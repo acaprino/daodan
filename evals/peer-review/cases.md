@@ -444,7 +444,7 @@ updating the plugin, with a key exported:
    `peer-review` server connected.
 3. Dry run first, against a profile whose `base_url` points at an unreachable
    host, to prove no call precedes consent:
-   `/peer-review:review docs/superpowers/plans/2026-08-11-cross-model-peer-review.md --dry-run`
+   `/peer-review:review docs/superpowers/specs/2026-08-11-cross-model-peer-review-design.md --dry-run`
    Expected: a complete `00-packet.md` with all nine sections and the digest
    recorded, and zero network calls. This closes Case 7.
 4. Real run, same artifact, real challenger, default rounds. Success is not

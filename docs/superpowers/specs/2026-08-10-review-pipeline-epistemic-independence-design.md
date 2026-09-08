@@ -2,7 +2,7 @@
 
 Date: 2026-08-10
 Plugins: `codebase-xray`, `senior-review`
-Status: frozen. Implementation plan at `docs/superpowers/plans/2026-08-10-review-pipeline-epistemic-independence.md`
+Status: frozen, and implemented. The implementation plan was retired once it was executed; the work it produced is in the plugins and in git history.
 
 ## The incident
 

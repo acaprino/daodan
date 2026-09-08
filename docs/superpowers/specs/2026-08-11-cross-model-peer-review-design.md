@@ -2,7 +2,7 @@
 
 Date: 2026-08-11
 Plugin: `peer-review` (new)
-Status: frozen. Implementation plan at `docs/superpowers/plans/2026-08-11-cross-model-peer-review.md`
+Status: frozen, and implemented. The implementation plan was retired once it was executed; the work it produced is in the plugins and in git history.
 
 ## Context
 
@@ -234,6 +234,6 @@ Deliberate, and not to be revisited without a second real harness in hand:
 - Stub: every server invariant, including that a missing `OPENAI_API_KEY` produces a named error and no request.
 - `--dry-run` against an unreachable host still produces a complete `00-packet.md`, proving no network call precedes consent.
 - Protocol dry runs against a scripted stub challenger, no real tokens: an unexplained withdrawal leaves the finding open, a repeated position triggers saturation, a quoted `MISREPRESENTED` flag reverts the finding to `CHALLENGED` (corrective round if budget remains, `CERTIFICATION_FAILED` otherwise) while an unsubstantiated one is discarded, and an inadmissible falsifier terminates as `UNTESTABLE`.
-- Real end-to-end run against the frozen epistemic-independence plan (`docs/superpowers/plans/2026-08-10-review-pipeline-epistemic-independence.md`), which is long, opinionated, and already peer reviewed once. Success is not that the challenger found something: it is that at least one finding reaches a terminal state through cited evidence on both sides, and that `04-verdict.md` presents either a real standoff or a documented genuine convergence.
+- Real end-to-end run against the frozen epistemic-independence design (`docs/superpowers/specs/2026-08-10-review-pipeline-epistemic-independence-design.md`), which is long, opinionated, and already peer reviewed once. Success is not that the challenger found something: it is that at least one finding reaches a terminal state through cited evidence on both sides, and that `04-verdict.md` presents either a real standoff or a documented genuine convergence.
 - Portability smoke test, cheap and revealing: hand `protocol/PROTOCOL.md` plus a packet to the challenger with no harness context and confirm it can execute its role from the protocol text alone.
 - The six CI checks pass from the repo root.
