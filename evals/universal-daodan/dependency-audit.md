@@ -1,15 +1,15 @@
-# Canary eval: `dependency-audit` on three hosts
+# Canary eval: `dependency-audit` on every host
 
 `dependency-audit` is the simple canary of the universal marketplace: one skill, one workflow, one
-context, no fan-out and no semantic override. It is what proves the compiler produces three
-installable packages with one identity and one observable contract, before the review pipeline is
-attempted.
+context, no fan-out and no semantic override. It is what proves the compiler produces one
+installable package per host with one identity and one observable contract, before the review
+pipeline is attempted.
 
 ## What is asserted mechanically
 
 `tests/test_dependency_audit_ports.py` runs in the normal suite and asserts:
 
-- all three manifests report `dependency-audit` at the same version as the kernel
+- every host reports `dependency-audit` at the same version as the kernel, from its plugin manifest where it has one and from `.daodan-provenance.json` on Pi, which has none
 - all three packages carry the four skill resources byte-for-byte
 - each host exposes exactly one invocable audit workflow, at its native path:
   `commands/deps-audit.md` (Claude), `prompts/deps-audit.prompt.md` (Copilot),

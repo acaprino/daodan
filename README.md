@@ -4,7 +4,7 @@
 
 **40 specialized plugins that augment your coding agent into a specialized toolkit - so you spend less time prompting and more time shipping.**
 
-> The Daodan is the symbiote that enhances its host. This marketplace is the Daodan of coding agents: Claude Code, GitHub Copilot and Codex, compiled from one source.
+> The Daodan is the symbiote that enhances its host. This marketplace is the Daodan of coding agents: Claude Code, GitHub Copilot, Codex and Pi, compiled from one source.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
 [![Consistency](https://github.com/acaprino/daodan/actions/workflows/consistency.yml/badge.svg)](https://github.com/acaprino/daodan/actions/workflows/consistency.yml)
@@ -31,7 +31,7 @@
 ## Quick Start
 
 ```bash
-# Add the marketplace (Claude Code; use copilot or codex for the other hosts)
+# Add the marketplace (Claude Code; use copilot or codex for those hosts, and see Pi below)
 claude plugin marketplace add acaprino/daodan
 
 # Install the plugins you need
@@ -428,10 +428,11 @@ daodan/
 ├── .claude-plugin/marketplace.json   # generated Claude catalog
 ├── .github/plugin/marketplace.json   # generated Copilot catalog
 ├── .agents/plugins/marketplace.json  # generated Codex catalog
+├── package.json                      # generated Pi catalog, not a Node project
 ├── adapters/                  # one directory per host: capabilities, coordination, layout, templates
 ├── docs/plugins/              # per-plugin documentation
 ├── evals/                     # eval harnesses (never shipped)
-├── exports/                   # generated packages: claude/, copilot/, codex/
+├── exports/                   # generated packages: claude/, copilot/, codex/, pi/
 ├── plugins/
 │   ├── python-development/
 │   │   ├── plugin.toml        # neutral control plane

@@ -1,9 +1,10 @@
 # Migrating from `claude-code-daodan` to `daodan`
 
-The repository is now one marketplace with three native front ends. The same 40 plugins are compiled
-from one set of content kernels into Claude Code, GitHub Copilot and Codex packages, at one identical
-version everywhere. Two things changed for existing users: the repository name, and the removal of the
-VS Code extension.
+The repository is now one marketplace with four native front ends. The same 40 plugins are compiled
+from one set of content kernels into Claude Code, GitHub Copilot, Codex and Pi packages, at one
+identical version everywhere. Two things changed for existing users: the repository name, and the
+removal of the VS Code extension. Pi arrived later, in marketplace 28.0.0, and changed nothing for
+anyone already installed.
 
 ## What replaced what
 
@@ -13,6 +14,7 @@ VS Code extension.
 | Claude packages under `plugins/<name>` | compiled packages under `exports/claude/plugins/<name>` |
 | A VS Code extension built from `exports/vscode` | a native Copilot marketplace at `.github/plugin/marketplace.json` |
 | No Codex distribution | a native Codex marketplace at `.agents/plugins/marketplace.json` |
+| No Pi distribution | a package installed from git, catalogued by the root `package.json` |
 
 Plugin names did not change. Command, agent and skill names did not change on Claude Code.
 

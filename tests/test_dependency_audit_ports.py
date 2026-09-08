@@ -1,7 +1,7 @@
 """Cross-host package parity for the first real compiled plugin.
 
 `dependency-audit` is the simple canary: one skill, one workflow, one context.
-It proves the compiler produces three installable packages with the same
+It proves the compiler produces one installable package per host with the same
 identity and the same observable contract before anything harder is attempted.
 """
 
@@ -14,12 +14,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.daodan.adapter import load_adapter  # noqa: E402
+from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 
 PLUGIN = "dependency-audit"
 KERNEL = REPO_ROOT / "plugins" / PLUGIN
 
+#: Pi is absent on purpose: it has no per-plugin manifest, so the identity it
+#: can be held to is the one its package records in `.daodan-provenance.json`.
 MANIFEST = {
     "claude": ".claude-plugin/plugin.json",
     "copilot": "plugin.json",
@@ -30,6 +32,17 @@ WORKFLOW_ENTRYPOINT = {
     "claude": "commands/deps-audit.md",
     "copilot": "prompts/deps-audit.prompt.md",
     "codex": "skills/deps-audit-workflow/SKILL.md",
+    "pi": "prompts/dependency-audit-deps-audit.md",
+}
+
+PROVENANCE = ".daodan-provenance.json"
+
+#: What each host's workflow frontmatter opens with. Pi carries no `name`,
+#: because there the command is the filename.
+FRONTMATTER_PREFIX = {
+    "copilot": "---\nname: deps-audit\n",
+    "codex": "---\nname: deps-audit\n",
+    "pi": "---\ndescription:",
 }
 
 SKILL_RESOURCES = (
@@ -59,8 +72,16 @@ def package(host: str) -> Path:
 class DependencyAuditPortTests(unittest.TestCase):
     def test_every_host_reports_the_same_identity(self):
         kernel = load_plugin(KERNEL)
-        for host, manifest in MANIFEST.items():
+        for host in HOSTS:
             with self.subTest(host=host):
+                manifest = MANIFEST.get(host)
+                if manifest is None:
+                    recorded = json.loads(
+                        (package(host) / PROVENANCE).read_text(encoding="utf-8")
+                    )
+                    self.assertEqual(recorded["plugin"], kernel.name)
+                    self.assertEqual(recorded["version"], kernel.version)
+                    continue
                 declared = json.loads(
                     (package(host) / manifest).read_text(encoding="utf-8")
                 )
@@ -68,7 +89,7 @@ class DependencyAuditPortTests(unittest.TestCase):
                 self.assertEqual(declared["version"], kernel.version)
 
     def test_every_host_carries_the_skill_resources_byte_for_byte(self):
-        for host in MANIFEST:
+        for host in HOSTS:
             for resource in SKILL_RESOURCES:
                 with self.subTest(host=host, resource=resource):
                     exported = package(host) / resource
@@ -102,7 +123,9 @@ class DependencyAuditPortTests(unittest.TestCase):
                 expected = kernel_body.replace(
                     "${CLAUDE_PLUGIN_ROOT}", layout["plugin_root_reference"]
                 ).replace("$ARGUMENTS", layout["arguments_reference"])
-                self.assertTrue(rendered.startswith("---\nname: deps-audit\n"), rendered[:60])
+                self.assertTrue(
+                    rendered.startswith(FRONTMATTER_PREFIX[host]), rendered[:60]
+                )
                 self.assertIn(expected, rendered)
 
     def test_the_kernel_declares_the_audit_contract(self):

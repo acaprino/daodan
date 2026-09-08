@@ -1,4 +1,4 @@
-# Canary eval: the `team-review` contract on three hosts
+# Canary eval: the `team-review` contract on every host
 
 `team-review` is the complex canary. It fans out over dimensions chosen at runtime, requires every
 reviewer to work in its own context, holds an all-delivered barrier before anything is consolidated,

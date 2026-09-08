@@ -15,7 +15,7 @@ description: >
 
 # Downstream exports
 
-The mirror image of the `external-repo-intake` skill. That skill covers content flowing *in* from other repos; this one covers our content flowing *out* to the three hosts.
+The mirror image of the `external-repo-intake` skill. That skill covers content flowing *in* from other repos; this one covers our content flowing *out* to the other hosts.
 
 **Nothing under `exports/` is edited by hand, ever.** Every file there is compiler output from `plugins/` plus `adapters/`, and `python scripts/daodan_build.py --check` fails the build the moment a committed package stops reproducing from its source. If an export looks wrong, the bug is in the kernel, the adapter, or the compiler. Fixing the export directly produces a change that the next build silently deletes.
 
