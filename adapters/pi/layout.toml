@@ -43,3 +43,12 @@ workflow_frontmatter = "description, argument-hint"
 # Appended to every MCP registration note, because on this host the registration
 # has a specific destination and a specific extension that reads it.
 mcp_registration_hint = "Pi has no MCP client of its own: install `pi-mcp-adapter` (`pi install npm:pi-mcp-adapter`), then add that command under that name to the `mcpServers` object of `~/.config/mcp/mcp.json`, or of any other file that extension reads (`.mcp.json` in the project, `<pi agent dir>/mcp.json`, `.pi/mcp.json`). Resolve the plugin root to an absolute path when you write it there, because that file is read outside this session."
+
+# Hard ceilings Pi enforces when it registers a package. Pi refuses a skill
+# whose description is longer than this and reports it as a skill conflict at
+# agent start, so an over-long description ships a package the host will not
+# load rather than a cosmetic problem. Roles land under `skills/` on this host
+# too, so the ceiling binds both kinds. `tests/test_host_limits.py` measures
+# every rendered skill against whatever is declared here.
+[limits]
+skill_description = 1024

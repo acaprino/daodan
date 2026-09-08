@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.0.0"
+    "version": "28.0.1"
   },
   "name": "daodan",
   "owner": {
@@ -49,7 +49,7 @@
         "./skills/prompt-optimize-workflow"
       ],
       "source": "./exports/codex/plugins/ai-tooling",
-      "version": "5.4.0"
+      "version": "5.4.1"
     },
     {
       "author": {

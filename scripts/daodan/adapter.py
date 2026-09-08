@@ -12,7 +12,7 @@ Nothing here decides what a plugin means. It decides only how a host runs it.
 from __future__ import annotations
 
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, Mapping
 
@@ -64,6 +64,9 @@ class HostAdapter:
     bindings: Mapping[str, CapabilityBinding]
     strategies: tuple[CoordinationStrategy, ...]
     layout: Mapping[str, str]
+    #: Hard ceilings this host enforces on a package it registers. A host that
+    #: declares none accepts whatever the compiler renders.
+    limits: Mapping[str, int] = field(default_factory=dict)
 
 
 class AdapterError(ValueError):
@@ -140,15 +143,24 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
         strategies.append(strategy)
 
     layout_path = directory / "layout.toml"
-    layout = _read(layout_path).get("layout", {})
+    document = _read(layout_path)
+    layout = document.get("layout", {})
     if not isinstance(layout, dict) or not all(isinstance(item, str) for item in layout.values()):
         raise AdapterError(layout_path, "[layout] must be a table of strings")
+
+    limits = document.get("limits", {})
+    if not isinstance(limits, dict) or not all(
+        isinstance(item, int) and not isinstance(item, bool) and item > 0
+        for item in limits.values()
+    ):
+        raise AdapterError(layout_path, "[limits] must be a table of positive integers")
 
     return HostAdapter(
         host=host,
         bindings=bindings,
         strategies=tuple(strategies),
         layout=dict(layout),
+        limits=dict(limits),
     )
 
 
