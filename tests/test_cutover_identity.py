@@ -1,4 +1,4 @@
-"""The cutover gate: one marketplace identity, three hosts, no extension surface."""
+"""The cutover gate: one marketplace identity on every host, no extension surface."""
 
 import json
 import subprocess
@@ -19,6 +19,9 @@ CATALOGS = {
     "claude": REPO_ROOT / ".claude-plugin/marketplace.json",
     "copilot": REPO_ROOT / ".github/plugin/marketplace.json",
     "codex": REPO_ROOT / ".agents/plugins/marketplace.json",
+    # Pi has no marketplace: its catalog is the package manifest at the root,
+    # which carries the identity and the version but lists no plugin.
+    "pi": REPO_ROOT / "package.json",
 }
 
 IDENTITY = "daodan"
@@ -34,7 +37,7 @@ def tracked_files() -> list[str]:
 
 
 class CutoverIdentityTests(unittest.TestCase):
-    def test_all_three_native_manifests_exist(self):
+    def test_every_native_manifest_exists(self):
         for host, path in CATALOGS.items():
             with self.subTest(host=host):
                 self.assertTrue(path.is_file(), f"missing: {path}")
@@ -45,17 +48,22 @@ class CutoverIdentityTests(unittest.TestCase):
                 self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["name"], IDENTITY)
 
     def test_versions_and_plugin_sets_match_across_hosts(self):
-        reference = None
-        version = None
+        # Read the listing catalogs first, so the globbing one is compared
+        # against a version that exists however the mapping above is ordered.
+        claude = json.loads(CATALOGS["claude"].read_text(encoding="utf-8"))
+        reference = {entry["name"]: entry["version"] for entry in claude["plugins"]}
+        version = claude["metadata"]["version"]
         for host, path in CATALOGS.items():
             catalog = json.loads(path.read_text(encoding="utf-8"))
-            entries = {entry["name"]: entry["version"] for entry in catalog["plugins"]}
             with self.subTest(host=host):
-                if reference is None:
-                    reference, version = entries, catalog["metadata"]["version"]
-                else:
-                    self.assertEqual(entries, reference)
-                    self.assertEqual(catalog["metadata"]["version"], version)
+                if "plugins" not in catalog:
+                    # A globbing catalog lists nothing, so what it can be held to
+                    # is the marketplace version it carries at the top level.
+                    self.assertEqual(catalog["version"], version)
+                    continue
+                entries = {entry["name"]: entry["version"] for entry in catalog["plugins"]}
+                self.assertEqual(entries, reference)
+                self.assertEqual(catalog["metadata"]["version"], version)
 
     def test_the_extension_export_is_gone(self):
         self.assertFalse((REPO_ROOT / "exports/vscode").exists())

@@ -1,8 +1,10 @@
-"""Native catalog rendering for the three hosts.
+"""Native catalog rendering, one catalog per host.
 
-One catalog per host, all three naming the same plugins at the same versions.
-That identity is the whole point of a universal marketplace, so a version
-mismatch is rejected before serialization rather than shipped and noticed later.
+Every host names the same plugins at the same versions. That identity is the
+whole point of a universal marketplace, so a version mismatch is rejected before
+serialization rather than shipped and noticed later. The shape may differ: three
+hosts take a plugin listing, and Pi takes a package manifest that globs the
+rendered tree, because Pi installs a package and has no marketplace to list into.
 """
 
 from __future__ import annotations
@@ -31,7 +33,9 @@ class CatalogError(ValueError):
 def _source(host: str, name: str) -> object:
     """Return the host-native source reference for one plugin.
 
-    All three hosts take a repository-relative path string. Codex was specified
+    The three hosts with a catalog take a repository-relative path string; Pi
+    has no source field at all and reuses this shape as the root of its globs.
+    Codex was specified
     as `{"source": "local", "path": ...}`, and that shape is silently ignored:
     the marketplace registers, and then every plugin in it is "not found".
     Measured against codex-cli 0.149.1, which lists a plugin only when `source`

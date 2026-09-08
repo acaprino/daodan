@@ -24,11 +24,11 @@ Three passes, each independently reported. Exits non-zero if any fails.
                    installation if the compiler ships <path>. It ships roles,
                    workflows, contracts, policies and every file under
                    skills/<name>/; a references/, scripts/ or mcp/ directory at
-                   the kernel root is copied nowhere, so the read fails on all
-                   three hosts and nothing else notices. Each reference is
+                   the kernel root is copied nowhere, so the read fails on every
+                   host and nothing else notices. Each reference is
                    resolved against the generated Claude package under
                    exports/claude/plugins/<name>/, which is the layout the
-                   placeholder maps onto itself in; the other two hosts are
+                   placeholder maps onto itself in; the other hosts are
                    rendered from the same kernel by the same rules and the drift
                    gate keeps them in step. Its motivating case: ai-tooling's
                    reasoning-patterns reference sat unshipped for eleven days
