@@ -35,3 +35,9 @@ Thumbs.db
 
 # Distribution archives never belong in the tree
 plugins/**/*.zip
+
+# The root package.json is Pi's generated catalog, not a Node project. Nothing
+# here declares a dependency, but `pi install git:` runs `npm install` on the
+# clone, and a local run would otherwise leave these behind.
+node_modules/
+package-lock.json
