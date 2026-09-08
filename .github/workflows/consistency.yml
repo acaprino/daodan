@@ -1,6 +1,6 @@
 # Marketplace consistency checks. Content in this repo is the neutral plugin
-# kernels under plugins/ plus the three host adapters; everything under exports/
-# and all three root marketplace manifests are compiler output. These jobs are
+# kernels under plugins/ plus the host adapters; everything under exports/ and
+# every root marketplace manifest are compiler output. These jobs are
 # the mechanical versions of the contracts documented in CLAUDE.md, plus unit
 # tests for the helper scripts that have branching logic. Every script is
 # stdlib-only Python and runs from the repository root, so failures reproduce

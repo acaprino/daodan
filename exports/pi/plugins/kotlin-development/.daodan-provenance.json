@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:3786894a5a01c4169fc473229de2fd1f4c5fb49cd96169f663ac7e4ffcb25822",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "kotlin-development",
+  "version": "1.1.0"
+}

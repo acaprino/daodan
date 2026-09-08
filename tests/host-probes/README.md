@@ -1,9 +1,11 @@
 # Native host protocol probes
 
-Three disposable single-plugin marketplaces, one per host, that establish what each native harness
+One disposable single-plugin package per host, establishing what each native harness
 actually supports. They exist so that the adapter capability and coordination bindings in
 `adapters/<host>/` encode measured behaviour instead of assumptions. They are fixtures: nothing here
-ships, and every disposable marketplace is removed from the host profile after the probe.
+ships, and every disposable marketplace is removed from the host profile after the probe. Pi is
+the exception to the word marketplace: it has none, so its fixture is a package installed from a
+path and removed with `pi remove`.
 
 Each fixture packages the same probe plugin (`daodan-probe`, version `0.0.1`, source `./plugins/probe`):
 
@@ -19,6 +21,7 @@ Per-host specifics:
 | claude | `commands/probe-team.md` | packaged agent, plus native Agent Teams versus plain isolated subagents |
 | copilot | `agents/probe-coordinator.agent.md` | named custom agent, restricted by the `agents` frontmatter allowlist |
 | codex | `skills/probe/SKILL.md` | packaged `.codex/agents/probe.toml` role, with inline role body as the fallback |
+| pi | `prompts/daodan-probe-team.md` | role registered as a `disable-model-invocation` skill, dispatched with the `subagent` tool from `pi-subagents` |
 
 ## Structural check
 
@@ -36,7 +39,16 @@ invoke the single-worker and two-worker probes:
 claude plugin validate tests/host-probes/claude
 copilot plugin marketplace add ./tests/host-probes/copilot
 codex plugin marketplace add ./tests/host-probes/codex
+pi install ./tests/host-probes/pi
 ```
+
+Pi is the one host with no marketplace to add: it installs a package from a path, so the fixture
+root is what you hand it. The Pi probe answers three questions the others do not raise. Whether a
+`subagent` tool exists at all, which needs `pi install npm:pi-subagents` first and decides whether
+the `contexts.isolate` binding is honest. Whether `/skill:probe-worker` resolves even though the
+skill declares `disable-model-invocation`, which is what makes a role reachable there. And whether
+the manifest's directory globs pick up a nested skill, which the adapter assumes and nothing local
+can prove.
 
 Expected single-worker result on every host: `DAODAN_PROBE_OK`.
 Expected coordinator result: both unique worker nonces plus `DELIVERED=2/2`.
@@ -54,8 +66,9 @@ host | isolated workers | parallel fan-out | shared tasks | peer messaging | wor
 | claude | yes | yes | conditional | conditional | n/a | yes |
 | copilot | partial | partial | partial | partial | partial | yes (structural) |
 | codex | yes | yes | no | no | n/a | no (inline succeeded) |
+| pi | unmeasured | unmeasured | no | no | n/a | unmeasured |
 
-**Claude and Codex are measured; Copilot is not.** The Claude row comes from two headless runs
+**Claude and Codex are measured; Copilot and Pi are not.** The Claude row comes from two headless runs
 against the fixture package, loaded with `--plugin-dir` so nothing was registered in a real profile:
 
 ```bash

@@ -1,0 +1,45 @@
+[layout]
+root = "exports/pi"
+
+# Pi has no marketplace. It installs a package from npm, git or a local path, and
+# reads its manifest from the root of that package, so the Pi catalog is the
+# repository-root `package.json` and its `pi` key globs the rendered tree.
+marketplace = "package.json"
+
+plugin_root = "plugins/${plugin}"
+skills = "skills/${skill}/SKILL.md"
+# A role is registered as a skill that the model never sees listed. Pi puts
+# every registered skill's name and description in the system prompt, so 76
+# roles listed there would cost that budget in every session; the standard
+# `disable-model-invocation` flag hides them and keeps them loadable, which is
+# what makes a role-only plugin exist at all on this host. The prefix keeps them
+# out of the way of the skills that carry the plugin's own name.
+roles = "skills/${plugin}-${role}/SKILL.md"
+role_template = "role.SKILL.md.tmpl"
+
+# The filename is the command name on Pi, and prompt discovery is flat and
+# global: `code-review.md` from any installed package answers `/code-review`.
+# The plugin prefix is what keeps 57 workflows out of the user's own namespace,
+# and it mirrors Claude's `/senior-review:code-review`.
+workflows = "prompts/${plugin}-${workflow}.md"
+team_workflow_template = "team-prompt.md.tmpl"
+
+# `plugin_manifest` is deliberately absent: Pi has no per-plugin manifest, and
+# rendering one would ship a file nothing reads.
+
+# Pi hands a prompt template no plugin-root variable, so the reference is a
+# marker the agent resolves once from where it loaded the file.
+plugin_root_reference = "<plugin-root>"
+plugin_root_note = "`<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it."
+
+# Pi expands `$ARGUMENTS`, `$@`, `$1` and `${1:-default}` in a prompt template
+# natively, so the kernel's own placeholder maps onto itself and needs no note.
+arguments_reference = "$ARGUMENTS"
+
+# A prompt template reads description and argument-hint. There is no `name`:
+# the command is the filename.
+workflow_frontmatter = "description, argument-hint"
+
+# Appended to every MCP registration note, because on this host the registration
+# has a specific destination and a specific extension that reads it.
+mcp_registration_hint = "Pi has no MCP client of its own: install `pi-mcp-adapter` (`pi install npm:pi-mcp-adapter`), then add that command under that name to the `mcpServers` object of `~/.config/mcp/mcp.json`, or of any other file that extension reads (`.mcp.json` in the project, `<pi agent dir>/mcp.json`, `.pi/mcp.json`). Resolve the plugin root to an absolute path when you write it there, because that file is read outside this session."

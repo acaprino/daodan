@@ -1,0 +1,25 @@
+# Provisional until the evidence table in tests/host-probes/README.md is measured.
+# Every state and strategy row here must be re-derived from that table.
+#
+# Both strategies are `runtime-optional` rather than `baseline`: on Pi an
+# isolated worker context comes from the `pi-subagents` package, not from the
+# core. The harness template says what to do when it is absent, and the answer
+# depends on whether the workflow declared isolation as required or shared.
+
+[[strategies]]
+name = "parallel-subagents"
+availability = "runtime-optional"
+isolated = true
+parallel = true
+shared_tasks = false
+peer_messaging = false
+role_delivery = "inline-prompt"
+
+[[strategies]]
+name = "serial-isolated"
+availability = "runtime-optional"
+isolated = true
+parallel = false
+shared_tasks = false
+peer_messaging = false
+role_delivery = "inline-prompt"

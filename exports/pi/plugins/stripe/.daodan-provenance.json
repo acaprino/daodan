@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:29fa018311f143d6b41a05822c915773bb71655028601c613620e734afe2e0df",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "stripe",
+  "version": "2.5.0"
+}

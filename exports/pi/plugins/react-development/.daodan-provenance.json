@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:eb32831e249744926b048c0afb5608de194a594704c5694199b6c42c13ed9821",
+  "harnessStrategies": {
+    "review-react": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "react-development",
+  "version": "1.11.0"
+}

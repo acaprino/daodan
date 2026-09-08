@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:7cd5cc82d98826d17711a231850dc84c28860f0b0c5b124066686fc5a7eb859e",
+  "harnessStrategies": {
+    "prompt-optimize": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "ai-tooling",
+  "version": "5.4.0"
+}

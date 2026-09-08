@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROBE_ROOT = REPO_ROOT / "tests" / "host-probes"
 
-HOSTS = ("claude", "copilot", "codex")
+HOSTS = ("claude", "copilot", "codex", "pi")
 
 MARKETPLACE_PATH = {
     "claude": Path(".claude-plugin/marketplace.json"),
@@ -51,7 +51,17 @@ REQUIRED_FILES = {
         Path("plugins/probe/hooks/hooks.json"),
         Path("plugins/probe/.codex/agents/probe.toml"),
     ),
+    "pi": (
+        Path("plugins/probe/skills/probe/SKILL.md"),
+        Path("plugins/probe/skills/probe-worker/SKILL.md"),
+        Path("plugins/probe/prompts/daodan-probe-team.md"),
+    ),
 }
+
+#: Pi installs a package rather than registering a marketplace, so its fixture is
+#: a package manifest at the fixture root and there is no per-plugin manifest at
+#: all. Everything else about the probe is the same.
+PI_MANIFEST = Path("package.json")
 
 PROBE_NAME = "daodan-probe"
 PROBE_VERSION = "0.0.1"
@@ -59,8 +69,56 @@ PROBE_SOURCE = "./plugins/probe"
 SINGLE_WORKER_CONTRACT = "Return exactly DAODAN_PROBE_OK."
 
 
+def validate_pi_fixture(root: Path) -> list[str]:
+    """Structural check for the package-shaped fixture.
+
+    Pi registers what its globs reach, so the check that matters is that they
+    reach the probe: a manifest naming the right package is not evidence that
+    anything in it is loadable.
+    """
+    errors: list[str] = []
+    manifest = root / PI_MANIFEST
+    if not manifest.is_file():
+        return [f"pi: missing {PI_MANIFEST.as_posix()}"]
+    try:
+        declared = json.loads(manifest.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        return [f"pi: {PI_MANIFEST.as_posix()} is not valid JSON: {error}"]
+
+    if declared.get("name") != PROBE_NAME:
+        errors.append(f"pi: package name is {declared.get('name')!r}, expected {PROBE_NAME!r}")
+    if declared.get("version") != PROBE_VERSION:
+        errors.append(f"pi: package version is {declared.get('version')!r}")
+    if "pi-package" not in declared.get("keywords", []):
+        errors.append("pi: package is not tagged with the pi-package keyword")
+
+    globs = declared.get("pi", {})
+    for kind in ("skills", "prompts"):
+        patterns = globs.get(kind, [])
+        if not patterns:
+            errors.append(f"pi: manifest declares no {kind} glob")
+        reached = [
+            path for pattern in patterns for path in root.glob(pattern.lstrip("./"))
+        ]
+        if not reached:
+            errors.append(f"pi: the {kind} glob reaches nothing on disk")
+
+    for relative in REQUIRED_FILES["pi"]:
+        if not (root / relative).is_file():
+            errors.append(f"pi: missing {relative.as_posix()}")
+
+    worker = root / "plugins/probe/skills/probe-worker/SKILL.md"
+    if worker.is_file() and "disable-model-invocation: true" not in worker.read_text(
+        encoding="utf-8"
+    ):
+        errors.append("pi: the worker role skill is not hidden from the system prompt")
+    return errors
+
+
 def validate_fixture(root: Path, host: str) -> list[str]:
     """Return one message per structural defect in a probe fixture."""
+    if host == "pi":
+        return validate_pi_fixture(root)
     if host not in MARKETPLACE_PATH:
         return [f"{host}: unknown host"]
 

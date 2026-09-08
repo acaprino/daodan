@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:e21501749bdf67616ec9c15e7e5302c650323446b2726bbecb3303bd0fbf1f77",
+  "harnessStrategies": {
+    "maintain-readme": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "docs",
+  "version": "1.2.0"
+}

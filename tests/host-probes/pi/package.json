@@ -1,0 +1,18 @@
+{
+  "description": "Single-worker and two-worker coordination probe.",
+  "keywords": [
+    "pi-package",
+    "probe"
+  ],
+  "name": "daodan-probe",
+  "pi": {
+    "prompts": [
+      "./plugins/probe/prompts"
+    ],
+    "skills": [
+      "./plugins/probe/skills"
+    ]
+  },
+  "private": true,
+  "version": "0.0.1"
+}

@@ -71,6 +71,7 @@ class HostRenderingTests(unittest.TestCase):
             "claude": f"commands/{workflow}.md",
             "copilot": f"agents/{workflow}-coordinator.agent.md",
             "codex": f"skills/{workflow}-workflow/SKILL.md",
+            "pi": f"prompts/{plugin}-{workflow}.md",
         }
         return _read(self.package(host, plugin) / layout[host])
 

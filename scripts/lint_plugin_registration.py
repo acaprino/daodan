@@ -14,13 +14,22 @@ the Claude Code equivalent, added after senior-review 9.0.0 shipped
 `premise-auditor.md` on disk and undeclared, which silently disabled both
 mechanisms that release existed to add.
 
-Two passes, each independently reported. Exits non-zero if either fails.
+Three passes, each independently reported. Exits non-zero if any fails.
 
   1. undeclared    a content file exists on disk but no manifest entry points at
                    it. This is the failure above: installed, invisible.
   2. dangling      a manifest entry points at a path that does not exist. This is
                    the same defect from the other side, and it is what a rename
                    that updates the file but not the manifest produces.
+  3. pi globs      the Pi catalog registers nothing by name: `package.json` globs
+                   the rendered tree instead. So the same invariant inverts
+                   there, and the question becomes whether every generated
+                   component of a registered kind falls inside a declared glob,
+                   and whether every declared glob reaches anything at all. A
+                   layout path moved out from under a glob would ship a package
+                   whose commands do not exist, silently and on that host only.
+                   Roles are deliberately not checked as a kind of their own:
+                   they render as skills there.
 
 All three content kinds are checked, because the invariant is not agent-specific:
 an undeclared skill or command fails the same way for the same reason.
@@ -39,6 +48,8 @@ from pathlib import Path
 
 MARKETPLACE = Path(".claude-plugin/marketplace.json")
 PLUGINS = Path("plugins")
+PI_MANIFEST = Path("package.json")
+PI_PACKAGES = Path("exports/pi/plugins")
 
 # Since the Claude bootstrap, `source` points at the generated package under
 # `exports/claude/plugins/<name>` rather than at the authoring kernel. Both are
@@ -97,11 +108,39 @@ def report(name, problems, hint):
         print(f"ok    {name}")
 
 
+def check_pi() -> list[tuple[str, str, str]]:
+    """Violations of the globbing catalog's half of the same invariant."""
+    if not PI_MANIFEST.is_file() or not PI_PACKAGES.is_dir():
+        return []
+    declared = json.loads(PI_MANIFEST.read_text(encoding="utf-8")).get("pi", {})
+    violations: list[tuple[str, str, str]] = []
+    reached: dict[str, set[Path]] = {}
+    for kind, patterns in declared.items():
+        matched: set[Path] = set()
+        for pattern in patterns:
+            hits = {path for path in Path().glob(pattern.lstrip("./")) if path.is_dir()}
+            if not hits:
+                violations.append(("pi globs", "(manifest)", f"{kind}: {pattern} reaches nothing"))
+            matched |= hits
+        reached[kind] = matched
+
+    for package in sorted(PI_PACKAGES.iterdir()):
+        if not package.is_dir():
+            continue
+        for skill in sorted(package.glob("skills/*/SKILL.md")):
+            if skill.parent.parent not in reached.get("skills", set()):
+                violations.append(("pi globs", package.name, skill.as_posix()))
+        for prompt in sorted(package.glob("prompts/*.md")):
+            if prompt.parent not in reached.get("prompts", set()):
+                violations.append(("pi globs", package.name, prompt.as_posix()))
+    return violations
+
+
 def main():
     if not MARKETPLACE.is_file() or not PLUGINS.is_dir():
         sys.exit("run from the repository root: .claude-plugin/marketplace.json not found")
 
-    violations = sorted(set(check()))
+    violations = sorted(set(check()) | set(check_pi()))
     data = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
     counted = sum(len(p.get(k, [])) for p in data["plugins"]
                   for k in ("agents", "skills", "commands"))
@@ -113,6 +152,9 @@ def main():
     report("dangling", [(p, path) for kind, p, path in violations if kind == "dangling"],
            "the declared path does not exist: fix the entry to match the file on "
            "disk, or remove the entry")
+    report("pi globs", [(p, path) for kind, p, path in violations if kind == "pi globs"],
+           "widen the matching glob in the root package.json `pi` table, or move the "
+           "component back under a path it already reaches")
 
     if failures:
         sys.exit(f"\n{len(failures)} check(s) failed: {', '.join(failures)}")

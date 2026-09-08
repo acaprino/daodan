@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "27.5.0"
+    "version": "28.0.0"
   },
   "name": "daodan",
   "owner": {

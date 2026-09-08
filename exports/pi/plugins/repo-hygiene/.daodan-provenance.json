@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:fe7e5e52789bec0f2c45f87b8787d1042e3885b9e1bc40c2c12ecee76a33c491",
+  "harnessStrategies": {
+    "tidy": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "repo-hygiene",
+  "version": "1.2.0"
+}

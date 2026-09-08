@@ -310,15 +310,19 @@ def _mcp_manifest(plugin: PluginSpec, adapter: HostAdapter) -> str:
 
 def _mcp_registration_notes(plugin: PluginSpec, adapter: HostAdapter) -> tuple[str, ...]:
     """One note per server for a host that does not start declared servers itself."""
+    hint = adapter.layout.get("mcp_registration_hint")
     notes = []
     for server in plugin.mcp_servers:
         command = " ".join([server.command, *_host_arguments(server.args, adapter)])
-        notes.append(
+        note = (
             f"This plugin declares an MCP server, `{server.name}`, started with `{command}`. "
             "This host does not start a plugin-declared MCP server on its own: register that "
             "command under that name in the host's MCP configuration before running this "
             "workflow, because its calls to that server fail until it is connected."
         )
+        if hint:
+            note = f"{note} {hint}"
+        notes.append(note)
     return tuple(notes)
 
 
@@ -501,9 +505,13 @@ def render_plugin(
     replacements = {spec.source: spec for spec in overrides}
     applied: list[str] = []
 
-    manifest = render_template(_manifest_template(adapter, adapters_root), context)
-    manifest_path = render_path(adapter.layout["plugin_manifest"], context)
-    _write_text(staging_root / manifest_path, manifest)
+    # A host with no per-plugin manifest declares no `plugin_manifest` path.
+    # Pi is the case: it installs a package and reads one manifest at its root,
+    # so a per-plugin file would ship as something nothing reads.
+    manifest_layout = adapter.layout.get("plugin_manifest")
+    if manifest_layout:
+        manifest = render_template(_manifest_template(adapter, adapters_root), context)
+        _write_text(staging_root / render_path(manifest_layout, context), manifest)
 
     # A declared MCP server becomes a package-root manifest on a host that
     # starts it, and a note on every workflow of the plugin on a host that
@@ -669,6 +677,16 @@ def _policy_implementation(adapters_root: Path, host: str, policy: str) -> Path 
     return None
 
 
+def _isolation_companion(adapter: HostAdapter) -> str:
+    """The package a host needs installed before an isolated worker context exists.
+
+    Empty on a host that ships isolation itself, which is every host but Pi. A
+    template that never mentions it substitutes nothing.
+    """
+    binding = adapter.bindings.get("contexts.isolate")
+    return binding.package or "" if binding is not None else ""
+
+
 def _harness_context(
     plugin: PluginSpec,
     workflow: WorkflowSpec,
@@ -712,6 +730,7 @@ def _harness_context(
         "agents": ", ".join(f"'{item}'" for item in ordered),
         "tools": _coordinator_tools(plugin, adapter),
         "dispatch_plan": _dispatch_plan(workflow),
+        "companion": _isolation_companion(adapter),
         "body": body.strip() + "\n",
         "hint": _unquote(meta.get("argument-hint", "")).strip() or None,
     }

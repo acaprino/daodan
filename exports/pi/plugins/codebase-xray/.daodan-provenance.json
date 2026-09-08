@@ -1,0 +1,12 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:c1051d47ac511c73dc947d2870ac979bc13118e897acb7d795494de047cb1166",
+  "harnessStrategies": {
+    "analyze": "parallel-subagents",
+    "team-analyze": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "codebase-xray",
+  "version": "4.0.1"
+}

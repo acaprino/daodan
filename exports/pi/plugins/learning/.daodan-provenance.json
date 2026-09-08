@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:56502cb8a2127170dbee875dbcd5ffc41a791b5af54c132e22443bf429ce58ab",
+  "harnessStrategies": {
+    "export-to-markmind": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "learning",
+  "version": "1.7.0"
+}

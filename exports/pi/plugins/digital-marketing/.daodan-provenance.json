@@ -1,0 +1,16 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:088c532b1080678341490fb1c412be1df5dd1a82006ce9634aa8ba93f68a05f0",
+  "harnessStrategies": {
+    "brand-naming": "parallel-subagents",
+    "content-strategy": "parallel-subagents",
+    "ga4-audit": "parallel-subagents",
+    "llm-seo-audit": "parallel-subagents",
+    "reply-to-customer-review": "parallel-subagents",
+    "seo-audit": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "digital-marketing",
+  "version": "2.1.0"
+}

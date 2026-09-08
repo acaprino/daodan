@@ -1,11 +1,11 @@
 """The Daodan compiler entry point.
 
-    python scripts/daodan_build.py            # publish all three hosts
+    python scripts/daodan_build.py            # publish every host
     python scripts/daodan_build.py --check    # fail on drift, write nothing
 
 Exit codes: 0 clean, 1 drift or validation failure, 2 invocation error.
 
-Publication always builds Claude, Copilot and Codex together: a marketplace that
+Publication always builds every host together: a marketplace that
 ships one host ahead of the others is exactly the drift this compiler exists to
 prevent. Selecting a subset is a development affordance, and only under
 ``--check``.
@@ -195,7 +195,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     hosts = tuple(arguments.host or HOSTS)
     if not arguments.check and set(hosts) != set(HOSTS):
         parser.print_usage(sys.stderr)
-        sys.stderr.write("publication always builds claude, copilot and codex together\n")
+        sys.stderr.write(f"publication always builds {', '.join(HOSTS)} together\n")
         return 2
 
     report = build_repository(arguments.root, hosts, arguments.check)

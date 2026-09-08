@@ -65,10 +65,18 @@ working tree is 31 MB against roughly 6.4 MB of Pi content.
    file, and a real install command. A CLI mode remains a good idea and is now optional
    future work rather than the price of this port.
 
-4. **Roles ship as files, not as skills.** Pi puts every registered skill's name and
-   description in the system prompt at startup. Registering 76 roles would put 134
-   entries in every session. They ship under `roles/` unregistered, exactly as on Codex,
-   and the coordinator reads one and delivers it inline.
+4. **Roles ship as skills that the model never sees listed.** This decision was also
+   taken twice, and the second time by a test. The first answer was to ship them as
+   unregistered files under `roles/`, as on Codex, on the reasoning that Pi puts every
+   registered skill's name and description in the system prompt and 76 roles would put
+   134 entries in every session. That cost is real, but Pi has a flag for exactly it:
+   `disable-model-invocation: true` hides a skill from the system prompt and keeps it
+   loadable by name. The parity test written for section 8 then found what the first
+   answer cost: `app-analyzer` and `csp` are role-only plugins, so under it they shipped
+   files and registered nothing, and two of forty plugins simply did not exist on this
+   host. Roles now render as `skills/<plugin>-<role>/SKILL.md` carrying that flag. Names
+   were measured against Pi's limits before choosing this: the longest is 45 characters
+   against a cap of 64, and the longest description 859 against 1024.
 
 5. **No release asset, no extractor, no packaging job.** Fact 5 above makes an archive
    strictly worse than the native path, and CLAUDE.md already records that the packaging
@@ -87,20 +95,22 @@ and `ls`.
 | `repository.write` | native | tool `edit` | |
 | `shell.execute` | native | tool `bash` | |
 | `network.fetch` | adapted | `shell-fetch` | no network tool in the core |
-| `contexts.isolate` | adapted | `runtime-subagent` | value `pi-subagents` |
+| `contexts.isolate` | adapted | `runtime-subagent` | package `pi-subagents` |
 | `roles.dispatch` | adapted | `inline-prompt` | no named agents |
-| `execution.parallel` | adapted | `concurrent-dispatch` | value `pi-subagents` |
+| `execution.parallel` | adapted | `concurrent-dispatch` | package `pi-subagents` |
 | `tasks.share` | unsupported | none | |
 | `peers.message` | unsupported | none | |
 | `hooks.lifecycle` | unsupported | none | Pi exposes lifecycle events to TypeScript extensions, a mechanism no probe has measured |
-| `mcp.servers` | adapted | `mcp-registration` | value `pi-mcp-adapter` |
+| `mcp.servers` | adapted | `mcp-registration` | package `pi-mcp-adapter` |
 
 `hooks.lifecycle` is required by no plugin, so `unsupported` blocks nothing and is the
 only honest state until the extension mechanism is probed.
 
-Three bindings carry the name of the companion package that satisfies them in `value`,
-so the install line a template renders is derived from the adapter rather than written
-into the template text. The day a companion is renamed, one file changes instead of 57
+Three bindings carry the name of the companion package that satisfies them in a new
+`package` field, so the install line a template renders is derived from the adapter
+rather than written into the template text. It is deliberately not `value`: that field
+names a host tool and feeds the Copilot coordinator's derived `tools` line, so a package
+name there would read as a tool that does not exist. The day a companion is renamed, one file changes instead of 57
 generated prompts. It is the same mechanism that already derives the Copilot
 coordinator's `tools` line from the bindings.
 
@@ -119,7 +129,8 @@ root = "exports/pi"
 marketplace = "package.json"
 plugin_root = "plugins/${plugin}"
 skills = "skills/${skill}/SKILL.md"
-roles = "roles/${role}.md"
+roles = "skills/${plugin}-${role}/SKILL.md"
+role_template = "role.SKILL.md.tmpl"
 workflows = "prompts/${plugin}-${workflow}.md"
 team_workflow_template = "team-prompt.md.tmpl"
 
@@ -154,9 +165,9 @@ There is no `role_template`, because role bodies ship unrewritten.
 
 ```
 exports/pi/plugins/senior-review/
-├── skills/review-quality-gates/SKILL.md
-├── roles/security-auditor.md
-└── prompts/senior-review-code-review.md
+├── skills/review-quality-gates/SKILL.md              # the plugin's own skill
+├── skills/senior-review-security-auditor/SKILL.md    # a role, hidden from the skill list
+└── prompts/senior-review-code-review.md              # /senior-review-code-review
 ```
 
 ## 6. The root `package.json`, which is Pi's catalog

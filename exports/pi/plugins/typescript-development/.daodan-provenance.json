@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:842105dff573d1f76524ee08cc919983919d925c3344183c872ae6604210bb69",
+  "harnessStrategies": {
+    "review-typescript": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "typescript-development",
+  "version": "2.3.0"
+}

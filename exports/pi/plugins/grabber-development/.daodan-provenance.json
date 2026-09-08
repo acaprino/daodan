@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:dab856905bcb76ef1159da2d96b86e3e44cd4b2a95abad94846d6c4f2d7e9e35",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "grabber-development",
+  "version": "1.5.0"
+}

@@ -1,7 +1,7 @@
 # The only workflow here that pushes. On every push to master it rebuilds all
-# three host marketplaces from the neutral kernels and commits the result.
+# every host marketplace from the neutral kernels and commits the result.
 #
-# It publishes all three or none. A marketplace where one host is a commit ahead
+# It publishes every host or none. A marketplace where one host is a commit ahead
 # of the others is exactly the drift the compiler exists to prevent, so the
 # staged set below is fixed and the final --check runs before the commit rather
 # than after it.
@@ -46,7 +46,7 @@ jobs:
       - name: Validate before building
         run: python -m unittest discover -s tests
 
-      - name: Build all three native marketplaces
+      - name: Build every native marketplace
         run: python scripts/daodan_build.py
 
       - name: Verify the built tree reproduces
@@ -60,9 +60,11 @@ jobs:
             exports/claude \
             exports/copilot \
             exports/codex \
+            exports/pi \
             .claude-plugin/marketplace.json \
             .github/plugin/marketplace.json \
-            .agents/plugins/marketplace.json
+            .agents/plugins/marketplace.json \
+            package.json
           if git diff --cached --quiet; then
             echo "no drift: the committed marketplaces already match the kernels"
             exit 0
@@ -81,7 +83,7 @@ jobs:
             exit 0
           fi
           cat > "${RUNNER_TEMP}/release-notes.md" <<'NOTES'
-          Marketplace version `__DAODAN_VERSION__`, identical across all three hosts.
+          Marketplace version `__DAODAN_VERSION__`, identical across every host.
 
           ```bash
           claude plugin marketplace add acaprino/daodan

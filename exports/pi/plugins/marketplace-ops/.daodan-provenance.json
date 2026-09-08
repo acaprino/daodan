@@ -1,0 +1,14 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:0d61f16e85bfe93f242fbb242fe3358aac0092525849ed9fab5bd73d2f86b33b",
+  "harnessStrategies": {
+    "marketplace-health": "parallel-subagents",
+    "marketplace-review": "parallel-subagents",
+    "marketplace-scaffold-plugin": "parallel-subagents",
+    "skills-validate": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "marketplace-ops",
+  "version": "2.3.0"
+}

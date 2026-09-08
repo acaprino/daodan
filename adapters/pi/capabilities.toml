@@ -1,0 +1,66 @@
+# Provisional until the evidence table in tests/host-probes/README.md is measured.
+# Every state and strategy row here must be re-derived from that table.
+#
+# Pi ships eight built-in tools: read, bash, powershell, edit, write, grep, find
+# and ls. It deliberately ships no subagent, no MCP client and no hook manifest,
+# and points at extensions and companion packages for all three. A binding whose
+# mechanism arrives that way names the package in `package`, so a harness
+# template renders the install line from the adapter instead of carrying the
+# name in its own prose.
+
+[capabilities."repository.read"]
+state = "native"
+strategy = "tool"
+value = "read"
+
+[capabilities."repository.write"]
+state = "native"
+strategy = "tool"
+value = "edit"
+
+[capabilities."shell.execute"]
+state = "native"
+strategy = "tool"
+value = "bash"
+
+# No network tool in the core, so a fetch is a shell command like any other.
+[capabilities."network.fetch"]
+state = "adapted"
+strategy = "shell-fetch"
+
+[capabilities."contexts.isolate"]
+state = "adapted"
+strategy = "runtime-subagent"
+package = "pi-subagents"
+
+[capabilities."roles.dispatch"]
+state = "adapted"
+strategy = "inline-prompt"
+
+[capabilities."execution.parallel"]
+state = "adapted"
+strategy = "concurrent-dispatch"
+package = "pi-subagents"
+
+[capabilities."tasks.share"]
+state = "unsupported"
+strategy = "none"
+
+[capabilities."peers.message"]
+state = "unsupported"
+strategy = "none"
+
+# Pi exposes lifecycle events to TypeScript extensions rather than to a hook
+# manifest. That is a different mechanism, no probe has measured it, and no
+# plugin requires this capability, so the honest state is unsupported.
+[capabilities."hooks.lifecycle"]
+state = "unsupported"
+strategy = "none"
+
+# Pi has no MCP client by design. The `pi-mcp-adapter` extension supplies one and
+# reads the standard MCP files, the same shape the compiler already renders for
+# Claude, so the note this strategy writes has a real destination.
+[capabilities."mcp.servers"]
+state = "adapted"
+strategy = "mcp-registration"
+package = "pi-mcp-adapter"

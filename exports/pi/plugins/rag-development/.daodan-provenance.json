@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:f24e864985a2f0e0495152a9391196a5a98d10d7770d5f49cd3f74539aa8e005",
+  "harnessStrategies": {
+    "rag-audit": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "rag-development",
+  "version": "1.6.0"
+}

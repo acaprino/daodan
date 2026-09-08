@@ -25,7 +25,7 @@
 - **Multi-agent orchestration** - code review fires architecture, security, and pattern analysis in parallel
 - **End-to-end workflows** - chain analysis, implementation, review, and cleanup into single commands
 - **Install only what you need** - every plugin is independent, no runtime dependencies
-- **Three hosts, one source** - every plugin is compiled into native Claude Code, Copilot and Codex packages at one identical version
+- **Four hosts, one source** - every plugin is compiled into native Claude Code, Copilot, Codex and Pi packages at one identical version
 - **Community-driven** - MIT licensed, upstream-synced with projects from Anthropic, Vercel, and others
 
 ## Quick Start
@@ -40,12 +40,52 @@ claude plugin install senior-review@daodan
 claude plugin install react-development@daodan
 ```
 
-The same repository is a native marketplace for the other two hosts:
+The same repository is a native marketplace for Copilot and Codex:
 
 ```bash
 copilot plugin marketplace add acaprino/daodan
 codex plugin marketplace add acaprino/daodan
 ```
+
+### Pi
+
+[Pi](https://pi.dev/) has no marketplace: it installs a package, so the repository itself is the
+unit, pinned to a released version.
+
+```bash
+pi install git:github.com/acaprino/daodan@v28.0.0
+```
+
+That gives every plugin at once. To pick a subset, filter in `~/.pi/agent/settings.json` rather than
+installing selectively, and Pi keeps the choice across updates:
+
+```json
+{
+  "packages": [{
+    "source": "git:github.com/acaprino/daodan",
+    "skills": ["exports/pi/plugins/senior-review/**", "exports/pi/plugins/codebase-xray/**"],
+    "prompts": ["exports/pi/plugins/senior-review/prompts/*.md"]
+  }]
+}
+```
+
+Two companion packages are worth installing alongside it, because Pi's core deliberately ships
+neither mechanism:
+
+```bash
+pi install npm:pi-subagents      # every workflow that fans out
+pi install npm:pi-mcp-adapter    # peer-review only
+```
+
+Without `pi-subagents` there is no subagent tool, so a workflow whose contract requires isolated
+reviewers stops and says so rather than running its phases in one context and calling the result a
+review. Without `pi-mcp-adapter` there is no MCP client, so `/peer-review-review` cannot reach its
+challenger transport; every other plugin is unaffected. `pi-subagents` is still pre-1.0, so pin it
+if a release breaks something.
+
+Workflows are prefixed with their plugin on this host, because Pi's command namespace is flat and
+shared with your own prompts: `/senior-review-code-review`, not `/code-review`. Roles are registered
+as skills hidden from the model's skill list, so they cost no context and stay loadable by name.
 
 Coming from the old `claude-code-daodan` marketplace or the VS Code extension? See
 [docs/migration-from-claude-code-daodan.md](docs/migration-from-claude-code-daodan.md).
@@ -376,7 +416,7 @@ claude plugin install codebase-cleanup@claude-code-workflows
 | **Skill** | A knowledge module Claude references automatically | Activates when the task matches its trigger keywords |
 | **Command** | A slash command that kicks off a workflow | `/code-review`, `/python-scaffold`, `/senior-review:team-review` |
 
-Plugin content is pure Markdown with optional Python helper scripts, plus a declarative TOML control plane per plugin. A stdlib-only compiler turns those kernels into native packages for all three hosts, so nothing under `exports/` is written by hand. A consistency CI guards the contracts on every push: cross-plugin references must match declared dependencies, plugin changes must bump versions, and every committed package must reproduce byte-for-byte from its source.
+Plugin content is pure Markdown with optional Python helper scripts, plus a declarative TOML control plane per plugin. A stdlib-only compiler turns those kernels into native packages for all four hosts, so nothing under `exports/` is written by hand. A consistency CI guards the contracts on every push: cross-plugin references must match declared dependencies, plugin changes must bump versions, and every committed package must reproduce byte-for-byte from its source.
 
 </details>
 

@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:1f9f0cfb9d9aefc6126e27d8281abe510a5a401cd4d65997a6acbdd70f7285f2",
+  "harnessStrategies": {
+    "libgdx-audit": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "libgdx-development",
+  "version": "1.1.0"
+}

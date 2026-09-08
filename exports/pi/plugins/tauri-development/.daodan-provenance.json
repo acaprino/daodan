@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:d1b9e2f950ed1ecfc66ba5b27a3720c136e426d25504f5172adf321dae96db9d",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "tauri-development",
+  "version": "2.8.0"
+}

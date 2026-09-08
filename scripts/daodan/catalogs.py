@@ -135,14 +135,46 @@ def catalog_document(
     return document
 
 
+#: The npm package name Pi installs the whole marketplace as.
+PI_PACKAGE = "daodan"
+
+
+def _pi_manifest(document):
+    """Pi's catalog, which is an npm manifest rather than a plugin listing.
+
+    Pi has no marketplace: it installs one package, from npm, git or a local
+    path, and reads the manifest at that package's root. So the catalog for this
+    host is the repository-root `package.json`, and instead of enumerating
+    plugins it globs the rendered tree. `private` states that publication is by
+    git tag rather than by registry, and is the one field to flip the day npm is
+    added.
+    """
+    tree = _source("pi", "*")
+    manifest = {
+        "name": PI_PACKAGE,
+        "version": document["metadata"]["version"],
+        "private": True,
+        "description": CATALOG_DESCRIPTION,
+        "keywords": ["pi-package"],
+        "pi": {"prompts": [f"{tree}/prompts"], "skills": [f"{tree}/skills"]},
+    }
+    return (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
+
+
 def render_catalog(
     host: str,
     plugins: Sequence[PluginSpec],
     version: str,
     packages: Mapping[str, Path] | None = None,
 ) -> bytes:
-    """Serialize one host catalog deterministically."""
+    """Serialize one host catalog deterministically.
+
+    Every host gets the same neutral document, which is what the identity gate
+    compares. Only the serialization differs.
+    """
     document = catalog_document(host, plugins, version, packages)
+    if host == "pi":
+        return _pi_manifest(document)
     return (json.dumps(document, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 

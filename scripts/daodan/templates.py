@@ -37,6 +37,7 @@ ALLOWED_KEYS: frozenset[str] = frozenset(
         "isolation",
         "join",
         "dispatch_plan",
+        "companion",
     }
 )
 

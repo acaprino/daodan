@@ -18,7 +18,7 @@ from typing import Literal, Mapping
 
 from .model import PluginSpec, WorkflowSpec
 
-HOSTS: tuple[str, ...] = ("claude", "copilot", "codex")
+HOSTS: tuple[str, ...] = ("claude", "copilot", "codex", "pi")
 
 CapabilityState = Literal["native", "adapted", "unsupported"]
 
@@ -31,6 +31,11 @@ class CapabilityBinding:
     state: CapabilityState
     strategy: str
     value: str | None = None
+    #: The companion package a host needs installed for this mechanism to exist,
+    #: where the host ships none itself. Distinct from `value`, which names a
+    #: host tool: a coordinator's tool list is derived from those, and a package
+    #: name leaking into it would read as a tool that does not exist.
+    package: str | None = None
 
 
 @dataclass(frozen=True)
@@ -101,7 +106,12 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
         value = entry.get("value")
         if value is not None and not isinstance(value, str):
             raise AdapterError(capabilities_path, f"{name} value must be a string")
-        bindings[name] = CapabilityBinding(state=state, strategy=strategy, value=value)
+        package = entry.get("package")
+        if package is not None and not isinstance(package, str):
+            raise AdapterError(capabilities_path, f"{name} package must be a string")
+        bindings[name] = CapabilityBinding(
+            state=state, strategy=strategy, value=value, package=package
+        )
 
     coordination_path = directory / "coordination.toml"
     rows = _read(coordination_path).get("strategies", [])

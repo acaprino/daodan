@@ -1,0 +1,12 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:dfb504c52454b874cafa28e83593086bb21c629bfa7e633a982023d22ea4d016",
+  "harnessStrategies": {
+    "test-audit": "parallel-subagents",
+    "test-consolidate": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "testing",
+  "version": "2.3.0"
+}

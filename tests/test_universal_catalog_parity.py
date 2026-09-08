@@ -22,6 +22,9 @@ CATALOG_PATH = {
     "claude": ".claude-plugin/marketplace.json",
     "copilot": ".github/plugin/marketplace.json",
     "codex": ".agents/plugins/marketplace.json",
+    # Pi has no marketplace: its catalog is the package manifest at the root of
+    # the repository, which is what `pi install git:` reads.
+    "pi": "package.json",
 }
 
 
@@ -34,7 +37,36 @@ def catalog(host: str) -> dict:
 
 
 def catalog_names(host: str) -> set[str]:
-    return {entry["name"] for entry in catalog(host)["plugins"]}
+    document = catalog(host)
+    if "plugins" in document:
+        return {entry["name"] for entry in document["plugins"]}
+    return globbed_names(document)
+
+
+def globbed_names(document: dict) -> set[str]:
+    """The plugins a globbing catalog reaches, which is Pi's form of registration.
+
+    Pi's manifest names no plugin. What it registers is whatever its globs
+    resolve to on disk, so the parity question becomes whether those globs reach
+    every package. A plugin whose components all land outside them would ship
+    and register nothing, which is the failure this turns into a test.
+    """
+    names: set[str] = set()
+    for patterns in document["pi"].values():
+        for pattern in patterns:
+            for path in REPO_ROOT.glob(pattern.lstrip("./")):
+                if path.is_dir():
+                    names.add(path.parent.name)
+    return names
+
+
+def package_versions(host: str) -> dict[str, str]:
+    """The version every rendered package of one host claims, from its provenance."""
+    root = REPO_ROOT / "exports" / host / "plugins"
+    return {
+        path.parent.name: json.loads(path.read_text(encoding="utf-8"))["version"]
+        for path in root.glob("*/.daodan-provenance.json")
+    }
 
 
 def parity_states(host: str) -> set[str]:
@@ -73,10 +105,17 @@ class UniversalCatalogParityTests(unittest.TestCase):
         }
         for host in HOSTS:
             with self.subTest(host=host):
-                self.assertEqual(
-                    {entry["name"]: entry["version"] for entry in catalog(host)["plugins"]},
-                    reference,
-                )
+                document = catalog(host)
+                if "plugins" in document:
+                    self.assertEqual(
+                        {entry["name"]: entry["version"] for entry in document["plugins"]},
+                        reference,
+                    )
+                    continue
+                # A globbing catalog carries no per-plugin version. What has to
+                # agree there is the version each rendered package claims, which
+                # is the same number read one level down.
+                self.assertEqual(package_versions(host), reference)
 
     def test_no_override_is_stale(self):
         from scripts.daodan.overrides import load_overrides, validate_override

@@ -27,11 +27,23 @@ class CatalogTests(unittest.TestCase):
     def test_catalogs_share_identity_names_and_versions(self):
         catalogs = build_fixture_catalogs()
         self.assertEqual({catalog["name"] for catalog in catalogs.values()}, {"daodan"})
-        versions = {entry["name"]: entry["version"] for entry in catalogs["claude"]["plugins"]}
-        for catalog in catalogs.values():
+        listings = {host: item for host, item in catalogs.items() if "plugins" in item}
+        versions = {entry["name"]: entry["version"] for entry in listings["claude"]["plugins"]}
+        for catalog in listings.values():
             self.assertEqual(
                 {entry["name"]: entry["version"] for entry in catalog["plugins"]}, versions
             )
+        # Pi's catalog is a package manifest and names no plugin, so the identity
+        # it can carry is the marketplace version the others carry in metadata.
+        self.assertEqual(catalogs["pi"]["version"], listings["claude"]["metadata"]["version"])
+
+    def test_pi_catalog_is_an_npm_manifest_that_globs_the_rendered_tree(self):
+        catalog = build_fixture_catalogs()["pi"]
+        self.assertNotIn("plugins", catalog)
+        self.assertEqual(catalog["keywords"], ["pi-package"])
+        self.assertIs(catalog["private"], True)
+        self.assertEqual(catalog["pi"]["skills"], ["./exports/pi/plugins/*/skills"])
+        self.assertEqual(catalog["pi"]["prompts"], ["./exports/pi/plugins/*/prompts"])
 
     def test_each_host_gets_its_native_source_shape(self):
         catalogs = build_fixture_catalogs()

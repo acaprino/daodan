@@ -1,7 +1,7 @@
 ---
 name: downstream-exports
 description: >
-  How our content reaches hosts that are not Claude Code: the three adapters, what each
+  How our content reaches hosts that are not Claude Code: the host adapters, what each
   host expects a package to look like, how the compiler renders harnesses from templates,
   how a neutral policy gets a host implementation, when a fingerprinted semantic override is
   the right answer, and the content that deliberately keeps host-as-subject vocabulary.
@@ -37,20 +37,40 @@ The core owns roles, workflow dependencies, required context isolation, joins an
 
 ## What each host expects
 
-| | claude | copilot | codex |
-|---|---|---|---|
-| catalog | `.claude-plugin/marketplace.json` | `.github/plugin/marketplace.json` | `.agents/plugins/marketplace.json` |
-| plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` | `.codex-plugin/plugin.json` |
-| roles | `agents/<role>.md` | `agents/<role>.agent.md` | `roles/<role>.md` |
-| workflows | `commands/<workflow>.md` | `prompts/<workflow>.prompt.md` | `skills/<workflow>-workflow/SKILL.md` |
-| skills | `skills/<skill>/SKILL.md` | same | same |
+| | claude | copilot | codex | pi |
+|---|---|---|---|---|
+| catalog | `.claude-plugin/marketplace.json` | `.github/plugin/marketplace.json` | `.agents/plugins/marketplace.json` | the root `package.json` |
+| plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` | `.codex-plugin/plugin.json` | none |
+| roles | `agents/<role>.md` | `agents/<role>.agent.md` | `roles/<role>.md` | `skills/<plugin>-<role>/SKILL.md` |
+| workflows | `commands/<workflow>.md` | `prompts/<workflow>.prompt.md` | `skills/<workflow>-workflow/SKILL.md` | `prompts/<plugin>-<workflow>.md` |
+| skills | `skills/<skill>/SKILL.md` | same | same | same |
+| source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` | a glob, not a reference |
+
+Pi is the one host with no marketplace and no per-plugin manifest, so three of those cells are
+unlike the others and each is load-bearing. Its catalog is an npm-shaped `package.json` at the
+**repository root**, because `pi install git:` reads the manifest from the root of the clone, and it
+registers by globbing `./exports/pi/plugins/*/skills` and `.../prompts` rather than by naming
+anything. `plugin_manifest` is absent from its layout, which is what makes that key optional in the
+renderer. And its roles render as skills carrying `disable-model-invocation: true`: Pi lists every
+registered skill's name and description in the system prompt, so the flag is what keeps 76 roles
+from costing that budget in every session while staying loadable, and it is also what makes a
+role-only plugin such as `app-analyzer` exist at all on a host with no agent concept.
+
+Two mechanisms Pi's core omits on purpose arrive from companion packages the user installs,
+`pi-subagents` for an isolated worker context and `pi-mcp-adapter` for MCP. Both are named in the
+binding's `package` field rather than in template prose, which is why that field exists and why it
+is separate from `value`: `value` names a host tool and feeds the Copilot coordinator's derived
+`tools` line, so a package name there would read as a tool that does not exist.
 | source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` |
 
 Codex suffixes workflow directories with `-workflow` on purpose: it is the one host that renders both skills and workflows as skills, and without the suffix a plugin that has a skill and a workflow of the same name (`codebase-xray:analyze` does) would collide on disk. That suffix is why component names may repeat across kinds; within a kind they may not.
 
 ## Harness rendering
 
-A workflow whose phases fan out is not copied, it is rendered through that host's harness template, which wraps the neutral body with the dispatch obligations the contract requires: isolated worker contexts, the delivery barrier, the single-writer rule for the report, and a **dispatch plan**. The templates are `claude/templates/team-workflow.md.tmpl`, `copilot/templates/coordinator.agent.md.tmpl` (plus `worker.agent.md.tmpl` for the roles) and `codex/templates/subagent-workflow.SKILL.md.tmpl`.
+A workflow whose phases fan out is not copied, it is rendered through that host's harness template, which wraps the neutral body with the dispatch obligations the contract requires: isolated worker contexts, the delivery barrier, the single-writer rule for the report, and a **dispatch plan**. The templates are `claude/templates/team-workflow.md.tmpl`, `copilot/templates/coordinator.agent.md.tmpl` (plus `worker.agent.md.tmpl` for the roles), `codex/templates/subagent-workflow.SKILL.md.tmpl` and `pi/templates/team-prompt.md.tmpl` (plus `role.SKILL.md.tmpl`).
+
+The Pi template is the one that branches, and the branch is a contract rather than a courtesy. Its `subagent` tool is not part of Pi's core, so the template states what to do when none is available and makes the answer depend on the isolation the workflow declared: `required` stops and asks for `pi install npm:pi-subagents`, `shared` may run the phases in one context and say so. Running a review pipeline serially in one context is the loss of isolation rather than a lesser form of it, so collapsing those two branches would produce a report claiming a contract it did not meet.
+
 
 The dispatch plan (`${dispatch_plan}`) is one numbered line per phase of the sidecar, in order: how many workers (once each for a static `fanout`, one per item for a `fanout_from` selection, one for a single `role`, none for a shared phase), in what context, at what concurrency, behind which barrier, and what the phase needs, consumes and produces. It replaced a header that said "dispatch the selected roles, once each", which was right for one wave of reviewers and wrong for `codebase-xray:team-analyze`, which fans out one worker per partition across three waves: on Codex and Copilot that header was the only dispatch guidance, and read literally it produced one structure worker for the whole codebase.
 
@@ -64,12 +84,14 @@ Substitution is `string.Template` with an allowlisted context (`scripts/daodan/t
 
 A kernel body says `${CLAUDE_PLUGIN_ROOT}/skills/x/scripts/y.py` because the bundled-path linter requires that form: it is what survives installation on Claude. It says `$ARGUMENTS` because that is what a Claude command expands. Neither is defined on Copilot or Codex, so the renderer rewrites both per host from four layout keys, and inserts the host's explanation once, after the frontmatter, in every Markdown file that uses the reference:
 
-| key | claude | copilot | codex |
-|---|---|---|---|
-| `plugin_root_reference` | `${CLAUDE_PLUGIN_ROOT}` (itself) | `${PLUGIN_ROOT}`, which Copilot CLI documents for paths inside the plugin directory | `<plugin-root>`, a marker the agent resolves once: Codex hands `PLUGIN_ROOT` to hook commands only |
-| `plugin_root_note` | none | names `plugin.json` as the directory to find | names `.codex-plugin/plugin.json` |
-| `arguments_reference` | `$ARGUMENTS` (itself) | `<arguments>` | `<arguments>` |
-| `arguments_note` | none | "substitute what the user typed after the prompt name" | "... after the skill name" |
+| key | claude | copilot | codex | pi |
+|---|---|---|---|---|
+| `plugin_root_reference` | `${CLAUDE_PLUGIN_ROOT}` (itself) | `${PLUGIN_ROOT}`, which Copilot CLI documents for paths inside the plugin directory | `<plugin-root>`, a marker the agent resolves once: Codex hands `PLUGIN_ROOT` to hook commands only | `<plugin-root>`, same marker: a prompt template gets no variable |
+| `plugin_root_note` | none | names `plugin.json` as the directory to find | names `.codex-plugin/plugin.json` | names the directory holding the plugin's `skills/` and `prompts/` |
+| `arguments_reference` | `$ARGUMENTS` (itself) | `<arguments>` | `<arguments>` | `$ARGUMENTS` (itself) |
+| `arguments_note` | none | "substitute what the user typed after the prompt name" | "... after the skill name" | none |
+
+Pi is the only host besides Claude whose arguments placeholder maps onto itself, because a Pi prompt template expands `$ARGUMENTS`, `$@`, `$1` and `${1:-default}` natively.
 
 Claude's keys map each placeholder onto itself and carry no note, so its packages are unchanged by this pass. Only the `${CLAUDE_PLUGIN_ROOT}` form is rewritten; a bare `$CLAUDE_PLUGIN_ROOT` would pass through and fail `tests/test_daodan_host_rendering.py`.
 
@@ -118,7 +140,7 @@ A neutral policy under `plugins/<name>/policies/` says what must hold. An adapte
 ## Verification
 
 ```bash
-python scripts/daodan_build.py                 # publish all three hosts
+python scripts/daodan_build.py                 # publish every host
 python scripts/daodan_build.py --check --support   # drift gate plus the per-host support table
 python -m unittest discover -s tests           # compiler, port and parity contracts
 python adapters/copilot/policies/xray-guard/test_xray_guard.py

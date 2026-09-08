@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:85e97db0a6dd0bf4e3d47e450f285035f40b01411226b2c98a22f99eee45ecb1",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "docker",
+  "version": "1.4.0"
+}

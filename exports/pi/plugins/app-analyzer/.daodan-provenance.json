@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:5d51a4b32fe9239c3023a13e30b4801e8d5d00351395706c73df5f906f7ba9a9",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "app-analyzer",
+  "version": "1.2.0"
+}
