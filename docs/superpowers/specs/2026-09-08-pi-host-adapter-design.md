@@ -87,16 +87,22 @@ and `ls`.
 | `repository.write` | native | tool `edit` | |
 | `shell.execute` | native | tool `bash` | |
 | `network.fetch` | adapted | `shell-fetch` | no network tool in the core |
-| `contexts.isolate` | adapted | `runtime-subagent` | `pi-subagents` |
+| `contexts.isolate` | adapted | `runtime-subagent` | value `pi-subagents` |
 | `roles.dispatch` | adapted | `inline-prompt` | no named agents |
-| `execution.parallel` | adapted | `concurrent-dispatch` | `pi-subagents` |
+| `execution.parallel` | adapted | `concurrent-dispatch` | value `pi-subagents` |
 | `tasks.share` | unsupported | none | |
 | `peers.message` | unsupported | none | |
 | `hooks.lifecycle` | unsupported | none | Pi exposes lifecycle events to TypeScript extensions, a mechanism no probe has measured |
-| `mcp.servers` | adapted | `mcp-registration` | `pi-mcp-adapter` |
+| `mcp.servers` | adapted | `mcp-registration` | value `pi-mcp-adapter` |
 
 `hooks.lifecycle` is required by no plugin, so `unsupported` blocks nothing and is the
 only honest state until the extension mechanism is probed.
+
+Three bindings carry the name of the companion package that satisfies them in `value`,
+so the install line a template renders is derived from the adapter rather than written
+into the template text. The day a companion is renamed, one file changes instead of 57
+generated prompts. It is the same mechanism that already derives the Copilot
+coordinator's `tools` line from the bindings.
 
 ### 4.2 `coordination.toml`
 
@@ -132,9 +138,17 @@ only Claude does today, because Pi expands `$ARGUMENTS` natively. And
 
 One template, `team-prompt.md.tmpl`, bound to `team_workflow_template`. It carries the
 generated dispatch plan like the other three hosts, plus the clause specific to Pi: use
-the `subagent` tool when `pi-subagents` is installed, otherwise run the phases serially
-in the current context and say so in the report. There is no `role_template`, because
-role bodies ship unrewritten.
+the `subagent` tool supplied by `pi-subagents`.
+
+What happens when that tool is missing has **two branches**, and collapsing them into
+one would be a defect. A workflow that requires isolation, which is every review
+pipeline declaring the `reviewers-use-isolated-contexts` outcome, stops and tells the
+user to run `pi install npm:pi-subagents`. Running its phases serially in one context
+*is* the loss of isolation, so announcing it in the report would degrade a declared
+contract quietly, which is exactly what this repository's dependency policy forbids. A
+workflow that merely prefers concurrency may run serially and say so.
+
+There is no `role_template`, because role bodies ship unrewritten.
 
 ## 5. The package
 
@@ -204,8 +218,12 @@ reaches it.
 
 ## 9. Repository obligations
 
-- README: an install section for Pi, the two companion packages, and a settings example
-  showing per-plugin selection through the object form of `packages`.
+- README: an install section for Pi that names the one install command, **both companion
+  packages with what each one unlocks and what stops working without it**
+  (`pi-subagents` for every workflow that fans out, `pi-mcp-adapter` for `peer-review`),
+  and a settings example showing per-plugin selection through the object form of
+  `packages`. `pi-subagents` is still 0.x, so the text names the package and never the
+  signature of its tools.
 - `.claude/skills/downstream-exports/SKILL.md`: a Pi column in the host table, the Pi
   row in the placeholder table, and the note that Pi has no per-plugin manifest.
 - `CLAUDE.md`: the Distribution section, the compiler description, and every place that
