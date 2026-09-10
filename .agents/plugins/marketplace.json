@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.0.1"
+    "version": "28.2.0"
   },
   "name": "daodan",
   "owner": {
@@ -265,10 +265,11 @@
       "license": "MIT",
       "name": "grabber-development",
       "skills": [
-        "./skills/grabber-development"
+        "./skills/grabber-development",
+        "./skills/instagram-grab-workflow"
       ],
       "source": "./exports/codex/plugins/grabber-development",
-      "version": "1.5.0"
+      "version": "1.7.0"
     },
     {
       "author": {

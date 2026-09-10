@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.0.1"
+    "version": "28.2.0"
   },
   "name": "daodan",
   "owner": {
@@ -328,6 +328,9 @@
       "author": {
         "name": "Alfio Caprino"
       },
+      "commands": [
+        "./commands/instagram-grab.md"
+      ],
       "dependencies": [
         "playwright-skill@playwright-skill"
       ],
@@ -338,7 +341,7 @@
         "./skills/grabber-development"
       ],
       "source": "./exports/claude/plugins/grabber-development",
-      "version": "1.5.0"
+      "version": "1.7.0"
     },
     {
       "author": {

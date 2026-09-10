@@ -15,6 +15,8 @@ This section overrides everything else in this skill if there is any conflict. R
 
 When this skill activates on a scraping task, **your next non-question tool call MUST launch a visible browser with the capture surface attached**. Not `Write pyproject.toml`. Not `Write models.py`. Not "let me sketch the architecture first". Browser first, then code.
 
+The one carve-out is a target listed under **Bundled Targets** below. Its Discovery Gate has already been run and its capture is recorded, so reading that reference and running its script satisfies this rule without reopening a browser. Anything not on that list gets the browser.
+
 The default path is **user-driven navigation with live capture**, not Claude-clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
 
 1. Ask the bare minimum to start: target URL, what data is wanted, authenticated yes/no. One short batch of questions, then stop asking.
@@ -146,6 +148,24 @@ For every scraping task, follow this sequence (the Discovery Gate above governs 
 | 3 | Residential | $0.49-8.00/GB | Anti-bot bypass, geo-targeting |
 | 4 | Mobile | $4-13/GB | Highest trust, last resort |
 
+## Bundled Targets
+
+Some targets have already been through the Discovery Gate, and their capture is
+recorded rather than repeated. When the task is one of these, read the reference
+and run the script instead of opening a browser to rediscover what is written
+down.
+
+- **Instagram profile media** -- `references/instagram-media.md` plus
+  `scripts/instagram_grab.py`. Downloads every photo, carousel slide and reel of
+  a profile at full resolution. Anonymous access is closed (`401 require_login`
+  on both `web_profile_info` endpoints), so it drives a logged-in browser,
+  captures one genuine `PolarisProfilePostsTabContentQuery_connection` request
+  and replays it with the cursor swapped. The workflow `instagram-grab` wraps it.
+  The one trap worth carrying in your head: the newest 24 posts are delivered in
+  the initial page payload and never appear in that query, so a passive network
+  listener returns a truncated archive that looks complete.
+
 ## Reference Materials
 
 - `field-guide.md` -- full 2025-2026 Python web scraping field guide covering browser stealth, TLS fingerprinting, behavioral biometrics, anti-bot bypass, CAPTCHA solving, proxy landscape, frameworks, AI-assisted scraping, GraphQL reverse engineering, rate limiting, and observability
+- `instagram-media.md` -- the captured Instagram surface: the closed anonymous routes, the 2026 login selectors, the EU pay-or-consent wall, the profile grid query and its node schema, and the download stage
