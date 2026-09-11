@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:c1051d47ac511c73dc947d2870ac979bc13118e897acb7d795494de047cb1166",
+  "coreDigest": "sha256:8348ee1d4d602fa3c70de72dc219f144b2ca802520e6109c773f610a5b0ce2fc",
   "harnessStrategies": {
     "analyze": "parallel-subagents",
     "team-analyze": "parallel-subagents"
@@ -8,5 +8,5 @@
   "host": "codex",
   "overrides": [],
   "plugin": "codebase-xray",
-  "version": "4.0.1"
+  "version": "4.0.2"
 }

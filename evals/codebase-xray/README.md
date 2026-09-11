@@ -35,5 +35,6 @@ MUST assertions are the invariant. A single MUST failure fails the case. SHOULD 
 | `claims-cite-evidence` | `/codebase-xray:analyze` | Every finding cites file and line; no runtime evidence is invented |
 | `claims-carry-status` | `semantic-interconnect-mapper` | Every row carries one of the four statuses, and `verified` always cites its enforcement |
 | `team-mode-partition-ownership` | `/codebase-xray:team-analyze` | Each worker writes only its owned files; the consolidated layout is the classic one |
+| `team-scope-authorization` | `/codebase-xray:team-analyze` (six sessions) | An authorized scope proceeds without requiring `--yes`; an unresolved decision gets a concrete, answerable question and accepts ordinary replies, including when no input tool is available |
 | `mapper-scope-in-team-mode` | `/codebase-xray:team-analyze` | The interconnect map covers the cross-partition surface, not the whole codebase |
 | `incremental-carry-and-rederive` | `/codebase-xray:analyze` (four sessions) plus a fifth in a separate scratch | An incremental run carries unmarked claims byte for byte, re-derives or retires every marked one, documents every added symbol, and never publishes with a marker still stale; `--update` and `--no-update` change only whether detection runs, never whether the checkpoint waits |

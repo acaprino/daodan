@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.2.0"
+    "version": "28.2.1"
   },
   "name": "daodan",
   "owner": {
@@ -198,7 +198,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/claude/plugins/codebase-xray",
-      "version": "4.0.1"
+      "version": "4.0.2"
     },
     {
       "agents": [

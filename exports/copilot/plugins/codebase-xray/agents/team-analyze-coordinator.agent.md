@@ -69,6 +69,7 @@ Orchestrate a partitioned multi-agent codebase analysis plus global interconnect
 4. **Wait for the global Wave 1 barrier** before spawning Wave 2 workers.
 5. **Never enter plan mode.** Execute immediately.
 6. **Resume-safe.** Re-spawn only missing workers on resume.
+7. **Honor existing authorization.** Invoking this workflow authorizes the requested analysis and its reports. Show the concrete scope, then proceed when it is settled. Ask only for a material unresolved choice or when the user explicitly requested approval before dispatch; missing `--yes` is not a reason to stop.
 
 ## Pre-flight Checks
 
@@ -83,8 +84,8 @@ Orchestrate a partitioned multi-agent codebase analysis plus global interconnect
    - `--skip-interconnect`: skip Phase 3
    - `--skip-synthesis`: skip Phase 2 AND Phase 3
    - `--run-name <name>`: explicit run identity for concurrent or repeated analyses
-   - `--yes`: auto-accept partition checkpoint
-   - `--update`: require an update base; error out if no usable parent team run exists (the checkpoint still offers both the update and a full run)
+   - `--yes`: select the recommended eligible scope without another confirmation; ordinary language can authorize the same choice
+   - `--update`: require an update base; error out if no usable parent team run exists (execution mode is still resolved at the checkpoint)
    - `--no-update`: skip parent detection and run every partition fresh
    - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `/codebase-xray:analyze`)
 3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-xray:xray-method` skill):
@@ -99,7 +100,7 @@ Orchestrate a partitioned multi-agent codebase analysis plus global interconnect
      .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --flags '<this run's flags as JSON>'
    ```
 
-   Hold `changes.json` for the partition checkpoint. With `--update` and no candidate, stop and say which condition failed (no completed run for this target, a completed run that is not team mode, or a parent with no manifest), and that a full run is the way to create one. Never fabricate a parent. With a candidate present, `--update` changes nothing else: the checkpoint still presents the update and full-run options and waits for a choice, unless `--yes` auto-accepts.
+   Hold `changes.json` for the partition checkpoint. With `--update` and no candidate, stop and say which condition failed (no completed run for this target, a completed run that is not team mode, or a parent with no manifest), and that a full run is the way to create one. Never fabricate a parent. With a candidate present, `--update` requires that base but does not choose the execution mode: resolve that choice at the checkpoint using the user's request, earlier answers or `--yes`; ask only if it remains unsettled.
 
 ## Phase 0: Run Setup + Partition Detection
 
@@ -193,7 +194,7 @@ For each partition, compute `file_count` and `loc_estimate` (use `classifier.py`
 
 The unit of an update here is the partition, deliberately coarser than the claim-level update of `/codebase-xray:analyze`. A partition either changed or it did not, and a touched partition is worth re-analyzing whole: threading a change set through every worker would put it into every spawn prompt for a saving the partition split already provides most of.
 
-Available only when pre-flight point 4 found a candidate parent and its change set does not recommend `full`; the checkpoint below still presents it as a choice, never as a forced path.
+Available only when pre-flight point 4 found a candidate parent and its change set does not recommend `full`; the checkpoint below resolves whether to use it, never forcing an update over a requested full run.
 
 1. **The partition set must match.** The names this detection produced must be the same set as the parent's `state.json -> partitions`. Any difference means a full run, with the difference named at the checkpoint. A partition that appeared, vanished or was renamed changes what every other partition's boundaries mean.
 2. **Assign the affected files.** For each partition, its affected files are the `affected_files` of the change set that fall under its path. Record `partitions[i].update` as `"copied"` when that list is empty and `"re-analyzed"` (with the affected-file count) otherwise, before either branch below runs: the completion summary in Phase 4 and the `## Partitions` table both read this field, and neither can be reconstructed later, since `partitions[i].status` ends at `"done"` for both outcomes.
@@ -202,11 +203,13 @@ Available only when pre-flight point 4 found a candidate parent and its change s
 5. **Synthesis and the interconnect map always run**, over the mix of copied and fresh partition output. Both are cross-partition by construction, so neither can be carried.
 6. **`changes.md` holds the change set's three mechanical sections plus a `## Partitions` table** naming each partition as copied or re-analyzed, read from `partitions[i].update`.
 
-### Checkpoint
+### Scope preview and unresolved choices
 
-When a partition-level update applies, present each partition as `unchanged (copied)` or `re-analyzed ([N] affected files)`, with the parent run-id and the change set totals above the table, and offer the update as option 1 and a full run as option 2. When the change set recommends `full`, or the partition set does not match the parent's, present the reasons (from `changes.json`'s `reasons`, plus "the partition set changed since the parent run" when that is why) and reverse the options. Otherwise present the block below unchanged.
+This checkpoint is always a concrete scope preview. It waits only for an unresolved decision. Finish knowledge discovery and partition detection before deciding whether to ask; never stop merely to announce that this workflow contains a checkpoint.
 
-Present to the user:
+When a partition-level update applies, present each partition as `unchanged (copied)` or `re-analyzed ([N] affected files)`, with the parent run-id and change set totals above the table. Recommend the update unless the user requested a full run. When the change set recommends `full`, or the partition set does not match the parent's, present the reasons (from `changes.json`'s `reasons`, plus "the partition set changed since the parent run" when applicable) and recommend a full run. Never offer an ineligible update.
+
+Populate the preview with observed values, including the actual worker count after depth flags, skipped phases and copied partitions are applied:
 
 ```
 X-ray team-mode scope:
@@ -215,36 +218,26 @@ Run: <run-id>  (concurrent active runs: <count or "none">)
 
 Detected partitioning strategy: <strategy name>
 
-Proposed partitions (<N>):
+Partitions (<N>):
   P1: <path>          (<language>, <file-count> files, ~<loc>k LOC)
   ...
 
-Spawn plan: <N> partitions × 3 agents = <3N> workers + 1 synthesizer + 1 interconnect-mapper = <3N+2> agents total.
-
-Note: token cost scales linearly with file count × agents. Consider `--depth=lite` for monorepos with many partitions.
-
-Options:
-  [A] Accept and start
-  [M] Modify partition list (rename, regroup, exclude one)
-  [m] Manual: provide partition paths
-  [c] Cancel
+Mode: <full or partition-level update, depth and active flags>
+Spawn plan: <structure count> structure + <behavior count> behavior + <quality count> quality
+            + <synthesizer count> synthesizer + <mapper count> interconnect-mapper = <total> agents.
 ```
 
-If `--yes`, auto-select `[A]`.
+**Proceed when the scope is settled.** A fresh analysis of the requested target, including the default cwd, needs no additional acceptance of routine detected partitions. The same applies to an explicitly requested full run (`--no-update`), an eligible update already chosen in conversation, and a recommendation authorized by `--yes` or ordinary language such as "proceed with your recommendation". Honor partition lists already supplied by the user. State the chosen scope and continue to snapshot creation and worker dispatch in the same turn. Do not demand a flag, an option letter, or a repeated confirmation.
 
-If `[M]`, prompt for changes:
-- `rename <old> <new>`
-- `exclude <name>`
-- `merge <name1> <name2> [<merged-name>]`
-- `done` to finalize
+**Ask when a material choice remains.** Examples: whether to update or run fresh when neither has been chosen, conflicting inclusion/exclusion instructions, or an explicit request to approve the partition plan before dispatch. Show the completed preview first and ask one concrete question naming the decision and the eligible alternatives. For a requested partition approval, ask "Shall I start with these partitions, or would you like to change them?" Accept ordinary replies such as "yes, proceed", "exclude web", or "merge api and workers"; update the plan accordingly. A later explicit request to wait takes precedence over an earlier `--yes` or authorization.
 
-If `[m]`, prompt for paths and optional names.
+Use the host's user-input tool when available and permitted in the current mode. If no suitable tool is available, end the turn with the actual question in plain text so the user can reply in chat. Do not switch into plan mode to obtain a tool. Never end with only a statement that confirmation is required or that `--yes` was omitted. Keep the decision pending until the user answers; an unavailable tool or elapsed time is not an answer.
 
-If `[c]`, set state to `cancelled`, remove the run from `active` in `runs.json`, and exit.
+If the user cancels, set state to `cancelled`, remove the run from `active` in `runs.json`, and exit. If the user modifies or supplies partitions, finalize that list before proceeding. Recompute update eligibility and the preview when the partition set changes.
 
 Finalize `partitions` array in `state.json` with `{name, path, language_primary, file_count, loc_estimate, status: "pending"}` for each. Mark `phase_0_detection: "complete"`.
 
-Immediately after the checkpoint is accepted, write this run's snapshot over the whole target, before any worker is dispatched:
+Immediately after the scope is settled, either by existing authorization or by an answer, write this run's snapshot over the whole target, before any worker is dispatched:
 
 ```bash
 python ${PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py write \
@@ -461,7 +454,7 @@ Resuming dispatches fresh workers as needed. Worker contexts are not restored ac
 
 ## Quick Examples
 
-- `/codebase-xray:team-analyze .` — auto-detect, full depth
+- `/codebase-xray:team-analyze .` — auto-detect, full depth; a fresh run proceeds after the scope preview
 - `/codebase-xray:team-analyze . --depth=lite` — lite mode (2N+2 agents)
 - `/codebase-xray:team-analyze . --critical` — prioritize security paths in Phase 3-4
 - `/codebase-xray:team-analyze . --partition packages/api --partition packages/web --yes` — manual partitions, auto-accept
