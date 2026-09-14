@@ -54,7 +54,7 @@ For unsupported languages, fall back to `Read` and `Grep` directly.
 
 ## PHASE 1: Structure Extraction
 
-Scan all files under `partition_path` and build a structural map.
+Scan `partition_path` and build a structural map. The inventory is what `snapshot.py` records: source in the seven parsed languages, configuration and documentation, and presentation files (stylesheets and markup, file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it; state that under `## Key Observations`, so the synthesizer can report coverage rather than a file count.
 
 For each file in the partition, extract:
 - Module/file name and path (relative to partition root)

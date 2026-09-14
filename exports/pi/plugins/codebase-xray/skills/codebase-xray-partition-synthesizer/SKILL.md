@@ -275,9 +275,14 @@ Template:
 - Run: [run-id]
 - Target: [path]
 - Partitions: [count] ([list])
+- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count)
+- Files read in depth: [count, by partition]
+- Exercised at runtime: none. Static analysis; if the user supplied runtime evidence, cite it here instead
 - Phases completed: [list]
 - Date: [timestamp]
 ```
+
+The three coverage lines are mandatory: a single file count read as coverage is how a blocking defect in an inventoried component once went unreported.
 
 ## COMPLETION
 

@@ -233,6 +233,44 @@ class ManifestTests(unittest.TestCase):
         return next(v for k, v in files.items() if k.endswith(rel))
 
 
+class PresentationInventoryTests(unittest.TestCase):
+    """
+    A stylesheet or markup file cannot be parsed for symbols, but it decides
+    whether a screen renders and scrolls, so it must be in the inventory and
+    in the diff. The motivating case: a global dark-theme rule overrode a
+    consent modal's positioning and locked users out, and the manifest of the
+    run that missed it held not one `.css` path, by construction.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="xray-presentation-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.src = self.tmp / "src"
+        write(self.src, "web/cart.js", JS_SOURCE)
+        write(self.src, "styles/theme.css", ".dark #root > div:first-child { position: relative; }\n")
+        write(self.src, "index.html", "<div id=\"root\"></div>\n")
+        import snapshot
+        self.snapshot = snapshot
+        self.manifest = snapshot.build_manifest(self.src)
+
+    def key(self, suffix):
+        return next(k for k in self.manifest["files"] if k.endswith(suffix))
+
+    def test_a_stylesheet_and_markup_are_recorded_as_file_level_entries(self):
+        for suffix in ("styles/theme.css", "index.html"):
+            entry = self.manifest["files"][self.key(suffix)]
+            self.assertIsNone(entry["language"])
+            self.assertEqual(entry["symbols"], {})
+            for field in ("size", "mtime", "hash", "lines"):
+                self.assertIn(field, entry)
+
+    def test_an_edited_stylesheet_is_modified_in_the_diff(self):
+        path = self.src / "styles/theme.css"
+        path.write_text(".dark-ambient-glow { position: relative; }\n", encoding="utf-8")
+        result = self.snapshot.compare_files(self.manifest, self.src)
+        self.assertEqual(result["modified"], [self.key("styles/theme.css")])
+
+
 class ComparisonTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix="xray-compare-"))

@@ -44,8 +44,10 @@ from ast_parser import parse_file  # noqa: E402
 from languages import SUPPORTED_EXTENSIONS  # noqa: E402
 
 __all__ = [
+    "DOC_EXTENSIONS",
     "MARKER_PREFIX",
     "PHASE_FILES",
+    "PRESENTATION_EXTENSIONS",
     "SCHEMA",
     "blast_radius",
     "build_import_index",
@@ -85,6 +87,16 @@ DOC_EXTENSIONS = frozenset({
     ".xml", ".yaml", ".yml",
 })
 
+# Presentation files: no adapter parses them, so they carry no symbols, but a
+# stylesheet or a markup file decides whether a screen renders, scrolls and can
+# be completed. They enter the manifest as file-level entries so a phase file
+# can cite them and an incremental run notices when one changes. The set exists
+# because a run once held not one `.css` path while a global dark-theme rule
+# was overriding a consent modal's positioning and locking users out.
+PRESENTATION_EXTENSIONS = frozenset({
+    ".css", ".htm", ".html", ".less", ".sass", ".scss", ".svelte", ".vue",
+})
+
 # The X-ray's forbidden list. These never enter the manifest, not even as a hash.
 FORBIDDEN_GLOBS = (
     ".env", ".env.*", "credentials.*", "secrets.*", "*secret*", "*credential*",
@@ -108,7 +120,11 @@ def iter_files(target: Path) -> Iterator[Path]:
                 continue
             path = Path(dirpath) / name
             suffix = path.suffix.lower()
-            if suffix not in SUPPORTED_EXTENSIONS and suffix not in DOC_EXTENSIONS:
+            if (
+                suffix not in SUPPORTED_EXTENSIONS
+                and suffix not in DOC_EXTENSIONS
+                and suffix not in PRESENTATION_EXTENSIONS
+            ):
                 continue
             yield path
 

@@ -53,6 +53,7 @@ Do NOT use raw bash to do these jobs.
 Scan the partition for:
 - **Anti-patterns:** God objects, spaghetti code, shotgun surgery, feature envy
 - **Red flags:** Swallowed exceptions, hardcoded credentials (note presence only, never quote), race conditions, N+1 queries
+- **Usability-blocking:** an entry-gating path (from this partition's `03-flows.md` when it exists, otherwise identified here from its `01-structure.md` entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Read the partition's global stylesheets against those screens: a selector that reaches the root or its first children and sets `position`, `overflow` or `height` is a candidate, and one that overrides a fixed or scrollable screen is Critical. Static evidence only; nothing here was exercised
 - **Technical debt:** TODO/FIXME comments, deprecated APIs, outdated patterns
 - **Failure modes:** What breaks under load, edge cases, missing error handling
 
@@ -65,7 +66,7 @@ Scan the partition for:
 [Organized by severity (Critical / High / Medium / Low). Each row: pattern, file:line, brief evidence, severity rationale.]
 
 ## Red Flags
-[Security, reliability, performance risks. Same row schema.]
+[Security, reliability, performance, and usability-blocking risks. Same row schema; a usability-blocking row names the entry-gating path it blocks and the rule that blocks it.]
 
 ## Technical Debt Inventory
 [TODO/FIXME items, deprecated usage, modernization opportunities. Each row cites file:line.]

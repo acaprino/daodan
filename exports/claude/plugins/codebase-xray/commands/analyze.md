@@ -292,7 +292,7 @@ The canonical copy of this section lives in `## Phase 0: Project Knowledge Disco
 
 ## Phase 1: Structure Extraction
 
-Scan all files in the target and build a structural map.
+Scan the target and build a structural map. The inventory is what `snapshot.py` records: source in the seven parsed languages, configuration and documentation, and presentation files (stylesheets and markup, file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage.
 
 For each file, extract:
 - Module/file name and path
@@ -380,6 +380,7 @@ Trace critical execution paths through the codebase:
 - Data transformation pipeline (input → validation → processing → output)
 - Error propagation paths (where errors originate, how they're handled)
 - State mutation flows (what changes state, side effects)
+- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths whenever this phase runs, not a `--critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach.
 
 If `--critical` flag is set, prioritize:
 - Authentication/authorization flows
@@ -392,7 +393,7 @@ If `--critical` flag is set, prioritize:
 # Phase 3: Flow Tracing
 
 ## Critical Paths
-[Step-by-step flow descriptions with file:line references]
+[Step-by-step flow descriptions with file:line references. Entry-gating paths first, each ending at the control the user must reach, with the stylesheet rules that govern that screen cited alongside the component]
 
 ## Data Flow
 [How data transforms through the system]
@@ -485,6 +486,7 @@ Scan for anti-patterns, red flags, and technical debt:
 
 - **Anti-patterns**: God objects, spaghetti code, shotgun surgery, feature envy
 - **Red flags**: Swallowed exceptions, hardcoded credentials, race conditions, N+1 queries
+- **Usability-blocking**: an entry-gating path (from Phase 3 when it ran, otherwise identified here from the Phase 1 entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Read the global stylesheets against those screens: a selector that reaches the root or its first children and sets `position`, `overflow` or `height` is a candidate, and one that overrides a fixed or scrollable screen is Critical. This is static evidence, ranked by what the cascade proves; nothing here was exercised, and the report says so unless the user supplied runtime evidence
 - **Technical debt**: TODO/FIXME comments, deprecated APIs, outdated patterns
 - **Failure modes**: What breaks under load, edge cases, missing error handling
 
@@ -497,7 +499,7 @@ Scan for anti-patterns, red flags, and technical debt:
 [Organized by severity]
 
 ## Red Flags
-[Security, reliability, and performance risks]
+[Security, reliability, performance, and usability-blocking risks. A usability-blocking row names the entry-gating path it blocks and the rule that blocks it]
 
 ## Technical Debt Inventory
 [TODO/FIXME items, deprecated usage, modernization opportunities]
@@ -587,6 +589,7 @@ Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 |----------|----------|------|--------|-----|
 | Anti-patterns | X | X | X | X |
 | Security risks | X | X | X | X |
+| Usability-blocking | X | X | X | X |
 | Technical debt | X | X | X | X |
 | Doc gaps | X | X | X | X |
 
@@ -617,10 +620,14 @@ Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 ## Analysis Metadata
 - Run: [run-id]
 - Target: [path]
-- Files analyzed: [count]
+- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count)
+- Files read in depth: [count, and the list or the directories]
+- Exercised at runtime: none. This is static analysis; if the user supplied runtime evidence, cite it here instead
 - Phases completed: [list]
 - Date: [timestamp]
 ```
+
+The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path.
 
 Update `$RUN_DIR/state.json`: set `status` to `"complete"`.
 
@@ -661,7 +668,7 @@ Output Files:
 (mirrored to .codebase-xray/ root for downstream consumers)
 
 Summary:
-- Files analyzed: [count]
+- Files in inventory: [count] | Read in depth: [count] | Exercised at runtime: none
 - Anti-patterns: [count] | Red flags: [count] | Tech debt items: [count]
 - Documentation gaps: [count]
 ```

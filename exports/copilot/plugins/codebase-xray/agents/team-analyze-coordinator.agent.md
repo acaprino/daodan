@@ -412,7 +412,7 @@ Output Files:
   Root mirror:              .codebase-xray/01..08.md (for downstream consumers)
 
 Summary:
-  - Files analyzed:  <count>
+  - Files in inventory: <count>  |  Read in depth: <count>  |  Exercised at runtime: none
   - Anti-patterns:   <count>  |  Red flags: <count>  |  Tech debt: <count>
   - Documentation gaps: <count>
   - Cross-partition flows: <count>

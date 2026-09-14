@@ -46,6 +46,7 @@ Trace critical execution paths through the partition:
 - Data transformation pipeline (input -> validation -> processing -> output)
 - Error propagation paths
 - State mutation flows
+- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths, not a `critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach.
 
 If `active_flags.critical` is `true`, prioritize:
 - Authentication / authorization flows
@@ -58,7 +59,7 @@ If `active_flags.critical` is `true`, prioritize:
 # Partition: <partition_name> — Flow Tracing
 
 ## Critical Paths
-[Step-by-step flow descriptions with file:line references. Mark cross-partition steps with `(from <other-partition>)` or `(to <other-partition>)`.]
+[Step-by-step flow descriptions with file:line references. Entry-gating paths first, each ending at the control the user must reach, with the stylesheet rules that govern that screen cited alongside the component. Mark cross-partition steps with `(from <other-partition>)` or `(to <other-partition>)`.]
 
 ## Data Flow
 [How data transforms through the partition. Use cross-partition arrows where applicable.]
