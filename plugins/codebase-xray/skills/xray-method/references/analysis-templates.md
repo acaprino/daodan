@@ -80,7 +80,7 @@ Every section of documentation MUST have one of these status markers:
 - `[UNVERIFIED]` - Requires verification before trusting
 - `[DEPRECATED]` - Code has changed, documentation outdated
 
-Symbol reference format: `file.py::symbol` for top-level, `file.py::Class.method` for members.
+Symbol reference format: `file.py::symbol` for top-level, `file.py::Class.method` for members. A stylesheet symbol is the rule's flattened selector, `modal.css::.modal` or `modal.css::@media (max-width: 600px) { .modal }`, and a marker for one takes no `@ date` suffix, because the `@` of an at-rule would be read as one.
 Never use line numbers in markers -- they break on any file edit.
 
 **UNVERIFIED documentation is UNTRUSTED documentation.**

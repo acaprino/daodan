@@ -73,6 +73,10 @@ SCHEMA = 1
 MAX_PARSE_BYTES = 2_000_000
 # Not recorded at all above this size: a file this large is not what a claim cites.
 MAX_FILE_BYTES = 20_000_000
+# A stylesheet with a line longer than this is minified: every rule shares one
+# line, so each rule symbol would hash the whole file and any edit would change
+# them all. It stays a file-level entry.
+MAX_STYLESHEET_LINE = 10_000
 
 # Pruned during the walk, so a large dependency tree is never descended into.
 EXCLUDED_DIRS = frozenset({
@@ -87,14 +91,16 @@ DOC_EXTENSIONS = frozenset({
     ".xml", ".yaml", ".yml",
 })
 
-# Presentation files: no adapter parses them, so they carry no symbols, but a
-# stylesheet or a markup file decides whether a screen renders, scrolls and can
-# be completed. They enter the manifest as file-level entries so a phase file
-# can cite them and an incremental run notices when one changes. The set exists
-# because a run once held not one `.css` path while a global dark-theme rule
-# was overriding a consent modal's positioning and locking users out.
+# Presentation files no adapter parses: markup, single-file components and
+# indented Sass. They carry no symbols, but they decide whether a screen
+# renders, scrolls and can be completed, so they enter the manifest as
+# file-level entries: a phase file can cite them and an incremental run notices
+# when one changes. The set exists because a run once held not one `.css` path
+# while a global dark-theme rule was overriding a consent modal's positioning
+# and locking users out. CSS, SCSS and LESS left it for their own adapter,
+# which records every rule as a symbol.
 PRESENTATION_EXTENSIONS = frozenset({
-    ".css", ".htm", ".html", ".less", ".sass", ".scss", ".svelte", ".vue",
+    ".htm", ".html", ".sass", ".svelte", ".vue",
 })
 
 # The X-ray's forbidden list. These never enter the manifest, not even as a hash.
@@ -211,6 +217,16 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
 
     spans: dict[str, dict] = {}
 
+    hashes: dict[tuple[int, int], str] = {}
+
+    def span_hash(start: int, end: int) -> str:
+        # Many symbols can share one span (a minified line, a class and its one
+        # method); each distinct span is hashed once.
+        key = (start, end)
+        if key not in hashes:
+            hashes[key] = hash_text("\n".join(lines[start - 1:end]))
+        return hashes[key]
+
     def record(name: str, kind: str, start: int, end: int) -> None:
         start = max(1, min(start, total))
         end = max(start, min(end, total))
@@ -229,7 +245,7 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
             "kind": kind,
             "start": start,
             "end": end,
-            "hash": hash_text("\n".join(lines[start - 1:end])),
+            "hash": span_hash(start, end),
         }
 
     for item in top:
@@ -266,8 +282,10 @@ def file_entry(path: Path) -> dict:
         except Exception:  # a parser failure degrades to a file-level entry
             return entry
         entry["language"] = result.language
-        entry["symbols"] = symbol_spans(result, lines)
         entry["imports"] = sorted({i.module for i in result.imports if i.is_internal and i.module})
+        if result.language == "css" and max((len(text) for text in lines), default=0) > MAX_STYLESHEET_LINE:
+            return entry
+        entry["symbols"] = symbol_spans(result, lines)
     return entry
 
 
@@ -415,6 +433,10 @@ def compare_symbols(manifest: dict, comparison: dict) -> dict:
 _MODULE_EXTENSIONS = (".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".java", ".rs")
 # Directory imports: `orders` resolving to the package's entry file.
 _PACKAGE_FILES = ("__init__.py", "index.ts", "index.tsx", "index.js", "index.jsx", "mod.rs")
+# A stylesheet resolves stylesheets only, and only these ways: a TypeScript
+# `import "./theme"` never means `theme.css`, and a Python `import app` never
+# means `app/static/app.css`, so none of this is tried for any other importer.
+_STYLESHEET_SUFFIXES = (".css", ".scss", ".less")
 
 
 def _by_basename(paths) -> dict[str, list[str]]:
@@ -461,10 +483,45 @@ def _lookup(candidate: str, known: dict[str, list[str]], importer: str) -> str |
     return local[0] if len(local) == 1 else None
 
 
+def _resolve_stylesheet(module: str, importer: str, known: dict[str, list[str]]) -> str | None:
+    """
+    A stylesheet import is a URL relative to the importing file, and each tool
+    tries its own forms in its own order. Sass tries `.sass` and `.scss`, plain
+    or partial, then `.css`, then the directory's index files; LESS appends
+    `.less`; a plain CSS `@import` loads exactly what it names, or that name
+    plus `.css`. A candidate must match a known path exactly: the specifier is
+    already joined to the importer's directory, and a suffix match would bind
+    it to a same-named file somewhere else.
+    """
+    if not module.startswith("."):
+        return None
+    base = importer.rsplit("/", 1)[0] if "/" in importer else ""
+    joined = os.path.normpath(os.path.join(base, module)).replace(os.sep, "/")
+    head, _, tail = joined.rpartition("/")
+    partial = f"{head}/_{tail}" if head else f"_{tail}"
+    lowered = importer.lower()
+    candidates = [joined]
+    if lowered.endswith(".scss"):
+        for ext in (".sass", ".scss", ".css"):
+            candidates += [joined + ext, partial + ext]
+        candidates += [f"{joined}/{name}" for name in
+                       ("_index.sass", "index.sass", "_index.scss", "index.scss", "_index.css", "index.css")]
+    elif lowered.endswith(".less"):
+        candidates.append(joined + ".less")
+    else:
+        candidates.append(joined + ".css")
+    for candidate in candidates:
+        if candidate in known.get(candidate.rsplit("/", 1)[-1], []):
+            return candidate
+    return None
+
+
 def resolve_module(module: str, importer: str, known: dict[str, list[str]]) -> str | None:
     """Map an import specifier to a path in the snapshot, or None."""
     if not module:
         return None
+    if importer.lower().endswith(_STYLESHEET_SUFFIXES):
+        return _resolve_stylesheet(module, importer, known)
     candidates: list[str] = []
     if module.startswith("."):
         base = importer.rsplit("/", 1)[0] if "/" in importer else ""
@@ -549,6 +606,11 @@ def blast_radius(index: dict[str, list[str]], comparison: dict, symbols: dict) -
     return [{"file": key, "imports": sorted(value)} for key, value in sorted(reverse.items())]
 
 
+def _cell(text: str) -> str:
+    """A markdown table cell: a pipe splits a row even inside a code span, so it is escaped."""
+    return str(text).replace("|", "\\|")
+
+
 PHASE_FILES = (
     "01-structure.md", "02-interfaces.md", "03-flows.md", "04-semantics.md",
     "05-risks.md", "06-documentation.md", "07-final-report.md",
@@ -557,10 +619,27 @@ PHASE_FILES = (
 
 # `src/app/service.py::Class.method`
 CITE_SYMBOL = re.compile(r"([\w./\\-]+\.[A-Za-z0-9_]+)::([A-Za-z_][\w.]*)")
+# `theme.css::.dark #root > div:first-child`: a stylesheet symbol carries spaces
+# and punctuation the bare form cannot, so it is cited inside backticks and
+# matched whole.
+CITE_SYMBOL_QUOTED = re.compile(r"`([\w./\\-]+\.[A-Za-z0-9_]+)::([^`\n]+)`")
 # `src/app/service.py:42`
 CITE_LINE = re.compile(r"([\w./\\-]+\.[A-Za-z0-9_]+):(\d+)\b")
 # A bare path inside backticks or a table cell.
 CITE_PATH = re.compile(r"[`|\s(\[]([\w./\\-]+\.[A-Za-z0-9_]+)[`|\s),\]]")
+
+
+def cited_symbols(line: str) -> list[tuple[str, str]]:
+    """Every `path::symbol` citation on a line, bare or quoted, without repeats."""
+    quoted = CITE_SYMBOL_QUOTED.findall(line)
+    # A quoted stylesheet selector is matched whole and never also by its leading
+    # word: `theme.css::body > div` names `body > div`, not `body`. Its span is
+    # blanked before the bare pattern runs.
+    bare = CITE_SYMBOL_QUOTED.sub(
+        lambda m: " " * len(m.group(0)) if m.group(1).lower().endswith(_STYLESHEET_SUFFIXES) else m.group(0),
+        line,
+    )
+    return list(dict.fromkeys(CITE_SYMBOL.findall(bare) + quoted))
 
 
 def _path_index(paths) -> dict[str, list[str]]:
@@ -636,13 +715,17 @@ def scan_claims(parent_dir: Path, comparison: dict, symbols: dict, importers: li
             cites: list[str] = []
             reason: str | None = None
 
-            for path_text, symbol in CITE_SYMBOL.findall(line):
+            for path_text, symbol in cited_symbols(line):
                 path = _match_cited_path(path_text, index)
                 if not path:
                     continue
                 cites.append(f"{path}::{symbol}")
                 verdict = _symbol_verdict(path, symbol, changed, removed, added_files, removed_files)
                 reason = reason or verdict
+                if verdict is None and path in modified and not symbols.get("fresh", {}).get(path, {}).get("symbols"):
+                    # A file kept file-level (a minified stylesheet) has no symbol to
+                    # judge by, so a symbol citation into it is judged by the file.
+                    reason = reason or "file-modified"
                 if verdict is None and path in importer_files:
                     reason = reason or "importer"
 
@@ -739,13 +822,13 @@ def _changes_markdown(changes: dict) -> str:
         lines += ["| Symbol | File | Kind | Change |", "|---|---|---|---|"]
         for state in ("changed", "added", "removed"):
             for item in changes["symbols"][state]:
-                lines.append(f"| `{item['symbol']}` | `{item['file']}` | {item['kind']} | {state} |")
+                lines.append(f"| `{_cell(item['symbol'])}` | `{_cell(item['file'])}` | {item['kind']} | {state} |")
         lines.append("")
     lines += ["## Blast radius", ""]
     if changes["importers"]:
         lines += ["| Importer | Imports |", "|---|---|"]
         lines += [
-            f"| `{entry['file']}` | {', '.join('`' + i + '`' for i in entry['imports'])} |"
+            f"| `{_cell(entry['file'])}` | {', '.join('`' + _cell(i) + '`' for i in entry['imports'])} |"
             for entry in changes["importers"]
         ]
     else:
@@ -754,8 +837,8 @@ def _changes_markdown(changes: dict) -> str:
     if changes["claims"]:
         lines += ["| Phase file | Line | Section | Cites | Reason |", "|---|---|---|---|---|"]
         lines += [
-            f"| {c['phase_file']} | {c['line']} | {c['section']} | "
-            f"{', '.join('`' + x + '`' for x in c['cites'])} | {c['reason']} |"
+            f"| {c['phase_file']} | {c['line']} | {_cell(c['section'])} | "
+            f"{', '.join('`' + _cell(x) + '`' for x in c['cites'])} | {c['reason']} |"
             for c in changes["claims"]
         ]
     else:
@@ -934,7 +1017,7 @@ def cmd_carry(args: argparse.Namespace) -> int:
             handle.write("No claim cites these yet. Phases 01 and 02 always; 03 to 06 at full depth.\n\n")
             handle.write("| Symbol | File | Kind |\n|---|---|---|\n")
             for item in added:
-                handle.write(f"| `{item['symbol']}` | `{item['file']}` | {item['kind']} |\n")
+                handle.write(f"| `{_cell(item['symbol'])}` | `{_cell(item['file'])}` | {item['kind']} |\n")
 
     print(f"carry: {copied} phase files copied, {marked} claims marked stale, {len(added)} symbols added")
     return 0
@@ -975,7 +1058,7 @@ def cmd_check(args: argparse.Namespace) -> int:
             if line.startswith(MARKER_PREFIX):
                 problems.append(f"{name}:{number}: claim still marked stale: {line.strip()}")
                 continue
-            for path_text, symbol in CITE_SYMBOL.findall(line):
+            for path_text, symbol in cited_symbols(line):
                 resolved = _match_cited_path(path_text, index)
                 if resolved:
                     documented.add((resolved, symbol))

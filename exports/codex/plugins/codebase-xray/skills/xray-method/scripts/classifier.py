@@ -10,7 +10,8 @@ Classifies source files based on:
 - Complexity indicators (state machines, async patterns, concurrency
   primitives) - extended with multi-language keywords
 
-Supported languages: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust.
+Supported languages: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS
+(incl. SCSS and LESS).
 
 Known limitation: the critical and complexity patterns are matched against raw
 file content, so hits inside comments and string literals count the same as
@@ -238,8 +239,10 @@ def classify_from_content(content: str, file_name: str = "") -> ClassificationRe
     language = detect_language(Path(file_name), content) if file_name else None
     if language is not None:
         adapter = get_adapter(language)
-        loc = adapter.strip_comments_and_blanks(content)
-        num_deps = adapter.count_imports(content)
+        # The stylesheet adapter reads `//` by dialect, which only the file name gives.
+        path_argument = (file_name,) if language == "css" else ()
+        loc = adapter.strip_comments_and_blanks(content, *path_argument)
+        num_deps = adapter.count_imports(content, *path_argument)
     else:
         # Generic fallback: count non-empty lines, no import detection.
         loc = sum(1 for line in content.splitlines() if line.strip())

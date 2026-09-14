@@ -4,7 +4,7 @@ Analyze File CLI.
 
 Main entry point for analyzing a single source file: classification, structural
 parse, and (optionally) cross-codebase usage lookup for its exported symbols.
-Multi-language: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust.
+Multi-language: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS.
 
 Usage:
     python analyze_file.py --file <path> [options]
@@ -39,7 +39,7 @@ def analyze_single_file(
     Perform complete analysis of a single source file.
 
     Args:
-        file_path: Path to the source file (.py/.java/.js/.ts/.sql/PL-SQL/.rs)
+        file_path: Path to the source file (.py/.java/.js/.ts/.sql/PL-SQL/.rs/.css/.scss/.less)
         find_usages: Whether to find usages of exported symbols
         project_root: Root of the project (for usage finding)
         symbol: Restrict the usage search to this single exported symbol.
@@ -90,7 +90,13 @@ def analyze_single_file(
             target_symbols = structure.exported_symbols[:5]  # Limit to first 5
 
         for target in target_symbols:
-            usage_result = find_all_usages(target, file_path, project_root)
+            try:
+                usage_result = find_all_usages(target, file_path, project_root)
+            except ValueError as err:
+                # A stylesheet exports class names such as `md:flex` that a usage
+                # search refuses; one refusal must not end the whole analysis.
+                usages[target] = {"error": str(err)}
+                continue
             usages[target] = {
                 "count": len(usage_result.usages),
                 "importing_modules": usage_result.importing_modules,
@@ -280,6 +286,10 @@ def format_as_markdown(analysis: dict[str, Any]) -> str:
         lines.append("## Symbol Usages")
         lines.append("")
         for symbol, usage_data in analysis["usages"].items():
+            if "error" in usage_data:
+                lines.append(f"### `{symbol}`: not searched. {usage_data['error']}")
+                lines.append("")
+                continue
             lines.append(f"### `{symbol}` ({usage_data['count']} usages)")
             lines.append("")
             if usage_data["importing_modules"]:
@@ -336,7 +346,7 @@ def main():
         description=(
             "Analyze a source file: classification, structure, and optional "
             "usage lookup. Supports Python, Java, JavaScript, TypeScript, "
-            "SQL, PL/SQL, Rust."
+            "SQL, PL/SQL, Rust, CSS/SCSS/LESS."
         )
     )
 

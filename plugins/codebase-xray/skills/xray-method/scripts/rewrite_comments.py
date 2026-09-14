@@ -665,7 +665,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Analyze comments in a source file",
         description=(
             "Analyze comments in a source file "
-            "(Python/Java/JS/TS/SQL/PL-SQL/Rust).\n\n"
+            "(Python/Java/JS/TS/SQL/PL-SQL/Rust/CSS/SCSS/LESS).\n\n"
             "Classifies each comment according to antirez taxonomy:\n"
             "- GOOD: function, design, why, teacher, checklist, guide\n"
             "- BAD: trivial, debt, backup"
@@ -684,7 +684,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Rewrite comments in a source file",
         description=(
             "Rewrite comments in a source file "
-            "(Python/Java/JS/TS/SQL/PL-SQL/Rust).\n\n"
+            "(Python/Java/JS/TS/SQL/PL-SQL/Rust; stylesheets are refused).\n\n"
             "By default runs as dry-run showing proposed changes.\n"
             "Use --apply to actually modify the file.\n\n"
             "Actions taken:\n"
@@ -706,7 +706,7 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Scan a directory for comment issues across supported languages.\n\n"
             "Analyzes all supported source files "
-            "(Python/Java/JS/TS/SQL/PL-SQL/Rust) and reports aggregate "
+            "(Python/Java/JS/TS/SQL/PL-SQL/Rust/CSS/SCSS/LESS) and reports aggregate "
             "statistics."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -724,7 +724,7 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Generate a comprehensive comment health report.\n\n"
             "Creates a markdown report analyzing all supported source files "
-            "(Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust) in the "
+            "(Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, and CSS for analysis only) in the "
             "directory."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,

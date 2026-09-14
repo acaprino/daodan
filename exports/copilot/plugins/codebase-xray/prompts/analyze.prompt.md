@@ -22,13 +22,14 @@ argument-hint: '<target path> [--critical] [--comments] [--docs-only] [--phase N
 
 ## Tool Integration
 
-The scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/` are language-aware and support: **Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust**. You MUST use them instead of manual file reading whenever the target file matches one of those languages.
+The scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/` are language-aware and support: **Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust, CSS (incl. SCSS and LESS)**. You MUST use them instead of manual file reading whenever the target file matches one of those languages.
 
 - **Phase 1-2 (Structure):** Use `ast_parser.py` for class/function/import extraction and `classifier.py` for file classification. Do NOT attempt to parse AST manually or count imports with grep.
+- **Phase 5 (Usability-blocking):** Run `cascade_scan.py <client root>` (add `--json` to consume it) before reading any stylesheet by hand. It lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, with the class, id and attribute rules each one can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order), screen-level rules first: a fixed or sticky position, a scroll container, a viewport height. Tailwind `@apply` utilities count as the declarations they inline, and when a stylesheet uses Tailwind, screen-level utilities in string-literal `class` and `className` attributes count as conflicts. Its output is leads, never verdicts.
 - **Phase 5 (Risks):** Use `usage_finder.py` to trace symbol usages across the codebase. Multi-language: matches Python `from/import`, Java `import`, JS/TS `import`/`require`, Rust `use`, etc.
 - **Phase 6 (Docs):** Use `doc_review.py` for link validation and marker checks, and `rewrite_comments.py` for multi-language comment quality analysis (Python `#`/docstrings, Java/JS/TS `//` / `/* */` / Javadoc / JSDoc, SQL/PL-SQL `--` / `/* */`, Rust `//` / rustdoc).
 
-For unsupported languages, use the Read tool and Grep tool directly. Tree-sitter is optional (see Prerequisites in the `codebase-xray:xray-method` skill): when `tree-sitter-language-pack` is installed, Java/JS/TS/Rust use the tree-sitter parsers for higher fidelity; otherwise a regex fallback is used. Python always uses the stdlib `ast` module. SQL/PL-SQL use a regex-based DDL extractor.
+For unsupported languages, use the Read tool and Grep tool directly. Tree-sitter is optional (see Prerequisites in the `codebase-xray:xray-method` skill): when `tree-sitter-language-pack` is installed, Java/JS/TS/Rust use the tree-sitter parsers for higher fidelity; otherwise a regex fallback is used. Python always uses the stdlib `ast` module. SQL/PL-SQL use a regex-based DDL extractor. CSS, SCSS and LESS use a stdlib tokenizer.
 
 Do NOT use raw bash commands (cat, grep, find) to extract structure when a dedicated script exists. The scripts use real parsers, which are faster, more accurate, and consume fewer tokens than reading files line by line.
 
@@ -295,7 +296,7 @@ The canonical copy of this section lives in `## Phase 0: Project Knowledge Disco
 
 ## Phase 1: Structure Extraction
 
-Scan the target and build a structural map. The inventory is what `snapshot.py` records: source in the seven parsed languages, configuration and documentation, and presentation files (stylesheets and markup, file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage.
+Scan the target and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage.
 
 For each file, extract:
 - Module/file name and path
@@ -383,7 +384,7 @@ Trace critical execution paths through the codebase:
 - Data transformation pipeline (input → validation → processing → output)
 - Error propagation paths (where errors originate, how they're handled)
 - State mutation flows (what changes state, side effects)
-- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths whenever this phase runs, not a `--critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach.
+- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths whenever this phase runs, not a `--critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach. Run `cascade_scan.py` over the client root, never over a stylesheet directory alone, and cite, on the path, every rule it lists whose selector can match that screen.
 
 If `--critical` flag is set, prioritize:
 - Authentication/authorization flows
@@ -489,7 +490,7 @@ Scan for anti-patterns, red flags, and technical debt:
 
 - **Anti-patterns**: God objects, spaghetti code, shotgun surgery, feature envy
 - **Red flags**: Swallowed exceptions, hardcoded credentials, race conditions, N+1 queries
-- **Usability-blocking**: an entry-gating path (from Phase 3 when it ran, otherwise identified here from the Phase 1 entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Read the global stylesheets against those screens: a selector that reaches the root or its first children and sets `position`, `overflow` or `height` is a candidate, and one that overrides a fixed or scrollable screen is Critical. This is static evidence, ranked by what the cascade proves; nothing here was exercised, and the report says so unless the user supplied runtime evidence
+- **Usability-blocking**: an entry-gating path (from Phase 3 when it ran, otherwise identified here from the Phase 1 entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Start from `cascade_scan.py`: each candidate it lists reaches the root or its untargeted children and sets a property that decides layout, and each conflict names a rule the candidate can beat. Confirm every candidate against the component tree: does its selector match the entry screen's element, and is its scope class applied there (`usage_finder.py`). A confirmed override of a fixed or scrollable entry screen is Critical. This is static evidence, ranked by what the cascade proves; nothing here was exercised, and the report says so unless the user supplied runtime evidence
 - **Technical debt**: TODO/FIXME comments, deprecated APIs, outdated patterns
 - **Failure modes**: What breaks under load, edge cases, missing error handling
 
@@ -732,11 +733,11 @@ If the user picks option 4 (any sub-option), the downstream command auto-detects
 
 If the user picks option 2, use the dedicated scripts for safe, automated fixes:
 
-1. **Comment cleanup:** Run `rewrite_comments.py rewrite <file> --apply --backup` for each file flagged in Phase 6. The script handles backup, lexer-safe removal of trivial/backup comments, and auto-formatting. Works on Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust. Do NOT manually edit comments with the Edit tool when the script supports the language.
+1. **Comment cleanup:** Run `rewrite_comments.py rewrite <file> --apply --backup` for each file flagged in Phase 6. The script handles backup, lexer-safe removal of trivial/backup comments, and auto-formatting. Works on Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust; stylesheets are analyzed, never rewritten. Do NOT manually edit comments with the Edit tool when the script supports the language.
 2. **Type hint / annotation fixes:** Apply these with the Edit tool one file at a time, verifying syntax after each change.
 3. **Stale references:** Update outdated names/references in comments using targeted Edit tool replacements.
 
-Present a summary of changes made after applying fixes. For languages outside the supported set (Python/Java/JS/TS/SQL/PL-SQL/Rust), fall back to targeted Edit tool changes with explicit before/after diffs shown to the user.
+Present a summary of changes made after applying fixes. For languages outside the supported set (Python/Java/JS/TS/SQL/PL-SQL/Rust), fall back to targeted Edit tool changes with explicit before/after diffs shown to the user. Stylesheet comments are reported only: never remove or rewrite them, by script or by hand, because in plain CSS a `//` line belongs to the next rule's prelude and deleting it can make a dropped rule apply.
 
 ## Quick Examples
 

@@ -235,11 +235,12 @@ class ManifestTests(unittest.TestCase):
 
 class PresentationInventoryTests(unittest.TestCase):
     """
-    A stylesheet or markup file cannot be parsed for symbols, but it decides
-    whether a screen renders and scrolls, so it must be in the inventory and
-    in the diff. The motivating case: a global dark-theme rule overrode a
-    consent modal's positioning and locked users out, and the manifest of the
-    run that missed it held not one `.css` path, by construction.
+    A presentation file decides whether a screen renders and scrolls, so it
+    must be in the inventory and in the diff. The motivating case: a global
+    dark-theme rule overrode a consent modal's positioning and locked users
+    out, and the manifest of the run that missed it held not one `.css` path,
+    by construction. Stylesheets have their own adapter since 4.2.0 (see
+    test_xray_stylesheet.py); markup stays a file-level entry.
     """
 
     def setUp(self):
@@ -256,8 +257,8 @@ class PresentationInventoryTests(unittest.TestCase):
     def key(self, suffix):
         return next(k for k in self.manifest["files"] if k.endswith(suffix))
 
-    def test_a_stylesheet_and_markup_are_recorded_as_file_level_entries(self):
-        for suffix in ("styles/theme.css", "index.html"):
+    def test_markup_is_recorded_as_a_file_level_entry(self):
+        for suffix in ("index.html",):
             entry = self.manifest["files"][self.key(suffix)]
             self.assertIsNone(entry["language"])
             self.assertEqual(entry["symbols"], {})

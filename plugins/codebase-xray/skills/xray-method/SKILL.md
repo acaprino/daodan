@@ -1,7 +1,7 @@
 ---
 name: xray-method
 description: >
-  X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust.
+  X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS.
   TRIGGER WHEN: encountering an unfamiliar codebase, needing pre-review technical context, before a major refactor, or when documentation is stale or missing.
   DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /codebase-mapper:map-codebase), a public-facing README, or a review verdict (senior-review consumes this output instead).
 ---
@@ -28,6 +28,7 @@ This skill combines **mechanical structure extraction** with **Claude's semantic
 | SQL | `.sql`, `.ddl`, `.dml` | regex DDL (tables, views, indexes, sequences, types, functions, procedures, triggers) | `--`, `/* */` |
 | PL/SQL (Oracle) | `.pks`, `.pkb`, `.plsql`, `.pls`, `.pck`, `.prc`, `.fnc`, `.trg` | regex (packages, package bodies, type bodies, cursors, exceptions, %TYPE/%ROWTYPE references) | `--`, `/* */` |
 | Rust | `.rs` | tree-sitter (preferred) or regex; structs, enums, traits, impls (with `Trait for Type` naming), mods, unions, type aliases | `//`, `/* */`, rustdoc `///` / `//!` / `/** */` / `/*! */` |
+| CSS, SCSS, LESS | `.css`, `.scss`, `.less` | stdlib tokenizer, never tree-sitter: one symbol per applied rule, named by its flattened selector inside its enclosing at-rules; top-level at-rules and Sass or LESS variables; mixins and Sass functions; `@import` / `@use` / `@forward`; Tailwind `@apply` layout utilities read as the declarations they inline | `/* */`, and `//` outside plain CSS |
 
 `.sql` files are disambiguated against PL/SQL by inspecting content for Oracle-specific markers (`CREATE OR REPLACE PACKAGE`, `DBMS_OUTPUT`, `%TYPE`, `%ROWTYPE`, `UTL_FILE`, `PRAGMA AUTONOMOUS`, etc.). PostgreSQL `plpgsql` is correctly classified as SQL.
 
@@ -47,9 +48,9 @@ What changes when tree-sitter is installed:
 - **Java**: nested classes, generic type parameters, annotations, multi-line declarations parsed correctly. Without it, the regex fallback still finds top-level classes, methods, imports, and constants.
 - **JavaScript / TypeScript**: arrow functions in object/class properties, decorators, template literals, JSX elements parsed correctly. Without it, the regex fallback handles top-level declarations, ES6 `import`/`export`, and CommonJS `require`.
 - **Rust**: lifetimes, generic bounds (`where` clauses), impl blocks with trait bounds, attribute macros parsed correctly. Without it, the regex fallback still finds top-level fns, structs/enums/traits/impls/mods, use declarations, and UPPER_CASE constants.
-- **Python / SQL / PL-SQL**: no change. Python always uses stdlib `ast`; SQL/PL-SQL always use the regex DDL extractor.
+- **Python / SQL / PL-SQL / CSS**: no change. Python always uses stdlib `ast`; SQL/PL-SQL always use the regex DDL extractor; CSS, SCSS and LESS always use the stylesheet tokenizer.
 
-The active parser is reported in `ParseResult.notes` and in the CLI output: `parser=stdlib-ast`, `parser=tree-sitter`, or `parser=regex-fallback`.
+The active parser is reported in `ParseResult.notes` and in the CLI output: `parser=stdlib-ast`, `parser=tree-sitter`, `parser=regex-fallback`, or `parser=stylesheet`.
 
 ### Capabilities
 
@@ -119,7 +120,7 @@ Rules:
 
 A second X-ray of the same target rebuilds from nothing only if nobody asked what changed. The mechanism that asks is `scripts/snapshot.py`, and every part of it runs outside the model.
 
-**The snapshot** (`snapshot/manifest.json`, written by every run) records each file with its size, mtime and content hash, and each symbol with its line span and a hash of its body, plus the git commit as metadata. A class span encloses its methods, so editing a method moves both hashes. Three sets of files enter it: source in the seven parsed languages, with symbols; configuration and documentation (`.json`, `.yaml`, `.toml`, `.md` and their kin), as file-level entries with no symbols; and presentation files (`.css`, `.scss`, `.sass`, `.less`, `.html`, `.htm`, `.vue`, `.svelte`), also file-level, because a stylesheet or a markup file decides whether a screen renders, scrolls and can be completed, and a run that drops them can neither cite one nor notice that it changed. Any other extension is absent from the manifest and from every count derived from it, and the final report says so. Forbidden files never enter it, not even as a hash.
+**The snapshot** (`snapshot/manifest.json`, written by every run) records each file with its size, mtime and content hash, and each symbol with its line span and a hash of its body, plus the git commit as metadata. A class span encloses its methods, so editing a method moves both hashes. Three sets of files enter it: source in the parsed languages, with symbols, where CSS, SCSS and LESS carry one symbol per applied rule, except a minified stylesheet (any line over 10,000 characters), which stays file-level; configuration and documentation (`.json`, `.yaml`, `.toml`, `.md` and their kin), as file-level entries with no symbols; and presentation files no adapter parses (`.html`, `.htm`, `.vue`, `.svelte`, indented `.sass`), also file-level, because markup decides whether a screen renders, scrolls and can be completed, and a run that drops it can neither cite it nor notice that it changed. Any other extension is absent from the manifest and from every count derived from it, and the final report says so. Forbidden files never enter it, not even as a hash.
 
 **The change set** (`changes.json`, written by `snapshot.py diff`) compares that manifest with the current worktree. Equal size and mtime means unchanged with no read at all; anything else is hashed, because a checkout moves mtimes without changing a byte. It classifies files and symbols, resolves the one-hop blast radius from the manifest's import edges, and scans the parent's phase files for every claim citing anything it touched. It recommends `incremental`, `full` (with reasons: too much changed, no parent manifest, an incomplete parent, flags differing from the parent's) or `none`.
 
@@ -139,7 +140,7 @@ Every file this skill produces is a set of claims about the code, each anchored 
 2. **NEVER** assume any existing documentation, comment, or docstring is accurate
 3. **NEVER** write documentation based on memory, inference, or "what should be"
 4. **ALWAYS** derive technical facts EXCLUSIVELY from reading and tracing actual code
-5. **ALWAYS** cite `file:line` for every technical claim in a phase file, and add the qualified symbol (`file.py::Class.method`) where one exists. The line locates the evidence for this run; the symbol survives the next edit. Downstream consumers (`premise-auditor`, the interconnect mapper, the review dimensions) read `file:line`
+5. **ALWAYS** cite `file:line` for every technical claim in a phase file, and add the qualified symbol (`file.py::Class.method`) where one exists. A stylesheet symbol is the rule's flattened selector, which carries spaces and punctuation, so it is cited inside single backticks exactly as the manifest names it, for example `theme.css::.dark #root > div:first-child`; the incremental gate matches that quoted form whole. The line locates the evidence for this run; the symbol survives the next edit. Downstream consumers (`premise-auditor`, the interconnect mapper, the review dimensions) read `file:line`
 6. **ALWAYS** verify state machines, enums, constants against actual definitions
 7. **TREAT** all pre-existing docs as unverified claims requiring validation
 8. **MARK** every claim with the status the interconnect mapper uses: `verified` (enforced in code, cite where), `documented` (a document declares it, cite where), `unverified` (relied on, nothing enforces or documents it), `disputed` (two derivations disagree, cite both). `[UNVERIFIED - REQUIRES CODE CHECK]` stays the inline form for prose
@@ -522,10 +523,11 @@ The team command:
   - `comment_rewriter.py` - multi-language comment analysis engine
   - `rewrite_comments.py` - comment quality CLI (scan / analyze / rewrite / report)
   - `doc_review.py` - documentation maintenance (Phase 6)
-  - `languages/` - per-language adapters (Python `ast`, Java/JS/TS/Rust via tree-sitter or regex, SQL/PL-SQL regex)
+  - `cascade_scan.py` - stylesheet rules with global reach that can break a screen, with the rules each can override in cascade order, screen-level rules first (Phase 5)
+  - `languages/` - per-language adapters (Python `ast`, Java/JS/TS/Rust via tree-sitter or regex, SQL/PL-SQL regex, CSS/SCSS/LESS stdlib tokenizer)
     - `base.py` - shared dataclasses + `LanguageAdapter` Protocol
     - `__init__.py` - extension dispatch (`detect_language`, `get_adapter`)
     - `comments.py` - per-language comment lexer (includes rustdoc post-processor)
     - `_treesitter.py` - optional tree-sitter loader with fallbacks
-    - `python.py`, `java.py`, `javascript.py`, `typescript.py`, `sql.py`, `plsql.py`, `rust.py`
+    - `python.py`, `java.py`, `javascript.py`, `typescript.py`, `sql.py`, `plsql.py`, `rust.py`, `stylesheet.py`
   - `requirements.txt` - optional dependencies (tree-sitter + tree-sitter-language-pack)

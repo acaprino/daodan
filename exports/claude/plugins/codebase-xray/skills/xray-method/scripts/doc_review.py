@@ -106,8 +106,10 @@ class DocReviewer:
 
     # Compiled regex patterns (M4 performance fix)
     TODO_PATTERN = re.compile(r'\b(TODO|FIXME|TBD|XXX)\b', re.IGNORECASE)
-    VERIFIED_PATTERN = re.compile(r'\[VERIFIED:\s*([^\]]+)\]')
-    VALIDATED_PATTERN = re.compile(r'\[VALIDATED:\s*([^\]]+)\]')
+    # A marker's content may hold one level of brackets: an attribute selector,
+    # `form.css::input[type="text"]`, is part of a stylesheet symbol.
+    VERIFIED_PATTERN = re.compile(r'\[VERIFIED:\s*((?:[^\[\]]|\[[^\]]*\])+)\]')
+    VALIDATED_PATTERN = re.compile(r'\[VALIDATED:\s*((?:[^\[\]]|\[[^\]]*\])+)\]')
     UNVERIFIED_PATTERN = re.compile(r'\[UNVERIFIED[^\]]*\]')
     DEPRECATED_PATTERN = re.compile(r'\[DEPRECATED[^\]]*\]')
     LINK_PATTERN = re.compile(r'\[([^\]]*)\]\(([^)]+)\)')
@@ -115,6 +117,9 @@ class DocReviewer:
     # Symbol-based (preferred): file.py::Class.method or file.py::function @ date
     # Legacy line-based: file.py:123 or file.py:123 @ date
     MARKER_SYMBOL_PATTERN = re.compile(r'([^:@]+)::([A-Za-z_][\w.]+)(?:\s*@\s*(.+))?')
+    # A stylesheet symbol is a selector, `modal.css::@media (max-width: 600px) { .modal }`:
+    # everything after `::` is the name. No `@ date` suffix, because `@media` uses the `@`.
+    MARKER_STYLESHEET_PATTERN = re.compile(r'([^:]+\.(?:css|scss|less))::(.+)$')
     MARKER_LINE_PATTERN = re.compile(r'([^:@]+):(\d+)(?:\s*@\s*(.+))?')
 
     def __init__(self, base_path: str = "."):
@@ -592,6 +597,10 @@ class DocReviewer:
 
         stripped = marker_content.strip()
 
+        stylesheet_match = self.MARKER_STYLESHEET_PATTERN.match(stripped)
+        if stylesheet_match:
+            return self._validate_symbol_marker(validation, stylesheet_match)
+
         # Try symbol-based format first: file.py::Class.method
         symbol_match = self.MARKER_SYMBOL_PATTERN.match(stripped)
         if symbol_match:
@@ -634,7 +643,7 @@ class DocReviewer:
             return validation
 
         # Use AST to verify symbol exists
-        if AST_AVAILABLE and source_path.suffix == '.py':
+        if AST_AVAILABLE and source_path.suffix.lower() in ('.py', '.css', '.scss', '.less'):
             try:
                 parse_result = parse_file(source_path)
 

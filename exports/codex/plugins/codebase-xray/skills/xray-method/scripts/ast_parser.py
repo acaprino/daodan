@@ -4,7 +4,8 @@ Structural parser.
 This module is a thin dispatcher over per-language adapters in ./languages/.
 
 Supported languages:
-    Python, Java, JavaScript, TypeScript (incl. TSX), SQL, PL/SQL, Rust.
+    Python, Java, JavaScript, TypeScript (incl. TSX), SQL, PL/SQL, Rust,
+    CSS (incl. SCSS and LESS).
 
 Tree-sitter is used when the optional `tree-sitter-language-pack` package is
 installed; otherwise a regex-based fallback is used. Python always uses the

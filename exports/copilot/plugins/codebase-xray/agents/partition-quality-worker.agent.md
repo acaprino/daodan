@@ -40,6 +40,7 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 ## TOOL USAGE
 
 Use the scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/`:
+- `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, for the usability-blocking check: a global rule meets its victim wherever the victim's stylesheet or markup lives. It lists every rule whose selector reaches the document root or its untargeted children and sets a layout property, with the rules and Tailwind utilities it can override, screen-level ones first. Keep the candidates and conflicts with at least one side in this partition, and record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`. Leads, never verdicts
 - `usage_finder.py` to trace symbol usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
 - `doc_review.py` for link validation and marker checks in `06-documentation.md` work
 - `rewrite_comments.py` for comment quality analysis if `active_flags.comments` is true
@@ -51,7 +52,7 @@ Do NOT use raw bash to do these jobs.
 Scan the partition for:
 - **Anti-patterns:** God objects, spaghetti code, shotgun surgery, feature envy
 - **Red flags:** Swallowed exceptions, hardcoded credentials (note presence only, never quote), race conditions, N+1 queries
-- **Usability-blocking:** an entry-gating path (from this partition's `03-flows.md` when it exists, otherwise identified here from its `01-structure.md` entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Read the partition's global stylesheets against those screens: a selector that reaches the root or its first children and sets `position`, `overflow` or `height` is a candidate, and one that overrides a fixed or scrollable screen is Critical. Static evidence only; nothing here was exercised
+- **Usability-blocking:** an entry-gating path (from this partition's `03-flows.md` when it exists, otherwise identified here from its `01-structure.md` entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Start from `cascade_scan.py`: each candidate reaches the root or its untargeted children and sets a property that decides layout, and each conflict names a rule it can beat. Confirm every candidate against the component tree: does its selector match the entry screen's element, and is its scope class applied there (`usage_finder.py`). A confirmed override of a fixed or scrollable entry screen is Critical. Static evidence only; nothing here was exercised
 - **Technical debt:** TODO/FIXME comments, deprecated APIs, outdated patterns
 - **Failure modes:** What breaks under load, edge cases, missing error handling
 

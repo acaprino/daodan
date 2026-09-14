@@ -20,7 +20,8 @@ BAD (to remove/rewrite):
   8. Debt Comments    - TODO/FIXME that should be resolved or documented
   9. Backup Comments  - Commented-out code (use git history instead)
 
-Multi-language: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust.
+Multi-language: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust. Stylesheets
+(CSS, SCSS, LESS) are analyzed and never rewritten.
 Per-language comment extraction is delegated to
 languages.<lang>.adapter.extract_comments(). Classification uses regex patterns
 that are largely language-agnostic.
@@ -572,7 +573,8 @@ class CommentRewriter:
             comment_ratio=0.0,
         )
 
-        for token in adapter.extract_comments(content):
+        # The stylesheet adapter reads `//` by dialect, which only the path gives.
+        for token in adapter.extract_comments(content, *((file_path,) if language == "css" else ())):
             # Python docstrings are NOT emitted by extract_python_comments
             # (tokenize only yields `#` tokens). They are pulled separately
             # via the AST helper `_add_python_docstrings` later in this
@@ -714,6 +716,14 @@ class CommentRewriter:
     ) -> tuple[str, list[str]]:
         file_path = Path(file_path).resolve()
         language = _validate_source_file(file_path)
+        if language == "css":
+            # CSS has no line comment to emit, and in plain CSS `//` is not a
+            # comment: it joins the next prelude or declaration, which the browser
+            # drops, so removing it could make a dropped rule apply. Stylesheet
+            # comments are analyzed, never rewritten.
+            raise CommentRewriterError(
+                f"Stylesheets are analyzed, never rewritten: {file_path.name}"
+            )
         if output_path is not None:
             output_path = _validate_output_path(Path(output_path), file_path)
 
@@ -900,7 +910,7 @@ if __name__ == "__main__":
         print("Usage: python comment_rewriter.py <file_path>")
         print("")
         print("Analyzes file comments following antirez standards.")
-        print("Supports Python, Java, JavaScript, TypeScript, SQL, PL/SQL.")
+        print("Supports Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust; stylesheets are analyzed only.")
         sys.exit(1)
     test_file = Path(sys.argv[1])
     try:

@@ -4,10 +4,11 @@ Usage Finder Module.
 Finds where symbols are used across the codebase. Multi-language:
 - Source file types: .py, .java, .js/.mjs/.cjs/.jsx, .ts/.tsx, .rs,
   .sql/.ddl/.dml, PL/SQL extensions (.pks, .pkb, .plsql, .pls, .pck, .prc,
-  .fnc, .trg).
+  .fnc, .trg), and stylesheets (.css, .scss, .less).
 - Import patterns are language-aware (Python `import`/`from`, Java `import`,
-  JS/TS `import`/`require`; Rust and SQL/PL-SQL have no import pattern, so
-  only raw usages are reported for them).
+  JS/TS `import`/`require`; Rust, SQL/PL-SQL and stylesheets have no import
+  pattern, so only raw usages are reported for them). Markup (.vue, .svelte,
+  .html, .htm) is searched for raw usages too, because it applies CSS classes.
 - Inheritance / call detection uses language-agnostic heuristics that work
   reasonably across the targeted set.
 
@@ -32,6 +33,8 @@ __all__ = [
     "find_all_usages",
     "is_excluded",
     "SOURCE_EXTENSIONS",
+    "MARKUP_EXTENSIONS",
+    "SEARCH_EXTENSIONS",
 ]
 
 # Constants
@@ -47,6 +50,12 @@ logger = logging.getLogger(__name__)
 from languages import SUPPORTED_EXTENSIONS as _SUPPORTED_EXTENSIONS_MAP
 
 SOURCE_EXTENSIONS: tuple[str, ...] = tuple(_SUPPORTED_EXTENSIONS_MAP.keys())
+
+# Where a symbol is used without being imported: markup applies a CSS class
+# (`class="dark-ambient-glow"`), so a usage search reads these too. They are not
+# source files: nothing parses them, and analyze_file refuses them.
+MARKUP_EXTENSIONS: tuple[str, ...] = (".vue", ".svelte", ".html", ".htm")
+SEARCH_EXTENSIONS: tuple[str, ...] = SOURCE_EXTENSIONS + MARKUP_EXTENSIONS
 
 DEFAULT_EXCLUDES = (
     "__pycache__",
@@ -89,9 +98,12 @@ def validate_symbol(symbol: str) -> str:
 
     Python/Java/JS/TS identifiers are `[A-Za-z_][A-Za-z0-9_]*` with optional
     dotted qualifiers; SQL allows dotted (schema.table) and quoted names but
-    we restrict here to unquoted identifiers for safety.
+    we restrict here to unquoted identifiers for safety. A hyphen is accepted
+    after the first character, because a CSS class name (`dark-ambient-glow`)
+    is the symbol a stylesheet exports; a leading hyphen stays refused, since
+    grep would read it as an option.
     """
-    if not re.match(r"^[A-Za-z_$][A-Za-z0-9_.$]*$", symbol):
+    if not re.match(r"^[A-Za-z_$][A-Za-z0-9_.$-]*$", symbol):
         raise ValueError(
             f"Invalid symbol name: {symbol!r}. Must be a valid identifier."
         )
@@ -136,7 +148,7 @@ def _classify_usage(line: str, symbol: str) -> str:
 
 def _ripgrep_globs() -> list[str]:
     globs: list[str] = []
-    for ext in SOURCE_EXTENSIONS:
+    for ext in SEARCH_EXTENSIONS:
         globs.extend(["--glob", f"*{ext}"])
     for pattern in DEFAULT_EXCLUDES:
         globs.extend(["--glob", f"!{pattern}"])
@@ -144,7 +156,7 @@ def _ripgrep_globs() -> list[str]:
 
 
 def _grep_includes() -> list[str]:
-    return [f"--include=*{ext}" for ext in SOURCE_EXTENSIONS]
+    return [f"--include=*{ext}" for ext in SEARCH_EXTENSIONS]
 
 
 def find_usages_with_grep(
@@ -170,7 +182,7 @@ def find_usages_with_grep(
             cmd.extend(_ripgrep_globs())
             for pat in excludes:
                 cmd.extend(["--glob", f"!{pat}"])
-            cmd.append(symbol)
+            cmd.extend(["-F", "-e", symbol])
             cmd.append(str(search_path))
             result = subprocess.run(
                 cmd,
@@ -186,7 +198,7 @@ def find_usages_with_grep(
 
         # 2. grep.
         try:
-            cmd = ["grep", "-rn"] + _grep_includes() + [symbol, str(search_path)]
+            cmd = ["grep", "-rn", "-F"] + _grep_includes() + ["-e", symbol, str(search_path)]
             result = subprocess.run(
                 cmd,
                 capture_output=True,
@@ -258,7 +270,7 @@ def _python_based_search(
     for src in search_path.rglob("*"):
         if not src.is_file():
             continue
-        if src.suffix not in SOURCE_EXTENSIONS:
+        if src.suffix not in SEARCH_EXTENSIONS:
             continue
         if is_excluded(src, exclude_patterns):
             continue

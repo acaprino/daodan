@@ -42,7 +42,7 @@ If encountered: note file existence only (`".env present — contains environmen
 
 ## TOOL USAGE
 
-Use the language-aware scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/` whenever the target language is supported (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust):
+Use the language-aware scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/` whenever the target language is supported (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS):
 
 - **Structure extraction:** `ast_parser.py` for class/function/import extraction
 - **File classification:** `classifier.py` for language detection and counting
@@ -53,7 +53,7 @@ For unsupported languages, fall back to `Read` and `Grep` directly.
 
 ## PHASE 1: Structure Extraction
 
-Scan `partition_path` and build a structural map. The inventory is what `snapshot.py` records: source in the seven parsed languages, configuration and documentation, and presentation files (stylesheets and markup, file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it; state that under `## Key Observations`, so the synthesizer can report coverage rather than a file count.
+Scan `partition_path` and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it; state that under `## Key Observations`, so the synthesizer can report coverage rather than a file count.
 
 For each file in the partition, extract:
 - Module/file name and path (relative to partition root)

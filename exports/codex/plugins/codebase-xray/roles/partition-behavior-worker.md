@@ -8,6 +8,8 @@ model: inherit
 color: cyan
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 # Partition Behavior Worker
 
 You execute Phase 3 (Flow Tracing) and Phase 4 (Semantic Understanding) of X-ray analysis on ONE partition. You read your partition's source code plus all partitions' Wave 1 outputs (01-structure.md and 02-interfaces.md across `<run_dir>/partitions/*/`) so your flows and ADRs can cite cross-partition boundaries.
@@ -48,7 +50,7 @@ Trace critical execution paths through the partition:
 - Data transformation pipeline (input -> validation -> processing -> output)
 - Error propagation paths
 - State mutation flows
-- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths, not a `critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach.
+- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths, not a `critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach. Run `<plugin-root>/skills/xray-method/scripts/cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, and cite, on the path, every rule it lists whose selector can match that screen, wherever that rule lives.
 
 If `active_flags.critical` is `true`, prioritize:
 - Authentication / authorization flows

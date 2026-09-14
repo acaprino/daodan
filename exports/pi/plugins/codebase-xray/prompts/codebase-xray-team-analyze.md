@@ -184,6 +184,7 @@ Otherwise, run the detection chain (first rule that matches wins):
 4. **Language split:**
    - Use `<plugin-root>/skills/xray-method/scripts/classifier.py` to count files per language
    - If ≥2 languages with ≥20 files each: partition per language (`*.py` -> "python", `*.ts/*.tsx` -> "typescript")
+   - Stylesheets (`css` in the classifier's counts) never form a language partition and never count toward the two languages: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side
 5. **Fallback:** single partition wrapping the entire target, name = `root`
 
 **Always excluded paths:** `node_modules/`, `dist/`, `build/`, `.next/`, `target/`, `vendor/`, `__pycache__/`, `.venv/`.

@@ -61,6 +61,10 @@ Kind = Literal[
     "impl",
     "mod",
     "union",
+    # Stylesheet kinds:
+    "rule",
+    "at-rule",
+    "variable",
 ]
 
 
@@ -147,7 +151,8 @@ class ParseResult:
     - `notes[0]` starts with `parser=<source>` where source is one of:
       `stdlib-ast` (Python), `tree-sitter` (Java/JS), `tree-sitter (ts)` (TS),
       `regex-fallback` (Java/JS), `regex-fallback (ts)` (TS),
-      `regex (sql)` (SQL), `regex (plsql)` (PL/SQL).
+      `regex (sql)` (SQL), `regex (plsql)` (PL/SQL),
+      `stylesheet (css)`, `stylesheet (scss)`, `stylesheet (less)` (CSS, SCSS, LESS).
     - Additional notes may be appended for syntax errors, tree-sitter
       exceptions, lossy encoding, etc.
     """
