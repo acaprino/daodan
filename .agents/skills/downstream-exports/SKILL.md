@@ -63,7 +63,7 @@ is separate from `value`: `value` names a host tool and feeds the Copilot coordi
 `tools` line, so a package name there would read as a tool that does not exist.
 | source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` |
 
-Codex suffixes workflow directories with `-workflow` on purpose: it is the one host that renders both skills and workflows as skills, and without the suffix a plugin that has a skill and a workflow of the same name (`codebase-xray:analyze` does) would collide on disk. That suffix is why component names may repeat across kinds; within a kind they may not.
+Codex suffixes workflow directories with `-workflow` on purpose: it is the one host that renders both skills and workflows as skills, and without the suffix a plugin that has a skill and a workflow of the same name (`codebase-xray:analyze` and `digital-marketing:brand-naming` do) would collide on disk. The frontmatter `name` carries the same suffix, through the layout's `workflow_name` key, because Codex resolves a skill by that name rather than by its directory: until marketplace 28.5.0 the directory was suffixed and the name was not, so `brand-naming` registered two skills under one name. That suffix is why component names may repeat across kinds; within a kind they may not.
 
 ## Harness rendering
 

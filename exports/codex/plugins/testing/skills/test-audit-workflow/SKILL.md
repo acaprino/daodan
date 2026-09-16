@@ -1,5 +1,5 @@
 ---
-name: test-audit
+name: test-audit-workflow
 description: 'Writes a versioned TEST_AUDIT.md; with --fix, quarantines the rot in gated, revertible commits. TRIGGER WHEN: auditing a test suite, measuring test health, finding dead or flaky or redundant tests, or quarantining failing tests to get CI trustworthy again. DO NOT TRIGGER WHEN: one modules tests are consolidated (use /testing:test-consolidate), or new tests written (use the test-writer agent).'
 ---
 

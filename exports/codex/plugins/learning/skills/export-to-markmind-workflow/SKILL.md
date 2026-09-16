@@ -1,5 +1,5 @@
 ---
-name: export-to-markmind
+name: export-to-markmind-workflow
 description: 'Turn a topic, text, or file into a rendered vault-ready file. TRIGGER WHEN: the user asks for a MarkMind mind map, a mappa mentale for Obsidian, or an Obsidian-compatible concept map. DO NOT TRIGGER WHEN: the user wants a force-graph web mindmap (use learning:forcegraph-exporter).'
 ---
 

@@ -27,11 +27,11 @@ Invoke the `brand-naming` skill and follow its full workflow.
 
 ## What it does
 
-1. Analyzes the brief and asks clarifying questions if needed
+1. Takes the brief from the arguments when they carry it, scans the current project only when the brief is thin or names the project, and asks clarifying questions for what neither supplies
 2. Generates 12-15 curated candidates across 4 Strategic Directions: Etymological Hijacking, Scientific Decontextualization, Metaphorical Shift, Phonetic Real-Word
 3. Filters linguistically and culturally (pronunciation, negative meanings, phonosymbolism)
-4. Checks domain availability and social media handles
+4. Checks domain registration once over the requested TLDs with the RDAP domain checker, lists every dropped name with its reason, then checks social media handles
 5. Analyzes market saturation: existing apps, websites, active businesses with same name (Google, Play Store, App Store, Crunchbase)
-6. Pre-screens trademarks via EUIPO/USPTO/WIPO web searches
+6. Pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (`playwright-skill`), or reports the step as not screened
 7. Scores top 5 on weighted criteria (memorability, distinctiveness, market saturation, SEO, legal risk, etc.)
 8. Presents top 3 with full breakdown: scoring table, name story, saturation report, domain status, tagline suggestion

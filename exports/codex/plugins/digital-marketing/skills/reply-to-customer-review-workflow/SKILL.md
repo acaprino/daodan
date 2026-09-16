@@ -1,5 +1,5 @@
 ---
-name: reply-to-customer-review
+name: reply-to-customer-review-workflow
 description: 'Drafts a ready-to-post answer, with brand, tone, language, and sector flags. TRIGGER WHEN: the user pastes a customer review (Airbnb, Booking, Tripadvisor, Amazon, Trustpilot, App Store, Google) and asks for a reply or response. DO NOT TRIGGER WHEN: writing general marketing copy (use content-marketer).'
 ---
 

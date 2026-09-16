@@ -41,7 +41,7 @@ PROVENANCE = ".daodan-provenance.json"
 #: because there the command is the filename.
 FRONTMATTER_PREFIX = {
     "copilot": "---\nname: deps-audit\n",
-    "codex": "---\nname: deps-audit\n",
+    "codex": "---\nname: deps-audit-workflow\n",
     "pi": "---\ndescription:",
 }
 

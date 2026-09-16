@@ -23,6 +23,7 @@ ALLOWED_KEYS: frozenset[str] = frozenset(
         "skill",
         "role",
         "workflow",
+        "workflow_name",
         "marketplace",
         "adapter_version",
         "author",

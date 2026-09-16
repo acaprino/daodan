@@ -1,5 +1,5 @@
 ---
-name: audit
+name: audit-workflow
 description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-xray:analyze when .codebase-xray/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
 ---
 

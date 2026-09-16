@@ -6,6 +6,10 @@ plugin_root = "plugins/${plugin}"
 skills = "skills/${skill}/SKILL.md"
 roles = "roles/${role}.md"
 workflows = "skills/${workflow}-workflow/SKILL.md"
+# Codex resolves a skill by the `name` in its frontmatter, so the name has to
+# carry the same suffix as the directory: a plugin with a skill and a workflow
+# called `brand-naming` would otherwise register two skills under one name.
+workflow_name = "${workflow}-workflow"
 team_workflow_template = "subagent-workflow.SKILL.md.tmpl"
 
 # Codex hands PLUGIN_ROOT to hook commands only; a skill body gets no variable,

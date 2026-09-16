@@ -1,5 +1,5 @@
 ---
-name: python-audit
+name: python-audit-workflow
 description: 'Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --fix), or test writing (use python-development:python-tdd).'
 ---
 

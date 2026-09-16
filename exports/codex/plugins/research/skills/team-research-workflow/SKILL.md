@@ -1,5 +1,5 @@
 ---
-name: team-research
+name: team-research-workflow
 description: '"Deep web research run: clarify scope only when needed, show a plan of sub-questions for approval, spawn one iterative researcher per sub-question in parallel, verify contradictions, synthesize a long-form cited report and write it to disk. Web only."'
 ---
 

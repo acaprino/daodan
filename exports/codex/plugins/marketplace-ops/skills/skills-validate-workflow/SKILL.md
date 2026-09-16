@@ -1,5 +1,5 @@
 ---
-name: skills-validate
+name: skills-validate-workflow
 description: 'Validate skill and agent quality: deterministic activation checks plus AI body review. TRIGGER WHEN: the user asks to validate skill/agent quality, enforce trigger patterns, check description token budgets, or run pre-commit marketplace checks. DO NOT TRIGGER WHEN: checking structural JSON references only (use /marketplace-ops:marketplace-health) or doing an AI-only content review (use /marketplace-ops:marketplace-review).'
 ---
 

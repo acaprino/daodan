@@ -1,5 +1,5 @@
 ---
-name: firefox-lint
+name: firefox-lint-workflow
 description: 'Runs `web-ext lint` plus static checks for forbidden APIs, permission bloat, remote-hosted code and Manifest V3 migration issues. TRIGGER WHEN: linting, validating or checking a Firefox extension, before an AMO submission or a git push on an extension project.'
 ---
 

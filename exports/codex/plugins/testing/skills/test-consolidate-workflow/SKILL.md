@@ -1,5 +1,5 @@
 ---
-name: test-consolidate
+name: test-consolidate-workflow
 description: 'Turns overlapping suites into one clean file per source file: BEHAVIOR inventory approved first, originals deleted in the same commit, coverage verified after. TRIGGER WHEN: consolidating, deduping or rewriting the tests of a module, or processing quarantined tests for code being touched. DO NOT TRIGGER WHEN: whole-suite health is measured or quarantined (use /testing:test-audit), or tests written for untested code (use the test-writer agent).'
 ---
 

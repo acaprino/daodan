@@ -104,14 +104,14 @@ Use the llm-seo-optimize agent to audit [url or local path] for answer-engine op
 
 ### `brand-naming`
 
-Brand naming strategist. Generates, filters, scores, and validates brand names through a lateral thinking workflow.
+Brand naming strategist. Generates, filters, scores, and validates brand names through a strategic semantic workflow.
 
 | | |
 |---|---|
 | **Invoke** | Skill reference or `/brand-naming` |
 | **Trigger** | "brand name", "naming", "name my app", "name my product", "startup name" |
 
-**Workflow:** Uses 4 lateral thinking techniques (semantic collision, vocabulary shift, invisible hinge, polarization) for creative generation, then filters with 7 naming archetypes, linguistic/phonotactic rules, weighted scoring, domain availability checks, market saturation analysis, trademark pre-screening, and SEO analysis.
+**Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the RDAP domain checker, runs market saturation analysis, pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (`playwright-skill`), rates SEO potential, and scores the top 5 on weighted criteria. Coined words, letter-mashing and cheap suffixes are banned at generation.
 
 ---
 
@@ -164,12 +164,11 @@ Generate, filter, score, and validate brand names through a structured naming wo
 
 ```
 /brand-naming "fitness app for busy professionals"
-/brand-naming "sustainable fashion marketplace" --style evocative --tlds .com,.co,.app
+/brand-naming "sustainable fashion marketplace" --languages en,es,pt --tlds .com,.co,.app
 ```
 
 | Flag | Effect |
 |------|--------|
-| `--style` | Focus on descriptive, abstract, evocative, or all (default: all) |
 | `--languages` | Languages to check for cultural conflicts (default: en,it,es,fr,de,pt) |
 | `--tlds` | TLDs to check for domain availability (default: .com,.app,.io,.co) |
 

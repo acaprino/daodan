@@ -1,5 +1,5 @@
 ---
-name: platform-review
+name: platform-review-workflow
 description: 'Audit a codebase against the platform-engineering rulebook. TRIGGER WHEN: the user asks for a platform-level review, cross-platform security audit, Electron or Tauri hardening check, or an SPA, PWA, mobile, or desktop compliance review. DO NOT TRIGGER WHEN: reviewing generic code quality with no platform dimension (use /senior-review:code-review).'
 ---
 

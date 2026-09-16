@@ -1,5 +1,5 @@
 ---
-name: xterm-implement
+name: xterm-implement-workflow
 description: 'Read the current setup, then insert the feature without conflicting with what is loaded. TRIGGER WHEN: the user asks to add an xterm.js addon, PTY integration, theme, search, resize, decorations, parser hooks, or framework (React/Vue/Electron/Tauri) wiring. DO NOT TRIGGER WHEN: debugging existing code (use /xterm:xterm-debug).'
 ---
 

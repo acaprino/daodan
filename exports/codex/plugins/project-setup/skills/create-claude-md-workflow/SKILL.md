@@ -1,5 +1,5 @@
 ---
-name: create-claude-md
+name: create-claude-md-workflow
 description: 'Ask the questionnaire first, then write a file sized to the codebase. TRIGGER WHEN: the user asks to create/generate/scaffold a CLAUDE.md for a project that doesnt have one. DO NOT TRIGGER WHEN: auditing or updating an existing one (use /project-setup:maintain-claude-md).'
 ---
 

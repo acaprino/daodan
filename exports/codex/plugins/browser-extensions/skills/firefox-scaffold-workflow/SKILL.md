@@ -1,5 +1,5 @@
 ---
-name: firefox-scaffold
+name: firefox-scaffold-workflow
 description: 'Generates manifest.json (V3 default), directory layout, content and background scripts, web-ext config and a working popup. TRIGGER WHEN: creating, bootstrapping or scaffolding a new Firefox extension, WebExtension or browser add-on. DO NOT TRIGGER WHEN: features are added to an existing extension (use the firefox-extension-dev agent).'
 ---
 

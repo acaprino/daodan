@@ -1,5 +1,5 @@
 ---
-name: mt5-audit
+name: mt5-audit-workflow
 description: 'Report on the reliability, error handling, and production readiness of an existing system. TRIGGER WHEN: the user asks to review, audit, or validate an MT5 Python trading bot (polling loops, fill modes, reconnection, order retcodes, Windows deployment). DO NOT TRIGGER WHEN: building from scratch (use the mt5-architect agent), or auditing an IB system (use /trading-broker-integration:ibkr-audit).'
 ---
 

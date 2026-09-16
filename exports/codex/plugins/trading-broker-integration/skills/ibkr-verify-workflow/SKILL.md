@@ -1,5 +1,5 @@
 ---
-name: ibkr-verify
+name: ibkr-verify-workflow
 description: 'Answer a question about IBKR behaviour with evidence instead of a guess. TRIGGER WHEN: the user asks whether IBKR supports something, why an order was refused, what a code means, or wants a claim about venue behaviour verified against a real gateway. DO NOT TRIGGER WHEN: auditing a whole codebase (use /trading-broker-integration:ibkr-audit), or designing a system from scratch (use the ibkr-architect agent).'
 ---
 

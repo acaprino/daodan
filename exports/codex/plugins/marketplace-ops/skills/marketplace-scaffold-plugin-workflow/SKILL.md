@@ -1,5 +1,5 @@
 ---
-name: marketplace-scaffold-plugin
+name: marketplace-scaffold-plugin-workflow
 description: 'Scaffold a new plugin for any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to create a new plugin, bootstrap plugin structure, or add a new entry to marketplace.json. DO NOT TRIGGER WHEN: adding a skill or agent to an existing plugin (use skills-creator).'
 ---
 

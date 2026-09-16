@@ -1,5 +1,5 @@
 ---
-name: python-scaffold
+name: python-scaffold-workflow
 description: 'Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: llm-seo-audit
+name: llm-seo-audit-workflow
 description: 'Checks whether a page is quotable by generative assistants, not merely rankable. TRIGGER WHEN: the user asks to audit for AI search or answer engines, check visibility in Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, or Bing Copilot, verify the AI-bot crawler allowlist, or check E-E-A-T, llms.txt, JSON-LD citation readiness, passage extractability, and prompt-injection hardening. DO NOT TRIGGER WHEN: the task is traditional organic / SERP ranking SEO (use /digital-marketing:seo-audit), or content tone and voice only (use the content-marketer agent).'
 ---
 

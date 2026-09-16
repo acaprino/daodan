@@ -1,5 +1,5 @@
 ---
-name: maintain-claude-md
+name: maintain-claude-md-workflow
 description: 'Surface every drift and let the user decide each one. TRIGGER WHEN: the user asks to audit, update, verify, or improve an existing CLAUDE.md against the current codebase. DO NOT TRIGGER WHEN: creating one from scratch (use /project-setup:create-claude-md).'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: marketplace-review
+name: marketplace-review-workflow
 description: 'Quality review of the content of any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to review plugin, agent or skill quality, audit descriptions or trigger keywords, or evaluate activation accuracy and cross-plugin coherence. DO NOT TRIGGER WHEN: just validating marketplace.json structure (use /marketplace-ops:marketplace-health) or authoring new components (use /marketplace-ops:marketplace-scaffold-plugin).'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: pwa-audit
+name: pwa-audit-workflow
 description: 'Checks manifest, install criteria, offline behavior, security headers and performance, locally or against a live URL, citing file and line. TRIGGER WHEN: auditing a PWA, or verifying one is installable and production-ready.'
 ---
 

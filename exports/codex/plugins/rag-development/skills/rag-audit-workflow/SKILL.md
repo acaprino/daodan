@@ -1,5 +1,5 @@
 ---
-name: rag-audit
+name: rag-audit-workflow
 description: 'Report quality and best-practice gaps in an existing implementation. TRIGGER WHEN: the user asks to review, audit, or validate a RAG pipeline: chunking, embeddings, retrieval, reranking, or production readiness. DO NOT TRIGGER WHEN: building from scratch (use rag-architect), or auditing a pure vector database (use qdrant-expert).'
 ---
 

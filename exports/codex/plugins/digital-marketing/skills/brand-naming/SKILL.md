@@ -11,28 +11,30 @@ description: >
 
 You are a world-class Brand Naming Strategist. Your goal is to ideate, filter, and validate brand names following a rigorous analytical process.
 
-**CRITICAL: Execute ALL steps yourself in this conversation. Do NOT spawn agents or delegate steps to subagents. Every step (including generation, filtering, domain checks, and scoring) runs inline here. The Agent tool must NOT be used to call this skill or any part of it.**
+**CRITICAL: Execute ALL steps yourself in this conversation. Do NOT delegate any step to a subagent, worker, or separate context. Every step (including generation, filtering, domain checks, and scoring) runs inline here. Never call this skill, or any part of it, through a delegation mechanism.**
 
-## BEFORE ANYTHING ELSE: Project Context Scan
+## BEFORE ANYTHING ELSE: Decide Where the Brief Comes From
 
-**YOUR VERY FIRST ACTION must be scanning the project using Read/Glob/Grep tools. Do NOT output ANY text before completing this scan.** No exceptions. No greetings. No questionnaire. SCAN FIRST, TALK SECOND.
+The brief has six fields (listed in Step 1). Where they come from depends on what the user gave you, and the check is made before any output. No greetings, no generic questionnaire in either branch.
 
-**WRONG (never do this):**
+**Branch A: the user's message already carries the brief.** If the invocation text or the conversation supplies four or more of the six fields (the workflow's own examples do: industry, target, values, constraints), take the brief from there. Do **not** scan the working directory: the user may have invoked this from any project, and a brief inferred from an unrelated repository would be merged into the real one. Present the brief you extracted for confirmation and go to Step 1.
+
+**Branch B: the brief is thin or the user names a project.** If fewer than four fields are given, or the user refers to "this project", "my app", or a product name, scan the project before writing anything. Read files first, then present what you found.
+
+**WRONG (never do this in either branch):**
 > Welcome to Brand Naming! I need a brief to get started. What are you naming?
 > Please share: - What it is ... - Industry/category ... - Target audience ...
 
-**RIGHT:** Silently read project files first, then present what you found.
+### Scan procedure for Branch B (execute silently before any output):
 
-### Scan procedure (execute silently before any output):
-
-1. **Read project files** using Read/Glob -- do NOT skip this step:
+1. **Read project files** with the file reading and search tools -- do NOT skip this step:
    - README.md, CLAUDE.md, package.json, pyproject.toml, Cargo.toml, manifest files
    - Landing pages, marketing copy, taglines, app descriptions in the codebase
    - Any docs/ directory, pitch decks, product specs, .planning/ directory
    - Project structure, tech stack, and existing branding assets
    - Also check the user's message and conversation history for context about what they're naming
 
-2. **If the user mentioned a product/project name**, search for it in the codebase (Grep the name) and in project docs to understand what it is before responding.
+2. **If the user mentioned a product/project name**, search for it in the codebase and in project docs to understand what it is before responding.
 
 3. **Present a pre-filled brief** showing what you inferred -- never a blank questionnaire:
    > **Inferred brief** (confirm or adjust):
@@ -53,7 +55,7 @@ Execute these steps in order:
 
 ### Step 1: Brief Analysis
 
-Using the project context you already scanned above, extract or confirm these **brief fields**:
+Using the brief you extracted or scanned above, extract or confirm these **brief fields**:
 - Industry/sector and competitive landscape
 - Target audience (demographics, psychographics)
 - Core values and emotions to convey
@@ -113,20 +115,24 @@ For each name, output:
 
 From the 12-15 candidates, filter down to the best 8-10 by checking:
 - Pronunciation ease in all target languages
-- No negative/offensive meanings in the target languages (default: English, Italian, Spanish, French, German, Portuguese, plus Chinese and Japanese; if the user passed `--languages`, check exactly that list)
+- No negative/offensive meanings in the target languages: the brief's language list, which defaults to English, Italian, Spanish, French, German and Portuguese, the same six the workflow's `--languages` default names. If the user passed `--languages`, check exactly that list. When the brief says global or names an Asian market, add Chinese and Japanese and say so in the brief.
 - No unfortunate phonetic associations (sounds like profanity, disease, etc.)
 - **Phonosymbolism alignment** - Does the sound match the brand personality? Use the Phonosymbolism Quick Reference below. Reject names whose sound contradicts the intended brand feel.
 - No excessive similarity to existing major brands
 
 ### Step 3b: Quick Domain Gate
 
-Before full analysis, run a rapid viability check on each of the 8-10 filtered candidates:
+Before full analysis, run one registration check on all 8-10 filtered candidates at once. This is the only place `.com` registration is established; Steps 4 and 6a reuse the result rather than checking again.
 
-- For each name, WebSearch for `"name.com"` and `"name" app`
-- If .com is owned by an established company (Fortune 500, funded startup, active SaaS), **silently discard** the name
-- Generate a replacement name using the 4 Strategic Directions and re-filter it
-- Only names that pass this quick gate proceed to the full Step 4-6 analysis
-- Goal: eliminate obviously blocked names before spending search calls on deep analysis
+- Run the domain checker script (see Domain Checker Script below) with every candidate in one invocation, over the target TLD set: `.com`, `.app`, `.io`, `.co` by default, or exactly the user's `--tlds` list when they passed one. Keep the output; it is the registration table Steps 4 and 6a read from.
+- A name is **blocked** when every requested TLD is `TAKEN`. A name whose requested TLDs are all `UNKNOWN` is not blocked: retry it once, and if it is still unknown carry it forward flagged for registrar verification.
+- For a blocked name, one web search for `"name" app` or `"name" company` settles whether the holder is an established business. If it is, drop the name; if the domains are parked or dormant, carry the name forward with a note, because Step 6a decides what a taken-but-inactive domain costs.
+- **Never discard silently.** List every dropped name with the one-line reason (which TLDs were taken and by whom), so the user can overrule a drop.
+- Generate a replacement for each dropped name using the 4 Strategic Directions and re-filter it, then run the script on the replacements
+- Only names that pass this gate proceed to the full Step 4-6 analysis
+- Goal: settle the cheap mechanical fact once, with the reliable tool, before spending web searches on deep analysis
+
+If the script cannot run, fall back to one web search per name for `"name.com"` and apply the same rules, saying in the report that registration was inferred from search results rather than from the registry.
 
 ### Step 3c: Phonotactic Refinement
 
@@ -144,10 +150,9 @@ This is where the morphological toolkit (see Refinement Toolkit below) is genuin
 
 > **Tip:** For deep registrar price comparison, promo code hunting, and purchase guidance on your final picks, use the `digital-marketing:domain-hunter` skill.
 
-For the top 8-10 names that passed the Quick Domain Gate, verify:
-- Domain availability across the target TLDs, using the domain checker script (see Domain Checker Script below) or WebSearch as a fallback
-- TLD set: `.com`, `.app`, `.io`, `.co` by default. If the user passed `--tlds`, use exactly that list and pass it through to the script's `--tlds` flag
-- Social media handle availability on major platforms (search via web)
+For the top 8-10 names that passed the Quick Domain Gate:
+- Take domain availability per TLD from the Step 3b registration table. Do not run the script again; re-run it only for a replacement name generated after the gate, or for a TLD still `UNKNOWN` after the retry.
+- Check social media handle availability on major platforms with a web search per name.
 
 Report findings in a table with one column per checked TLD, in the order they were requested:
 ```
@@ -156,23 +161,39 @@ Report findings in a table with one column per checked TLD, in the order they we
 
 ### Step 5: Trademark Pre-screening
 
-For each remaining candidate:
-- Search EUIPO (TMview), USPTO (TESS), WIPO Global Brand Database via WebSearch
-- Flag exact matches or confusingly similar marks in the same Nice class
-- Rate risk: LOW (no matches) / MEDIUM (similar in different class) / HIGH (conflict in same class)
+The three registers to query are EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs are in `references/naming-frameworks.md`. All three are JavaScript applications whose records a web search engine does not index, so **a web search for the name never queries a register**, and a LOW rating built on one is unearned.
+
+Query them through a real browser with the `playwright-skill` plugin, a declared dependency of this plugin. For each remaining candidate, on each register: open the search page, enter the exact name, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in.
+
+If the browser tools are unavailable, stop and tell the user:
+
+```
+Missing required plugin: playwright-skill
+
+Trademark pre-screening queries EUIPO TMview, USPTO Trademark Search and the
+WIPO Global Brand Database, which cannot be searched from a search engine.
+
+playwright-skill is a declared dependency of digital-marketing, distributed
+by its own upstream marketplace. Install it with:
+  claude plugin marketplace add lackeyjb/playwright-skill
+  claude plugin install playwright-skill@playwright-skill
+```
+
+Without the browser, do not rate trademark risk at all. Report the step as **NOT SCREENED** for every candidate, score the Trademark Risk criterion in Step 7 at the midpoint, and say so in the Step 8 summary, so no reader takes an unrun check for a clean one.
+
+Rate risk when the registers were queried: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
 
 ### Step 6: Market Saturation Analysis (Fail-Fast)
 
-For each candidate, perform a fail-fast market saturation check using WebSearch. Run checks in order - if a name fails an early gate, skip remaining checks and discard:
+For each candidate, perform a fail-fast market saturation check with web searches. Run checks in order - if a name fails an early gate, skip remaining checks and discard, listing the name and the reason:
 
 **6a. Domain activity check (GATE - run first)**
-- If .com is registered, visit it (WebFetch or WebSearch `site:name.com`) to determine if it's an active business, parked domain, or dead page
-- Check alternative TLDs too (.app, .io, .co) for active competitors
+- Registration is already known from the Step 3b table; do not check it again. For each requested TLD marked `TAKEN`, fetch the page (or search `site:name.tld`) to determine whether it is an active business, a parked domain, or a dead page
 - Rate: ACTIVE BUSINESS (red flag) / PARKED (moderate risk) / AVAILABLE (clear)
 - **If ACTIVE BUSINESS in same sector: discard immediately, generate replacement, skip remaining checks**
 
 **6b. App store saturation (only if 6a passed)**
-- Search "name" on Google Play Store and Apple App Store (via WebSearch: `"name" site:play.google.com`, `"name" site:apps.apple.com`)
+- Search "name" on Google Play Store and Apple App Store (web searches `"name" site:play.google.com` and `"name" site:apps.apple.com`)
 - Count apps with identical or very similar names in the same category
 - Rate: SATURATED (3+ same-category matches) / MODERATE (1-2 matches) / CLEAR (no matches)
 
@@ -188,7 +209,7 @@ For each candidate, perform a fail-fast market saturation check using WebSearch.
 
 **6e. Industry-specific saturation (only if 6a passed)**
 - Search `"name" + industry keywords` to find competitors using similar names
-- Check Product Hunt, Crunchbase, AngelList for startups with that name (via WebSearch)
+- Check Product Hunt, Crunchbase, AngelList for startups with that name (via web search)
 - Look for same-name businesses in adjacent sectors that could cause confusion
 
 Present saturation findings in a summary table:
@@ -283,7 +304,7 @@ See `references/naming-frameworks.md` for the Name Archetypes table, the full Ev
 
 ## Domain Checker Script
 
-Use the domain checker script (located in domain-hunter) for bulk availability checks:
+Use the domain checker script (located in domain-hunter) for the Step 3b registration table, passing every candidate in one invocation:
 
 ```bash
 python "<plugin-root>/skills/domain-hunter/scripts/domain_checker.py" name1 name2 --tlds .com,.io
@@ -291,7 +312,7 @@ python "<plugin-root>/skills/domain-hunter/scripts/domain_checker.py" name1 name
 
 The script checks availability via RDAP. No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass the user's `--tlds` list through when they supplied one. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free, so retry those or verify them at a registrar.
 
-If the script cannot run, fall back to WebSearch queries or check registrar sites manually.
+If the script cannot run, fall back to web searches or check registrar sites manually, and say in the report that registration was inferred rather than read from the registry.
 
 ## Related Skills
 

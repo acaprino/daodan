@@ -19,7 +19,7 @@ Five criteria for an effective name:
 
 ## NameRobot Weighted Scoring
 
-Recommended weight distribution:
+Source material only. The weights this skill applies are the Step 7 table in SKILL.md, which adds Market Saturation, SEO Potential, Domain Availability and Trademark Risk as separate criteria and rebalances the rest to make room; where the two disagree, Step 7 governs. NameRobot's published distribution, for reference:
 - Simplicity/Memorability: 20%
 - Uniqueness: 20%
 - Relevance: 15%
@@ -186,6 +186,8 @@ Fuse morphemes from different languages where both parts carry relevant meaning.
 ## Trademark Resources
 
 - **EUIPO TMview**: https://www.tmdn.org/tmview/
-- **USPTO TESS**: https://tmsearch.uspto.gov/
+- **USPTO Trademark Search**: https://tmsearch.uspto.gov/ (replaced TESS, retired 2023-11-30; old TESS links redirect here)
 - **WIPO Global Brand Database**: https://branddb.wipo.int/
 - **Nice Classification**: 45 classes of goods/services for trademark registration
+
+All three registers are JavaScript applications. A search engine does not index their records, so they are queried in a browser, never through a web search for the name.

@@ -1,5 +1,5 @@
 ---
-name: team-review
+name: team-review-workflow
 description: 'Six-phase pipeline. Builds X-ray and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.'
 ---
 

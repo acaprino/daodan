@@ -167,7 +167,11 @@ class HostRenderingTests(unittest.TestCase):
     def test_codex_flat_workflow_has_skill_frontmatter(self):
         text = _read(self.package("codex", "codebase-xray") / "skills/analyze-workflow/SKILL.md")
         meta = _frontmatter(text)
-        self.assertEqual(meta["name"], "analyze")
+        # Codex registers skills by frontmatter name, so the name carries the
+        # directory suffix: `codebase-xray` also ships a skill, and a plugin
+        # with a skill and a workflow of one name (digital-marketing's
+        # brand-naming) would otherwise register two skills under it.
+        self.assertEqual(meta["name"], "analyze-workflow")
         self.assertIn("description", meta)
         self.assertNotIn("argument-hint", meta)
         self.assertIn("Arguments: `<target path>", text)

@@ -1,5 +1,5 @@
 ---
-name: map-codebase
+name: map-codebase-workflow
 description: 'Writes 10 documents with Mermaid diagrams and an INDEX.md entry point into .codebase-map/. TRIGGER WHEN: the user asks to onboard to an unfamiliar project, generate a codebase tour, or produce a full narrative guide for new contributors. DO NOT TRIGGER WHEN: the user wants structured AST/dependency analysis (use /codebase-xray:analyze) or just API docs (use /codebase-mapper:docs-create).'
 ---
 

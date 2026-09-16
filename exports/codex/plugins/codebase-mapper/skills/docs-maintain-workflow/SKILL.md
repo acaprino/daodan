@@ -1,5 +1,5 @@
 ---
-name: docs-maintain
+name: docs-maintain-workflow
 description: 'Checks shipped documentation against the code and plans the fixes. TRIGGER WHEN: the user asks to audit, update, or verify existing technical docs against the current codebase, or to detect documentation drift on any of the 20 dimensions (endpoints removed but still documented, env vars renamed, schema fields added/dropped, dependencies upgraded, alerts removed, etc.). DO NOT TRIGGER WHEN: creating new docs from scratch (use /codebase-mapper:docs-create) or humanizing prose style (use /codebase-mapper:humanize-docs).'
 ---
 

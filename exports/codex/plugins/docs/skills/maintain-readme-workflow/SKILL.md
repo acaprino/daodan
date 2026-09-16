@@ -1,5 +1,5 @@
 ---
-name: maintain-readme
+name: maintain-readme-workflow
 description: 'Verify every claim, path, count, and badge against the codebase before changing anything. TRIGGER WHEN: the user asks to audit, update, or improve an existing README.md: fix stale stats/links, reorganize sections, or apply readme-craft best practices. DO NOT TRIGGER WHEN: creating a new README (use the docs:readme-craft skill), or non-README docs (use /codebase-mapper:docs-maintain).'
 ---
 

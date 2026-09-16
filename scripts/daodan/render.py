@@ -19,7 +19,7 @@ import tomllib
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 from .adapter import HostAdapter, resolve_support, select_coordination
 from .catalogs import OWNER
@@ -342,13 +342,27 @@ def _mcp_rendering(
     raise RenderError(f"{adapter.host}: no MCP server strategy for {plugin.name} ({strategy})")
 
 
-def _flat_workflow(source: Path, workflow: str, adapter: HostAdapter) -> tuple[str, str | None]:
+def _workflow_name(workflow: str, adapter: HostAdapter, context: Mapping[str, str]) -> str:
+    """The name a host registers a workflow under.
+
+    Defaults to the kernel name. A host that renders workflows into the same
+    namespace as skills (Codex does) sets `workflow_name` in its layout so the
+    registered name carries the same suffix as the directory it lands in;
+    otherwise a skill and a workflow that share a kernel name collide by name
+    even though they no longer collide on disk.
+    """
+    template = adapter.layout.get("workflow_name", "${workflow}")
+    return render_template(template, {**context, "workflow": workflow})
+
+
+def _flat_workflow(source: Path, name: str, adapter: HostAdapter) -> tuple[str, str | None]:
     """Render a workflow that does not fan out: the body as it is, under host frontmatter.
 
     Claude commands carry `description` and `argument-hint`; a Codex skill wants
     `name` and `description`, and a Copilot prompt wants all three. The layout's
     `workflow_frontmatter` lists what the host reads, in order. Without it the
-    kernel file is copied verbatim, which is what Claude gets.
+    kernel file is copied verbatim, which is what Claude gets. `name` is the
+    host-registered name from `_workflow_name`, not necessarily the kernel's.
     """
     text = source.read_text(encoding="utf-8")
     meta, body = _frontmatter(text)
@@ -359,7 +373,7 @@ def _flat_workflow(source: Path, workflow: str, adapter: HostAdapter) -> tuple[s
     lines = ["---"]
     for key in (item.strip() for item in keys.split(",") if item.strip()):
         if key == "name":
-            lines.append(f"name: {workflow}")
+            lines.append(f"name: {name}")
         elif key == "description":
             lines.append(f"description: '{_one_line(meta.get('description', ''))}'")
         elif key == "argument-hint":
@@ -608,7 +622,7 @@ def render_plugin(
                     target, render_template(team_template, harness), adapter, hint, mcp_notes
                 )
             else:
-                rendered, hint = _flat_workflow(source, workflow.name, adapter)
+                rendered, hint = _flat_workflow(source, harness["workflow_name"], adapter)
                 _write_markdown(target, rendered, adapter, hint, mcp_notes)
             coordinator_template = _template(
                 adapters_root, adapter.host, adapter.layout.get("coordinator_template")
@@ -625,7 +639,8 @@ def render_plugin(
                     mcp_notes,
                 )
         else:
-            rendered, hint = _flat_workflow(source, workflow.name, adapter)
+            name = _workflow_name(workflow.name, adapter, context)
+            rendered, hint = _flat_workflow(source, name, adapter)
             _write_markdown(target, rendered, adapter, hint, mcp_notes)
         for schema in workflow.contract.schemas:
             _copy(plugin.root / schema, staging_root / schema)
@@ -721,6 +736,7 @@ def _harness_context(
     return {
         **context,
         "workflow": workflow.name,
+        "workflow_name": _workflow_name(workflow.name, adapter, context),
         "description": _one_line(meta.get("description", plugin.description)),
         "strategy": strategy.name,
         "role_delivery": strategy.role_delivery,

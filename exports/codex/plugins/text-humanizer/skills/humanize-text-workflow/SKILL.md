@@ -1,5 +1,5 @@
 ---
-name: humanize-text
+name: humanize-text-workflow
 description: 'Detect the 24 catalogued patterns and edit them out, then self-score the result. TRIGGER WHEN: the user asks to humanize prose/text, remove AI-sounding copy, or rewrite articles/blog posts/documentation for natural voice. DO NOT TRIGGER WHEN: cleaning up source code (use /clean-code:clean-code) or translating text.'
 ---
 

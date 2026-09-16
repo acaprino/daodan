@@ -1,5 +1,5 @@
 ---
-name: humanize-docs
+name: humanize-docs-workflow
 description: 'Edits documentation in place for a human reader. TRIGGER WHEN: the user asks to humanize existing docs, improve scannability, or rewrite dense technical writing for progressive disclosure. DO NOT TRIGGER WHEN: humanizing prose/articles (use /text-humanizer:humanize-text) or creating new docs (use /codebase-mapper:docs-create).'
 ---
 

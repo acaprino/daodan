@@ -1,5 +1,5 @@
 ---
-name: team-codebase-map
+name: team-codebase-map-workflow
 description: 'Multi-agent variant of /codebase-mapper:map-codebase: one explorer, 6 writers at once, then a review pass producing INDEX.md. TRIGGER WHEN: the user wants a codebase guide built by parallel writers, typically on a large project.'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: otel-audit
+name: otel-audit-workflow
 description: 'Report on an existing Python deployment: what is broken, where, and the fix. TRIGGER WHEN: the user asks to review, audit, or validate OTel instrumentation: span hygiene, context propagation, exporter config, sampling, async handling, attribute budgets, or AWS X-Ray / ADOT setup. DO NOT TRIGGER WHEN: building new instrumentation from scratch (use the otel-architect agent), or non-OTel observability (Datadog APM, Sentry).'
 ---
 

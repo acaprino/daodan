@@ -1,5 +1,5 @@
 ---
-name: ga4-audit
+name: ga4-audit-workflow
 description: 'Inspects a live deployment in the browser to see what really fires. TRIGGER WHEN: the user asks to audit GA4, verify GTM setup, check Consent Mode v2 compliance, debug missing conversions, validate dataLayer events, or check "why isnt my site converting". DO NOT TRIGGER WHEN: the task is general SEO (use /digital-marketing:seo-audit), or content and CTA optimization (use /digital-marketing:content-strategy).'
 ---
 

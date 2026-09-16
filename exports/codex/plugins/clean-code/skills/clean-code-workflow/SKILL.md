@@ -1,5 +1,5 @@
 ---
-name: clean-code
+name: clean-code-workflow
 description: 'Readability-only rewrite of existing source. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, or make code more maintainable without changing behavior. DO NOT TRIGGER WHEN: the target is prose or text (use /text-humanizer:humanize-text), or deep architectural refactoring (use /python-development:python-refactor).'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: xterm-debug
+name: xterm-debug-workflow
 description: 'Scan for known pitfalls, then analyze the architecture for race conditions and fragile assumptions. TRIGGER WHEN: the user reports a bug or asks to audit an existing xterm.js integration (render glitches, key handling, resize, PTY issues, addon conflicts). DO NOT TRIGGER WHEN: implementing a new feature (use /xterm:xterm-implement).'
 ---
 

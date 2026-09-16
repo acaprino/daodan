@@ -1,5 +1,5 @@
 ---
-name: prompt-optimize
+name: prompt-optimize-workflow
 description: 'Present the efficiency-versus-effectiveness frontier as labelled variants and let the user pick. TRIGGER WHEN: the user wants to review or optimize a prompt, system message, or agent instructions for clarity/tokens/reliability.'
 ---
 

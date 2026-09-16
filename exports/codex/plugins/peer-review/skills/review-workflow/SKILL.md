@@ -1,5 +1,5 @@
 ---
-name: review
+name: review-workflow
 description: 'Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the sessions context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the sessions own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session.'
 ---
 

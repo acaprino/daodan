@@ -1,5 +1,5 @@
 ---
-name: seo-audit
+name: seo-audit-workflow
 description: 'Diagnoses why a page underperforms in traditional Google and Bing results. TRIGGER WHEN: the user asks for a technical SEO audit, Core Web Vitals check, sitemap, redirect, or crawlability review, structured data or meta tags, mobile usability, or SERP ranking analysis. DO NOT TRIGGER WHEN: the goal is being cited by AI answer engines (use /digital-marketing:llm-seo-audit), conversion, CTA, or copy quality (use /digital-marketing:content-strategy), or GA4 tracking (use ga4-implementation-expert).'
 ---
 

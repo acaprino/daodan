@@ -1,5 +1,5 @@
 ---
-name: docs-create
+name: docs-create-workflow
 description: 'Documents a project from its source, on one dimension or many. TRIGGER WHEN: the user asks to create technical documentation, API docs, architecture guides, data model / schema docs, data flow / pipeline docs, dependency maps, or any new documentation for a codebase. DO NOT TRIGGER WHEN: the user wants to audit existing docs (use /codebase-mapper:docs-maintain) or just a README (use /docs:maintain-readme) or a full multi-document project guide (use /codebase-mapper:map-codebase).'
 ---
 

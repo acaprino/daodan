@@ -1,5 +1,5 @@
 ---
-name: ibkr-audit
+name: ibkr-audit-workflow
 description: 'Report reliability and production-readiness defects, plus the venue assumptions nobody checked. TRIGGER WHEN: the user asks to review, audit, or validate an IB or TWS trading system: contracts, orders, brackets, pacing, error handling, reconnection, deployment. DO NOT TRIGGER WHEN: building from scratch (use ibkr-architect), answering a single behaviour question (use /trading-broker-integration:ibkr-verify), or MetaTrader 5 (use /trading-broker-integration:mt5-audit).'
 ---
 

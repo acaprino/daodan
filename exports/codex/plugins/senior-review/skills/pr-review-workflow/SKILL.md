@@ -1,5 +1,5 @@
 ---
-name: pr-review
+name: pr-review-workflow
 description: 'Generates a risk assessment, a review checklist, and a lite dead-code and VCS-hygiene pass over the diff, then submits it via gh with --create. TRIGGER WHEN: the user asks to prepare a PR, write a PR description, or open a pull request from the current branch. DO NOT TRIGGER WHEN: reviewing someone elses PR (use /senior-review:code-review with the PR number).'
 ---
 
