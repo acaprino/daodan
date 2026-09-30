@@ -198,6 +198,7 @@ flowchart TD
     grabber[grabber-development]
     digitalmarketing[digital-marketing]
     business[business]
+    research[research]
     codebasemapper[codebase-mapper]
     seniorreview[senior-review]
     deepdive[codebase-xray]
@@ -230,6 +231,7 @@ flowchart TD
     digitalmarketing --> playwright
     digitalmarketing --> texthumanizer
     business --> texthumanizer
+    business --> research
     codebasemapper --> texthumanizer
     codebasemapper --> agentteams
     codebasemapper --> deepdive
@@ -253,7 +255,7 @@ flowchart TD
     frontendreview --> platformeng
 ```
 
-Every arrow is a hard dependency. As of marketplace 21.3.0 there are no optional edges at all: a dependency on a plugin inside this marketplace is always mandatory, so installing one plugin installs everything it needs and no capability can silently go missing. The graph is rooted at `codebase-xray`, the plugin that works out how a codebase actually behaves: `senior-review` (review), `codebase-mapper` (documentation), and `abstraction-architect` all build on top of it, and it depends on nothing of ours. That shape is deliberate as of marketplace 16.0.0, when the shared interconnect mapper moved into `codebase-xray` and removed the last near-cycle. `senior-review`'s seven edges are `codebase-xray` plus six review dimensions: `repo-hygiene`'s workspace auditor always runs, and the other five run or are skipped on whether the change shows their signal, never on whether a plugin is present. `text-humanizer` is a pure leaf: zero dependencies, three dependents. `frontend-review` sits outside that tree: its three external arrows are hard dependencies on design plugins from other marketplaces, which the user installs by hand, so it does not join the `codebase-xray` root; its four local arrows back the auto-detected code dimensions. `research` depends on nothing at all, deliberately: it researches the web and nothing else. `peer-review` sits outside the tree the same way `ai-tooling` does: its one arrow is a hard dependency on external `superpowers`, and nothing of ours depends on it.
+Every arrow is a hard dependency. As of marketplace 21.3.0 there are no optional edges at all: a dependency on a plugin inside this marketplace is always mandatory, so installing one plugin installs everything it needs and no capability can silently go missing. The graph is rooted at `codebase-xray`, the plugin that works out how a codebase actually behaves: `senior-review` (review), `codebase-mapper` (documentation), and `abstraction-architect` all build on top of it, and it depends on nothing of ours. That shape is deliberate as of marketplace 16.0.0, when the shared interconnect mapper moved into `codebase-xray` and removed the last near-cycle. `senior-review`'s seven edges are `codebase-xray` plus six review dimensions: `repo-hygiene`'s workspace auditor always runs, and the other five run or are skipped on whether the change shows their signal, never on whether a plugin is present. `text-humanizer` is a pure leaf: zero dependencies, three dependents. `frontend-review` sits outside that tree: its three external arrows are hard dependencies on design plugins from other marketplaces, which the user installs by hand, so it does not join the `codebase-xray` root; its four local arrows back the auto-detected code dimensions. `research` depends on nothing at all, deliberately: it researches the web and nothing else, and `business` depends on it for the market research its planner delegates. `peer-review` sits outside the tree the same way `ai-tooling` does: its one arrow is a hard dependency on external `superpowers`, and nothing of ours depends on it.
 
 ### Frontend and design
 

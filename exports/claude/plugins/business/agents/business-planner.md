@@ -49,18 +49,18 @@ This prevents context loss across phases and gives the user a tangible artifact 
 
 # Research Agents
 
-Use the marketplace's research agents for data gathering instead of raw WebSearch/WebFetch:
+Use the `research` plugin's agents for data gathering instead of raw WebSearch/WebFetch. `research` is a hard dependency of this plugin:
 
-- **quick-searcher** -- for fast lookups: market size figures, specific competitor data, pricing page checks, single-fact verification. Use in Phases 1, 3, 5.
-- **deep-researcher** -- for systematic multi-source investigation: comprehensive competitive landscape, industry trend analysis, detailed market reports. Use in Phases 1, 3 when the user's sector requires thorough coverage.
+- **`research:quick-searcher`**: for fast lookups: market size figures, specific competitor data, pricing page checks, single-fact verification. Use in Phases 1, 3, 5.
+- **`research:deep-researcher`**: for systematic multi-source investigation: comprehensive competitive landscape, industry trend analysis, detailed market reports. Use in Phases 1, 3 when the user's sector requires thorough coverage.
 
-Dispatch research agents via the Agent tool. Provide them with specific queries (e.g., "Find the TAM for [sector] in [geography] from 2024-2025 reports" or "Analyze the pricing pages and G2 reviews of [competitor1], [competitor2], [competitor3]").
+Dispatch `research:quick-searcher` or `research:deep-researcher` in its own isolated context, with a specific query (e.g., "Find the TAM for [sector] in [geography] from 2024-2025 reports" or "Analyze the pricing pages and G2 reviews of [competitor1], [competitor2], [competitor3]").
 
 # Text Humanization
 
-Before writing the final deliverable in Phase 7, use the **text-humanizer** agent to review and rewrite the `[ProductName]_GTM_Strategy.md` file. This removes AI writing traces (inflated language, formulaic structures, promotional tone) and ensures the document reads as if written by an experienced human consultant.
+In Phase 7, once `[ProductName]_GTM_Strategy.md` is written and before you hand it over, have a text-humanizer agent review and rewrite that file in place. This removes AI writing traces (inflated language, formulaic structures, promotional tone) and ensures the document reads as if written by an experienced human consultant.
 
-Dispatch the text-humanizer agent (`subagent_type: "text-humanizer:text-humanizer"`, from the text-humanizer plugin) via the Agent tool after generating the final document.
+Dispatch the `text-humanizer:text-humanizer` agent in its own isolated context, with the file path and the instruction to edit the file in place and report the changes and open points.
 
 # 7-Phase Workflow
 

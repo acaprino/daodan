@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.6.2"
+    "version": "28.6.3"
   },
   "name": "daodan",
   "owner": {
@@ -89,7 +89,8 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "text-humanizer"
+        "text-humanizer",
+        "research"
       ],
       "description": "Legal advisory, compliance document generation, and SaaS business planning - Privacy Policies, Cookie Policies, DPAs, GDPR/ePrivacy/CCPA compliance, contract review, GTM strategy, market sizing, pricing, and positioning",
       "license": "MIT",
@@ -98,7 +99,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/codex/plugins/business",
-      "version": "1.11.0"
+      "version": "1.12.0"
     },
     {
       "author": {

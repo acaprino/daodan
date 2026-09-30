@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-The `text-humanizer` plugin is a hard dependency: `business-planner` runs its agent over the final GTM strategy document.
+Two local plugins are hard dependencies: `text-humanizer`, whose agent `business-planner` runs over the final GTM strategy document, and `research`, whose `quick-searcher` and `deep-researcher` agents do the planner's market, competitor and pricing lookups.
 
 ## Agents
 
