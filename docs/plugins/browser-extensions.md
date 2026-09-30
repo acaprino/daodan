@@ -68,7 +68,7 @@ Scaffold a new Firefox WebExtension with Manifest V3 defaults, web-ext config, A
 /browser-extensions:firefox-scaffold url-shortener --sidebar --options-page
 ```
 
-Arguments: `<extension-name> [--mv V2|V3] [--sidebar] [--content-script] [--options-page]`. The name is required, kebab-case.
+Arguments: `<extension-name> [--mv V2|V3] [--sidebar] [--content-script] [--options-page] [--author NAME] [--id GECKO-ID]`. The name is required, kebab-case.
 
 | Flag | Effect |
 |------|--------|
@@ -76,6 +76,8 @@ Arguments: `<extension-name> [--mv V2|V3] [--sidebar] [--content-script] [--opti
 | `--sidebar` | Include `sidebar_action` and sidebar template |
 | `--content-script` | Include content script template (default: on) |
 | `--options-page` | Include options UI template |
+| `--author NAME` | Manifest `author` (asked for when absent) |
+| `--id GECKO-ID` | `browser_specific_settings.gecko.id` (asked for when absent; AMO requires a unique ID) |
 
 Generates: `manifest.json` with MV3 defaults + `browser_specific_settings.gecko.id`, `src/{background,content,popup,options,sidebar}/`, `web-ext-config.js`, `package.json` with web-ext scripts, icons directory, `.gitignore`, README with first-run instructions.
 

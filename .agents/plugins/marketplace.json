@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.7.0"
+    "version": "28.7.1"
   },
   "name": "daodan",
   "owner": {
@@ -30,7 +30,7 @@
         "./skills/audit-workflow"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -48,7 +48,7 @@
         "./skills/prompt-optimize-workflow"
       ],
       "source": "./exports/codex/plugins/ai-tooling",
-      "version": "5.4.1"
+      "version": "5.4.2"
     },
     {
       "author": {
@@ -71,7 +71,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Expert Firefox extension (WebExtension) developer covering Manifest V2/V3, all 51 browser.* APIs, content scripts, background scripts, native messaging, cross-browser compatibility, AMO publishing, web-ext CLI tooling, project scaffolding, and live MDN documentation lookup; includes /firefox-scaffold, /firefox-lint, /firefox-publish commands",
+      "description": "Expert Firefox extension (WebExtension) developer covering Manifest V2/V3, all 51 browser.* APIs, content scripts, background scripts, native messaging, cross-browser compatibility, AMO publishing, web-ext CLI tooling, project scaffolding, and live MDN documentation lookup; includes /browser-extensions:firefox-scaffold, /browser-extensions:firefox-lint, /browser-extensions:firefox-publish commands",
       "license": "MIT",
       "name": "browser-extensions",
       "skills": [
@@ -81,7 +81,7 @@
         "./skills/firefox-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/browser-extensions",
-      "version": "1.8.0"
+      "version": "1.8.1"
     },
     {
       "author": {
@@ -136,7 +136,7 @@
         "./skills/team-codebase-map-workflow"
       ],
       "source": "./exports/codex/plugins/codebase-mapper",
-      "version": "3.1.0"
+      "version": "3.1.1"
     },
     {
       "author": {
@@ -188,7 +188,7 @@
         "playwright@claude-plugins-official",
         "text-humanizer"
       ],
-      "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot) - technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /ga4-audit Playwright-powered verification, and /llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
+      "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot): technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /digital-marketing:ga4-audit Playwright-powered verification, and /digital-marketing:llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
       "license": "MIT",
       "name": "digital-marketing",
       "skills": [
@@ -204,7 +204,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "author": {
@@ -233,7 +233,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/codex/plugins/docs",
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "author": {
@@ -255,7 +255,7 @@
         "./skills/review-frontend-workflow"
       ],
       "source": "./exports/codex/plugins/frontend-review",
-      "version": "2.1.1"
+      "version": "2.1.2"
     },
     {
       "author": {
@@ -303,7 +303,7 @@
         "./skills/markmind-exporter"
       ],
       "source": "./exports/codex/plugins/learning",
-      "version": "1.7.0"
+      "version": "1.7.1"
     },
     {
       "author": {
@@ -367,14 +367,14 @@
         "./skills/obsidian-scaffold"
       ],
       "source": "./exports/codex/plugins/obsidian-development",
-      "version": "1.5.0"
+      "version": "1.5.1"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "OpenTelemetry Python instrumentation - distributed tracing, async context propagation, custom transport propagators, OTLP exporters, AWS ADOT/X-Ray, and production observability; includes /otel-audit command",
+      "description": "OpenTelemetry Python instrumentation: distributed tracing, async context propagation, custom transport propagators, OTLP exporters, AWS ADOT/X-Ray, and production observability; includes /opentelemetry:otel-audit command",
       "license": "MIT",
       "name": "opentelemetry",
       "skills": [
@@ -382,7 +382,7 @@
         "./skills/otel-audit-workflow"
       ],
       "source": "./exports/codex/plugins/opentelemetry",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": {
@@ -399,14 +399,14 @@
         "./skills/review-workflow"
       ],
       "source": "./exports/codex/plugins/peer-review",
-      "version": "2.4.0"
+      "version": "2.4.1"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Cross-platform development rulebook - security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; includes /platform-review standalone command",
+      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; includes /platform-engineering:platform-review standalone command",
       "license": "MIT",
       "name": "platform-engineering",
       "skills": [
@@ -414,14 +414,14 @@
         "./skills/platform-review-workflow"
       ],
       "source": "./exports/codex/plugins/platform-engineering",
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Project configuration and setup tools including CLAUDE.md creation and maintenance with ground truth validation. The maintain flow preserves existing references and information by default - removal requires cross-verification proving the content false or obsolete (else: keep, extract to docs/, or ask the user) - and surfaces every single drift to the user via AskUserQuestion before applying any change (no batch-auto-fix, default on unanswered = leave unchanged). Includes a Phase 4b internal-duplication detection pass: file paths, pointers, and external resources are counted across the document; reference outliers (one path appearing N>1 times while peers appear once), conceptual restatements, and weak-justification duplicates (e.g., 'scannability' for jumping readers) are surfaced as per-drift questions with all N occurrences, peer-group comparison, and concrete merge/keep/cross-reference/extract options. Dedup merges are treated as deletions and require explicit per-item approval. Enforces a hard 40,000-character cap on CLAUDE.md (Claude Code performance warning threshold) by extracting bloated sections to docs/ via thin pointers. The project-structure section is required to document the EVERGREEN shape (top-level layout + repeating structural patterns + role per category), not an exhaustive file-by-file tree; file-by-file annotation is justified only where names alone are ambiguous, where the file is a key entry point, or to disambiguate siblings. Exhaustive file-by-file trees in existing CLAUDE.md files are flagged as Medium consolidation candidates (high decay risk, tokens without evergreen value) and surfaced as per-finding questions (consolidate / extract to docs/ / keep / skip), never collapsed autonomously. Generated CLAUDE.md files always include a canonical Working Principles section with 5 principles (4 inspired by upstream agentic-coding meta-rules: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution; plus the locally authored Centralize Shared Logic for DRY / Single Source of Truth across external calls and cross-cutting concerns). Each of principles 1-4 ships with 3 inline sub-bullets covering the deeper meta-rules (root-cause analysis, evergreen tests, surgical diffs) so the block is self-contained and never linked out. The create/maintain flows auto-detect .codebase-xray/ output and offer to ingest it as the technical-reference backbone. When the project has a test suite, generated CLAUDE.md files also carry a canonical Test-Suite Rules block (7 binding rules condensed from the testing plugin's hygiene knowledge base: search before writing, mirrored placement, explicit layers, behavior over implementation, no skip markers, assertion integrity, delete tests with the feature), offered on create and verified on audit; projects without tests do not get the block.",
+      "description": "Project configuration and setup tools including CLAUDE.md creation and maintenance with ground truth validation. The maintain flow preserves existing references and information by default: removal requires cross-verification proving the content false or obsolete (else: keep, extract to docs/, or ask the user). It surfaces every single drift to the user via AskUserQuestion before applying any change (no batch-auto-fix, default on unanswered = leave unchanged). Includes a Phase 4b internal-duplication detection pass: file paths, pointers, and external resources are counted across the document; reference outliers (one path appearing N>1 times while peers appear once), conceptual restatements, and weak-justification duplicates (e.g., 'scannability' for jumping readers) are surfaced as per-drift questions with all N occurrences, peer-group comparison, and concrete merge/keep/cross-reference/extract options. Dedup merges are treated as deletions and require explicit per-item approval. Enforces a hard 40,000-character cap on CLAUDE.md (Claude Code performance warning threshold) by extracting bloated sections to docs/ via thin pointers. The project-structure section is required to document the EVERGREEN shape (top-level layout + repeating structural patterns + role per category), not an exhaustive file-by-file tree; file-by-file annotation is justified only where names alone are ambiguous, where the file is a key entry point, or to disambiguate siblings. Exhaustive file-by-file trees in existing CLAUDE.md files are flagged as Medium consolidation candidates (high decay risk, tokens without evergreen value) and surfaced as per-finding questions (consolidate / extract to docs/ / keep / skip), never collapsed autonomously. Generated CLAUDE.md files always include a canonical Working Principles section with 5 principles (4 inspired by upstream agentic-coding meta-rules: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution; plus the locally authored Centralize Shared Logic for DRY / Single Source of Truth across external calls and cross-cutting concerns). Each of principles 1-4 ships with 3 inline sub-bullets covering the deeper meta-rules (root-cause analysis, evergreen tests, surgical diffs) so the block is self-contained and never linked out. The create/maintain flows auto-detect .codebase-xray/ output and offer to ingest it as the technical-reference backbone. When the project has a test suite, generated CLAUDE.md files also carry a canonical Test-Suite Rules block (7 binding rules condensed from the testing plugin's hygiene knowledge base: search before writing, mirrored placement, explicit layers, behavior over implementation, no skip markers, assertion integrity, delete tests with the feature), offered on create and verified on audit; projects without tests do not get the block.",
       "license": "MIT",
       "name": "project-setup",
       "skills": [
@@ -429,7 +429,7 @@
         "./skills/maintain-claude-md-workflow"
       ],
       "source": "./exports/codex/plugins/project-setup",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -438,7 +438,7 @@
       "dependencies": [
         "playwright@claude-plugins-official"
       ],
-      "description": "Progressive Web App expert for the 2025-2026 baseline. Covers Web App Manifest (id, display_override, scope_extensions, handle_links, file_handlers, share_target), Service Workers (Workbox 7 / Serwist), Web Push (VAPID, RFC 8030/8291/8292, Declarative Push for Safari 18.4+), install flows (beforeinstallprompt, Window Controls Overlay), OPFS storage, Project Fugu capabilities, Core Web Vitals 2025 (INP < 200ms), security (HTTPS, CSP, COOP/COEP), and distribution (Bubblewrap to Google Play, PWA Builder to Microsoft Store, Capacitor to App Store, PWA Builder to Meta Quest). Includes the pwa-architect agent and three commands: /pwa-audit (hybrid local-code + live-URL via Playwright), /pwa-scaffold (manifest + SW + iOS meta + framework wiring for Vite, Next.js, Angular, Nuxt, vanilla), /pwa-checklist (deterministic production-deploy checklist walk).",
+      "description": "Progressive Web App expert for the 2025-2026 baseline. Covers Web App Manifest (id, display_override, scope_extensions, handle_links, file_handlers, share_target), Service Workers (Workbox 7 / Serwist), Web Push (VAPID, RFC 8030/8291/8292, Declarative Push for Safari 18.4+), install flows (beforeinstallprompt, Window Controls Overlay), OPFS storage, Project Fugu capabilities, Core Web Vitals 2025 (INP < 200ms), security (HTTPS, CSP, COOP/COEP), and distribution (Bubblewrap to Google Play, PWA Builder to Microsoft Store, Capacitor to App Store, PWA Builder to Meta Quest). Includes the pwa-architect agent and three commands: /pwa-expert:pwa-audit (hybrid local-code + live-URL via Playwright), /pwa-expert:pwa-scaffold (manifest + SW + iOS meta + framework wiring for Vite, Next.js, Angular, Nuxt, vanilla), /pwa-expert:pwa-checklist (deterministic production-deploy checklist walk).",
       "license": "MIT",
       "name": "pwa-expert",
       "skills": [
@@ -448,14 +448,14 @@
         "./skills/pwa-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/pwa-expert",
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Python development toolkit - TDD with pytest, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-audit consolidated quality report",
+      "description": "Python development toolkit: TDD with pytest, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report",
       "license": "MIT",
       "name": "python-development",
       "skills": [
@@ -473,7 +473,7 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/codex/plugins/python-development",
-      "version": "1.22.0"
+      "version": "1.22.1"
     },
     {
       "author": {
@@ -548,7 +548,7 @@
         "typescript-development",
         "testing"
       ],
-      "description": "Multi-agent code review orchestration with unified code auditing (architecture, failure flow, pattern analysis, scoring), security auditing, UI race condition detection, distributed flow analysis, platform engineering review, codebase-hygiene auditing (dead code + orphan assets + generated artifacts in VCS + phantom/unused deps + barrel-file and eager-bundle bloat + stale documentation and historical artifacts), a lite dead-code and VCS-hygiene pass in code-review and pr-review plus incremental-phase removal inside the code-review fix loop with commit-per-category and build+test gates, logic-integrity auditing for cross-component contract violations driven by the interconnect map that codebase-xray produces, git blame/history analysis, temporal-resilience auditing (failure-over-time: uncapped retries, silent subsystem death, user-invisible degradation, clock/suspend hazards), data-integrity auditing (persistence semantics: application-only invariants, lost updates, cache/DB divergence), resource-lifecycle auditing (ownership and release across success/error/cancellation), all signal-activated, evidence classes for quantitative claims (measured vs derived) and a user-visible-consequence gate on metric-based closures, a delivery gate (every reviewer delivers or is reported degraded; the work tree is left as found), epistemic independence between the context pipeline and the reviewers that consume it: every finding declares the load-bearing premise it stands on and whether that premise was derived independently or inherited from shared context, a premise auditor derives a second set of claims blind to the X-ray output, the interconnect map carries a per-row status including disputed, consolidation reports agreement inherited from a shared premise as an echo rather than as corroboration, finding validation with false-positive filtering (a 4-lens panel: premise veto gated on provenance and requiring a file:line counterexample, then reachability and refutation, with severity calibration gated on survival), committable PR suggestions, pre-review skip logic, intent-driven review, confidence gating, cross-agent deduplication, pre-existing issue separation, verdict system, interactive fix loop (--fix edits and verifies, --commit adds the commits and gates the bulk cleanup), and signal-activated reviewers for testing quality (test-suite-auditor), TypeScript type safety (type-safety-auditor), API contracts, and data migrations, all backed by hard dependencies so a dimension is skipped only when the change shows no signal for it. Backed by a comprehensive defect taxonomy knowledge base (140+ defect patterns, CWE/OWASP mappings, plus a dedicated logic-integrity reference).",
+      "description": "Multi-agent code review orchestration with unified code auditing (architecture, failure flow, pattern analysis, scoring), security auditing, UI race condition detection, distributed flow analysis, platform engineering review, codebase-hygiene auditing (dead code + orphan assets + phantom/unused deps + barrel-file and eager-bundle bloat + stale documentation and historical artifacts + lifecycle archaeology), with workspace hygiene (generated artifacts tracked in VCS, .gitignore, scratch directories, git auxiliary state) left to repo-hygiene's workspace-auditor dimension, a lite dead-code and VCS-hygiene pass in code-review and pr-review plus incremental-phase removal inside the code-review fix loop with commit-per-category and build+test gates, logic-integrity auditing for cross-component contract violations driven by the interconnect map that codebase-xray produces, git blame/history analysis, temporal-resilience auditing (failure-over-time: uncapped retries, silent subsystem death, user-invisible degradation, clock/suspend hazards), data-integrity auditing (persistence semantics: application-only invariants, lost updates, cache/DB divergence), resource-lifecycle auditing (ownership and release across success/error/cancellation), all signal-activated, evidence classes for quantitative claims (measured vs derived) and a user-visible-consequence gate on metric-based closures, a delivery gate (every reviewer delivers or is reported degraded; the work tree is left as found), epistemic independence between the context pipeline and the reviewers that consume it: every finding declares the load-bearing premise it stands on and whether that premise was derived independently or inherited from shared context, a premise auditor derives a second set of claims blind to the X-ray output, the interconnect map carries a per-row status including disputed, consolidation reports agreement inherited from a shared premise as an echo rather than as corroboration, finding validation with false-positive filtering (a 4-lens panel: premise veto gated on provenance and requiring a file:line counterexample, then reachability and refutation, with severity calibration gated on survival), committable PR suggestions, pre-review skip logic, intent-driven review, confidence gating, cross-agent deduplication, pre-existing issue separation, verdict system, interactive fix loop (--fix edits and verifies, --commit adds the commits and gates the bulk cleanup), and signal-activated reviewers for testing quality (test-suite-auditor), TypeScript type safety (type-safety-auditor), API contracts, and data migrations, all backed by hard dependencies so a dimension is skipped only when the change shows no signal for it. Backed by a comprehensive defect taxonomy knowledge base (140+ defect patterns, CWE/OWASP mappings, plus a dedicated logic-integrity reference).",
       "license": "MIT",
       "name": "senior-review",
       "skills": [
@@ -559,7 +559,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "12.0.1"
+      "version": "12.0.2"
     },
     {
       "author": {
@@ -656,7 +656,7 @@
         "./skills/mt5-audit-workflow"
       ],
       "source": "./exports/codex/plugins/trading-broker-integration",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "author": {

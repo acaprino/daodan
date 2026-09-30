@@ -67,7 +67,7 @@ Orchestrate a multi-dimensional code review as a **6-phase pipeline**:
 1. **Phase 1 -- Context Building**: X-ray analysis (1a) runs in parallel with a blind second derivation of the same premises (1c); the two are joined into `01-knowledge-provenance.md` (1d); an interconnect map is built last (1b), covering contracts, invariants, assumptions, domain rules and integration hot-spots. Output goes to `.team-review/`.
 2. **Phase 2 -- Adversarial Review (parallel)**: specialized reviewers read the context files and hunt for violations within their dimension. Every finding declares the load-bearing premise it stands on and where that premise came from. Each reviewer writes structured findings to `.team-review/findings-<dim>.md`.
 3. **Phase 3 -- Monitor and Collect**: every spawned reviewer delivers findings or an explicit no-findings report before consolidation starts.
-4. **Phase 4 -- Consolidation and Gates**: findings are deduplicated and organized by severity, with agreement weighted by premise provenance; then the verification panel runs (4b, Lens 0's premise veto first) and the completeness critic asks what the review missed (4c).
+4. **Phase 4 (Consolidation)**: findings are deduplicated and organized by severity, with agreement weighted by premise provenance; then the verification panel runs (4b, Lens 0's premise veto first) and the completeness critic asks what the review missed (4c).
 5. **Phase 5 -- Report & Cleanup**.
 
 The pipeline lets reviewers find problems that are invisible from local-only inspection: broken implicit contracts, invariant drift, bypass paths to business rules, non-idempotent retry paths, terminal state mutations. Two derivations run side by side in Phase 1 so that the review has a second observer, rather than one observer consulted N times.
@@ -245,8 +245,9 @@ Pipeline plan:
   Phase 1d: knowledge reconciliation (inline)
   Phase 1b: codebase-xray:semantic-interconnect-mapper
   Phase 2:  {N} reviewers in parallel
-  Phase 3:  consolidation
-  Phase 4:  report
+  Phase 3:  monitor and collect (delivery barrier)
+  Phase 4:  consolidation, verification (4b), completeness critic (4c)
+  Phase 5:  report
 ```
 
 Every reason on the Skipped line is a statement about the code, never about the install: "not fullstack" means the code did not need the dimension. Every agent this command can spawn comes from a plugin `senior-review` declares as a hard dependency, so there is no "plugin not installed" reason and no generic fallback. If a spawn fails with "Agent type not found", stop and report the broken install instead of continuing with a silently reduced review.
@@ -318,7 +319,7 @@ If the workflow fails or produces no output, halt the pipeline and report the er
 
 Spawn immediately when Phase 1a starts. Do not wait for X-ray. The whole point of this phase is that it derives without seeing what X-ray derived.
 
-1. Spawn one teammate with `subagent_type: senior-review:premise-auditor`.
+1. Dispatch the `senior-review:premise-auditor` agent in its own isolated context.
 2. Prompt:
 
    ```
@@ -391,7 +392,7 @@ Mark `phase_1d_reconciliation` complete.
 
 ### Phase 1b: Semantic Interconnect Mapping
 
-1. Spawn a single teammate with `subagent_type: codebase-xray:semantic-interconnect-mapper`.
+1. Dispatch the `codebase-xray:semantic-interconnect-mapper` agent in its own isolated context.
 2. Prompt:
 
    ```
@@ -419,12 +420,12 @@ Mark `phase_1d_reconciliation` complete.
 
 ## Phase 2: Adversarial Review (parallel)
 
-1. The team forms implicitly when the first teammate is spawned (no `TeamCreate` step; the team name is session-derived and any `team_name` passed to the `Agent` tool is ignored).
-2. For each selected dimension (always-on + detected conditional), use `Agent` tool to spawn a teammate using the **most specialized agent**.
+1. There is no team-creation step. The host harness dispatches each reviewer as this phase requires and records every one as `delivered` or `failed`.
+2. For each selected dimension (always-on + detected conditional), dispatch the **most specialized agent** from the table below, each reviewer in its own isolated context.
 
 ### Dimension-to-agent mapping
 
-| Dimension | subagent_type |
+| Dimension | Agent |
 |-----------|---------------|
 | Security | `senior-review:security-auditor` |
 | Architecture (+ failure flows, patterns, scoring) | `senior-review:code-auditor` |
@@ -538,9 +539,9 @@ Two notes on why: a review is diff-anchored, so a whole-suite execution would do
 
 ### The workspace-hygiene dimension
 
-This dimension is not a `senior-review` agent. Spawn one teammate with
-`subagent_type: repo-hygiene:workspace-auditor`, which owns every check the
-filesystem and git decide without reading a symbol.
+This dimension is not a `senior-review` agent. Dispatch the `repo-hygiene:workspace-auditor`
+agent in its own isolated context. It owns every check the filesystem and git
+decide without reading a symbol.
 
 ```
 You are auditing workspace hygiene for a team review of {target}.
@@ -566,24 +567,24 @@ Its perimeter and `cleanup-auditor`'s do not overlap, so Phase 4 consolidation
 has nothing to deduplicate between them. A finding appearing in both reports is
 a boundary violation to investigate, not an `echo` to fold.
 
-### Spawn and task creation
+### Dispatch
 
-- `name`: `{dimension}-reviewer` (e.g., "security-reviewer", "logic-integrity-reviewer")
-- `subagent_type`: from the table above
-- `prompt`: the template above, with `{dimension}` and anchors substituted
+Dispatch each reviewer with:
 
-Use `TaskCreate` for each reviewer:
-- Subject: "Review {target} for {dimension} issues"
-- Description: the same structural prompt
+- name: `{dimension}-reviewer` (e.g., "security-reviewer", "logic-integrity-reviewer")
+- agent: from the table above
+- task: "Review {target} for {dimension} issues", with the template above as its prompt, `{dimension}` and anchors substituted
+
+The dispatched reviewers are the expected set that Phase 3's delivery barrier waits on.
 
 Mark `phase_2_review` as `in_progress`.
 
 ## Phase 3: Monitor and Collect
 
-1. Wait for all review tasks to complete (check `TaskList` periodically).
-2. As each reviewer completes, verify `.team-review/findings-{dimension}.md` was written. If a reviewer failed to write its output file, read the task output and save it manually to that path.
+1. Hold the delivery barrier: wait until every dispatched reviewer is recorded `delivered` or `failed`.
+2. As each reviewer delivers, verify `.team-review/findings-{dimension}.md` was written. If a reviewer failed to write its output file, take the output it returned and save it manually to that path.
 3. Track progress: "{completed}/{total} reviews complete".
-4. **Delivery gate** (per the `senior-review:review-quality-gates` skill, section `## Delivery Gate`): consolidation does not start until every spawned reviewer has either delivered its findings file or delivered an explicit no-findings report. A reviewer idle past a reasonable deadline gets one direct `SendMessage` nudge; if it stays silent, read whatever task output exists, save it to the findings path marked `[undelivered -- collected by orchestrator]`, and record the dimension as degraded in the report. A silently missing dimension is never presented as a clean one.
+4. **Delivery gate** (per the `senior-review:review-quality-gates` skill, section `## Delivery Gate`): consolidation does not start until every spawned reviewer has either delivered its findings file or delivered an explicit no-findings report. A reviewer that has not delivered by a reasonable deadline gets one reminder, through whatever channel the host offers to a running worker. If it stays silent, record it `failed`, take whatever output it returned, save it to the findings path marked `[undelivered -- collected by orchestrator]`, and record the dimension as degraded in the report. A silently missing dimension is never presented as a clean one.
 5. Mark `phase_2_review` complete, `phase_3_consolidation` in_progress.
 
 ## Phase 4: Consolidation
@@ -610,7 +611,7 @@ Skip this phase if `--fast` was passed (mark `phase_4b_verification` as `skipped
 2. Apply the selection rule from the skill:
    - If `--rigorous`, or 25 or fewer findings survive: verify all selected findings.
    - Otherwise (more than 25 findings, no `--rigorous`): narrow to stakes + uncertainty band per the skill, and record the count of findings left `unverified (cost-guard)`.
-3. **Lens 0 first.** For each finding to verify whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, spawn lens 0 (`subagent_type: senior-review:premise-auditor`, mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the X-ray line resolved to `$XRAY_RUN_DIR`. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
+3. **Lens 0 first.** For each finding to verify whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, spawn lens 0 (`senior-review:premise-auditor`, mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the X-ray line resolved to `$XRAY_RUN_DIR`. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
 4. For each finding that reaches this step, spawn lenses 1 and 2 in parallel using the lens prompts from the skill (`general-purpose`; inherit the session model; `run_in_background: true`), then spawn lens 3 (`model: sonnet`) only for findings that survive them, per the skill's gated-lens rule. Substitute the finding, diff, and full file content into each prompt.
 5. Apply the survival rule from the skill: survive if `>= 2` of lenses 1-2 vote REAL; discard (`filtered`) if `>= 2` vote FALSE_POSITIVE; tie or fewer-than-2-verdicts means survive and mark `contested`. Final severity is the lens-3 vote when confirmed real, else the original.
 6. Write `.team-review/98-verification.md`: one row per verified finding with the per-lens verdicts (including, for findings that reached lens 0, its verdict, refutation target, and counterexample), final severity, and flag (`verified` / `contested` / `filtered: premise-refuted` / `filtered`), plus a trailing count of `unverified (cost-guard)` findings.
@@ -669,8 +670,7 @@ Skip this phase if `--fast` was passed (mark `phase_4c_critic` as `skipped`). Ot
    Where `{cost_guard_note}` is `, narrowed to stakes+band (N unverified)` when the cost guard fired, else empty.
 
 2. **Workspace hygiene check** (per the `senior-review:review-quality-gates` skill, section `## Delivery Gate`): run `git status --porcelain` and compare against the pre-review state recorded in Phase 0. Any file created by the review that is not under `.team-review/` (probe scripts, scratch harnesses, temp fixtures) is removed now, and its removal is noted in the report. A review must leave the work tree exactly as it found it, plus `.team-review/`.
-3. Send `shutdown_request` to all reviewers.
-4. Team resources are cleaned up automatically when the session ends; there is no `TeamDelete` step.
+3. End the run. Every dispatched reviewer has been recorded `delivered` or `failed` by now, no reviewer may still be writing after the report is presented, and the harness owns whatever cleanup its workers need.
 4. Update `state.json` -> `status: "complete"`, mark `phase_4_report` complete.
 5. Inform the user that detailed findings and context are preserved in `.team-review/` for future reference (do not auto-delete).
 

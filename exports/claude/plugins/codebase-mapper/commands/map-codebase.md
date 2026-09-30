@@ -1,6 +1,6 @@
 ---
 description: >
-  Writes 10 documents with Mermaid diagrams and an INDEX.md entry point into .codebase-map/.
+  Writes a plain-language executive summary (00), 10 numbered narrative documents with Mermaid diagrams (01-10), a glossary (11) and an INDEX.md entry point into .codebase-map/.
   TRIGGER WHEN: the user asks to onboard to an unfamiliar project, generate a codebase tour, or produce a full narrative guide for new contributors.
   DO NOT TRIGGER WHEN: the user wants structured AST/dependency analysis (use /codebase-xray:analyze) or just API docs (use /codebase-mapper:docs-create).
 argument-hint: "[target-path]"
@@ -8,7 +8,7 @@ argument-hint: "[target-path]"
 
 # Map Codebase
 
-Generate a human-readable guide for an unfamiliar codebase. Produces 10 narrative documents with inline Mermaid diagrams, organized for progressive learning.
+Generate a human-readable guide for an unfamiliar codebase. Produces a plain-language executive summary, 10 numbered narrative documents with inline Mermaid diagrams, a glossary and an `INDEX.md` entry point, organized for progressive learning.
 
 ## Pre-flight
 

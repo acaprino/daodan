@@ -14,8 +14,9 @@ admissibility, verbatim carry through the ledger, mechanical termination, certif
 against misrepresentation, a ledger-computed verdict, and source-to-request
 transmission fidelity) plus two doctrine statements about what cross-model
 independence actually buys you. None of it names a tool, a vendor, a model, or a
-transport. The full, normative text ships with this plugin at `protocol/PROTOCOL.md`;
-the `cross-model-peer-review` skill carries the doctrine layer and the decision guide
+transport. The full, normative text ships with this plugin at
+`skills/cross-model-peer-review/references/PROTOCOL.md`; the `cross-model-peer-review`
+skill carries the doctrine layer and the decision guide
 for when a run is and is not worth its cost.
 
 This plugin, `peer-review`, is one conforming binding of that protocol for Claude
@@ -38,7 +39,7 @@ mechanism; the requirements it satisfies live in the protocol document, not here
 ## Setup
 
 These steps assume the plugin is already installed
-(`claude plugin install peer-review@claude-code-daodan`).
+(`claude plugin install peer-review@daodan`).
 
 1. Copy the shipped example profile file,
    `skills/cross-model-peer-review/scripts/profiles.example.json`, to one of the
@@ -225,16 +226,16 @@ If a server fails to start, it degrades per-server: `/mcp` shows it as `Failed t
 connect` with an Issue line naming the problem. This does not break the rest of the
 plugin. Its commands, agents, and skills keep working; only `/peer-review:review`'s
 transport calls (`peer_profiles`, `peer_ask`) fail when the command reaches them,
-which surfaces as the transport-error handling described in `commands/review.md`, not
+which surfaces as the transport-error handling described in `workflows/review.md`, not
 as a broken install.
 
 **Manual fallback.** If, after installing the plugin, the server does not appear
 connected in `/mcp`, register it directly at user scope instead of waiting on
 auto-discovery. Locate this plugin's installed copy of `server.py` under Claude Code's
 plugin cache directory (typically
-`~/.claude/plugins/cache/claude-code-daodan/peer-review/<installed
-version>/skills/cross-model-peer-review/scripts/server.py` on this marketplace; this is also what `${CLAUDE_PLUGIN_ROOT}`
-resolves to at runtime, and `/mcp` or your Claude Code installation's plugin listing
+`~/.claude/plugins/cache/daodan/peer-review/<installed
+version>/skills/cross-model-peer-review/scripts/server.py` on this marketplace; this is
+also what `${CLAUDE_PLUGIN_ROOT}` resolves to at runtime, and `/mcp` or your Claude Code installation's plugin listing
 will confirm the exact installed version), then add the same server definition this
 plugin already ships, with that path substituted in for `${CLAUDE_PLUGIN_ROOT}`, to
 your user-level MCP configuration:
@@ -247,7 +248,7 @@ your user-level MCP configuration:
       "args": [
         "run",
         "--script",
-        "~/.claude/plugins/cache/claude-code-daodan/peer-review/<installed version>/skills/cross-model-peer-review/scripts/server.py"
+        "~/.claude/plugins/cache/daodan/peer-review/<installed version>/skills/cross-model-peer-review/scripts/server.py"
       ]
     }
   }

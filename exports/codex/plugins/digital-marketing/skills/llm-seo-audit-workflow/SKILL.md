@@ -9,7 +9,7 @@ description: 'Checks whether a page is quotable by generative assistants, not me
 
 # LLM SEO / Answer Engine Optimization Audit
 
-Invokes the `llm-seo-optimize` agent to audit a site for answer-engine discoverability and citation-worthiness. Different from `/seo-audit` (traditional SERP ranking) -- this optimizes for getting **quoted inside an LLM-generated answer**.
+Invokes the `llm-seo-optimize` agent to audit a site for answer-engine discoverability and citation-worthiness. Different from `/digital-marketing:seo-audit` (traditional SERP ranking): this optimizes for getting **quoted inside an LLM-generated answer**.
 
 ## CRITICAL RULES
 
@@ -17,7 +17,7 @@ Invokes the `llm-seo-optimize` agent to audit a site for answer-engine discovera
 2. **Verify live, not just code**. For a live URL, use the Playwright MCP tools (the `playwright` plugin, a declared dependency) to confirm crawler access (`robots.txt` live fetch), JSON-LD presence, and rendered passage extractability.
 3. **Write output to `.aeo-audit/` for persistence** so re-runs can diff against the baseline.
 4. **Never fabricate crawler policies**. If `robots.txt` cannot be fetched, state the gap explicitly.
-5. **Complementary to `/seo-audit`, not a replacement**. Traditional SEO and AEO require different optimizations -- flag the overlap, not duplication.
+5. **Complementary to `/digital-marketing:seo-audit`, not a replacement**. Traditional SEO and AEO require different optimizations: flag the overlap, not duplication.
 
 ## Procedure
 
@@ -68,16 +68,16 @@ Agent writes `.aeo-audit/REPORT.md` with:
 
 ```
 # Full audit against a live URL
-/llm-seo-audit https://example.com
+/digital-marketing:llm-seo-audit https://example.com
 
 # Focus on Schema + E-E-A-T only
-/llm-seo-audit https://example.com --focus schema,eeat
+/digital-marketing:llm-seo-audit https://example.com --focus schema,eeat
 
 # Static site audit
-/llm-seo-audit ./dist/
+/digital-marketing:llm-seo-audit ./dist/
 
 # Strict grading: warnings become critical, report opens with PASS/FAIL
-/llm-seo-audit https://example.com --strict-mode
+/digital-marketing:llm-seo-audit https://example.com --strict-mode
 ```
 
 ## Complementary commands
@@ -86,10 +86,10 @@ Run alongside traditional SEO tooling for a complete picture:
 
 | Command | Purpose | Overlap with AEO |
 |---------|---------|------------------|
-| `/seo-audit` | Technical SEO (Core Web Vitals, meta tags, sitemap, redirects, SERP ranking) | Low -- traditional ranking signals |
-| `/content-strategy` | Conversion / CTA / tone / funnel audit | Medium -- answer-worthiness often correlates with clarity |
-| `/ga4-audit` | GA4 + GTM + Consent Mode v2 verification | Measurement only -- AEO needs AI-referrer tracking set up in GA4 |
-| **`/llm-seo-audit`** | **AEO / answer-engine optimization** | -- |
+| `/digital-marketing:seo-audit` | Technical SEO (Core Web Vitals, meta tags, sitemap, redirects, SERP ranking) | Low: traditional ranking signals |
+| `/digital-marketing:content-strategy` | Conversion / CTA / tone / funnel audit | Medium: answer-worthiness often correlates with clarity |
+| `/digital-marketing:ga4-audit` | GA4 + GTM + Consent Mode v2 verification | Measurement only: AEO needs AI-referrer tracking set up in GA4 |
+| **`/digital-marketing:llm-seo-audit`** | **AEO / answer-engine optimization** | -- |
 
 ## Synergies
 

@@ -231,7 +231,7 @@ Before presenting the final README, verify:
 - [ ] Quick Start is copy-pasteable and works in under 60 seconds
 - [ ] No placeholder images or broken links
 - [ ] Advanced content is in collapsible `<details>` blocks
-- [ ] Total length is reasonable (under 300 lines for most projects)
+- [ ] Total length is around 200 lines, never over the 300-line hard ceiling (rule 8)
 - [ ] Footer has correct license and author
 - [ ] All links are constructed from actual project metadata
 - [ ] README follows progressive disclosure (simple first, complex later)

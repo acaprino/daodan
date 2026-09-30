@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:d6667dc37d1f225a49497baf62bdf9105ae1b1f52452101e83558d32844700b6",
+  "coreDigest": "sha256:f187fa5f0796189a07d8388024a95e51ab3dcac70cc88069f7bc35b0f10eeccc",
   "harnessStrategies": {
     "docs-create": "parallel-subagents",
     "docs-maintain": "parallel-subagents",
@@ -11,5 +11,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "codebase-mapper",
-  "version": "3.1.0"
+  "version": "3.1.1"
 }

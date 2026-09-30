@@ -46,7 +46,7 @@ The vocabulary that is the same for every broker: what kind of access path a sys
 
 | | |
 |---|---|
-| **Trigger** | Comparing brokers or integration paths, starting an integration against a broker with no dedicated coverage in this skill, or naming what kind of access path a system uses |
+| **Trigger** | Comparing brokers or integration paths, starting an integration against a broker with no dedicated skill in this plugin, or naming what kind of access path a system uses |
 
 **Reference documents:** access-archetypes, order-lifecycle-reference-model, session-and-recovery, evidence-and-probes.
 

@@ -132,9 +132,8 @@ prompts (use `env` or an MCP tool instead), and isolate untrusted work in a cont
 | `references/mcp-plugins-skills.md` | Custom tools as in-process MCP servers, external MCP servers, loading plugins and settings |
 | `references/deployment.md` | Hosting shapes, sandbox isolation, CI/CD review agent, research pipeline, chat loop |
 
-`references/reasoning-patterns.md` in this directory belongs to the `prompt-engineer` agent, not to
-the SDK. It sits here because the VS Code export mirrors plugin-root references into the consuming
-skill directory.
+Reasoning patterns belong to the `prompt-engineer` agent, not to the SDK. That reference lives in
+the prompt-engineering skill: `${CLAUDE_PLUGIN_ROOT}/skills/prompt-engineering/references/reasoning-patterns.md`.
 
 ## Official documentation
 

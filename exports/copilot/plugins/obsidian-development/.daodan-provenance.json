@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:0911f76dab19dbce5b620e5cf19d67cf75acad0aec4aed26ceb12d740e0c41bd",
+  "coreDigest": "sha256:2ae8fea341fa063de1e1bf5475e140e435e1dd8651fd4cdfb46d539cebb2b0ed",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "obsidian-development",
-  "version": "1.5.0"
+  "version": "1.5.1"
 }

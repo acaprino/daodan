@@ -11,7 +11,7 @@ Generate a professional, empathetic response to a customer review. Analyze the r
 
 ## Input
 
-The user pastes a customer review (or invokes via `/reply-to-customer-review`). Optional parameters:
+The user pastes a customer review (or invokes via `/digital-marketing:reply-to-customer-review`). Optional parameters:
 
 - **--brand "Name"** -- business name to use in the response
 - **--tone formal|friendly|casual** -- override tone (default: professional-empathetic)

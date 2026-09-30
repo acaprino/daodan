@@ -259,7 +259,7 @@ Remaining issues: [count]
 
 ## Quick Examples
 
-- `/seo-audit https://example.com` -- Full technical SEO audit
-- `/seo-audit https://example.com/products` -- Audit specific section
-- `/seo-audit src/pages --local` -- Audit local HTML/template files
-- `/seo-audit https://example.com --focus security,performance` -- Focused audit
+- `/digital-marketing:seo-audit https://example.com`: Full technical SEO audit
+- `/digital-marketing:seo-audit https://example.com/products`: Audit specific section
+- `/digital-marketing:seo-audit src/pages --local`: Audit local HTML/template files
+- `/digital-marketing:seo-audit https://example.com --focus security,performance`: Focused audit

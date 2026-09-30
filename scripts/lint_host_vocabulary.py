@@ -60,7 +60,6 @@ GRANDFATHERED: dict[str, int] = {
     "plugins/codebase-mapper/workflows/humanize-docs.md": 2,
     "plugins/codebase-mapper/workflows/team-codebase-map.md": 18,
     "plugins/digital-marketing/workflows/content-strategy.md": 3,
-    "plugins/frontend-review/workflows/review-frontend.md": 4,
     "plugins/peer-review/workflows/review.md": 3,
     "plugins/react-development/workflows/review-react.md": 1,
     "plugins/senior-review/skills/review-quality-gates/SKILL.md": 4,
@@ -68,7 +67,6 @@ GRANDFATHERED: dict[str, int] = {
     "plugins/senior-review/skills/review-quality-gates/references/code-review-fix-loop.md": 1,
     "plugins/senior-review/workflows/code-review.md": 3,
     "plugins/senior-review/workflows/pr-review.md": 2,
-    "plugins/senior-review/workflows/team-review.md": 17,
     "plugins/typescript-development/workflows/review-typescript.md": 1,
 }
 

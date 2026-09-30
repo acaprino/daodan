@@ -71,8 +71,8 @@ Analyze an existing OpenTelemetry Python instrumentation and produce an actionab
 - [ ] Error sampling carve-out (always sample error spans) via span processor or Collector
 
 ### Logs and Metrics
-- [ ] Logs SDK used if log correlation matters (stabilized in v1.26+; no longer underscore-private)
-- [ ] `LoggerProvider` set up alongside `TracerProvider`
+- [ ] Log correlation goes through the `LoggingInstrumentor` bridge into the existing log pipeline; the Logs SDK (`opentelemetry._logs`) is still experimental, and the leading underscore is intentional
+- [ ] Where the Logs SDK is used anyway, `LoggerProvider` set up alongside `TracerProvider` and its experimental status acknowledged
 - [ ] Metrics use correct instruments (Counter for monotonic, UpDownCounter for gauges, Histogram for latencies)
 - [ ] View / aggregation configured for high-cardinality metrics
 
@@ -99,6 +99,6 @@ Analyze an existing OpenTelemetry Python instrumentation and produce an actionab
 
 ## Synergies
 
-- Deep propagator / custom transport patterns -> `opentelemetry-architect` (agent)
+- Deep propagator / custom transport patterns -> `opentelemetry:otel-architect` (agent)
 - Async context propagation patterns -> `python-development:async-python-patterns`
 - RabbitMQ propagation -> `messaging:rabbitmq-expert` + `opentelemetry:opentelemetry` reference

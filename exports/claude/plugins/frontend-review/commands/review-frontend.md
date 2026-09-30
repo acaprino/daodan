@@ -82,11 +82,11 @@ git diff --cached --name-only | grep -E '\.(tsx|jsx|ts|vue|svelte|css|scss)$|(^|
 find src app components pages styles -type f \( -name "*.tsx" -o -name "*.jsx" -o -name "*.ts" -o -name "*.vue" -o -name "*.svelte" -o -name "*.css" -o -name "*.scss" \) 2>/dev/null | head -120
 ```
 
-Or use the path from `$ARGUMENTS` if one is given.
+When `$ARGUMENTS` names a path, root that `find` at the path instead of the default directories, and in diff mode keep only the changed files under it.
 
 If no frontend files are found in either mode, stop and say so.
 
-Bind the resulting list to `$SCOPE_FILES`: the changed frontend files in diff mode, or the files discovered by the `find` command in full mode. Step 2 and Step 3 read `$SCOPE_FILES` by that name.
+Bind the resulting list to `$SCOPE_FILES`: the changed frontend files in diff mode, the frontend files under the given path when `$ARGUMENTS` names one, or the files discovered by the `find` command in full mode. Step 2 and Step 3 read `$SCOPE_FILES` by that name.
 
 ## Step 2: Dimension Detection
 
@@ -144,16 +144,18 @@ Every reason on the Skipped line is a statement about the codebase, never about 
 
 ## Step 3: Deterministic Ground Truth
 
-Run linters over the files in scope, if available. A missing tool is a note in the report, not an error that stops the command.
+Run linters over `$SCOPE_FILES` from Step 1, if available, so diff mode and a path argument lint exactly what is under review. A missing tool is a note in the report, not an error that stops the command.
 
 ```bash
-npx eslint --format json "src/**/*.{tsx,jsx,ts,js}" 2>/dev/null || true
+LINT_FILES=$(printf '%s\n' "$SCOPE_FILES" | grep -E '\.(tsx|jsx|ts|js)$' || true)
+[ -n "$LINT_FILES" ] && printf '%s\n' "$LINT_FILES" | xargs npx eslint --format json 2>/dev/null || true
 ```
 
-If Step 2 detected `TS_PROJECT=true`, also run:
+If Step 2 detected `TS_PROJECT=true`, also run the type checker. Passing file names to `tsc` makes it ignore `tsconfig.json`, so check the whole project under its own config and keep only the diagnostics for files in scope:
 
 ```bash
-npx tsc --noEmit 2>&1 || true
+TS_FILES=$(printf '%s\n' "$SCOPE_FILES" | grep -E '\.tsx?$' || true)
+[ -n "$TS_FILES" ] && npx tsc --noEmit --pretty false 2>&1 | grep -F -f <(printf '%s\n' "$TS_FILES") || true
 ```
 
 Carry both outputs into Step 4 and into the matching Step 5 agent as ground truth. Record "eslint not configured" or "tsc not available" in the final report instead of failing the step.
@@ -199,7 +201,7 @@ Attribute each finding to its source skill in the `category` field (for example 
 
 ## Step 5: Code Dimension Agents (parallel)
 
-Spawn every dimension that Step 2 activated in a single message, so they run in parallel. Each block below carries its activation condition, its skip note, and the Task call.
+Dispatch every dimension that Step 2 activated at once, each agent in its own isolated context, so they run in parallel. Wait until every dispatched agent has returned its result before Step 6. Each block below carries its activation condition, its skip note, and the agent's brief.
 
 ### Agent: React Performance (conditional)
 
@@ -207,40 +209,37 @@ Spawn every dimension that Step 2 activated in a single message, so they run in 
 
 `react-development` is a hard dependency of this plugin, so this agent is always available. Skip the dimension only when its detection signal did not match.
 
+Dispatch the `react-development:react-performance-optimizer` agent in its own isolated context, without waiting on it before dispatching the other activated dimensions. Its brief:
+
+````
+Audit the React performance, state management, and bundle optimization of this
+frontend codebase.
+
+## Scope
+[files from Step 1]
+
+## File Contents
+[sampled components and state files from Step 1, not stylesheets]
+
+## Linter Output
+[ESLint JSON from Step 3, or "No linter output available"]
+
+## Instructions
+Cover re-render optimization, state management, bundle impact, and React 19 API
+adoption. For each finding: severity (Critical/High/Medium/Low), file, issue, fix.
+Note what is done well.
+
+Close with:
+```json
+{
+  "findings": [
+    { "severity": "Critical", "category": "Re-renders", "file": "...", "issue": "...", "fix": "..." }
+  ],
+  "positives": ["..."],
+  "score": { "overall": 0 }
+}
 ```
-Agent tool call:
-  - description: "React performance review for frontend-review command"
-  - subagent_type: "react-development:react-performance-optimizer"
-  - run_in_background: true
-  - prompt: |
-    Audit the React performance, state management, and bundle optimization of this
-    frontend codebase.
-
-    ## Scope
-    [files from Step 1]
-
-    ## File Contents
-    [sampled components and state files from Step 1, not stylesheets]
-
-    ## Linter Output
-    [ESLint JSON from Step 3, or "No linter output available"]
-
-    ## Instructions
-    Cover re-render optimization, state management, bundle impact, and React 19 API
-    adoption. For each finding: severity (Critical/High/Medium/Low), file, issue, fix.
-    Note what is done well.
-
-    Close with:
-    ```json
-    {
-      "findings": [
-        { "severity": "Critical", "category": "Re-renders", "file": "...", "issue": "...", "fix": "..." }
-      ],
-      "positives": ["..."],
-      "score": { "overall": 0 }
-    }
-    ```
-```
+````
 
 ### Agent: TypeScript Type Safety (conditional)
 
@@ -248,38 +247,35 @@ Agent tool call:
 
 `typescript-development` is a hard dependency of this plugin, so this agent is always available. Skip the dimension only when its detection signal did not match.
 
+Dispatch the `typescript-development:type-safety-auditor` agent in its own isolated context, without waiting on it before dispatching the other activated dimensions. Its brief:
+
+````
+Audit the type safety of this frontend codebase: tsconfig strictness first, then
+a mechanical sweep for unsound casts and assertions, then a boundary pass for
+unvalidated external input.
+
+## Scope
+[files from Step 1]
+
+## tsc Output
+[tsc --noEmit output from Step 3, or "tsc not available"]
+
+## Instructions
+Cover config strictness, unsound casts and assertions, unvalidated boundaries, and
+non-exhaustive handling. For each finding: severity (Critical/High/Medium/Low),
+file, issue, fix, citing the rule id where one applies. Note what is done well.
+
+Close with:
+```json
+{
+  "findings": [
+    { "severity": "High", "category": "Unsound cast", "file": "...", "issue": "...", "fix": "..." }
+  ],
+  "positives": ["..."],
+  "score": { "overall": 0 }
+}
 ```
-Agent tool call:
-  - description: "TypeScript type safety review for frontend-review command"
-  - subagent_type: "typescript-development:type-safety-auditor"
-  - run_in_background: true
-  - prompt: |
-    Audit the type safety of this frontend codebase: tsconfig strictness first, then
-    a mechanical sweep for unsound casts and assertions, then a boundary pass for
-    unvalidated external input.
-
-    ## Scope
-    [files from Step 1]
-
-    ## tsc Output
-    [tsc --noEmit output from Step 3, or "tsc not available"]
-
-    ## Instructions
-    Cover config strictness, unsound casts and assertions, unvalidated boundaries, and
-    non-exhaustive handling. For each finding: severity (Critical/High/Medium/Low),
-    file, issue, fix, citing the rule id where one applies. Note what is done well.
-
-    Close with:
-    ```json
-    {
-      "findings": [
-        { "severity": "High", "category": "Unsound cast", "file": "...", "issue": "...", "fix": "..." }
-      ],
-      "positives": ["..."],
-      "score": { "overall": 0 }
-    }
-    ```
-```
+````
 
 ### Agent: PWA Architecture (conditional)
 
@@ -287,37 +283,34 @@ Agent tool call:
 
 `pwa-expert` is a hard dependency of this plugin, so this agent is always available. Skip the dimension only when its detection signal did not match.
 
+Dispatch the `pwa-expert:pwa-architect` agent in its own isolated context, without waiting on it before dispatching the other activated dimensions. Its brief:
+
+````
+Audit this PWA against the 2025-2026 baseline: manifest completeness, service
+worker lifecycle and caching strategy, install flow, Web Push if present, storage
+and quota handling, and platform constraints across iOS WebKit, Android, and desktop.
+
+## Scope
+[manifest, service worker, and install-flow files from Step 1]
+
+## File Contents
+[paste the manifest and service worker source]
+
+## Instructions
+For each finding: severity (Critical/High/Medium/Low), file, issue, fix. Note what
+is done well.
+
+Close with:
+```json
+{
+  "findings": [
+    { "severity": "High", "category": "Service worker", "file": "...", "issue": "...", "fix": "..." }
+  ],
+  "positives": ["..."],
+  "score": { "overall": 0 }
+}
 ```
-Agent tool call:
-  - description: "PWA architecture review for frontend-review command"
-  - subagent_type: "pwa-expert:pwa-architect"
-  - run_in_background: true
-  - prompt: |
-    Audit this PWA against the 2025-2026 baseline: manifest completeness, service
-    worker lifecycle and caching strategy, install flow, Web Push if present, storage
-    and quota handling, and platform constraints across iOS WebKit, Android, and desktop.
-
-    ## Scope
-    [manifest, service worker, and install-flow files from Step 1]
-
-    ## File Contents
-    [paste the manifest and service worker source]
-
-    ## Instructions
-    For each finding: severity (Critical/High/Medium/Low), file, issue, fix. Note what
-    is done well.
-
-    Close with:
-    ```json
-    {
-      "findings": [
-        { "severity": "High", "category": "Service worker", "file": "...", "issue": "...", "fix": "..." }
-      ],
-      "positives": ["..."],
-      "score": { "overall": 0 }
-    }
-    ```
-```
+````
 
 ### Agent: Platform Compliance (conditional)
 
@@ -325,39 +318,36 @@ Agent tool call:
 
 `platform-engineering` is a hard dependency of this plugin, so this agent is always available. Skip the dimension only when its detection signal did not match.
 
+Dispatch the `platform-engineering:platform-reviewer` agent in its own isolated context, without waiting on it before dispatching the other activated dimensions. Its brief:
+
+````
+Review this frontend against the platform-engineering rulebook: server validation,
+auth token storage, API security, XSS/CSP, secrets exposure, and architecture.
+
+## Platforms Detected
+[signals from Step 2: SPA, PWA, Electron, Tauri, mobile]
+
+## Scope
+[files from Step 1]
+
+## File Contents
+[paste full contents of each file in scope]
+
+## Instructions
+For each finding: severity (Critical/High/Medium/Low), file, issue, fix. Note what
+is done well.
+
+Close with:
+```json
+{
+  "findings": [
+    { "severity": "High", "category": "API security", "file": "...", "issue": "...", "fix": "..." }
+  ],
+  "positives": ["..."],
+  "score": { "overall": 0 }
+}
 ```
-Agent tool call:
-  - description: "Platform engineering review for frontend-review command"
-  - subagent_type: "platform-engineering:platform-reviewer"
-  - run_in_background: true
-  - prompt: |
-    Review this frontend against the platform-engineering rulebook: server validation,
-    auth token storage, API security, XSS/CSP, secrets exposure, and architecture.
-
-    ## Platforms Detected
-    [signals from Step 2: SPA, PWA, Electron, Tauri, mobile]
-
-    ## Scope
-    [files from Step 1]
-
-    ## File Contents
-    [paste full contents of each file in scope]
-
-    ## Instructions
-    For each finding: severity (Critical/High/Medium/Low), file, issue, fix. Note what
-    is done well.
-
-    Close with:
-    ```json
-    {
-      "findings": [
-        { "severity": "High", "category": "API security", "file": "...", "issue": "...", "fix": "..." }
-      ],
-      "positives": ["..."],
-      "score": { "overall": 0 }
-    }
-    ```
-```
+````
 
 ## Step 6: Consolidate and Score
 

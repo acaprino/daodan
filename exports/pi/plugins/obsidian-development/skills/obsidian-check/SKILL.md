@@ -11,7 +11,7 @@ Review code against all Obsidian automated plugin review rules before pushing. S
 
 ## Usage
 
-`/obsidian-check` -- scans the current Obsidian plugin project for all automated review violations.
+This is a skill, not a slash command. Invoke it by asking to check an Obsidian plugin before submission, or by its skill name `obsidian-development:obsidian-check`. It scans the current Obsidian plugin project for all automated review violations.
 
 ## Procedure
 

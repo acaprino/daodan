@@ -5,6 +5,8 @@ description: >
   TRIGGER WHEN: code references claude-agent-sdk, user says "agent sdk", "build an agent", "programmatic claude", "claude code sdk", "sidecar", "run claude programmatically"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.
 ---
 
+> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+
 # Claude Agent SDK
 
 Build applications that run the Claude Code agent loop programmatically: agents that read files,
@@ -132,9 +134,8 @@ prompts (use `env` or an MCP tool instead), and isolate untrusted work in a cont
 | `references/mcp-plugins-skills.md` | Custom tools as in-process MCP servers, external MCP servers, loading plugins and settings |
 | `references/deployment.md` | Hosting shapes, sandbox isolation, CI/CD review agent, research pipeline, chat loop |
 
-`references/reasoning-patterns.md` in this directory belongs to the `prompt-engineer` agent, not to
-the SDK. It sits here because the VS Code export mirrors plugin-root references into the consuming
-skill directory.
+Reasoning patterns belong to the `prompt-engineer` agent, not to the SDK. That reference lives in
+the prompt-engineering skill: `${PLUGIN_ROOT}/skills/prompt-engineering/references/reasoning-patterns.md`.
 
 ## Official documentation
 

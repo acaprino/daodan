@@ -48,8 +48,8 @@ language or template. Only a participant's own, independent reach into the
 authoritative source can turn a GIVEN fact into evidence, and the run has to
 say so when it happens.
 
-**Probe.** `protocol/PROTOCOL.md` R14; `agents/respondent.md` Evidence Rules
-(the R14 sub-bullets); `commands/review.md` Phase 6 (the fixed list of verdict
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R14; `roles/respondent.md` Evidence Rules
+(the R14 sub-bullets); `workflows/review.md` Phase 6 (the fixed list of verdict
 sections, items 1 through 12); `skills/cross-model-peer-review/SKILL.md` the
 doctrine quote and the "Premature convergence" row of the hardening-rules
 table.
@@ -72,8 +72,8 @@ by argument alone. Every non-ACCEPT verdict must point at a specific place in
 the authoritative source, and a refutation must answer the falsifier as
 stated, not an easier restatement of it.
 
-**Probe.** `protocol/PROTOCOL.md` R7; `agents/respondent.md` "Evidence Rules"
-and "Verdict Vocabulary"; `protocol/finding-lifecycle.md` ledger entry
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R7; `roles/respondent.md` "Evidence Rules"
+and "Verdict Vocabulary"; `skills/cross-model-peer-review/references/finding-lifecycle.md` ledger entry
 template (`respondent evidence: <locator>`).
 
 **Pass.** R7 requires positive evidence at a stable locator for a refutation,
@@ -94,14 +94,14 @@ dropping it. A withdrawal only closes the finding when it names the specific
 evidence that changed the challenger's mind; a withdrawal with no named
 evidence leaves the finding open and is logged as a weakness of the run.
 
-**Probe.** `protocol/finding-lifecycle.md` "Transitions" (the withdrawal
-bullet); `protocol/round-prompts.md` "Challenge round (2..N)" (the WITHDRAW
-line); `commands/review.md` Phase 4 step 5, the `WITHDRAW naming no evidence`
+**Probe.** `skills/cross-model-peer-review/references/finding-lifecycle.md` "Transitions" (the withdrawal
+bullet); `skills/cross-model-peer-review/references/round-prompts.md` "Challenge round (2..N)" (the WITHDRAW
+line); `workflows/review.md` Phase 4 step 5, the `WITHDRAW naming no evidence`
 branch.
 
 **Pass.** All three files agree: a withdrawal naming no falsifying evidence
 does not close the finding, `state` stays `CHALLENGED`, and the verdict
-reports it as a run weakness (`commands/review.md` Phase 6 item 7,
+reports it as a run weakness (`workflows/review.md` Phase 6 item 7,
 "Unexplained withdrawals ... regardless of its final state"). A version that
 let any WITHDRAW reply close the finding, or that dropped the
 unexplained-withdrawal verdict section, fails this case.
@@ -116,18 +116,18 @@ test applied to those two facts, never by a fresh, subjective read of who is
 more convincing. Saturation always removes the finding from further open
 rounds immediately, without waiting for the round cap.
 
-**Probe.** `protocol/PROTOCOL.md` R11 (the saturation clause and the
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R11 (the saturation clause and the
 STANDOFF definition: "both substantive positions survive"); Requirement
 R11's clarification that "STANDOFF is reserved for substantive survival ...
 Procedural failures never produce it" (also restated in
-`protocol/finding-lifecycle.md`); `protocol/finding-lifecycle.md` "Saturation
-test (mechanical, run per finding per round)"; `commands/review.md` Phase 4
+`skills/cross-model-peer-review/references/finding-lifecycle.md`); `skills/cross-model-peer-review/references/finding-lifecycle.md` "Saturation
+test (mechanical, run per finding per round)"; `workflows/review.md` Phase 4
 step 7.
 
 **Pass.** `finding-lifecycle.md`'s saturation test is a two-input boolean
 check (`new evidence since previous round = NO on both sides AND both
 positions unchanged`), not a judgment call, and it fires immediately, no
-waiting for the round cap. `commands/review.md` Phase 4 step 7 disposes of a
+waiting for the round cap. `workflows/review.md` Phase 4 step 7 disposes of a
 saturated finding purely by its already-recorded respondent position, with no
 new evaluative step: a `NEEDS-EVIDENCE`/`DISAGREE`/no-position finding
 becomes `STANDOFF` immediately; a `REFUTE` finding is instead carried forward
@@ -140,7 +140,7 @@ CHALLENGED") unreachable. **Note for the results table:** an earlier version
 of this note flagged that the literal phrase "forces STANDOFF" did not hold
 for every saturated finding, only for the non-REFUTE branch, because R11 and
 `finding-lifecycle.md` still described saturation as producing STANDOFF
-unconditionally at the time, even though `commands/review.md` Phase 4 step 7
+unconditionally at the time, even though `workflows/review.md` Phase 4 step 7
 already implemented the position-aware behavior described above. That
 wording was corrected on 2026-08-11: R11 and `finding-lifecycle.md` now state
 the position-aware rule directly, so the protocol text and the command's
@@ -161,7 +161,7 @@ reaches the verdict without first passing through the certification step,
 where the challenger checks the respondent's rendering of its own claim
 against its original words.
 
-**Probe.** `protocol/PROTOCOL.md` R12, R13; `commands/review.md` Phase 5 step
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R12, R13; `workflows/review.md` Phase 5 step
 1 (the collection clause and its `RESOLVED_REFUTE` note); Phase 6's opening
 line ("Compute `04-verdict.md` from `03-ledger.md` alone").
 
@@ -188,7 +188,7 @@ stated rationale, fails this case.
 operator has explicitly agreed to send the packet. A capability check that
 touches no network is fine before that point; a transport call is not.
 
-**Probe.** `commands/review.md` Critical rule 2; Phase 0 step 5 (the
+**Probe.** `workflows/review.md` Critical rule 2; Phase 0 step 5 (the
 `peer_profiles` call); Phase 1b ("Consent gate"); every call site of
 `peer_ask`/`mcp__peer-review__peer_ask` in the file.
 
@@ -196,7 +196,7 @@ touches no network is fine before that point; a transport call is not.
 transport tool may be reachable before [the consent gate]. Calling
 `peer_profiles` before the gate is fine: it is a local capability check,
 never network egress.") and the document's own structure matches it: `grep
--n "peer_ask" commands/review.md` finds every call site inside `## Phase 2`
+-n "peer_ask" workflows/review.md` finds every call site inside `## Phase 2`
 or later, none inside `## Phase 0`, `## Phase 1`, or `## Phase 1b`, which
 appear earlier in the file in that order. A version that moved a `peer_ask`
 call site into Phase 0 or Phase 1, or that treated `peer_profiles` as
@@ -211,11 +211,11 @@ transmission, not a zero-argument local file read).
 **Invariant.** Choosing `--dry-run` means the run builds the packet, shows
 what would be sent, and stops, without ever making an outbound request.
 
-**Probe.** `commands/review.md` Phase 1b ("`--dry-run`: stop here ... End the
-command."); `mcp/server.py`, every use of `urllib.request`/`urlopen`.
+**Probe.** `workflows/review.md` Phase 1b ("`--dry-run`: stop here ... End the
+command."); `skills/cross-model-peer-review/scripts/server.py`, every use of `urllib.request`/`urlopen`.
 
 **Pass, as executed.** NOT FULLY EXECUTED. A complete proof requires an
-actual orchestrating session following `commands/review.md`'s phases with the
+actual orchestrating session following `workflows/review.md`'s phases with the
 `peer-review` MCP server connected and observing that a `--dry-run` invocation
 never calls `peer_ask`; that requires a live run this harness's environment
 cannot produce (the `peer-review` MCP server is not connected in this
@@ -225,7 +225,7 @@ a local HTTP stub stood up on `127.0.0.1`, `server.py` loaded as a module
 against it, and `peer_profiles()` called (the one tool Phase 0 calls before
 the consent gate). Result: zero requests reached the stub, both after import
 and after the `peer_profiles()` call. Static support: `grep -n
-"urlopen\|urllib.request" mcp/server.py` shows every network call site inside
+"urlopen\|urllib.request" skills/cross-model-peer-review/scripts/server.py` shows every network call site inside
 the body of `peer_ask`, none at import time and none inside `peer_profiles`.
 Together this shows the transport layer has no way to leak a request except
 through an explicit `peer_ask` call, which is the precondition Case 6's
@@ -245,8 +245,8 @@ from mere repetition, naming who derived it and where. A future
 simplification that deletes this path (for example, while "cleaning up" R14
 into a flat "no corroboration" rule) fails this case.
 
-**Probe.** `protocol/PROTOCOL.md` R14; `agents/respondent.md` "Evidence
-Rules" (the R14 sub-bullets); `commands/review.md` Phase 6 item 10
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R14; `roles/respondent.md` "Evidence
+Rules" (the R14 sub-bullets); `workflows/review.md` Phase 6 item 10
 ("Promotions"); `skills/cross-model-peer-review/SKILL.md` doctrine quote and
 glossary paragraph.
 
@@ -274,15 +274,15 @@ warning. Separately, once a challenge exists, a finding that attacks material
 that genuinely is not in the packet cannot be treated as a normal finding: it
 terminates its own way and is called out for the run to be repeated.
 
-**Probe.** `protocol/PROTOCOL.md` R15; `commands/review.md` Phase 1 step 4
-("Independent digest recheck"); Phase 2 step 6 ("Transmission-artifact
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R15; `workflows/review.md` Phase 1 step 4
+("Independent digest recheck"); Phase 2 step 7 ("Transmission-artifact
 check"); Phase 6 item 6.
 
 **Pass.** Phase 1 step 4 checks three independent recomputations (source file
 on disk, the packet's recorded `bytes`/`sha256` lines, and the packet's
 actually-embedded text) and states plainly: "If any pair disagrees: abort the
 run before any transport call ... a mismatch is never a warning." Phase 2
-step 6 sets a finding's state directly to `TRANSMISSION_ARTIFACT`, skipping
+step 7 sets a finding's state directly to `TRANSMISSION_ARTIFACT`, skipping
 `OPEN`, when its claimed substance cannot be located anywhere in the packet,
 and withholds it from the respondent in Phase 3. Phase 6 item 6 requires the
 verdict to recommend the run be repeated, not trusted, for any such finding.
@@ -302,11 +302,11 @@ goes back to open debate (one corrective round if the budget allows, else a
 dedicated failure state), and a misrepresentation can never manufacture a
 standoff.
 
-**Probe.** `protocol/PROTOCOL.md` R12 (the substantiated-flag sentence, and
-"A misrepresentation never manufactures a standoff"); `protocol/finding-lifecycle.md`
+**Probe.** `skills/cross-model-peer-review/references/PROTOCOL.md` R12 (the substantiated-flag sentence, and
+"A misrepresentation never manufactures a standoff"); `skills/cross-model-peer-review/references/finding-lifecycle.md`
 "Transitions" (the `proposed RESOLVED_REFUTE -> CHALLENGED` line) and the
 "STANDOFF is reserved for substantive survival ... never to STANDOFF" line;
-`commands/review.md` Phase 5 step 3 (`MISREPRESENTED, substantiated` branch)
+`workflows/review.md` Phase 5 step 3 (`MISREPRESENTED, substantiated` branch)
 and step 4 (corrective round finalization).
 
 **Pass.** R12 states a substantiated flag "invalidates the proposed closure,
@@ -314,7 +314,7 @@ strikes the restatement, and reverts the finding to CHALLENGED", and states
 outright that it "never manufactures a standoff." `finding-lifecycle.md`'s
 transition table has the reversion as its own named edge
 (`proposed RESOLVED_REFUTE -> CHALLENGED`) and separately states procedural
-failures never route to `STANDOFF`. `commands/review.md` Phase 5 step 3
+failures never route to `STANDOFF`. `workflows/review.md` Phase 5 step 3
 implements exactly this reversion (`state = CHALLENGED`, restatement struck),
 and step 4's corrective-round finalization explicitly rules out `STANDOFF` as
 an outcome, routing an unresolved corrective answer to
@@ -329,8 +329,9 @@ stand despite a substantiated flag, fails this case.
 
 ### Case 11: The protocol layer holds no harness or vendor vocabulary
 
-**Invariant.** `protocol/` describes a harness-independent, provider-independent
-protocol. It never names a specific tool, vendor, model family, or transport;
+**Invariant.** The protocol documents in `skills/cross-model-peer-review/references/` describe a
+harness-independent, provider-independent protocol. They never name a specific
+tool, vendor, model family, or transport;
 that is a binding concern for the plugin layer around it, not for the
 protocol itself.
 
@@ -357,8 +358,8 @@ A gate that ends the turn silently converts every slow answer into a hang, and
 a gate that matches tokens converts a granted consent into a withheld one,
 which is the failure mode that looks like caution and is not.
 
-**Probe.** `commands/review.md` Critical rule 8 and Phase 1b step 3 onward;
-`protocol/PROTOCOL.md` R5, third paragraph.
+**Probe.** `workflows/review.md` Critical rule 8 and Phase 1b step 3 onward;
+`skills/cross-model-peer-review/references/PROTOCOL.md` R5, third paragraph.
 
 **Pass.** All four hold. (a) Phase 1b asks through the harness's own question
 mechanism after presenting the disclosure block, rather than ending the turn on
@@ -416,7 +417,7 @@ read as if it were. What was executed, and what was not:
 
 **Executed and passing, verified directly against the shipped server:**
 
-- MCP handshake. `uv run --script plugins/peer-review/mcp/server.py` over
+- MCP handshake. `uv run --script plugins/peer-review/skills/cross-model-peer-review/scripts/server.py` over
   stdio: `initialize` returns `serverInfo.name = peer-review`, and
   `tools/list` returns exactly `peer_ask` and `peer_profiles`.
 - The Phase 0 availability gate. With a profile whose `api_key_env` names an
@@ -438,7 +439,7 @@ read as if it were. What was executed, and what was not:
 **To finish the acceptance**, in a session started after installing or
 updating the plugin, with a key exported:
 
-1. Copy `plugins/peer-review/mcp/profiles.example.json` to
+1. Copy `plugins/peer-review/skills/cross-model-peer-review/scripts/profiles.example.json` to
    `~/.peer-review/profiles.json` and export the key its `api_key_env` names.
 2. Confirm the transport is live: `claude mcp list` should show the
    `peer-review` server connected.
@@ -452,7 +453,7 @@ updating the plugin, with a key exported:
    reaches a terminal state through cited evidence on both sides, and that
    `04-verdict.md` presents either a real standoff or a documented genuine
    convergence.
-5. Portability smoke test, one call: send `protocol/PROTOCOL.md` plus the
+5. Portability smoke test, one call: send `skills/cross-model-peer-review/references/PROTOCOL.md` plus the
    Round 1 prompt as the system message and the packet as the user message,
    with no harness context at all, and confirm the reply executes the
    challenger role from the protocol text alone. If it cannot, the protocol

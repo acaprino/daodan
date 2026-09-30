@@ -323,8 +323,8 @@ Changes applied: [count]
 
 ## Quick Examples
 
-- `/content-strategy https://example.com` -- Full marketing audit
-- `/content-strategy https://example.com/pricing` -- Pricing page conversion optimization
-- `/content-strategy src/pages/landing.html` -- Audit local landing page
-- `/content-strategy https://example.com --focus cta,social-proof` -- Focused audit
-- `/content-strategy https://example.com --social` -- Social media presence focus
+- `/digital-marketing:content-strategy https://example.com`: Full marketing audit
+- `/digital-marketing:content-strategy https://example.com/pricing`: Pricing page conversion optimization
+- `/digital-marketing:content-strategy src/pages/landing.html`: Audit local landing page
+- `/digital-marketing:content-strategy https://example.com --focus cta,social-proof`: Focused audit
+- `/digital-marketing:content-strategy https://example.com --social`: Social media presence focus

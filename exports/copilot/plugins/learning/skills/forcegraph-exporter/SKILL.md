@@ -9,7 +9,7 @@ description: >
 
 # Force Graph Exporter
 
-Convert a mindmap JSON outline into an interactive HTML file with a force-directed graph visualization powered by [force-graph](https://github.com/vasturiano/force-graph). The output file can be opened in any browser -- no server required, but needs internet to load the force-graph library from CDN.
+Convert a mindmap JSON outline into an interactive HTML file with a force-directed graph visualization powered by [force-graph](https://github.com/vasturiano/force-graph). The output file opens in any browser with no server required, but it needs an internet connection to load the force-graph library from a CDN.
 
 ## Input
 

@@ -10,8 +10,9 @@ argument-hint: '[<path-to-plan-or-spec> | <topic>] [--challenger=<profile>] [--r
 
 # Cross-Model Peer Review
 
-Orchestrates one deliberation run against `protocol/PROTOCOL.md`: builds an immutable
-packet, gets explicit consent, sends it to an external challenger model, runs an
+Orchestrates one deliberation run against
+`<plugin-root>/skills/cross-model-peer-review/references/PROTOCOL.md`: builds an
+immutable packet, gets explicit consent, sends it to an external challenger model, runs an
 evidence-backed multi-round dialectic between the challenger and a repository-grounded
 respondent, and computes a verdict from a ledger that is never hand-edited.
 
@@ -59,8 +60,9 @@ All paths are relative to the run directory `.peer-review/YYYY-MM-DD-HHMM-<slug>
 | `sent/r2.md`, `sent/r3.md`, `sent/certification.md`, `sent/corrective.md` | command, one file per outgoing payload after round 1 | 4, 5 |
 
 **Every outgoing payload is a file before it is a request.** The transport reads the
-payload off disk and takes no inline text (`content_path`, see `mcp/server.py`), so
-each `peer_ask` call is preceded by the write that creates its payload file. Round 1's
+payload off disk and takes no inline text (`content_path`, see
+`<plugin-root>/skills/cross-model-peer-review/scripts/server.py`), so each
+`peer_ask` call is preceded by the write that creates its payload file. Round 1's
 payload is `00-packet.md` itself and needs no copy; every later round writes its
 payload under `sent/` first. This is R15 made mechanical rather than requested: a
 payload that must be retyped into a tool argument gets summarized instead, which is
@@ -277,9 +279,10 @@ No transport call of any kind precedes this phase.
 
 1. **Byte cap pre-flight.** Compare `00-packet.md`'s byte size (`<N>` below) against
    the transport's payload cap, 400000 bytes (the `peer_ask` tool refuses anything
-   larger outright, per `mcp/server.py`). If `<N>` exceeds the cap, do not present the
-   gate below: report the packet's size against the cap and stop. Approving a packet
-   the transport will refuse is not a real consent decision; the artifact or the
+   larger outright, per
+   `<plugin-root>/skills/cross-model-peer-review/scripts/server.py`). If `<N>`
+   exceeds the cap, do not present the gate below: report the packet's size against the
+   cap and stop. Approving a packet the transport will refuse is not a real consent decision; the artifact or the
    material it names must be reduced and the run repeated.
 2. Present verbatim, with the actual values substituted for the placeholders:
 
@@ -385,7 +388,7 @@ makes this gate a decision about a document rather than about an intention.
      finding to the respondent in Phase 3 as normal. The respondent has full
      repository access (R8) and judges the substance on its merits regardless of
      which section the challenger thought it lived in.
-7. Findings capped at 12 are the challenger prompt's responsibility, not this command's.
+8. Findings capped at 12 are the challenger prompt's responsibility, not this command's.
    If a reply carries more than 12, record every one of them anyway and note the
    overrun in the ledger's history for round 1.
 

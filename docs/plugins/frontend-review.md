@@ -37,6 +37,7 @@ The four code dimensions below are bare, local hard `dependencies` instead: `rea
 **Scope detection:**
 - **Diff mode** (default): reviews only changed frontend files (`.tsx .jsx .ts .vue .svelte .css .scss`, plus `index.html` and manifest files) from `git diff`
 - **Full mode**: scans the whole frontend surface (`src/ app/ components/ pages/ styles/`, or the given `path`) when no frontend changes exist in the diff, or `--full` is set. Discovery is capped at the first 120 files.
+- A `path` argument roots the full-mode scan at that path, and in diff mode keeps only the changed files under it.
 
 `--strict-mode` prints an explicit warning line if any Critical findings exist, on top of the normal report.
 
@@ -63,7 +64,7 @@ Design and UX runs inline in the command's own context, against the four loaded 
 
 There is one skip reason and it is always about the codebase: the dimension did not match. A missing plugin is not a reason, because all four are hard dependencies. A spawn failing with "Agent type not found" means a broken install, and the command stops and reports it rather than scoring a partial review.
 
-**Deterministic ground truth (Step 3):** before any review runs, the command runs `eslint` over the scope, and `tsc --noEmit` as well when the TypeScript signal matched. Both outputs are fed to the design pass and to the matching code agent as ground truth. A missing tool never stops the command: the report records "eslint not configured" or "tsc not available" instead.
+**Deterministic ground truth (Step 3):** before any review runs, the command runs `eslint` over the scoped files (the changed files in diff mode, the files under `path` when one is given), and `tsc --noEmit` as well when the TypeScript signal matched. `tsc` checks the whole project under its own `tsconfig.json`, and only the diagnostics for scoped files are kept. Both outputs are fed to the design pass and to the matching code agent as ground truth. A missing tool never stops the command: the report records "eslint not configured" or "tsc not available" instead.
 
 **Deduplication (Step 6):** when two dimensions flag the same file for the same underlying cause (design versus code, or code versus code: PWA and platform compliance both own the manifest, service worker and CSP; React performance and TypeScript type safety read the same components), the finding from the more specific dimension is kept, with one line noting which other dimension also caught it. A React re-render bug, for example, belongs to React performance, not to design and UX.
 

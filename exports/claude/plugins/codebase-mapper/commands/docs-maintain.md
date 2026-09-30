@@ -3,6 +3,7 @@ description: >
   Checks shipped documentation against the code and plans the fixes.
   TRIGGER WHEN: the user asks to audit, update, or verify existing technical docs against the current codebase, or to detect documentation drift on any of the 20 dimensions (endpoints removed but still documented, env vars renamed, schema fields added/dropped, dependencies upgraded, alerts removed, etc.).
   DO NOT TRIGGER WHEN: creating new docs from scratch (use /codebase-mapper:docs-create) or humanizing prose style (use /codebase-mapper:humanize-docs).
+argument-hint: "[path] [--audit-only] [--plan-only] [--merge-duplicates] [--scope <dim1,dim2,...>]"
 ---
 
 # Maintain Documentation
@@ -46,7 +47,7 @@ Use this command when you need to:
 
 **Audit-only workflow** (report without changes):
 ```
-You:   /docs-maintain --audit-only
+You:   /codebase-mapper:docs-maintain --audit-only
 
 Agent: I've inventoried your documentation. Found:
        - 3 duplicate documentation files
@@ -59,7 +60,7 @@ Agent: I've inventoried your documentation. Found:
 
 **Full refactoring workflow** (audit -> plan -> execute):
 ```
-You:   /docs-maintain
+You:   /codebase-mapper:docs-maintain
 
 Agent: I've inventoried your documentation. Found:
        - 3 duplicate documentation files
@@ -100,15 +101,15 @@ Valid dimensions for `--scope`: `interfaces`, `config`, `integrations`, `archite
 
 **Examples:**
 ```bash
-/docs-maintain                                        # Full workflow on entire project (all dimensions)
-/docs-maintain --audit-only                           # Report only, no changes
-/docs-maintain --plan-only                            # Audit + plan, no execution
-/docs-maintain docs/                                  # Manage only docs/ folder
-/docs-maintain README.md                              # Check specific file
-/docs-maintain --merge-duplicates                     # Focus on duplicates
-/docs-maintain --scope data-model                     # Schema drift only
-/docs-maintain --scope interfaces,integrations,auth   # API surface + integrations + auth drift
-/docs-maintain --scope dependencies                   # Outdated package versions only
+/codebase-mapper:docs-maintain                                        # Full workflow on entire project (all dimensions)
+/codebase-mapper:docs-maintain --audit-only                           # Report only, no changes
+/codebase-mapper:docs-maintain --plan-only                            # Audit + plan, no execution
+/codebase-mapper:docs-maintain docs/                                  # Manage only docs/ folder
+/codebase-mapper:docs-maintain README.md                              # Check specific file
+/codebase-mapper:docs-maintain --merge-duplicates                     # Focus on duplicates
+/codebase-mapper:docs-maintain --scope data-model                     # Schema drift only
+/codebase-mapper:docs-maintain --scope interfaces,integrations,auth   # API surface + integrations + auth drift
+/codebase-mapper:docs-maintain --scope dependencies                   # Outdated package versions only
 ```
 
 ## Issues Detected (generic)
@@ -168,19 +169,19 @@ In addition to the generic checks, the audit runs a **structured drift check per
 
 ```bash
 # Quarterly documentation maintenance
-/docs-maintain
+/codebase-mapper:docs-maintain
 
 # Quick health check without changes
-/docs-maintain --audit-only
+/codebase-mapper:docs-maintain --audit-only
 
 # Focus on cleaning up duplicates
-/docs-maintain --merge-duplicates
+/codebase-mapper:docs-maintain --merge-duplicates
 
 # Manage API documentation only
-/docs-maintain docs/api/
+/codebase-mapper:docs-maintain docs/api/
 
 # Check if README is current
-/docs-maintain README.md
+/codebase-mapper:docs-maintain README.md
 ```
 
 ## Tips for Best Results
@@ -194,6 +195,6 @@ In addition to the generic checks, the audit runs a **structured drift check per
 
 ## Related Commands
 
-- `/docs-create` - Create NEW documentation from code analysis (use when docs don't exist)
-- `/docs-maintain` - Audit and improve EXISTING documentation (use when docs exist but need maintenance)
-- `/humanize-docs` - Rewrite existing docs to be more human-readable
+- `/codebase-mapper:docs-create`: Create NEW documentation from code analysis (use when docs don't exist)
+- `/codebase-mapper:docs-maintain`: Audit and improve EXISTING documentation (use when docs exist but need maintenance)
+- `/codebase-mapper:humanize-docs`: Rewrite existing docs to be more human-readable

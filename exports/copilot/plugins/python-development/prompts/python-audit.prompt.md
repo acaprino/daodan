@@ -1,6 +1,6 @@
 ---
 name: python-audit
-description: 'Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --fix), or test writing (use python-development:python-tdd).'
+description: 'Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use python-development:python-tdd).'
 argument-hint: '<path> [--strict] [--skip-types] [--skip-coverage]'
 ---
 
@@ -129,6 +129,6 @@ Return exit code 1 if any critical issues are present and `--strict` is set; oth
 ## Synergies
 
 - Deep refactoring with metrics -> `/python-development:python-refactor`
-- Dead code removal only -> `/senior-review:code-review --fix`
+- Dead code removal only -> `/senior-review:code-review --commit`
 - Adding tests to raise coverage -> `python-development:python-tdd` skill
 - CLAUDE.md updates after cleanup -> `/project-setup:maintain-claude-md`

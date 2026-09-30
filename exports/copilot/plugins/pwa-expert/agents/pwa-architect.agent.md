@@ -77,7 +77,7 @@ Every deliverable cites the relevant reference file so the user can verify the r
 
 Delegate to other agents or plugins when the task crosses out of PWA scope:
 
-- Generic frontend styling, design systems, layout work: `frontend` plugin.
+- Generic frontend styling, design systems, layout work: out of scope for this agent. For a design and UX review, point the user to `/frontend-review:review-frontend`.
 - React-specific performance, bundle size, re-render audit: `react-development:review-react`.
 - Cross-platform security audit beyond PWA mechanics (mobile / Electron / Tauri rulebook): `platform-engineering:platform-review`.
 - Tauri or Electron desktop wrappers: `tauri-development`.

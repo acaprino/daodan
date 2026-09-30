@@ -12,7 +12,7 @@ Generate a MarkMind mind map for: <arguments>
 
 Execute immediately -- no plan mode. This command chains two skills:
 
-1. **Generate mindmap outline** (skill: `learning:generate-mindmap`): brainstorm internally (do not show to user), identify the central theme (2-4 words), extract branches and sub-concepts scaled to complexity level, assign emoji and colors. Save the JSON outline to a temporary file.
+1. **Generate mindmap outline** (skill: `learning:generate-mindmap`): brainstorm internally (do not show to user), identify the central theme (1-2 words maximum, plus its emoji, as the skill requires), extract branches and sub-concepts scaled to complexity level, assign emoji and colors. Save the JSON outline to a temporary file.
 
 2. **Render to MarkMind** (skill: `learning:markmind-exporter`): pipe the JSON outline to `<plugin-root>/skills/markmind-exporter/scripts/generate_markmind.py` with `--output` flag to produce the `.md` file.
 

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:8115ff88fff785e05c0a030590d4704858b64e292fe881124192a3c24da0d328",
+  "coreDigest": "sha256:498284fe7e164b497e253db5697cb432dc62ba295a9c62a54dfba857e2a262f2",
   "harnessStrategies": {
     "firefox-lint": "native-team",
     "firefox-publish": "native-team",
@@ -9,5 +9,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "browser-extensions",
-  "version": "1.8.0"
+  "version": "1.8.1"
 }

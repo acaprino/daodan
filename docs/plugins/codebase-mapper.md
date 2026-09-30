@@ -179,7 +179,7 @@ Rewrite existing documentation for readability: strips AI-style density and appl
 
 ### `/codebase-mapper:team-codebase-map`
 
-Agent-team variant of the mapping pipeline: the six writers run as a team with task tracking, capped with `--writers N`.
+Agent-team variant of the mapping pipeline, with the same phases and the same document set as `/codebase-mapper:map-codebase`. Both spawn the six writers at once; here they run as a team with task tracking, capped with `--writers N`.
 
 **Prerequisites:** the `agent-teams:task-coordination-strategies` and `agent-teams:team-communication-protocols` skills from `agent-teams@claude-code-workflows` (a hard dependency of this plugin; install `/plugin marketplace add wshobson/agents`, then `/plugin install agent-teams@claude-code-workflows`). Teammate spawning is an experimental Claude Code feature that also requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`; if teammate spawning is unavailable in the session, the command stops and tells the user to enable the flag and restart.
 
@@ -189,10 +189,11 @@ Agent-team variant of the mapping pipeline: the six writers run as a team with t
 
 **Pipeline:**
 
-1. **Explore** (sequential): `codebase-explorer` builds `.codebase-map/_internal/context-brief.md`. Checkpoint: a summary of the findings, then confirm before continuing.
-2. **Interconnect map** (sequential): `codebase-xray:semantic-interconnect-mapper` reads the context brief and produces `.codebase-map/_internal/interconnect.md` (contracts, invariants, domain rules, assumptions, integration hot-spots, call graph). If the run fails to produce the file, writers continue with only the context brief and a warning is logged.
-3. **Write** (parallel, up to 6 writers at once): `overview-writer`, `tech-writer`, `flow-writer`, `onboarding-writer`, `ops-writer`, `config-writer`. `tech-writer`, `flow-writer`, and `ops-writer` additionally cite the interconnect map's structured facts instead of paraphrasing code.
-4. **Review** (sequential, skipped with `--skip-review`): `guide-reviewer` checks documents `01` to `10` for consistency, detects documentation-reality drift against the interconnect map using `senior-review:defect-taxonomy`'s `logic-integrity.md`, and produces `INDEX.md`.
+1. **Explore** (sequential): `codebase-explorer` builds `.codebase-map/_internal/context-brief.md`, opening with the `## Project Profile` section.
+2. **Confirm Project Profile** (sequential): the same one-question checkpoint as `/codebase-mapper:map-codebase` Phase 1.5; adjustments are written back into the context brief before the writers run.
+3. **Interconnect map** (sequential): `codebase-xray:semantic-interconnect-mapper` reads the context brief and produces `.codebase-map/_internal/interconnect.md` (contracts, invariants, domain rules, assumptions, integration hot-spots, call graph). If the run fails to produce the file, writers continue with only the context brief and a warning is logged.
+4. **Write** (parallel, up to 6 writers at once): `overview-writer` (including `00-executive-summary.md`), `tech-writer`, `flow-writer`, `onboarding-writer`, `ops-writer`, `config-writer`, each calibrated to the confirmed profile. `tech-writer`, `flow-writer`, and `ops-writer` additionally cite the interconnect map's structured facts instead of paraphrasing code.
+5. **Review** (sequential, skipped with `--skip-review`): `guide-reviewer` checks documents `00` to `10` for consistency, detects documentation-reality drift against the interconnect map using `senior-review:defect-taxonomy`'s `logic-integrity.md`, checks register consistency and the plain-language layer, writes `11-glossary.md`, and produces `INDEX.md` with per-audience reading paths.
 
 ```
 /codebase-mapper:team-codebase-map                  # map the entire current project, 6 parallel writers
@@ -200,7 +201,7 @@ Agent-team variant of the mapping pipeline: the six writers run as a team with t
 /codebase-mapper:team-codebase-map . --writers 3     # cap parallel writers
 ```
 
-Output differs from `/codebase-mapper:map-codebase`: the team workflow has no Project Profile confirmation step, and it produces `01` to `10` plus `INDEX.md` only, without `00-executive-summary.md` or `11-glossary.md`.
+**Output:** the same set as `/codebase-mapper:map-codebase`: `00-executive-summary.md`, `01` to `10`, `11-glossary.md` and `INDEX.md`. The one team-specific difference is `--skip-review`: the reviewer writes `11-glossary.md` and `INDEX.md`, so a skipped review produces neither.
 
 ---
 

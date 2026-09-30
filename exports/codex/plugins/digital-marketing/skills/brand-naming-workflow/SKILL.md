@@ -22,9 +22,9 @@ Invoke the `brand-naming` skill and follow its full workflow.
 ## Examples
 
 ```
-/brand-naming Meal prep app for vegan athletes. Values: energy, nature, performance. Target: 20-35, international.
-/brand-naming SaaS project management tool for remote teams --languages en,es,pt
-/brand-naming Italian artisan coffee brand, premium positioning --tlds .com,.it,.coffee
+/digital-marketing:brand-naming Meal prep app for vegan athletes. Values: energy, nature, performance. Target: 20-35, international.
+/digital-marketing:brand-naming SaaS project management tool for remote teams --languages en,es,pt
+/digital-marketing:brand-naming Italian artisan coffee brand, premium positioning --tlds .com,.it,.coffee
 ```
 
 ## What it does

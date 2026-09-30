@@ -2,8 +2,8 @@
 name: cleanup-auditor
 description: >
   Always-on hygiene dimension of /senior-review:team-review.
-  TRIGGER WHEN: the user asks for a cleanup review, technical-debt audit, dead code, orphan assets, generated artifacts tracked in VCS, unused dependencies, stale docs and historical artifacts, or leftovers of finished work (migrations, debug tooling, stale branches).
-  DO NOT TRIGGER WHEN: the user wants removal (use /senior-review:code-review --commit, Step 7c), architecture or security review (use code-auditor or security-auditor), or one language only (use typescript-development:knip or python-development:python-dead-code).
+  TRIGGER WHEN: the user asks for a cleanup review, technical-debt audit, dead code, orphan assets, unused dependencies, stale docs and historical artifacts, or leftovers of finished work (migrations, debug tooling).
+  DO NOT TRIGGER WHEN: the user wants removal (use /senior-review:code-review --commit, Step 7c), workspace hygiene decided by the filesystem and git alone such as generated artifacts tracked in VCS, `.gitignore`, scratch directories, stale branches, stashes or worktrees (use repo-hygiene:workspace-auditor or /repo-hygiene:tidy), architecture or security review (use code-auditor or security-auditor), or one language only (use typescript-development:knip or python-development:python-dead-code).
 model: inherit
 color: yellow
 tools: Read, Write, Glob, Grep, Bash
@@ -28,7 +28,7 @@ Execute in order. Skip a dimension if the signals are absent (e.g., no `public/`
 
 ### D1: Dead Code (language-aware)
 
-Delegate detection to existing skills and read the output. Do NOT re-implement the analyzers.
+Run the analyzers directly (Knip, vulture, ruff) and parse their output. Do NOT re-implement them.
 
 **TS/JS projects** (`package.json` present):
 ```bash
@@ -188,8 +188,10 @@ Every finding carries a confidence tier and a recommended action alongside its s
 
 ## SEVERITY
 
-- **CRITICAL**: Secrets / credentials tracked in git, files that will corrupt `git checkout` cross-platform (`nul`, names with `<>|`).
-- **HIGH**: Generated artifacts tracked (bloats repo, slows clones, leaks internal paths), phantom deps (wrong `package.json`, breaks when workspace extracted), unused deps > 1 MB install footprint, scratch/pipeline-output directories tracked in git.
+- **CRITICAL**: Secrets / credentials tracked in git.
+- **HIGH**: Phantom deps (wrong `package.json`, breaks when workspace extracted), unused deps > 1 MB install footprint.
+
+Tracked generated artifacts, scratch and pipeline-output directories, and checkout-breaking filenames (`nul`, names with `<>|`) are rated by `repo-hygiene:workspace-auditor`, not here. If you notice one, list it under Cross-Reviewer Notes.
 - **MEDIUM**: Orphan assets > 100 KB each or > 20 total, eager-bundle bloat > 50 KB gzip, barrel-file bloat with < 20% usage ratio, completed plans older than 90 days with no `status: archived` marker, backup folders (`_archive/`, `legacy/`) tracked in git, stale doc references in README/CLAUDE.md to removed code.
 - **LOW**: Unused TS exports (may be public API), unused imports, single small orphan asset, superseded ADRs not yet moved.
 

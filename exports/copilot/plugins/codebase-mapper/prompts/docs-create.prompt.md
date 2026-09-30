@@ -198,14 +198,14 @@ If the output directory doesn't exist, create it.
 
 ## Quick Examples
 
-- `/docs-create src/api --interfaces` -- Document all API endpoints + emitted events in src/api
-- `/docs-create UserService --component` -- Deep dive on the UserService class
-- `/docs-create --architecture` -- Architecture doc for the whole project
-- `/docs-create --data-model` -- Entities, schema, ER diagram for the whole project
-- `/docs-create src/models --data-model` -- Data model for a specific module
-- `/docs-create --integrations --auth` -- Inbound/outbound integrations + auth model in one document
-- `/docs-create --config --observability --deployment` -- Operational doc (env vars + logs/metrics + deploy)
-- `/docs-create --dependencies` -- Internal call graph + external libraries with versions
-- `/docs-create --data-flows` -- Request lifecycle, pipelines, event flows with sequence diagrams
-- `/docs-create --state-machines` -- FSM diagrams for domain objects
-- `/docs-create --full --output docs/technical.md` -- Everything in one file
+- `/codebase-mapper:docs-create src/api --interfaces`: Document all API endpoints + emitted events in src/api
+- `/codebase-mapper:docs-create UserService --component`: Deep dive on the UserService class
+- `/codebase-mapper:docs-create --architecture`: Architecture doc for the whole project
+- `/codebase-mapper:docs-create --data-model`: Entities, schema, ER diagram for the whole project
+- `/codebase-mapper:docs-create src/models --data-model`: Data model for a specific module
+- `/codebase-mapper:docs-create --integrations --auth`: Inbound/outbound integrations + auth model in one document
+- `/codebase-mapper:docs-create --config --observability --deployment`: Operational doc (env vars + logs/metrics + deploy)
+- `/codebase-mapper:docs-create --dependencies`: Internal call graph + external libraries with versions
+- `/codebase-mapper:docs-create --data-flows`: Request lifecycle, pipelines, event flows with sequence diagrams
+- `/codebase-mapper:docs-create --state-machines`: FSM diagrams for domain objects
+- `/codebase-mapper:docs-create --full --output docs/technical.md`: Everything in one file

@@ -56,7 +56,7 @@ Wait for all fixes to complete before proceeding.
 
 ### 7c. Cleanup Phases
 
-Run this sub-step only when the accepted findings include codebase-hygiene items (dead code, orphan assets, generated artifacts tracked in VCS, unused or phantom deps, stale docs). Skip it entirely otherwise. This is the only place in the marketplace that performs bulk removal of application code (test-file bulk removal is owned by the `testing` plugin's gated `/testing:test-consolidate` workflow); detection lives in `senior-review:cleanup-auditor` and in Agent B2 above, and neither of them deletes anything.
+Run this sub-step only when the accepted findings include codebase-hygiene items (dead code, orphan assets, unused or phantom deps, stale docs). Skip it entirely otherwise. Workspace hygiene that the filesystem and git decide alone (generated artifacts tracked in VCS, `.gitignore`, scratch directories, git auxiliary state) is applied by `/repo-hygiene:tidy`, never here. This is the only place in the marketplace that performs bulk removal of application code (test-file bulk removal is owned by the `testing` plugin's gated `/testing:test-consolidate` workflow); detection lives in `senior-review:cleanup-auditor` and in Agent B2 above, and neither of them deletes anything.
 
 #### Critical rules
 
@@ -81,7 +81,7 @@ Lowest risk first, stopping at the first gate failure. Run only the phases the a
 1. `brand` -- rebrand residue. Requires the user to confirm the old brand name first.
 2. `assets` -- orphan static files. Watch for dynamic references built from template literals, so Grep partial basenames too. For eager `import.meta.glob` bloat, switch to `{ eager: false }` with lazy resolution rather than removing the glob, unless every file in it is provably unused; removing the glob needs user sign-off.
 3. `deps` -- unused and phantom dependencies. Move phantom deps to the correct workspace's manifest instead of deleting them unless confirmed unused everywhere. Re-install after editing and commit the manifest together with the lockfile. Never touch implicitly-used devDependencies (`prettier`, `eslint`, `typescript`, `@types/*` matching runtime deps) without grepping config files first.
-4. `exports` -- dead exports, types, files, and unused Python symbols, in ascending risk order: ruff `F401` and `F841` auto-fix, then Knip unused exports and types verified by Grep across all workspaces, then Knip unused files verified against dynamic require and framework-convention paths, then vulture functions and classes under rule 6.
+4. `exports`: dead exports, types, files, and unused Python symbols, in ascending risk order: ruff `F401` and `F841` auto-fix, then Knip unused exports and types verified by Grep across all workspaces, then Knip unused files verified against dynamic require and framework-convention paths, then vulture functions and classes under rule 7.
 5. `docs` -- stale documentation and historical artifacts. Last on purpose, so it also catches doc references made stale by the `exports` phase. Detection-only unless the user explicitly opts into removal.
 
 #### Per-phase template
@@ -89,7 +89,7 @@ Lowest risk first, stopping at the first gate failure. Run only the phases the a
 For every phase `P`:
 
 - **P.1 Confirm zero references.** Grep each candidate across source and docs, excluding the file being removed. Skip anything with a match.
-- **P.2 Apply removals in batches** of 5 to 20 items. Delete files or edit export lines for code, `git rm` for assets, `git rm --cached` for generated artifacts, manifest edit plus re-install for deps, append for `.gitignore`.
+- **P.2 Apply removals in batches** of 5 to 20 items. Delete files or edit export lines for code, `git rm` for assets, manifest edit plus re-install for deps, line-level edits for stale doc references.
 - **P.3 Gate.** Run `BUILD_CMD` then `TEST_CMD`. On failure, `git reset --hard HEAD~1`, report which phase failed, and halt.
 - **P.4 Commit.** One commit per phase: `chore(cleanup): <phase> -- <count> items removed`, with a short summary of what went in the body.
 - **P.5 Proceed** to the next phase, or halt if the gate failed.
@@ -108,7 +108,7 @@ Highest false-positive rate of the five, so removal is opt-in and gated per item
 
 After the last phase, or at the first gate failure, present one row per phase with status, items removed, and the commit sha, plus the before-and-after test counts and the reverted phase if any. Then run the alignment check: Grep the removed symbols, paths, and dependency names against `CLAUDE.md` and propose updates for any hit, since a cleanup that leaves the project instructions describing deleted code has only moved the problem.
 
-Four phase names that used to live here now belong to `/repo-hygiene:tidy`: `garbage`, `gitignore`, `scratch` and `git-state`. They left because the filesystem and git decide them without reading a symbol, so the build-and-test gate below protects nothing there. A hygiene finding naming one of those is not this loop's to apply.
+Four phase names that used to live here now belong to `/repo-hygiene:tidy`: `garbage`, `gitignore`, `scratch` and `git-state`. They left because the filesystem and git decide them without reading a symbol, so the build-and-test gate above protects nothing there. A hygiene finding naming one of those is not this loop's to apply.
 
 This step is pure subtraction. It does not refactor architecture, does not touch test files unless they reference removed symbols, and does not run a bundle analyzer.
 

@@ -6,9 +6,9 @@ description: >
   machine, session and recovery, and the evidence ladder that decides what a claim about a venue is
   worth.
   TRIGGER WHEN: comparing brokers or integration paths, starting an integration against a broker with
-  no dedicated plugin, or naming what kind of access path a system uses.
-  DO NOT TRIGGER WHEN: the question is about one specific broker that has its own plugin, or about
-  strategy, backtesting, or portfolio construction.
+  no dedicated skill, or naming what kind of access path a system uses.
+  DO NOT TRIGGER WHEN: the question is about one specific broker that has its own skill (use the ibkr
+  or mt5 skill), or about strategy, backtesting, or portfolio construction.
 ---
 
 # Broker Connectivity

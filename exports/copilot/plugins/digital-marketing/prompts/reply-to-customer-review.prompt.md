@@ -27,10 +27,10 @@ If invoked without arguments, prompts the user to paste a review.
 ## Examples
 
 ```
-/reply-to-customer-review "Camera sporca e personale scortese. Mai piu." --brand "Villa Serena" --tone friendly
-/reply-to-customer-review The app crashes every time I try to checkout. Uninstalling.
-/reply-to-customer-review --lang en "Prodotto arrivato rotto, assistenza inesistente"
-/reply-to-customer-review "Amazing stay! The view was breathtaking and the host was incredibly welcoming." --brand "Casa Luna"
+/digital-marketing:reply-to-customer-review "Camera sporca e personale scortese. Mai piu." --brand "Villa Serena" --tone friendly
+/digital-marketing:reply-to-customer-review The app crashes every time I try to checkout. Uninstalling.
+/digital-marketing:reply-to-customer-review --lang en "Prodotto arrivato rotto, assistenza inesistente"
+/digital-marketing:reply-to-customer-review "Amazing stay! The view was breathtaking and the host was incredibly welcoming." --brand "Casa Luna"
 ```
 
 ## What it does

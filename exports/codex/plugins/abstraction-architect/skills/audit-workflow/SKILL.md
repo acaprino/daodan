@@ -70,7 +70,7 @@ The directory is created automatically if missing. Re-running the command overwr
 
 ## Prerequisites
 
-- The `codebase-xray` plugin must be installed (declared as a dependency in `marketplace.json`). `--diff` degrades gracefully without X-ray output and reports the reduced confidence in its Gaps section.
+- The `codebase-xray` plugin must be installed (a hard dependency declared in this plugin's `plugin.toml`). `--diff` degrades gracefully without X-ray output and reports the reduced confidence in its Gaps section.
 - `--diff` requires the target path to be a git repository.
 - For monorepos large enough to benefit from partitioned analysis, run `/codebase-xray:team-analyze` first to produce `08-interconnect-map.md`; the auditor will then include bounded-context fusion findings.
 

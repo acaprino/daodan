@@ -121,7 +121,7 @@ All factual content preserved. Review the changes with git diff.
 ## Quick Examples
 
 ```bash
-/humanize-docs docs/                    # Humanize all docs in docs/
-/humanize-docs README.md                # Humanize a single file
-/humanize-docs docs/api/reference.md    # Humanize specific API docs
+/codebase-mapper:humanize-docs docs/                    # Humanize all docs in docs/
+/codebase-mapper:humanize-docs README.md                # Humanize a single file
+/codebase-mapper:humanize-docs docs/api/reference.md    # Humanize specific API docs
 ```

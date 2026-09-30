@@ -47,7 +47,7 @@ For Electron / Tauri specifically, the agent also loads platform-security.md for
 `.platform-review/REPORT.md`:
 
 ```markdown
-# Platform Review -- <target> -- <date>
+# Platform Review: <target> (<date>)
 
 ## Detected platforms
 - SPA | PWA | Mobile | Electron | Tauri
@@ -60,7 +60,7 @@ For Electron / Tauri specifically, the agent also loads platform-security.md for
 ## Findings
 
 ### [CRITICAL]
-- <file:line> <issue> -- <rule violated> -- <fix>
+- <file:line> <issue>. Rule: <rule violated>. Fix: <fix>
 
 ### [HIGH]
 - ...

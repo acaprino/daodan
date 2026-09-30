@@ -113,5 +113,5 @@ Verify each item against codebase ground truth:
 
 ## Related
 
-- `readme-craft` skill -- the best practices and structure this command audits against
-- `/maintain-claude-md` -- similar audit workflow for CLAUDE.md files
+- `readme-craft` skill: the best practices and structure this command audits against
+- `/project-setup:maintain-claude-md`: similar audit workflow for CLAUDE.md files
