@@ -129,7 +129,7 @@ Single-fact lookups (1-3 searches, lead with the answer) and the verifier the co
 
 ### `web-search-techniques`
 
-Query formulation, source authority ranking, the two search backends, reading rules (WebFetch, then `webfetch.py` on a bot-block, browser only if `playwright-skill` happens to be installed), anti-loop rules. Loaded by both agents and the command.
+Query formulation, source authority ranking, the two search backends, reading rules (WebFetch, then `webfetch.py` on a bot-block, browser only if the `playwright` plugin's MCP tools happen to be available), anti-loop rules. Loaded by both agents and the command.
 
 ## Scripts
 

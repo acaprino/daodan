@@ -20,7 +20,7 @@ Use the app-analyzer agent to analyze [app name or URL]
 
 **Phase 0: Setup and platform detection**
 - Runs `adb devices`: a listed device selects mobile mode (Android via ADB). Otherwise a provided URL with the Playwright MCP tools available selects web mode. With neither, it stops and asks for a device or a URL
-- Web mode needs the Playwright MCP tools; when they are missing it stops and prints the `playwright-skill` install commands
+- Web mode needs the Playwright MCP tools; when they are missing it stops and prints the install command for the `playwright` plugin
 - Creates `.app-analyzer/screenshots/` and initializes `.app-analyzer/sitemap.json`, or loads it to resume a previous session
 - Authentication: in web mode with credentials it fills and submits the login form itself and confirms the logged-in state; without credentials it asks the user to log in manually in the browser and waits. In mobile mode it asks the user to log in on the device
 
@@ -70,4 +70,4 @@ The three Phase 2 reports follow the templates in the plugin's `app-analysis` sk
 
 ---
 
-**Related:** [playwright-skill](https://github.com/lackeyjb/playwright-skill) (upstream plugin, required for web app exploration; install: `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`) | [tauri-development](tauri-development.md) (scaffolds Tauri 2 mobile apps from analysis output)
+**Related:** `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for web app exploration; install: `claude plugin install playwright@claude-plugins-official`) | [tauri-development](tauri-development.md) (scaffolds Tauri 2 mobile apps from analysis output)

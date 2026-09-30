@@ -70,7 +70,7 @@ Cost note (checked 2026-08-23): serper.dev gives 2,500 free queries, then $1.00 
 A search result is a candidate. A claim enters a researcher's ledger only from a page that was read:
 1. `WebFetch` the page (prefer docs and primary sources; target anchors on long pages)
 2. On a bot-block (403, 429, challenge page) or thin content (under ~200 useful characters), `python3 ${PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py <url>`
-3. If the `playwright-skill` plugin is installed and the page is a primary source the answer depends on, drive a real browser with it as the last resort; if it is not installed, record the URL under limitations and move on. This is a pointer, not a dependency.
+3. If the Playwright MCP tools of the `playwright` plugin are available and the page is a primary source the answer depends on, drive a real browser with them as the last resort (`browser_navigate`, then `browser_snapshot`); if they are not, record the URL under limitations and move on. This is a pointer, not a dependency.
 4. Record: URL, title, the date the page carries, authority rank (below), and the claims taken from it
 
 ## WebFetch Guidance

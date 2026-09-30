@@ -25,8 +25,7 @@ Only after establishing intent, proceed with semantic and technical audits.
 
 ## BROWSER-BASED AUDITING
 
-Primary tooling for live site analysis: use Playwright MCP tools (requires the `playwright-skill` plugin). Install it with `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`.
-If Playwright MCP tools are not available, fall back to WebFetch/curl for all checks and skip browser-specific analysis (responsive resize, console messages, network requests).
+Primary tooling for live site analysis: the Playwright MCP tools, from the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of digital-marketing. If they are not available, stop and tell the user to run `claude plugin install playwright@claude-plugins-official`; do not fall back to a browserless audit of a live site.
 - `browser_navigate` - load pages, follow redirects, detect final URL
 - `browser_snapshot` - extract full rendered DOM for meta tags, headings, schema, OG tags, link structure
 - `browser_evaluate` - run JS: extract JSON-LD, check lazy loading, measure DOM size, get computed styles, count elements

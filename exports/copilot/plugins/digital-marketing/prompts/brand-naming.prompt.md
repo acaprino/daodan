@@ -35,6 +35,6 @@ Invoke the `brand-naming` skill and follow its full workflow.
 3. Filters linguistically and culturally (pronunciation, negative meanings, phonosymbolism)
 4. Checks domain registration once over the requested TLDs with the RDAP domain checker, lists every dropped name with its reason, then checks social media handles
 5. Analyzes market saturation: existing apps, websites, active businesses with same name (Google, Play Store, App Store, Crunchbase)
-6. Pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (`playwright-skill`), or reports the step as not screened
+6. Pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (the `playwright` plugin's MCP tools), or reports the step as not screened
 7. Scores top 5 on weighted criteria (memorability, distinctiveness, market saturation, SEO, legal risk, etc.)
 8. Presents top 3 with full breakdown: scoring table, name story, saturation report, domain status, tagline suggestion

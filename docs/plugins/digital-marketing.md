@@ -112,7 +112,7 @@ Brand naming strategist. Generates, filters, scores, and validates brand names t
 | **Invoke** | Skill reference or `/digital-marketing:brand-naming` |
 | **Trigger** | "brand name", "naming", "name my app", "name my product", "startup name" |
 
-**Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the RDAP domain checker, runs market saturation analysis, pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (`playwright-skill`), rates SEO potential, and scores the top 5 on weighted criteria. Coined words, letter-mashing and cheap suffixes are banned at generation.
+**Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the RDAP domain checker, runs market saturation analysis, pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (the `playwright` plugin's MCP tools), rates SEO potential, and scores the top 5 on weighted criteria. Coined words, letter-mashing and cheap suffixes are banned at generation.
 
 ---
 
@@ -278,4 +278,4 @@ Delegates to the `llm-seo-optimize` agent (6-phase protocol). Output: `.aeo-audi
 
 ---
 
-**Related:** [research](research.md) (deep research for content strategy) | [playwright-skill](https://github.com/lackeyjb/playwright-skill) (upstream plugin, required for browser-based SEO / GA4 / AEO audits; install: `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`)
+**Related:** [research](research.md) (deep research for content strategy) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for browser-based SEO / GA4 / AEO audits and trademark pre-screening; install: `claude plugin install playwright@claude-plugins-official`)

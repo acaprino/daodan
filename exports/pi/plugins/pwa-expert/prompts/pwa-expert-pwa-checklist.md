@@ -13,7 +13,7 @@ Delegate to `pwa-architect`. The agent reads `production-checklist.md` upfront (
 
 ## Modes
 
-- If `$ARGUMENTS` is a URL: walk the checklist against the live deployment via `playwright-skill` where applicable, plus the codebase for items that can only be verified in source.
+- If `$ARGUMENTS` is a URL: walk the checklist against the live deployment via the Playwright MCP tools of the `playwright` plugin where applicable, plus the codebase for items that can only be verified in source.
 - If `$ARGUMENTS` is a path or omitted: walk against the codebase only.
 
 ## How the walk works
@@ -21,7 +21,7 @@ Delegate to `pwa-architect`. The agent reads `production-checklist.md` upfront (
 For every item in every category of `production-checklist.md`:
 
 1. State the item verbatim.
-2. Verify it. Use `Read`, `Grep`, `Glob`, `Bash`, or `playwright-skill` tools as appropriate.
+2. Verify it. Use `Read`, `Grep`, `Glob`, `Bash`, or the Playwright MCP tools as appropriate.
 3. Record the result as one of: **PASS**, **FAIL**, **N/A** (with a reason for N/A).
 
 ## Output format

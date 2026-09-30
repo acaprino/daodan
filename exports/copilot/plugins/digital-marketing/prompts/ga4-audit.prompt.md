@@ -14,7 +14,7 @@ Comprehensive audit of a website's GA4 + GTM setup with live Playwright verifica
 
 ## CRITICAL RULES
 
-1. **Verify live, not just code**. Use Playwright MCP (via `playwright-skill`) to load the site, inspect `dataLayer`, network requests to `google-analytics.com`/`googletagmanager.com`, and the cookie banner state.
+1. **Verify live, not just code**. Use the Playwright MCP tools to load the site, inspect `dataLayer`, network requests to `google-analytics.com`/`googletagmanager.com`, and the cookie banner state.
 2. **Check Consent Mode v2 compliance**. Analytics must not fire before consent on EU visitors; verify default `analytics_storage: 'denied'` and correct `update` calls.
 3. **Never fabricate IDs**. If you cannot see the GA4 Measurement ID, GTM Container ID, or Ads Conversion ID, say so -- do not guess.
 4. **Write output to `.ga4-audit/`** for persistence and re-runs.
@@ -23,22 +23,21 @@ Comprehensive audit of a website's GA4 + GTM setup with live Playwright verifica
 
 ### Dependency check
 
-Every live check in Phase 2 needs Playwright MCP tools (`browser_navigate`, `browser_evaluate`, `browser_network_requests`). If they are not available, warn the user:
+Every live check in Phase 2 needs the Playwright MCP tools (`browser_navigate`, `browser_evaluate`, `browser_network_requests`). If they are not available, print this and stop:
 
 ```
-Missing required plugin: playwright-skill
+Missing required plugin: playwright (claude-plugins-official)
 
-Live verification needs Playwright MCP tools to inspect dataLayer, network
-requests, cookies, and the consent banner state in a real browser. Without
-it, the audit is limited to reading source code.
+Live verification needs the Playwright MCP tools to inspect dataLayer,
+network requests, cookies, and the consent banner state in a real browser.
 
-playwright-skill is a declared dependency of digital-marketing, distributed
-by its own upstream marketplace. Install it with:
-  claude plugin marketplace add lackeyjb/playwright-skill
-  claude plugin install playwright-skill@playwright-skill
+playwright is a declared dependency of digital-marketing: Microsoft's Playwright
+MCP server, published in the official Claude plugin marketplace.
+Install it with:
+  claude plugin install playwright@claude-plugins-official
 ```
 
-Degraded fallback without Playwright: run a source-only audit (grep the codebase, fetch raw HTML via WebFetch). Report every check that needs a live browser as **NOT VERIFIED**, never as pass or fail. Say so explicitly in the report header so no reader mistakes an unrun check for a passing one.
+Do not fall back to a source-only audit: a GA4 audit that never saw a tag fire is a code review, and reading it as an audit is how broken tracking ships.
 
 ### Flags
 
@@ -160,7 +159,7 @@ Generate `.ga4-audit/REPORT.md`:
 - GA4 Property: <G-XXXXXXXX>
 - CMP Detected: <iubenda / Cookiebot / etc.>
 - Consent Mode v2: [COMPLIANT | PARTIAL | MISSING]
-- Live verification: [PLAYWRIGHT | SOURCE-ONLY, live checks NOT VERIFIED]
+- Live verification: PLAYWRIGHT
 - VERDICT: [PASS | FAIL]   <!-- with --strict-mode, any Warning promotes to Critical and forces FAIL -->
 
 ## Critical (GDPR / data-loss risk)
@@ -181,7 +180,7 @@ Code snippets ready to paste for each fix.
 
 ## Synergies
 
-- Playwright-based verification -> `playwright-skill`
+- Playwright-based verification -> the `playwright` plugin (Microsoft's Playwright MCP server)
 - GA4/GTM knowledge base -> `digital-marketing:ga4-implementation` skill
 - Cookie banner (CMP) selection + config -> `business:privacy-doc-generator`
 - Full SEO audit (separate) -> `/digital-marketing:seo-audit`

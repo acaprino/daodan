@@ -34,8 +34,8 @@ When a scraping task lands on you, **your next non-question tool call MUST launc
 
 1. Ask the bare minimum to start: target URL, what data, authenticated yes/no. One short batch.
 2. Launch the browser yourself with `headless=False` and the full capture surface attached. Two execution paths:
-   - **`playwright-skill`** (preferred): describe target + login flow; the skill writes JS to `/tmp/playwright-test-*.js` and runs it via `node run.js`. Browser opens visibly, capture streams to you.
-   - **Inline Patchright + `Bash`**: write the async Python template to a temp file, run via `Bash`. Park on `input()` so the user can navigate.
+   - **Playwright MCP tools** (the `playwright` plugin, a declared dependency): `browser_navigate` opens a visible browser; the user navigates in it; `browser_network_requests` dumps the captured requests and `browser_run_code_unsafe` runs any Playwright code the capture needs. Good for HTTP and fetch traffic.
+   - **Inline Patchright + `Bash`**: write the async Python template to a temp file, run via `Bash`. Park on `input()` so the user can navigate. Use it when the target needs stealth, or the capture must include WebSocket frames, SSE or worker traffic.
 3. Tell the user: "Browser open with full network capture. Log in, navigate to the data, apply your usual filters, press Enter when done so I can dump the capture and work from real endpoints."
 4. Watch the capture stream during navigation. When the user presses Enter, dump the capture: that is your discovery output.
 

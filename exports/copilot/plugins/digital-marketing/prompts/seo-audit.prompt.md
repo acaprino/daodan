@@ -22,22 +22,21 @@ argument-hint: '<url or local path> [--focus <comma-separated category names>] [
 
 ### Dependency check (live sites only)
 
-For live URL targets (not `--local`), this command uses Playwright MCP tools for browser-based analysis. If Playwright MCP tools (`browser_navigate`, `browser_snapshot`, etc.) are not available, warn the user:
+For live URL targets (not `--local`), this command uses the Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_evaluate`, `browser_network_requests`, `browser_resize`). If they are not available, print this and stop:
 
 ```
-Missing required plugin: playwright-skill
+Missing required plugin: playwright (claude-plugins-official)
 
-Live site analysis needs Playwright MCP tools for DOM inspection,
-responsive testing, and network analysis. Without it, analysis will be
-limited to what can be fetched via WebFetch/curl.
+Live site analysis needs the Playwright MCP tools for DOM inspection,
+responsive testing, and network analysis.
 
-playwright-skill is a declared dependency of digital-marketing, distributed
-by its own upstream marketplace. Install it with:
-  claude plugin marketplace add lackeyjb/playwright-skill
-  claude plugin install playwright-skill@playwright-skill
+playwright is a declared dependency of digital-marketing: Microsoft's Playwright
+MCP server, published in the official Claude plugin marketplace.
+Install it with:
+  claude plugin install playwright@claude-plugins-official
 ```
 
-If Playwright tools are unavailable, fall back to WebFetch for fetching pages and analyze the raw HTML instead. Skip browser-specific checks (console messages, network requests, responsive resize).
+Do not fall back to a WebFetch-only audit: a live audit without a browser leaves every browser check unrun, and a report that lists them as skipped still reads as an audit. `--local` targets need no browser.
 
 ### Initialize
 

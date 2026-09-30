@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:5f75a0f04093e044103b008b1cb76b150a2bf0dc16d7568d5ec6c395fe6667d1",
+  "coreDigest": "sha256:7d184c4ecd00781109074460056053e7ae4a4d1412b594fed7dfeaf3a1dda570",
   "harnessStrategies": {
     "team-research": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "research",
-  "version": "6.2.1"
+  "version": "6.2.2"
 }

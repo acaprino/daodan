@@ -4,12 +4,11 @@
     "claude-plugins-official",
     "impeccable",
     "mattpocock",
-    "playwright-skill",
     "ui-ux-pro-max-skill"
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.6.4"
+    "version": "28.7.0"
   },
   "name": "daodan",
   "owner": {
@@ -56,7 +55,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "playwright-skill@playwright-skill"
+        "playwright@claude-plugins-official"
       ],
       "description": "Comprehensive app analysis for Android (ADB) and web (Playwright MCP) - navigation mapping, competitive analysis, design system extraction, UX flow analysis, and business model intelligence",
       "license": "MIT",
@@ -65,7 +64,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/codex/plugins/app-analyzer",
-      "version": "1.3.0"
+      "version": "1.4.0"
     },
     {
       "author": {
@@ -186,7 +185,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "playwright-skill@playwright-skill",
+        "playwright@claude-plugins-official",
         "text-humanizer"
       ],
       "description": "SEO optimization, content marketing, brand naming, domain hunting, customer review response, GA4/GTM analytics implementation, and answer-engine optimization (Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, Bing Copilot) - technical audits, keyword research, content strategy, brand naming, domain checks, trademark screening, professional review reply generation with sentiment analysis, Google Analytics 4 + Google Tag Manager deployment with EU/GDPR Consent Mode v2 compliance, /ga4-audit Playwright-powered verification, and /llm-seo-audit AEO command with crawler-access matrix, E-E-A-T, structured data, passage extractability. Prose humanization lives in the standalone text-humanizer plugin.",
@@ -205,7 +204,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "2.2.0"
+      "version": "2.3.0"
     },
     {
       "author": {
@@ -263,7 +262,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "playwright-skill@playwright-skill"
+        "playwright@claude-plugins-official"
       ],
       "description": "Expert Python web scraping - coordinator (grabber-architect) plus three specialists: stealth-browser-expert (Patchright/Camoufox/Nodriver + CAPTCHA), http-fingerprint-expert (JA4+/curl_cffi/primp + proxies/Web Unlocker), ai-scraping-expert (Crawl4AI/Firecrawl/ScrapeGraphAI + Pydantic + GraphQL RE)",
       "license": "MIT",
@@ -273,7 +272,7 @@
         "./skills/instagram-grab-workflow"
       ],
       "source": "./exports/codex/plugins/grabber-development",
-      "version": "1.7.0"
+      "version": "1.8.0"
     },
     {
       "author": {
@@ -437,7 +436,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "playwright-skill@playwright-skill"
+        "playwright@claude-plugins-official"
       ],
       "description": "Progressive Web App expert for the 2025-2026 baseline. Covers Web App Manifest (id, display_override, scope_extensions, handle_links, file_handlers, share_target), Service Workers (Workbox 7 / Serwist), Web Push (VAPID, RFC 8030/8291/8292, Declarative Push for Safari 18.4+), install flows (beforeinstallprompt, Window Controls Overlay), OPFS storage, Project Fugu capabilities, Core Web Vitals 2025 (INP < 200ms), security (HTTPS, CSP, COOP/COEP), and distribution (Bubblewrap to Google Play, PWA Builder to Microsoft Store, Capacitor to App Store, PWA Builder to Meta Quest). Includes the pwa-architect agent and three commands: /pwa-audit (hybrid local-code + live-URL via Playwright), /pwa-scaffold (manifest + SW + iOS meta + framework wiring for Vite, Next.js, Angular, Nuxt, vanilla), /pwa-checklist (deterministic production-deploy checklist walk).",
       "license": "MIT",
@@ -449,7 +448,7 @@
         "./skills/pwa-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/pwa-expert",
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "author": {
@@ -534,7 +533,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/codex/plugins/research",
-      "version": "6.2.1"
+      "version": "6.2.2"
     },
     {
       "author": {

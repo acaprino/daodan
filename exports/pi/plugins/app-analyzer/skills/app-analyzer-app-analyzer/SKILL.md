@@ -40,16 +40,17 @@ Abstract operations with platform-specific implementations:
 
 ### Web mode dependency check
 
-Web mode requires the `playwright-skill` plugin for Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_click`, etc.). If Playwright MCP tools are not available, STOP and tell the user:
+Web mode requires the Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_click`, etc.) from the `playwright` plugin, Microsoft's Playwright MCP server. If they are not available, STOP and tell the user:
 
 ```
-Missing required plugin: playwright-skill
+Missing required plugin: playwright (claude-plugins-official)
 
-The app-analyzer agent requires Playwright MCP tools for web app analysis.
-playwright-skill is a declared dependency, distributed by its own upstream
-marketplace. Install it with:
-  claude plugin marketplace add lackeyjb/playwright-skill
-  claude plugin install playwright-skill@playwright-skill
+The app-analyzer agent needs the Playwright MCP tools for web app analysis.
+
+playwright is a declared dependency of app-analyzer: Microsoft's Playwright
+MCP server, published in the official Claude plugin marketplace.
+Install it with:
+  claude plugin install playwright@claude-plugins-official
 ```
 
 ### Initialize output

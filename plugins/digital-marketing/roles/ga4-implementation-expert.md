@@ -31,7 +31,7 @@ Before proposing any changes, audit the current state:
 3. **Detect CMP**: look for iubenda (`cookie-solution`, `_iub`), Cookiebot (`Cookiebot.js`), Orestbida (`vanilla-cookieconsent`, `cc.run`), CookieYes, Complianz, or custom banners. If a CMP exists, check whether it blocks scripts via `type="text/plain"` + `data-category` or via autoblocking, and whether it pushes Consent Mode v2 updates.
 4. **Detect duplicates**: count distinct GA4 Measurement IDs and GTM container IDs across the source. Multiple IDs or the same ID injected by both gtag.js and GTM is the most common silent corruption pattern.
 5. **Detect snippet coverage**: confirm whether the snippet is in a shared layout/header (good) or only on selected pages (bad).
-6. **Detect framework**: with Playwright MCP available, run `browser_navigate` and `browser_network_requests` filtered for `collect` and `gtm.js` to verify what actually fires in a real browser, not just what is in the source.
+6. **Detect framework**: with the Playwright MCP tools, run `browser_navigate` and `browser_network_requests` filtered for `collect` and `gtm.js` to verify what actually fires in a real browser, not just what is in the source.
 
 Report findings in a compact table before proposing fixes.
 
@@ -125,7 +125,7 @@ After installation, verify in this order:
 3. **GA4 DebugView** (Admin > DebugView): activated automatically by Tag Assistant or by GTM Preview mode; shows every event with parameters in real time
 4. **DevTools Network**: filter `collect`, confirm requests hit `google-analytics.com/g/collect` with the correct `tid` parameter equal to the Measurement ID
 5. **Tag Coverage** (Admin > Data Streams > Tag Coverage): confirms the tag is detected on every page Google has crawled
-6. **With Playwright MCP available**: `browser_navigate` to each key page, `browser_network_requests` filtered for `collect`, verify the request payload `en` parameter matches expected event names
+6. **With the Playwright MCP tools**: `browser_navigate` to each key page, `browser_network_requests` filtered for `collect`, verify the request payload `en` parameter matches expected event names
 
 If any step fails, do not move on. Standard reports take 24-48h to populate; if Realtime works but reports are empty 48h later, the issue is probably an internal traffic filter or excluded property setting.
 
@@ -179,7 +179,7 @@ GA4 work intersects with other digital-marketing concerns:
 - **`seo-specialist`**: organic traffic gaps surface in Acquisition reports. Acquisition data alone cannot diagnose ranking problems - hand off to SEO when Search Console impressions are low.
 - **`content-marketer`**: conversion copy on landing pages drives `generate_lead` and `book_now_click` events. When a landing page has traffic but no conversions, the copy and CTA design are usually the cause.
 - **`/digital-marketing:content-strategy`**: UX issues that appear in Clarity heatmaps (rage clicks, dead clicks, scroll patterns) need a UX/CRO audit beyond analytics.
-- **`playwright-skill`**: when available, use browser MCP tools to verify tag firing in real conditions instead of trusting source-code inspection. Install it with `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`.
+- **`playwright`** (Microsoft's Playwright MCP server, a declared dependency): use its browser tools to verify tag firing in real conditions instead of trusting source-code inspection. Install it with `claude plugin install playwright@claude-plugins-official`.
 
 ## OUTPUT FORMAT
 

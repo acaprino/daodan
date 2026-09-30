@@ -22,22 +22,21 @@ description: 'Reviews whether the material actually persuades a visitor, not whe
 
 ### Dependency check (live sites only)
 
-For live URL targets, this command uses Playwright MCP tools for browser-based analysis. If Playwright MCP tools (`browser_navigate`, `browser_snapshot`, etc.) are not available, warn the user:
+For live URL targets, this command uses the Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_resize`). If they are not available, print this and stop:
 
 ```
-Missing required plugin: playwright-skill
+Missing required plugin: playwright (claude-plugins-official)
 
-Live site analysis needs Playwright MCP tools for DOM inspection,
-screenshots, and responsive testing. Without it, analysis will be limited
-to what can be fetched via WebFetch/curl.
+Live site analysis needs the Playwright MCP tools for DOM inspection,
+screenshots, and responsive testing.
 
-playwright-skill is a declared dependency of digital-marketing, distributed
-by its own upstream marketplace. Install it with:
-  claude plugin marketplace add lackeyjb/playwright-skill
-  claude plugin install playwright-skill@playwright-skill
+playwright is a declared dependency of digital-marketing: Microsoft's Playwright
+MCP server, published in the official Claude plugin marketplace.
+Install it with:
+  claude plugin install playwright@claude-plugins-official
 ```
 
-If Playwright tools are unavailable, fall back to WebFetch for fetching pages and analyze the raw HTML instead. Skip browser-specific checks (screenshots, responsive resize).
+Do not fall back to a WebFetch-only analysis. Local files need no browser.
 
 ### Initialize
 

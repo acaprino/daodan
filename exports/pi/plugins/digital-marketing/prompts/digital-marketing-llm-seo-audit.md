@@ -12,7 +12,7 @@ Invokes the `llm-seo-optimize` agent to audit a site for answer-engine discovera
 ## CRITICAL RULES
 
 1. **Delegate to the `llm-seo-optimize` agent**. This command is a thin wrapper -- the agent owns the full 6-phase audit.
-2. **Verify live, not just code**. If Playwright MCP is available, use it to confirm crawler access (`robots.txt` live fetch), JSON-LD presence, and rendered passage extractability.
+2. **Verify live, not just code**. For a live URL, use the Playwright MCP tools (the `playwright` plugin, a declared dependency) to confirm crawler access (`robots.txt` live fetch), JSON-LD presence, and rendered passage extractability.
 3. **Write output to `.aeo-audit/` for persistence** so re-runs can diff against the baseline.
 4. **Never fabricate crawler policies**. If `robots.txt` cannot be fetched, state the gap explicitly.
 5. **Complementary to `/seo-audit`, not a replacement**. Traditional SEO and AEO require different optimizations -- flag the overlap, not duplication.
@@ -95,4 +95,4 @@ Run alongside traditional SEO tooling for a complete picture:
 - Structured data validation alongside broader checks -> `/digital-marketing:seo-audit`
 - Measurement setup -> `digital-marketing:ga4-implementation-expert` agent (AI-referrer tracking)
 - Humanizing AI-sounding copy to raise E-E-A-T -> `/text-humanizer:humanize-text` (text-humanizer plugin)
-- Playwright-based live verification -> `playwright-skill`
+- Playwright-based live verification -> the `playwright` plugin (Microsoft's Playwright MCP server)

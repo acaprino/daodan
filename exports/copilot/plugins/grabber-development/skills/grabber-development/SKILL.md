@@ -20,7 +20,7 @@ The one carve-out is a target listed under **Bundled Targets** below. Its Discov
 The default path is **user-driven navigation with live capture**, not Claude-clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
 
 1. Ask the bare minimum to start: target URL, what data is wanted, authenticated yes/no. One short batch of questions, then stop asking.
-2. Immediately invoke `playwright-skill` (preferred; it is a declared dependency of this plugin, installed from its upstream marketplace: `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`) or write an inline Patchright script via `Bash`. The script must run with `headless=False`, attach every handler in the Capture Surface below, and park on `input()` waiting for the user.
+2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, installed with `claude plugin install playwright@claude-plugins-official`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, write an inline Patchright script via `Bash` that runs with `headless=False`, attaches every handler in the Capture Surface, and parks on `input()` waiting for the user.
 3. Tell the user verbatim: "Browser is open with full network capture (XHR + fetch + WebSocket + SSE + workers + cookies + main-frame navigations). Log in, navigate to the data, apply the filters you'd use day-to-day, then press Enter here so I can dump the capture and reason from real endpoints."
 4. While the user navigates, you watch the capture stream. When they press Enter you have: real URLs, real endpoint paths, real field names, real WebSocket frames, real auth cookies. *Now* you can scaffold.
 
@@ -47,7 +47,7 @@ The full capture surface, output checklist, and anti-patterns are in the **Disco
 
 **Phase 1 (Target Assessment) and Phase 2 (Data Discovery) are blocking gates, not optional steps.** You MUST execute them yourself and have their concrete outputs in hand before scaffolding any project file (`pyproject.toml`, modules, models, CLI). No exceptions.
 
-**You always control the browser session and the capture.** The deliverable of discovery is not a script you hand over; it is a live capture you watched. Always launch the browser yourself (via `playwright-skill` or inline Patchright) with `headless=False` and the full capture surface attached, and keep the session open inside your turn.
+**You always control the browser session and the capture.** The deliverable of discovery is not a script you hand over; it is a live capture you watched. Always launch the browser yourself (the Playwright MCP tools, or inline Patchright when stealth or WebSocket, SSE and worker capture are needed), visible, with the full capture surface attached, and keep the session open inside your turn.
 
 **Who clicks depends on the task. The capture is yours either way:**
 
@@ -94,7 +94,7 @@ If any of those is still a guess, you have not finished discovery; do not procee
 For every scraping task, follow this sequence (the Discovery Gate above governs steps 1 and 2):
 
 ### 1. Target Assessment (YOU execute this)
-- Load the target URL in a stealth browser (via `playwright-skill` or inline Patchright)
+- Load the target URL in a browser (the Playwright MCP tools, or inline Patchright when stealth is needed)
 - Identify: static HTML vs JS-rendered, anti-bot service (check for cf_clearance, DataDome cookies, px cookies), data volume needed, update frequency
 - Capture: real landing URL after any redirects, SPA framework if any, presence/absence of anti-bot cookies
 

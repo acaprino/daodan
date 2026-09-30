@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ab8f8ba63a3d1579503a8463ca0d2c95d8b230c57087fed59db27af27f89d51e",
+  "coreDigest": "sha256:76f08721eb55d2bb53f150f7d62c1dc80a8e63eb7f44feb5c40ae87c5019bc47",
   "harnessStrategies": {
     "instagram-grab": "parallel-subagents"
   },
   "host": "pi",
   "overrides": [],
   "plugin": "grabber-development",
-  "version": "1.7.0"
+  "version": "1.8.0"
 }

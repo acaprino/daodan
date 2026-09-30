@@ -56,7 +56,7 @@ Knowledge base for building, auditing, and shipping PWAs in 2025-2026, loaded au
 
 ### `/pwa-expert:pwa-audit`
 
-Adversarial PWA audit. Auto-detects mode from the argument: a URL triggers live-mode auditing via `playwright-skill` (manifest fetch, install-criteria check, security headers, offline behavior, Core Web Vitals); a path or omitted argument triggers local-code mode (locates and reads the manifest, service worker, registration call, iOS meta tags, and header config in source).
+Adversarial PWA audit. Auto-detects mode from the argument: a URL triggers live-mode auditing via the Playwright MCP tools (manifest fetch, install-criteria check, security headers, offline behavior, Core Web Vitals); a path or omitted argument triggers local-code mode (locates and reads the manifest, service worker, registration call, iOS meta tags, and header config in source).
 
 ```
 /pwa-expert:pwa-audit                    # local code mode, current directory
@@ -64,7 +64,7 @@ Adversarial PWA audit. Auto-detects mode from the argument: a URL triggers live-
 /pwa-expert:pwa-audit https://example.com  # live URL mode via Playwright
 ```
 
-Findings are numbered `C1, C2, ...` (Critical), `I1, I2, ...` (Important), `N1, N2, ...` (Nice-to-have) so they stay referenceable across follow-up prompts. Live mode runs on `playwright-skill`, a required dependency of this plugin (`claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`). Notes upfront that Safari Web Inspector cannot inspect installed Home Screen PWAs, so live-mode results don't cover the post-install standalone experience.
+Findings are numbered `C1, C2, ...` (Critical), `I1, I2, ...` (Important), `N1, N2, ...` (Nice-to-have) so they stay referenceable across follow-up prompts. Live mode runs on the Playwright MCP tools of `playwright@claude-plugins-official` (Microsoft's Playwright MCP server), a hard dependency of this plugin (`claude plugin install playwright@claude-plugins-official`); without them the command stops rather than auditing a live site without a browser. Notes upfront that Safari Web Inspector cannot inspect installed Home Screen PWAs, so live-mode results don't cover the post-install standalone experience.
 
 ---
 
@@ -94,4 +94,4 @@ Every **FAIL** links back to the matching reference file for self-service remedi
 
 ---
 
-**Related:** [platform-engineering](platform-engineering.md) (cross-platform security/architecture/performance beyond PWA mechanics) | [react-development](react-development.md) (React-specific performance) | [tauri-development](tauri-development.md) (desktop/mobile native wrappers) | [playwright-skill](https://github.com/lackeyjb/playwright-skill) (upstream plugin and a hard dependency, used by the live-URL modes of `/pwa-expert:pwa-audit` and `/pwa-expert:pwa-checklist`; install: `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`)
+**Related:** [platform-engineering](platform-engineering.md) (cross-platform security/architecture/performance beyond PWA mechanics) | [react-development](react-development.md) (React-specific performance) | [tauri-development](tauri-development.md) (desktop/mobile native wrappers) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server and a hard dependency, used by the live-URL modes of the audit and checklist commands; install: `claude plugin install playwright@claude-plugins-official`)

@@ -163,23 +163,23 @@ Report findings in a table with one column per checked TLD, in the order they we
 
 The three registers to query are EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs are in `references/naming-frameworks.md`. All three are JavaScript applications whose records a web search engine does not index, so **a web search for the name never queries a register**, and a LOW rating built on one is unearned.
 
-Query them through a real browser with the `playwright-skill` plugin, a declared dependency of this plugin. For each remaining candidate, on each register: open the search page, enter the exact name, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in.
+Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the search page, enter the exact name, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in.
 
 If the browser tools are unavailable, stop and tell the user:
 
 ```
-Missing required plugin: playwright-skill
+Missing required plugin: playwright (claude-plugins-official)
 
 Trademark pre-screening queries EUIPO TMview, USPTO Trademark Search and the
 WIPO Global Brand Database, which cannot be searched from a search engine.
 
-playwright-skill is a declared dependency of digital-marketing, distributed
-by its own upstream marketplace. Install it with:
-  claude plugin marketplace add lackeyjb/playwright-skill
-  claude plugin install playwright-skill@playwright-skill
+playwright is a declared dependency of digital-marketing: Microsoft's Playwright
+MCP server, published in the official Claude plugin marketplace.
+Install it with:
+  claude plugin install playwright@claude-plugins-official
 ```
 
-Without the browser, do not rate trademark risk at all. Report the step as **NOT SCREENED** for every candidate, score the Trademark Risk criterion in Step 7 at the midpoint, and say so in the Step 8 summary, so no reader takes an unrun check for a clean one.
+Do not rate trademark risk without the registers: a LOW rating built on anything else is unearned.
 
 Rate risk when the registers were queried: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
 

@@ -34,7 +34,7 @@ Budget is a planning-time cap: plan queries before launching them; do not count 
 
 ## 2. Read
 
-- Read the pages that matter, per the skill's reading rules (`WebFetch`, then `webfetch.py` on a block, browser only when `playwright-skill` is installed and the page is load-bearing)
+- Read the pages that matter, per the skill's reading rules (`WebFetch`, then `webfetch.py` on a block, browser only when the `playwright` plugin's MCP tools are available and the page is load-bearing)
 - A page enters the ledger only after it is read. A snippet is a pointer, never a claim
 - On entry record: URL, title, the date the page carries, authority rank 1-5, and each claim taken, as one sentence with numbers carrying date and unit
 

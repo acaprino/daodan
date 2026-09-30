@@ -38,6 +38,10 @@ claude plugin marketplace add acaprino/daodan
 claude plugin install python-development@daodan
 claude plugin install senior-review@daodan
 claude plugin install react-development@daodan
+
+# Upstream plugins some of ours depend on (see Required dependencies)
+claude plugin install superpowers@claude-plugins-official   # ai-tooling, peer-review
+claude plugin install playwright@claude-plugins-official    # app-analyzer, digital-marketing, grabber-development, pwa-expert
 ```
 
 The same repository is a native marketplace for Copilot and Codex:
@@ -117,12 +121,13 @@ Installing the same plugin from [obra's own marketplace](https://github.com/obra
 
 More detail in [Brainstorming, planning, and execution](#brainstorming-planning-and-execution).
 
-`app-analyzer`, `pwa-expert`, `digital-marketing`, and `grabber-development` declare [lackeyjb/playwright-skill](https://github.com/lackeyjb/playwright-skill) as a hard dependency (`playwright-skill@playwright-skill`): their browser-based workflows (web app exploration, live PWA audits, live SEO/GA4 checks, scraping discovery) run on its Playwright automation skill. Install it from its own marketplace:
+`app-analyzer`, `digital-marketing`, `grabber-development` and `pwa-expert` declare Microsoft's Playwright MCP server as a hard dependency, `playwright@claude-plugins-official`: their browser work (web app exploration, live SEO, GA4 and AEO audits, trademark pre-screening, scraping discovery, live PWA audits) runs on its `browser_*` tools. It lives in the official Claude plugin marketplace, the same one superpowers comes from:
 
 ```bash
-claude plugin marketplace add lackeyjb/playwright-skill
-claude plugin install playwright-skill@playwright-skill
+claude plugin install playwright@claude-plugins-official
 ```
+
+Without it, those commands stop and print this line; none of them runs a reduced audit without a browser.
 
 More detail in [Browser automation (Playwright)](#browser-automation-playwright).
 
@@ -215,7 +220,7 @@ flowchart TD
     subgraph external [External marketplaces]
         superpowers["superpowers<br/>(claude-plugins-official)"]
         agentteams["agent-teams<br/>(claude-code-workflows)"]
-        playwright["playwright-skill<br/>(playwright-skill)"]
+        playwrightmcp["playwright<br/>(claude-plugins-official)"]
         mattpocockskills["mattpocock-skills<br/>(mattpocock)"]
         deveressentials["developer-essentials<br/>(claude-code-workflows)"]
         impeccable["impeccable<br/>(impeccable)"]
@@ -225,10 +230,10 @@ flowchart TD
 
     aitooling --> superpowers
     peerreview --> superpowers
-    appanalyzer --> playwright
-    pwaexpert --> playwright
-    grabber --> playwright
-    digitalmarketing --> playwright
+    appanalyzer --> playwrightmcp
+    pwaexpert --> playwrightmcp
+    grabber --> playwrightmcp
+    digitalmarketing --> playwrightmcp
     digitalmarketing --> texthumanizer
     business --> texthumanizer
     business --> research
@@ -324,18 +329,17 @@ The three pipelines this marketplace built on top of the old `agent-teams` plugi
 
 ### Browser automation (Playwright)
 
-As of marketplace 11.0.0, the `playwright-skill` plugin is no longer vendored here. The local copy was byte-identical to its upstream (which installs directly as a marketplace), so it was handed back:
+As of marketplace 11.0.0, the `playwright-skill` plugin is no longer vendored here: the local copy was byte-identical to its upstream, so it was handed back. As of marketplace 28.7.0 no plugin here depends on it any more. Every plugin that drives a browser depends on Microsoft's Playwright MCP server, published in the official Claude plugin marketplace:
 
 | Upstream | License | Covers |
 |----------|---------|--------|
-| [lackeyjb/playwright-skill](https://github.com/lackeyjb/playwright-skill) | MIT | General-purpose browser automation with Playwright: auto-detects dev servers, writes and runs test scripts, screenshots, responsive checks, login flows, link checking |
+| `playwright@claude-plugins-official` ([microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)) | Apache-2.0 | Playwright MCP server: `browser_*` tools for navigation, snapshots, clicks, forms, network requests, screenshots, and arbitrary Playwright code |
 
 ```bash
-claude plugin marketplace add lackeyjb/playwright-skill
-claude plugin install playwright-skill@playwright-skill
+claude plugin install playwright@claude-plugins-official
 ```
 
-The plugins that build on it ([app-analyzer](docs/plugins/app-analyzer.md), [pwa-expert](docs/plugins/pwa-expert.md), [digital-marketing](docs/plugins/digital-marketing.md), [grabber-development](docs/plugins/grabber-development.md)) declare it as a hard dependency and keep referencing the same `playwright-skill:playwright-skill` namespace, which resolves as written once the upstream plugin is installed.
+[app-analyzer](docs/plugins/app-analyzer.md), [digital-marketing](docs/plugins/digital-marketing.md), [grabber-development](docs/plugins/grabber-development.md) and [pwa-expert](docs/plugins/pwa-expert.md) declare it as a hard dependency. One maintained upstream now covers what two used to: the interactive tools the audits call, and, through `browser_run_code_unsafe` and `browser_network_requests`, the scripted cases (offline simulation, traffic capture). `grabber-development` keeps an inline Patchright script for stealth browsing and WebSocket, SSE and worker capture, which needs no plugin.
 
 ### Reverse engineering (binary analysis)
 
