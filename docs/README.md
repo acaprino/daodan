@@ -10,7 +10,7 @@ The augmentation symbiote for coding agents. Agents, skills, and commands for de
 |--------|----------|-------------|------|
 | [abstraction-architect](plugins/abstraction-architect.md) | code-quality | Structural entropy audits: seven dimensions over two evidence tracks (knowledge and form), whole-codebase or diff mode | 1 agent, 1 skill, 1 command |
 | [ai-tooling](plugins/ai-tooling.md) | ai-ml | Prompt engineering, Claude Agent SDK | 1 agent, 2 skills, 1 command |
-| [app-analyzer](plugins/app-analyzer.md) | analysis | Android app analysis via ADB and webapp exploration via Playwright | 1 agent |
+| [app-analyzer](plugins/app-analyzer.md) | analysis | Android app analysis via ADB and webapp exploration via Playwright | 1 agent, 1 skill |
 | [browser-extensions](plugins/browser-extensions.md) | development | Firefox WebExtension development: Manifest V2/V3, browser.* APIs, AMO publishing | 1 agent, 1 skill, 3 commands |
 | [business](plugins/business.md) | business | Legal advisory, privacy policies, GDPR/ePrivacy/CCPA compliance, SaaS business planning | 3 agents, 1 skill |
 | [clean-code](plugins/clean-code.md) | review | Rewrite source code for readability without changing behavior | 1 agent, 1 command |

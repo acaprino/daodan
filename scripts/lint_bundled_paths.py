@@ -11,7 +11,7 @@ nothing and the reference silently does not load. `${CLAUDE_PLUGIN_ROOT}` is the
 substitution that survives installation, and it expands inside agent, command and
 skill bodies, not only in hooks and MCP configs.
 
-Three passes, each independently reported. Exits non-zero if any fails.
+Four passes, each independently reported. Exits non-zero if any fails.
 
   1. self refs     a plugin referencing its OWN bundled file must go through
                    ${CLAUDE_PLUGIN_ROOT}/... (or a skill-relative references/...
@@ -34,6 +34,15 @@ Three passes, each independently reported. Exits non-zero if any fails.
                    reasoning-patterns reference sat unshipped for eleven days
                    after the kernel neutralization, read by an agent and a
                    command on every host, and passed every other check.
+  4. skill refs    a role or workflow sits outside every skill, so a bare
+                   `references/<file>.md` in its body can only mean a file in a
+                   skill it loads: one of its own plugin's skills, or a skill of a
+                   local plugin it declares in [dependencies].required. The file
+                   must exist there. Its motivating case: app-analyzer's role read
+                   `references/report-templates.md`, which sat in an agents/
+                   directory at the kernel root, shipped nowhere, and was never
+                   written as ${CLAUDE_PLUGIN_ROOT}/..., so the third pass could
+                   not see it.
 
 What is deliberately NOT flagged:
 
@@ -55,6 +64,7 @@ skill, fix the reference, never add an entry.
 import json
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 MARKETPLACE = Path(".claude-plugin/marketplace.json")
@@ -103,6 +113,9 @@ CLAUDE_PACKAGES = Path("exports/claude/plugins")
 #
 # Fix a reference, delete its entry. Never add one to make a build pass.
 UNSHIPPED: dict[str, set[str]] = {}
+
+# A bare references/<file>.md that no `/`, `{`, `}` or word character precedes.
+BARE_REF = re.compile(r"(?<![/{}\w-])references/([\w.-]+\.md)")
 
 failures: list[str] = []
 
@@ -189,6 +202,38 @@ def check_shipped(hits):
     return missing, skipped
 
 
+def local_dependencies(plugin: str) -> list[str]:
+    manifest = tomllib.loads((PLUGINS / plugin / "plugin.toml").read_text(encoding="utf-8"))
+    declared = manifest.get("dependencies", {}).get("required", [])
+    return [name for name in declared if "@" not in name]
+
+
+def reference_names(plugin: str) -> set[str]:
+    return {path.name for path in (PLUGINS / plugin / "skills").glob("*/references/*.md")}
+
+
+def check_skill_refs():
+    """Bare references/<file>.md in roles and workflows must resolve in a loadable skill."""
+    unresolved = []
+    for plugin_dir in sorted(PLUGINS.iterdir()):
+        plugin = plugin_dir.name
+        if plugin in SUBJECT_MATTER_PLUGINS or not (plugin_dir / "plugin.toml").is_file():
+            continue
+        available = set(reference_names(plugin))
+        for dependency in local_dependencies(plugin):
+            if (PLUGINS / dependency).is_dir():
+                available |= reference_names(dependency)
+        bodies = sorted(plugin_dir.glob("roles/*.md")) + sorted(plugin_dir.glob("workflows/*.md"))
+        for body in bodies:
+            for line_no, line in enumerate(body.read_text(encoding="utf-8").splitlines(), 1):
+                for name in BARE_REF.findall(line):
+                    if name not in available:
+                        unresolved.append(
+                            (body.as_posix(), line_no, plugin, f"references/{name}  |  {line.strip()}")
+                        )
+    return unresolved
+
+
 def report(name, problems, hint):
     if problems:
         failures.append(name)
@@ -235,6 +280,13 @@ def main():
            "the compiler ships roles/, workflows/, contracts/, policies/ and skills/<name>/** "
            "only; move the file under a skill, point the reference there, then rebuild "
            "with python scripts/daodan_build.py")
+
+    unresolved = check_skill_refs()
+    print()
+    report("skill refs", unresolved,
+           "a role or workflow can only read references/ from a skill it loads; move the "
+           "file under skills/<name>/references/ of this plugin (or of a declared local "
+           "dependency) and point at it with ${CLAUDE_PLUGIN_ROOT}/skills/<name>/references/")
 
     if failures:
         sys.exit(f"\n{len(failures)} check(s) failed: {', '.join(failures)}")

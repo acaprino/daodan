@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.6.0"
+    "version": "28.6.1"
   },
   "name": "daodan",
   "owner": {
@@ -68,8 +68,11 @@
       "description": "Comprehensive app analysis for Android (ADB) and web (Playwright MCP) - navigation mapping, competitive analysis, design system extraction, UX flow analysis, and business model intelligence",
       "license": "MIT",
       "name": "app-analyzer",
+      "skills": [
+        "./skills/app-analysis"
+      ],
       "source": "./exports/copilot/plugins/app-analyzer",
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "agents": [

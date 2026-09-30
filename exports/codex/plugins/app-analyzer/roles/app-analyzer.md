@@ -7,6 +7,8 @@ model: inherit
 color: cyan
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 # app-analyzer
 
 Unified app analysis for Android (ADB) and web (Playwright MCP). Auto-detects platform. Phase 1: exhaustive navigation mapping. Phase 2: competitive intelligence report. User can stop after Phase 1.
@@ -368,11 +370,11 @@ Uses the sitemap from Phase 1 as navigation guide. Revisits key screens for deep
 
 ### Phase 2 Output
 
-**`docs/{APP}_ANALYSIS.md`** - Structured competitive analysis report. See `references/report-templates.md` for template.
+**`docs/{APP}_ANALYSIS.md`** - Structured competitive analysis report. See `<plugin-root>/skills/app-analysis/references/report-templates.md` for template.
 
-**`docs/{APP}_USER_FLOWS.md`** - Mermaid flowcharts of key journeys. See `references/report-templates.md` for template.
+**`docs/{APP}_USER_FLOWS.md`** - Mermaid flowcharts of key journeys. See `<plugin-root>/skills/app-analysis/references/report-templates.md` for template.
 
-**`docs/{APP}_REPORT.html`** - Visual HTML report with screenshot gallery. See `references/report-templates.md` for template.
+**`docs/{APP}_REPORT.html`** - Visual HTML report with screenshot gallery. See `<plugin-root>/skills/app-analysis/references/report-templates.md` for template.
 
 ### Checklist
 

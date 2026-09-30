@@ -368,11 +368,11 @@ Uses the sitemap from Phase 1 as navigation guide. Revisits key screens for deep
 
 ### Phase 2 Output
 
-**`docs/{APP}_ANALYSIS.md`** - Structured competitive analysis report. See `references/report-templates.md` for template.
+**`docs/{APP}_ANALYSIS.md`** - Structured competitive analysis report. See `${CLAUDE_PLUGIN_ROOT}/skills/app-analysis/references/report-templates.md` for template.
 
-**`docs/{APP}_USER_FLOWS.md`** - Mermaid flowcharts of key journeys. See `references/report-templates.md` for template.
+**`docs/{APP}_USER_FLOWS.md`** - Mermaid flowcharts of key journeys. See `${CLAUDE_PLUGIN_ROOT}/skills/app-analysis/references/report-templates.md` for template.
 
-**`docs/{APP}_REPORT.html`** - Visual HTML report with screenshot gallery. See `references/report-templates.md` for template.
+**`docs/{APP}_REPORT.html`** - Visual HTML report with screenshot gallery. See `${CLAUDE_PLUGIN_ROOT}/skills/app-analysis/references/report-templates.md` for template.
 
 ### Checklist
 

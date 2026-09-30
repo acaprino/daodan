@@ -161,7 +161,7 @@ More detail in [Test authoring knowledge bases (TDD and browser E2E)](#test-auth
 | **[research](docs/plugins/research.md)** | Deep web research with clarification, plan approval, parallel iterative researchers, citation check and a report file; quick single-fact lookups; optional serper.dev backend | 2 | 1 | 1 |
 | **[project-setup](docs/plugins/project-setup.md)** | Create and maintain CLAUDE.md with ground truth verification | 1 | - | 2 |
 | **[clean-code](docs/plugins/clean-code.md)** | Rewrite code for readability without changing behavior | 1 | - | 1 |
-| **[app-analyzer](docs/plugins/app-analyzer.md)** | Analyze Android apps via ADB and webapps via Playwright | 1 | - | - |
+| **[app-analyzer](docs/plugins/app-analyzer.md)** | Analyze Android apps via ADB and webapps via Playwright | 1 | 1 | - |
 | **[xterm](docs/plugins/xterm.md)** | Build and debug xterm.js terminal emulators | - | 1 | 2 |
 | **[obsidian-development](docs/plugins/obsidian-development.md)** | Obsidian community plugins that pass the Community hub's automated release review | - | 3 | - |
 | **[typescript-development](docs/plugins/typescript-development.md)** | TypeScript engineer agent, best practices, Knip dead code detection, and enterprise TypeScript mastery. Includes a type-safety review layer (type-safety-auditor agent, 20-rule skill, /review-typescript command) that also powers the ts-safety dimension of /senior-review:team-review. | 2 | 4 | 1 |

@@ -55,6 +55,8 @@ docs/
   {APP}_REPORT.html         # Phase 2 output
 ```
 
+The three Phase 2 reports follow the templates in the plugin's `app-analysis` skill (`references/report-templates.md`), which the agent reads when it writes them.
+
 **Supported platforms:**
 
 | Operation | ADB (Android) | Playwright MCP (Web) |
