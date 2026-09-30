@@ -56,7 +56,7 @@ In personal writing, removing patterns is half the job: sterile, voiceless prose
 - **Make the author's stance audible.** If the text takes a position, state it plainly instead of burying it under "some say, others say". Do not supply a stance the text does not take.
 - **Vary the rhythm.** Short sentences next to longer ones that take their time.
 - **Keep the author's person.** Write "I" where the author writes in the first person; never introduce it.
-- **Let some looseness in.** A parenthetical aside, a fragment, an admitted uncertainty. Perfect symmetry reads as assembled.
+- **Let some looseness in.** A parenthetical aside, a fragment, an uncertainty the author admits. Perfect symmetry reads as assembled.
 
 **Before (clean but voiceless):**
 > The experiment produced interesting results. The agents generated 3 million lines of code. Some developers were impressed while others were skeptical. The implications remain unclear.
@@ -206,7 +206,7 @@ One or two words from a list prove nothing; a cluster does. People are poor judg
 > Additionally, a distinctive feature of Somali cuisine is the incorporation of camel meat. An enduring testament to Italian colonial influence is the widespread adoption of pasta in the local culinary landscape, showcasing how these dishes have integrated into the traditional diet.
 
 **After:**
-> Camel meat is a distinctive part of Somali cuisine. Pasta, a legacy of Italian colonial rule, is widely eaten and has become part of the traditional diet.
+> Camel meat is a distinctive part of Somali cuisine. Pasta, a legacy of Italian colonial influence, is widely eaten and has become part of the traditional diet.
 
 ---
 
@@ -346,7 +346,9 @@ The zero-dash rule is this plugin's house policy. It applies whether or not a gi
 > - **Security:** Security has been strengthened with end-to-end encryption.
 
 **After:**
-> The update brings a new interface for a better user experience, optimized algorithms for performance, and end-to-end encryption for security.
+> A new interface improves the user experience, optimized algorithms improve performance, and end-to-end encryption strengthens security.
+
+**Open point:** "significantly improved": by how much, measured how?
 
 In documentation a list can stay a list: drop the bold header that only repeats the item's first words.
 
@@ -356,7 +358,7 @@ In documentation a list can stay a list: drop the bold header that only repeats 
 
 **Problem:** AI chatbots capitalize all main words in headings.
 
-**Strength:** weak alone in English, where headline styles such as AP and Chicago use title case; strong in Italian and other languages whose headings take sentence case.
+**Strength:** weak alone in English, where title case is an established headline style; strong in Italian (see `references/italiano.md`).
 
 Related heading tells: a heading echoed by the first sentence under it ("## Pricing" followed by "Pricing is..."), headings that contain only other headings, and a horizontal rule between every section. In documentation keep a heading's wording, since other pages may link to it; changing its case is safe.
 
@@ -414,7 +416,7 @@ Related heading tells: a heading echoed by the first sentence under it ("## Pric
 > Here is an overview of the French Revolution. The Revolution began in 1789, amid a financial crisis and food shortages. I hope this helps! Let me know if you'd like me to expand on any section.
 
 **After:**
-> The Revolution began in 1789, amid a financial crisis and food shortages.
+> The French Revolution began in 1789, amid a financial crisis and food shortages.
 
 ---
 
@@ -501,7 +503,7 @@ The draft and the second-pass notes are working material, not part of the reply.
 ## Output Format
 
 **report** (default):
-1. The final text, complete.
+1. The final text, complete, as the first section, headed **Final text**, inside a code fence longer than any fence the text itself contains (```` when the text has ``` blocks), with nothing else inside the fence.
 2. **Changes:** short bullets, grouped by pattern number.
 3. **Open points:** claims cut or left general for lack of a fact, placeholders left unfilled, and inconsistencies worth the author's attention (register, form of address, quotation marks). Write "None" when there are none.
 4. The quality score, only when asked.
@@ -557,9 +559,13 @@ Evaluate the rewritten text on a 1-10 scale (total 50):
 
 **Report (docs register):**
 
-> AI coding assistants generate code, documentation, tests, and refactors. With them, code generation is faster, output quality has improved with better training, and usage keeps growing: adoption has spread from hobbyists and solo developers to enterprise-wide rollouts and cross-functional teams. The New York Times, Wired, and The Verge have covered them.
->
-> Known problems include hallucinations, bias, and questions of accountability.
+**Final text**
+
+````text
+AI coding assistants generate code, documentation, tests, and refactors. With them, code generation is faster, output quality has improved with better training, and usage keeps growing: adoption has spread from hobbyists and solo developers to enterprise-wide rollouts and cross-functional teams. The New York Times, Wired, and The Verge have covered them.
+
+Known problems include hallucinations, bias, and questions of accountability.
+````
 
 **Changes:**
 - 19, 21: chatbot wrappers removed ("Great question!", "Here is an essay", "I hope this helps!", "Let me know...")

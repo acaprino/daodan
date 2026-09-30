@@ -47,7 +47,7 @@ The role edits a file only when its brief asks it to change that file (business-
 
 The workflow passes the file path with an instruction not to write, passes `Score: yes|no` explicitly, accepts an optional `--register docs|business|personal`, and asks the user (overwrite, new file, show only) before it writes anything itself. The dispatch is worded neutrally; the linter's debt entry is deleted. `AskUserQuestion` leaves the role's tools: ambiguity goes into open points.
 
-Existing consumers need no edit: codebase-mapper already asks for text-only, business-planner and humanize-docs already ask for the file to be rewritten, and digital-marketing loads the skill directly.
+Existing consumers need no edit: codebase-mapper's docs-create asks for text-only on inline text, business-planner asks for its file to be rewritten, and digital-marketing loads the skill directly. humanize-docs gives file paths for a "polish pass" and also says "just return the cleaned text"; the role therefore states that reply format and file handling are separate, so that pass still edits its files (a finding of the whole-branch review).
 
 ### D2. Ground rules and registers
 

@@ -51,7 +51,7 @@ Humanized version ready.
 3. Only show the result
 ```
 
-Write only after the user picks 1 or 2, and write the final text exactly as the report gives it.
+Write only after the user picks 1 or 2, and write only the body inside the **Final text** fence of the report, exactly as it stands: never the fence lines, the headings or the other sections.
 
 ## When to use what
 
