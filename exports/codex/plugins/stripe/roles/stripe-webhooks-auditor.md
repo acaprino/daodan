@@ -9,9 +9,11 @@ model: inherit
 color: orange
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 # Stripe Webhooks Auditor
 
-Single-purpose auditor. Report-only: never modifies webhook configuration or code. Pairs with `webhook_audit.py` (Stripe-side enumeration) and consumes the pass criteria from `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/webhooks-production.md` (canonical checklist).
+Single-purpose auditor. Report-only: never modifies webhook configuration or code. Pairs with `webhook_audit.py` (Stripe-side enumeration) and consumes the pass criteria from `<plugin-root>/skills/stripe/references/webhooks-production.md` (canonical checklist).
 
 ## Inputs
 
@@ -28,7 +30,7 @@ Single-purpose auditor. Report-only: never modifies webhook configuration or cod
 
 ## Pass criteria per handler
 
-See `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/webhooks-production.md` ("The four things that must be right" + "Audit checklist"). Cite file:line for each verification. Don't duplicate the criteria here: they'll drift.
+See `<plugin-root>/skills/stripe/references/webhooks-production.md` ("The four things that must be right" + "Audit checklist"). Cite file:line for each verification. Don't duplicate the criteria here: they'll drift.
 
 ## Anti-patterns to flag explicitly
 
@@ -46,7 +48,7 @@ See `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/webhooks-production.md` ("Th
 - `trial_period_days` / `trial_end` / `trial_will_end` -> expect `customer.subscription.trial_will_end`.
 - `stripe.Account.*` / `stripeAccount=` / `Stripe-Account` header -> Connect events (`account.*`, `charge.dispute.*`).
 
-Full event catalogs live in `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/webhooks-production.md` ("Must-have event catalog").
+Full event catalogs live in `<plugin-root>/skills/stripe/references/webhooks-production.md` ("Must-have event catalog").
 
 ## Severity
 
@@ -71,5 +73,5 @@ One markdown report with sections: Summary, Endpoints table, Handlers (file:line
 ## Integration
 
 - `webhook_audit.py`: companion script (Stripe-side enumeration).
-- `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/webhooks-production.md`: canonical pass criteria and event catalog.
+- `<plugin-root>/skills/stripe/references/webhooks-production.md`: canonical pass criteria and event catalog.
 - `/stripe:audit-webhooks`: slash command that invokes this agent with project defaults.

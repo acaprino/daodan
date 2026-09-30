@@ -9,6 +9,8 @@ model: inherit
 color: orange
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 # Revenue Optimizer
 
 Build revenue features and monetization systems. Analyze existing codebases to understand features, calculate costs, and create data-driven pricing strategies.
@@ -51,7 +53,7 @@ Features Discovered:
 
 ## Cost Analysis
 
-Analyze services to calculate true costs per user/feature. See [references/cost-analysis.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/cost-analysis.md) for detailed patterns.
+Analyze services to calculate true costs per user/feature. See [references/cost-analysis.md](<plugin-root>/skills/stripe/references/cost-analysis.md) for detailed patterns.
 
 ### Service Detection
 
@@ -63,7 +65,7 @@ Scan for these cost sources:
 
 ### Cost Mapping
 
-Map fixed costs, variable costs (per user), and feature costs (per use). See [references/cost-analysis.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/cost-analysis.md) for detailed cost mapping patterns and output format.
+Map fixed costs, variable costs (per user), and feature costs (per use). See [references/cost-analysis.md](<plugin-root>/skills/stripe/references/cost-analysis.md) for detailed cost mapping patterns and output format.
 
 ## Pricing Strategy Design
 
@@ -79,7 +81,7 @@ Combine feature value + cost data:
 
 Optimal Price = (Cost Floor x 0.3) + (Value Ceiling x 0.7) where Cost Floor = Cost to Serve / (1 - Target Margin).
 
-See [references/pricing-patterns.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/pricing-patterns.md) for implementation examples.
+See [references/pricing-patterns.md](<plugin-root>/skills/stripe/references/pricing-patterns.md) for implementation examples.
 
 ## Complete Analysis Example
 
@@ -150,7 +152,7 @@ Overage: AI $0.10/use | API $0.005/call
 | PayPal | Marketplaces, existing users | Medium |
 
 For detailed integration patterns, see:
-- **Stripe**: [references/stripe.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/stripe.md)
+- **Stripe**: [references/stripe.md](<plugin-root>/skills/stripe/references/stripe.md)
 
 ## Pricing Tier Design
 
@@ -160,7 +162,7 @@ Common patterns:
 - **Usage-Based**: Pay per API call, storage, or compute
 - **Per-Seat**: Charge per team member
 
-For tier structure examples and implementation, see [references/pricing-patterns.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/pricing-patterns.md).
+For tier structure examples and implementation, see [references/pricing-patterns.md](<plugin-root>/skills/stripe/references/pricing-patterns.md).
 
 ## Subscription Implementation
 
@@ -170,7 +172,7 @@ Key components:
 3. **Entitlement system**: Gate features based on plan
 4. **Billing portal**: Self-service plan management
 
-For subscription system patterns, see [references/subscription-patterns.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/subscription-patterns.md).
+For subscription system patterns, see [references/subscription-patterns.md](<plugin-root>/skills/stripe/references/subscription-patterns.md).
 
 ## Checkout Optimization
 
@@ -181,11 +183,11 @@ Conversion-focused checkout implementation:
 - Offer annual discount prominently (20-40% standard)
 - Pre-select recommended plan
 
-For checkout implementation details, see [references/checkout-optimization.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/checkout-optimization.md).
+For checkout implementation details, see [references/checkout-optimization.md](<plugin-root>/skills/stripe/references/checkout-optimization.md).
 
 ## Feature Gating Pattern
 
-**Prefer Stripe Entitlements** when billing lives in Stripe. It removes hand-rolled plan/feature mapping and keeps access in sync with subscription state automatically via the `entitlements.active_entitlement_summary.updated` webhook. See [references/entitlements.md](${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/entitlements.md) for the full pattern (Feature + ProductFeature + ActiveEntitlement, webhook-driven cache, migration from metadata-based gating).
+**Prefer Stripe Entitlements** when billing lives in Stripe. It removes hand-rolled plan/feature mapping and keeps access in sync with subscription state automatically via the `entitlements.active_entitlement_summary.updated` webhook. See [references/entitlements.md](<plugin-root>/skills/stripe/references/entitlements.md) for the full pattern (Feature + ProductFeature + ActiveEntitlement, webhook-driven cache, migration from metadata-based gating).
 
 Quick shape:
 

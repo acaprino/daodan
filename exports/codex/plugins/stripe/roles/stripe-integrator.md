@@ -8,6 +8,8 @@ model: inherit
 color: orange
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 # Stripe Integrator
 
 Interact with Stripe's API for complete payment and subscription management.
@@ -159,7 +161,7 @@ def handle_webhook(payload, sig_header):
 
 ## Firebase Integration Pattern
 
-For Firebase + Stripe integration, see `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/firebase-integration.md`.
+For Firebase + Stripe integration, see `<plugin-root>/skills/stripe/references/firebase-integration.md`.
 
 Quick setup:
 1. Store Stripe customer_id in Firestore user document
@@ -222,7 +224,7 @@ except stripe.error.StripeError as e:
 
 ## Advanced Features
 
-For detailed code examples of the following, see `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/stripe-patterns.md`:
+For detailed code examples of the following, see `<plugin-root>/skills/stripe/references/stripe-patterns.md`:
 - **Stripe Connect (Marketplaces)**: Connected accounts, platform fees, transfers
 - **Tax Calculation (Stripe Tax)**: Automatic tax in checkout
 - **3D Secure and SCA Compliance**: Strong Customer Authentication (EU/UK)
@@ -231,13 +233,13 @@ For detailed code examples of the following, see `${CLAUDE_PLUGIN_ROOT}/skills/s
 - **Idempotency**: Preventing duplicate operations
 
 For topics with their own reference files:
-- **Metered / usage-based billing** -> `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/billing-meters.md` (legacy `create_usage_record` removed in `2025-03-31.basil`)
-- **Feature gating via Stripe** -> `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/entitlements.md`
-- **Webhooks in production** -> `${CLAUDE_PLUGIN_ROOT}/skills/stripe/references/webhooks-production.md`
+- **Metered / usage-based billing** -> `<plugin-root>/skills/stripe/references/billing-meters.md` (legacy `create_usage_record` removed in `2025-03-31.basil`)
+- **Feature gating via Stripe** -> `<plugin-root>/skills/stripe/references/entitlements.md`
+- **Webhooks in production** -> `<plugin-root>/skills/stripe/references/webhooks-production.md`
 
 ## Scripts Reference
 
-All scripts live in the `stripe:stripe` skill. Absolute paths at runtime use `${CLAUDE_PLUGIN_ROOT}/skills/stripe/scripts/`:
+All scripts live in the `stripe:stripe` skill. Absolute paths at runtime use `<plugin-root>/skills/stripe/scripts/`:
 
 - `setup_products.py`: Create products and prices
 - `webhook_handler.py`: Signature-verified webhook endpoint with idempotency

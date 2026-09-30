@@ -19,13 +19,13 @@ Use the stripe-integrator agent to [integrate/audit/extend] [Stripe feature]
 ```
 
 **Core capabilities:**
-- **Payments** - Payment intents, checkout sessions, payment links
-- **Subscriptions** - Recurring billing, metered usage, tiered pricing
-- **Connect** - Marketplace payments, platform fees, seller onboarding
-- **Billing** - Invoices, customer portal, tax calculation
-- **Webhooks** - Signature-verified event handling, subscription lifecycle, idempotency
-- **Security** - 3D Secure, SCA compliance, fraud prevention (Radar)
-- **Disputes** - Chargeback handling, evidence submission
+- **Payments**: Payment intents, checkout sessions, payment links
+- **Subscriptions**: Recurring billing, metered usage, tiered pricing
+- **Connect**: Marketplace payments, platform fees, seller onboarding
+- **Billing**: Invoices, customer portal, tax calculation
+- **Webhooks**: Signature-verified event handling, subscription lifecycle, idempotency
+- **Security**: 3D Secure, SCA compliance, fraud prevention (Radar)
+- **Disputes**: Chargeback handling, evidence submission
 
 **Quick reference:**
 | Task | Method |
@@ -34,7 +34,7 @@ Use the stripe-integrator agent to [integrate/audit/extend] [Stripe feature]
 | Checkout session | `stripe.checkout.Session.create()` |
 | Subscription | `stripe.Subscription.create()` |
 | Payment link | `stripe.PaymentLink.create()` |
-| Report usage | `stripe.SubscriptionItem.create_usage_record()` |
+| Report usage | `stripe.billing.MeterEvent.create()` (the legacy usage-record API was removed in `2025-03-31.basil`) |
 | Connect account | `stripe.Account.create(type="express")` |
 
 **Prerequisites:**
@@ -61,11 +61,11 @@ Use the revenue-optimizer agent to [analyze/design/project] [pricing|tiers|reven
 ```
 
 **5-Phase Workflow:**
-1. **Discover** - Scan codebase for features, services, and integrations
-2. **Cost Analysis** - Calculate per-user and per-feature costs
-3. **Design** - Create pricing tiers based on value + cost data
-4. **Implement** - Build payment integration and checkout flows
-5. **Optimize** - Add conversion optimization and revenue tracking
+1. **Discover**: Scan codebase for features, services, and integrations
+2. **Cost Analysis**: Calculate per-user and per-feature costs
+3. **Design**: Create pricing tiers based on value + cost data
+4. **Implement**: Build payment integration and checkout flows
+5. **Optimize**: Add conversion optimization and revenue tracking
 
 **Key Metrics Calculated:**
 | Metric | Formula |
@@ -91,12 +91,14 @@ Adversarial auditor for Stripe webhook integrations. Given a Stripe account plus
 ```
 Use the stripe-webhooks-auditor agent to audit webhook setup
 ```
-Also runnable as `/audit-webhooks` (see Commands below).
+Also runnable as `/stripe:audit-webhooks` (see Commands below).
 
 **Three surfaces to check:**
-1. **Stripe account state** - configured endpoints, subscribed events, disabled endpoints, per-endpoint API version (via `webhook_audit.py`)
-2. **Codebase implementation** - signature verification, raw body preservation, idempotency via `event.id`, runtime config, handler coverage
-3. **Pass criteria** - canonical checklist in `skills/stripe/references/webhooks-production.md`
+1. **Stripe account state**: configured endpoints, subscribed events, disabled endpoints, per-endpoint API version (via `webhook_audit.py`)
+2. **Codebase implementation**: signature verification, raw body preservation, idempotency via `event.id`, runtime config, handler coverage
+3. **Gap analysis**: required events per declared feature, against the events enabled on Stripe and the events the code actually handles
+
+Pass criteria come from the canonical checklist in `skills/stripe/references/webhooks-production.md`.
 
 **Inputs:**
 - `STRIPE_SECRET_KEY` or `STRIPE_RESTRICTED_KEY` (read-only scope is enough)
@@ -109,7 +111,7 @@ Also runnable as `/audit-webhooks` (see Commands below).
 
 ### `stripe`
 
-Stripe knowledge base - API patterns, checkout optimization, subscription lifecycle, pricing strategies, webhook reliability, Firebase integration, cost analysis, revenue modeling. Loaded by `stripe-integrator` and `revenue-optimizer`; also usable standalone when you need patterns without agent invocation.
+Stripe knowledge base: API patterns, checkout optimization, subscription lifecycle, pricing strategies, webhook reliability, Firebase integration, cost analysis, revenue modeling. Loaded by `stripe-integrator` and `revenue-optimizer`; also usable standalone when you need patterns without agent invocation.
 
 | | |
 |---|---|
@@ -140,7 +142,7 @@ Stripe knowledge base - API patterns, checkout optimization, subscription lifecy
 **Scripts** (`skills/stripe/scripts/`, reference via `${CLAUDE_PLUGIN_ROOT}/skills/stripe/scripts/`):
 - `setup_products.py` - bootstrap Products and Prices
 - `webhook_handler.py` - signature-verified receiver with idempotency
-- `webhook_audit.py` - enumerate Stripe-side webhook endpoints and event coverage for `/audit-webhooks`
+- `webhook_audit.py` - enumerate Stripe-side webhook endpoints and event coverage for `/stripe:audit-webhooks`
 - `sync_subscriptions.py` - reconcile local DB vs Stripe subscription state
 - `simulate_subscription.py` - drive a subscription through test clock scenarios
 - `stripe_utils.py` - shared utilities
@@ -151,13 +153,13 @@ Stripe knowledge base - API patterns, checkout optimization, subscription lifecy
 
 ## Commands
 
-### `/audit-webhooks`
+### `/stripe:audit-webhooks`
 
 Runs the `stripe-webhooks-auditor` agent against the current project. Enumerates Stripe-side state via `scripts/webhook_audit.py` (reads `STRIPE_SECRET_KEY`), greps the codebase for webhook handlers, verifies each against the pass criteria in `webhooks-production.md`, and produces a prioritized remediation report. Report-only.
 
 ```
-/audit-webhooks --features meters,entitlements,trials
-/audit-webhooks --account acct_xxx
+/stripe:audit-webhooks --features meters,entitlements,trials
+/stripe:audit-webhooks --account acct_xxx
 ```
 
 **When to invoke:**

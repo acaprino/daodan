@@ -157,7 +157,7 @@ More detail in [Test authoring knowledge bases (TDD and browser E2E)](#test-auth
 | **[learning](docs/plugins/learning.md)** | Mind maps in MarkMind format and interactive force-graphs | - | 3 | 1 |
 | **[codebase-xray](docs/plugins/codebase-xray.md)** | 7-phase systematic codebase X-ray with pattern detection, concurrent runs and incremental updates that re-read only what changed since the last run, plus the interconnect mapper that review and documentation both build on (was deep-dive-analysis) | 5 | 1 | 2 |
 | **[business](docs/plugins/business.md)** | Tech law, compliance, privacy docs, contracts, SaaS business planning | 3 | 1 | - |
-| **[stripe](docs/plugins/stripe.md)** | Stripe payments, subscriptions, Connect, revenue optimization, webhook reliability and auditing, in one link-first skill | - | 1 | - |
+| **[stripe](docs/plugins/stripe.md)** | Stripe payments, subscriptions, Connect, revenue optimization, webhook reliability and auditing, /stripe:audit-webhooks | 3 | 1 | 1 |
 | **[research](docs/plugins/research.md)** | Deep web research with clarification, plan approval, parallel iterative researchers, citation check and a report file; quick single-fact lookups; optional serper.dev backend | 2 | 1 | 1 |
 | **[project-setup](docs/plugins/project-setup.md)** | Create and maintain CLAUDE.md with ground truth verification | 1 | - | 2 |
 | **[clean-code](docs/plugins/clean-code.md)** | Rewrite code for readability without changing behavior | 1 | - | 1 |

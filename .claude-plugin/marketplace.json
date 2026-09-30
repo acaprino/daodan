@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.5.1"
+    "version": "28.6.0"
   },
   "name": "daodan",
   "owner": {
@@ -717,9 +717,17 @@
       "version": "12.0.0"
     },
     {
+      "agents": [
+        "./agents/revenue-optimizer.md",
+        "./agents/stripe-integrator.md",
+        "./agents/stripe-webhooks-auditor.md"
+      ],
       "author": {
         "name": "Alfio Caprino"
       },
+      "commands": [
+        "./commands/audit-webhooks.md"
+      ],
       "dependencies": [],
       "description": "Stripe payments, subscriptions, Connect marketplaces, and revenue optimization for SaaS monetization; includes a dedicated skill (link-first references + scripts) for API patterns, Next.js/TypeScript integration, Embedded Checkout, Billing Meters, Entitlements, webhook reliability and auditing, Stripe Agent Toolkit for LLM tool-calling, test-clock simulation, PCI DSS 4.0 compliance, and pricing design",
       "license": "MIT",
@@ -728,7 +736,7 @@
         "./skills/stripe"
       ],
       "source": "./exports/claude/plugins/stripe",
-      "version": "2.5.0"
+      "version": "2.6.0"
     },
     {
       "author": {

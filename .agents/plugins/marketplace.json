@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.5.1"
+    "version": "28.6.0"
   },
   "name": "daodan",
   "owner": {
@@ -567,10 +567,11 @@
       "license": "MIT",
       "name": "stripe",
       "skills": [
+        "./skills/audit-webhooks-workflow",
         "./skills/stripe"
       ],
       "source": "./exports/codex/plugins/stripe",
-      "version": "2.5.0"
+      "version": "2.6.0"
     },
     {
       "author": {
