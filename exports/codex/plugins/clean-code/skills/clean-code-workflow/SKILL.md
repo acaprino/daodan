@@ -54,8 +54,8 @@ Run all detected tools and capture both stdout and stderr. Record the baseline.
 ```
 No tests or type checker found. Cannot validate that changes are safe.
 
-1. Cancel -- set up tests or type checking first (recommended)
-2. Proceed with --force -- I'll be careful but regressions may go undetected
+1. Cancel: set up tests or type checking first (recommended)
+2. Proceed with --force: I'll be careful but regressions may go undetected
 ```
 
 `--yes` alone does NOT bypass this gate. Only `--force` does.
@@ -97,28 +97,23 @@ If `--dry-run`, stop after the preview.
 
 ## Step 4: Apply Changes
 
-Spawn the `clean-code-agent` with the file list and approved changes from the preview. The agent has its own safety rules and transformation guidelines -- do not repeat them here. Just pass the target:
+Dispatch the `clean-code-agent` agent in its own isolated context, with the file list and the approved changes from the preview. The agent has its own safety rules and transformation guidelines: do not repeat them here. Its brief:
 
 ```
-Task:
-  subagent_type: "clean-code-agent"
-  description: "Clean [target] for readability"
-  prompt: |
-    Improve the readability of this code. Zero behavior changes.
+Improve the readability of this code. Zero behavior changes.
 
-    Files: [list of files]
-    Approved changes: [from preview, if applicable]
-    Flags: [--strict if present in <arguments>]
+Files: [list of files]
+Approved changes: [from preview, if applicable]
 ```
 
 ## Step 5: Validate & Report
 
 Re-run ALL validation tools detected in Step 2, in this order:
 
-1. **Type checker** -- if it fails on a file that passed in baseline, revert that file
-2. **Tests** -- if any previously-passing test now fails, revert the responsible file
-3. **Linter** -- if new errors appear, fix or revert
-4. **Non-code grep** -- for every renamed symbol, search `.json`, `.yaml`, `.yml`, `.toml`, `.env`, `.cfg`, `.ini`, `.xml`, `.html`, `.md` for the OLD name. Report matches as warnings.
+1. **Type checker**: if it fails on a file that passed in baseline, revert that file
+2. **Tests**: if any previously-passing test now fails, revert the responsible file
+3. **Linter**: if new errors appear, fix or revert
+4. **Non-code grep**: for every renamed symbol, search `.json`, `.yaml`, `.yml`, `.toml`, `.env`, `.cfg`, `.ini`, `.xml`, `.html`, `.md` for the OLD name. Report matches as warnings.
 
 Present summary:
 
@@ -133,13 +128,13 @@ Changes made:
 - Structural simplifications: [count]
 
 Validation:
-  Type check: [passed / N errors -- reverted] or [not available]
-  Tests: [all passing / X failures -- reverted] or [not available]
+  Type check: [passed / N errors: reverted] or [not available]
+  Tests: [all passing / X failures: reverted] or [not available]
   Linter: [passed / N new warnings] or [not available]
 
 Stale references found in non-code files:
-  - [config.json:12] -- still references old name `data`
-  - [README.md:45] -- documents old function name `proc`
+  - [config.json:12]: still references old name `data`
+  - [README.md:45]: documents old function name `proc`
 
 Review the changes with: git diff
 ```
@@ -152,7 +147,7 @@ If `--strict` flag is set, also flag any remaining readability concerns that wer
 
 **Does not:** reorder code, extract functions, change APIs, remove error handling/validations/imports, modify test files, over-simplify. See the agent's safety rules for the full list.
 
-For deeper restructuring, use `/python-refactor`.
+For deeper restructuring of Python code, use `/python-development:python-refactor`.
 
 Clean the following:
 

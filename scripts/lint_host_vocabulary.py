@@ -57,7 +57,6 @@ SUBJECT_MATTER = (
 # Never raise a count to make a build pass.
 GRANDFATHERED: dict[str, int] = {
     "plugins/business/roles/business-planner.md": 1,
-    "plugins/clean-code/workflows/clean-code.md": 1,
     "plugins/codebase-mapper/workflows/docs-create.md": 2,
     "plugins/codebase-mapper/workflows/humanize-docs.md": 2,
     "plugins/codebase-mapper/workflows/team-codebase-map.md": 18,
