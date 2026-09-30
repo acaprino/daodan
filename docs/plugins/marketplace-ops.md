@@ -1,12 +1,12 @@
 # Marketplace Ops Plugin
 
-> Manage and maintain the Claude Code Daodan plugin ecosystem - audit marketplace integrity, scaffold new plugins, create skills and agents, and review content quality.
+> Manage and maintain any Claude Code plugin marketplace with the standard `.claude-plugin/marketplace.json` + `plugins/<name>/` layout: audit marketplace integrity, scaffold new plugins, create skills and agents, and review content quality. Project conventions (author, license, categories, upstream sources) are read from the target marketplace, never hardcoded.
 
 ## Agents
 
 ### `marketplace-manager`
 
-Expert marketplace operations manager for Claude Code Daodan.
+Expert marketplace operations manager for any Claude Code plugin marketplace.
 
 | | |
 |---|---|
@@ -16,12 +16,12 @@ Expert marketplace operations manager for Claude Code Daodan.
 | **Use for** | Adding, auditing, reorganizing, versioning, or syncing plugins |
 
 **Capabilities:**
-- **Audit & Validation** - Cross-reference marketplace.json vs filesystem, validate frontmatter
-- **Plugin Scaffolding** - Create new plugins with proper directory structure and registration
-- **Version Management** - Semantic versioning for plugins and marketplace
-- **Upstream Sync** - Fetch and merge upstream changes while preserving local additions
-- **AI Quality Review** - Score descriptions, prompts, and trigger accuracy (1-5 scale)
-- **Consolidation Analysis** - Identify overlapping plugins and suggest reorganization
+- **Audit & Validation**: Cross-reference marketplace.json vs filesystem, validate frontmatter
+- **Plugin Scaffolding**: Create new plugins with proper directory structure and registration
+- **Version Management**: Semantic versioning for plugins and marketplace
+- **Upstream Sync**: Fetch and merge upstream changes while preserving local additions
+- **AI Quality Review**: Score descriptions, prompts, and trigger accuracy (1-5 scale)
+- **Consolidation Analysis**: Identify overlapping plugins and suggest reorganization
 
 ---
 
@@ -43,10 +43,15 @@ Structural validation of the marketplace ecosystem.
 - Color consistency and harmony across plugins
 - Naming conventions (kebab-case, filename/name match)
 - Version sanity (valid semver)
+- marketplace.json schema and duplicate keywords
+- Dependency resolution and acyclicity, including the qualified `name@marketplace` form for cross-marketplace entries
+- Documentation count drift: the docs index, README counts and every "N plugins" phrase
+
+The audit script takes `--fix` and `--project-root`.
 
 ### `skills-creator`
 
-Guided creation of new Claude Code Daodan components.
+Guided creation of new Claude Code plugin components.
 
 | | |
 |---|---|
@@ -54,41 +59,51 @@ Guided creation of new Claude Code Daodan components.
 | **Use for** | Creating skills, agents, commands, or full plugins with real content |
 
 **Workflow:**
-1. **Requirements Gathering** - Ask targeted questions about purpose, triggers, plugin placement
-2. **Content Generation** - Write production-ready files (not placeholders)
-3. **Marketplace Registration** - Update marketplace.json, bump versions
-4. **Validation** - Verify paths, frontmatter, naming conventions
+1. **Requirements Gathering**: Ask targeted questions about purpose, triggers, plugin placement
+2. **Content Generation**: Write production-ready files (not placeholders)
+3. **Marketplace Registration**: Update marketplace.json, bump versions
+4. **Validation**: Verify paths, frontmatter, naming conventions
 
-Includes a conventions reference with color palette, categories, agent structure patterns, and naming rules.
+Includes a conventions reference with color palette, categories, agent structure patterns, and naming rules, a skills-versus-agents reference, and `scripts/validate_skills.py`, the engine behind `/marketplace-ops:skills-validate` (16 deterministic checks plus a per-component activation score).
 
 ---
 
 ## Commands
 
-### `/marketplace-health`
+### `/marketplace-ops:marketplace-health`
 
-Quick marketplace health check - validates marketplace.json, checks file references, and reports plugin counts and version status.
+Quick marketplace health check: validates marketplace.json, checks file references, and reports plugin counts and version status.
 
-### `/marketplace-scaffold-plugin`
+```
+/marketplace-ops:marketplace-health [--fix] [--verbose]
+```
+
+`--fix` adds orphaned plugins to marketplace.json and removes missing references, each with confirmation, and bumps `metadata.version`. `--verbose` prints a per-plugin breakdown.
+
+### `/marketplace-ops:marketplace-scaffold-plugin`
 
 Scaffold a new plugin with proper directory structure, starter files, and marketplace.json registration.
 
 ```
-/marketplace-scaffold-plugin my-plugin --with-agent --with-skill --category development
+/marketplace-ops:marketplace-scaffold-plugin my-plugin --with-agent --with-skill --with-command --category development --author "Name"
 ```
 
-### `/marketplace-review`
+### `/marketplace-ops:marketplace-review`
 
-AI-powered quality review of plugin descriptions, trigger keywords, agent prompts, skill instructions, and command definitions.
+AI-powered quality review of plugin descriptions, trigger keywords, agent prompts, skill instructions, and command definitions. Writes `.marketplace-review/REPORT.md`.
 
-### `/skills-validate`
+```
+/marketplace-ops:marketplace-review [plugin-name] [--all] [--fix]
+```
+
+### `/marketplace-ops:skills-validate`
 
 Deterministic activation-quality checks plus AI-powered body review for all skills and agents.
 
 ```
-/skills-validate my-plugin
-/skills-validate --all
-/skills-validate my-plugin --skip-ai
+/marketplace-ops:skills-validate my-plugin
+/marketplace-ops:skills-validate --all
+/marketplace-ops:skills-validate my-plugin --skip-ai
 ```
 
 **Deterministic checks (script):**

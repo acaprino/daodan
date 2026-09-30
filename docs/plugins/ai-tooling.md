@@ -55,6 +55,16 @@ Build apps with the Claude Agent SDK (formerly Claude Code SDK). Covers programm
 | **Invoke** | Skill reference |
 | **Trigger** | `claude-agent-sdk`, `@anthropic-ai/claude-agent-sdk`, "agent sdk", "build an agent", "programmatic claude", "sidecar" |
 
+References, loaded on demand:
+
+| Reference | Covers |
+|---|---|
+| `sdk-api.md` | Install, `query()`, full options table, built-in tools, streaming, structured output, cost tracking, migration from `claude-code-sdk` |
+| `sessions-subagents.md` | Sessions, resume, fork, session metadata, introspection, subagent definitions, Python client methods |
+| `permissions-hooks-security.md` | Permission modes and evaluation order, `canUseTool`, hook events and matchers, security practices |
+| `mcp-plugins-skills.md` | Custom tools as in-process MCP servers, external MCP servers, loading plugins and settings |
+| `deployment.md` | Hosting shapes, sandbox isolation, CI/CD review agent, research pipeline, chat loop |
+
 **Key distinction:** The Agent SDK (`claude-agent-sdk`) runs the full Claude Code agent loop with built-in tools. The Anthropic Client SDK (`anthropic`) is for raw API calls.
 
 **Packages:**
@@ -66,13 +76,13 @@ Build apps with the Claude Agent SDK (formerly Claude Code SDK). Covers programm
 
 ## Commands
 
-### `/prompt-optimize`
+### `/ai-tooling:prompt-optimize`
 
 Analyzes a prompt in one `prompt-engineer` pass and presents the efficiency-versus-effectiveness frontier as labelled variants (max effectiveness, balanced, max efficiency), each with a token estimate, the technique applied, the enforcement rung it assumes when the output is parsed, what it gives up, and the behavioral changes it makes. The user picks the pole; `--optimize-for` skips the question for a user who already knows it, and `--compare` forces the full frontier.
 
 ```
-/prompt-optimize "You are a helpful assistant that..." --optimize-for tokens
-/prompt-optimize prompts/extract.md --model gemma-3-12b
+/ai-tooling:prompt-optimize "You are a helpful assistant that..." --optimize-for tokens
+/ai-tooling:prompt-optimize prompts/extract.md --model gemma-3-12b
 ```
 
 **Flags:** `--model claude|gpt|gemini|<open-weight model name>` (the analysis turns it into a model class), `--optimize-for clarity|tokens|reliability`, `--compare`.

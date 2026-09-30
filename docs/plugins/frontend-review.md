@@ -36,7 +36,7 @@ The four code dimensions below are bare, local hard `dependencies` instead: `rea
 
 **Scope detection:**
 - **Diff mode** (default): reviews only changed frontend files (`.tsx .jsx .ts .vue .svelte .css .scss`, plus `index.html` and manifest files) from `git diff`
-- **Full mode**: scans the whole frontend surface (`src/ app/ components/ pages/ styles/`, or the given `path`) when no frontend changes exist in the diff, or `--full` is set
+- **Full mode**: scans the whole frontend surface (`src/ app/ components/ pages/ styles/`, or the given `path`) when no frontend changes exist in the diff, or `--full` is set. Discovery is capped at the first 120 files.
 
 `--strict-mode` prints an explicit warning line if any Critical findings exist, on top of the normal report.
 
@@ -50,18 +50,22 @@ The four code dimensions below are bare, local hard `dependencies` instead: `rea
 | PWA architecture | Auto-detected | `pwa-expert` plugin |
 | Platform compliance | Auto-detected | `platform-engineering` plugin |
 
-Design and UX runs inline in the command's own context, against the four loaded skills; it is not a spawned agent, because the upstream plugins ship skills rather than reviewer agents. The four code dimensions spawn as parallel agents, one per matched signal, only when both the signal and the owning plugin are present.
+Design and UX runs inline in the command's own context, against the four loaded skills; it is not a spawned agent, because the upstream plugins ship skills rather than reviewer agents. The four code dimensions spawn as parallel agents, one per matched signal. A code dimension is conditional only on its signal: its plugin is a hard dependency and is always installed.
 
 **Activation, per code dimension:**
 
-| Plugin | Backs | Skipped: not matched |
-|---|---|---|
-| `react-development` | React performance | No `react` dependency in `package.json`, or no `.tsx`/`.jsx` files in scope |
-| `typescript-development` | TypeScript type safety | No `.tsx?` files in scope, or no `tsconfig.json` at the project root |
-| `pwa-expert` | PWA architecture | No manifest, service worker, or Workbox config found |
-| `platform-engineering` | Platform compliance | Fewer than 2 of the fullstack/platform signals present |
+| Plugin | Backs | Agent spawned | Skipped: not matched |
+|---|---|---|---|
+| `react-development` | React performance | `react-development:react-performance-optimizer` | No `react` dependency in `package.json`, or no `.tsx`/`.jsx` files in scope |
+| `typescript-development` | TypeScript type safety | `typescript-development:type-safety-auditor` | No `.tsx?` files in scope, or no `tsconfig.json` at the project root |
+| `pwa-expert` | PWA architecture | `pwa-expert:pwa-architect` | No manifest, service worker, or Workbox config found |
+| `platform-engineering` | Platform compliance | `platform-engineering:platform-reviewer` | Fewer than 2 of the fullstack/platform signals present |
 
 There is one skip reason and it is always about the codebase: the dimension did not match. A missing plugin is not a reason, because all four are hard dependencies. A spawn failing with "Agent type not found" means a broken install, and the command stops and reports it rather than scoring a partial review.
+
+**Deterministic ground truth (Step 3):** before any review runs, the command runs `eslint` over the scope, and `tsc --noEmit` as well when the TypeScript signal matched. Both outputs are fed to the design pass and to the matching code agent as ground truth. A missing tool never stops the command: the report records "eslint not configured" or "tsc not available" instead.
+
+**Deduplication (Step 6):** when two dimensions flag the same file for the same underlying cause (design versus code, or code versus code: PWA and platform compliance both own the manifest, service worker and CSP; React performance and TypeScript type safety read the same components), the finding from the more specific dimension is kept, with one line noting which other dimension also caught it. A React re-render bug, for example, belongs to React performance, not to design and UX.
 
 **Scoring model:**
 
@@ -70,7 +74,7 @@ Each dimension that ran reports its own `overall` score, 0 to 10. The report's o
 - **Design and UX**: 40% of the weighted mean. It always contributes, since it is hard-gated: if it did not run, the command already stopped at Step 0.
 - **Code dimensions**: the remaining 60%, split evenly across however many of the four actually ran. With `N` code dimensions run, each contributes `60/N` percentage points. With `N=0`, the overall score collapses to the design score alone.
 
-A skipped dimension, whether skipped for lack of a signal or for a missing plugin, is excluded from the mean entirely. It is never treated as a zero.
+A dimension skipped for lack of a signal is excluded from the mean entirely. It is never treated as a zero.
 
 **Report:** `.frontend-review/report.md`, always at that path regardless of how many dimensions ran:
 

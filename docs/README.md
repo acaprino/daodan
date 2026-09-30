@@ -1,50 +1,53 @@
-# Claude Code Daodan Documentation
+# Daodan Documentation
 
-The augmentation symbiote for Claude Code. Agents, skills, and commands for development workflows, code quality, AI tooling, and more.
+The augmentation symbiote for coding agents. Agents, skills, and commands for development workflows, code quality, AI tooling, and more, compiled from one source into native packages for Claude Code, GitHub Copilot, Codex and Pi.
 
-**Install:** `claude plugin marketplace add acaprino/claude-code-daodan`
+**Install:** `claude plugin marketplace add acaprino/daodan` (Copilot and Codex: `copilot plugin marketplace add acaprino/daodan`, `codex plugin marketplace add acaprino/daodan`; Pi: see the [main README](../README.md))
 
 ## Plugin Index
 
 | Plugin | Category | Description | Docs |
 |--------|----------|-------------|------|
-| [abstraction-architect](plugins/abstraction-architect.md) | code-quality | Pure-architecture audits: missed unification, wrong abstractions, diff-anchored prior-art search | 1 agent, 1 skill, 1 command |
-| [ai-tooling](plugins/ai-tooling.md) | ai-ml | Prompt engineering, Claude Agent SDK | 1 agent, 1 skill, 1 command |
+| [abstraction-architect](plugins/abstraction-architect.md) | code-quality | Structural entropy audits: seven dimensions over two evidence tracks (knowledge and form), whole-codebase or diff mode | 1 agent, 1 skill, 1 command |
+| [ai-tooling](plugins/ai-tooling.md) | ai-ml | Prompt engineering, Claude Agent SDK | 1 agent, 2 skills, 1 command |
 | [app-analyzer](plugins/app-analyzer.md) | analysis | Android app analysis via ADB and webapp exploration via Playwright | 1 agent |
 | [browser-extensions](plugins/browser-extensions.md) | development | Firefox WebExtension development: Manifest V2/V3, browser.* APIs, AMO publishing | 1 agent, 1 skill, 3 commands |
 | [business](plugins/business.md) | business | Legal advisory, privacy policies, GDPR/ePrivacy/CCPA compliance, SaaS business planning | 3 agents, 1 skill |
 | [clean-code](plugins/clean-code.md) | review | Rewrite source code for readability without changing behavior | 1 agent, 1 command |
 | [codebase-mapper](plugins/codebase-mapper.md) | documentation | Human-readable codebase guide generator with standalone doc creation, maintenance, and humanization | 10 agents, 1 skill, 5 commands |
 | [csp](plugins/csp.md) | optimization | Constraint programming with Google OR-Tools CP-SAT solver | 1 agent |
-| [codebase-xray](plugins/codebase-xray.md) | review | Systematic codebase analysis - architecture, data flows, anti-patterns - plus the shared interconnect mapper that review and documentation build on | 5 agents, 1 skill, 2 commands |
+| [codebase-xray](plugins/codebase-xray.md) | review | Systematic codebase analysis: architecture, data flows, anti-patterns, plus the shared interconnect mapper that review and documentation build on | 5 agents, 1 skill, 2 commands |
 | [dependency-audit](plugins/dependency-audit.md) | review | Evidence-first dependency auditing: CVEs, outdated packages, license obligations, and supply-chain signals via each ecosystem's real tooling | 1 skill, 1 command |
 | [digital-marketing](plugins/digital-marketing.md) | marketing | SEO + AEO audits, GA4/GTM with Consent Mode v2, content strategy, brand naming, domain hunting, text humanization, customer review replies | 4 agents, 4 skills, 6 commands |
 | [docker](plugins/docker.md) | development | Optimized multi-stage Dockerfiles for any language or framework | 1 skill |
 | [docs](plugins/docs.md) | documentation | Craft top-tier README.md files with progressive disclosure, badges, quick start | 1 skill, 1 command |
-| [grabber-development](plugins/grabber-development.md) | development | Expert Python web scraping: stealth browsers, TLS impersonation, anti-bot bypass, proxy architecture, AI extraction | 4 agents, 1 skill |
-| [kotlin-development](plugins/kotlin-development.md) | development | Idiomatic Kotlin - coroutines, Flow/StateFlow, Kotlin Multiplatform (KMP), Jetpack Compose, Ktor server, type-safe DSLs | 1 skill |
-| [libgdx-development](plugins/libgdx-development.md) | development | libGDX cross-platform game dev - rendering pipeline, Scene2D + Ashley ECS, Box2D, AssetManager, Desktop/Android/iOS/HTML5 deploy, /libgdx-audit | 1 agent, 1 skill, 1 command |
+| [frontend-review](plugins/frontend-review.md) | review | Full frontend review in one pass: design and UX from the upstream impeccable, ui-ux-pro-max and frontend-design skills, plus auto-detected React, TypeScript, PWA and platform code dimensions | 1 command |
+| [grabber-development](plugins/grabber-development.md) | development | Expert Python web scraping: stealth browsers, TLS impersonation, anti-bot bypass, proxy architecture, AI extraction, Instagram profile grabber | 4 agents, 1 skill, 1 command |
+| [kotlin-development](plugins/kotlin-development.md) | development | Idiomatic Kotlin: coroutines, Flow/StateFlow, Kotlin Multiplatform (KMP), Jetpack Compose, Ktor server, type-safe DSLs | 1 skill |
+| [libgdx-development](plugins/libgdx-development.md) | development | libGDX cross-platform game dev: rendering pipeline, Scene2D + Ashley ECS, Box2D, AssetManager, Desktop/Android/iOS/HTML5 deploy, /libgdx-audit | 1 agent, 1 skill, 1 command |
 | [learning](plugins/learning.md) | productivity | Mind maps, Obsidian MarkMind export, interactive force-graph visualization | 3 skills, 1 command |
-| [marketplace-ops](plugins/marketplace-ops.md) | utilities | Plugin management - auditing, validation, upstream sync, scaffolding | 1 agent, 2 skills, 4 commands |
-| [messaging](plugins/messaging.md) | infrastructure | RabbitMQ and AMQP - queue design, clustering, high availability | 1 agent |
-| [obsidian-development](plugins/obsidian-development.md) | development | Obsidian community plugin development with ReviewBot compliance | 3 skills |
+| [marketplace-ops](plugins/marketplace-ops.md) | utilities | Plugin management for any marketplace: auditing, validation, upstream sync, scaffolding | 1 agent, 2 skills, 4 commands |
+| [messaging](plugins/messaging.md) | infrastructure | RabbitMQ and AMQP: queue design, clustering, high availability, production operations | 1 agent, 1 skill |
+| [obsidian-development](plugins/obsidian-development.md) | development | Obsidian community plugin development that passes the Community hub's automated release review | 3 skills |
 | [opentelemetry](plugins/opentelemetry.md) | development | OpenTelemetry Python: distributed tracing, context propagation, exporters, /otel-audit | 1 agent, 1 skill, 1 command |
+| [peer-review](plugins/peer-review.md) | review | Cross-model peer review of plans, specs and session decisions: an external challenger model attacks the artifact, the local session answers with evidence, a ledger computes the verdict | 3 agents, 1 skill, 1 command |
 | [platform-engineering](plugins/platform-engineering.md) | development | Cross-platform security, architecture, and performance rulebook with /platform-review | 1 agent, 1 skill, 1 command |
 | [project-setup](plugins/project-setup.md) | utilities | CLAUDE.md creation and maintenance with ground truth validation | 1 agent, 2 commands |
 | [pwa-expert](plugins/pwa-expert.md) | frontend | Progressive Web Apps 2025-2026: manifest, service workers, Web Push, install flows, store distribution | 1 agent, 1 skill, 3 commands |
 | [python-development](plugins/python-development.md) | development | TDD, refactoring, profiling, async, uv, dead code, Pydantic v2, scaffolding, /python-audit | 3 agents, 9 skills, 3 commands |
-| [rag-development](plugins/rag-development.md) | ai-ml | RAG system design and audit - chunking, embeddings, Qdrant, advanced patterns | 2 agents, 1 skill, 1 command |
+| [rag-development](plugins/rag-development.md) | ai-ml | RAG system design and audit: chunking, embeddings, Qdrant, advanced patterns | 2 agents, 1 skill, 1 command |
 | [react-development](plugins/react-development.md) | frontend | React 19 performance, state management, bundle optimization, Vercel best practices | 1 agent, 1 skill, 1 command |
+| [repo-hygiene](plugins/repo-hygiene.md) | code-quality | Workspace tidying decided by the filesystem and git alone: garbage, tracked build output, .gitignore gaps, scratch directories, stale git state (detection only) | 1 agent, 1 skill, 1 command |
 | [research](plugins/research.md) | research | Quick search (Sonnet) and deep multi-source research with shared web-search-techniques skill | 2 agents, 1 skill, 1 command |
-| [senior-review](plugins/senior-review.md) | review | Multi-agent code review: architecture, security, patterns, distributed flows, logic integrity, API contracts, startup cycles, UI races, temporal resilience, data integrity, resource lifecycle, codebase hygiene | 11 agents, 2 skills, 3 commands |
-| [stripe](plugins/stripe.md) | payments | Stripe payments, subscriptions, Connect, revenue optimization, webhook auditing | 3 agents, 1 skill, 1 command |
+| [senior-review](plugins/senior-review.md) | review | Multi-agent code review: architecture, security, patterns, distributed flows, logic integrity, API contracts, startup cycles, UI races, temporal resilience, data integrity, resource lifecycle, codebase hygiene, plus a premise auditor | 12 agents, 2 skills, 3 commands |
+| [stripe](plugins/stripe.md) | payments | Stripe payments, subscriptions, Connect, revenue optimization, webhook auditing | 1 skill |
 | [system-utils](plugins/system-utils.md) | utilities | File organization, duplicate detection, directory cleanup | 1 skill, 1 command |
-| [tauri-development](plugins/tauri-development.md) | development | Tauri 2 desktop/mobile - IPC optimization, Rust backend, cross-platform | 3 agents, 1 skill |
-| [testing](plugins/testing.md) | testing | TDD methodology, E2E testing patterns, behavior-driven test generation | 1 agent, 2 skills |
-| [text-humanizer](plugins/text-humanizer.md) | writing | Removes AI writing traces from prose in any language via 24 documented patterns. Zero-dependency leaf, consumed by digital-marketing, codebase-mapper, business, and clean-code | 1 agent, 1 skill, 1 command |
+| [tauri-development](plugins/tauri-development.md) | development | Tauri 2 desktop/mobile: IPC optimization, Rust backend, cross-platform | 3 agents, 1 skill |
+| [testing](plugins/testing.md) | testing | Test-suite hygiene rules, whole-suite audit, per-module consolidation, behavior-driven test generation (TDD and E2E knowledge delegated upstream) | 2 agents, 1 skill, 2 commands |
+| [text-humanizer](plugins/text-humanizer.md) | writing | Removes AI writing traces from prose in any language via 24 documented patterns. Never invents content; register-aware, with an Italian profile. Zero-dependency leaf, required by digital-marketing, codebase-mapper and business | 1 agent, 1 skill, 1 command |
 | [trading-broker-integration](plugins/trading-broker-integration.md) | algotrading | Interactive Brokers (TWS API, ib_async) and MetaTrader 5 algotrading, plus the vendor-neutral archetype/order-lifecycle/evidence-ladder vocabulary shared between every broker | 2 agents, 3 skills, 3 commands |
-| [typescript-development](plugins/typescript-development.md) | development | Hands-on TypeScript engineer agent, best practices, Knip dead code detection, and enterprise TypeScript mastery | 1 agent, 3 skills |
-| [xterm](plugins/xterm.md) | frontend | xterm.js terminal emulator - addons, PTY wiring, debugging, features | 1 skill, 2 commands |
+| [typescript-development](plugins/typescript-development.md) | development | Hands-on TypeScript engineer agent, best practices, Knip dead code detection, enterprise TypeScript mastery, and a type-safety review layer | 2 agents, 4 skills, 1 command |
+| [xterm](plugins/xterm.md) | frontend | xterm.js terminal emulator: addons, PTY wiring, debugging, features | 1 skill, 2 commands |
 
 ## Quick Start Recipes
 
@@ -74,4 +77,4 @@ The four relocated multi-agent pipeline commands are documented in their host pl
 
 Cross-cutting knowledge bases that inform changes across multiple plugins.
 
-- [Agent Teams best practices](references/agent-teams-best-practices.md) — when to spawn a team vs a subagent vs a single Claude, sizing, ownership, hooks, hard limits, and operational do's and don'ts. Source of truth when restructuring `senior-review`, `codebase-mapper`, `research`, `codebase-xray` (the team pipelines). Snapshot 2026-05-16.
+- [Agent Teams best practices](references/agent-teams-best-practices.md): when to spawn a team vs a subagent vs a single Claude, sizing, ownership, hooks, hard limits, and operational do's and don'ts. Source of truth when restructuring `senior-review`, `codebase-mapper`, `research`, `codebase-xray` (the team pipelines). Snapshot 2026-05-16.

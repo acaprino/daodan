@@ -11,7 +11,7 @@ Adversarial cross-platform code reviewer that audits code against the platform-e
 | | |
 |---|---|
 | **Model** | `inherit` |
-| **Tools** | `Read, Glob, Grep, Bash` |
+| **Tools** | `Read, Write, Glob, Grep, Bash` |
 | **Use for** | Reviewing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop platforms |
 
 **Invocation:**
@@ -25,6 +25,7 @@ Use the platform-reviewer agent to audit [path or PR]
 - API security (CORS, rate limiting, HTTPS)
 - XSS/CSP headers
 - Secrets exposure
+- Platform-specific security: Electron `nodeIntegration`, `contextIsolation`, `sandbox` and `webSecurity` settings, code signing, unvalidated `shell.openExternal()` URLs and broad IPC channels; Tauri command exposure; mobile certificate pinning, system biometrics and secrets in binaries; PWA sensitive data in the Cache API, broad service-worker scope and missing HTTPS
 - Architecture patterns (client-server, REST vs GraphQL, offline-first)
 - Performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching)
 
@@ -46,14 +47,14 @@ Comprehensive cross-platform development rulebook with 13 reference documents co
 
 ## Commands
 
-### `/platform-review`
+### `/platform-engineering:platform-review`
 
 Standalone cross-platform security, architecture, and performance review. Auto-detects the platform mix (SPA, PWA, mobile, Electron, Tauri) from `package.json`, `Cargo.toml`, `manifest.json`, and `tauri.conf.json`, then spawns the `platform-reviewer` agent against every applicable rulebook. Writes a persistent report to `.platform-review/REPORT.md`. Report-only; never auto-fixes.
 
 ```
-/platform-review                              # current directory, auto-detect platforms, all 3 dimensions
-/platform-review src/ --focus security        # security-only audit on a subdirectory
-/platform-review --platform tauri --focus arch # Tauri architecture review
+/platform-engineering:platform-review                                # current directory, auto-detect platforms, all 3 dimensions
+/platform-engineering:platform-review src/ --focus security          # security-only audit on a subdirectory
+/platform-engineering:platform-review --platform tauri --focus arch  # Tauri architecture review
 ```
 
 **Arguments:**

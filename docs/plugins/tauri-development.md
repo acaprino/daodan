@@ -1,6 +1,6 @@
 # Tauri Development Plugin
 
-> Build fast, secure cross-platform apps. Expert Rust engineering plus Tauri 2 optimization for desktop and mobile - with concrete performance targets for startup time, memory, and IPC latency.
+> Build fast, secure cross-platform apps. Expert Rust engineering plus Tauri 2 optimization for desktop and mobile, with concrete performance targets for startup time, memory, and IPC latency.
 
 ## Agents
 
@@ -59,7 +59,7 @@ Use the rust-engineer agent to implement [feature]
 ```
 
 **Checklist enforced:**
-- Zero unsafe code outside core abstractions
+- Zero `unsafe` in the public API surface, encapsulated behind safe abstractions with documented invariants
 - clippy::pedantic compliance
 - Complete documentation with examples
 - MIRI verification for unsafe blocks

@@ -18,7 +18,7 @@ Senior React performance engineer specializing in React 19 optimization, bundle 
 Use the react-performance-optimizer agent to analyze [component/app]
 ```
 
-**Core philosophy:** Measure first, optimize second. External store subscriptions are the #1 re-render source - React Compiler cannot fix them. Surgical selectors over broad subscriptions.
+**Core philosophy:** Measure first, optimize second. External store subscriptions are the #1 re-render source, and React Compiler cannot fix them. Surgical selectors over broad subscriptions.
 
 **Key areas:**
 - React Compiler (React Forget) configuration and limitations
@@ -32,10 +32,14 @@ Use the react-performance-optimizer agent to analyze [component/app]
 **Performance targets:**
 | Metric | Web | Desktop |
 |--------|-----|---------|
+| LCP | < 2.5s | N/A |
+| INP | < 200ms | < 100ms |
+| CLS | < 0.1 | < 0.05 |
 | Bundle (initial) | < 200KB | < 3MB |
-| Frame rate | 60 FPS | 60 FPS |
-| Render time | < 16ms | < 16ms |
 | Memory baseline | N/A | < 100MB |
+| Memory growth | N/A | < 5MB/hour |
+| Frame rate | 60 FPS | 60 FPS stable |
+| Render time | < 16ms | < 16ms |
 
 **Agent delegation:** Reports CSS issues, animation jank, and layout structure as styling problems it does not own. Reports native desktop backend work (Rust, IPC, shell configuration) as out of scope; the reverse route exists instead, with `tauri-development`'s `tauri-desktop` sending pure React performance work here.
 
@@ -45,7 +49,7 @@ Use the react-performance-optimizer agent to analyze [component/app]
 
 ### `react-best-practices`
 
-62 performance optimization rules from Vercel Engineering across 8 categories, prioritized by impact.
+70 performance optimization rules from Vercel Engineering across 8 categories, prioritized by impact.
 
 | | |
 |---|---|
@@ -67,18 +71,18 @@ Use the react-performance-optimizer agent to analyze [component/app]
 | 7 | JavaScript Performance | LOW-MEDIUM |
 | 8 | Advanced Patterns | LOW |
 
-Includes `references.md` with all 62 rules expanded and a `rules/` directory with individual rule files containing code examples.
+Includes `references.md` with all 70 rules expanded and a `rules/` directory with individual rule files containing code examples.
 
 ---
 
 ## Commands
 
-### `/review-react`
+### `/react-development:review-react`
 
 React performance and optimization review. Audits state management, analyzes bundles, detects re-renders, checks React 19 API adoption, and runs the Vercel best practices checklist.
 
 ```
-/review-react src/ --strict-mode
+/react-development:review-react src/ --strict-mode
 ```
 
 **Scope detection:**
@@ -87,7 +91,7 @@ React performance and optimization review. Audits state management, analyzes bun
 
 **Pipeline:** Detect scope -> Run ESLint (if available) -> Sample key files -> Fire `react-performance-optimizer` agent with Vercel checklist -> Generate markdown report
 
-**Output:** `.react-review/report.md` - actionable checklist with scores per category (re-render control, state management, bundle, React 19 adoption) and prioritized findings.
+**Output:** `.react-review/report.md`, an actionable checklist with scores per category (re-render control, state management, bundle, React 19 adoption) and prioritized findings.
 
 ---
 

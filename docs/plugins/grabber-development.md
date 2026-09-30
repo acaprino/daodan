@@ -1,6 +1,6 @@
 # Grabber Development Plugin
 
-> Expert Python web scraping - coordinator plus three specialists covering stealth browser automation, TLS/HTTP fingerprint impersonation, AI-assisted extraction, anti-bot bypass, proxy architecture, API discovery, and production observability.
+> Expert Python web scraping: a coordinator plus three specialists covering stealth browser automation, TLS/HTTP fingerprint impersonation, AI-assisted extraction, anti-bot bypass, proxy architecture, API discovery, and production observability.
 
 ## Agents
 
@@ -66,7 +66,7 @@ Specialist for AI-assisted extraction: Crawl4AI, Firecrawl, ScrapeGraphAI, Brows
 
 **Framework matrix:** Crawl4AI (LLM-ready markdown, deep crawl) / Firecrawl (strongest Pydantic integration) / ScrapeGraphAI (graph-based LLM pipelines) / Browser Use (85K stars, 89% WebVoyager) / Stagehand (self-healing) / Skyvern (vision-first) / Jina Reader (100B tokens/day).
 
-**Key content:** when LLM extraction vs CSS vs JSON-LD (CSS ~$0, LLM ~$0.01/page), hybrid CSS+LLM fallback pattern (10x cost reduction), Pydantic schema-driven extraction, GraphQL persisted-query bypass via mitmproxy sha256Hash replacement, cost formulas for 1M pages/month pipelines.
+**Key content:** when LLM extraction vs CSS vs JSON-LD (CSS ~$0, LLM ~$0.01/page), hybrid CSS+LLM fallback pattern (cuts cost 5-10x), Pydantic schema-driven extraction, GraphQL persisted-query bypass via mitmproxy sha256Hash replacement, cost formulas for 1M pages/month pipelines.
 
 ---
 
@@ -80,13 +80,17 @@ Comprehensive Python web scraping knowledge base covering the full stack from ta
 |---|---|
 | **Trigger** | Building, optimizing, or debugging Python web scrapers |
 
+**First tool call:** on any scraping task, the first non-question tool call must launch a visible browser (`headless=False`) with the full capture surface attached (XHR and fetch, WebSocket, SSE, workers, cookies, main-frame navigations). The skill states that this rule overrides everything else in it. By default the user navigates while the capture streams, and the session parks on `input()` until they signal done; Claude drives only when there is no login, no 2FA and no UI-knowledge gap. The one carve-out is a target listed under **Bundled Targets**: its capture is already recorded, so reading its reference and running its script satisfies the rule without reopening a browser.
+
+**Discovery Gate:** Target Assessment and Data Discovery are blocking gates. No project file (`pyproject.toml`, modules, models, CLI) is scaffolded until the discovery checklist is filled from a live capture: real page URLs, real endpoints, real field names, WebSocket, SSE and GraphQL details, and the anti-bot cookies present or absent. Endpoints or field names inferred from "common patterns" are named anti-patterns.
+
 **Core workflow:**
 
-1. **Target Assessment** - Identify protection level, data volume, update frequency
-2. **Data Discovery (API-first)** - Intercept network traffic, find REST/GraphQL/WebSocket endpoints
-3. **DOM Fallback** - CSS/XPath selectors, JSON-LD, LLM extraction as last resort
-4. **Stealth & Evasion** - Layer minimally: plain curl_cffi -> Patchright -> Camoufox + ghost-cursor
-5. **Production Hardening** - Rate limiting, proxy rotation, observability, error handling
+1. **Target Assessment**: Identify protection level, data volume, update frequency
+2. **Data Discovery (API-first)**: Intercept network traffic, find REST/GraphQL/WebSocket endpoints
+3. **DOM Fallback**: CSS/XPath selectors, JSON-LD, LLM extraction as last resort
+4. **Stealth & Evasion**: Layer minimally: plain curl_cffi -> Patchright -> Camoufox + ghost-cursor
+5. **Production Hardening**: Rate limiting, proxy rotation, observability, error handling
 
 **Quick reference tables:**
 
@@ -99,11 +103,32 @@ Comprehensive Python web scraping knowledge base covering the full stack from ta
 | DataDome | none | Camoufox + ghost-cursor | custom |
 | PerimeterX | none | Nodriver / Patchright | custom |
 
+**Bundled Targets:** targets that have already been through the Discovery Gate, with their capture recorded. The one listed is **Instagram profile media** (`references/instagram-media.md` plus `scripts/instagram_grab.py`, wrapped by `/grabber-development:instagram-grab`).
+
 **Reference docs included:**
 
 | Reference | Content |
 |-----------|---------|
-| `field-guide.md` | Full 2025-2026 Python web scraping field guide - browser stealth, TLS fingerprinting, behavioral biometrics, anti-bot bypass, CAPTCHA solving, proxy landscape, frameworks, AI-assisted scraping, GraphQL reverse engineering |
+| `field-guide.md` | Full 2025-2026 Python web scraping field guide: browser stealth, TLS fingerprinting, behavioral biometrics, anti-bot bypass, CAPTCHA solving, proxy landscape, frameworks, AI-assisted scraping, GraphQL reverse engineering |
+| `instagram-media.md` | The captured Instagram surface: the closed anonymous routes, the login selectors, the EU pay-or-consent wall, the profile grid query and its node schema, and the download stage |
+
+---
+
+## Commands
+
+### `/grabber-development:instagram-grab`
+
+Download every photo and video of one Instagram profile at full resolution, carousel slides and reels included, into a local folder that a re-run updates with only what is new. The bundled script drives a real logged-in browser to the profile, keeps one genuine `PolarisProfilePostsTabContentQuery_connection` request the page issues on its own, and replays it with only the cursor changed, so no rotating token is ever reconstructed. The workflow settles the username and a destination that nothing publishes or git tracks, checks for a stored session at `~/.instagram-grabber/session.json` (anonymous access is closed, so a first run needs a person at the keyboard), runs a `--dry-run` first and checks its counts, and leaves the Meta cookie dialog and the EU pay-or-consent screen to the user rather than answering them on their behalf. The run is resumable and idempotent, and the report gives the downloaded, already present and failed counts, the total size and the destination. Credentials go only in the `IG_USER` and `IG_PASS` environment variables of that one command, never in a file or on a command line.
+
+| | |
+|---|---|
+| **Argument** | `<username> [--out DIR] [--limit N] [--since YYYY-MM-DD] [--no-videos] [--metadata]` |
+| **Other flags the workflow uses** | `--dry-run`, `--no-photos`, `--covers` (keep each video's cover frame), `--concurrency N` (parallel downloads, default 5) |
+| **Output** | The media files plus `_manifest.json`, which records what was fetched and, with `--metadata`, captions, permalinks and alt text |
+
+```
+/grabber-development:instagram-grab some_profile --out ig-some_profile --limit 50
+```
 
 ---
 

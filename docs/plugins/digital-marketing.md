@@ -6,12 +6,12 @@
 
 ### `seo-specialist`
 
-Expert SEO strategist specializing in technical SEO, content optimization, and search engine rankings.
+Intent-first SEO strategist: establishes search intent and topical coverage before touching tags, then runs the semantic and technical audits and maps competitive gaps.
 
 | | |
 |---|---|
 | **Model** | `inherit` |
-| **Use for** | Technical SEO audits, keyword research, on-page optimization, structured data |
+| **Use for** | Technical SEO audits, search-intent alignment, keyword and semantic analysis, on-page optimization, structured data, competitive analysis |
 
 **Invocation:**
 ```
@@ -19,23 +19,23 @@ Use the seo-specialist agent to [audit/optimize/research] [target]
 ```
 
 **Expertise:**
-- Technical SEO audits (crawl errors, broken links, redirect chains)
-- Keyword research and competition analysis
-- On-page optimization and content structure
-- Structured data / schema markup implementation
-- Core Web Vitals and performance optimization
-- E-E-A-T factors and algorithm update recovery
+- Search intent first: classifies the target query (informational, transactional, navigational, commercial investigation), checks the top 3-5 ranking results for the content type that wins, and flags content-intent gaps
+- Semantic audit: keyword and semantic analysis, content depth, readability
+- Technical audit: on-page tags, headings, URLs, links, images, structured data, crawlability, performance signals, security, mobile readiness, E-E-A-T, plus international and local SEO where applicable
+- Scoring: a 0-100 health score with a letter grade, a per-category breakdown, and Error / Warning / Notice classification
+- Competitive analysis: SERP landscape and features, content gaps, keyword overlap, E-E-A-T comparison
+- Applies fixes only after approval, then re-audits and shows before/after scores
 
 ---
 
 ### `content-marketer`
 
-Expert content marketer specializing in content strategy, SEO optimization, and engagement-driven marketing.
+Audit and rewrite agent for what a visitor actually reads before deciding, built around the conversion pyramid: Functional, then Clear, then Persuasive, then Frictionless. A higher level blocks the lower ones, so CTAs are never optimized on a page whose message is unclear.
 
 | | |
 |---|---|
 | **Model** | `inherit` |
-| **Use for** | Content strategy, editorial calendars, campaign management, lead generation |
+| **Use for** | Marketing materials, landing page copy, CTAs, product presentation, social media readiness, conversion optimization |
 
 **Invocation:**
 ```
@@ -43,16 +43,17 @@ Use the content-marketer agent to [plan/create/optimize] [content/campaign]
 ```
 
 **Expertise:**
-- Content strategy and editorial planning
-- Multi-channel content creation (blog, email, social, video)
-- SEO-optimized content production
-- Lead generation and conversion optimization
-- Analytics, A/B testing, and ROI measurement
-- Brand voice consistency and thought leadership
+- Context first: B2B vs B2C, traffic source (for message match), primary conversion goal
+- UX and conversion audit: page layout, CTAs, social proof and E-E-A-T, product presentation, pricing pages, forms, accessibility, navigation
+- Content and copy audit: headlines, body copy, tone and voice, SEO copy, microcopy, product descriptions
+- Social media audit: share readiness, presence, platform strategy, content mix, social commerce
+- Visual and media audit: images, product gallery, video
+- Metric-driven diagnosis when data is available (bounce, time on page, add-to-cart vs checkout)
+- Before/after rewrites applied in batches after approval, and A/B hypotheses in the form "If we change [Element] from [Control] to [Variant], then [Metric] will increase because [Principle]"
 
 ---
 
-> **Moved:** prose humanization (the `text-humanizer` agent, the `/humanize-text` command, and the `anti-ai-writing-patterns` knowledge base) now lives in the standalone [text-humanizer](text-humanizer.md) plugin, a hard dependency of this one. SEO flows route to `/text-humanizer:humanize-text`.
+> **Moved:** prose humanization (the `text-humanizer` agent, the `/text-humanizer:humanize-text` command, and the `anti-ai-writing-patterns` knowledge base) now lives in the standalone [text-humanizer](text-humanizer.md) plugin, a hard dependency of this one. SEO flows route to `/text-humanizer:humanize-text`.
 
 ---
 
@@ -89,14 +90,14 @@ Use the llm-seo-optimize agent to audit [url or local path] for answer-engine op
 ```
 
 **6-phase audit:**
-1. **Crawler access** - full robots.txt user-agent matrix for 12 AI bots (GPTBot, ChatGPT-User, OAI-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, Googlebot, ClaudeBot, anthropic-ai, Applebot-Extended, Bytespider, CCBot) with train-vs-retrieve distinction
-2. **E-E-A-T signals** - author bylines with credentials, publication + last-updated dates in ISO + JSON-LD, primary-source citations, first-hand experience markers, fact-check structure
-3. **Passage-level extractability** - direct-answer first paragraphs, one-question-per-H2, bulleted fact lists, tables with captions, numbers with unit + date + source
-4. **Structured data** - JSON-LD for Article / HowTo / FAQPage / Product / Dataset / ClaimReview / SoftwareApplication / Organization + sameAs
-5. **Citation readiness** - canonical URL, section-anchor permalinks, cite-this-article block, clear licensing, downloadable data
-6. **Prompt-injection hardening** - audit hidden text, invisible CSS, JSON-LD / alt-text / comment payloads that reach the LLM context
+1. **Crawler access**: full robots.txt user-agent matrix for 13 AI bots (GPTBot, ChatGPT-User, OAI-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, Googlebot, ClaudeBot, Claude-User, Claude-SearchBot, Applebot-Extended, Bytespider, CCBot) with train-vs-retrieve distinction. `anthropic-ai` and `Claude-Web` are retired tokens that identify no Anthropic crawler: they are flagged as legacy entries to clean up, since blocking or allowing them changes nothing. Blocking `Google-Extended` does not remove a page from AI Overviews; blocking `Googlebot` does
+2. **E-E-A-T signals**: author bylines with credentials, publication + last-updated dates in ISO + JSON-LD, primary-source citations, first-hand experience markers, fact-check structure
+3. **Passage-level extractability**: direct-answer first paragraphs, one-question-per-H2, bulleted fact lists, tables with captions, numbers with unit + date + source
+4. **Structured data**: JSON-LD for Article / HowTo / FAQPage / Product / Dataset / ClaimReview / SoftwareApplication / Organization + sameAs
+5. **Citation readiness**: canonical URL, section-anchor permalinks, cite-this-article block, clear licensing, downloadable data
+6. **Prompt-injection hardening**: audit hidden text, invisible CSS, JSON-LD / alt-text / comment payloads that reach the LLM context
 
-**Also covers:** `llms.txt` / `llms-full.txt` proposed standards, AI-referral analytics setup (chatgpt.com / perplexity.ai / claude.ai / copilot.microsoft.com hostnames), weekly brand-mention citation-share tracking, GSC AI Overviews impression metrics.
+**Also covers:** `llms.txt` / `llms-full.txt` proposed standards, AI-referral analytics setup (chatgpt.com, legacy chat.openai.com, perplexity.ai, claude.ai, copilot.microsoft.com, gemini.google.com hostnames), weekly brand-mention citation-share tracking. Search Console does not break AI Overviews out (their impressions and clicks are folded into aggregate Web performance), so the AI-referrer hostnames are the measurable proxy.
 
 ---
 
@@ -108,7 +109,7 @@ Brand naming strategist. Generates, filters, scores, and validates brand names t
 
 | | |
 |---|---|
-| **Invoke** | Skill reference or `/brand-naming` |
+| **Invoke** | Skill reference or `/digital-marketing:brand-naming` |
 | **Trigger** | "brand name", "naming", "name my app", "name my product", "startup name" |
 
 **Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the RDAP domain checker, runs market saturation analysis, pre-screens trademarks in EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database through a browser (`playwright-skill`), rates SEO potential, and scores the top 5 on weighted criteria. Coined words, letter-mashing and cheap suffixes are banned at generation.
@@ -126,7 +127,7 @@ Search domains, compare registrar prices, find promo codes, and get purchase rec
 
 **Source:** Ported from [ReScienceLab/opc-skills](https://github.com/ReScienceLab/opc-skills).
 
-**Includes:** `references/registrars.md` (registrar comparison) and `references/spaceship-api.md` (Spaceship API docs).
+**Includes:** `references/registrars.md` (registrar comparison), `references/spaceship-api.md` (Spaceship API docs) and `scripts/domain_checker.py`, the stdlib RDAP availability checker that `brand-naming` also calls. It reports each domain as AVAILABLE, TAKEN or UNKNOWN, and UNKNOWN never means available.
 
 ---
 
@@ -136,7 +137,7 @@ Generate professional, empathetic, on-brand replies to online customer reviews. 
 
 | | |
 |---|---|
-| **Invoke** | Skill reference or `/reply-to-customer-review` |
+| **Invoke** | Skill reference or `/digital-marketing:reply-to-customer-review` |
 | **Trigger** | "reply to review", "respond to customer", "review response", Airbnb / Booking / Tripadvisor / Amazon / App Store / Trustpilot reviews |
 
 **Sectors covered:** hospitality (Airbnb, Booking, Tripadvisor) and e-commerce / app (Amazon, App Store, Trustpilot) with sector-specific phrasing patterns. Detects negative / neutral / positive sentiment and calibrates tone (formal / friendly / casual). Flags operational issues (repeated complaint pattern) worth escalating.
@@ -158,13 +159,13 @@ Knowledge base for implementing GA4 + GTM with EU/GDPR Consent Mode v2 complianc
 
 ## Commands
 
-### `/brand-naming`
+### `/digital-marketing:brand-naming`
 
 Generate, filter, score, and validate brand names through a structured naming workflow.
 
 ```
-/brand-naming "fitness app for busy professionals"
-/brand-naming "sustainable fashion marketplace" --languages en,es,pt --tlds .com,.co,.app
+/digital-marketing:brand-naming "fitness app for busy professionals"
+/digital-marketing:brand-naming "sustainable fashion marketplace" --languages en,es,pt --tlds .com,.co,.app
 ```
 
 | Flag | Effect |
@@ -174,13 +175,21 @@ Generate, filter, score, and validate brand names through a structured naming wo
 
 ---
 
-### `/seo-audit`
+### `/digital-marketing:seo-audit`
 
 5-phase technical SEO audit with Playwright analysis, scoring, a checkpoint before applying fixes, and a persistent report.
 
 ```
-/seo-audit https://example.com
+/digital-marketing:seo-audit https://example.com
+/digital-marketing:seo-audit https://example.com --focus security,performance
+/digital-marketing:seo-audit src/pages --local
 ```
+
+| Flag | Effect |
+|------|--------|
+| `--focus` | Comma-separated category names from the technical audit (for example `security,performance`); every other category is marked `not audited` in the scorecard |
+| `--local` | Audit local HTML or template files; approved fixes are edited into the local source |
+| `--strict-mode` | At the checkpoint, recommend fixing every Error before approval |
 
 **Phases:** Discovery -> Technical Audit -> Score -> (Checkpoint) -> Fix -> Report
 
@@ -188,13 +197,21 @@ Generate, filter, score, and validate brand names through a structured naming wo
 
 ---
 
-### `/content-strategy`
+### `/digital-marketing:content-strategy`
 
 Marketing and conversion audit. Runs 3 parallel agents (UX/Conversion, Content/Copy, Social/Visual) with a checkpoint before applying changes and a persistent report.
 
 ```
-/content-strategy https://example.com
+/digital-marketing:content-strategy https://example.com
+/digital-marketing:content-strategy https://example.com --focus cta,social-proof
+/digital-marketing:content-strategy https://example.com --social
 ```
+
+| Flag | Effect |
+|------|--------|
+| `--focus` | Comma-separated areas; only the agents owning a requested area run, and every other area is marked `not audited`. Agent A owns `ux`, `cta`, `social-proof`, `pricing`, `forms`, `navigation`; Agent B owns `copy`, `seo-copy`, `microcopy`, `product-descriptions`; Agent C owns `social`, `images`, `video` |
+| `--social` | Shorthand for `--focus social,images,video`, which runs Agent C alone |
+| `--strict-mode` | Promotes every Important finding to Critical and opens the plan with a `VERDICT: PASS` / `VERDICT: FAIL` line (FAIL when any Critical remains) |
 
 **Phases:** Scope -> Parallel Audit (3 agents) -> Synthesis -> (Checkpoint) -> Apply -> Report
 
@@ -202,13 +219,13 @@ Marketing and conversion audit. Runs 3 parallel agents (UX/Conversion, Content/C
 
 ---
 
-### `/reply-to-customer-review`
+### `/digital-marketing:reply-to-customer-review`
 
 Generate a sentiment-calibrated, sector-aware reply to a customer review.
 
 ```
-/reply-to-customer-review "Stay was ok but WiFi was slow" --brand "Hotel X" --tone friendly --sector hospitality
-/reply-to-customer-review "App crashed on checkout" --brand "MyApp" --lang en --sector ecommerce
+/digital-marketing:reply-to-customer-review "Stay was ok but WiFi was slow" --brand "Hotel X" --tone friendly --sector hospitality
+/digital-marketing:reply-to-customer-review "App crashed on checkout" --brand "MyApp" --lang en --sector ecommerce
 ```
 
 | Flag | Effect |
@@ -220,15 +237,20 @@ Generate a sentiment-calibrated, sector-aware reply to a customer review.
 
 ---
 
-### `/ga4-audit`
+### `/digital-marketing:ga4-audit`
 
 Playwright-verified GA4 + GTM audit covering Consent Mode v2 compliance, Key Event configuration, remarketing audiences, Ads linking, and CMP integration.
 
 ```
-/ga4-audit https://example.com
-/ga4-audit https://example.com --gtm GTM-XXXXXX
-/ga4-audit https://example.com --strict-mode       # CI: exit 1 on any critical finding
+/digital-marketing:ga4-audit https://example.com
+/digital-marketing:ga4-audit https://example.com --gtm GTM-XXXXXX
+/digital-marketing:ga4-audit https://example.com --strict-mode
 ```
+
+| Flag | Effect |
+|------|--------|
+| `--gtm` | Skip container detection and audit the given container ID; any other container ID found in the source is still flagged as a duplicate |
+| `--strict-mode` | Report-level escalation: every Warning becomes Critical and the report carries an explicit `VERDICT: FAIL` line when any remains. It never sets a process exit code |
 
 **5-phase audit:** Discovery (CMP + GTM / GA4 ID detection) -> Live verification via Playwright (dataLayer state pre-consent vs post-consent, event coverage per page type) -> Configuration audit (GA4 property, Key Events, Audiences, Ads linking) -> Consent Mode v2 deep check (default / update calls, granular 4-signal mapping, `wait_for_update`) -> Report with prioritized fixes.
 
@@ -236,21 +258,21 @@ Playwright-verified GA4 + GTM audit covering Consent Mode v2 compliance, Key Eve
 
 ---
 
-### `/llm-seo-audit`
+### `/digital-marketing:llm-seo-audit`
 
-Answer-engine optimization (AEO) audit. Different from `/seo-audit` - optimizes for getting cited inside LLM-generated answers (Google AI Overviews, Perplexity, ChatGPT Search, Claude Search, Bing Copilot) rather than ranking on traditional SERPs.
+Answer-engine optimization (AEO) audit. Unlike `/digital-marketing:seo-audit`, it optimizes for getting cited inside LLM-generated answers (Google AI Overviews, Perplexity, ChatGPT Search, Claude Search, Bing Copilot) rather than ranking on traditional SERPs.
 
 ```
-/llm-seo-audit https://example.com
-/llm-seo-audit https://example.com --focus schema,eeat    # target two dimensions
-/llm-seo-audit ./dist/                                    # static site audit
-/llm-seo-audit https://example.com --strict-mode          # CI-friendly
+/digital-marketing:llm-seo-audit https://example.com
+/digital-marketing:llm-seo-audit https://example.com --focus schema,eeat    # target two dimensions
+/digital-marketing:llm-seo-audit ./dist/                                    # static site audit
+/digital-marketing:llm-seo-audit https://example.com --strict-mode          # verdict line, Warnings raised to Critical
 ```
 
 | Flag | Effect |
 |------|--------|
 | `--focus` | `crawlers` / `eeat` / `schema` / `passages` / `injection` / `all` (default) |
-| `--strict-mode` | Treat warnings as blockers, exit 1 on any critical finding |
+| `--strict-mode` | Report-level escalation: every Warning is raised to Critical and the report opens with a `VERDICT: PASS` / `VERDICT: FAIL` line (FAIL when any Critical remains). It never sets a process exit code |
 
 Delegates to the `llm-seo-optimize` agent (6-phase protocol). Output: `.aeo-audit/REPORT.md` with crawler-access matrix, E-E-A-T and extractability scores, JSON-LD coverage, priority fixes, AI-referral tracking setup.
 

@@ -2,7 +2,7 @@
 
 # Daodan
 
-**40 specialized plugins that augment your coding agent into a specialized toolkit - so you spend less time prompting and more time shipping.**
+**40 specialized plugins that augment your coding agent into a specialized toolkit, so you spend less time prompting and more time shipping.**
 
 > The Daodan is the symbiote that enhances its host. This marketplace is the Daodan of coding agents: Claude Code, GitHub Copilot, Codex and Pi, compiled from one source.
 
@@ -21,12 +21,12 @@
 
 ## Why Daodan?
 
-- **Domain experts, not generic prompts** - each plugin encodes months of specialized knowledge (Python, Rust, React, security, SEO, legal...)
-- **Multi-agent orchestration** - code review fires architecture, security, and pattern analysis in parallel
-- **End-to-end workflows** - chain analysis, implementation, review, and cleanup into single commands
-- **Install only what you need** - every plugin is independent, no runtime dependencies
-- **Four hosts, one source** - every plugin is compiled into native Claude Code, Copilot, Codex and Pi packages at one identical version
-- **Community-driven** - MIT licensed, upstream-synced with projects from Anthropic, Vercel, and others
+- **Domain experts, not generic prompts**: each plugin encodes months of specialized knowledge (Python, Rust, React, security, SEO, legal...)
+- **Multi-agent orchestration**: code review fires architecture, security, and pattern analysis in parallel
+- **End-to-end workflows**: chain analysis, implementation, review, and cleanup into single commands
+- **Install only what you need**: installing a plugin pulls in exactly the plugins it declares as dependencies, and nothing else
+- **Four hosts, one source**: every plugin is compiled into native Claude Code, Copilot, Codex and Pi packages at one identical version
+- **Community-driven**: MIT licensed, upstream-synced with projects from Anthropic, Vercel, and others
 
 ## Quick Start
 
@@ -53,8 +53,10 @@ codex plugin marketplace add acaprino/daodan
 unit, pinned to a released version.
 
 ```bash
-pi install git:github.com/acaprino/daodan@v28.0.0
+pi install git:github.com/acaprino/daodan@v<version>
 ```
+
+`<version>` is the latest release tag on the [Releases](https://github.com/acaprino/daodan/releases) page (for example `v28.5.1`).
 
 That gives every plugin at once. To pick a subset, filter in `~/.pi/agent/settings.json` rather than
 installing selectively, and Pi keeps the choice across updates:
@@ -90,7 +92,7 @@ as skills hidden from the model's skill list, so they cost no context and stay l
 Coming from the old `claude-code-daodan` marketplace or the VS Code extension? See
 [docs/migration-from-claude-code-daodan.md](docs/migration-from-claude-code-daodan.md).
 
-That's it. Plugins activate automatically when relevant - or invoke them directly:
+That's it. Plugins activate automatically when relevant, or invoke them directly:
 
 ```bash
 # Slash commands
@@ -105,17 +107,17 @@ That's it. Plugins activate automatically when relevant - or invoke them directl
 
 ### Required dependencies
 
-`ai-tooling` declares [obra/superpowers](https://github.com/obra/superpowers) as a hard dependency, marketplace-qualified since v12.0.2 (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`): its planning phase loads the `brainstorming`, `writing-plans`, and `executing-plans` skills. If you install it, install superpowers too — from the official Claude plugin marketplace, which is the one the dependency resolves against:
+`ai-tooling` and `peer-review` declare [obra/superpowers](https://github.com/obra/superpowers) as a hard dependency, marketplace-qualified since v12.0.2 (`superpowers@claude-plugins-official` in each plugin's `plugin.toml`): `ai-tooling`'s planning phase loads the `brainstorming`, `writing-plans`, and `executing-plans` skills. If you install either, install superpowers too, from the official Claude plugin marketplace, which is the one the dependency resolves against:
 
 ```bash
 claude plugin install superpowers@claude-plugins-official
 ```
 
-Installing the same plugin from [obra's own marketplace](https://github.com/obra/superpowers-marketplace) (`superpowers@superpowers-marketplace`) does NOT satisfy the qualified dependency: the CLI reports it as missing and keeps the official copy pinned. Same bytes, wrong marketplace — use the official one, and don't keep both installed (the duplicate collides at load time).
+Installing the same plugin from [obra's own marketplace](https://github.com/obra/superpowers-marketplace) (`superpowers@superpowers-marketplace`) does NOT satisfy the qualified dependency: the CLI reports it as missing and keeps the official copy pinned. Same bytes, wrong marketplace: use the official one, and don't keep both installed (the duplicate collides at load time).
 
 More detail in [Brainstorming, planning, and execution](#brainstorming-planning-and-execution).
 
-`app-analyzer`, `pwa-expert`, `digital-marketing`, and `grabber-development` declare [lackeyjb/playwright-skill](https://github.com/lackeyjb/playwright-skill) as a hard dependency (`dependencies: ["playwright-skill"]`): their browser-based workflows (web app exploration, live PWA audits, live SEO/GA4 checks, scraping discovery) run on its Playwright automation skill. Install it from its own marketplace:
+`app-analyzer`, `pwa-expert`, `digital-marketing`, and `grabber-development` declare [lackeyjb/playwright-skill](https://github.com/lackeyjb/playwright-skill) as a hard dependency (`playwright-skill@playwright-skill`): their browser-based workflows (web app exploration, live PWA audits, live SEO/GA4 checks, scraping discovery) run on its Playwright automation skill. Install it from its own marketplace:
 
 ```bash
 claude plugin marketplace add lackeyjb/playwright-skill
@@ -142,50 +144,51 @@ More detail in [Test authoring knowledge bases (TDD and browser E2E)](#test-auth
 | Plugin | Description | A | S | C |
 |--------|-------------|:-:|:-:|:-:|
 | **[python-development](docs/plugins/python-development.md)** | TDD, refactoring, async patterns, packaging, performance, dead code, Pydantic v2, /python-audit | 3 | 9 | 3 |
-| **[senior-review](docs/plugins/senior-review.md)** | 11 agents review architecture, security, patterns, distributed flows, logic integrity, API contracts, startup cycles, UI races, temporal resilience (failure-over-time), data integrity (persistence semantics), resource lifecycle, and codebase hygiene in parallel | 11 | 2 | 3 |
+| **[senior-review](docs/plugins/senior-review.md)** | 11 dimension agents review architecture, security, patterns, distributed flows, logic integrity, API contracts, startup cycles, UI races, temporal resilience (failure-over-time), data integrity (persistence semantics), resource lifecycle, and codebase hygiene in parallel, plus a premise auditor that independently re-derives the claims findings rest on | 12 | 2 | 3 |
 | **[frontend-review](docs/plugins/frontend-review.md)** | Full frontend review in one pass: design/UX audit from the upstream impeccable, ui-ux-pro-max, and frontend-design skills, plus auto-detected React, TypeScript, PWA, and platform code dimensions | - | - | 1 |
-| **[peer-review](docs/plugins/peer-review.md)** | Cross-model peer review of plans and specs: an external challenger model attacks your artifact, the local session refutes with repository evidence, and the run terminates in a ledger-computed verdict | 2 | 1 | 1 |
+| **[peer-review](docs/plugins/peer-review.md)** | Cross-model peer review of plans and specs: an external challenger model attacks your artifact, the local session refutes with repository evidence, and the run terminates in a ledger-computed verdict | 3 | 1 | 1 |
 | **[codebase-mapper](docs/plugins/codebase-mapper.md)** | Generate 10 narrative docs with Mermaid diagrams from any codebase | 10 | 1 | 5 |
 | **[ai-tooling](docs/plugins/ai-tooling.md)** | Prompt engineering knowledge base and optimization (reasoning patterns, output-shape enforcement down to small open models, extraction prompting, judge prompt shapes, agent instructions and tool descriptions, dated vendor guidance), Agent SDK | 1 | 2 | 1 |
 | **[tauri-development](docs/plugins/tauri-development.md)** | Tauri 2 desktop + mobile, Rust backend, IPC optimization | 3 | 1 | - |
 | **[digital-marketing](docs/plugins/digital-marketing.md)** | SEO + AEO (AI Overviews/Perplexity/ChatGPT Search), GA4/GTM with Consent Mode v2, content strategy, brand naming, domain hunting | 4 | 4 | 6 |
 | **[react-development](docs/plugins/react-development.md)** | React 19 performance, state management, bundle optimization | 1 | 1 | 1 |
-| **[rag-development](docs/plugins/rag-development.md)** | RAG system design - chunking, embeddings, vector DBs, advanced patterns | 2 | 1 | 1 |
+| **[rag-development](docs/plugins/rag-development.md)** | RAG system design: chunking, embeddings, vector DBs, advanced patterns | 2 | 1 | 1 |
 | **[marketplace-ops](docs/plugins/marketplace-ops.md)** | Audit, scaffold, review, and manage plugins in this ecosystem | 1 | 2 | 4 |
 | **[learning](docs/plugins/learning.md)** | Mind maps in MarkMind format and interactive force-graphs | - | 3 | 1 |
 | **[codebase-xray](docs/plugins/codebase-xray.md)** | 7-phase systematic codebase X-ray with pattern detection, concurrent runs and incremental updates that re-read only what changed since the last run, plus the interconnect mapper that review and documentation both build on (was deep-dive-analysis) | 5 | 1 | 2 |
 | **[business](docs/plugins/business.md)** | Tech law, compliance, privacy docs, contracts, SaaS business planning | 3 | 1 | - |
-| **[stripe](docs/plugins/stripe.md)** | Stripe payments, subscriptions, Connect, revenue optimization, /audit-webhooks | 3 | 1 | 1 |
+| **[stripe](docs/plugins/stripe.md)** | Stripe payments, subscriptions, Connect, revenue optimization, webhook reliability and auditing, in one link-first skill | - | 1 | - |
 | **[research](docs/plugins/research.md)** | Deep web research with clarification, plan approval, parallel iterative researchers, citation check and a report file; quick single-fact lookups; optional serper.dev backend | 2 | 1 | 1 |
 | **[project-setup](docs/plugins/project-setup.md)** | Create and maintain CLAUDE.md with ground truth verification | 1 | - | 2 |
 | **[clean-code](docs/plugins/clean-code.md)** | Rewrite code for readability without changing behavior | 1 | - | 1 |
 | **[app-analyzer](docs/plugins/app-analyzer.md)** | Analyze Android apps via ADB and webapps via Playwright | 1 | - | - |
 | **[xterm](docs/plugins/xterm.md)** | Build and debug xterm.js terminal emulators | - | 1 | 2 |
-| **[obsidian-development](docs/plugins/obsidian-development.md)** | Pass ObsidianReviewBot on first try | - | 3 | - |
+| **[obsidian-development](docs/plugins/obsidian-development.md)** | Obsidian community plugins that pass the Community hub's automated release review | - | 3 | - |
 | **[typescript-development](docs/plugins/typescript-development.md)** | TypeScript engineer agent, best practices, Knip dead code detection, and enterprise TypeScript mastery. Includes a type-safety review layer (type-safety-auditor agent, 20-rule skill, /review-typescript command) that also powers the ts-safety dimension of /senior-review:team-review. | 2 | 4 | 1 |
 | **[system-utils](docs/plugins/system-utils.md)** | Clean up messy folders, find duplicates | - | 1 | 1 |
-| **[messaging](docs/plugins/messaging.md)** | RabbitMQ queue design and AMQP patterns | 1 | - | - |
+| **[messaging](docs/plugins/messaging.md)** | RabbitMQ 4.3 queue design and AMQP patterns, plus a production knowledge skill | 1 | 1 | - |
 | **[csp](docs/plugins/csp.md)** | Scheduling, routing, assignment with OR-Tools CP-SAT | 1 | - | - |
 | **[browser-extensions](docs/plugins/browser-extensions.md)** | Firefox extensions with Manifest V2/V3, /firefox-scaffold /firefox-lint /firefox-publish | 1 | 1 | 3 |
 | **[docs](docs/plugins/docs.md)** | Craft top-tier README.md files | - | 1 | 1 |
 | **[testing](docs/plugins/testing.md)** | Test-suite hygiene: search-before-write rules, whole-suite audit with quarantine, per-module consolidation, behavior-driven test generation | 2 | 1 | 2 |
 | **[platform-engineering](docs/plugins/platform-engineering.md)** | Cross-platform security (passkeys/WebAuthn, Electron Fuses), architecture, and performance rulebook + /platform-review | 1 | 1 | 1 |
 | **[trading-broker-integration](docs/plugins/trading-broker-integration.md)** | Interactive Brokers (TWS API, ib_async) and MetaTrader 5 algotrading, plus the vendor-neutral archetype/order-lifecycle/evidence-ladder vocabulary shared between every broker | 2 | 3 | 3 |
-| **[opentelemetry](docs/plugins/opentelemetry.md)** | OpenTelemetry Python - distributed tracing, context propagation, exporters, /otel-audit | 1 | 1 | 1 |
+| **[opentelemetry](docs/plugins/opentelemetry.md)** | OpenTelemetry Python: distributed tracing, context propagation, exporters, /otel-audit | 1 | 1 | 1 |
 | **[docker](docs/plugins/docker.md)** | Optimized multi-stage Dockerfiles for any language or framework | - | 1 | - |
-| **[grabber-development](docs/plugins/grabber-development.md)** | Python web scraping - coordinator + 3 specialists (stealth browser, HTTP fingerprint, AI scraping), anti-bot bypass | 4 | 1 | - |
-| **[dependency-audit](docs/plugins/dependency-audit.md)** | Evidence-first dependency auditing - CVEs, outdated packages, license obligations, supply-chain signals via real ecosystem tooling | - | 1 | 1 |
-| **[libgdx-development](docs/plugins/libgdx-development.md)** | libGDX cross-platform game dev - rendering pipeline, Scene2D + Ashley ECS, Box2D, AssetManager, deploy to Desktop/Android/iOS/HTML5, /libgdx-audit | 1 | 1 | 1 |
-| **[kotlin-development](docs/plugins/kotlin-development.md)** | Idiomatic Kotlin - coroutines, Flow/StateFlow, Kotlin Multiplatform (KMP), Jetpack Compose, Ktor server, type-safe DSLs | - | 1 | - |
+| **[grabber-development](docs/plugins/grabber-development.md)** | Python web scraping: coordinator + 3 specialists (stealth browser, HTTP fingerprint, AI scraping), anti-bot bypass, /instagram-grab | 4 | 1 | 1 |
+| **[dependency-audit](docs/plugins/dependency-audit.md)** | Evidence-first dependency auditing: CVEs, outdated packages, license obligations, supply-chain signals via real ecosystem tooling | - | 1 | 1 |
+| **[libgdx-development](docs/plugins/libgdx-development.md)** | libGDX cross-platform game dev: rendering pipeline, Scene2D + Ashley ECS, Box2D, AssetManager, deploy to Desktop/Android/iOS/HTML5, /libgdx-audit | 1 | 1 | 1 |
+| **[kotlin-development](docs/plugins/kotlin-development.md)** | Idiomatic Kotlin: coroutines, Flow/StateFlow, Kotlin Multiplatform (KMP), Jetpack Compose, Ktor server, type-safe DSLs | - | 1 | - |
 | **[pwa-expert](docs/plugins/pwa-expert.md)** | Progressive Web Apps 2025-2026: manifest, service workers, Web Push, install flows, store distribution | 1 | 1 | 3 |
 | **[abstraction-architect](docs/plugins/abstraction-architect.md)** | Structural entropy audits: duplicated domain knowledge, competing sources of truth, redundant representation, derivable state, missed unification, prior art, abstraction fitness | 1 | 1 | 1 |
-| **[text-humanizer](docs/plugins/text-humanizer.md)** | Remove AI writing traces from any prose (24 patterns) with /humanize-text; consumed by digital-marketing, codebase-mapper, business, clean-code | 1 | 1 | 1 |
+| **[text-humanizer](docs/plugins/text-humanizer.md)** | Remove AI writing traces from any prose (24 patterns) without inventing content, register-aware, with an Italian profile, via /text-humanizer:humanize-text; required by digital-marketing, codebase-mapper and business, and clean-code routes prose to it | 1 | 1 | 1 |
+| **[repo-hygiene](docs/plugins/repo-hygiene.md)** | Workspace tidying decided by the filesystem and git alone: garbage, tracked build output, .gitignore gaps, scratch directories, stale git state (detection only), /tidy | 1 | 1 | 1 |
 
 **A** = Agents, **S** = Skills, **C** = Commands
 
 ### Dependency graph
 
-Every arrow is a hard dependency (`dependencies` in `marketplace.json`: the plugin does not work without it). There are no optional edges: since marketplace 21.3.0 a dependency on a plugin inside this marketplace is always mandatory, so nothing installs half-working. Plugins with no declared dependencies and no dependents are omitted. External upstream plugins are grouped at the bottom with their marketplace name.
+Every arrow is a hard dependency (declared in the plugin's `plugin.toml`: the plugin does not work without it). There are no optional edges: since marketplace 21.3.0 a dependency on a plugin inside this marketplace is always mandatory, so nothing installs half-working. Plugins with no declared dependencies and no dependents are omitted. External upstream plugins are grouped at the bottom with their marketplace name.
 
 ```mermaid
 flowchart TD
@@ -195,8 +198,6 @@ flowchart TD
     grabber[grabber-development]
     digitalmarketing[digital-marketing]
     business[business]
-    cleancode[clean-code]
-    research[research]
     codebasemapper[codebase-mapper]
     seniorreview[senior-review]
     deepdive[codebase-xray]
@@ -204,11 +205,11 @@ flowchart TD
     texthumanizer[text-humanizer]
     reactdev[react-development]
     platformeng[platform-engineering]
-    pythondev[python-development]
     tsdev[typescript-development]
     testing[testing]
     frontendreview[frontend-review]
     peerreview[peer-review]
+    repohygiene[repo-hygiene]
 
     subgraph external [External marketplaces]
         superpowers["superpowers<br/>(claude-plugins-official)"]
@@ -229,23 +230,20 @@ flowchart TD
     digitalmarketing --> playwright
     digitalmarketing --> texthumanizer
     business --> texthumanizer
-    cleancode --> texthumanizer
     codebasemapper --> texthumanizer
     codebasemapper --> agentteams
     codebasemapper --> deepdive
     codebasemapper --> seniorreview
-    seniorreview --> agentteams
+    seniorreview --> repohygiene
     seniorreview --> deepdive
     seniorreview --> abstraction
     seniorreview --> reactdev
     seniorreview --> platformeng
-    seniorreview --> pythondev
     seniorreview --> tsdev
     seniorreview --> testing
     testing --> mattpocockskills
     testing --> deveressentials
     abstraction --> deepdive
-    deepdive --> agentteams
     frontendreview --> impeccable
     frontendreview --> uiuxpromax
     frontendreview --> frontenddesign
@@ -255,7 +253,7 @@ flowchart TD
     frontendreview --> platformeng
 ```
 
-Every arrow is a hard dependency. As of marketplace 21.3.0 there are no optional edges at all: a dependency on a plugin inside this marketplace is always mandatory, so installing one plugin installs everything it needs and no capability can silently go missing. The graph is rooted at `codebase-xray`, the plugin that works out how a codebase actually behaves: `senior-review` (review), `codebase-mapper` (documentation), and `abstraction-architect` all build on top of it, and it depends on nothing of ours. That shape is deliberate as of marketplace 16.0.0, when the shared interconnect mapper moved into `codebase-xray` and removed the last near-cycle. `senior-review`'s six edges back its review dimensions, each run or skipped on whether the change shows its signal, never on whether a plugin is present. `text-humanizer` is a pure leaf: zero dependencies, four dependents. `frontend-review` sits outside that tree: its three external arrows are hard dependencies on design plugins from other marketplaces, which the user installs by hand, so it does not join the `codebase-xray` root; its four local arrows back the auto-detected code dimensions. `research` depends on nothing at all, deliberately: it researches the web and nothing else. `peer-review` sits outside the tree the same way `ai-tooling` does: its one arrow is a hard dependency on external `superpowers`, and nothing of ours depends on it.
+Every arrow is a hard dependency. As of marketplace 21.3.0 there are no optional edges at all: a dependency on a plugin inside this marketplace is always mandatory, so installing one plugin installs everything it needs and no capability can silently go missing. The graph is rooted at `codebase-xray`, the plugin that works out how a codebase actually behaves: `senior-review` (review), `codebase-mapper` (documentation), and `abstraction-architect` all build on top of it, and it depends on nothing of ours. That shape is deliberate as of marketplace 16.0.0, when the shared interconnect mapper moved into `codebase-xray` and removed the last near-cycle. `senior-review`'s seven edges are `codebase-xray` plus six review dimensions: `repo-hygiene`'s workspace auditor always runs, and the other five run or are skipped on whether the change shows their signal, never on whether a plugin is present. `text-humanizer` is a pure leaf: zero dependencies, three dependents. `frontend-review` sits outside that tree: its three external arrows are hard dependencies on design plugins from other marketplaces, which the user installs by hand, so it does not join the `codebase-xray` root; its four local arrows back the auto-detected code dimensions. `research` depends on nothing at all, deliberately: it researches the web and nothing else. `peer-review` sits outside the tree the same way `ai-tooling` does: its one arrow is a hard dependency on external `superpowers`, and nothing of ours depends on it.
 
 ### Frontend and design
 
@@ -282,7 +280,7 @@ Framework-specific frontend work stays here: [frontend-review](docs/plugins/fron
 
 ### Brainstorming, planning, and execution
 
-Same story for the design-first workflow. The `brainstorming`, `writing-plans`, and `executing-plans` skills shipped in `ai-tooling` were ports of [obra/superpowers](https://github.com/obra/superpowers), which maintains them upstream inside a much larger methodology. Carrying three stale copies stopped paying for itself, so they are gone as of ai-tooling 3.0.0. As of marketplace 8.2.0, superpowers is no longer an optional companion: `ai-tooling` declares it as a hard dependency in `marketplace.json` — qualified as `superpowers@claude-plugins-official` since v12.0.2 — so install it from there alongside this marketplace.
+Same story for the design-first workflow. The `brainstorming`, `writing-plans`, and `executing-plans` skills shipped in `ai-tooling` were ports of [obra/superpowers](https://github.com/obra/superpowers), which maintains them upstream inside a much larger methodology. Carrying three stale copies stopped paying for itself, so they are gone as of ai-tooling 3.0.0. As of marketplace 8.2.0, superpowers is no longer an optional companion: `ai-tooling` declares it as a hard dependency, qualified as `superpowers@claude-plugins-official` since v12.0.2, so install it from there alongside this marketplace.
 
 | Upstream | License | Covers |
 |----------|---------|--------|
@@ -294,7 +292,7 @@ Superpowers is listed on the [official Claude plugin marketplace](https://claude
 claude plugin install superpowers@claude-plugins-official
 ```
 
-Obra's own [Superpowers marketplace](https://github.com/obra/superpowers-marketplace) carries the same plugin plus a few companions (e.g. `double-shot-latte`); adding that marketplace for the companions is fine, but install superpowers itself from `claude-plugins-official` only — a second copy from another marketplace doesn't satisfy the dependency and collides at load time.
+Obra's own [Superpowers marketplace](https://github.com/obra/superpowers-marketplace) carries the same plugin plus a few companions (e.g. `double-shot-latte`); adding that marketplace for the companions is fine, but install superpowers itself from `claude-plugins-official` only: a second copy from another marketplace doesn't satisfy the dependency and collides at load time.
 
 Upstream also documents installs for Antigravity, Codex, Cursor, Gemini CLI, Copilot CLI, Kimi, OpenCode, and Pi: see its [installation section](https://github.com/obra/superpowers#installation).
 
@@ -315,7 +313,7 @@ claude plugin marketplace add wshobson/agents
 claude plugin install agent-teams@claude-code-workflows
 ```
 
-The three pipelines this marketplace built on top of the old `agent-teams` plugin were relocated rather than removed (the fourth, `/research:team-research`, dropped the dependency in marketplace 25.0.0 and runs on plain subagents). Their commands live locally, but each of the three plugins declares `agent-teams@claude-code-workflows` as a hard dependency in `marketplace.json` (the pipelines load its skills and spawn its `team-reviewer` fallback agent), so the upstream install above is required:
+The three pipelines this marketplace built on top of the old `agent-teams` plugin were relocated rather than removed (the fourth, `/research:team-research`, dropped the dependency in marketplace 25.0.0 and runs on plain subagents). Their commands live locally, and worker dispatch now comes from the host harness the compiler generates, so `senior-review` and `codebase-xray` no longer need the upstream plugin. Only `codebase-mapper` still declares `agent-teams@claude-code-workflows` as a hard dependency, so the upstream install above is required for `/codebase-mapper:team-codebase-map`:
 
 - `/agent-teams:team-review` -> [`/senior-review:team-review`](docs/plugins/senior-review.md)
 - `/agent-teams:team-deep-dive` -> [`/codebase-xray:team-analyze`](docs/plugins/codebase-xray.md)
@@ -395,7 +393,7 @@ References across this marketplace use the upstream namespaces (`mattpocock-skil
 As of marketplace 19.0.0, the `codebase-cleanup` plugin (3 commands cherry-picked from `wshobson/agents`) is retired. Unlike the delegated areas above it was deleted rather than handed back: a line-by-line review verified content defects worth not recommending even by delegation (an `npm audit fix --force` auto-remediation script, a binary license-compatibility matrix, absolute code metrics presented as pass/fail gates, fabricated ROI figures), and delegating would also have pulled in the two upstream agents originally excluded for overlap with senior-review and testing. The capability lives on locally, split by concern:
 
 - Structural refactoring: [clean-code](docs/plugins/clean-code.md) and [python-development](docs/plugins/python-development.md)'s `/python-refactor`
-- Tech-debt inventory: [senior-review](docs/plugins/senior-review.md)'s `cleanup-auditor` dimension (extended with lifecycle archaeology in the same release). Workspace hygiene, meaning everything the filesystem and git decide without reading a symbol: [repo-hygiene](docs/plugins/repo-hygiene.md)'s `/tidy` and `code-auditor`
+- Tech-debt inventory: [senior-review](docs/plugins/senior-review.md)'s `cleanup-auditor` dimension (extended with lifecycle archaeology in the same release). Workspace hygiene, meaning everything the filesystem and git decide without reading a symbol: [repo-hygiene](docs/plugins/repo-hygiene.md)'s `/repo-hygiene:tidy` and its `workspace-auditor` agent
 - Dependency auditing (CVE, licenses, supply chain, outdated packages): the new hand-authored [dependency-audit](docs/plugins/dependency-audit.md) plugin and its `/dependency-audit:deps-audit` command
 
 Users who want the original trio can install it from upstream:
@@ -484,8 +482,8 @@ Restart Claude Code (or open a new session) after editing.
 ## Contributing
 
 1. Fork the repository
-2. Add your agent/skill/command following existing patterns
-3. Register it in `marketplace.json`
+2. Add or edit the plugin's kernel under `plugins/<name>/` (`plugin.toml`, `roles/`, `workflows/`, `skills/`), following existing patterns
+3. Rebuild with `python scripts/daodan_build.py` (every catalog and host package is generated: never hand-edit `marketplace.json` or `exports/`)
 4. Submit a pull request
 
 <details>
@@ -495,7 +493,7 @@ Restart Claude Code (or open a new session) after editing.
 ---
 name: agent-name
 description: When and how to use this agent
-model: opus
+model: inherit
 tools: Read, Write, Edit, Bash, Glob, Grep
 color: blue
 ---
@@ -525,7 +523,7 @@ Instructions, references, and domain knowledge...
 
 <div align="center">
 
-MIT License - [LICENSE](LICENSE)
+MIT License: [LICENSE](LICENSE)
 
 Built by [Alfio](https://github.com/acaprino)
 

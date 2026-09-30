@@ -39,7 +39,7 @@ What you will see, in order:
 
 1. **A clarification prompt, only if the question is ambiguous.** Up to four multiple-choice questions in one dialog (scope, audience, time window, jurisdiction, what a good answer looks like). A clear question skips this step and the lead says so in one line. Answer with the `Other` field when none of the choices fit.
 2. **The research plan**, as a dialog with three options: `Approve` runs it; `Change depth` re-plans at another tier; `Edit the plan` takes free text (drop a sub-question, add one, narrow the time window), merges it, and shows the plan once more. The plan lists the restated question, the tier and why, the backend, the sub-questions with their source families and boundaries, the researcher count, estimated pages read and time, and the output path.
-3. **The run.** Researchers spawn in one batch; at `deep` a second batch follows the gap analysis. Nothing is printed between the plan and the delivery beyond the spawn activity the session already shows. `standard` takes on the order of 5-15 minutes, `deep` 15-40.
+3. **The run.** Researchers spawn in one batch; at `deep` a second batch follows the gap analysis. Nothing is printed between the plan and the delivery beyond the spawn activity the session already shows. The plan's estimated time is the figure to go by.
 4. **The delivery**: run header, executive summary, the two file paths and the run metadata (tier, researchers per wave, pages read, backend, wall time, failures and re-spawns). The full report is in the file.
 
 ### Choosing the depth
@@ -98,8 +98,8 @@ Cost per run, order of magnitude: `standard` makes 45-75 serper calls, `deep` 15
 |---|---|---|
 | "No search backend available" | `WebSearch` is not in the session's toolset and no serper key is set | Enable web search for the session, or set `SERPER_API_KEY` |
 | The `websearch.py` setup line | `--backend serper --auto` with no key, or the service failed | Paste a key when asked (an attended run offers this), set one as above, or drop the flag to use native search |
-| "This command has no local-codebase capability" | The question is about local code | Use Grep, Glob, or a codebase-oriented plugin |
-| "More than half the researchers failed" | The wave could not search or fetch (offline, blocked, quota) | Fix the connectivity and re-run; nothing is synthesized from a failed wave |
+| The lead says the question is about local code and stops | The question is about local code; the command researches the web only | Use Grep, Glob, or a codebase-oriented plugin |
+| The lead lists which researchers failed and why, and stops | More than half the researchers of a wave failed (offline, blocked, quota) | Fix the connectivity and re-run; nothing is synthesized from a failed wave |
 
 ### Using the agents directly
 
@@ -135,7 +135,7 @@ Query formulation, source authority ranking, the two search backends, reading ru
 
 | Script | Purpose |
 |---|---|
-| `skills/web-search-techniques/scripts/websearch.py` | Optional serper.dev backend. Used when a key is available or `--backend serper`; `--vertical search\|news\|scholar`, `--num`, `--since h\|d\|w\|m\|y`, `--gl`, `--hl`, `--json`. `--check-key` reports availability without a network call; `--set-key` saves a key from stdin to `~/.serper_key`. Reads `SERPER_API_KEY` first, then that file. Exit 2 when no key is available, 1 on HTTP errors. Stdlib only |
+| `skills/web-search-techniques/scripts/websearch.py` | Optional serper.dev backend. Used when a key is available or `--backend serper`; `--vertical search\|news\|scholar`, `--num`, `--since h\|d\|w\|m\|y`, `--gl`, `--hl`, `--page`, `--timeout`, `--json`. `--check-key` reports availability without a network call; `--set-key` saves a key from stdin to `~/.serper_key`. Reads `SERPER_API_KEY` first, then that file. Exit 2 when no key is available, 1 on HTTP errors. Stdlib only |
 | `skills/web-search-techniques/scripts/webfetch.py` | Bot-block fallback fetcher (Chrome TLS impersonation via curl_cffi, httpx fallback) |
 
 Backend rule: `auto` uses serper when a key is available, native `WebSearch` otherwise; the choice is stated in the plan, in each researcher report and in the report header. Serper never replaces reading: snippets qualify a page for fetching, only read pages are cited.

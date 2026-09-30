@@ -2,6 +2,10 @@
 
 > Navigate tech law and SaaS strategy without a full-time CMO or lawyer on retainer. Contract review, GDPR/CCPA compliance, IP protection, risk assessment, and end-to-end SaaS business planning (positioning, pricing, GTM, unit economics) tailored to software businesses.
 
+## Prerequisites
+
+The `text-humanizer` plugin is a hard dependency: `business-planner` runs its agent over the final GTM strategy document.
+
 ## Agents
 
 ### `business-planner`
@@ -24,13 +28,17 @@ Use the business-planner agent to plan [business dimension] for [product]
 - Frameworks: April Dunford positioning, Blue Ocean, Crossing the Chasm, PLG/SLG/hybrid GTM, Jobs-to-be-Done
 - Builds on the `saas-business-plan` knowledge base
 
-**Workflow phases:** Discovery -> Market sizing -> Competitive analysis -> Positioning -> Pricing -> GTM motion -> Unit economics -> Risk assessment. Stops at each phase for user validation.
+**Workflow phases (7):** Market Sizing -> Audience & JTBD -> Competitive Analysis -> Positioning -> Pricing -> Go-to-Market -> Metrics, KPI & Financial Projections. Stops at each phase for user validation; the user can skip ahead, go back to a phase, or ask where the session stands.
+
+**Running draft:** after each phase the agent writes its conclusions to `draft-business-plan.md` in the working directory, so nothing is lost across phases and the user holds a tangible artifact at every step. Phase 7 turns that draft into the final deliverable, `[ProductName]_GTM_Strategy.md`.
+
+**Humanization pass:** the final `[ProductName]_GTM_Strategy.md` goes through the `text-humanizer:text-humanizer` agent before delivery, to remove AI writing traces (inflated language, formulaic structures, promotional tone).
 
 ---
 
 ### `privacy-doc-generator`
 
-Drafts privacy compliance documents - Privacy Policies, Cookie Policies, DPAs, consent notices, DPIA reports. Covers EU/Italy (GDPR, ePrivacy, Codice Privacy) with modular support for CCPA, LGPD, and FADP.
+Drafts privacy compliance documents: Privacy Policies, Cookie Policies, DPAs, consent notices, DPIA reports. Covers EU/Italy (GDPR, ePrivacy, Codice Privacy) with modular support for CCPA, LGPD, and FADP.
 
 | | |
 |---|---|
@@ -42,10 +50,10 @@ Drafts privacy compliance documents - Privacy Policies, Cookie Policies, DPAs, c
 Use the privacy-doc-generator agent to draft a [privacy policy/cookie policy/DPA] for [product]
 ```
 
-**Workflow:** Context gathering (jurisdiction, business profile, processing activities, cookie assessment) -> Risk analysis (DPIA triggers, transfer risks, sector overlays) -> Document generation -> Validation -> Output with evidence pack.
+**Workflow:** Phase 0 Regulatory Delta Check (only when an existing document is passed in for review or update) -> Context gathering (jurisdiction, business profile, processing activities, cookie assessment) -> Risk analysis (DPIA triggers, transfer risks, sector overlays) -> Document generation -> Validation -> Output with evidence pack.
 
 **Key features:**
-- ROPA-driven generation - builds a structured processing model before drafting
+- ROPA-driven generation: builds a structured processing model before drafting
 - Normative references on every clause (article, guideline, recital)
 - Legal research phase with source verification against official texts
 - Uncertainty markers (`[NON SPECIFICATO]`, `[REQUIRES LEGAL REVIEW]`, `[ASSUMPTION]`)
@@ -54,7 +62,7 @@ Use the privacy-doc-generator agent to draft a [privacy policy/cookie policy/DPA
 
 ### `legal-advisor`
 
-Technology law advisor for advisory analysis and general legal documents - contracts, NDAs, IP/copyright, employment law, M&A, corporate governance, regulatory compliance.
+Technology law advisor for advisory analysis and general legal documents: contracts, NDAs, IP/copyright, employment law, M&A, corporate governance, regulatory compliance.
 
 | | |
 |---|---|
@@ -66,7 +74,15 @@ Technology law advisor for advisory analysis and general legal documents - contr
 Use the legal-advisor agent for [contract review / IP question / compliance check]
 ```
 
+**Workflow:** Phase 0 Regulatory Delta Check (only when an existing document is passed in) -> Research & Assessment -> Implementation -> Verification.
+
 Route privacy document drafting (Privacy Policies, Cookie Policies, DPAs, DPIA reports) to `privacy-doc-generator` instead.
+
+---
+
+### Regulatory Delta Check (both legal agents)
+
+When the user passes an existing document (a policy, contract or agreement) to review, update, audit or assess, `privacy-doc-generator` and `legal-advisor` both start with Phase 0: they extract the document's jurisdictions, cited normative sources and last-update date (asking for the date when the document carries none), then run a capped set of 4-6 targeted WebSearch queries against EDPB, Garante, EUR-Lex and CJEU sources covering the years since that date. The output is advisory: a table of updates with the impacted section and relevance, or a statement that nothing relevant was found, with sources that returned nothing marked "unable to verify" and an all-failed search reported as inconclusive before proceeding to Phase 1. A brand-new document with no existing file skips Phase 0.
 
 ---
 

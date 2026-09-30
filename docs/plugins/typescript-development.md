@@ -32,7 +32,7 @@ Use the typescript-engineer agent to [design/implement/migrate] [feature]
 
 ### `type-safety-auditor`
 
-Adversarial TypeScript type-safety reviewer. Hunts type-system erosion: any leakage, unsound casts, missing runtime validation at boundaries, assertion abuse, tsconfig strictness drift, exhaustiveness gaps, and unsound generics or type guards. Spawned by `/senior-review:team-review` (dimension `ts-safety`) and `/senior-review:code-review` (Agent K) when this plugin is installed.
+Adversarial TypeScript type-safety reviewer. Hunts type-system erosion: any leakage, unsound casts, missing runtime validation at boundaries, assertion abuse, tsconfig strictness drift, exhaustiveness gaps, and unsound generics or type guards. Spawned by `/senior-review:team-review` (dimension `ts-safety`) and `/senior-review:code-review` (Agent K) whenever the change touches `.ts`/`.tsx` files and the project has a `tsconfig.json`; senior-review hard-depends on this plugin.
 
 | | |
 |---|---|

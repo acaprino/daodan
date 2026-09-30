@@ -1,6 +1,6 @@
 # xterm Plugin
 
-> Build, debug, and extend xterm.js terminal emulators in web, Electron, and Tauri apps. Covers addons, PTY wiring, theming, high-performance data handling, and browser quirks - plus two commands for debugging and implementing features.
+> Build, debug, and extend xterm.js terminal emulators in web, Electron, and Tauri apps. Covers addons, PTY wiring, theming, high-performance data handling, and browser quirks, plus two commands for debugging and implementing features.
 
 ## Skills
 
@@ -15,7 +15,7 @@ Expert guidance for building, configuring, and integrating xterm.js (`@xterm/xte
 
 **Coverage:**
 - Installation and basic setup (Terminal constructor, `term.open()`)
-- 9 official addons: FitAddon, AttachAddon, SearchAddon, WebglAddon, WebLinksAddon, ClipboardAddon, WebFontsAddon, Unicode11Addon, LigaturesAddon
+- 9 official addons: FitAddon, AttachAddon, SearchAddon, WebglAddon, WebLinksAddon, ClipboardAddon, WebFontsAddon, Unicode11Addon, LigaturesAddon (deprecated with the Canvas renderer removal)
 - Backend integration: node-pty + WebSocket with resize sync
 - Theming (full ANSI palette) and custom key handlers
 - Search, decorations, markers, and parser hooks (custom OSC/CSI)
@@ -29,14 +29,14 @@ Expert guidance for building, configuring, and integrating xterm.js (`@xterm/xte
 
 ## Commands
 
-### `/xterm-debug`
+### `/xterm:xterm-debug`
 
 Diagnose and fix xterm.js terminal issues with a two-phase analysis: quick pitfall scan (18 known patterns) followed by deep architectural analysis.
 
 ```
-/xterm-debug src/ --issue "terminal renders blank after tab switch"
-/xterm-debug --shallow           # pitfall scan only
-/xterm-debug --dry-run            # report without applying fixes
+/xterm:xterm-debug src/ --issue "terminal renders blank after tab switch"
+/xterm:xterm-debug --shallow           # pitfall scan only
+/xterm:xterm-debug --dry-run            # report without applying fixes
 ```
 
 **Phase 1 (Pitfall Scan)** checks 18 known patterns including: blank terminal (P1), broken backspace (P2), staircase newlines (P3), WebGL context loss (P4), copy/paste (P5), Unicode width (P6), resize sync (P7-P8), memory leaks (P9), addon loading order (P10), timer race conditions (P11), scroll jumping (P12), ghost cursors (P13), duplicate paste (P14), stale PTY dimensions (P15), `display:none` init (P16), WebGL silent death after standby (P17), narrow columns after tab switch (P18).
@@ -45,18 +45,18 @@ Diagnose and fix xterm.js terminal issues with a two-phase analysis: quick pitfa
 
 ---
 
-### `/xterm-implement`
+### `/xterm:xterm-implement`
 
 Implement xterm.js features into existing terminal code. Reads your current setup and adds the requested feature without conflicts.
 
 ```
-/xterm-implement "add WebGL rendering with fallback"
-/xterm-implement "add search functionality" --path src/Terminal.tsx
+/xterm:xterm-implement "add WebGL rendering with fallback"
+/xterm:xterm-implement "add search functionality" --path src/Terminal.tsx
 ```
 
 **Supported features:** FitAddon, WebglAddon, SearchAddon, WebLinksAddon, ClipboardAddon, Unicode11Addon, AttachAddon, node-pty backend wiring, theming, custom key handlers, decorations/markers, parser hooks, React/Vue integration, ResizeObserver.
 
-**Safety:** Reads all existing terminal code first. Checks for duplicate addon loads. Respects loading order (`open()` before WebGL, WebSocket open before AttachAddon). Matches existing code style. Surgical edits only - does not rewrite entire components.
+**Safety:** Reads all existing terminal code first. Checks for duplicate addon loads. Respects loading order (`open()` before WebGL, WebSocket open before AttachAddon). Matches existing code style. Surgical edits only: does not rewrite entire components.
 
 ---
 

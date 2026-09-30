@@ -1,6 +1,6 @@
 # OpenTelemetry Plugin
 
-> OpenTelemetry Python instrumentation - distributed tracing, async context propagation, custom transport propagators (AMQP, ZMQ, gRPC), OTLP exporters, AWS ADOT/X-Ray integration, and production observability. Targets SDK v1.42.1.
+> OpenTelemetry Python instrumentation: distributed tracing, async context propagation, custom transport propagators (AMQP, ZMQ, gRPC), OTLP exporters, AWS ADOT/X-Ray integration, and production observability. Targets SDK v1.42.1.
 
 ## Agents
 
@@ -25,7 +25,7 @@ Use the otel-architect agent to [instrument/audit/design] [component or pipeline
 
 ### `opentelemetry`
 
-Knowledge base for instrumenting Python services with OpenTelemetry - distributed tracing, metrics, and log correlation.
+Knowledge base for instrumenting Python services with OpenTelemetry: distributed tracing, metrics, and log correlation.
 
 | | |
 |---|---|
@@ -44,13 +44,13 @@ Knowledge base for instrumenting Python services with OpenTelemetry - distribute
 
 ## Commands
 
-### `/otel-audit`
+### `/opentelemetry:otel-audit`
 
 Audit an existing OpenTelemetry Python instrumentation for correctness, performance, and production readiness. Delegates to the `otel-architect` agent with a structured 10-dimension checklist.
 
 ```
-/otel-audit src/
-/otel-audit src/worker/           # audit a single module
+/opentelemetry:otel-audit src/
+/opentelemetry:otel-audit src/worker/           # audit a single module
 ```
 
 **Audit dimensions:**
@@ -61,7 +61,7 @@ Audit an existing OpenTelemetry Python instrumentation for correctness, performa
 - Async / threading (asyncio, Celery, threading boundaries)
 - Exporters (OTLP port choice, BatchSpanProcessor in prod, TLS, compression)
 - Sampling (parent-based ratio, tail sampling via Collector, error carve-out)
-- Logs + metrics (Logs SDK stabilized in v1.26+, correct instruments per signal)
+- Logs + metrics (the Logs SDK, `opentelemetry._logs`, is still experimental: correlate logs through the `LoggingInstrumentor` bridge; correct instruments per signal)
 - AWS / ADOT (X-Ray ID generator + propagator, ECS / Lambda resource detectors)
 - Anti-patterns (per-call propagator allocation, SimpleSpanProcessor in prod, Jaeger exporter removed in v1.22)
 

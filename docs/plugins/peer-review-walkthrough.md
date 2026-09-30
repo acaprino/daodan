@@ -8,7 +8,7 @@ how every branch the protocol allows gets reached.
 **The specifics below are invented.** The plan on trial, the repository it cites, the challenger's
 findings and the respondent's evidence are a fabricated example. What is real: the phase order, the
 file names, the consent gate text, the reply verbs, the nine finding states and every transition
-rule. Those come from `plugins/peer-review/commands/review.md` and `plugins/peer-review/skills/cross-model-peer-review/references/`.
+rule. Those come from `plugins/peer-review/workflows/review.md` and `plugins/peer-review/skills/cross-model-peer-review/references/`.
 
 The example is also deliberately maximal. One run here trips a transmission artifact, an
 inadmissible falsifier, an unexplained withdrawal and a certification failure. A real run usually
@@ -295,6 +295,7 @@ No transport call of any kind precedes this phase. The command hashes the packet
 ```
 About to send this packet to an external service:
   destination: https://api.openai.com/v1  model: gpt-5.6
+  request params: none
   size: 48213 bytes (transport cap: 400000 bytes)
   sha256: 9f2c1a77b0e3d4482ac9f61b5d0e7738cc41ab902f6e5d3c8471be09a2d5f41a
   sections: Mandate, Artifact, Ground truth, Constraints, Considered and rejected,
@@ -303,7 +304,9 @@ Nothing else leaves this machine. Later rounds, certification, a corrective roun
 and any granted repository excerpt travel under this same consent.
 ```
 
-and then asks, as a question with visible options:
+The `request params` line lists the extra request fields the profile sets (`reasoning_effort` and
+the like), because they go out with every request; this profile sets none. The command then asks,
+as a question with visible options:
 
 > **Send this packet to gpt-5.6 at https://api.openai.com/v1?**
 > **Send it** or **Do not send**

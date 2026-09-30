@@ -43,7 +43,7 @@ Adversarial whole-suite hygiene auditor. Report-only: it never edits, moves, or 
 |---|---|
 | **Model** | inherit |
 | **Use for** | Test-suite audits, flaky/dead test detection, redundancy and layer assessment |
-| **Wired into** | `/testing:test-audit`, and senior-review's testing-quality dimension (`/senior-review:team-review`, `/senior-review:code-review` Agent F) when this plugin is installed |
+| **Wired into** | `/testing:test-audit`, and senior-review's testing-quality dimension (`/senior-review:team-review`, `/senior-review:code-review` Agent F), which runs whenever the change touches test files |
 
 Nine detection dimensions: inventory and layer distribution, orphan tests, skipped and disabled, failing and flaky, duplicate coverage, contradictory tests, implementation-coupled tests, never-failing tests, runtime and coverage distribution. Every finding carries evidence (`file:line` or command output) and a fix path pointing at the quarantine or consolidation workflow.
 
@@ -89,4 +89,4 @@ Per-module consolidation: inventories the BEHAVIORS the module's tests cover (ta
 
 ---
 
-**Related:** [python-development](python-development.md) (Python-specific TDD with pytest) | [senior-review](senior-review.md) (spawns `test-suite-auditor` as its testing dimension when this plugin is installed, generic fallback otherwise) | [project-setup](project-setup.md) (injects the condensed Test-Suite Rules block into target projects' CLAUDE.md)
+**Related:** [python-development](python-development.md) (Python-specific TDD with pytest) | [senior-review](senior-review.md) (hard-depends on this plugin and spawns `test-suite-auditor` as its testing dimension whenever the change touches test files) | [project-setup](project-setup.md) (injects the condensed Test-Suite Rules block into target projects' CLAUDE.md)

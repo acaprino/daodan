@@ -6,7 +6,7 @@
 
 ### `kotlin-specialist`
 
-Senior Kotlin developer covering coroutines, KMP, modern Kotlin 2.x patterns (upstream baseline is Kotlin 1.9+), and the broader Kotlin server/Android/multiplatform ecosystem.
+Senior Kotlin developer covering coroutines, KMP, modern Kotlin 1.9+ patterns, and the broader Kotlin server/Android/multiplatform ecosystem.
 
 | | |
 |---|---|
@@ -30,9 +30,9 @@ Senior Kotlin developer covering coroutines, KMP, modern Kotlin 2.x patterns (up
 | ktor-server.md | Application setup, routing, models/serialization, JWT auth, Exposed database integration, error handling, CORS, WebSockets, testing |
 | dsl-idioms.md | Type-safe builders, lambda with receiver, scope functions, extension functions, delegated properties, infix functions, operator overloading, sealed classes, inline & reified, `@JvmInline` value classes |
 
-**Source:** Vendored from [Jeffallan/claude-skills](https://github.com/Jeffallan/claude-skills) (MIT). Upstream-synced — see `CLAUDE.md` for the resync workflow.
+**Source:** Vendored from [Jeffallan/claude-skills](https://github.com/Jeffallan/claude-skills) (MIT). Upstream-synced: the resync workflow lives in the repository's `upstream-sync` skill, and under the repository's standing no-vendoring policy (2026-08-04) this vendored copy is scheduled for the de-vendoring pass.
 
-**Knowledge reference:** Kotlin 2.x (upstream baseline 1.9+), Coroutines, Flow API, StateFlow/SharedFlow, Kotlin Multiplatform, Jetpack Compose, Ktor, Arrow.kt, kotlinx.serialization, Detekt, ktlint, Gradle Kotlin DSL, JUnit 5, MockK, Turbine.
+**Knowledge reference:** Kotlin 1.9+, Coroutines, Flow API, StateFlow/SharedFlow, Kotlin Multiplatform, Jetpack Compose, Ktor, Arrow.kt, kotlinx.serialization, Detekt, ktlint, Gradle Kotlin DSL, JUnit 5, MockK, Turbine.
 
 ---
 

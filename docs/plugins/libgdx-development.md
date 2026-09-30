@@ -54,7 +54,7 @@ Comprehensive libGDX knowledge base covering the rendering pipeline, ECS archite
 
 ## Commands
 
-### `/libgdx-audit`
+### `/libgdx-development:libgdx-audit`
 
 Audit an existing libGDX project for rendering pipeline correctness, asset disposal hygiene, Screen lifecycle bugs, GL thread blocking, multi-platform configuration drift, and libGDX 1.14.0 migration readiness.
 

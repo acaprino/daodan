@@ -80,7 +80,7 @@ Knowledge base for the official MetaTrader 5 API, its polling model, and Windows
 
 ### `/trading-broker-integration:ibkr-audit`
 
-Audit an existing Interactive Brokers trading system for reliability, error handling, and production readiness. Covers connection, market data, orders, close path and netting, terminal preset config, error handling, venue boundary, reconnection, historical data integrity, and production hardening.
+Audit an existing Interactive Brokers trading system for reliability, error handling, and production readiness. Scopes the asset classes and account entity first, which decides the checks that apply, then covers connection, market data, orders, close path and netting, account state, positions and PnL, capability assumptions and their provenance, terminal preset config, error handling, event listeners, venue boundary, reconnection, historical data integrity, and production hardening.
 
 ```
 /trading-broker-integration:ibkr-audit [path-or-description]
@@ -90,7 +90,7 @@ Audit an existing Interactive Brokers trading system for reliability, error hand
 
 ### `/trading-broker-integration:ibkr-verify`
 
-Answer a question about IBKR behaviour with evidence instead of a guess: whether IBKR supports something, why an order was refused, what a code means, or a claim about venue behaviour verified against a real gateway. Walks a fixed evidence ladder (capability list, documentation, probe against a paper Gateway) and reports which rung produced the answer.
+Answer a question about IBKR behaviour with evidence instead of a guess: whether IBKR supports something, why an order was refused, what a code means, or a claim about venue behaviour verified against a real gateway. Walks a fixed evidence ladder (rung 0: is it a message code, looked up in the shipped code table; rung 1: capability list; rung 2: documentation; rung 3: probe against a paper Gateway; rung 4: report as unresolved) and reports which rung produced the answer.
 
 ```
 /trading-broker-integration:ibkr-verify [question, code, or contract]
@@ -100,7 +100,7 @@ Answer a question about IBKR behaviour with evidence instead of a guess: whether
 
 ### `/trading-broker-integration:mt5-audit`
 
-Audit an existing MetaTrader 5 trading system for reliability, error handling, and production readiness. Covers connection setup, event/polling loop structure, order execution, data fetching, error handling, reconnection, and logging.
+Audit an existing MetaTrader 5 trading system for reliability, error handling, and production readiness. Covers connection setup, event/polling loop structure, order execution, data fetching, error handling, reconnection, logging, thread safety, and production hardening.
 
 ```
 /trading-broker-integration:mt5-audit [path-or-description]

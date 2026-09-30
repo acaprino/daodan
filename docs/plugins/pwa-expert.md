@@ -22,7 +22,7 @@ Also delegated to by all three commands below.
 
 **Workflow:** target platforms first (which of Chromium desktop, Android Chrome, iOS Safari, desktop Safari, Firefox does the user need, and what constraints follow), then manifest design, service-worker strategy per route type, a push plan only if it adds user-visible notifications, install UX per platform, storage design, a distribution plan, and a production-checklist gate before shipping. Every deliverable cites the reference file backing the recommendation.
 
-**Routing:** hands off generic frontend styling to the `frontend` plugin (if installed), React-specific performance to `react-development:review-react`, cross-platform security beyond PWA mechanics to `platform-engineering:platform-review`, Tauri/Electron wrapping to `tauri-development`, GA4/analytics to `digital-marketing:ga4-implementation-expert`, and Stripe integration to `stripe:stripe-integrator`.
+**Routing:** stays within PWA mechanics. Generic frontend styling and design-system work is out of its scope (for a design and UX review, use `/frontend-review:review-frontend`). It hands off React-specific performance to `/react-development:review-react`, cross-platform security beyond PWA mechanics to `/platform-engineering:platform-review`, Tauri/Electron wrapping to `tauri-development`, GA4/analytics to `digital-marketing:ga4-implementation-expert`, and Stripe integration to `stripe:stripe-integrator`.
 
 ---
 
@@ -33,20 +33,20 @@ Also delegated to by all three commands below.
 Knowledge base for building, auditing, and shipping PWAs in 2025-2026, loaded automatically by `pwa-architect` and referenced on-demand (never preloaded in bulk).
 
 **Reference files:**
-- `manifest.md` - Web App Manifest members, icons, splash screens, iOS meta tags
-- `service-workers.md` - SW lifecycle, caching strategies, Workbox 7, updates, debugging
-- `background-execution.md` - Background Sync, Periodic Sync, Background Fetch, Wake Lock
-- `push-notifications.md` - Web Push end-to-end: VAPID, RFCs, Declarative Push, Badge API
-- `install-flows.md` - `beforeinstallprompt`, iOS manual install, Window Controls Overlay
-- `permissions.md` - Permissions API, `Permissions-Policy` header, platform availability
-- `storage-persistence.md` - IndexedDB, OPFS, quotas, persistent storage
-- `capabilities-fugu.md` - Project Fugu API matrix and worked examples
-- `platform-constraints.md` - iOS / Android / Desktop per-platform reality check
-- `performance.md` - Core Web Vitals 2025, INP < 200ms, audit tooling
-- `security.md` - HTTPS, CSP for service workers, COOP / COEP, secure contexts
-- `distribution.md` - Bubblewrap / TWA, PWA Builder MSIX, Capacitor, Meta Quest
-- `frameworks-tooling.md` - Vite, Next.js, Angular, Nuxt wiring plus debugging surface
-- `production-checklist.md` - full deploy checklist consumed directly by `/pwa-checklist`
+- `manifest.md`: Web App Manifest members, icons, splash screens, iOS meta tags
+- `service-workers.md`: SW lifecycle, caching strategies, Workbox 7, updates, debugging
+- `background-execution.md`: Background Sync, Periodic Sync, Background Fetch, Wake Lock
+- `push-notifications.md`: Web Push end-to-end: VAPID, RFCs, Declarative Push, Badge API
+- `install-flows.md`: `beforeinstallprompt`, iOS manual install, Window Controls Overlay
+- `permissions.md`: Permissions API, `Permissions-Policy` header, platform availability
+- `storage-persistence.md`: IndexedDB, OPFS, quotas, persistent storage
+- `capabilities-fugu.md`: Project Fugu API matrix and worked examples
+- `platform-constraints.md`: iOS / Android / Desktop per-platform reality check
+- `performance.md`: Core Web Vitals 2025, INP < 200ms, audit tooling
+- `security.md`: HTTPS, CSP for service workers, COOP / COEP, secure contexts
+- `distribution.md`: Bubblewrap / TWA, PWA Builder MSIX, Capacitor, Meta Quest
+- `frameworks-tooling.md`: Vite, Next.js, Angular, Nuxt wiring plus debugging surface
+- `production-checklist.md`: full deploy checklist consumed directly by `/pwa-expert:pwa-checklist`
 
 **Decision quick-reference table** answers common either/or questions inline (which caching strategy per route type, minimum icon sizes, whether to call `skipWaiting()` by default, iOS Web Push requirements) so the agent doesn't have to open a reference file for a one-line lookup.
 
@@ -64,7 +64,7 @@ Adversarial PWA audit. Auto-detects mode from the argument: a URL triggers live-
 /pwa-expert:pwa-audit https://example.com  # live URL mode via Playwright
 ```
 
-Findings are numbered `C1, C2, ...` (Critical), `I1, I2, ...` (Important), `N1, N2, ...` (Nice-to-have) so they stay referenceable across follow-up prompts. Falls back to manual-check suggestions with explicit "could not verify" markers if `playwright-skill` is unavailable. Notes upfront that Safari Web Inspector cannot inspect installed Home Screen PWAs, so live-mode results don't cover the post-install standalone experience.
+Findings are numbered `C1, C2, ...` (Critical), `I1, I2, ...` (Important), `N1, N2, ...` (Nice-to-have) so they stay referenceable across follow-up prompts. Live mode runs on `playwright-skill`, a required dependency of this plugin (`claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`). Notes upfront that Safari Web Inspector cannot inspect installed Home Screen PWAs, so live-mode results don't cover the post-install standalone experience.
 
 ---
 
@@ -83,15 +83,15 @@ Collects app name, short name, description, theme/background colors, and up to t
 
 ### `/pwa-expert:pwa-checklist`
 
-Walks the production deploy checklist from `production-checklist.md` interactively against the codebase (or a live URL) and reports **PASS** / **FAIL** / **N/A** per item with a per-category summary table. Deterministic by design: two runs against the same target produce a structurally identical report, which makes it suitable as a CI release gate (unlike `/pwa-audit`, which is open-ended and adversarial).
+Walks the production deploy checklist from `production-checklist.md` interactively against the codebase (or a live URL) and reports **PASS** / **FAIL** / **N/A** per item with a per-category summary table. Deterministic by design: two runs against the same target produce a structurally identical report, which makes it suitable as a CI release gate (unlike `/pwa-expert:pwa-audit`, which is open-ended and adversarial).
 
 ```
 /pwa-expert:pwa-checklist                    # walk against current codebase
 /pwa-expert:pwa-checklist https://example.com  # walk against a live deployment
 ```
 
-Every **FAIL** links back to the matching reference file for self-service remediation. Use `/pwa-checklist` for release gates and CI integration; use `/pwa-audit` for design reviews and pre-launch deep-dives.
+Every **FAIL** links back to the matching reference file for self-service remediation. Use `/pwa-expert:pwa-checklist` for release gates and CI integration; use `/pwa-expert:pwa-audit` for design reviews and pre-launch deep-dives.
 
 ---
 
-**Related:** [platform-engineering](platform-engineering.md) (cross-platform security/architecture/performance beyond PWA mechanics) | [react-development](react-development.md) (React-specific performance) | [tauri-development](tauri-development.md) (desktop/mobile native wrappers) | [playwright-skill](https://github.com/lackeyjb/playwright-skill) (upstream plugin, required for live-URL audit mode; install: `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`)
+**Related:** [platform-engineering](platform-engineering.md) (cross-platform security/architecture/performance beyond PWA mechanics) | [react-development](react-development.md) (React-specific performance) | [tauri-development](tauri-development.md) (desktop/mobile native wrappers) | [playwright-skill](https://github.com/lackeyjb/playwright-skill) (upstream plugin and a hard dependency, used by the live-URL modes of `/pwa-expert:pwa-audit` and `/pwa-expert:pwa-checklist`; install: `claude plugin marketplace add lackeyjb/playwright-skill`, then `claude plugin install playwright-skill@playwright-skill`)

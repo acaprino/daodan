@@ -6,7 +6,7 @@
 
 ### `rag-architect`
 
-Expert in RAG system design covering the full pipeline - ingestion, chunking, embeddings, vector storage, retrieval, re-ranking, and answer generation.
+Expert in RAG system design covering the full pipeline: ingestion, chunking, embeddings, vector storage, retrieval, re-ranking, and answer generation.
 
 | | |
 |---|---|
@@ -69,28 +69,37 @@ Knowledge base covering every stage of RAG development.
 5. Evaluation: RAGAS from day one
 
 **Reference docs:**
-- `references/chunking-strategies.md` - Splitting approaches by document type
-- `references/embedding-models.md` - Model comparison and selection
-- `references/retrieval-patterns.md` - Search, re-ranking, and fusion
-- `references/advanced-rag-patterns.md` - Graph RAG, CRAG, Self-RAG, Agentic RAG
-- `references/vector-databases.md` - DB comparison and selection
-- `references/production-guide.md` - Deployment, monitoring, scaling
+- `references/chunking-strategies.md`: splitting approaches by document type
+- `references/embedding-models.md`: model comparison and selection
+- `references/retrieval-patterns.md`: search, re-ranking, and fusion
+- `references/advanced-rag-patterns.md`: Graph RAG, CRAG, Self-RAG, Agentic RAG
+- `references/vector-databases.md`: DB comparison and selection
+- `references/production-guide.md`: evaluation cadence, observability tooling, semantic caching, security (prompt injection, data access control, PII), cost and latency optimization, and a build-versus-adopt framework matrix
 
 ---
 
 ## Commands
 
-### `/rag-audit`
+### `/rag-development:rag-audit`
 
 Audit a RAG implementation for quality, performance, and best practices.
 
 ```
-/rag-audit src/rag/
-/rag-audit "our customer support chatbot pipeline"
+/rag-development:rag-audit src/rag/
+/rag-development:rag-audit "our customer support chatbot pipeline"
 ```
 
-**Audit covers:** chunking quality, embedding model fit, vector DB configuration, retrieval/search logic, re-ranking setup, prompt construction, and evaluation coverage. Produces an actionable report with prioritized improvements.
+**Audit dimensions:**
+- Chunking (chunk size, overlap, preprocessing of tables, images and headers, strategy matching document structure)
+- Embeddings (current model, dimensions, caching at ingestion)
+- Vector Database (payload indexes, quantization, HNSW parameters, on-disk storage)
+- Retrieval (hybrid search, re-ranking, metadata filtering, MMR or diversity)
+- Generation (context use, source attribution, streaming)
+- Production (evaluation, observability, semantic caching, error handling for embedding API failures, rate limits and cost controls)
+- Security (tenant isolation through mandatory filters, PII filtering at ingestion, prompt-injection sanitization, output validation)
+
+Produces an actionable report: current state, risk areas, improvements ordered by impact, and a code example for each recommendation.
 
 ---
 
-**Related:** [research](research.md) (web fetching for knowledge ingestion) | [python-development](python-development.md) (Python implementation)
+**Related:** [python-development](python-development.md) (Python implementation)
