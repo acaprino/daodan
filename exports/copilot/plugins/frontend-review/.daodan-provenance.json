@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:9d73620c715ee52af4fb5fbb94082d645837e8315be8edcaa9b311829cc27b98",
+  "coreDigest": "sha256:ddeb59341bc67205210926dfaad4e09a3cdb56d8adb1a5cb862fb0aecd157e07",
   "harnessStrategies": {
     "review-frontend": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "frontend-review",
-  "version": "2.1.0"
+  "version": "2.1.1"
 }

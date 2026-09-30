@@ -9,7 +9,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.6.3"
+    "version": "28.6.4"
   },
   "name": "daodan",
   "owner": {
@@ -320,7 +320,7 @@
       "license": "MIT",
       "name": "frontend-review",
       "source": "./exports/claude/plugins/frontend-review",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "agents": [
@@ -718,7 +718,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/claude/plugins/senior-review",
-      "version": "12.0.0"
+      "version": "12.0.1"
     },
     {
       "agents": [

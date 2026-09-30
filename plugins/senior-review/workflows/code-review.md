@@ -312,8 +312,6 @@ Pull out findings with `[PRE-EXISTING]` prefix into a separate list. These are r
 
 Skip this step if `--fast` was passed. Otherwise verify findings with the 4-lens panel defined in the `senior-review:review-quality-gates` skill, section `## Adversarial Verification Panel`. This replaces the former single-validator step: four independent lenses (premise veto, reachability/correctness, false-positive causes, severity) catch more failure modes than one judge, and the scope widens from Critical/High only to every finding above the confidence floor.
 
-If the skill is unavailable, fall back to the legacy behavior: one `general-purpose` validator per Critical/High finding returning VALID/FALSE_POSITIVE (opus for bug/logic/architecture findings, sonnet for style/CLAUDE.md findings).
-
 ### Selection
 
 - **Default:** every finding with confidence `>= 50%` that survived Step 4b deduplication, regardless of severity.
@@ -340,7 +338,7 @@ Medium and Low findings are no longer skipped by default: they enter the panel l
 
 ## Step 4c: Completeness Critic
 
-Skip this step if `--fast` was passed. Otherwise run the critic defined in the `senior-review:review-quality-gates` skill, section `## Completeness Critic` (if the skill is unavailable, skip this step).
+Skip this step if `--fast` was passed. Otherwise run the critic defined in the `senior-review:review-quality-gates` skill, section `## Completeness Critic`.
 
 1. Spawn one `general-purpose` critic with the skill's critic prompt. Pass the verified findings, the changed-file scope, the agents that ran, and the X-ray context paths if `.codebase-xray/` exists (else "none").
 2. If the critic names a single high-risk uncovered area under `## Recommended follow-up` AND the cost guard did not fire: spawn ONE targeted reviewer (the most specialized agent for that area) scoped to the files named, then route its findings back through Step 4 (dedup) and Step 4b (panel). At most one round.

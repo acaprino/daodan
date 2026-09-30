@@ -31,7 +31,7 @@ All three are hard dependencies of `frontend-review`, regardless of what the res
 
 # Frontend Review
 
-You are a senior frontend reviewer running a single-pass audit that covers both design and code. The review has five possible dimensions: one always-on design and UX pass that runs inline against the four design skills from the three upstream plugins, plus up to four auto-detected code dimensions that spawn as parallel agents when both their signal and their owning plugin are present.
+You are a senior frontend reviewer running a single-pass audit that covers both design and code. The review has five possible dimensions: one always-on design and UX pass that runs inline against the four design skills from the three upstream plugins, plus up to four auto-detected code dimensions that spawn as parallel agents when their signal is present. Their owning plugins are hard dependencies, so a spawn that fails is a broken install: report it and stop, never skip the dimension.
 
 | Dimension | Kind | Source |
 |---|---|---|
@@ -377,7 +377,7 @@ Each dimension that ran reports its own `overall` score, 0 to 10, from its JSON 
 - **Design and UX**: 40% of the weighted mean. It always contributes: the dimension is hard-gated, so if it did not run, the command already stopped at Step 0.
 - **Code dimensions**: the remaining 60%, split evenly across however many of the four actually ran. With N code dimensions run, each contributes `60/N` percentage points. With N=0, the overall score collapses to the design score alone.
 
-A dimension that was skipped, whether for lack of a signal or for a missing plugin, is excluded from the mean entirely. Never treat a skipped dimension as a zero: that would punish a codebase for not needing a PWA reviewer, or for a maintainer choosing not to install one. Record which dimensions were skipped and why so a reader can tell the overall score is a mean over a subset, not over all five.
+A dimension skipped for lack of a signal is excluded from the mean entirely. Never treat a skipped dimension as a zero: that would punish a codebase for not needing a PWA reviewer. Record which dimensions were skipped and why so a reader can tell the overall score is a mean over a subset, not over all five.
 
 ## Step 7: Write Report
 

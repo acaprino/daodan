@@ -276,7 +276,7 @@ Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `ph
 3. Verify on completion that at minimum `01-structure.md`, `02-interfaces.md`, and `05-risks.md` exist.
 4. Mark `phase_1a_xray` complete.
 
-If the workflow is unavailable (plugin not installed) or produces no output, halt the pipeline and report the error. Do **not** fall back to spawning a `general-purpose` agent to fake the X-ray output -- the file naming and section anchors that Phase 1b/Phase 2 depend on come from the workflow itself, and a freelance fallback breaks the contract for `logic-integrity-auditor`.
+If the workflow fails or produces no output, halt the pipeline and report the error: `codebase-xray` is a hard dependency, so a workflow that cannot be loaded is a broken install. Do **not** fall back to spawning a `general-purpose` agent to fake the X-ray output -- the file naming and section anchors that Phase 1b/Phase 2 depend on come from the workflow itself, and a freelance fallback breaks the contract for `logic-integrity-auditor`.
 
 ### Phase 1c: Independent Premise Derivation (parallel with 1a)
 
