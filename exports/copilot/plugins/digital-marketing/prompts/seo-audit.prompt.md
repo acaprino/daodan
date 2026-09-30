@@ -25,15 +25,19 @@ argument-hint: '<url or local path> [--focus <comma-separated category names>] [
 For live URL targets (not `--local`), this command uses the Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_evaluate`, `browser_network_requests`, `browser_resize`). If they are not available, print this and stop:
 
 ```
-Missing required plugin: playwright (claude-plugins-official)
+Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
 
 Live site analysis needs the Playwright MCP tools for DOM inspection,
 responsive testing, and network analysis.
 
-playwright is a declared dependency of digital-marketing: Microsoft's Playwright
-MCP server, published in the official Claude plugin marketplace.
-Install it with:
-  claude plugin install playwright@claude-plugins-official
+Install Microsoft's Playwright MCP server for the host you run in, then
+run this again:
+  Claude Code  claude plugin install playwright@claude-plugins-official
+  Codex        codex mcp add playwright npx "@playwright/mcp@latest"
+  VS Code      code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'
+  Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
+  Pi           pi install npm:pi-mcp-adapter, then add the same server under
+               "playwright" in mcpServers of ~/.config/mcp/mcp.json
 ```
 
 Do not fall back to a WebFetch-only audit: a live audit without a browser leaves every browser check unrun, and a report that lists them as skipped still reads as an audit. `--local` targets need no browser.

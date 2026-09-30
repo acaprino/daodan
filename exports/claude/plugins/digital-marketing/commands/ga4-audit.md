@@ -24,15 +24,19 @@ Comprehensive audit of a website's GA4 + GTM setup with live Playwright verifica
 Every live check in Phase 2 needs the Playwright MCP tools (`browser_navigate`, `browser_evaluate`, `browser_network_requests`). If they are not available, print this and stop:
 
 ```
-Missing required plugin: playwright (claude-plugins-official)
+Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
 
 Live verification needs the Playwright MCP tools to inspect dataLayer,
 network requests, cookies, and the consent banner state in a real browser.
 
-playwright is a declared dependency of digital-marketing: Microsoft's Playwright
-MCP server, published in the official Claude plugin marketplace.
-Install it with:
-  claude plugin install playwright@claude-plugins-official
+Install Microsoft's Playwright MCP server for the host you run in, then
+run this again:
+  Claude Code  claude plugin install playwright@claude-plugins-official
+  Codex        codex mcp add playwright npx "@playwright/mcp@latest"
+  VS Code      code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'
+  Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
+  Pi           pi install npm:pi-mcp-adapter, then add the same server under
+               "playwright" in mcpServers of ~/.config/mcp/mcp.json
 ```
 
 Do not fall back to a source-only audit: a GA4 audit that never saw a tag fire is a code review, and reading it as an audit is how broken tracking ships.

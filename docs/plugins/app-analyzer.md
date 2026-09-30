@@ -70,4 +70,4 @@ The three Phase 2 reports follow the templates in the plugin's `app-analysis` sk
 
 ---
 
-**Related:** `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for web app exploration; install: `claude plugin install playwright@claude-plugins-official`) | [tauri-development](tauri-development.md) (scaffolds Tauri 2 mobile apps from analysis output)
+**Related:** `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, required for web app exploration; on Claude Code `claude plugin install playwright@claude-plugins-official`, on Codex, Copilot and Pi see the per-host table in the README's [Browser automation](../../README.md#browser-automation-playwright) section) | [tauri-development](tauri-development.md) (scaffolds Tauri 2 mobile apps from analysis output)

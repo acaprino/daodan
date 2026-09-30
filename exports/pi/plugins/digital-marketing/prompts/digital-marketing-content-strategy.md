@@ -23,15 +23,19 @@ argument-hint: '<url or local path> [--focus <comma-separated areas>] [--social]
 For live URL targets, this command uses the Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_resize`). If they are not available, print this and stop:
 
 ```
-Missing required plugin: playwright (claude-plugins-official)
+Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
 
 Live site analysis needs the Playwright MCP tools for DOM inspection,
 screenshots, and responsive testing.
 
-playwright is a declared dependency of digital-marketing: Microsoft's Playwright
-MCP server, published in the official Claude plugin marketplace.
-Install it with:
-  claude plugin install playwright@claude-plugins-official
+Install Microsoft's Playwright MCP server for the host you run in, then
+run this again:
+  Claude Code  claude plugin install playwright@claude-plugins-official
+  Codex        codex mcp add playwright npx "@playwright/mcp@latest"
+  VS Code      code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'
+  Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
+  Pi           pi install npm:pi-mcp-adapter, then add the same server under
+               "playwright" in mcpServers of ~/.config/mcp/mcp.json
 ```
 
 Do not fall back to a WebFetch-only analysis. Local files need no browser.

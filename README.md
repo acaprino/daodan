@@ -80,13 +80,14 @@ neither mechanism:
 
 ```bash
 pi install npm:pi-subagents      # every workflow that fans out
-pi install npm:pi-mcp-adapter    # peer-review only
+pi install npm:pi-mcp-adapter    # peer-review, and the Playwright MCP server
 ```
 
 Without `pi-subagents` there is no subagent tool, so a workflow whose contract requires isolated
 reviewers stops and says so rather than running its phases in one context and calling the result a
 review. Without `pi-mcp-adapter` there is no MCP client, so `/peer-review-review` cannot reach its
-challenger transport; every other plugin is unaffected. `pi-subagents` is still pre-1.0, so pin it
+challenger transport and the browser commands of app-analyzer, digital-marketing,
+grabber-development and pwa-expert cannot reach Playwright; every other plugin is unaffected. `pi-subagents` is still pre-1.0, so pin it
 if a release breaks something.
 
 Workflows are prefixed with their plugin on this host, because Pi's command namespace is flat and
@@ -121,13 +122,19 @@ Installing the same plugin from [obra's own marketplace](https://github.com/obra
 
 More detail in [Brainstorming, planning, and execution](#brainstorming-planning-and-execution).
 
-`app-analyzer`, `digital-marketing`, `grabber-development` and `pwa-expert` declare Microsoft's Playwright MCP server as a hard dependency, `playwright@claude-plugins-official`: their browser work (web app exploration, live SEO, GA4 and AEO audits, trademark pre-screening, scraping discovery, live PWA audits) runs on its `browser_*` tools. It lives in the official Claude plugin marketplace, the same one superpowers comes from:
+`app-analyzer`, `digital-marketing`, `grabber-development` and `pwa-expert` declare Microsoft's Playwright MCP server as a hard dependency, `playwright@claude-plugins-official`: their browser work (web app exploration, live SEO, GA4 and AEO audits, trademark pre-screening, scraping discovery, live PWA audits) runs on its `browser_*` tools. On Claude Code it is a plugin in the official Claude plugin marketplace, the same one superpowers comes from; on the other hosts you register the same server yourself:
 
-```bash
-claude plugin install playwright@claude-plugins-official
-```
+| Host | Install Microsoft's Playwright MCP server |
+|------|-------------------------------------------|
+| Claude Code | `claude plugin install playwright@claude-plugins-official` (the declared dependency) |
+| Codex | `codex mcp add playwright npx "@playwright/mcp@latest"` |
+| GitHub Copilot in VS Code | `code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'` |
+| GitHub Copilot CLI | `/mcp add` in a session, name `playwright`, command `npx @playwright/mcp@latest` (or the same entry in `~/.copilot/mcp-config.json`) |
+| Pi | `pi install npm:pi-mcp-adapter`, then add `"playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]}` to `mcpServers` in `~/.config/mcp/mcp.json` |
 
-Without it, those commands stop and print this line; none of them runs a reduced audit without a browser.
+The commands are the ones Microsoft documents in the [Playwright MCP README](https://github.com/microsoft/playwright-mcp). Every host runs the same server with the same `browser_*` tools, so the plugins' commands are identical everywhere; only this install step differs. It needs Node.js for `npx`.
+
+Without it, those commands stop and print these lines; none of them runs a reduced audit without a browser.
 
 More detail in [Browser automation (Playwright)](#browser-automation-playwright).
 
@@ -329,15 +336,21 @@ The three pipelines this marketplace built on top of the old `agent-teams` plugi
 
 ### Browser automation (Playwright)
 
-As of marketplace 11.0.0, the `playwright-skill` plugin is no longer vendored here: the local copy was byte-identical to its upstream, so it was handed back. As of marketplace 28.7.0 no plugin here depends on it any more. Every plugin that drives a browser depends on Microsoft's Playwright MCP server, published in the official Claude plugin marketplace:
+As of marketplace 11.0.0, the `playwright-skill` plugin is no longer vendored here: the local copy was byte-identical to its upstream, so it was handed back. As of marketplace 28.7.0 no plugin here depends on it any more. Every plugin that drives a browser depends on Microsoft's Playwright MCP server, published for Claude Code in the official Claude plugin marketplace and registered by hand on the other hosts:
 
 | Upstream | License | Covers |
 |----------|---------|--------|
 | `playwright@claude-plugins-official` ([microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)) | Apache-2.0 | Playwright MCP server: `browser_*` tools for navigation, snapshots, clicks, forms, network requests, screenshots, and arbitrary Playwright code |
 
-```bash
-claude plugin install playwright@claude-plugins-official
-```
+| Host | Install Microsoft's Playwright MCP server |
+|------|-------------------------------------------|
+| Claude Code | `claude plugin install playwright@claude-plugins-official` (the declared dependency) |
+| Codex | `codex mcp add playwright npx "@playwright/mcp@latest"` |
+| GitHub Copilot in VS Code | `code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'` |
+| GitHub Copilot CLI | `/mcp add` in a session, name `playwright`, command `npx @playwright/mcp@latest` (or the same entry in `~/.copilot/mcp-config.json`) |
+| Pi | `pi install npm:pi-mcp-adapter`, then add `"playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]}` to `mcpServers` in `~/.config/mcp/mcp.json` |
+
+The commands are the ones Microsoft documents in the [Playwright MCP README](https://github.com/microsoft/playwright-mcp). Every host runs the same server with the same `browser_*` tools, so the plugins' commands are identical everywhere; only this install step differs. It needs Node.js for `npx`.
 
 [app-analyzer](docs/plugins/app-analyzer.md), [digital-marketing](docs/plugins/digital-marketing.md), [grabber-development](docs/plugins/grabber-development.md) and [pwa-expert](docs/plugins/pwa-expert.md) declare it as a hard dependency. One maintained upstream now covers what two used to: the interactive tools the audits call, and, through `browser_run_code_unsafe` and `browser_network_requests`, the scripted cases (offline simulation, traffic capture). `grabber-development` keeps an inline Patchright script for stealth browsing and WebSocket, SSE and worker capture, which needs no plugin.
 

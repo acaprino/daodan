@@ -43,14 +43,18 @@ Abstract operations with platform-specific implementations:
 Web mode requires the Playwright MCP tools (`browser_navigate`, `browser_snapshot`, `browser_click`, etc.) from the `playwright` plugin, Microsoft's Playwright MCP server. If they are not available, STOP and tell the user:
 
 ```
-Missing required plugin: playwright (claude-plugins-official)
+Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
 
 The app-analyzer agent needs the Playwright MCP tools for web app analysis.
 
-playwright is a declared dependency of app-analyzer: Microsoft's Playwright
-MCP server, published in the official Claude plugin marketplace.
-Install it with:
-  claude plugin install playwright@claude-plugins-official
+Install Microsoft's Playwright MCP server for the host you run in, then
+run this again:
+  Claude Code  claude plugin install playwright@claude-plugins-official
+  Codex        codex mcp add playwright npx "@playwright/mcp@latest"
+  VS Code      code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'
+  Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
+  Pi           pi install npm:pi-mcp-adapter, then add the same server under
+               "playwright" in mcpServers of ~/.config/mcp/mcp.json
 ```
 
 ### Initialize output

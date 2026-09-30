@@ -132,4 +132,4 @@ Download every photo and video of one Instagram profile at full resolution, caro
 
 ---
 
-**Related:** [python-development](python-development.md) (async patterns, system architecture) | [opentelemetry](opentelemetry.md) (distributed tracing for scraping observability) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, a hard dependency, required for live-capture discovery; install: `claude plugin install playwright@claude-plugins-official`)
+**Related:** [python-development](python-development.md) (async patterns, system architecture) | [opentelemetry](opentelemetry.md) (distributed tracing for scraping observability) | `playwright@claude-plugins-official` (Microsoft's Playwright MCP server, a hard dependency, required for live-capture discovery; on Claude Code `claude plugin install playwright@claude-plugins-official`, on Codex, Copilot and Pi see the per-host table in the README's [Browser automation](../../README.md#browser-automation-playwright) section)

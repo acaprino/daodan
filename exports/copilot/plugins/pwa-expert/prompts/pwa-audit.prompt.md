@@ -43,7 +43,7 @@ If `<arguments>` is a URL, use the Playwright MCP tools of the `playwright` plug
 7. Test offline behavior with `browser_run_code_unsafe`: `async (page) => { await page.context().setOffline(true); await page.reload(); return await page.content(); }`, then confirm a non-broken response (offline page or cached navigation) and set the context back online.
 8. Measure Core Web Vitals on the landing page (LCP, CLS at least; INP requires interaction). Compare against `performance.md` thresholds.
 
-If the Playwright MCP tools are unavailable, stop and tell the user to install the plugin (`claude plugin install playwright@claude-plugins-official`). It is a declared dependency; a live audit without a browser is not run. Mode B (a local codebase) needs no browser.
+If the Playwright MCP tools are unavailable, stop and tell the user to install Microsoft's Playwright MCP server for the host: on Claude Code `claude plugin install playwright@claude-plugins-official`; on Codex, VS Code, Copilot CLI or Pi, register `npx @playwright/mcp@latest` as the MCP server `playwright` (the exact command for each host is in the Browser automation section of the Daodan README). It is a declared dependency; a live audit without a browser is not run. Mode B (a local codebase) needs no browser.
 
 Live-mode auth note: if the target URL is behind authentication, ask the user via `AskUserQuestion` whether to run the audit against a public route only, or whether the user can provide login steps. Never attempt to bypass auth.
 

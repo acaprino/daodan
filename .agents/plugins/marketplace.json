@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.7.1"
+    "version": "28.7.2"
   },
   "name": "daodan",
   "owner": {
@@ -64,7 +64,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/codex/plugins/app-analyzer",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": {
@@ -204,7 +204,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "2.3.1"
+      "version": "2.3.2"
     },
     {
       "author": {
@@ -272,7 +272,7 @@
         "./skills/instagram-grab-workflow"
       ],
       "source": "./exports/codex/plugins/grabber-development",
-      "version": "1.8.0"
+      "version": "1.8.1"
     },
     {
       "author": {
@@ -448,7 +448,7 @@
         "./skills/pwa-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/pwa-expert",
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "author": {

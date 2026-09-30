@@ -166,15 +166,19 @@ Query them through a real browser with the Playwright MCP tools of the `playwrig
 If the browser tools are unavailable, stop and tell the user:
 
 ```
-Missing required plugin: playwright (claude-plugins-official)
+Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
 
 Trademark pre-screening queries EUIPO TMview, USPTO Trademark Search and the
 WIPO Global Brand Database, which cannot be searched from a search engine.
 
-playwright is a declared dependency of digital-marketing: Microsoft's Playwright
-MCP server, published in the official Claude plugin marketplace.
-Install it with:
-  claude plugin install playwright@claude-plugins-official
+Install Microsoft's Playwright MCP server for the host you run in, then
+run this again:
+  Claude Code  claude plugin install playwright@claude-plugins-official
+  Codex        codex mcp add playwright npx "@playwright/mcp@latest"
+  VS Code      code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'
+  Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
+  Pi           pi install npm:pi-mcp-adapter, then add the same server under
+               "playwright" in mcpServers of ~/.config/mcp/mcp.json
 ```
 
 Do not rate trademark risk without the registers: a LOW rating built on anything else is unearned.
