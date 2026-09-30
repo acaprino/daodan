@@ -1,62 +1,60 @@
 ---
 description: >
-  Detect the 24 catalogued patterns and edit them out, then self-score the result.
+  Detect the 24 catalogued patterns and edit them out without inventing content; --score adds a self-assessed quality score.
   TRIGGER WHEN: the user asks to humanize prose/text, remove AI-sounding copy, or rewrite articles/blog posts/documentation for natural voice.
   DO NOT TRIGGER WHEN: cleaning up source code (use /clean-code:clean-code) or translating text.
-argument-hint: "<file or text> [--score]"
+argument-hint: "<file or text> [--register docs|business|personal] [--score]"
 ---
 
 # Humanize Text
 
-Use the `text-humanizer` agent to remove AI writing traces from prose, articles, blog posts, documentation, or any non-code text.
+Remove AI writing traces from prose, articles, blog posts, documentation or any other non-code text, with the `text-humanizer` agent.
 
-**This is for TEXT/PROSE. For source code readability, use `/clean-code:clean-code` instead.**
+**This is for text and prose. For source code readability, use `/clean-code:clean-code`.**
 
-## Step 1: Identify Input
+## Step 1: Read the arguments
 
-From `$ARGUMENTS`, determine what to humanize:
-- If a file path: read and humanize the file content
-- If inline text: humanize the provided text
-- If no arguments: ask the user for text to humanize
+From `$ARGUMENTS`:
+- **Input:** a file path, or inline text. With neither, ask the user for the text and wait.
+- `--register docs|business|personal`: optional. Without it, the agent infers the register.
+- `--score`: optional. Adds the quality score.
 
-## Step 2: Run Text Humanizer
+## Step 2: Run the text-humanizer agent
+
+Dispatch the `text-humanizer` agent in its own isolated context, with this brief filled in:
 
 ```
-Task:
-  subagent_type: "text-humanizer"
-  description: "Remove AI writing traces from text"
-  prompt: |
-    Humanize the following text. Remove all AI writing patterns, inject real
-    personality, and produce natural human-sounding prose.
+Humanize the text below following the anti-ai-writing-patterns skill: ground rules first,
+then register, language and patterns.
 
-    Follow the full process:
-    1. Draft rewrite (fix all 24 AI patterns)
-    2. Self-evaluate: "What makes the below so obviously AI generated?"
-    3. Final rewrite addressing remaining tells
-    4. Brief change summary
-    5. Quality score (if --score flag provided)
-
-    Text to humanize:
-    [input text]
+Input: <the file path, or the inline text>
+File handling: if a path is given, read it; do not write or edit any file.
+Register: <docs | business | personal | infer>
+Score: <yes | no>
+Reply format: report
 ```
 
-## Step 3: Output
+## Step 3: Show the report
 
-If the input was a file, offer to write the humanized version back:
+Show the agent's report as it came back: the final text, Changes, Open points, and the score when `--score` was given.
+
+## Step 4: Offer to write (file input only)
+
+When the input was a file, ask:
 
 ```
 Humanized version ready.
 
 1. Overwrite the original file
-2. Write to a new file (e.g. [filename].humanized.md)
-3. Just show the result (don't write)
+2. Write to a new file ([filename].humanized.[ext])
+3. Only show the result
 ```
 
-If `--score` flag is set, include the 5-dimension quality scoring table.
+Write only after the user picks 1 or 2, and write the final text exactly as the report gives it.
 
 ## When to use what
 
-- `/clean-code:clean-code` -- source code readability (naming, comments, structure)
-- `/humanize-text` -- prose/text AI trace removal (this command)
+- `/clean-code:clean-code`: source code readability (naming, comments, structure)
+- `/text-humanizer:humanize-text`: prose and text (this command)
 
 $ARGUMENTS

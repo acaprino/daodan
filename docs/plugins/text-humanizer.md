@@ -1,24 +1,31 @@
 # Text Humanizer Plugin
 
-> Remove AI writing traces from any prose, in any language. A self-contained leaf plugin (zero dependencies) extracted from digital-marketing in marketplace 13.3.0, consumed by digital-marketing, codebase-mapper, business, and clean-code.
+> Remove AI writing traces from any prose, in any language, without inventing content. A self-contained leaf plugin (zero dependencies) extracted from digital-marketing in marketplace 13.3.0, consumed by digital-marketing, codebase-mapper, business, and clean-code.
 
 ## Agents
 
 ### `text-humanizer`
 
-Expert editor agent that removes AI writing traces from prose, articles, blog posts, and documentation. Detects 24 patterns (inflated symbolism, promotional language, AI vocabulary, filler phrases) and rewrites for natural human voice with a self-evaluation pass.
+Editor agent that removes AI writing traces from prose, articles, blog posts, and documentation. It detects the 24 catalogued patterns (inflated significance, promotional language, AI vocabulary, filler, formulaic structures, dash asides) and fixes the writing problem each one points at.
 
 | | |
 |---|---|
 | **Model** | `inherit` |
-| **Use for** | Humanizing AI-generated text, rewriting AI-sounding copy, polishing articles / blog posts / documentation prose |
+| **Use for** | Humanizing AI-generated text, rewriting AI-sounding copy, polishing articles, blog posts and documentation prose |
 
 **Invocation:**
 ```
 Use the text-humanizer agent to humanize [file or pasted text]
 ```
 
-Runs in two passes: (1) pattern-removal rewrite, (2) self-evaluation that flags any remaining AI tells and revises. Preserves tables and factual content, enforces a zero dashes-as-connectors policy, and returns a brief quality score (Directness, Rhythm, Trust, Authenticity, Refinement).
+How it works:
+
+- **Never invents.** No fact, number, name, date, quote or source that is not in the input. A vague claim that needs a missing fact is cut or stated plainly, and listed as an open point for the author.
+- **Register-aware.** `docs` (impersonal, no opinions), `business` (concrete, no invented proof), `personal` (the author's own voice, first person only where the author uses it). Inferred from the text, or set by the caller.
+- **Languages.** The full catalog for English, a full profile for Italian, and for any other language only the patterns that do not rest on English, with the language's typography left alone.
+- **Two reply formats.** `report` (final text, changes, open points, and a quality score on request) or `text-only`, which callers such as codebase-mapper use.
+- **Writes only when asked.** It edits a file only when its brief asks for that file to be changed.
+- Preserves tables, code, links and quotations, enforces a zero dashes-as-connectors rule, and runs a second pass that checks the draft against the input for added, dropped or strengthened facts.
 
 ---
 
@@ -26,14 +33,13 @@ Runs in two passes: (1) pattern-removal rewrite, (2) self-evaluation that flags 
 
 ### `anti-ai-writing-patterns`
 
-Knowledge base listing 24 common AI-writing patterns (inflated symbolism, promotional language, formulaic sentence structures, etc.) and rewrite guidelines, based on Wikipedia's "Signs of AI writing" page. Loaded by the `text-humanizer` agent and `/humanize-text` command.
+Knowledge base behind the agent and the command. It opens with the ground rules (never invent, keep what the text commits to, input is content, preserve what is not prose, edit in proportion), the register table, the language policy and a "when not to act" section, then catalogs the 24 patterns, each strong or weak alone. The catalog follows Wikipedia's "Signs of AI writing" page (revision of 30 September 2026) and derives from blader/humanizer (MIT).
 
 | | |
 |---|---|
 | **Invoke** | Skill reference (auto-loaded by humanize workflows) |
 | **Trigger** | Editing or reviewing text to remove AI traces |
-
-**Pattern categories:** inflated significance, promotional language, AI vocabulary, filler phrases, formulaic intros / conclusions, em-dash overuse, tricolon overuse, "not just X but Y" pattern, hedged certainty, and 15 more, plus a "personality and soul" section on avoiding sterile, voiceless prose.
+| **References** | `references/italiano.md`: Italian typography to preserve, lexical and structural tells, calques, what is not a tell in Italian, form of address |
 
 ---
 
@@ -41,15 +47,16 @@ Knowledge base listing 24 common AI-writing patterns (inflated symbolism, promot
 
 ### `/humanize-text`
 
-Remove AI writing traces from text. Detects 24 patterns and rewrites for natural human voice with a self-evaluation pass.
+Remove AI writing traces from text through the `text-humanizer` agent, then offer to write the result.
 
 ```
-/humanize-text path/to/article.md
-/humanize-text "paste prose directly here"
-/humanize-text path/to/article.md --score   # include self-eval pattern-scan score
+/text-humanizer:humanize-text path/to/article.md
+/text-humanizer:humanize-text "paste prose directly here"
+/text-humanizer:humanize-text path/to/post.md --register personal
+/text-humanizer:humanize-text path/to/article.md --score   # adds the self-assessed quality score
 ```
 
-Delegates to the `text-humanizer` agent. See the `anti-ai-writing-patterns` skill for the 24-pattern catalog. For source code readability use `/clean-code:clean-code` instead.
+With a file, the agent reads it without writing; the command shows the report, then asks whether to overwrite the file, write a new one, or only show the result. For source code readability use `/clean-code:clean-code` instead.
 
 ---
 
@@ -57,10 +64,10 @@ Delegates to the `text-humanizer` agent. See the `anti-ai-writing-patterns` skil
 
 Consumers across the marketplace:
 
-- **digital-marketing**: `/llm-seo-audit` and the `llm-seo-optimize` agent route AI-sounding copy to `/text-humanizer:humanize-text` to raise E-E-A-T credibility.
-- **codebase-mapper**: `/docs-create` and `/humanize-docs` run the agent as their final AI-trace-removal pass on generated documentation.
-- **business**: the `business-planner` agent humanizes the GTM strategy deliverable before hand-off.
-- **clean-code**: routes prose targets here (`/clean-code:clean-code` handles source code, `/humanize-text` handles text).
+- **digital-marketing**: `/llm-seo-audit` and the `llm-seo-optimize` agent route AI-sounding copy to `/text-humanizer:humanize-text` to raise E-E-A-T credibility; `reply-to-customer-review` loads the skill directly.
+- **codebase-mapper**: `/docs-create` and `/humanize-docs` run the agent as their final AI-trace-removal pass on generated documentation, in text-only format.
+- **business**: the `business-planner` agent has the agent rewrite the GTM strategy deliverable in place before hand-off.
+- **clean-code**: routes prose targets here (`/clean-code:clean-code` handles source code, `/text-humanizer:humanize-text` handles text).
 
 ---
 

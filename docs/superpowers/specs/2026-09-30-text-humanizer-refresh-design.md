@@ -75,7 +75,7 @@ The agent identifies the language; mixed text is handled passage by passage.
 
 - **English:** the full catalog.
 - **Italian:** the structural patterns plus a new `references/italiano.md`, read only when the text is Italian.
-- **Any other language:** only the language-independent patterns (inflation, promotional tone, vague attribution, formulaic sections, negative parallelism, triads, bold, inline-header lists, chatbot residue, disclaimers, servility, filler, hedging, generic conclusions). English word lists are not applied. The language's typography is never changed: quotation marks, spacing before punctuation, dialogue dashes, capitalization rules.
+- **Any other language:** every pattern except 7, 8, 11, 16 and 18, which rest on English vocabulary, English schooling or English typography; the others apply by their construction, not by their English words to watch. English word lists are not applied. The language's typography is never changed: quotation marks, spacing before punctuation, dialogue dashes, capitalization rules.
 
 Two rules change for every language. Pattern 18 becomes "mixed quotation marks in one document", fixed by making them consistent with the document's prevailing convention, never by straightening them. The dash-aside policy holds in every language; dialogue dashes and numeric ranges (10–20) are exempt.
 
