@@ -71,7 +71,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/copilot/plugins/app-analyzer",
-      "version": "1.4.1"
+      "version": "1.4.2"
     },
     {
       "agents": [
@@ -486,7 +486,7 @@
         "./skills/pwa-development"
       ],
       "source": "./exports/copilot/plugins/pwa-expert",
-      "version": "1.3.2"
+      "version": "1.3.3"
     },
     {
       "agents": [

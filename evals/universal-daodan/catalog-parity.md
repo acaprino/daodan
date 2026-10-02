@@ -1,4 +1,4 @@
-# Catalog parity: 40 plugins, four hosts
+# Catalog parity: 40 plugins, five hosts
 
 Every plugin under `plugins/` is a neutral content kernel, and every host catalog lists all 40 at the
 same version. This file records the compiler's parity table and the host smoke results.
@@ -9,48 +9,48 @@ Produced by `python scripts/daodan_build.py --check --support`. `native` means t
 required capability directly; `adapted` means at least one is satisfied through a host mechanism the
 adapter names. No plugin is `unsupported` on any host, which is the release gate.
 
-| plugin | version | claude | copilot | codex | pi |
-|---|---|---|---|---|---|
-| `abstraction-architect` | 3.0.0 | native | native | adapted | adapted |
-| `ai-tooling` | 5.4.0 | native | native | adapted | adapted |
-| `app-analyzer` | 1.2.0 | native | native | adapted | adapted |
-| `browser-extensions` | 1.8.0 | native | native | adapted | adapted |
-| `business` | 1.11.0 | native | native | adapted | adapted |
-| `clean-code` | 1.3.0 | native | native | adapted | adapted |
-| `codebase-mapper` | 3.1.0 | native | native | adapted | adapted |
-| `codebase-xray` | 4.0.1 | native | native | adapted | adapted |
-| `csp` | 1.4.0 | native | native | adapted | adapted |
-| `dependency-audit` | 1.1.0 | native | native | native | native |
-| `digital-marketing` | 2.1.0 | native | native | adapted | adapted |
-| `docker` | 1.4.0 | native | native | native | native |
-| `docs` | 1.2.0 | native | native | native | native |
-| `frontend-review` | 2.1.0 | native | native | native | native |
-| `grabber-development` | 1.5.0 | native | native | adapted | adapted |
-| `kotlin-development` | 1.1.0 | native | native | native | native |
-| `learning` | 1.7.0 | native | native | native | native |
-| `libgdx-development` | 1.1.0 | native | native | adapted | adapted |
-| `marketplace-ops` | 2.3.0 | native | native | adapted | adapted |
-| `messaging` | 2.1.0 | native | native | adapted | adapted |
-| `obsidian-development` | 1.5.0 | native | native | native | native |
-| `opentelemetry` | 1.4.0 | native | native | adapted | adapted |
-| `peer-review` | 2.4.0 | native | adapted | adapted | adapted |
-| `platform-engineering` | 1.3.0 | native | native | adapted | adapted |
-| `project-setup` | 2.0.0 | native | native | adapted | adapted |
-| `pwa-expert` | 1.2.0 | native | native | adapted | adapted |
-| `python-development` | 1.22.0 | native | native | adapted | adapted |
-| `rag-development` | 1.6.0 | native | native | adapted | adapted |
-| `react-development` | 1.11.0 | native | native | adapted | adapted |
-| `repo-hygiene` | 1.2.0 | native | native | adapted | adapted |
-| `research` | 6.2.1 | native | native | adapted | adapted |
-| `senior-review` | 12.0.0 | native | native | adapted | adapted |
-| `stripe` | 2.5.0 | native | native | adapted | adapted |
-| `system-utils` | 2.1.0 | native | native | native | native |
-| `tauri-development` | 2.8.0 | native | native | adapted | adapted |
-| `testing` | 2.3.0 | native | native | adapted | adapted |
-| `text-humanizer` | 1.1.0 | native | native | adapted | adapted |
-| `trading-broker-integration` | 2.1.0 | native | native | adapted | adapted |
-| `typescript-development` | 2.3.0 | native | native | adapted | adapted |
-| `xterm` | 1.2.0 | native | native | native | native |
+| plugin | version | claude | copilot | codex | pi | opencode |
+|---|---|---|---|---|---|---|
+| `abstraction-architect` | 4.0.0 | native | native | adapted | adapted | native |
+| `ai-tooling` | 5.4.2 | native | native | adapted | adapted | native |
+| `app-analyzer` | 1.4.2 | native | native | adapted | adapted | native |
+| `browser-extensions` | 2.0.0 | native | native | adapted | adapted | native |
+| `business` | 1.12.0 | native | native | adapted | adapted | native |
+| `clean-code` | 1.3.2 | native | native | adapted | adapted | native |
+| `codebase-mapper` | 3.1.1 | native | native | adapted | adapted | native |
+| `codebase-xray` | 4.2.0 | native | native | adapted | adapted | native |
+| `csp` | 1.4.0 | native | native | adapted | adapted | native |
+| `dependency-audit` | 1.1.0 | native | native | native | native | native |
+| `digital-marketing` | 3.0.0 | native | native | adapted | adapted | native |
+| `docker` | 1.4.0 | native | native | native | native | native |
+| `docs` | 1.2.1 | native | native | native | native | native |
+| `frontend-review` | 2.1.2 | native | native | native | native | native |
+| `grabber-development` | 1.8.1 | native | native | adapted | adapted | native |
+| `kotlin-development` | 1.1.0 | native | native | native | native | native |
+| `learning` | 1.7.1 | native | native | native | native | native |
+| `libgdx-development` | 1.1.0 | native | native | adapted | adapted | native |
+| `marketplace-ops` | 2.3.1 | native | native | adapted | adapted | native |
+| `messaging` | 2.1.0 | native | native | adapted | adapted | native |
+| `obsidian-development` | 1.5.1 | native | native | native | native | native |
+| `opentelemetry` | 1.4.1 | native | native | adapted | adapted | native |
+| `peer-review` | 2.4.1 | native | adapted | adapted | adapted | adapted |
+| `platform-engineering` | 1.3.1 | native | native | adapted | adapted | native |
+| `project-setup` | 2.0.1 | native | native | adapted | adapted | native |
+| `pwa-expert` | 1.3.3 | native | native | adapted | adapted | native |
+| `python-development` | 2.0.0 | native | native | adapted | adapted | native |
+| `rag-development` | 1.6.0 | native | native | adapted | adapted | native |
+| `react-development` | 1.11.0 | native | native | adapted | adapted | native |
+| `repo-hygiene` | 1.2.0 | native | native | adapted | adapted | native |
+| `research` | 6.2.2 | native | native | adapted | adapted | native |
+| `senior-review` | 12.0.3 | native | native | adapted | adapted | native |
+| `stripe` | 2.6.0 | native | native | adapted | adapted | native |
+| `system-utils` | 2.1.1 | native | native | native | native | native |
+| `tauri-development` | 2.8.0 | native | native | adapted | adapted | native |
+| `testing` | 2.3.0 | native | native | adapted | adapted | native |
+| `text-humanizer` | 1.2.0 | native | native | adapted | adapted | native |
+| `trading-broker-integration` | 2.1.1 | native | native | adapted | adapted | native |
+| `typescript-development` | 2.3.0 | native | native | adapted | adapted | native |
+| `xterm` | 1.2.0 | native | native | native | native | native |
 
 Codex and Pi both read `adapted` for 31 plugins, for the same reason: their context isolation, role
 delivery and parallel dispatch are runtime-subagent mechanisms rather than packaged primitives. On Pi
@@ -58,6 +58,12 @@ that mechanism is a companion package the user installs, `pi-subagents`, which i
 strategies are marked `runtime-optional`. It is a binding difference, not a capability gap: the
 contract assertions in `tests/test_review_pipeline_ports.py` and
 `tests/test_dependency_audit_ports.py` hold identically on every host.
+
+OpenCode reads `native` for 39 plugins and `adapted` for `peer-review` alone. V2 runs a registered
+agent with `mode: subagent` in a fresh child session through its built-in `subagent` tool, so
+isolation, named roles and background dispatch are all host primitives there. `peer-review` is the
+exception because its MCP server is registered by the package's loader rather than read by the host
+from a file, which is what `adapted` records.
 
 ## Gates that must stay green
 
@@ -72,7 +78,7 @@ python scripts/lint_fact_anchors.py
 ```
 
 Result at the completed migration: 40 kernels and 40 packages per host, across Claude, Copilot, Codex
-and (since marketplace 28.0.0) Pi, zero unsupported required components, zero stale overrides, and in fact zero overrides at
+(since marketplace 28.0.0) Pi and (since marketplace 29.0.0) OpenCode, zero unsupported required components, zero stale overrides, and in fact zero overrides at
 all. Every host divergence so far was expressible through the generic harness templates, which is the
 outcome the override gate exists to make visible rather than to encourage.
 
@@ -84,8 +90,9 @@ outcome the override gate exists to make visible rather than to encourage.
 | copilot | not run | structural: 40/40 recognized | not run | not run | not run |
 | codex | yes | yes | yes | yes | yes (isolated, parallel, inline delivery) |
 | pi | n/a: no marketplace, installs a package | not run | not run | not run | not run |
+| opencode | n/a: no marketplace, installs a plugin package | not run | not run | not run | not run |
 
-Claude and Codex are measured end to end; Copilot and Pi are not. See `tests/host-probes/README.md`
+Claude and Codex are measured end to end; Copilot, Pi and OpenCode are not. See `tests/host-probes/README.md`
 for the commands and the raw results. `claude plugin marketplace add ./` then `claude plugin install clean-code@daodan`
 installs and enables; `codex plugin marketplace add` lists the plugin from the generated
 `.agents/plugins/marketplace.json` and `codex plugin add` installs it. `claude plugin validate .`

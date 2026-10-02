@@ -1,10 +1,11 @@
 # Migrating from `claude-code-daodan` to `daodan`
 
-The repository is now one marketplace with four native front ends. The same 40 plugins are compiled
-from one set of content kernels into Claude Code, GitHub Copilot, Codex and Pi packages, at one
+The repository is now one marketplace with five native front ends. The same 40 plugins are compiled
+from one set of content kernels into Claude Code, GitHub Copilot, Codex, Pi and OpenCode packages, at one
 identical version everywhere. Two things changed for existing users: the repository name, and the
-removal of the VS Code extension. Pi arrived later, in marketplace 28.0.0, and changed nothing for
-anyone already installed.
+removal of the VS Code extension. Pi arrived later, in marketplace 28.0.0, and OpenCode in 29.0.0;
+neither host changed anything for anyone already installed. Marketplace 29.0.0 did rename five
+components on every host, listed below.
 
 ## What replaced what
 
@@ -15,6 +16,7 @@ anyone already installed.
 | A VS Code extension built from `exports/vscode` | a native Copilot marketplace at `.github/plugin/marketplace.json` |
 | No Codex distribution | a native Codex marketplace at `.agents/plugins/marketplace.json` |
 | No Pi distribution | a package installed from git, catalogued by the root `package.json` |
+| No OpenCode distribution | a V2 plugin package at `exports/opencode/`, installed with `opencode plugin add` |
 
 Plugin names did not change. Command, agent and skill names did not change on Claude Code.
 
@@ -53,6 +55,22 @@ copilot plugin install <plugin>@daodan
 codex plugin marketplace add acaprino/daodan
 codex plugin install <plugin>@daodan
 ```
+
+## Renamed in marketplace 29.0.0
+
+No name may now be shared by two kinds of component inside one plugin, because OpenCode lists skills
+and agents in one menu. Five components were renamed on every host; the commands kept their names.
+
+| Plugin | Before | After |
+|---|---|---|
+| abstraction-architect | agent `abstraction-architect` | agent `abstraction-architect-agent` |
+| browser-extensions | agent `firefox-extension-dev` | agent `firefox-extension-dev-agent` |
+| digital-marketing | skill `brand-naming` | skill `brand-naming-method` |
+| digital-marketing | skill `reply-to-customer-review` | skill `review-reply-method` |
+| python-development | skill `python-refactor` | skill `python-refactor-method` |
+
+Anything that spawns or loads one of these by its old name needs the new one. `/digital-marketing:brand-naming`,
+`/digital-marketing:reply-to-customer-review` and `/python-development:python-refactor` are unchanged.
 
 ## The VS Code extension is not coming back
 

@@ -25,7 +25,7 @@ Only after establishing intent, proceed with semantic and technical audits.
 
 ## BROWSER-BASED AUDITING
 
-Primary tooling for live site analysis: the Playwright MCP tools, from the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of digital-marketing. If they are not available, stop and tell the user to install Microsoft's Playwright MCP server for the host: on Claude Code `claude plugin install playwright@claude-plugins-official`; on Codex, VS Code, Copilot CLI or Pi, register `npx @playwright/mcp@latest` as the MCP server `playwright` (the exact command for each host is in the Browser automation section of the Daodan README); do not fall back to a browserless audit of a live site.
+Primary tooling for live site analysis: the Playwright MCP tools, from the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of digital-marketing. If they are not available, stop and tell the user to install Microsoft's Playwright MCP server for the host: on Claude Code `claude plugin install playwright@claude-plugins-official`; on Codex, VS Code, Copilot CLI, Pi or OpenCode, register `npx @playwright/mcp@latest` as the MCP server `playwright` (the exact command for each host is in the Browser automation section of the Daodan README); do not fall back to a browserless audit of a live site.
 - `browser_navigate` - load pages, follow redirects, detect final URL
 - `browser_snapshot` - extract full rendered DOM for meta tags, headings, schema, OG tags, link structure
 - `browser_evaluate` - run JS: extract JSON-LD, check lazy loading, measure DOM size, get computed styles, count elements

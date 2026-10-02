@@ -4,7 +4,7 @@
 
 **40 specialized plugins that augment your coding agent into a specialized toolkit, so you spend less time prompting and more time shipping.**
 
-> The Daodan is the symbiote that enhances its host. This marketplace is the Daodan of coding agents: Claude Code, GitHub Copilot, Codex and Pi, compiled from one source.
+> The Daodan is the symbiote that enhances its host. This marketplace is the Daodan of coding agents: Claude Code, GitHub Copilot, Codex, Pi and OpenCode, compiled from one source.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
 [![Consistency](https://github.com/acaprino/daodan/actions/workflows/consistency.yml/badge.svg)](https://github.com/acaprino/daodan/actions/workflows/consistency.yml)
@@ -25,13 +25,13 @@
 - **Multi-agent orchestration**: code review fires architecture, security, and pattern analysis in parallel
 - **End-to-end workflows**: chain analysis, implementation, review, and cleanup into single commands
 - **Install only what you need**: installing a plugin pulls in exactly the plugins it declares as dependencies, and nothing else
-- **Four hosts, one source**: every plugin is compiled into native Claude Code, Copilot, Codex and Pi packages at one identical version
+- **Five hosts, one source**: every plugin is compiled into native Claude Code, Copilot, Codex, Pi and OpenCode packages at one identical version
 - **Community-driven**: MIT licensed, upstream-synced with projects from Anthropic, Vercel, and others
 
 ## Quick Start
 
 ```bash
-# Add the marketplace (Claude Code; use copilot or codex for those hosts, and see Pi below)
+# Add the marketplace (Claude Code; use copilot or codex for those hosts, and see Pi and OpenCode below)
 claude plugin marketplace add acaprino/daodan
 
 # Install the plugins you need
@@ -94,6 +94,46 @@ Workflows are prefixed with their plugin on this host, because Pi's command name
 shared with your own prompts: `/senior-review-code-review`, not `/code-review`. Roles are registered
 as skills hidden from the model's skill list, so they cost no context and stay loadable by name.
 
+### OpenCode
+
+[OpenCode](https://opencode.ai/) V2 has no marketplace either: a package reaches it as a plugin, so
+you add this repository's OpenCode package, pinned to a released version.
+
+```bash
+opencode plugin add 'github:acaprino/daodan#v<version>::path:exports/opencode'
+```
+
+`<version>` is the latest release tag, as for Pi. The `::path:` selector installs the generated
+package under `exports/opencode/` rather than the repository root. OpenCode Desktop needs nothing of
+its own: it runs the same V2 service the CLI does, so one install serves both. The package targets
+OpenCode V2 only (`@opencode/cli` 2.x); the 1.x line has a different plugin API and is not supported.
+
+That gives every plugin at once. To pick a subset, use the object form of the entry in
+`opencode.jsonc`, and the loader registers only what you name:
+
+```jsonc
+{
+  "plugins": [{
+    "package": "github:acaprino/daodan#v<version>::path:exports/opencode",
+    "options": { "plugins": ["senior-review", "codebase-xray"] }
+  }]
+}
+```
+
+A selection always brings the plugins it depends on, and `"exclude": [...]` never removes one that a
+selected plugin needs: every dependency inside this marketplace is mandatory, so a half-installed
+review would report as complete while missing a dimension. Both overrides are written to the log.
+
+Names follow Claude Code on this host: `/senior-review:code-review`, agent
+`senior-review:code-auditor`, skill `senior-review:review-quality-gates`. Roles are real subagents,
+dispatched with OpenCode's own `subagent` tool, so no companion package is needed, and
+`peer-review`'s MCP server is registered by the plugin itself. The loader owns the IDs it registers:
+an agent of yours with the same `<plugin>:<role>` ID is replaced by the Daodan one.
+
+On Windows, installing a git-backed plugin spec has failed under earlier OpenCode builds. If
+`opencode plugin add` cannot fetch it, clone the repository at the tag and add the local path
+`<clone>/exports/opencode` instead.
+
 Coming from the old `claude-code-daodan` marketplace or the VS Code extension? See
 [docs/migration-from-claude-code-daodan.md](docs/migration-from-claude-code-daodan.md).
 
@@ -131,6 +171,7 @@ More detail in [Brainstorming, planning, and execution](#brainstorming-planning-
 | GitHub Copilot in VS Code | `code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'` |
 | GitHub Copilot CLI | `/mcp add` in a session, name `playwright`, command `npx @playwright/mcp@latest` (or the same entry in `~/.copilot/mcp-config.json`) |
 | Pi | `pi install npm:pi-mcp-adapter`, then add `"playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]}` to `mcpServers` in `~/.config/mcp/mcp.json` |
+| OpenCode | `opencode mcp add playwright --global -- npx @playwright/mcp@latest` |
 
 The commands are the ones Microsoft documents in the [Playwright MCP README](https://github.com/microsoft/playwright-mcp). Every host runs the same server with the same `browser_*` tools, so the plugins' commands are identical everywhere; only this install step differs. It needs Node.js for `npx`.
 
@@ -349,6 +390,7 @@ As of marketplace 11.0.0, the `playwright-skill` plugin is no longer vendored he
 | GitHub Copilot in VS Code | `code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'` |
 | GitHub Copilot CLI | `/mcp add` in a session, name `playwright`, command `npx @playwright/mcp@latest` (or the same entry in `~/.copilot/mcp-config.json`) |
 | Pi | `pi install npm:pi-mcp-adapter`, then add `"playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]}` to `mcpServers` in `~/.config/mcp/mcp.json` |
+| OpenCode | `opencode mcp add playwright --global -- npx @playwright/mcp@latest` |
 
 The commands are the ones Microsoft documents in the [Playwright MCP README](https://github.com/microsoft/playwright-mcp). Every host runs the same server with the same `browser_*` tools, so the plugins' commands are identical everywhere; only this install step differs. It needs Node.js for `npx`.
 
@@ -433,7 +475,7 @@ claude plugin install codebase-cleanup@claude-code-workflows
 | **Skill** | A knowledge module Claude references automatically | Activates when the task matches its trigger keywords |
 | **Command** | A slash command that kicks off a workflow | `/code-review`, `/python-scaffold`, `/senior-review:team-review` |
 
-Plugin content is pure Markdown with optional Python helper scripts, plus a declarative TOML control plane per plugin. A stdlib-only compiler turns those kernels into native packages for all four hosts, so nothing under `exports/` is written by hand. A consistency CI guards the contracts on every push: cross-plugin references must match declared dependencies, plugin changes must bump versions, and every committed package must reproduce byte-for-byte from its source.
+Plugin content is pure Markdown with optional Python helper scripts, plus a declarative TOML control plane per plugin. A stdlib-only compiler turns those kernels into native packages for all five hosts, so nothing under `exports/` is written by hand. A consistency CI guards the contracts on every push: cross-plugin references must match declared dependencies, plugin changes must bump versions, and every committed package must reproduce byte-for-byte from its source.
 
 </details>
 
@@ -449,7 +491,7 @@ daodan/
 ├── adapters/                  # one directory per host: capabilities, coordination, layout, templates
 ├── docs/plugins/              # per-plugin documentation
 ├── evals/                     # eval harnesses (never shipped)
-├── exports/                   # generated packages: claude/, copilot/, codex/, pi/
+├── exports/                   # generated packages: claude/, copilot/, codex/, pi/, opencode/ (its package.json is the OpenCode catalog)
 ├── plugins/
 │   ├── python-development/
 │   │   ├── plugin.toml        # neutral control plane

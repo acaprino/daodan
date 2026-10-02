@@ -38,6 +38,7 @@ run this again:
   Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
   Pi           pi install npm:pi-mcp-adapter, then add the same server under
                "playwright" in mcpServers of ~/.config/mcp/mcp.json
+  OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
 Do not fall back to a source-only audit: a GA4 audit that never saw a tag fire is a code review, and reading it as an audit is how broken tracking ships.

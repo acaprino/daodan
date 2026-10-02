@@ -37,14 +37,14 @@ The core owns roles, workflow dependencies, required context isolation, joins an
 
 ## What each host expects
 
-| | claude | copilot | codex | pi |
-|---|---|---|---|---|
-| catalog | `.claude-plugin/marketplace.json` | `.github/plugin/marketplace.json` | `.agents/plugins/marketplace.json` | the root `package.json` |
-| plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` | `.codex-plugin/plugin.json` | none |
-| roles | `agents/<role>.md` | `agents/<role>.agent.md` | `roles/<role>.md` | `skills/<plugin>-<role>/SKILL.md` |
-| workflows | `commands/<workflow>.md` | `prompts/<workflow>.prompt.md` | `skills/<workflow>-workflow/SKILL.md` | `prompts/<plugin>-<workflow>.md` |
-| skills | `skills/<skill>/SKILL.md` | same | same | same |
-| source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` | a glob, not a reference |
+| | claude | copilot | codex | pi | opencode |
+|---|---|---|---|---|---|
+| catalog | `.claude-plugin/marketplace.json` | `.github/plugin/marketplace.json` | `.agents/plugins/marketplace.json` | the root `package.json` | `exports/opencode/package.json` |
+| plugin manifest | `.claude-plugin/plugin.json` | `plugin.json` | `.codex-plugin/plugin.json` | none | none |
+| roles | `agents/<role>.md` | `agents/<role>.agent.md` | `roles/<role>.md` | `skills/<plugin>-<role>/SKILL.md` | `agents/<role>.md`, registered as agent `<plugin>:<role>` |
+| workflows | `commands/<workflow>.md` | `prompts/<workflow>.prompt.md` | `skills/<workflow>-workflow/SKILL.md` | `prompts/<plugin>-<workflow>.md` | `commands/<workflow>.md`, registered as `/<plugin>:<workflow>` |
+| skills | `skills/<skill>/SKILL.md` | same | same | same | same, registered as `<plugin>:<skill>` |
+| source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` | a glob, not a reference | `root` in the manifest's `daodan` key |
 
 Pi is the one host with no marketplace and no per-plugin manifest, so three of those cells are
 unlike the others and each is load-bearing. Its catalog is an npm-shaped `package.json` at the
@@ -61,7 +61,32 @@ Two mechanisms Pi's core omits on purpose arrive from companion packages the use
 binding's `package` field rather than in template prose, which is why that field exists and why it
 is separate from `value`: `value` names a host tool and feeds the Copilot coordinator's derived
 `tools` line, so a package name there would read as a tool that does not exist.
-| source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` |
+
+OpenCode V2 is the host where nothing exists until code registers it. It has no marketplace and no
+static package format: a package arrives as a plugin, an ES module whose default export's `setup`
+calls the V2 transform hooks for skills, agents, commands and MCP servers. Directory discovery of
+`skills/`, `agents/` and `commands/` applies to config directories only, never to a plugin package.
+So the package is one npm-shaped directory, `exports/opencode/`, installed through npm's `::path:`
+selector into the tagged repository, which is why its catalog sits under `exports/` and the root
+`package.json` stays Pi's. The catalog is that package's own `package.json`, and its `daodan` key
+carries, per plugin, the local dependencies and every component with its ID, description, file and,
+for agents, a V2 permission list. `index.js` beside it is the loader: one fixed file under
+`adapters/opencode/templates/`, copied verbatim by the layout's `package_files` key and covered by
+the drift gate. **It is never generated per plugin**: anything plugin-specific is computed in Python
+and written into the manifest, which keeps the toolchain stdlib Python and keeps the loader
+reviewable as a single file. It imports nothing outside Node's standard library and never throws out
+of `setup` or a transform callback, because a plugin failing there can disable the host's whole
+plugin generation. `tests/opencode/loader.test.mjs` pins it, run from the Python suite.
+
+Three decisions in that loader are contracts. **IDs follow Claude** (`senior-review:code-auditor`),
+because V2 registers commands and agents by free string and the kernels already write that form; a
+probe item records whether the `skill` and `subagent` tools accept the colon. **Selection is a loader
+option that the dependency policy outranks**: `options.plugins` brings its transitive closure of local
+dependencies and `options.exclude` never removes a plugin a selected one needs, both logged. **A role's
+permission list starts with a deny-all and ends with an `external_directory` allowance scoped to
+`<package-root>/**`**, which the loader resolves: the package lives in OpenCode's cache, outside every
+project, so without it a role is refused the very references its body tells it to read. Roles carry
+neither `model` (V2's subagent default already inherits) nor `color` (V2 takes hex, the kernels names).
 
 Codex suffixes workflow directories with `-workflow` on purpose: it is the one host that renders both skills and workflows as skills, and before marketplace 29.0.0 a plugin could have a skill and a workflow of the same name (`digital-marketing:brand-naming` did), which would have collided on disk. The frontmatter `name` carries the same suffix, through the layout's `workflow_name` key, because Codex resolves a skill by that name rather than by its directory: until marketplace 28.5.0 the directory was suffixed and the name was not, so `brand-naming` registered two skills under one name.
 
@@ -69,7 +94,7 @@ Since marketplace 29.0.0 a name may not repeat across kinds at all: `validate_co
 
 ## Harness rendering
 
-A workflow whose phases fan out is not copied, it is rendered through that host's harness template, which wraps the neutral body with the dispatch obligations the contract requires: isolated worker contexts, the delivery barrier, the single-writer rule for the report, and a **dispatch plan**. The templates are `claude/templates/team-workflow.md.tmpl`, `copilot/templates/coordinator.agent.md.tmpl` (plus `worker.agent.md.tmpl` for the roles), `codex/templates/subagent-workflow.SKILL.md.tmpl` and `pi/templates/team-prompt.md.tmpl` (plus `role.SKILL.md.tmpl`).
+A workflow whose phases fan out is not copied, it is rendered through that host's harness template, which wraps the neutral body with the dispatch obligations the contract requires: isolated worker contexts, the delivery barrier, the single-writer rule for the report, and a **dispatch plan**. The templates are `claude/templates/team-workflow.md.tmpl`, `copilot/templates/coordinator.agent.md.tmpl` (plus `worker.agent.md.tmpl` for the roles), `codex/templates/subagent-workflow.SKILL.md.tmpl`, `pi/templates/team-prompt.md.tmpl` (plus `role.SKILL.md.tmpl`) and `opencode/templates/team-command.md.tmpl` (plus `agent.md.tmpl`). The OpenCode harness names the native `subagent` tool and `background: true` for one phase's workers, and has no missing-tool branch: isolation is native there, so a `subagent` call that answers with an unknown agent is a broken install, stopped and reported.
 
 The Pi template is the one that branches, and the branch is a contract rather than a courtesy. Its `subagent` tool is not part of Pi's core, so the template states what to do when none is available and makes the answer depend on the isolation the workflow declared: `required` stops and asks for `pi install npm:pi-subagents`, `shared` may run the phases in one context and say so. Running a review pipeline serially in one context is the loss of isolation rather than a lesser form of it, so collapsing those two branches would produce a report claiming a contract it did not meet.
 
@@ -86,14 +111,14 @@ Substitution is `string.Template` with an allowlisted context (`scripts/daodan/t
 
 A kernel body says `${CLAUDE_PLUGIN_ROOT}/skills/x/scripts/y.py` because the bundled-path linter requires that form: it is what survives installation on Claude. It says `$ARGUMENTS` because that is what a Claude command expands. Neither is defined on Copilot or Codex, so the renderer rewrites both per host from four layout keys, and inserts the host's explanation once, after the frontmatter, in every Markdown file that uses the reference:
 
-| key | claude | copilot | codex | pi |
-|---|---|---|---|---|
-| `plugin_root_reference` | `${CLAUDE_PLUGIN_ROOT}` (itself) | `${PLUGIN_ROOT}`, which Copilot CLI documents for paths inside the plugin directory | `<plugin-root>`, a marker the agent resolves once: Codex hands `PLUGIN_ROOT` to hook commands only | `<plugin-root>`, same marker: a prompt template gets no variable |
-| `plugin_root_note` | none | names `plugin.json` as the directory to find | names `.codex-plugin/plugin.json` | names the directory holding the plugin's `skills/` and `prompts/` |
-| `arguments_reference` | `$ARGUMENTS` (itself) | `<arguments>` | `<arguments>` | `$ARGUMENTS` (itself) |
-| `arguments_note` | none | "substitute what the user typed after the prompt name" | "... after the skill name" | none |
+| key | claude | copilot | codex | pi | opencode |
+|---|---|---|---|---|---|
+| `plugin_root_reference` | `${CLAUDE_PLUGIN_ROOT}` (itself) | `${PLUGIN_ROOT}`, which Copilot CLI documents for paths inside the plugin directory | `<plugin-root>`, a marker the agent resolves once: Codex hands `PLUGIN_ROOT` to hook commands only | `<plugin-root>`, same marker: a prompt template gets no variable | `<plugin-root>`, which the loader substitutes with the absolute plugin directory in every body it registers |
+| `plugin_root_note` | none | names `plugin.json` as the directory to find | names `.codex-plugin/plugin.json` | names the directory holding the plugin's `skills/` and `prompts/` | names the directory holding `skills/`, `agents/` and `commands/`, for files the loader does not register |
+| `arguments_reference` | `$ARGUMENTS` (itself) | `<arguments>` | `<arguments>` | `$ARGUMENTS` (itself) | `$ARGUMENTS` (itself) |
+| `arguments_note` | none | "substitute what the user typed after the prompt name" | "... after the skill name" | none | none |
 
-Pi is the only host besides Claude whose arguments placeholder maps onto itself, because a Pi prompt template expands `$ARGUMENTS`, `$@`, `$1` and `${1:-default}` natively.
+Pi and OpenCode are the hosts besides Claude whose arguments placeholder maps onto itself. A Pi prompt template expands `$ARGUMENTS`, `$@`, `$1` and `${1:-default}` natively. On OpenCode a plugin's command is an `execute` function, so the loader expands `$ARGUMENTS` and `$1` itself, with a line-for-line port of V2's own `evaluateTemplate` minus the shell-output blocks no kernel uses.
 
 Claude's keys map each placeholder onto itself and carry no note, so its packages are unchanged by this pass. Only the `${CLAUDE_PLUGIN_ROOT}` form is rewritten; a bare `$CLAUDE_PLUGIN_ROOT` would pass through and fail `tests/test_daodan_host_rendering.py`.
 
@@ -123,7 +148,8 @@ The validator refuses a server without the capability, the capability without a 
 | strategy | host | what the package gets |
 |---|---|---|
 | `mcp-manifest` | claude | a plugin-root `.mcp.json`, auto-discovered on install, with `${CLAUDE_PLUGIN_ROOT}` left for the host to expand, and `"mcpServers": "./.mcp.json"` in the catalog entry, derived from the package like every other component |
-| `mcp-registration` | codex, copilot | the server file, and one note per server at the top of every workflow giving the exact command (with the host's own plugin-root reference) to register under that name in the host's MCP configuration |
+| `mcp-registration` | codex, copilot, pi | the server file, and one note per server at the top of every workflow giving the exact command (with the host's own plugin-root reference) to register under that name in the host's MCP configuration |
+| `mcp-manifest` (adapted) | opencode | the same `.mcp.json`, plus the server in the manifest's `daodan` key, which the loader registers through the V2 MCP transform. The host reads neither file itself, so the binding is `adapted`, and a server name the user already configured is left alone |
 
 Both non-Claude bindings are `adapted`, not `native`, because no probe has shown either host starting a server declared by an installed plugin. Promote a binding to `mcp-manifest` only after such a probe, and record it in the evidence table. `tests/test_daodan_mcp.py` pins the rendering on the `valid-mcp` fixture.
 

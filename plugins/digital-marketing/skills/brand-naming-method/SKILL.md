@@ -179,6 +179,7 @@ run this again:
   Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
   Pi           pi install npm:pi-mcp-adapter, then add the same server under
                "playwright" in mcpServers of ~/.config/mcp/mcp.json
+  OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
 Do not rate trademark risk without the registers: a LOW rating built on anything else is unearned.
