@@ -76,6 +76,13 @@ Established from the V2 documentation (`opencode.ai/v2/docs/`) and from the sour
 
 5. **No V1 compatibility.** See section 1.
 
+6. **No name is shared across component kinds inside a plugin, and the kernels are
+   renamed to make that true.** See section 7. On OpenCode skills and agents share one
+   `@` mention menu, so a skill and a role of the same name become two identical
+   `@<plugin>:<name>` entries that insert different things. The rename happens in the
+   kernel rather than on this host alone, because decision 3 depends on a body's
+   reference resolving as written on every host.
+
 ## 4. The adapter: `adapters/opencode/`
 
 ### 4.1 `capabilities.toml`
@@ -97,7 +104,7 @@ V2's built-in tools are `read`, `write`, `edit`, `patch`, `glob`, `grep`, `shell
 | `hooks.lifecycle` | unsupported | none | V2 has plugin runtime hooks, no probe has measured them, and no plugin requires this capability |
 | `mcp.servers` | adapted | `mcp-manifest` | the compiler writes the per-plugin `.mcp.json` it already writes for Claude, and the loader registers it through `ctx.mcp.transform`; `adapted` because the host does not read the file, the loader does |
 
-Every row is provisional until the probe in section 9 records evidence, which is the
+Every row is provisional until the probe in section 10 records evidence, which is the
 standing rule for `adapters/*/capabilities.toml`.
 
 ### 4.2 `coordination.toml`
@@ -219,7 +226,7 @@ arguments are appended after a blank line), then calls
 `ctx.session.prompt({ ...input.prompt, sessionID: input.sessionID, text, delivery: input.delivery })`.
 
 The core's `` !`shell` `` blocks are **not** implemented: no kernel uses them, and a test
-keeps that true (section 8). The two `docker-compose` lines found in kernels sit inside
+keeps that true (section 9). The two `docker-compose` lines found in kernels sit inside
 fenced code the agent runs, not in template syntax.
 
 ### 5.6 MCP
@@ -249,9 +256,84 @@ No runtime hooks, no injected bootstrap, no custom tools, no V1 export.
    so the two cannot drift.
 5. `_source` returns `./plugins/<name>`, relative to the package root, for this host.
 
-No override, and no change to any kernel.
+No override. The only kernel changes are the renames in section 7.
 
-## 7. The package
+## 7. Renaming the five homonyms
+
+A census of the kernels at marketplace 28.7.x found five names shared across kinds inside
+one plugin:
+
+| plugin | name | kinds | collides on OpenCode |
+|---|---|---|---|
+| abstraction-architect | `abstraction-architect` | skill, role | yes: both are `@` mentions |
+| browser-extensions | `firefox-extension-dev` | skill, role | yes |
+| digital-marketing | `brand-naming` | skill, workflow | no: `@` against `/` |
+| digital-marketing | `reply-to-customer-review` | skill, workflow | no |
+| python-development | `python-refactor` | skill, workflow | no |
+
+The first draft of this spec gave `codebase-xray:analyze` as an example. That was wrong:
+its skill is `xray-method`.
+
+All five are renamed, the last three too, so the rule below holds without exceptions.
+
+**Roles take the `-agent` suffix**, the existing convention for a role beside a
+same-topic skill (`python-refactor-agent`, `clean-code-agent`):
+
+- `abstraction-architect:abstraction-architect` becomes
+  `abstraction-architect:abstraction-architect-agent`
+- `browser-extensions:firefox-extension-dev` becomes
+  `browser-extensions:firefox-extension-dev-agent`
+
+**Skills, not workflows, take the `-method` suffix in the skill/workflow pairs.** A command
+is what a user types and what the documentation's examples show; a skill is found by the
+model through its description and named only in cross-references. `codebase-xray` is the
+precedent: skill `xray-method`, workflow `analyze`. The skill is the method, the workflow
+is the action.
+
+- `digital-marketing:brand-naming` (skill) becomes `brand-naming-method`
+- `digital-marketing:reply-to-customer-review` (skill) becomes `review-reply-method`
+- `python-development:python-refactor` (skill) becomes `python-refactor-method`
+
+The three commands keep their names: `/digital-marketing:brand-naming`,
+`/digital-marketing:reply-to-customer-review`, `/python-development:python-refactor`.
+
+What does **not** move:
+
+- The `.python-refactor/` run-state directory and the `.abstraction-architect/` concept
+  index. Those are artifact paths, not component names, and renaming them would orphan
+  existing runs.
+- The plugin names. Every occurrence of `abstraction-architect` that names the plugin (its
+  `plugin.toml`, `senior-review`'s dependency list, the dependency-graph linter's edge, the
+  test clusters) stays as it is; only the role reference changes.
+- Codex's `-workflow` suffix. The new rule makes it unnecessary, but removing it would
+  rename every Codex workflow skill a user already has installed, which this change does
+  not need.
+
+**Rename footprint**, measured: the role and skill directories and files themselves, their
+frontmatter `name`, the `[components]` lists of the three `plugin.toml` files, the `role =`
+line of `abstraction-architect/workflows/audit.toml`, the role references in
+`senior-review`'s `code-auditor`, `code-review`, `team-review` and
+`code-review-agents.md`, the three `firefox-*` workflows and their sidecars, the
+"Invoke the `<name>` skill" lines of the two digital-marketing workflows, the skill
+cross-references in `clean-code-agent`, `python-refactor-agent`, `python-comments`,
+`optimization-patterns.md`, `skills-vs-agents.md` and `organize-files.md`, and
+`docs/plugins/{abstraction-architect,browser-extensions,digital-marketing,python-development,senior-review,text-humanizer}.md`.
+Each occurrence is classified by hand as plugin, role, skill, workflow or artifact before
+it is edited; a blanket replace would rename plugins and artifact paths.
+
+**Versions**: `abstraction-architect`, `browser-extensions`, `digital-marketing`,
+`python-development`, `senior-review`, `clean-code`, `marketplace-ops` and `system-utils`
+each take a bump, because each kernel changes. A renamed role or skill is a breaking
+change for anyone who spawns or loads it by name, so the two role renames and the three
+skill renames take a **major** bump of their owning plugin; the plugins whose only change
+is a cross-reference take a patch.
+
+**The guard**: a new validation rule in `scripts/daodan/validate.py`,
+`component-name-shared-across-kinds`, fails the build when any name appears in more than
+one of a plugin's `skills`, `roles` and `workflows`. It is what keeps this from returning,
+and it applies on every host, not only OpenCode.
+
+## 8. The package
 
 ```
 exports/opencode/
@@ -264,7 +346,7 @@ exports/opencode/
     └── contracts/code-review.workflow.toml
 ```
 
-## 8. CI and tests
+## 9. CI and tests
 
 - `tests/test_opencode_loader.py` runs `node --test` over
   `tests/opencode/loader.test.mjs` against a fake `ctx`, and skips when `node` is absent.
@@ -281,9 +363,12 @@ exports/opencode/
 - `tests/host-probes/opencode/`, packaging the same `daodan-probe` fixture, registered in
   `scripts/probe_host_marketplaces.py`.
 - `publish-marketplaces.yml` adds `exports/opencode` to the committed paths.
+- `tests/test_daodan_validate.py` gains the `component-name-shared-across-kinds` cases: a
+  skill and a role, a skill and a workflow, a role and a workflow sharing a name each
+  fail, and the real kernels pass.
 - The test files that name four hosts are updated to five.
 
-## 9. What the probe must confirm
+## 10. What the probe must confirm
 
 Every capability row in 4.1 and every naming decision in section 3 is provisional until
 then.
@@ -295,23 +380,23 @@ then.
    **If either fails**, that kind falls back to the hyphen form Pi uses
    (`senior-review-code-auditor`) through `layout.toml`, and the kernel references to that
    kind get rewritten by the renderer the way `${CLAUDE_PLUGIN_ROOT}` is.
-3. Whether a registered skill appears in the slash-command catalog. A plugin that has a
-   skill and a workflow of the same name (`digital-marketing:brand-naming`,
-   `codebase-xray:analyze`) would then show two entries under one name. `Skill.Info` in
-   2.0.22 carries no `slash` field, so the loader cannot hide a registered skill from that
-   catalog. If the collision shows, the spec is reopened for those two names rather than
-   patched in the loader.
+3. That a registered skill appears only in the `@` mention menu and never in the `/`
+   command catalog, which is what the 2.0.22 TUI source shows
+   (`packages/tui/src/component/prompt/autocomplete.tsx` lists skills and agents under `@`,
+   server commands under `/`). The renames in section 7 make every ID unique within a
+   plugin whatever the answer, so this item can no longer produce a collision, only a
+   cosmetic duplicate listing.
 4. That `background: true` workers of one phase actually run concurrently.
 5. That a git-backed spec installs on Windows. Superpowers documents failures there under
    V1 and Bun; V2 has a new npm service no one has measured.
 
-## 10. Repository obligations
+## 11. Repository obligations
 
-- **Version**: marketplace `29.0.0`, a new host, as Pi was `28.0.0`. No plugin version
-  moves, because no kernel changes.
+- **Version**: marketplace `29.0.0`, a new host, as Pi was `28.0.0`, and the plugin bumps
+  section 7 lists for the renames.
 - **README**: an OpenCode install section with the one command, the `options` example for
   selection with a sentence on dependency closure, the note that Desktop shares the CLI's
-  installation, and the Windows caveat from 9.5 until the probe settles it.
+  installation, and the Windows caveat from 10.5 until the probe settles it.
 - **`.claude/skills/downstream-exports/SKILL.md`**: an OpenCode column in the host table,
   its row in the placeholder table, the loader, and the reason the catalog lives under
   `exports/` rather than at the root.
@@ -321,9 +406,15 @@ then.
   `scripts/sync_codex_instructions.py`, whose `--check` is the parity gate.
 - **`evals/universal-daodan/catalog-parity.md`** and the migration document gain the
   fifth host where they enumerate hosts.
+- **`CLAUDE.md` Conventions** gains the rule from section 7: no name shared across
+  component kinds inside a plugin, roles beside a same-topic skill take `-agent`, skills
+  beside a same-topic workflow take `-method`.
+- **`.claude/skills/downstream-exports/SKILL.md`**: the paragraph explaining Codex's
+  `-workflow` suffix cites `brand-naming` as its case; it now records that the validator
+  rule makes the suffix redundant and why it stays.
 
-## 11. Out of scope
+## 12. Out of scope
 
 OpenCode V1, Desktop GUI extensions, runtime hooks, an injected bootstrap, custom tools,
-the `` !`shell` `` template syntax, npm publication of the package, any override, and any
-hand-written file under `exports/`.
+the `` !`shell` `` template syntax, npm publication of the package, any override, any
+hand-written file under `exports/`, and removing Codex's `-workflow` suffix.
