@@ -1,0 +1,48 @@
+{
+  "daodan": {
+    "plugins": {
+      "a": {
+        "agents": [
+          {
+            "description": "Worker of a",
+            "file": "agents/worker.md",
+            "id": "a:worker",
+            "permissions": [
+              {"action": "*", "effect": "deny", "resource": "*"},
+              {"action": "read", "effect": "allow", "resource": "*"},
+              {"action": "external_directory", "effect": "allow", "resource": "<package-root>/**"}
+            ]
+          }
+        ],
+        "commands": [
+          {"description": "Run a", "file": "commands/run.md", "name": "a:run"}
+        ],
+        "dependencies": ["b"],
+        "mcp": [
+          {"command": ["uv", "run", "<plugin-root>/skills/guide/server.py"], "name": "srv"}
+        ],
+        "root": "plugins/a",
+        "skills": [
+          {"description": "Guide of a", "file": "skills/guide/SKILL.md", "id": "a:guide", "name": "guide"}
+        ]
+      },
+      "b": {
+        "root": "plugins/b",
+        "skills": [
+          {"description": "Base of b", "file": "skills/base/SKILL.md", "id": "b:base", "name": "base"}
+        ]
+      },
+      "c": {
+        "commands": [
+          {"description": "Explain", "file": "commands/explain.md", "name": "c:explain"}
+        ],
+        "root": "plugins/c"
+      }
+    },
+    "schema": 1
+  },
+  "main": "index.js",
+  "name": "daodan",
+  "type": "module",
+  "version": "0.0.0"
+}
