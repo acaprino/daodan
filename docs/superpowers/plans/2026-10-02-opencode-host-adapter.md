@@ -27,7 +27,7 @@
 ## Review Focus
 
 - **A user selects a plugin whose dependency they also excluded.** Expected: the dependency stays loaded and the log names who needs it. Pinned in Task 5 (`exclude yields to a dependency`).
-- **A user's own config already defines an agent, skill or command with a Daodan ID.** Expected for MCP: the user's server wins and is logged. For agents, `update` would merge into the user's entry; the loader only touches IDs it owns, so the user's fields are overwritten only for those IDs. Pinned in Task 5 (`existing MCP server left alone`); the agent case is a documented behaviour in the README (Task 8).
+- **A user's own config already defines an agent, skill or command with a Daodan ID.** Expected for MCP: the user's server wins and is logged. For agents, `update` would merge into the user's entry; the loader only touches IDs it owns, so the user's fields are overwritten only for those IDs. Pinned in Task 5 (`existing MCP server left alone`, `loader owns its agent IDs`) and stated in the README (Task 8).
 - **A command invoked with quoted arguments, fewer arguments than placeholders, or no placeholder at all.** Expected: the core's semantics exactly. Pinned in Task 5 (argument expansion table).
 - **A role whose body reads `references/...` from the installed package, outside the project.** Expected: allowed by the scoped `external_directory` rule, never by `*`. Pinned in Task 3 (permission list ends with the package-scoped rule) and Task 5 (`<package-root>` substituted).
 - **The package is loaded from a path containing spaces or backslashes (Windows).** Expected: every registered `path` is absolute and `<plugin-root>` substitution uses forward slashes. Pinned in Task 5 (`windows-style root`).
@@ -188,7 +188,7 @@ The real-kernel sweep for `` !` `` over every plugin goes in Task 4's manifest t
 
 `agent.md.tmpl` frontmatter: `description: '${description}'`, `mode: subagent`, `permissions:` followed by `${permissions}`, then the generated-file comment and `${body}`. `team-command.md.tmpl`: the Pi template's structure with the OpenCode mechanism from spec 4.4 (subagent tool, `agent: "${plugin}:<role>"`, `background: true` for workers of one phase under `parallel-subagents`, wait for every completion notice, no missing-tool branch, a `subagent` failure on a registered agent is a broken install).
 
-- [ ] **Step 4: Run, expect PASS**, then `python -m unittest discover -s tests` (the four-host tests now iterate five hosts; fix their per-host tables in `test_cutover_identity.py`, `test_universal_catalog_parity.py`, `test_dependency_audit_ports.py`, `test_host_limits.py` by adding the `opencode` row, catalog path `exports/opencode/package.json`, workflow path `commands/deps-audit.md`, frontmatter prefix `---\ndescription:`)
+- [ ] **Step 4: Run, expect PASS**, then `python -m unittest discover -s tests`. Catalog-parity and CLI tests that read `exports/opencode/package.json` stay red until Task 4 writes it; every other test passes. Do not publish the build in this task (the four-host tests now iterate five hosts; fix their per-host tables in `test_cutover_identity.py`, `test_universal_catalog_parity.py`, `test_dependency_audit_ports.py`, `test_host_limits.py` by adding the `opencode` row, catalog path `exports/opencode/package.json`, workflow path `commands/deps-audit.md`, frontmatter prefix `---\ndescription:`)
 
 - [ ] **Step 5: Commit**
 
@@ -270,7 +270,7 @@ In `tests/test_daodan_cli.py`: a build of the fixture repository writes `exports
 
 - [ ] **Step 3: Implement**
 
-`layout.toml` gets `marketplace = "exports/opencode/package.json"` and `package_files = "index.js"`. `_opencode_manifest(document, packages)` reads descriptions and names from the rendered frontmatter of each package (never from the kernel, so the manifest describes what ships), permissions by calling `opencode_permissions` on the kernel role's `tools`, and MCP from the plugin's `.mcp.json`-equivalent data (`plugin.mcp_servers` with `_host_arguments`). `render_catalog` therefore needs the `PluginSpec`s, which it already receives. The `package_files` copy runs in `build_repository` after the catalog, and under `--check` compares bytes like a catalog.
+`layout.toml` already carries `marketplace = "exports/opencode/package.json"` and `package_files = "index.js"` from Task 3. `_opencode_manifest(document, packages)` reads descriptions and names from the rendered frontmatter of each package (never from the kernel, so the manifest describes what ships), permissions by calling `opencode_permissions` on the kernel role's `tools`, and MCP from the plugin's `.mcp.json`-equivalent data (`plugin.mcp_servers` with `_host_arguments`). `render_catalog` therefore needs the `PluginSpec`s, which it already receives. The `package_files` copy runs in `build_repository` after the catalog, and under `--check` compares bytes like a catalog.
 
 `check_opencode()` in the registration linter: every `file` in the manifest exists, and every rendered `skills/*/SKILL.md`, `agents/*.md`, `commands/*.md` under `exports/opencode/plugins/` appears in the manifest. Reported under `opencode manifest`.
 
@@ -306,6 +306,7 @@ git commit -m "Write the OpenCode package manifest and ship its loader"
 | malformed manifest registers nothing | `package.json` without `daodan` key: no transform called, `setup` resolves |
 | a rejected skill skips only itself | editor `add` throws for one ID: other skills still added, `setup` resolves |
 | agent fields | `update` sets `mode:"subagent"`, `description`, `system` (body without frontmatter, root substituted), `permissions` with `<package-root>` replaced by the absolute package path |
+| loader owns its agent IDs | a pre-existing agent `a:worker` with `mode:"primary"` and a custom `system` ends with the loader's `mode`, `system`, `description`, `permissions` (the README states this) |
 | existing MCP server left alone | editor `get(name)` returns a config: `set` not called, log mentions it |
 | MCP registered | `set("srv", {type:"local", command:[...]})` with `<plugin-root>` substituted |
 | `$ARGUMENTS` | `expandTemplate("Review $ARGUMENTS.", "src a.ts")` is `"Review src a.ts."` |
@@ -374,8 +375,8 @@ python -m unittest discover -s tests
 python scripts/daodan_build.py --check --support
 python adapters/copilot/policies/xray-guard/test_xray_guard.py
 python scripts/check_version_bumps.py c79954c5 HEAD
-git grep -nP "\x{2014}| -- " -- adapters/opencode docs/superpowers/plans/2026-10-02-opencode-host-adapter.md
+! grep -rn -e $'\u2014' -e ' -- ' adapters/opencode tests/opencode
 ```
-Expected: every command exits 0; the support table shows `opencode` supported for every plugin; the last grep prints nothing.
+Expected: every command exits 0; the support table shows `opencode` supported for every plugin; no new file carries a dash aside.
 
 - [ ] **Step 4: Commit** `git commit -m "Document the OpenCode host and resynchronize the Codex instructions"`
