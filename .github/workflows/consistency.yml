@@ -22,6 +22,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      # The OpenCode loader's tests run under `node --test` from the Python
+      # suite, and are skipped, not passed, where Node is absent.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Dependency graph lint
         run: python scripts/lint_dependency_graph.py
 

@@ -26,6 +26,9 @@ STAGED_PATHS = (
     "exports/claude",
     "exports/copilot",
     "exports/codex",
+    "exports/pi",
+    "exports/opencode",
+    "package.json",
     ".claude-plugin/marketplace.json",
     ".github/plugin/marketplace.json",
     ".agents/plugins/marketplace.json",
@@ -79,6 +82,22 @@ class PublishWorkflowContractTests(unittest.TestCase):
 
     def test_consistency_runs_the_drift_gate(self):
         self.assertIn("scripts/daodan_build.py --check", workflow_text(CONSISTENCY))
+
+    def test_both_workflows_set_up_node_before_the_tests(self):
+        # The OpenCode loader's tests run under `node --test` from the Python
+        # suite, which skips them without Node: a CI with no Node would pass a
+        # loader it never ran.
+        for path in (CONSISTENCY, PUBLISH):
+            with self.subTest(workflow=path.name):
+                text = workflow_text(path)
+                self.assertIn("actions/setup-node@", text)
+                self.assertLess(
+                    text.index("actions/setup-node@"),
+                    text.index("python -m unittest discover -s tests"),
+                )
+
+    def test_publication_release_notes_name_the_opencode_install(self):
+        self.assertIn("opencode plugin add", workflow_text(PUBLISH))
 
     def test_consistency_pins_python_311_or_later(self):
         text = workflow_text(CONSISTENCY)

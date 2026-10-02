@@ -43,6 +43,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      # The OpenCode loader's tests run under `node --test` from the Python
+      # suite, and are skipped, not passed, where Node is absent.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Validate before building
         run: python -m unittest discover -s tests
 
@@ -60,7 +66,7 @@ jobs:
             exports/claude \
             exports/copilot \
             exports/codex \
-            exports/pi \
+            exports/pi             exports/opencode \
             .claude-plugin/marketplace.json \
             .github/plugin/marketplace.json \
             .agents/plugins/marketplace.json \
@@ -92,6 +98,13 @@ jobs:
           ```
 
           Then install what you need, for example `claude plugin install senior-review@daodan`.
+
+          Pi and OpenCode have no marketplace, so they pin this tag directly:
+
+          ```bash
+          pi install git:github.com/acaprino/daodan@v__DAODAN_VERSION__
+          opencode plugin add 'github:acaprino/daodan#v__DAODAN_VERSION__::path:exports/opencode'
+          ```
 
           This tag records the commit a version was published from, for anyone pinning a
           revision or submitting to a curated directory. It carries no asset. Registering the
