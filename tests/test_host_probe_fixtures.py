@@ -46,6 +46,24 @@ class HostProbeFixtureTests(unittest.TestCase):
                 self.assertEqual(entry["version"], "0.0.1")
                 self.assertEqual(entry["source"], "./plugins/probe")
 
+    def test_opencode_fixture_validates(self):
+        self.assertEqual(validate_fixture(PROBE_ROOT / "opencode", "opencode"), [])
+
+    def test_opencode_fixture_ships_the_real_loader(self):
+        self.assertEqual(
+            (PROBE_ROOT / "opencode/index.js").read_bytes(),
+            (REPO_ROOT / "adapters/opencode/templates/index.js").read_bytes(),
+        )
+
+    def test_opencode_fixture_manifest_names_the_probe(self):
+        document = json.loads((PROBE_ROOT / "opencode/package.json").read_text(encoding="utf-8"))
+        self.assertEqual(document["name"], "daodan-probe")
+        self.assertEqual(document["version"], "0.0.1")
+        self.assertEqual(document["main"], "index.js")
+        entry = document["daodan"]["plugins"]["probe"]
+        self.assertEqual([a["id"] for a in entry["agents"]], ["probe:probe-worker"])
+        self.assertEqual([c["name"] for c in entry["commands"]], ["probe:probe-team"])
+
     def test_readme_carries_the_evidence_table_header(self):
         readme = (PROBE_ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn(

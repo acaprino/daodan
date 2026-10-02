@@ -1,0 +1,43 @@
+{
+  "daodan": {
+    "plugins": {
+      "probe": {
+        "agents": [
+          {
+            "description": "The probe worker role. TRIGGER WHEN: dispatched by the Daodan two-worker coordination probe.",
+            "file": "agents/probe-worker.md",
+            "id": "probe:probe-worker",
+            "permissions": []
+          }
+        ],
+        "commands": [
+          {
+            "description": "Run the Daodan two-worker coordination probe.",
+            "file": "commands/probe-team.md",
+            "name": "probe:probe-team"
+          }
+        ],
+        "root": "plugins/probe",
+        "skills": [
+          {
+            "description": "Single-worker output-contract probe. TRIGGER WHEN: running the disposable Daodan host protocol probe.",
+            "file": "skills/probe/SKILL.md",
+            "id": "probe:probe",
+            "name": "probe"
+          }
+        ]
+      }
+    },
+    "schema": 1
+  },
+  "description": "Single-worker and two-worker coordination probe.",
+  "keywords": [
+    "opencode-plugin",
+    "probe"
+  ],
+  "main": "index.js",
+  "name": "daodan-probe",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1"
+}

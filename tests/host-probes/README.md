@@ -3,9 +3,9 @@
 One disposable single-plugin package per host, establishing what each native harness
 actually supports. They exist so that the adapter capability and coordination bindings in
 `adapters/<host>/` encode measured behaviour instead of assumptions. They are fixtures: nothing here
-ships, and every disposable marketplace is removed from the host profile after the probe. Pi is
-the exception to the word marketplace: it has none, so its fixture is a package installed from a
-path and removed with `pi remove`.
+ships, and every disposable marketplace is removed from the host profile after the probe. Pi and
+OpenCode are the exceptions to the word marketplace: neither has one, so their fixtures are packages
+installed from a path and removed with `pi remove` and `opencode plugin remove`.
 
 Each fixture packages the same probe plugin (`daodan-probe`, version `0.0.1`, source `./plugins/probe`):
 
@@ -22,6 +22,7 @@ Per-host specifics:
 | copilot | `agents/probe-coordinator.agent.md` | named custom agent, restricted by the `agents` frontmatter allowlist |
 | codex | `skills/probe/SKILL.md` | packaged `.codex/agents/probe.toml` role, with inline role body as the fallback |
 | pi | `prompts/daodan-probe-team.md` | role registered as a `disable-model-invocation` skill, dispatched with the `subagent` tool from `pi-subagents` |
+| opencode | `commands/probe-team.md`, registered as `/probe:probe-team` | agent registered by the loader from `package.json`, dispatched with the native `subagent` tool |
 
 ## Structural check
 
@@ -40,6 +41,7 @@ claude plugin validate tests/host-probes/claude
 copilot plugin marketplace add ./tests/host-probes/copilot
 codex plugin marketplace add ./tests/host-probes/codex
 pi install ./tests/host-probes/pi
+opencode plugin add "$PWD/tests/host-probes/opencode"
 ```
 
 Pi is the one host with no marketplace to add: it installs a package from a path, so the fixture
@@ -49,6 +51,20 @@ the `contexts.isolate` binding is honest. Whether `/skill:probe-worker` resolves
 skill declares `disable-model-invocation`, which is what makes a role reachable there. And whether
 the manifest's directory globs pick up a nested skill, which the adapter assumes and nothing local
 can prove.
+
+OpenCode V2 is the second host with no marketplace, and the first whose components exist only
+because a plugin's JavaScript registers them. Its fixture ships the real loader byte for byte, so the
+probe measures the generated package rather than a stand-in. It answers five questions, each of
+which a decision in `docs/superpowers/specs/2026-10-02-opencode-host-adapter-design.md` rests on:
+
+1. Whether `opencode plugin add` installs a `github:<owner>/<repo>#<tag>::path:exports/opencode`
+   spec and loads its `index.js`, on the CLI and in OpenCode Desktop.
+2. Whether a skill with a colon in its ID (`probe:probe`) loads through the `skill` tool, and whether
+   the `subagent` tool accepts an agent named `probe:probe-worker`. If either fails, that kind falls
+   back to the hyphen form Pi uses.
+3. Whether a registered skill appears only in the `@` mention menu and never in the `/` catalog.
+4. Whether two `background: true` workers of one phase actually run concurrently.
+5. Whether a git-backed spec installs on Windows, where superpowers documents failures under V1.
 
 Expected single-worker result on every host: `DAODAN_PROBE_OK`.
 Expected coordinator result: both unique worker nonces plus `DELIVERED=2/2`.
@@ -67,8 +83,9 @@ host | isolated workers | parallel fan-out | shared tasks | peer messaging | wor
 | copilot | partial | partial | partial | partial | partial | yes (structural) |
 | codex | yes | yes | no | no | n/a | no (inline succeeded) |
 | pi | unmeasured | unmeasured | no | no | n/a | unmeasured |
+| opencode | unmeasured | unmeasured | no | no | n/a | unmeasured |
 
-**Claude and Codex are measured; Copilot and Pi are not.** The Claude row comes from two headless runs
+**Claude and Codex are measured; Copilot, Pi and OpenCode are not.** The Claude row comes from two headless runs
 against the fixture package, loaded with `--plugin-dir` so nothing was registered in a real profile:
 
 ```bash

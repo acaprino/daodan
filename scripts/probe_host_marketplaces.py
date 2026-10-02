@@ -1,7 +1,7 @@
 """Validate the disposable native-host protocol probe fixtures.
 
-The fixtures under ``tests/host-probes/`` are three throwaway single-plugin
-marketplaces, one per host, used to establish what each native harness actually
+The fixtures under ``tests/host-probes/`` are throwaway single-plugin
+packages, one per host, used to establish what each native harness actually
 supports before any adapter binding encodes an assumption. This module checks
 their structure; the behavioural evidence table is filled in by hand after
 running the probes in real host sessions (see ``tests/host-probes/README.md``).
@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROBE_ROOT = REPO_ROOT / "tests" / "host-probes"
 
-HOSTS = ("claude", "copilot", "codex", "pi")
+HOSTS = ("claude", "copilot", "codex", "pi", "opencode")
 
 MARKETPLACE_PATH = {
     "claude": Path(".claude-plugin/marketplace.json"),
@@ -55,6 +55,12 @@ REQUIRED_FILES = {
         Path("plugins/probe/skills/probe/SKILL.md"),
         Path("plugins/probe/skills/probe-worker/SKILL.md"),
         Path("plugins/probe/prompts/daodan-probe-team.md"),
+    ),
+    "opencode": (
+        Path("index.js"),
+        Path("plugins/probe/skills/probe/SKILL.md"),
+        Path("plugins/probe/agents/probe-worker.md"),
+        Path("plugins/probe/commands/probe-team.md"),
     ),
 }
 
@@ -115,10 +121,50 @@ def validate_pi_fixture(root: Path) -> list[str]:
     return errors
 
 
+def validate_opencode_fixture(root: Path) -> list[str]:
+    """Structural check for the plugin-package fixture.
+
+    OpenCode registers what the loader reads from the `daodan` key, so the
+    check that matters is that every file that key names exists, and that the
+    package resolves to the loader at all.
+    """
+    errors: list[str] = []
+    manifest = root / "package.json"
+    if not manifest.is_file():
+        return ["opencode: missing package.json"]
+    try:
+        declared = json.loads(manifest.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        return [f"opencode: package.json is not valid JSON: {error}"]
+    if declared.get("name") != PROBE_NAME:
+        errors.append(f"opencode: package name is {declared.get('name')!r}, expected {PROBE_NAME!r}")
+    if declared.get("version") != PROBE_VERSION:
+        errors.append(f"opencode: package version is {declared.get('version')!r}")
+    if declared.get("main") != "index.js" or declared.get("type") != "module":
+        errors.append("opencode: package is not an ES module whose main is index.js")
+    for relative in REQUIRED_FILES["opencode"]:
+        if not (root / relative).is_file():
+            errors.append(f"opencode: missing {relative.as_posix()}")
+    plugins = declared.get("daodan", {}).get("plugins", {})
+    if set(plugins) != {"probe"}:
+        errors.append("opencode: the daodan manifest must name exactly the probe plugin")
+    for name, entry in plugins.items():
+        for kind in ("skills", "agents", "commands"):
+            for item in entry.get(kind, []):
+                if not (root / entry.get("root", "") / item.get("file", "")).is_file():
+                    errors.append(f"opencode: {name} {kind} entry names a missing {item.get('file')}")
+    skill = root / "plugins/probe/skills/probe/SKILL.md"
+    if skill.is_file() and SINGLE_WORKER_CONTRACT not in skill.read_text(encoding="utf-8"):
+        errors.append("opencode: probe skill does not state the single-worker output contract")
+    return errors
+
+
 def validate_fixture(root: Path, host: str) -> list[str]:
     """Return one message per structural defect in a probe fixture."""
     if host == "pi":
         return validate_pi_fixture(root)
+    if host == "opencode":
+        return validate_opencode_fixture(root)
     if host not in MARKETPLACE_PATH:
         return [f"{host}: unknown host"]
 
