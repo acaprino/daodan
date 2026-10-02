@@ -20,6 +20,31 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(here, "fixture");
 const ROOT = FIXTURE.replaceAll("\\", "/");
 
+// What V2's Agent.Info.default gives a new agent (packages/schema/src/agent.ts).
+const V2_DEFAULTS = [
+  { action: "*", resource: "*", effect: "allow" },
+  { action: "external_directory", resource: "*", effect: "ask" },
+];
+
+// V2's own rule evaluation: the last matching rule wins, unmatched asks
+// (packages/core/src/permission.ts). Wildcards are only `*` in these tests.
+function evaluate(rules, action, resource) {
+  const match = (value, pattern) => {
+    // Glob with `*` only: every literal piece must appear in order.
+    const pieces = pattern.split("*");
+    if (pieces.length === 1) return value === pattern;
+    if (!value.startsWith(pieces[0]) || !value.endsWith(pieces.at(-1))) return false;
+    let at = pieces[0].length;
+    for (const piece of pieces.slice(1, -1)) {
+      const found = value.indexOf(piece, at);
+      if (found === -1) return false;
+      at = found + piece.length;
+    }
+    return at <= value.length - pieces.at(-1).length;
+  };
+  return rules.findLast((rule) => match(action, rule.action) && match(resource, rule.resource))?.effect ?? "ask";
+}
+
 function fakeContext({ options = {}, rejectSkill, existingMcp = {}, existingAgents = {} } = {}) {
   const calls = { skills: [], agents: {}, commands: [], mcp: {}, prompts: [], transforms: 0 };
   const agents = structuredClone(existingAgents);
@@ -41,7 +66,7 @@ function fakeContext({ options = {}, rejectSkill, existingMcp = {}, existingAgen
         calls.transforms++;
         fn({
           update(id, apply) {
-            const item = agents[id] ?? { id, permissions: [] };
+            const item = agents[id] ?? { id, permissions: structuredClone(V2_DEFAULTS) };
             apply(item);
             agents[id] = item;
             calls.agents[id] = item;
@@ -123,6 +148,14 @@ test("exclude yields to a dependency", async () => {
   assert.ok(log.some((line) => line.includes("b") && line.includes("a")), log.join("\n"));
 });
 
+test("exclusions do not depend on their order", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(FIXTURE, "package.json"), "utf8")).daodan;
+  const forward = resolveSelection(manifest, { exclude: ["a", "b"] }).selected;
+  const backward = resolveSelection(manifest, { exclude: ["b", "a"] }).selected;
+  assert.deepEqual(forward, ["c"]);
+  assert.deepEqual(backward, ["c"]);
+});
+
 test("exclude removes an unneeded plugin", async () => {
   const context = fakeContext({ options: { exclude: ["c"] } });
   await run(context);
@@ -135,6 +168,13 @@ test("an unknown name is logged, not fatal", async () => {
   const log = await run(context);
   assert.deepEqual(ids(context.calls).commands, ["c:explain"]);
   assert.ok(log.some((line) => line.includes("zzz")), log.join("\n"));
+});
+
+test("a selection of nothing but typos still loads everything", async () => {
+  const context = fakeContext({ options: { plugins: ["senior-reveiw"] } });
+  const log = await run(context);
+  assert.deepEqual(ids(context.calls).commands, ["a:run", "c:explain"]);
+  assert.ok(log.some((line) => line.includes("senior-reveiw")), log.join("\n"));
 });
 
 test("a malformed manifest registers nothing and setup resolves", async () => {
@@ -187,18 +227,48 @@ test("agent fields", async () => {
   assert.deepEqual(agent.permissions[0], { action: "*", resource: "*", effect: "deny" });
 });
 
-test("loader owns its agent IDs", async () => {
+test("an agent registered before the loader is taken over", async () => {
+  // Builtins and earlier packages run before this one; user config runs after
+  // it (V2's ConfigAgentPlugin is a post-plugin), so it is never seen here.
   const context = fakeContext({
     existingAgents: {
-      "a:worker": { id: "a:worker", mode: "primary", system: "user prompt", permissions: [{ action: "x", resource: "*", effect: "allow" }] },
+      "a:worker": { id: "a:worker", mode: "primary", system: "earlier", permissions: [{ action: "x", resource: "*", effect: "allow" }] },
     },
   });
   await run(context);
   const agent = context.calls.agents["a:worker"];
   assert.equal(agent.mode, "subagent");
-  assert.notEqual(agent.system, "user prompt");
-  assert.equal(agent.permissions[0].action, "*");
-  assert.ok(!agent.permissions.some((rule) => rule.action === "x"));
+  assert.notEqual(agent.system, "earlier");
+  assert.equal(evaluate(agent.permissions, "x", "anything"), "deny");
+});
+
+test("a restricted role denies what it did not declare", async () => {
+  const context = fakeContext();
+  await run(context);
+  const rules = context.calls.agents["a:worker"].permissions;
+  assert.equal(evaluate(rules, "read", "src/x.ts"), "allow");
+  assert.equal(evaluate(rules, "shell", "rm -rf /"), "deny");
+  assert.equal(evaluate(rules, "external_directory", `${ROOT}/plugins/a/skills/guide/x.md`), "allow");
+  assert.equal(evaluate(rules, "external_directory", "/etc/passwd"), "deny");
+});
+
+test("an unrestricted role keeps V2's defaults and reaches its package", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-"));
+  fs.cpSync(FIXTURE, directory, { recursive: true });
+  const manifestPath = path.join(directory, "package.json");
+  const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  document.daodan.plugins.a.agents[0].permissions = [
+    { action: "external_directory", resource: "<package-root>/**", effect: "allow" },
+  ];
+  fs.writeFileSync(manifestPath, JSON.stringify(document));
+  const context = fakeContext();
+  await run(context, directory);
+  const rules = context.calls.agents["a:worker"].permissions;
+  const root = directory.replaceAll("\\", "/");
+  assert.equal(evaluate(rules, "read", "src/x.ts"), "allow");
+  assert.equal(evaluate(rules, "edit", "src/x.ts"), "allow");
+  assert.equal(evaluate(rules, "external_directory", `${root}/plugins/a/skills/guide/x.md`), "allow");
+  assert.equal(evaluate(rules, "external_directory", "/etc/passwd"), "ask");
 });
 
 test("MCP registered with the plugin root substituted", async () => {

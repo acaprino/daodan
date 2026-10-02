@@ -152,7 +152,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/codex/plugins/codebase-xray",
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "author": {
@@ -272,7 +272,7 @@
         "./skills/instagram-grab-workflow"
       ],
       "source": "./exports/codex/plugins/grabber-development",
-      "version": "1.8.1"
+      "version": "1.8.2"
     },
     {
       "author": {
@@ -533,7 +533,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/codex/plugins/research",
-      "version": "6.2.2"
+      "version": "6.2.3"
     },
     {
       "author": {
@@ -656,7 +656,7 @@
         "./skills/mt5-audit-workflow"
       ],
       "source": "./exports/codex/plugins/trading-broker-integration",
-      "version": "2.1.1"
+      "version": "2.1.2"
     },
     {
       "author": {

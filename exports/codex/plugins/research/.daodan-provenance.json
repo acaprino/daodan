@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:7d184c4ecd00781109074460056053e7ae4a4d1412b594fed7dfeaf3a1dda570",
+  "coreDigest": "sha256:337e224407172b5bad45c6282405352a46e2d2f820715d5186861c567594f11e",
   "harnessStrategies": {
     "team-research": "parallel-subagents"
   },
   "host": "codex",
   "overrides": [],
   "plugin": "research",
-  "version": "6.2.2"
+  "version": "6.2.3"
 }

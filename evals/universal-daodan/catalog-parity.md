@@ -18,14 +18,14 @@ adapter names. No plugin is `unsupported` on any host, which is the release gate
 | `business` | 1.12.0 | native | native | adapted | adapted | native |
 | `clean-code` | 1.3.2 | native | native | adapted | adapted | native |
 | `codebase-mapper` | 3.1.1 | native | native | adapted | adapted | native |
-| `codebase-xray` | 4.2.0 | native | native | adapted | adapted | native |
+| `codebase-xray` | 4.2.1 | native | native | adapted | adapted | native |
 | `csp` | 1.4.0 | native | native | adapted | adapted | native |
 | `dependency-audit` | 1.1.0 | native | native | native | native | native |
 | `digital-marketing` | 3.0.0 | native | native | adapted | adapted | native |
 | `docker` | 1.4.0 | native | native | native | native | native |
 | `docs` | 1.2.1 | native | native | native | native | native |
 | `frontend-review` | 2.1.2 | native | native | native | native | native |
-| `grabber-development` | 1.8.1 | native | native | adapted | adapted | native |
+| `grabber-development` | 1.8.2 | native | native | adapted | adapted | native |
 | `kotlin-development` | 1.1.0 | native | native | native | native | native |
 | `learning` | 1.7.1 | native | native | native | native | native |
 | `libgdx-development` | 1.1.0 | native | native | adapted | adapted | native |
@@ -41,14 +41,14 @@ adapter names. No plugin is `unsupported` on any host, which is the release gate
 | `rag-development` | 1.6.0 | native | native | adapted | adapted | native |
 | `react-development` | 1.11.0 | native | native | adapted | adapted | native |
 | `repo-hygiene` | 1.2.0 | native | native | adapted | adapted | native |
-| `research` | 6.2.2 | native | native | adapted | adapted | native |
+| `research` | 6.2.3 | native | native | adapted | adapted | native |
 | `senior-review` | 12.0.3 | native | native | adapted | adapted | native |
 | `stripe` | 2.6.0 | native | native | adapted | adapted | native |
 | `system-utils` | 2.1.1 | native | native | native | native | native |
 | `tauri-development` | 2.8.0 | native | native | adapted | adapted | native |
 | `testing` | 2.3.0 | native | native | adapted | adapted | native |
 | `text-humanizer` | 1.2.0 | native | native | adapted | adapted | native |
-| `trading-broker-integration` | 2.1.1 | native | native | adapted | adapted | native |
+| `trading-broker-integration` | 2.1.2 | native | native | adapted | adapted | native |
 | `typescript-development` | 2.3.0 | native | native | adapted | adapted | native |
 | `xterm` | 1.2.0 | native | native | native | native | native |
 

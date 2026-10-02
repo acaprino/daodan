@@ -1,7 +1,10 @@
 ---
 description: 'Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1.'
 mode: subagent
-permissions: []
+permissions:
+  - action: "external_directory"
+    resource: "<package-root>/**"
+    effect: allow
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.

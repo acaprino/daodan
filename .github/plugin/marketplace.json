@@ -177,7 +177,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/copilot/plugins/codebase-xray",
-      "version": "4.2.0"
+      "version": "4.2.1"
     },
     {
       "agents": [
@@ -300,7 +300,7 @@
         "./skills/grabber-development"
       ],
       "source": "./exports/copilot/plugins/grabber-development",
-      "version": "1.8.1"
+      "version": "1.8.2"
     },
     {
       "author": {
@@ -583,7 +583,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/copilot/plugins/research",
-      "version": "6.2.2"
+      "version": "6.2.3"
     },
     {
       "agents": [
@@ -731,7 +731,7 @@
         "./skills/mt5"
       ],
       "source": "./exports/copilot/plugins/trading-broker-integration",
-      "version": "2.1.1"
+      "version": "2.1.2"
     },
     {
       "agents": [

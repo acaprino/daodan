@@ -83,7 +83,12 @@ export function resolveSelection(manifest, options = {}) {
     });
 
   const requested = check(asList(options.plugins), "plugins");
-  const roots = requested.length ? requested : asList(options.plugins).length ? [] : known;
+  // A selection with no recognized name loads everything rather than nothing,
+  // so a typo never switches the whole marketplace off.
+  if (asList(options.plugins).length && !requested.length) {
+    log.push(`${TAG} options.plugins names no known plugin; loading every plugin`);
+  }
+  const roots = requested.length ? requested : known;
   const requiredBy = new Map();
   const selected = new Set();
   const visit = (name, parent) => {
@@ -101,16 +106,32 @@ export function resolveSelection(manifest, options = {}) {
     }
   }
 
-  for (const name of check(asList(options.exclude), "exclude")) {
-    if (!selected.has(name)) continue;
-    const dependents = [...selected].filter(
-      (other) => other !== name && (plugins[other].dependencies ?? []).includes(name),
-    );
-    if (dependents.length) {
-      log.push(`${TAG} keeping "${name}" despite options.exclude: required by ${dependents.sort().join(", ")}`);
-      continue;
+  // Exclusions are resolved together, to a fixed point, so their order never
+  // matters: a plugin stays only while something that is itself staying needs it.
+  const excluded = new Set(check(asList(options.exclude), "exclude").filter((name) => selected.has(name)));
+  const kept = new Map();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const name of excluded) {
+      const dependents = [...selected].filter(
+        (other) =>
+          other !== name &&
+          (!excluded.has(other) || kept.has(other)) &&
+          (plugins[other].dependencies ?? []).includes(name),
+      );
+      if (dependents.length && !kept.has(name)) {
+        kept.set(name, dependents.sort());
+        changed = true;
+      }
     }
-    selected.delete(name);
+  }
+  for (const name of excluded) {
+    if (kept.has(name)) {
+      log.push(`${TAG} keeping "${name}" despite options.exclude: required by ${kept.get(name).join(", ")}`);
+    } else {
+      selected.delete(name);
+    }
   }
   return { selected: [...selected].sort(), log };
 }
@@ -196,11 +217,15 @@ export function createLoader(directory) {
                 ...rule,
                 resource: substituteRoot(rule.resource, root, packageRoot),
               }));
+              // A list that opens with a deny-all is a restriction and replaces
+              // whatever the agent had. Anything else is an addition to V2's
+              // defaults, which `update` has already put in place for a new ID.
+              const restricts = permissions[0]?.action === "*" && permissions[0]?.effect === "deny";
               editor.update(agent.id, (item) => {
                 item.mode = "subagent";
                 item.description = agent.description;
                 item.system = system;
-                item.permissions = permissions;
+                item.permissions = restricts ? permissions : [...(item.permissions ?? []), ...permissions];
               });
             });
           }

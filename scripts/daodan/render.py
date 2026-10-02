@@ -234,17 +234,25 @@ def _declared_tools(value: str) -> list[str]:
 def opencode_permissions(tools: str) -> list[dict[str, str]]:
     """A role's `tools` line as an OpenCode V2 permission list.
 
-    A role with no `tools` line declares no restriction and gets no rules, so
-    it inherits V2's defaults. Otherwise everything is denied first and each
-    declared tool allowed after it, in first-seen order. Two rules always
-    follow: `skill`, because every role may load a skill, and an
-    `external_directory` allowance scoped to the package, because the leading
-    deny would otherwise refuse the role the very references its body tells it
-    to read. That allowance is never `*`.
+    A role with no `tools` line declares no restriction, so it gets only the
+    package allowance below, and the loader appends that to V2's defaults
+    rather than replacing them. A list that starts with a deny-all is a
+    restriction, and the loader puts it in place of the defaults: everything
+    denied first, each declared tool allowed after it in first-seen order, then
+    `skill`, because every role may load a skill. Both kinds end with an
+    `external_directory` allowance scoped to the package, because the package
+    lives in OpenCode's cache, outside every project, and without it a role is
+    refused (or, under the defaults, asked about) the very references its body
+    tells it to read. That allowance is never `*`.
     """
+    package = {
+        "action": "external_directory",
+        "resource": f"{OPENCODE_PACKAGE_ROOT}/**",
+        "effect": "allow",
+    }
     declared = _declared_tools(tools)
     if not declared:
-        return []
+        return [package]
     rules = [{"action": "*", "resource": "*", "effect": "deny"}]
     seen: set[str] = set()
     for item in declared:
@@ -253,13 +261,7 @@ def opencode_permissions(tools: str) -> list[dict[str, str]]:
             seen.add(action)
             rules.append({"action": action, "resource": "*", "effect": "allow"})
     rules.append({"action": "skill", "resource": "*", "effect": "allow"})
-    rules.append(
-        {
-            "action": "external_directory",
-            "resource": f"{OPENCODE_PACKAGE_ROOT}/**",
-            "effect": "allow",
-        }
-    )
+    rules.append(package)
     return rules
 
 

@@ -74,7 +74,7 @@ campaign is over.
 ## Step 3: Dry run first
 
 ```
-python ${PLUGIN_ROOT}/skills/grabber-development/scripts/instagram_grab.py \
+python "${PLUGIN_ROOT}/skills/grabber-development/scripts/instagram_grab.py" \
   <username> --out <dir> --dry-run
 ```
 

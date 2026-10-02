@@ -51,8 +51,8 @@ Create `.python-refactor/` directory and `state.json`:
 1. **Read the target code** to understand current structure
 2. **Run complexity metrics** (if available):
    ```bash
-   uv run python ${PLUGIN_ROOT}/skills/python-refactor-method/scripts/measure_complexity.py <arguments> 2>/dev/null
-   uv run python ${PLUGIN_ROOT}/skills/python-refactor-method/scripts/analyze_with_flake8.py <arguments> 2>/dev/null
+   uv run python "${PLUGIN_ROOT}/skills/python-refactor-method/scripts/measure_complexity.py" <arguments> 2>/dev/null
+   uv run python "${PLUGIN_ROOT}/skills/python-refactor-method/scripts/analyze_with_flake8.py" <arguments> 2>/dev/null
    ```
    If scripts aren't available, analyze manually by reading the code.
 
@@ -192,7 +192,7 @@ After all steps executed:
 1. **Run full test suite** -- zero failures required
 2. **Compare metrics** (if scripts available):
    ```bash
-   uv run python ${PLUGIN_ROOT}/skills/python-refactor-method/scripts/compare_metrics.py [before] [after] 2>/dev/null
+   uv run python "${PLUGIN_ROOT}/skills/python-refactor-method/scripts/compare_metrics.py" [before] [after] 2>/dev/null
    ```
 3. **Manual comparison** -- re-read the code and compare complexity
 

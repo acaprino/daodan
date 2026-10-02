@@ -102,7 +102,7 @@ Orchestrate a partitioned multi-agent codebase analysis plus global interconnect
 4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and `.codebase-xray/runs/<id>/snapshot/manifest.json` exists. With a candidate, run the change set once over the whole target:
 
    ```bash
-   python <plugin-root>/skills/xray-method/scripts/snapshot.py diff \
+   python "<plugin-root>/skills/xray-method/scripts/snapshot.py" diff \
      .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --flags '<this run's flags as JSON>'
    ```
 
@@ -247,7 +247,7 @@ Finalize `partitions` array in `state.json` with `{name, path, language_primary,
 Immediately after the scope is settled, either by existing authorization or by an answer, write this run's snapshot over the whole target, before any worker is dispatched:
 
 ```bash
-python <plugin-root>/skills/xray-method/scripts/snapshot.py write \
+python "<plugin-root>/skills/xray-method/scripts/snapshot.py" write \
   <target> --out $RUN_DIR/snapshot/manifest.json
 ```
 

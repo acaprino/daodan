@@ -1,7 +1,10 @@
 ---
 description: 'Two-phase teardown of a rival product, platform auto-detected. TRIGGER WHEN: analyzing competitor apps, mapping app navigation, extracting design systems, or conducting UX audits on Android via ADB or on the web via Playwright MCP.'
 mode: subagent
-permissions: []
+permissions:
+  - action: "external_directory"
+    resource: "<package-root>/**"
+    effect: allow
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.

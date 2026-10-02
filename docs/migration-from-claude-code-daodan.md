@@ -18,7 +18,9 @@ components on every host, listed below.
 | No Pi distribution | a package installed from git, catalogued by the root `package.json` |
 | No OpenCode distribution | a V2 plugin package at `exports/opencode/`, installed with `opencode plugin add` |
 
-Plugin names did not change. Command, agent and skill names did not change on Claude Code.
+Plugin names did not change in this migration, and neither did command, agent and skill names on
+Claude Code. Marketplace 29.0.0 later renamed five components; see
+[Renamed in marketplace 29.0.0](#renamed-in-marketplace-2900).
 
 ## One-time migration
 

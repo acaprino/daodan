@@ -66,7 +66,7 @@ Skip this step entirely if `--no-update` was passed.
 2. With a candidate, run the change set:
 
    ```bash
-   python <plugin-root>/skills/xray-method/scripts/snapshot.py diff \
+   python "<plugin-root>/skills/xray-method/scripts/snapshot.py" diff \
      .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --flags '<this run's flags as JSON>'
    ```
 
@@ -167,7 +167,7 @@ After scope confirmation, every phase runs inline in this context, in order. Not
 **Every run writes a snapshot.** Right after scope confirmation, before Phase 0:
 
 ```bash
-python <plugin-root>/skills/xray-method/scripts/snapshot.py write \
+python "<plugin-root>/skills/xray-method/scripts/snapshot.py" write \
   <target> --out $RUN_DIR/snapshot/manifest.json
 ```
 
@@ -201,7 +201,7 @@ The phases and their numbering are unchanged. What changes is that most claims a
 2. **Carry the parent forward**, mechanically:
 
    ```bash
-   python <plugin-root>/skills/xray-method/scripts/snapshot.py carry \
+   python "<plugin-root>/skills/xray-method/scripts/snapshot.py" carry \
      .codebase-xray/runs/<parent-id> $RUN_DIR
    ```
 
@@ -220,7 +220,7 @@ The phases and their numbering are unchanged. What changes is that most claims a
 8. **Gate publication:**
 
    ```bash
-   python <plugin-root>/skills/xray-method/scripts/snapshot.py check $RUN_DIR
+   python "<plugin-root>/skills/xray-method/scripts/snapshot.py" check $RUN_DIR
    ```
 
    Exit `0` means clean: proceed to publish. Exit `1` means a claim is still marked stale or an added symbol was never documented: do not publish, report what the check named, and finish the work. Exit `2` means `changes.json` is missing, which should not happen this late in an incremental run: do not publish, and treat it as a bug in the run rather than in the code under analysis. This gate is what makes an incremental run worth trusting.

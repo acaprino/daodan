@@ -44,8 +44,8 @@ pi install ./tests/host-probes/pi
 opencode plugin add "$PWD/tests/host-probes/opencode"
 ```
 
-Pi is the one host with no marketplace to add: it installs a package from a path, so the fixture
-root is what you hand it. The Pi probe answers three questions the others do not raise. Whether a
+Pi has no marketplace to add: it installs a package from a path, so the fixture root is what you
+hand it. OpenCode is the same in that respect and is covered below. The Pi probe answers three questions the others do not raise. Whether a
 `subagent` tool exists at all, which needs `pi install npm:pi-subagents` first and decides whether
 the `contexts.isolate` binding is honest. Whether `/skill:probe-worker` resolves even though the
 skill declares `disable-model-invocation`, which is what makes a role reachable there. And whether

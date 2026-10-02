@@ -218,8 +218,13 @@ class HostRenderingTests(unittest.TestCase):
             {"action": "external_directory", "resource": "*", "effect": "allow"}, rules
         )
 
-    def test_opencode_role_without_tools_gets_no_rules(self):
-        self.assertEqual(opencode_permissions(""), [])
+    def test_opencode_role_without_tools_gets_only_the_package_allowance(self):
+        # No deny-all: the loader appends this to V2's defaults rather than
+        # replacing them, so an unrestricted role keeps ordinary tool access.
+        self.assertEqual(
+            opencode_permissions(""),
+            [{"action": "external_directory", "resource": "<package-root>/**", "effect": "allow"}],
+        )
 
     def test_opencode_team_command_dispatches_with_the_subagent_tool(self):
         text = self.harness("opencode", "senior-review", "team-review")
@@ -236,6 +241,21 @@ class HostRenderingTests(unittest.TestCase):
         self.assertIn(
             "<plugin-root>/skills/xray-method/scripts/", texts["skills/xray-method/SKILL.md"]
         )
+
+    def test_kernel_script_invocations_quote_the_plugin_root(self):
+        # On OpenCode the loader substitutes the absolute install path, and on
+        # every host that path may contain a space (C:/Users/John Doe/...). An
+        # unquoted script operand then splits and the command runs the wrong
+        # file, so every interpreter invocation of a shipped script quotes it.
+        unquoted = re.compile(
+            r"(?:python3?|uv run(?: --script)?(?: python)?|bash|node|sh) \$\{CLAUDE_PLUGIN_ROOT\}/"
+        )
+        offenders = []
+        for path in sorted((REPO_ROOT / "plugins").rglob("*.md")):
+            for number, line in enumerate(_read(path).splitlines(), 1):
+                if unquoted.search(line):
+                    offenders.append(f"{path.relative_to(REPO_ROOT).as_posix()}:{number}")
+        self.assertEqual(offenders, [])
 
     def test_opencode_command_bodies_use_no_shell_template_syntax(self):
         for plugin in ("codebase-xray", "senior-review"):

@@ -127,8 +127,11 @@ review would report as complete while missing a dimension. Both overrides are wr
 Names follow Claude Code on this host: `/senior-review:code-review`, agent
 `senior-review:code-auditor`, skill `senior-review:review-quality-gates`. Roles are real subagents,
 dispatched with OpenCode's own `subagent` tool, so no companion package is needed, and
-`peer-review`'s MCP server is registered by the plugin itself. The loader owns the IDs it registers:
-an agent of yours with the same `<plugin>:<role>` ID is replaced by the Daodan one.
+`peer-review`'s MCP server is registered by the plugin itself, unless you already configured a server
+of that name, which is left as it is. OpenCode applies your own `agents` configuration after every
+plugin, so an entry of yours keyed by a Daodan ID such as `senior-review:code-auditor` overrides the
+fields it sets on that agent. Setting `mode: primary` there stops it running as a subagent and
+breaks the workflows that dispatch it; leave Daodan IDs out of your agent configuration.
 
 On Windows, installing a git-backed plugin spec has failed under earlier OpenCode builds. If
 `opencode plugin add` cannot fetch it, clone the repository at the tag and add the local path

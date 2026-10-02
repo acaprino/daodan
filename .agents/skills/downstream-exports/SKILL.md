@@ -46,8 +46,8 @@ The core owns roles, workflow dependencies, required context isolation, joins an
 | skills | `skills/<skill>/SKILL.md` | same | same | same | same, registered as `<plugin>:<skill>` |
 | source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` | a glob, not a reference | `root` in the manifest's `daodan` key |
 
-Pi is the one host with no marketplace and no per-plugin manifest, so three of those cells are
-unlike the others and each is load-bearing. Its catalog is an npm-shaped `package.json` at the
+Pi and OpenCode are the hosts with no marketplace and no per-plugin manifest. On Pi three of those
+cells are unlike the others and each is load-bearing. Its catalog is an npm-shaped `package.json` at the
 **repository root**, because `pi install git:` reads the manifest from the root of the clone, and it
 registers by globbing `./exports/pi/plugins/*/skills` and `.../prompts` rather than by naming
 anything. `plugin_manifest` is absent from its layout, which is what makes that key optional in the
@@ -103,7 +103,7 @@ The dispatch plan (`${dispatch_plan}`) is one numbered line per phase of the sid
 
 The Copilot coordinator's `tools` line is derived, not fixed: every capability the plugin requires whose binding carries a `value` contributes that tool, and `repository.read` and `roles.dispatch` are always included. That is why `roles.dispatch` carries `value = "agent"` in the Copilot bindings. A coordinator that writes run state, runs a detection script and publishes a mirror gets `edit` and `runCommands` because its kernel declared `repository.write` and `shell.execute`, and a hand-written `['agent', 'search']` would have left it unable to do any of that.
 
-Copilot is the only host that rewrites role frontmatter: the compiler maps Claude-shaped tool names onto Copilot's (`Read`/`Glob`/`Grep` to `search`, `Write`/`Edit` to `edit`, `Bash` to `runCommands`, `WebFetch`/`WebSearch` to `fetch`, `Agent`/`Task` to `agent`) and flattens the description to a quoted one-liner. Frontmatter scalars are rendered inline, so a description carrying a colon or a stray quote is what breaks a whole block: that failure mode is the reason `_one_line` exists.
+Copilot and OpenCode are the hosts that rewrite role frontmatter. OpenCode's `agent.md.tmpl` replaces `tools`, `model` and `color` with `mode: subagent` and a V2 permission list derived from `tools` (see the OpenCode paragraph above). For Copilot the compiler maps Claude-shaped tool names onto Copilot's (`Read`/`Glob`/`Grep` to `search`, `Write`/`Edit` to `edit`, `Bash` to `runCommands`, `WebFetch`/`WebSearch` to `fetch`, `Agent`/`Task` to `agent`) and flattens the description to a quoted one-liner. Frontmatter scalars are rendered inline, so a description carrying a colon or a stray quote is what breaks a whole block: that failure mode is the reason `_one_line` exists.
 
 Substitution is `string.Template` with an allowlisted context (`scripts/daodan/templates.py`). An unknown placeholder is an error, never an empty string, and a layout path that escapes its package is refused.
 
@@ -151,7 +151,7 @@ The validator refuses a server without the capability, the capability without a 
 | `mcp-registration` | codex, copilot, pi | the server file, and one note per server at the top of every workflow giving the exact command (with the host's own plugin-root reference) to register under that name in the host's MCP configuration |
 | `mcp-manifest` (adapted) | opencode | the same `.mcp.json`, plus the server in the manifest's `daodan` key, which the loader registers through the V2 MCP transform. The host reads neither file itself, so the binding is `adapted`, and a server name the user already configured is left alone |
 
-Both non-Claude bindings are `adapted`, not `native`, because no probe has shown either host starting a server declared by an installed plugin. Promote a binding to `mcp-manifest` only after such a probe, and record it in the evidence table. `tests/test_daodan_mcp.py` pins the rendering on the `valid-mcp` fixture.
+The `mcp-registration` bindings are `adapted`, not `native`, because no probe has shown Codex, Copilot or Pi starting a server declared by an installed plugin. Promote one to `mcp-manifest` only after such a probe, and record it in the evidence table. OpenCode's `mcp-manifest` binding is `adapted` for a different reason: the server is started because the loader registers it, not because the host read a file. `tests/test_daodan_mcp.py` pins the rendering on the `valid-mcp` fixture.
 
 ## Policies: what is enforced where
 

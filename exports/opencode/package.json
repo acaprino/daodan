@@ -145,7 +145,13 @@
             "description": "Two-phase teardown of a rival product, platform auto-detected. TRIGGER WHEN: analyzing competitor apps, mapping app navigation, extracting design systems, or conducting UX audits on Android via ADB or on the web via Playwright MCP.",
             "file": "agents/app-analyzer.md",
             "id": "app-analyzer:app-analyzer",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "root": "plugins/app-analyzer",
@@ -1298,25 +1304,49 @@
             "description": "Audits and rewrites what a visitor actually reads before deciding. TRIGGER WHEN: the user asks about marketing materials, conversion optimization, content strategy, social media, CTAs, product presentation, or landing page copy.",
             "file": "agents/content-marketer.md",
             "id": "digital-marketing:content-marketer",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           },
           {
             "description": "Implements the measurement layer on a real deployment, compliance first, in vanilla HTML, Next.js/React, or WordPress. TRIGGER WHEN: the user mentions GA4, Google Analytics 4, GTM, Google Tag Manager, gtag, dataLayer, Consent Mode v2, cookie banner, CMP, iubenda, Cookiebot, Orestbida CookieConsent, Microsoft Clarity, conversion tracking, Key Events, remarketing audiences, Google Ads conversion import, or Enhanced Conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy, or DPA (use business:privacy-doc-generator).",
             "file": "agents/ga4-implementation-expert.md",
             "id": "digital-marketing:ga4-implementation-expert",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           },
           {
             "description": "Rewrites prose and markup for verbatim quotability rather than ranking position. TRIGGER WHEN: prose or markup needs answer-engine (AEO) treatment, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer).",
             "file": "agents/llm-seo-optimize.md",
             "id": "digital-marketing:llm-seo-optimize",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           },
           {
             "description": "Establishes intent and topical coverage before touching tags, and maps competitive gaps. TRIGGER WHEN: the user mentions SEO, search rankings, organic traffic, on-page optimization, structured data, or website optimization.",
             "file": "agents/seo-specialist.md",
             "id": "digital-marketing:seo-specialist",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "commands": [
@@ -2057,19 +2087,37 @@
             "description": "Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b. DO NOT TRIGGER WHEN: the run already has a plan or spec on disk (Phase 0b is skipped).",
             "file": "agents/brief-builder.md",
             "id": "peer-review:brief-builder",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           },
           {
             "description": "Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1.",
             "file": "agents/packet-builder.md",
             "id": "peer-review:packet-builder",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           },
           {
             "description": "Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).",
             "file": "agents/respondent.md",
             "id": "peer-review:respondent",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "commands": [
@@ -3740,13 +3788,25 @@
             "description": "Senior engineer for latency-critical, high-frequency streaming workloads. TRIGGER WHEN: building or reviewing Tauri v2 desktop apps with React: IPC and command design, capabilities and permissions, window and system tray, shell plugin, WebView tuning (WebView2, WKWebView, WebKitGTK), bundling, signing, auto-updates, memory leaks, React-side performance. DO NOT TRIGGER WHEN: mobile targets (use tauri-mobile), Rust outside Tauri (use rust-engineer), React outside Tauri (use react-performance-optimizer).",
             "file": "agents/tauri-desktop.md",
             "id": "tauri-development:tauri-desktop",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           },
           {
             "description": "Senior mobile application engineer. TRIGGER WHEN: Tauri 2 work on Android or iOS: environment setup (Android SDK, Xcode, NDK), emulator and ADB testing, plugins (biometric, haptics, barcode, NFC, geolocation, notifications), in-app purchases, OAuth deep links, Play Store and App Store code signing, or CI/CD for device builds.",
             "file": "agents/tauri-mobile.md",
             "id": "tauri-development:tauri-mobile",
-            "permissions": []
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "root": "plugins/tauri-development",

@@ -21,7 +21,7 @@ more impressive one.
 If the question is about a message code, answer immediately, with no gateway:
 
 ```bash
-python <plugin-root>/skills/ibkr/scripts/ibkr_probe.py codes <code> [<code> ...]
+python "<plugin-root>/skills/ibkr/scripts/ibkr_probe.py" codes <code> [<code> ...]
 ```
 
 Report the grade `ib_async` assigns it, and the consequence. The tool grades by ib_async's rule, not
@@ -39,7 +39,7 @@ Most "does IBKR support X" questions are answered by `ContractDetails.orderTypes
 question. This is free and definitive in the negative direction.
 
 ```bash
-python <plugin-root>/skills/ibkr/scripts/ibkr_probe.py capabilities --stock AAPL
+python "<plugin-root>/skills/ibkr/scripts/ibkr_probe.py" capabilities --stock AAPL
 ```
 
 Requires a running paper Gateway (see Rung 3 setup). Report:

@@ -24,7 +24,7 @@ Load `research:web-search-techniques` for operators, backends, source ranking, r
 # DIRECT MODE
 
 1. Identify the single core fact needed
-2. Pick the most direct path: search for discovery, `WebFetch` for extraction; with `SERPER_API_KEY` set, `python <plugin-root>/skills/web-search-techniques/scripts/websearch.py "<query>"` is an equivalent discovery step
+2. Pick the most direct path: search for discovery, `WebFetch` for extraction; with `SERPER_API_KEY` set, `python "<plugin-root>/skills/web-search-techniques/scripts/websearch.py" "<query>"` is an equivalent discovery step
 3. Execute 1-3 focused searches, read the one page that answers
 4. Return the answer with source URL, the date the page carries, and access date
 

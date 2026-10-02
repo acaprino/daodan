@@ -369,7 +369,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/rewrite_comments.py" st
 ### 14. Write a structural snapshot
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py write <target> \
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" write <target> \
   --out <run-dir>/snapshot/manifest.json
 ```
 
@@ -379,14 +379,14 @@ Records the tree a run analyzed. Every run writes one, which is what makes it a 
 
 ```bash
 # what changed since a parent run, and which of its claims that affects
-python ${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py diff \
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" diff \
   <parent-run-dir> <target> --out <run-dir> [--verify] [--threshold 0.4] [--flags '{"depth":"full"}']
 
 # copy the parent's phase files, renumber citations, mark the stale claims
-python ${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py carry <parent-run-dir> <run-dir>
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" carry <parent-run-dir> <run-dir>
 
 # publication gate: no marker left, no undocumented new symbol
-python ${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py check <run-dir>
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" check <run-dir>
 ```
 
 `--verify` hashes every file instead of trusting size and mtime. `--threshold` is the affected-file ratio above which a full run is recommended instead.
