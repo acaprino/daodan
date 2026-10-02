@@ -78,6 +78,24 @@ class CompilerCliTests(unittest.TestCase):
         self.assertTrue((self.root / ".github/plugin/marketplace.json").is_file())
         self.assertTrue((self.root / ".agents/plugins/marketplace.json").is_file())
 
+    def test_opencode_package_ships_the_loader_and_its_manifest(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        package = self.root / "exports/opencode"
+        self.assertEqual(
+            (package / "index.js").read_bytes(),
+            (self.root / "adapters/opencode/templates/index.js").read_bytes(),
+        )
+        self.assertTrue((package / "package.json").is_file())
+        self.assertTrue((package / "plugins/example/agents/inspector.md").is_file())
+
+    def test_check_reports_drift_when_the_loader_is_edited(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        loader = self.root / "exports/opencode/index.js"
+        loader.write_text(loader.read_text(encoding="utf-8") + "// edited" + chr(10), encoding="utf-8")
+        code, output = self.run_cli("--check")
+        self.assertEqual(code, 1)
+        self.assertIn("index.js", output)
+
     def test_support_table_names_every_host(self):
         report = build_repository(self.root, ("claude", "copilot", "codex"), check=True)
         self.assertEqual({item.host for item in report.support}, {"claude", "copilot", "codex"})

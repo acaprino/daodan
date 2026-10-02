@@ -1,0 +1,13 @@
+name = "instagram-grab"
+entrypoint = "instagram-grab.md"
+
+[[phases]]
+id = "grab"
+isolation = "shared"
+produces = ["artifact:instagram-archive"]
+
+[contract]
+inputs = ["repository"]
+outcomes = ["instagram-grab-completed"]
+artifacts = ["instagram-archive"]
+schemas = []

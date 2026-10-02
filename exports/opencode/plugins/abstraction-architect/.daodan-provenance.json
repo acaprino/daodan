@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:8b04c4c81f7231650437542594d1c2fd8aafd7e6d46111b7223fafa92f4759cc",
+  "harnessStrategies": {
+    "audit": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "abstraction-architect",
+  "version": "4.0.0"
+}

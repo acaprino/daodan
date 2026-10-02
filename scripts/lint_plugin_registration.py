@@ -30,6 +30,13 @@ Three passes, each independently reported. Exits non-zero if any fails.
                    whose commands do not exist, silently and on that host only.
                    Roles are deliberately not checked as a kind of their own:
                    they render as skills there.
+  4. opencode manifest
+                   OpenCode registers what its loader reads from the `daodan`
+                   key of `exports/opencode/package.json`. Both directions
+                   again: every `file` there exists, and every rendered skill,
+                   agent and command under `exports/opencode/plugins/` is named
+                   by one. A component the manifest omits ships and is never
+                   registered.
 
 All three content kinds are checked, because the invariant is not agent-specific:
 an undeclared skill or command fails the same way for the same reason.
@@ -50,6 +57,8 @@ MARKETPLACE = Path(".claude-plugin/marketplace.json")
 PLUGINS = Path("plugins")
 PI_MANIFEST = Path("package.json")
 PI_PACKAGES = Path("exports/pi/plugins")
+OPENCODE_MANIFEST = Path("exports/opencode/package.json")
+OPENCODE_PACKAGES = Path("exports/opencode/plugins")
 
 # Since the Claude bootstrap, `source` points at the generated package under
 # `exports/claude/plugins/<name>` rather than at the authoring kernel. Both are
@@ -136,11 +145,41 @@ def check_pi() -> list[tuple[str, str, str]]:
     return violations
 
 
+def check_opencode() -> list[tuple[str, str, str]]:
+    """Violations of the OpenCode manifest's half of the same invariant."""
+    if not OPENCODE_MANIFEST.is_file() or not OPENCODE_PACKAGES.is_dir():
+        return []
+    plugins = json.loads(OPENCODE_MANIFEST.read_text(encoding="utf-8")).get("daodan", {}).get("plugins", {})
+    root = OPENCODE_MANIFEST.parent
+    violations: list[tuple[str, str, str]] = []
+    declared: set[Path] = set()
+    for name, entry in sorted(plugins.items()):
+        for kind in ("skills", "agents", "commands"):
+            for item in entry.get(kind, []):
+                path = root / entry["root"] / item["file"]
+                declared.add(path)
+                if not path.is_file():
+                    violations.append(("opencode manifest", name, f"dangling {item['file']}"))
+    for package in sorted(OPENCODE_PACKAGES.iterdir()):
+        if not package.is_dir():
+            continue
+        rendered = [
+            *package.glob("skills/*/SKILL.md"),
+            *package.glob("agents/*.md"),
+            *package.glob("commands/*.md"),
+        ]
+        for path in sorted(rendered):
+            if path not in declared:
+                relative = path.relative_to(package).as_posix()
+                violations.append(("opencode manifest", package.name, f"unregistered {relative}"))
+    return violations
+
+
 def main():
     if not MARKETPLACE.is_file() or not PLUGINS.is_dir():
         sys.exit("run from the repository root: .claude-plugin/marketplace.json not found")
 
-    violations = sorted(set(check()) | set(check_pi()))
+    violations = sorted(set(check()) | set(check_pi()) | set(check_opencode()))
     data = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
     counted = sum(len(p.get(k, [])) for p in data["plugins"]
                   for k in ("agents", "skills", "commands"))
@@ -155,6 +194,11 @@ def main():
     report("pi globs", [(p, path) for kind, p, path in violations if kind == "pi globs"],
            "widen the matching glob in the root package.json `pi` table, or move the "
            "component back under a path it already reaches")
+
+    report("opencode manifest",
+           [(p, path) for kind, p, path in violations if kind == "opencode manifest"],
+           "rebuild with scripts/daodan_build.py: the manifest is generated from the "
+           "rendered tree, so a mismatch means one of them was edited by hand")
 
     if failures:
         sys.exit(f"\n{len(failures)} check(s) failed: {', '.join(failures)}")

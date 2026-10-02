@@ -1,6 +1,7 @@
 """Cross-host identity tests for the generated catalogs."""
 
 import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -45,6 +46,19 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(catalog["pi"]["skills"], ["./exports/pi/plugins/*/skills"])
         self.assertEqual(catalog["pi"]["prompts"], ["./exports/pi/plugins/*/prompts"])
 
+    def test_opencode_catalog_is_a_v2_plugin_package(self):
+        catalog = build_fixture_catalogs()["opencode"]
+        self.assertNotIn("plugins", catalog)
+        self.assertEqual(catalog["name"], "daodan")
+        self.assertEqual(catalog["version"], "1.0.0")
+        self.assertEqual(catalog["main"], "index.js")
+        self.assertEqual(catalog["type"], "module")
+        self.assertEqual(catalog["keywords"], ["opencode-plugin"])
+        self.assertIs(catalog["private"], True)
+        self.assertEqual(catalog["daodan"]["schema"], 1)
+        entry = catalog["daodan"]["plugins"]["example"]
+        self.assertEqual(entry["root"], "plugins/example")
+
     def test_each_host_gets_its_native_source_shape(self):
         catalogs = build_fixture_catalogs()
         self.assertEqual(
@@ -78,6 +92,67 @@ class CatalogTests(unittest.TestCase):
         catalogs["codex"]["plugins"][0]["version"] = "9.9.9"
         with self.assertRaises(CatalogError):
             assert_cross_host_identity(catalogs)
+
+
+OPENCODE = REPO_ROOT / "exports/opencode"
+
+
+def live_opencode_manifest() -> dict:
+    return json.loads((OPENCODE / "package.json").read_text(encoding="utf-8"))
+
+
+class OpenCodeManifestTests(unittest.TestCase):
+    """The published manifest is what the loader reads, so it is read as the loader would."""
+
+    def test_ids_carry_the_plugin_prefix(self):
+        entry = live_opencode_manifest()["daodan"]["plugins"]["senior-review"]
+        self.assertIn("senior-review:code-auditor", [a["id"] for a in entry["agents"]])
+        self.assertIn("senior-review:code-review", [c["name"] for c in entry["commands"]])
+        self.assertIn(
+            "senior-review:review-quality-gates", [s["id"] for s in entry["skills"]]
+        )
+
+    def test_dependencies_are_local_only(self):
+        plugins = live_opencode_manifest()["daodan"]["plugins"]
+        self.assertIn("codebase-xray", plugins["senior-review"]["dependencies"])
+        for name, entry in plugins.items():
+            for dependency in entry.get("dependencies", []):
+                self.assertNotIn("@", dependency, name)
+                self.assertIn(dependency, plugins, name)
+
+    def test_agents_carry_their_permission_list(self):
+        entry = live_opencode_manifest()["daodan"]["plugins"]["senior-review"]
+        agent = next(a for a in entry["agents"] if a["id"] == "senior-review:code-auditor")
+        self.assertEqual(agent["permissions"][0], {"action": "*", "resource": "*", "effect": "deny"})
+        self.assertEqual(agent["permissions"][-1]["resource"], "<package-root>/**")
+
+    def test_every_file_exists_and_no_command_uses_shell_syntax(self):
+        for name, entry in live_opencode_manifest()["daodan"]["plugins"].items():
+            for kind in ("skills", "agents", "commands"):
+                for item in entry.get(kind, []):
+                    path = OPENCODE / entry["root"] / item["file"]
+                    self.assertTrue(path.is_file(), path)
+                    if kind == "commands":
+                        text = path.read_text(encoding="utf-8")
+                        self.assertIsNone(re.search(r"(?m)^!`", text), path)
+
+    def test_descriptions_are_present_for_every_agent_and_skill(self):
+        for name, entry in live_opencode_manifest()["daodan"]["plugins"].items():
+            for kind in ("skills", "agents"):
+                for item in entry.get(kind, []):
+                    self.assertTrue(item["description"].strip(), f"{name}: {item}")
+
+    def test_peer_review_declares_its_server(self):
+        mcp = live_opencode_manifest()["daodan"]["plugins"]["peer-review"]["mcp"]
+        self.assertEqual(mcp[0]["name"], "peer-review")
+        self.assertTrue(any("<plugin-root>" in part for part in mcp[0]["command"]))
+        self.assertFalse(any("CLAUDE_PLUGIN_ROOT" in part for part in mcp[0]["command"]))
+
+    def test_loader_is_the_adapter_template_byte_for_byte(self):
+        self.assertEqual(
+            (OPENCODE / "index.js").read_bytes(),
+            (REPO_ROOT / "adapters/opencode/templates/index.js").read_bytes(),
+        )
 
 
 if __name__ == "__main__":

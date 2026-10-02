@@ -165,6 +165,119 @@ def _pi_manifest(document):
     return (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 
+#: The npm package name OpenCode installs the whole marketplace as, and the
+#: schema version of the `daodan` key its loader reads.
+OPENCODE_PACKAGE = "daodan"
+OPENCODE_MANIFEST_SCHEMA = 1
+
+
+def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, object]:
+    """What the OpenCode loader needs to register one plugin.
+
+    Names and descriptions are read from the rendered package rather than from
+    the kernel, so the manifest describes exactly what ships. Permissions are
+    derived from the kernel role's `tools` line, because the rendered agent
+    carries them as YAML the loader would otherwise have to parse.
+    """
+    # Imported here: render imports this module for OWNER.
+    from .render import PLUGIN_ROOT_PLACEHOLDER, _frontmatter, _one_line, opencode_permissions
+
+    entry: dict[str, object] = {"root": f"plugins/{plugin.name}"}
+    dependencies = [item for item in plugin.required_dependencies if "@" not in item]
+    if dependencies:
+        entry["dependencies"] = dependencies
+    # A package that was never rendered (missing output under --check, or a
+    # build stopped by validation) contributes its identity only; the drift
+    # gate reports the missing package itself.
+    if package is None or not package.is_dir():
+        return entry
+
+    def described(relative: str) -> dict[str, str]:
+        meta, _ = _frontmatter((package / relative).read_text(encoding="utf-8"))
+        return {key: _one_line(value.strip("'\"")) for key, value in meta.items()}
+
+    skills = []
+    for skill in plugin.components.skills:
+        relative = f"skills/{skill}/SKILL.md"
+        meta = described(relative)
+        skills.append(
+            {
+                "id": f"{plugin.name}:{skill}",
+                "name": meta.get("name", skill),
+                "description": meta.get("description", ""),
+                "file": relative,
+            }
+        )
+    agents = []
+    for role in plugin.components.roles:
+        relative = f"agents/{role}.md"
+        kernel, _ = _frontmatter((plugin.root / "roles" / f"{role}.md").read_text(encoding="utf-8"))
+        agents.append(
+            {
+                "id": f"{plugin.name}:{role}",
+                "description": described(relative).get("description", ""),
+                "file": relative,
+                "permissions": opencode_permissions(kernel.get("tools", "")),
+            }
+        )
+    commands = []
+    for workflow in plugin.components.workflows:
+        relative = f"commands/{workflow}.md"
+        commands.append(
+            {
+                "name": f"{plugin.name}:{workflow}",
+                "description": described(relative).get("description", ""),
+                "file": relative,
+            }
+        )
+    servers = [
+        {
+            "name": server.name,
+            "command": [
+                server.command,
+                *(PLUGIN_ROOT_PLACEHOLDER.sub("<plugin-root>", arg) for arg in server.args),
+            ],
+        }
+        for server in plugin.mcp_servers
+    ]
+    for key, items in (("skills", skills), ("agents", agents), ("commands", commands), ("mcp", servers)):
+        if items:
+            entry[key] = items
+    return entry
+
+
+def _opencode_manifest(document, plugins: Sequence[PluginSpec], packages) -> bytes:
+    """OpenCode's catalog, which is the plugin package's own npm manifest.
+
+    OpenCode V2 has no marketplace: a package arrives as a plugin whose default
+    export registers what it ships. The fixed loader beside this file does that
+    from the `daodan` key, so everything plugin-specific is data here and none
+    of it is generated code. `private` states that publication is by git tag,
+    installed through npm's `::path:` selector.
+    """
+    ordered = sorted(plugins, key=lambda plugin: plugin.name)
+    manifest = {
+        "name": OPENCODE_PACKAGE,
+        "version": document["metadata"]["version"],
+        "private": True,
+        "description": CATALOG_DESCRIPTION,
+        "license": "MIT",
+        "type": "module",
+        "main": "index.js",
+        "keywords": ["opencode-plugin"],
+        "daodan": {
+            "schema": OPENCODE_MANIFEST_SCHEMA,
+            "plugins": {
+                plugin.name: _opencode_entry(
+                    plugin, (packages or {}).get(plugin.name)
+                )
+                for plugin in ordered
+            },
+        },
+    }
+    return (json.dumps(manifest, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+
+
 def render_catalog(
     host: str,
     plugins: Sequence[PluginSpec],
@@ -179,6 +292,8 @@ def render_catalog(
     document = catalog_document(host, plugins, version, packages)
     if host == "pi":
         return _pi_manifest(document)
+    if host == "opencode":
+        return _opencode_manifest(document, plugins, packages)
     return (json.dumps(document, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 

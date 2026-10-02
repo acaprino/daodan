@@ -1,0 +1,12 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:2439e29d5c0c8be52f1695fca35a50508a9d7ba4d7bca05c49798ff41915c278",
+  "harnessStrategies": {
+    "analyze": "parallel-subagents",
+    "team-analyze": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "codebase-xray",
+  "version": "4.2.0"
+}

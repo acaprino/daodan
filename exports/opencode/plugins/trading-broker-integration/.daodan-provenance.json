@@ -1,0 +1,13 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:2f650073a4c489144392e0b31c9584108ea608728fb2139f3cfe80a52e61a429",
+  "harnessStrategies": {
+    "ibkr-audit": "parallel-subagents",
+    "ibkr-verify": "parallel-subagents",
+    "mt5-audit": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "trading-broker-integration",
+  "version": "2.1.1"
+}

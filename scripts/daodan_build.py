@@ -138,10 +138,34 @@ def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildRe
             catalog_path.parent.mkdir(parents=True, exist_ok=True)
             catalog_path.write_bytes(rendered)
 
+        for live_file, content in _package_files(root, adapter):
+            if check:
+                if not live_file.is_file() or live_file.read_bytes() != content:
+                    drift.append(live_file)
+            elif not issues:
+                live_file.parent.mkdir(parents=True, exist_ok=True)
+                live_file.write_bytes(content)
+
     if len(catalogs) == len(HOSTS):
         assert_cross_host_identity(catalogs)
 
     return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support))
+
+
+def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
+    """Files a host package carries once at its root, copied from the adapter.
+
+    OpenCode's loader is the case: fixed code shipped beside the manifest it
+    reads, so a rebuild must reproduce it byte for byte like any other output.
+    Text is normalized to LF, as every rendered file is.
+    """
+    names = [item.strip() for item in adapter.layout.get("package_files", "").split(",") if item.strip()]
+    files = []
+    for name in names:
+        source = root / "adapters" / adapter.host / "templates" / name
+        raw = source.read_bytes().replace(b"\r\n", b"\n")
+        files.append((root / adapter.layout["root"] / name, raw))
+    return files
 
 
 def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Path) -> bytes:

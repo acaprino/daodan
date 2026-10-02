@@ -1,0 +1,4252 @@
+{
+  "daodan": {
+    "plugins": {
+      "abstraction-architect": {
+        "agents": [
+          {
+            "description": "Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from .codebase-xray/ plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).",
+            "file": "agents/abstraction-architect-agent.md",
+            "id": "abstraction-architect:abstraction-architect-agent",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-xray:analyze when .codebase-xray/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.",
+            "file": "commands/audit.md",
+            "name": "abstraction-architect:audit"
+          }
+        ],
+        "dependencies": [
+          "codebase-xray"
+        ],
+        "root": "plugins/abstraction-architect",
+        "skills": [
+          {
+            "description": "Knowledge base for structural entropy: the cost of change when one concept lives in many places. TRIGGER WHEN: the user asks \"should I extract this\", \"who owns this rule\", \"is this DRY enough\", \"is this the wrong abstraction\"; centralizing, inlining or removing a layer; auditing for duplicated domain knowledge, competing sources of truth, redundant models or derivable state stored anyway; loaded under /abstraction-architect:audit or the /senior-review:team-review abstraction dimension. DO NOT TRIGGER WHEN: the concern is formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead-code removal (use /senior-review:code-review --commit), security (use senior-review:security-auditor), contract drift (use senior-review:api-contract-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).",
+            "file": "skills/abstraction-architect/SKILL.md",
+            "id": "abstraction-architect:abstraction-architect",
+            "name": "abstraction-architect"
+          }
+        ]
+      },
+      "ai-tooling": {
+        "agents": [
+          {
+            "description": "Author, restructure, and evaluate the text that steers a model. TRIGGER WHEN: writing system prompts, designing agent instructions, or optimizing prompt performance for reliability and token efficiency.",
+            "file": "agents/prompt-engineer.md",
+            "id": "ai-tooling:prompt-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Present the efficiency-versus-effectiveness frontier as labelled variants and let the user pick. TRIGGER WHEN: the user wants to review or optimize a prompt, system message, or agent instructions for clarity/tokens/reliability.",
+            "file": "commands/prompt-optimize.md",
+            "name": "ai-tooling:prompt-optimize"
+          }
+        ],
+        "root": "plugins/ai-tooling",
+        "skills": [
+          {
+            "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
+            "file": "skills/agent-sdk-builder/SKILL.md",
+            "id": "ai-tooling:agent-sdk-builder",
+            "name": "agent-sdk-builder"
+          },
+          {
+            "description": "Knowledge base behind the prompt-engineer agent and /prompt-optimize: the source-of-truth order for model facts, the model-class gate, and six on-demand references covering reasoning patterns, output-shape enforcement, extraction prompting, judge prompts, agent and tool instructions, and dated vendor guidance. TRIGGER WHEN: designing, reviewing or optimizing a prompt, system message or agent instructions; forcing JSON or a schema out of a model, especially a small one such as Gemma; prompting for extraction (NER, relations, events, fields from documents); deciding whether a reasoning scaffold, few-shot examples or a thinking budget belongs in a prompt; writing an LLM-as-judge prompt; writing a tool description, an instruction file, a skill description or an orchestrator brief. DO NOT TRIGGER WHEN: building an agent on the Claude Agent SDK (use agent-sdk-builder), or the question is about a models pricing or API surface with no prompt involved.",
+            "file": "skills/prompt-engineering/SKILL.md",
+            "id": "ai-tooling:prompt-engineering",
+            "name": "prompt-engineering"
+          }
+        ]
+      },
+      "app-analyzer": {
+        "agents": [
+          {
+            "description": "Two-phase teardown of a rival product, platform auto-detected. TRIGGER WHEN: analyzing competitor apps, mapping app navigation, extracting design systems, or conducting UX audits on Android via ADB or on the web via Playwright MCP.",
+            "file": "agents/app-analyzer.md",
+            "id": "app-analyzer:app-analyzer",
+            "permissions": []
+          }
+        ],
+        "root": "plugins/app-analyzer",
+        "skills": [
+          {
+            "description": "Report templates for the app-analyzer teardown: the competitive analysis, the user-flow diagrams and the visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the app itself (that is the app-analyzer agents Phase 1), or auditing a codebase rather than a running product.",
+            "file": "skills/app-analysis/SKILL.md",
+            "id": "app-analyzer:app-analysis",
+            "name": "app-analysis"
+          }
+        ]
+      },
+      "browser-extensions": {
+        "agents": [
+          {
+            "description": "Hands-on developer that writes the code and reads MDN live when the bundled references fall short. TRIGGER WHEN: creating, debugging or publishing any Firefox extension, WebExtension or browser add-on, migrating Manifest V2 to V3, or fixing cross-browser compatibility.",
+            "file": "agents/firefox-extension-dev-agent.md",
+            "id": "browser-extensions:firefox-extension-dev-agent",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs `web-ext lint` plus static checks for forbidden APIs, permission bloat, remote-hosted code and Manifest V3 migration issues. TRIGGER WHEN: linting, validating or checking a Firefox extension, before an AMO submission or a git push on an extension project.",
+            "file": "commands/firefox-lint.md",
+            "name": "browser-extensions:firefox-lint"
+          },
+          {
+            "description": "Lints, signs and uploads a build on the listed or unlisted channel, then walks the user through the review workflow. TRIGGER WHEN: publishing, releasing, submitting, uploading or signing a Firefox extension, or preparing an addons.mozilla.org (AMO) submission.",
+            "file": "commands/firefox-publish.md",
+            "name": "browser-extensions:firefox-publish"
+          },
+          {
+            "description": "Generates manifest.json (V3 default), directory layout, content and background scripts, web-ext config and a working popup. TRIGGER WHEN: creating, bootstrapping or scaffolding a new Firefox extension, WebExtension or browser add-on. DO NOT TRIGGER WHEN: features are added to an existing extension (use the firefox-extension-dev-agent agent).",
+            "file": "commands/firefox-scaffold.md",
+            "name": "browser-extensions:firefox-scaffold"
+          }
+        ],
+        "root": "plugins/browser-extensions",
+        "skills": [
+          {
+            "description": "Reference knowledge base behind the firefox-extension-dev-agent agent. TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.",
+            "file": "skills/firefox-extension-dev/SKILL.md",
+            "id": "browser-extensions:firefox-extension-dev",
+            "name": "firefox-extension-dev"
+          }
+        ]
+      },
+      "business": {
+        "agents": [
+          {
+            "description": "Fractional CMO working Socratically, one phase at a time, against benchmarks. TRIGGER WHEN: the user needs SaaS business planning, go-to-market strategy, positioning, pricing strategy, market sizing, TAM/SAM/SOM, or product-market fit work. DO NOT TRIGGER WHEN: legal or compliance questions (use legal-advisor), privacy documents (use privacy-doc-generator).",
+            "file": "agents/business-planner.md",
+            "id": "business:business-planner",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "subagent",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Advise on technology law and risk, and draft the documents. TRIGGER WHEN: contracts, NDAs, terms of service, IP and copyright, employment law, M&A, corporate governance, regulatory compliance, legal risk assessment, or advisory memos. DO NOT TRIGGER WHEN: Privacy Policies, Cookie Policies, DPAs, or DPIA reports (use privacy-doc-generator); business planning (use business-planner).",
+            "file": "agents/legal-advisor.md",
+            "id": "business:legal-advisor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Draft and audit data-protection documents from a ROPA-driven model. TRIGGER WHEN: the user needs a Privacy Policy, Cookie Policy, DPA, consent notice, or DPIA under GDPR, ePrivacy, Codice Privacy, CCPA, LGPD, or FADP. DO NOT TRIGGER WHEN: general legal, contract, NDA, or IP questions (use legal-advisor); cookie banners, Consent Mode v2, or GTM (use digital-marketing:ga4-implementation-expert); business planning (use business-planner).",
+            "file": "agents/privacy-doc-generator.md",
+            "id": "business:privacy-doc-generator",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "dependencies": [
+          "text-humanizer",
+          "research"
+        ],
+        "root": "plugins/business",
+        "skills": [
+          {
+            "description": "Knowledge base of strategy frameworks and market data, loaded by business-planner. TRIGGER WHEN: SaaS business planning or GTM strategy work, including positioning frameworks (April Dunford, Blue Ocean, Crossing the Chasm), PLG/SLG motions, and KPI benchmarks.",
+            "file": "skills/saas-business-plan/SKILL.md",
+            "id": "business:saas-business-plan",
+            "name": "saas-business-plan"
+          }
+        ]
+      },
+      "clean-code": {
+        "agents": [
+          {
+            "description": "Readability-only rewrite of existing source, behavior unchanged. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, reduce complexity, or make code more maintainable. DO NOT TRIGGER WHEN: the target is prose or text (use text-humanizer).",
+            "file": "agents/clean-code-agent.md",
+            "id": "clean-code:clean-code-agent",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "subagent",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Readability-only rewrite of existing source. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, or make code more maintainable without changing behavior. DO NOT TRIGGER WHEN: the target is prose or text (use /text-humanizer:humanize-text), or deep architectural refactoring (use /python-development:python-refactor).",
+            "file": "commands/clean-code.md",
+            "name": "clean-code:clean-code"
+          }
+        ],
+        "root": "plugins/clean-code"
+      },
+      "codebase-mapper": {
+        "agents": [
+          {
+            "description": "Explores an unfamiliar project and writes .codebase-map/_internal/context-brief.md from README, configs, package manifests, entry points, and directory structure. TRIGGER WHEN: spawned by the /codebase-mapper:map-codebase pipeline in Phase 1 to build the brief the writer agents consume. DO NOT TRIGGER WHEN: invoked outside it; for direct exploration use the built-in Explore subagent.",
+            "file": "agents/codebase-explorer.md",
+            "id": "codebase-mapper:codebase-explorer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Writes 10-configuration-guide.md (environment setup, configuration scenarios, common operations, troubleshooting) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
+            "file": "agents/config-writer.md",
+            "id": "codebase-mapper:config-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Rewrites technical docs into clear, scannable narrative. TRIGGER WHEN: documentation exists but reads like a wall of text or AI output. DO NOT TRIGGER WHEN: humanizing prose or articles rather than technical docs (use text-humanizer:text-humanizer), or generating new documentation from source code (use codebase-mapper:documentation-engineer).",
+            "file": "agents/doc-humanizer.md",
+            "id": "codebase-mapper:doc-humanizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Documentation engineer for a single dimension or a whole project, generation or drift audit. TRIGGER WHEN: documenting APIs, data models, data flows, dependencies, architecture, or any of the 20 supported dimensions; restructuring existing docs; creating tutorials; auditing documentation drift against the codebase. DO NOT TRIGGER WHEN: pure prose or style rewriting of existing docs (use codebase-mapper:doc-humanizer), a full multi-document narrative project guide (use /codebase-mapper:map-codebase), or a public-facing README (use docs:readme-craft).",
+            "file": "agents/documentation-engineer.md",
+            "id": "codebase-mapper:documentation-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Writes 05-workflows.md (user and system flows, with flowcharts and sequence diagrams) and 06-data-model.md (data structures, with ER diagrams) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
+            "file": "agents/flow-writer.md",
+            "id": "codebase-mapper:flow-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews the 10 generated documents for consistency, adds cross-references, uniformizes tone, flags gaps and contradictions, and produces INDEX.md. TRIGGER WHEN: spawned by the /codebase-mapper:map-codebase pipeline in Phase 3, after all writer agents complete. DO NOT TRIGGER WHEN: invoked outside it (the 10 writer outputs are not in .codebase-map/).",
+            "file": "agents/guide-reviewer.md",
+            "id": "codebase-mapper:guide-reviewer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Writes 07-getting-started.md (developer onboarding steps) and 08-open-questions.md (knowledge gaps) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
+            "file": "agents/onboarding-writer.md",
+            "id": "codebase-mapper:onboarding-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Writes 09-project-anatomy.md (config files, environment variables, startup scripts, annotated directory tree) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
+            "file": "agents/ops-writer.md",
+            "id": "codebase-mapper:ops-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Writes 01-overview.md (project narrative with a mindmap diagram) and 02-features.md (feature catalog) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
+            "file": "agents/overview-writer.md",
+            "id": "codebase-mapper:overview-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Writes 03-tech-stack.md (technologies and dependencies) and 04-architecture.md (code organization and layers, with component diagrams) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
+            "file": "agents/tech-writer.md",
+            "id": "codebase-mapper:tech-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Documents a project from its source, on one dimension or many. TRIGGER WHEN: the user asks to create technical documentation, API docs, architecture guides, data model / schema docs, data flow / pipeline docs, dependency maps, or any new documentation for a codebase. DO NOT TRIGGER WHEN: the user wants to audit existing docs (use /codebase-mapper:docs-maintain) or just a README (use /docs:maintain-readme) or a full multi-document project guide (use /codebase-mapper:map-codebase).",
+            "file": "commands/docs-create.md",
+            "name": "codebase-mapper:docs-create"
+          },
+          {
+            "description": "Checks shipped documentation against the code and plans the fixes. TRIGGER WHEN: the user asks to audit, update, or verify existing technical docs against the current codebase, or to detect documentation drift on any of the 20 dimensions (endpoints removed but still documented, env vars renamed, schema fields added/dropped, dependencies upgraded, alerts removed, etc.). DO NOT TRIGGER WHEN: creating new docs from scratch (use /codebase-mapper:docs-create) or humanizing prose style (use /codebase-mapper:humanize-docs).",
+            "file": "commands/docs-maintain.md",
+            "name": "codebase-mapper:docs-maintain"
+          },
+          {
+            "description": "Edits documentation in place for a human reader. TRIGGER WHEN: the user asks to humanize existing docs, improve scannability, or rewrite dense technical writing for progressive disclosure. DO NOT TRIGGER WHEN: humanizing prose/articles (use /text-humanizer:humanize-text) or creating new docs (use /codebase-mapper:docs-create).",
+            "file": "commands/humanize-docs.md",
+            "name": "codebase-mapper:humanize-docs"
+          },
+          {
+            "description": "Writes a plain-language executive summary (00), 10 numbered narrative documents with Mermaid diagrams (01-10), a glossary (11) and an INDEX.md entry point into .codebase-map/. TRIGGER WHEN: the user asks to onboard to an unfamiliar project, generate a codebase tour, or produce a full narrative guide for new contributors. DO NOT TRIGGER WHEN: the user wants structured AST/dependency analysis (use /codebase-xray:analyze) or just API docs (use /codebase-mapper:docs-create).",
+            "file": "commands/map-codebase.md",
+            "name": "codebase-mapper:map-codebase"
+          },
+          {
+            "description": "Multi-agent variant of /codebase-mapper:map-codebase with the same document set (00-11 plus INDEX.md): one explorer, a project profile confirmation, 6 writers at once as a tracked team, then a review pass producing the glossary and INDEX.md. TRIGGER WHEN: the user wants a codebase guide built by parallel writers, typically on a large project.",
+            "file": "commands/team-codebase-map.md",
+            "name": "codebase-mapper:team-codebase-map"
+          }
+        ],
+        "dependencies": [
+          "codebase-xray",
+          "text-humanizer",
+          "senior-review"
+        ],
+        "root": "plugins/codebase-mapper",
+        "skills": [
+          {
+            "description": "Writing guidelines, tone rules, and diagram conventions for this plugins project guides. TRIGGER WHEN: referenced by codebase-mapper pipeline agents (codebase-explorer, overview-writer, tech-writer, flow-writer, onboarding-writer, ops-writer, config-writer, guide-reviewer) during document generation. DO NOT TRIGGER WHEN: outside the /map-codebase pipeline (general documentation work should use docs:readme-craft or codebase-mapper:docs-create).",
+            "file": "skills/codebase-mapper/SKILL.md",
+            "id": "codebase-mapper:codebase-mapper",
+            "name": "codebase-mapper"
+          }
+        ]
+      },
+      "codebase-xray": {
+        "agents": [
+          {
+            "description": "Runs Flow Tracing and Semantic Understanding over one partition, reading every partitions structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its second wave.",
+            "file": "agents/partition-behavior-worker.md",
+            "id": "codebase-xray:partition-behavior-worker",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its second wave.",
+            "file": "agents/partition-quality-worker.md",
+            "id": "codebase-xray:partition-quality-worker",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-xray:analyze extracts structure inline without an agent.",
+            "file": "agents/partition-structure-worker.md",
+            "id": "codebase-xray:partition-structure-worker",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Consolidates per-partition X-ray outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, byte-compatible with a classic single-agent run. TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-xray:analyze writes its phase files directly.",
+            "file": "agents/partition-synthesizer.md",
+            "id": "codebase-xray:partition-synthesizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own. TRIGGER WHEN: spawned by /codebase-xray:team-analyze, /senior-review:team-review or /codebase-mapper:map-codebase, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-xray/ nor codebase-explorers context-brief.md), or the task is a surface-level operation that does not need the map.",
+            "file": "agents/semantic-interconnect-mapper.md",
+            "id": "codebase-xray:semantic-interconnect-mapper",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Run an X-ray: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support. TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /codebase-mapper:map-codebase) or a shallow overview.",
+            "file": "commands/analyze.md",
+            "name": "codebase-xray:analyze"
+          },
+          {
+            "description": "Multi-agent X-ray for large or multi-workspace codebases: splits the project into its natural units, works them in parallel, and publishes one consolidated result set to the .codebase-xray/ root. TRIGGER WHEN: the user wants X-ray analysis on a monorepo, or a cross-partition interconnection map produced as part of the same flow. DO NOT TRIGGER WHEN: the target is a single small directory, or the user wants a documentation-only audit (use /codebase-xray:analyze, optionally with --docs-only).",
+            "file": "commands/team-analyze.md",
+            "name": "codebase-xray:team-analyze"
+          }
+        ],
+        "root": "plugins/codebase-xray",
+        "skills": [
+          {
+            "description": "X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: encountering an unfamiliar codebase, needing pre-review technical context, before a major refactor, or when documentation is stale or missing. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /codebase-mapper:map-codebase), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+            "file": "skills/xray-method/SKILL.md",
+            "id": "codebase-xray:xray-method",
+            "name": "xray-method"
+          }
+        ]
+      },
+      "csp": {
+        "agents": [
+          {
+            "description": "Formulate, encode, and deploy discrete decision engines for production use. TRIGGER WHEN: modeling scheduling, routing, assignment, bin-packing, or any constraint satisfaction / combinatorial optimization problem; using Google OR-Tools CP-SAT; needing symmetry breaking, search strategy tuning, or solver performance optimization.",
+            "file": "agents/or-tools-expert.md",
+            "id": "csp:or-tools-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "root": "plugins/csp"
+      },
+      "dependency-audit": {
+        "commands": [
+          {
+            "description": "Run each ecosystems own tooling; report only what tools, registries, and advisory databases say. Covers npm/pnpm/yarn/bun, pip/uv/poetry, cargo, go, gem, composer, maven/gradle, nuget. TRIGGER WHEN: the user asks to audit dependencies, scan for CVEs, check license obligations or compatibility, find outdated packages, assess supply-chain risk, or prepare a dependency-update PR. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use /senior-review:code-review --fix), a Python-only lint/type/coverage audit (use /python-development:python-audit), or a Stripe webhook event audit (use /stripe:audit-webhooks).",
+            "file": "commands/deps-audit.md",
+            "name": "dependency-audit:deps-audit"
+          }
+        ],
+        "root": "plugins/dependency-audit",
+        "skills": [
+          {
+            "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
+            "file": "skills/dependency-audit/SKILL.md",
+            "id": "dependency-audit:dependency-audit",
+            "name": "dependency-audit"
+          }
+        ]
+      },
+      "digital-marketing": {
+        "agents": [
+          {
+            "description": "Audits and rewrites what a visitor actually reads before deciding. TRIGGER WHEN: the user asks about marketing materials, conversion optimization, content strategy, social media, CTAs, product presentation, or landing page copy.",
+            "file": "agents/content-marketer.md",
+            "id": "digital-marketing:content-marketer",
+            "permissions": []
+          },
+          {
+            "description": "Implements the measurement layer on a real deployment, compliance first, in vanilla HTML, Next.js/React, or WordPress. TRIGGER WHEN: the user mentions GA4, Google Analytics 4, GTM, Google Tag Manager, gtag, dataLayer, Consent Mode v2, cookie banner, CMP, iubenda, Cookiebot, Orestbida CookieConsent, Microsoft Clarity, conversion tracking, Key Events, remarketing audiences, Google Ads conversion import, or Enhanced Conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy, or DPA (use business:privacy-doc-generator).",
+            "file": "agents/ga4-implementation-expert.md",
+            "id": "digital-marketing:ga4-implementation-expert",
+            "permissions": []
+          },
+          {
+            "description": "Rewrites prose and markup for verbatim quotability rather than ranking position. TRIGGER WHEN: prose or markup needs answer-engine (AEO) treatment, whether spawned by /digital-marketing:llm-seo-audit or asked for directly. DO NOT TRIGGER WHEN: the task is traditional organic-ranking SEO (use seo-specialist), or content marketing tone and voice (use content-marketer).",
+            "file": "agents/llm-seo-optimize.md",
+            "id": "digital-marketing:llm-seo-optimize",
+            "permissions": []
+          },
+          {
+            "description": "Establishes intent and topical coverage before touching tags, and maps competitive gaps. TRIGGER WHEN: the user mentions SEO, search rankings, organic traffic, on-page optimization, structured data, or website optimization.",
+            "file": "agents/seo-specialist.md",
+            "id": "digital-marketing:seo-specialist",
+            "permissions": []
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs the whole workflow from a brief, with optional language and TLD constraints. TRIGGER WHEN: the user asks for brand, startup, product, or company names. DO NOT TRIGGER WHEN: renaming source code identifiers (use clean-code), or picking SEO keywords (use /digital-marketing:seo-audit).",
+            "file": "commands/brand-naming.md",
+            "name": "digital-marketing:brand-naming"
+          },
+          {
+            "description": "Reviews whether the material actually persuades a visitor, not whether it is well built. TRIGGER WHEN: the user asks for a content, marketing, conversion, or CRO audit of a website, landing page, or funnel. DO NOT TRIGGER WHEN: the audit is technical SEO only (use /digital-marketing:seo-audit).",
+            "file": "commands/content-strategy.md",
+            "name": "digital-marketing:content-strategy"
+          },
+          {
+            "description": "Inspects a live deployment in the browser to see what really fires. TRIGGER WHEN: the user asks to audit GA4, verify GTM setup, check Consent Mode v2 compliance, debug missing conversions, validate dataLayer events, or check \"why isnt my site converting\". DO NOT TRIGGER WHEN: the task is general SEO (use /digital-marketing:seo-audit), or content and CTA optimization (use /digital-marketing:content-strategy).",
+            "file": "commands/ga4-audit.md",
+            "name": "digital-marketing:ga4-audit"
+          },
+          {
+            "description": "Checks whether a page is quotable by generative assistants, not merely rankable. TRIGGER WHEN: the user asks to audit for AI search or answer engines, check visibility in Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, or Bing Copilot, verify the AI-bot crawler allowlist, or check E-E-A-T, llms.txt, JSON-LD citation readiness, passage extractability, and prompt-injection hardening. DO NOT TRIGGER WHEN: the task is traditional organic / SERP ranking SEO (use /digital-marketing:seo-audit), or content tone and voice only (use the content-marketer agent).",
+            "file": "commands/llm-seo-audit.md",
+            "name": "digital-marketing:llm-seo-audit"
+          },
+          {
+            "description": "Drafts a ready-to-post answer, with brand, tone, language, and sector flags. TRIGGER WHEN: the user pastes a customer review (Airbnb, Booking, Tripadvisor, Amazon, Trustpilot, App Store, Google) and asks for a reply or response. DO NOT TRIGGER WHEN: writing general marketing copy (use content-marketer).",
+            "file": "commands/reply-to-customer-review.md",
+            "name": "digital-marketing:reply-to-customer-review"
+          },
+          {
+            "description": "Diagnoses why a page underperforms in traditional Google and Bing results. TRIGGER WHEN: the user asks for a technical SEO audit, Core Web Vitals check, sitemap, redirect, or crawlability review, structured data or meta tags, mobile usability, or SERP ranking analysis. DO NOT TRIGGER WHEN: the goal is being cited by AI answer engines (use /digital-marketing:llm-seo-audit), conversion, CTA, or copy quality (use /digital-marketing:content-strategy), or GA4 tracking (use ga4-implementation-expert).",
+            "file": "commands/seo-audit.md",
+            "name": "digital-marketing:seo-audit"
+          }
+        ],
+        "dependencies": [
+          "text-humanizer"
+        ],
+        "root": "plugins/digital-marketing",
+        "skills": [
+          {
+            "description": "Ideates candidates, filters them against archetypes and phonotactic rules, then scores survivors on domain availability, market saturation, and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
+            "file": "skills/brand-naming-method/SKILL.md",
+            "id": "digital-marketing:brand-naming-method",
+            "name": "brand-naming-method"
+          },
+          {
+            "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
+            "file": "skills/domain-hunter/SKILL.md",
+            "id": "digital-marketing:domain-hunter",
+            "name": "domain-hunter"
+          },
+          {
+            "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
+            "file": "skills/ga4-implementation/SKILL.md",
+            "id": "digital-marketing:ga4-implementation",
+            "name": "ga4-implementation"
+          },
+          {
+            "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
+            "file": "skills/review-reply-method/SKILL.md",
+            "id": "digital-marketing:review-reply-method",
+            "name": "review-reply-method"
+          }
+        ]
+      },
+      "docker": {
+        "root": "plugins/docker",
+        "skills": [
+          {
+            "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
+            "file": "skills/multi-stage-dockerfile/SKILL.md",
+            "id": "docker:multi-stage-dockerfile",
+            "name": "multi-stage-dockerfile"
+          }
+        ]
+      },
+      "docs": {
+        "commands": [
+          {
+            "description": "Verify every claim, path, count, and badge against the codebase before changing anything. TRIGGER WHEN: the user asks to audit, update, or improve an existing README.md: fix stale stats/links, reorganize sections, or apply readme-craft best practices. DO NOT TRIGGER WHEN: creating a new README (use the docs:readme-craft skill), or non-README docs (use /codebase-mapper:docs-maintain).",
+            "file": "commands/maintain-readme.md",
+            "name": "docs:maintain-readme"
+          }
+        ],
+        "root": "plugins/docs",
+        "skills": [
+          {
+            "description": "Author the front door of an open-source repository: detect stack and structure, gather missing metadata, then write the file. TRIGGER WHEN: the user asks to write, create, draft, or scaffold a README.md for a project (English or Italian phrasing: \"readme\", \"write a readme\", \"create readme\", \"scrivi il readme\", \"crea il readme\"). DO NOT TRIGGER WHEN: auditing an existing README (use /docs:maintain-readme), or non-README docs (use /codebase-mapper:docs-create).",
+            "file": "skills/readme-craft/SKILL.md",
+            "id": "docs:readme-craft",
+            "name": "readme-craft"
+          }
+        ]
+      },
+      "frontend-review": {
+        "commands": [
+          {
+            "description": "Full frontend review in one pass: a design and UX audit (typography, color and contrast, spacing and layout, motion, cognitive load, platform conventions, design-token architecture, component states, visual craft) alongside auto-detected code dimensions (React performance, TypeScript type safety, PWA architecture, platform compliance). Produces one scored report at `.frontend-review/report.md`. TRIGGER WHEN: the user asks for a complete frontend review, a design plus code review, a UI/UX audit paired with a code audit, or a full pass over a frontend surface before shipping. DO NOT TRIGGER WHEN: the request is React-only (use `/react-development:review-react`), TypeScript-only (use `/typescript-development:review-typescript`), PWA-only (use `/pwa-expert:pwa-audit`), or a general code review with no design dimension (use `/senior-review:code-review`).",
+            "file": "commands/review-frontend.md",
+            "name": "frontend-review:review-frontend"
+          }
+        ],
+        "dependencies": [
+          "react-development",
+          "typescript-development",
+          "pwa-expert",
+          "platform-engineering"
+        ],
+        "root": "plugins/frontend-review"
+      },
+      "grabber-development": {
+        "agents": [
+          {
+            "description": "Specialist for the AI-assisted half of a scraping pipeline. TRIGGER WHEN: picking between Crawl4AI, Firecrawl, ScrapeGraphAI, Browser Use, Stagehand, Skyvern, Jina Reader and Spider.cloud, designing Pydantic schema-driven extraction, building a CSS plus LLM-fallback hybrid, reverse-engineering a GraphQL API, or estimating extraction cost at scale. DO NOT TRIGGER WHEN: the work is TLS fingerprinting (use http-fingerprint-expert), browser stealth or CAPTCHA (use stealth-browser-expert), or boilerplate with no LLM (use grabber-architect).",
+            "file": "agents/ai-scraping-expert.md",
+            "id": "grabber-development:ai-scraping-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Lead architect for production Python crawlers: owns the upstream decisions, routes the rest to three experts. TRIGGER WHEN: designing a scraping pipeline end to end, assessing target protection before tool choice, reverse-engineering an API via network interception, picking between Scrapy, Crawlee, Crawl4AI and Firecrawl, or setting rate limits, observability and cost. DO NOT TRIGGER WHEN: the task sits wholly in one specialty: browser stealth (use stealth-browser-expert), HTTP fingerprints (use http-fingerprint-expert), or LLM extraction (use ai-scraping-expert).",
+            "file": "agents/grabber-architect.md",
+            "id": "grabber-development:grabber-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Specialist for the transport layer of a scraper. TRIGGER WHEN: picking an HTTP client that impersonates a browser TLS fingerprint (curl_cffi, primp, async-tls-client), debugging why httpx or requests gets blocked, matching JA3, JA4+ or HTTP/2 fingerprints, replaying a reverse-engineered API, choosing a proxy tier (datacenter, ISP, residential, mobile), or integrating a Web Unlocker API. DO NOT TRIGGER WHEN: the work needs a rendered browser (use stealth-browser-expert) or LLM extraction (use ai-scraping-expert).",
+            "file": "agents/http-fingerprint-expert.md",
+            "id": "grabber-development:http-fingerprint-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Evasion specialist for the rendered-browser layer of a scraper. TRIGGER WHEN: selecting or configuring a stealth driver (Patchright, Camoufox, Nodriver, rebrowser-patches, selenium-driverless), bypassing Cloudflare, DataDome or PerimeterX, extracting cf_clearance for HTTP replay, wiring ghost-cursor, playwright-captcha or playwright-recaptcha, or designing a persistent browser context. DO NOT TRIGGER WHEN: the target has no anti-bot (plain Playwright or httpx suffices), the work is HTTP fingerprinting (use http-fingerprint-expert) or LLM extraction (use ai-scraping-expert).",
+            "file": "agents/stealth-browser-expert.md",
+            "id": "grabber-development:stealth-browser-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Download every photo and video from an Instagram profile at full resolution, including carousel slides and reels, into a local folder that can be re-run to pick up only what is new. TRIGGER WHEN: the user asks to grab, download, archive, mirror or back up the media of an Instagram profile or account, or wants the photos and videos of a page for reuse elsewhere. DO NOT TRIGGER WHEN: the target is a single post URL the user already has, a platform other than Instagram, or the task is building a new scraper for a different site, which belongs to the grabber-development skill and its specialists.",
+            "file": "commands/instagram-grab.md",
+            "name": "grabber-development:instagram-grab"
+          }
+        ],
+        "root": "plugins/grabber-development",
+        "skills": [
+          {
+            "description": "Knowledge base for production crawlers, from target assessment through observability. TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.",
+            "file": "skills/grabber-development/SKILL.md",
+            "id": "grabber-development:grabber-development",
+            "name": "grabber-development"
+          }
+        ]
+      },
+      "kotlin-development": {
+        "root": "plugins/kotlin-development",
+        "skills": [
+          {
+            "description": "Idiomatic patterns for concurrent, shared-code, and UI-layer work. TRIGGER WHEN: building, writing, or reviewing Kotlin code using coroutines / Flow / StateFlow / SharedFlow / suspend functions, Kotlin Multiplatform (KMP) and expect/actual, Compose composables / ViewModels, Ktor routing with JWT auth and Exposed, sealed-class state modeling, scope functions, or DSL builders. DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development), or Android Java without Kotlin.",
+            "file": "skills/kotlin-specialist/SKILL.md",
+            "id": "kotlin-development:kotlin-specialist",
+            "name": "kotlin-specialist"
+          }
+        ]
+      },
+      "learning": {
+        "commands": [
+          {
+            "description": "Turn a topic, text, or file into a rendered vault-ready file. TRIGGER WHEN: the user asks for a MarkMind mind map, a mappa mentale for Obsidian, or an Obsidian-compatible concept map. DO NOT TRIGGER WHEN: the user wants a force-graph web mindmap (use learning:forcegraph-exporter).",
+            "file": "commands/export-to-markmind.md",
+            "name": "learning:export-to-markmind"
+          }
+        ],
+        "root": "plugins/learning",
+        "skills": [
+          {
+            "description": "Render a JSON outline into a standalone browser page; needs internet for the CDN. TRIGGER WHEN: the user says interactive map, force graph, web mindmap, or HTML mindmap, or asks for a zoomable, draggable visual export. DO NOT TRIGGER WHEN: the user wants Obsidian MarkMind format (use markmind-exporter).",
+            "file": "skills/forcegraph-exporter/SKILL.md",
+            "id": "learning:forcegraph-exporter",
+            "name": "forcegraph-exporter"
+          },
+          {
+            "description": "Produce a Buzan-style radiant outline as structured JSON, optimized for recall over symmetry: single keywords, emoji anchors, cross-links. TRIGGER WHEN: the user asks to create a mind map, mappa mentale, concept map, or visual summary of a topic, text, or file, typically to learn or brainstorm.",
+            "file": "skills/generate-mindmap/SKILL.md",
+            "id": "learning:generate-mindmap",
+            "name": "generate-mindmap"
+          },
+          {
+            "description": "Render a JSON outline into a drop-in vault file for the Obsidian plugin. TRIGGER WHEN: the user says markmind or needs MarkMind Rich output from a mindmap structure, typically one produced by generate-mindmap. DO NOT TRIGGER WHEN: the user wants an interactive HTML mindmap (use forcegraph-exporter).",
+            "file": "skills/markmind-exporter/SKILL.md",
+            "id": "learning:markmind-exporter",
+            "name": "markmind-exporter"
+          }
+        ]
+      },
+      "libgdx-development": {
+        "agents": [
+          {
+            "description": "Build cross-platform 2D and 3D games in Java or Kotlin. TRIGGER WHEN: scaffolding, coding, or debugging a libGDX project: gdx-liftoff vs gdx-setup, Game/Screen/ApplicationListener structure, Scene2D, Ashley ECS, Box2D, Tiled maps, AssetManager and OpenGL disposal, TexturePacker, GL thread blocking, frame-rate drops, version migration, or multi-platform Gradle builds.",
+            "file": "agents/libgdx-architect.md",
+            "id": "libgdx-development:libgdx-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Report correctness, performance, and lifecycle defects. TRIGGER WHEN: the user asks to review, audit, or validate a libGDX game: rendering pipeline, asset disposal, Screen lifecycle, GL thread blocking, multi-platform config, version migration. DO NOT TRIGGER WHEN: building a new game from scratch (use libgdx-architect).",
+            "file": "commands/libgdx-audit.md",
+            "name": "libgdx-development:libgdx-audit"
+          }
+        ],
+        "root": "plugins/libgdx-development",
+        "skills": [
+          {
+            "description": "Knowledge base for shipping production games from one Java or Kotlin codebase. TRIGGER WHEN: building, optimizing, debugging, or scaffolding libGDX games; migrating libGDX versions; choosing libGDX architecture patterns.",
+            "file": "skills/libgdx-development/SKILL.md",
+            "id": "libgdx-development:libgdx-development",
+            "name": "libgdx-development"
+          }
+        ]
+      },
+      "marketplace-ops": {
+        "agents": [
+          {
+            "description": "Maintains any Claude Code plugin marketplace end to end. TRIGGER WHEN: adding, auditing, reorganizing, versioning or syncing plugins, skills, agents and commands; marketplace.json consistency; plugin scaffolding; structural validation. DO NOT TRIGGER WHEN: working on an individual plugins internal logic (route to the plugins own agents/skills) or on a non-Claude-Code project.",
+            "file": "agents/marketplace-manager.md",
+            "id": "marketplace-ops:marketplace-manager",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Quick health check for any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to validate marketplace.json, check plugin file references, report plugin counts and version status, or audit structural integrity. DO NOT TRIGGER WHEN: reviewing plugin content quality (use /marketplace-ops:marketplace-review) or authoring new plugins.",
+            "file": "commands/marketplace-health.md",
+            "name": "marketplace-ops:marketplace-health"
+          },
+          {
+            "description": "Quality review of the content of any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to review plugin, agent or skill quality, audit descriptions or trigger keywords, or evaluate activation accuracy and cross-plugin coherence. DO NOT TRIGGER WHEN: just validating marketplace.json structure (use /marketplace-ops:marketplace-health) or authoring new components (use /marketplace-ops:marketplace-scaffold-plugin).",
+            "file": "commands/marketplace-review.md",
+            "name": "marketplace-ops:marketplace-review"
+          },
+          {
+            "description": "Scaffold a new plugin for any Claude Code plugin marketplace. TRIGGER WHEN: the user asks to create a new plugin, bootstrap plugin structure, or add a new entry to marketplace.json. DO NOT TRIGGER WHEN: adding a skill or agent to an existing plugin (use skills-creator).",
+            "file": "commands/marketplace-scaffold-plugin.md",
+            "name": "marketplace-ops:marketplace-scaffold-plugin"
+          },
+          {
+            "description": "Validate skill and agent quality: deterministic activation checks plus AI body review. TRIGGER WHEN: the user asks to validate skill/agent quality, enforce trigger patterns, check description token budgets, or run pre-commit marketplace checks. DO NOT TRIGGER WHEN: checking structural JSON references only (use /marketplace-ops:marketplace-health) or doing an AI-only content review (use /marketplace-ops:marketplace-review).",
+            "file": "commands/skills-validate.md",
+            "name": "marketplace-ops:skills-validate"
+          }
+        ],
+        "root": "plugins/marketplace-ops",
+        "skills": [
+          {
+            "description": "Validates the integrity of any Claude Code plugin marketplace. Use PROACTIVELY before any commit that modifies plugin files or marketplace.json. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan plugins/skills/agents/commands, checking dependency resolution or cycles, confirming documented plugin counts still match README and docs tables, or checking naming conventions. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding new plugins (use marketplace-scaffold-plugin / skills-creator).",
+            "file": "skills/marketplace-audit/SKILL.md",
+            "id": "marketplace-ops:marketplace-audit",
+            "name": "marketplace-audit"
+          },
+          {
+            "description": "Creates new Claude Code plugin components: skills, agents, commands, full plugins. Also decides skill vs agent architecture. TRIGGER WHEN: the user asks to create, add, scaffold or build a new skill, agent, command or plugin, or says \"new skill\", \"new agent\", \"new plugin\", \"skills-creator\", \"skills-hammer\". DO NOT TRIGGER WHEN: editing or updating an existing component, or auditing marketplace integrity (use marketplace-audit instead).",
+            "file": "skills/skills-creator/SKILL.md",
+            "id": "marketplace-ops:skills-creator",
+            "name": "skills-creator"
+          }
+        ]
+      },
+      "messaging": {
+        "agents": [
+          {
+            "description": "Broker-side architecture and first-aid diagnostics. TRIGGER WHEN: configuring RabbitMQ exchanges, designing queue topologies, troubleshooting message delivery guarantees, setting up clustering/HA (Khepri, quorum queues, streams), working with MQTT 5 or AMQP 1.0, or optimizing AMQP throughput.",
+            "file": "agents/rabbitmq-expert.md",
+            "id": "messaging:rabbitmq-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "root": "plugins/messaging",
+        "skills": [
+          {
+            "description": "Knowledge base for running the broker under real load, split into references loaded on demand. TRIGGER WHEN: designing, operating, upgrading, monitoring, or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: the task is a quick conceptual question the rabbitmq-expert agent answers without production detail.",
+            "file": "skills/rabbitmq-production/SKILL.md",
+            "id": "messaging:rabbitmq-production",
+            "name": "rabbitmq-production"
+          }
+        ]
+      },
+      "obsidian-development": {
+        "root": "plugins/obsidian-development",
+        "skills": [
+          {
+            "description": "Report every automated-review violation with its file location and fix. TRIGGER WHEN: preparing an Obsidian plugin for submission or before pushing code.",
+            "file": "skills/obsidian-check/SKILL.md",
+            "id": "obsidian-development:obsidian-check",
+            "name": "obsidian-check"
+          },
+          {
+            "description": "Comply with the automated gate on first submission: eslint-plugin-obsidianmd rules plus the official guidelines. TRIGGER WHEN: writing, reviewing, or fixing Obsidian community plugin code.",
+            "file": "skills/obsidian-plugin-development/SKILL.md",
+            "id": "obsidian-development:obsidian-plugin-development",
+            "name": "obsidian-plugin-development"
+          },
+          {
+            "description": "Generate the layout, manifest, tsconfig, esbuild config, and a minimal class that passes automated review. TRIGGER WHEN: the user asks to start, create, bootstrap, scaffold, or initialize a new Obsidian community plugin.",
+            "file": "skills/obsidian-scaffold/SKILL.md",
+            "id": "obsidian-development:obsidian-scaffold",
+            "name": "obsidian-scaffold"
+          }
+        ]
+      },
+      "opentelemetry": {
+        "agents": [
+          {
+            "description": "Architect and harden the telemetry layer of a Python service. TRIGGER WHEN: instrumenting, implementing, writing, coding, or building code with OpenTelemetry, designing distributed tracing, auditing observability pipelines, configuring OTLP exporters and Collectors, wiring context propagation over custom transports (AMQP, ZMQ, gRPC), or reviewing tracing code for correctness.",
+            "file": "agents/otel-architect.md",
+            "id": "opentelemetry:otel-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Report on an existing Python deployment: what is broken, where, and the fix. TRIGGER WHEN: the user asks to review, audit, or validate OTel instrumentation: span hygiene, context propagation, exporter config, sampling, async handling, attribute budgets, or AWS X-Ray / ADOT setup. DO NOT TRIGGER WHEN: building new instrumentation from scratch (use the otel-architect agent), or non-OTel observability (Datadog APM, Sentry).",
+            "file": "commands/otel-audit.md",
+            "name": "opentelemetry:otel-audit"
+          }
+        ],
+        "root": "plugins/opentelemetry",
+        "skills": [
+          {
+            "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
+            "file": "skills/opentelemetry/SKILL.md",
+            "id": "opentelemetry:opentelemetry",
+            "name": "opentelemetry"
+          }
+        ]
+      },
+      "peer-review": {
+        "agents": [
+          {
+            "description": "Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b. DO NOT TRIGGER WHEN: the run already has a plan or spec on disk (Phase 0b is skipped).",
+            "file": "agents/brief-builder.md",
+            "id": "peer-review:brief-builder",
+            "permissions": []
+          },
+          {
+            "description": "Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1.",
+            "file": "agents/packet-builder.md",
+            "id": "peer-review:packet-builder",
+            "permissions": []
+          },
+          {
+            "description": "Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).",
+            "file": "agents/respondent.md",
+            "id": "peer-review:respondent",
+            "permissions": []
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the sessions context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the sessions own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session.",
+            "file": "commands/review.md",
+            "name": "peer-review:review"
+          }
+        ],
+        "mcp": [
+          {
+            "command": [
+              "uv",
+              "run",
+              "--script",
+              "<plugin-root>/skills/cross-model-peer-review/scripts/server.py"
+            ],
+            "name": "peer-review"
+          }
+        ],
+        "root": "plugins/peer-review",
+        "skills": [
+          {
+            "description": "Doctrine for putting a plan, a spec, or a sessions own decisions in front of a second model family: when the cost is earned, the GIVEN versus DERIVED provenance rules, when to skip it. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external challenge, or interpreting a verdicts standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review), or running same-family multi-reviewer pipelines (use senior-review:review-quality-gates).",
+            "file": "skills/cross-model-peer-review/SKILL.md",
+            "id": "peer-review:cross-model-peer-review",
+            "name": "cross-model-peer-review"
+          }
+        ]
+      },
+      "platform-engineering": {
+        "agents": [
+          {
+            "description": "Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+            "file": "agents/platform-reviewer.md",
+            "id": "platform-engineering:platform-reviewer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Audit a codebase against the platform-engineering rulebook. TRIGGER WHEN: the user asks for a platform-level review, cross-platform security audit, Electron or Tauri hardening check, or an SPA, PWA, mobile, or desktop compliance review. DO NOT TRIGGER WHEN: reviewing generic code quality with no platform dimension (use /senior-review:code-review).",
+            "file": "commands/platform-review.md",
+            "name": "platform-engineering:platform-review"
+          }
+        ],
+        "root": "plugins/platform-engineering",
+        "skills": [
+          {
+            "description": "Rulebook of MUST/DO/DONT rules backed by real-world incident references. TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri) apps for security posture, architecture decisions, performance, or compliance with OWASP, Core Web Vitals, and OAuth 2.1.",
+            "file": "skills/platform-engineering/SKILL.md",
+            "id": "platform-engineering:platform-engineering",
+            "name": "platform-engineering"
+          }
+        ]
+      },
+      "project-setup": {
+        "agents": [
+          {
+            "description": "Check ground truth: obsolete claims, an evergreen project-structure section, and proportional sizing. TRIGGER WHEN: creating, reviewing, or improving CLAUDE.md files.",
+            "file": "agents/claude-md-auditor.md",
+            "id": "project-setup:claude-md-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Ask the questionnaire first, then write a file sized to the codebase. TRIGGER WHEN: the user asks to create/generate/scaffold a CLAUDE.md for a project that doesnt have one. DO NOT TRIGGER WHEN: auditing or updating an existing one (use /project-setup:maintain-claude-md).",
+            "file": "commands/create-claude-md.md",
+            "name": "project-setup:create-claude-md"
+          },
+          {
+            "description": "Surface every drift and let the user decide each one. TRIGGER WHEN: the user asks to audit, update, verify, or improve an existing CLAUDE.md against the current codebase. DO NOT TRIGGER WHEN: creating one from scratch (use /project-setup:create-claude-md).",
+            "file": "commands/maintain-claude-md.md",
+            "name": "project-setup:maintain-claude-md"
+          }
+        ],
+        "root": "plugins/project-setup"
+      },
+      "pwa-expert": {
+        "agents": [
+          {
+            "description": "Designs and hardens a whole shippable web app across Chromium, iOS WebKit and Firefox, trading capability for reach. TRIGGER WHEN: building, auditing or scaffolding a PWA end to end, or wiring manifest, service worker, Web Push, install flow and store distribution together. DO NOT TRIGGER WHEN: React performance (use react-development:review-react), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).",
+            "file": "agents/pwa-architect.md",
+            "id": "pwa-expert:pwa-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Checks manifest, install criteria, offline behavior, security headers and performance, locally or against a live URL, citing file and line. TRIGGER WHEN: auditing a PWA, or verifying one is installable and production-ready.",
+            "file": "commands/pwa-audit.md",
+            "name": "pwa-expert:pwa-audit"
+          },
+          {
+            "description": "Walks the production deploy checklist, reporting pass, fail or N/A per category against the codebase and an optional URL. TRIGGER WHEN: checking PWA launch readiness, or walking a deterministic go/no-go list before deploying. DO NOT TRIGGER WHEN: an open-ended adversarial audit fits better (use /pwa-expert:pwa-audit).",
+            "file": "commands/pwa-checklist.md",
+            "name": "pwa-expert:pwa-checklist"
+          },
+          {
+            "description": "Generates manifest, service worker, iOS meta tags, registration code and icon stubs, detecting the framework in use. TRIGGER WHEN: scaffolding, bootstrapping or adding PWA support to a Vite, Next.js, Angular, Nuxt or vanilla project.",
+            "file": "commands/pwa-scaffold.md",
+            "name": "pwa-expert:pwa-scaffold"
+          }
+        ],
+        "root": "plugins/pwa-expert",
+        "skills": [
+          {
+            "description": "Knowledge base for the app layer of the web platform, and the gaps between engines. TRIGGER WHEN: building or auditing a PWA: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, @angular/pwa, @vite-pwa/nuxt, Web Push, VAPID, Declarative Push, beforeinstallprompt, Window Controls Overlay, OPFS, Background Sync, Wake Lock, Project Fugu, Bubblewrap, TWA, PWA Builder, Capacitor. DO NOT TRIGGER WHEN: React performance (use react-development:review-react), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).",
+            "file": "skills/pwa-development/SKILL.md",
+            "id": "pwa-expert:pwa-development",
+            "name": "pwa-development"
+          }
+        ]
+      },
+      "python-development": {
+        "agents": [
+          {
+            "description": "Hands-on Python 3.12+ engineer. Ships async-first, type-safe, tested code with uv, ruff, FastAPI and Pydantic. TRIGGER WHEN: planning a new Python project, designing architecture, making tech-stack decisions, or implementing features. DO NOT TRIGGER WHEN: the task is writing tests (use python-test-engineer) or isolated refactoring (use python-refactor-agent).",
+            "file": "agents/python-engineer.md",
+            "id": "python-development:python-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Modernize legacy Python in place. TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings. DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use python-test-engineer).",
+            "file": "agents/python-refactor-agent.md",
+            "id": "python-development:python-refactor-agent",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Write behavior-driven suites and drive TDD workflows in Python. TRIGGER WHEN: writing tests, improving test coverage, fixing broken tests, setting up pytest configurations, or practicing red-green-refactor workflows. DO NOT TRIGGER WHEN: building new features from scratch or designing system architecture (use python-engineer).",
+            "file": "agents/python-test-engineer.md",
+            "id": "python-development:python-test-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use python-development:python-tdd).",
+            "file": "commands/python-audit.md",
+            "name": "python-development:python-audit"
+          },
+          {
+            "description": "Measure, rewrite, verify against the tests, then report the delta. TRIGGER WHEN: the user asks to refactor Python code, reduce cyclomatic complexity, or restructure modules with measured before/after metrics. DO NOT TRIGGER WHEN: renaming or simplifying for readability only (use /clean-code:clean-code), or removing dead code (use /senior-review:code-review --commit).",
+            "file": "commands/python-refactor.md",
+            "name": "python-development:python-refactor"
+          },
+          {
+            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
+            "file": "commands/python-scaffold.md",
+            "name": "python-development:python-scaffold"
+          }
+        ],
+        "root": "plugins/python-development",
+        "skills": [
+          {
+            "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
+            "file": "skills/async-python-patterns/SKILL.md",
+            "id": "python-development:async-python-patterns",
+            "name": "async-python-patterns"
+          },
+          {
+            "description": "Deep reference for the data layer of a production service. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+; migrating a codebase from Pydantic v1 to v2; choosing between `Annotated[Decimal, ...]` and `condecimal` for money; hitting v2 validator, serialization or performance surprises; designing FastAPI request/response schemas or error envelopes. DO NOT TRIGGER WHEN: the task is Python testing (use python-tdd) or non-Python schema work (use typescript-development).",
+            "file": "skills/pydantic-v2/SKILL.md",
+            "id": "python-development:pydantic-v2",
+            "name": "pydantic-v2"
+          },
+          {
+            "description": "Grade and rewrite code prose against antirezs 9-type taxonomy, mapped to PEP 257. TRIGGER WHEN: the user asks to improve comments, add docstrings, review comment quality, or audit documentation in a Python codebase.",
+            "file": "skills/python-comments/SKILL.md",
+            "id": "python-development:python-comments",
+            "name": "python-comments"
+          },
+          {
+            "description": "Find and remove unused variables, functions, classes and unreachable branches with vulture and ruff, filtering framework false positives (Django, FastAPI, pytest, click). TRIGGER WHEN: cleaning up Python codebases, enforcing import hygiene, or integrating dead code checks into CI.",
+            "file": "skills/python-dead-code/SKILL.md",
+            "id": "python-development:python-dead-code",
+            "name": "python-dead-code"
+          },
+          {
+            "description": "Build wheels and sdists from a pyproject.toml, then publish them. TRIGGER WHEN: packaging Python libraries, choosing a src or flat layout, setting up dynamic versioning, creating CLI entry points, or uploading to TestPyPI and PyPI.",
+            "file": "skills/python-packaging/SKILL.md",
+            "id": "python-development:python-packaging",
+            "name": "python-packaging"
+          },
+          {
+            "description": "Measure first with cProfile, line_profiler, memory_profiler or py-spy, then fix what the numbers show. TRIGGER WHEN: debugging slow Python code, optimizing bottlenecks, cutting memory usage, or improving application performance.",
+            "file": "skills/python-performance-optimization/SKILL.md",
+            "id": "python-development:python-performance-optimization",
+            "name": "python-performance-optimization"
+          },
+          {
+            "description": "Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for \"readable\", \"maintainable\" or \"clean\" code, a review flags comprehension issues, or the task is legacy modernization or onboarding cleanup.",
+            "file": "skills/python-refactor-method/SKILL.md",
+            "id": "python-development:python-refactor-method",
+            "name": "python-refactor-method"
+          },
+          {
+            "description": "Generate suites that pin behavior instead of implementation. TRIGGER WHEN: writing Python tests, improving coverage, reviewing test quality, or practicing red-green-refactor workflows with pytest. DO NOT TRIGGER WHEN: the target is non-Python (use mattpocock-skills:tdd for other languages, or developer-essentials:e2e-testing-patterns for browser E2E).",
+            "file": "skills/python-tdd/SKILL.md",
+            "id": "python-development:python-tdd",
+            "name": "python-tdd"
+          },
+          {
+            "description": "Handle virtual environments, lockfiles and interpreter version pinning. TRIGGER WHEN: setting up Python projects, managing dependencies, migrating off pip/poetry, or optimizing Python development workflows with uv.",
+            "file": "skills/uv-package-manager/SKILL.md",
+            "id": "python-development:uv-package-manager",
+            "name": "uv-package-manager"
+          }
+        ]
+      },
+      "rag-development": {
+        "agents": [
+          {
+            "description": "Configure and operate the vector store in production. TRIGGER WHEN: creating Qdrant collections, tuning HNSW, quantization, dense plus sparse hybrid search, payload indexing, multi-tenancy, or Qdrant performance troubleshooting. DO NOT TRIGGER WHEN: end-to-end RAG design, or another vector database such as Pinecone, Weaviate, Chroma, or pgvector (use rag-architect).",
+            "file": "agents/qdrant-expert.md",
+            "id": "rag-development:qdrant-expert",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Design whole systems that answer from documents, ingestion through generation. TRIGGER WHEN: building an end-to-end RAG pipeline, choosing chunking strategies, embedding models, hybrid search, re-ranking, or a vector database, or optimizing RAG for production. DO NOT TRIGGER WHEN: Qdrant-specific work such as HNSW tuning, quantization, payload indexing, or multi-tenancy (use qdrant-expert).",
+            "file": "agents/rag-architect.md",
+            "id": "rag-development:rag-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Report quality and best-practice gaps in an existing implementation. TRIGGER WHEN: the user asks to review, audit, or validate a RAG pipeline: chunking, embeddings, retrieval, reranking, or production readiness. DO NOT TRIGGER WHEN: building from scratch (use rag-architect), or auditing a pure vector database (use qdrant-expert).",
+            "file": "commands/rag-audit.md",
+            "name": "rag-development:rag-audit"
+          }
+        ],
+        "root": "plugins/rag-development",
+        "skills": [
+          {
+            "description": "Knowledge base for production question-answering pipelines. TRIGGER WHEN: building, optimizing, or auditing RAG systems, including Graph RAG, CRAG, Self-RAG, and Agentic RAG.",
+            "file": "skills/rag-development/SKILL.md",
+            "id": "rag-development:rag-development",
+            "name": "rag-development"
+          }
+        ]
+      },
+      "react-development": {
+        "agents": [
+          {
+            "description": "Measure first, then cut the wasted work a component tree does at runtime. TRIGGER WHEN: reviewing or optimizing React 19 performance: re-renders, React Compiler adoption, Server Components, bundle analysis, state management (Zustand/Redux/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js infrastructure (use the react-best-practices skill).",
+            "file": "agents/react-performance-optimizer.md",
+            "id": "react-development:react-performance-optimizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Produce a scored markdown report with fix instructions. TRIGGER WHEN: the user asks to review React code for performance, re-renders, bundle size, state management, React 19 API adoption, or the Vercel best-practices checklist.",
+            "file": "commands/review-react.md",
+            "name": "react-development:review-react"
+          }
+        ],
+        "root": "plugins/react-development",
+        "skills": [
+          {
+            "description": "Vercel Engineerings 70 rules, ordered by impact across 8 categories. TRIGGER WHEN: writing, reviewing, or refactoring React or Next.js code: components, pages, data fetching, bundle size, or render performance.",
+            "file": "skills/react-best-practices/SKILL.md",
+            "id": "react-development:react-best-practices",
+            "name": "react-best-practices"
+          }
+        ]
+      },
+      "repo-hygiene": {
+        "agents": [
+          {
+            "description": "Adversarial workspace-hygiene auditor: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch and pipeline-output directories, orphan doc-assets, and git auxiliary state. Report-only, no edits. TRIGGER WHEN: the user asks to tidy a repository, find committed build output, audit or repair `.gitignore`, locate scratch directories or leftover pipeline output, or list stale stashes, orphan worktrees and gone-upstream branches. Spawned as the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: the finding would need source comprehension (dead code, unused exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review:cleanup-auditor`; or the user wants the removal applied, which belongs to `/repo-hygiene:tidy`.",
+            "file": "agents/workspace-auditor.md",
+            "id": "repo-hygiene:workspace-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Tidy the workspace: filesystem garbage, generated artifacts tracked in git, `.gitignore` gaps and stale rules, scratch directories, orphan doc-assets, and git auxiliary state. Detects by default; applies with --fix or --commit. TRIGGER WHEN: the user asks to clean up a repository, remove committed build output, fix or audit `.gitignore`, clear scratch and pipeline-output directories, or list stale stashes, orphan worktrees and gone-upstream branches. DO NOT TRIGGER WHEN: the target needs source comprehension (dead code, unused exports, unused dependencies, orphan application assets), which belongs to `/senior-review:code-review`; or the target is test files, which belongs to `/testing:test-consolidate`.",
+            "file": "commands/tidy.md",
+            "name": "repo-hygiene:tidy"
+          }
+        ],
+        "root": "plugins/repo-hygiene",
+        "skills": [
+          {
+            "description": "The check catalog for workspace tidying: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch directories, orphan doc-assets, and git auxiliary state. Two profiles, full and lite, over one set of check definitions. TRIGGER WHEN: running `/repo-hygiene:tidy`, spawned as the repo-hygiene dimension of a review pipeline, or running the diff-scoped VCS check inside a code or PR review. DO NOT TRIGGER WHEN: the question needs source comprehension (dead exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review`.",
+            "file": "skills/repo-hygiene/SKILL.md",
+            "id": "repo-hygiene:repo-hygiene",
+            "name": "repo-hygiene"
+          }
+        ]
+      },
+      "research": {
+        "agents": [
+          {
+            "description": "Iterative web investigator for one research sub-question: orients with broad queries, reads the pages that matter, keeps a ledger of claims with sources and dates, narrows round by round and stops at saturation, then returns a compressed cited report. The worker that /research:team-research spawns in parallel, one per sub-question; also usable alone for a single focused investigation. TRIGGER WHEN: spawned by /research:team-research with a spawn block, or the user asks for one question to be investigated in depth across several sources with citations. DO NOT TRIGGER WHEN: the question is a single-fact lookup (use quick-searcher), the user wants a whole multi-question research run with a plan and a report file (use /research:team-research), the task is about local code or files, or the user is implementing or editing code.",
+            "file": "agents/deep-researcher.md",
+            "id": "research:deep-researcher",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Lite web search agent for single-fact lookups and quick web answers on any topic; also the verifier /research:team-research spawns to settle one contested claim with a third independent source. TRIGGER WHEN: the user asks for a single fact, definition, stat, URL, or quick confirmation answerable by 1-3 web searches from one source; or spawned with a verifier block. DO NOT TRIGGER WHEN: the question needs synthesis across 3+ sources (use deep-researcher or /research:team-research), the task is about local code or files, or the user is implementing or editing code.",
+            "file": "agents/quick-searcher.md",
+            "id": "research:quick-searcher",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Deep web research run: clarify scope only when needed, show a plan of sub-questions for approval, spawn one iterative researcher per sub-question in parallel, verify contradictions, synthesize a long-form cited report and write it to disk. Web only.",
+            "file": "commands/team-research.md",
+            "name": "research:team-research"
+          }
+        ],
+        "root": "plugins/research",
+        "skills": [
+          {
+            "description": "Knowledge base for web research: query formulation, source authority ranking, the two search backends (native WebSearch, optional serper.dev through websearch.py), reading pages with WebFetch and the webfetch.py bot-block fallback, and the anti-loop rules. Used by quick-searcher, deep-researcher and /research:team-research. TRIGGER WHEN: performing web research with WebSearch, WebFetch, or the research plugins scripts. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
+            "file": "skills/web-search-techniques/SKILL.md",
+            "id": "research:web-search-techniques",
+            "name": "web-search-techniques"
+          }
+        ]
+      },
+      "senior-review": {
+        "agents": [
+          {
+            "description": "Auditor for declared interfaces versus the code behind them. TRIGGER WHEN: checking OpenAPI, Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs, or Pydantic models for drift against the implementation; a PR that touches an API surface; backwards compatibility before a release; or the interconnect map has a `## Contracts (formal)` section. DO NOT TRIGGER WHEN: there is no contract file (use code-auditor), the concern is cross-service runtime flow (use distributed-flow-auditor), or invariants beyond the contract surface (use logic-integrity-auditor).",
+            "file": "agents/api-contract-auditor.md",
+            "id": "senior-review:api-contract-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Detects the chicken-and-egg cycle where component A needs B ready while B needs A: cold-start hangs, deadlocks, hidden temporal coupling. TRIGGER WHEN: the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck. DO NOT TRIGGER WHEN: the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+            "file": "agents/chicken-egg-detector.md",
+            "id": "senior-review:chicken-egg-detector",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Always-on hygiene dimension of /senior-review:team-review. TRIGGER WHEN: the user asks for a cleanup review, technical-debt audit, dead code, orphan assets, unused dependencies, stale docs and historical artifacts, or leftovers of finished work (migrations, debug tooling). DO NOT TRIGGER WHEN: the user wants removal (use /senior-review:code-review --commit, Step 7c), workspace hygiene decided by the filesystem and git alone such as generated artifacts tracked in VCS, `.gitignore`, scratch directories, stale branches, stashes or worktrees (use repo-hygiene:workspace-auditor or /repo-hygiene:tidy), architecture or security review (use code-auditor or security-auditor), or one language only (use typescript-development:knip or python-development:python-dead-code).",
+            "file": "agents/cleanup-auditor.md",
+            "id": "senior-review:cleanup-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Hunts coupling violations, broken abstractions, resource leaks, stale caches, and anti-patterns. TRIGGER WHEN: the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check. DO NOT TRIGGER WHEN: the task is security-specific auditing (use security-auditor).",
+            "file": "agents/code-auditor.md",
+            "id": "senior-review:code-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Persistence-layer reviewer: impossible or inconsistent stored state. TRIGGER WHEN: the diff or target touches schemas, models, ORM entities, repositories, raw SQL, caches, or transaction boundaries; or the concern is partial writes, read-modify-write races, uniqueness enforced in code but not in the database, cache and database divergence, or eventual consistency consumed as strong. DO NOT TRIGGER WHEN: the concern is domain rules and state machines (use logic-integrity-auditor), migration mechanics (the data-migrations dimension), or cross-service message flows (use distributed-flow-auditor).",
+            "file": "agents/data-integrity-auditor.md",
+            "id": "senior-review:data-integrity-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Hunts cascading timeout violations, missing idempotency, broken saga compensation, message ordering bugs, and split-brain risks. TRIGGER WHEN: the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+            "file": "agents/distributed-flow-auditor.md",
+            "id": "senior-review:distributed-flow-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Cross-component reviewer for the guarantees recorded in `.team-review/02-interconnect.md`: ordering, idempotency, state machines, terminal states, domain rules, implicit assumptions. TRIGGER WHEN: /senior-review:team-review Phase 2 runs (always-on in the review preset), or the user asks for a logic, contract, or invariant audit. DO NOT TRIGGER WHEN: the task is surface-level style or lint review (use code-auditor), pure security auditing (use security-auditor), or the interconnect map does not exist yet (run semantic-interconnect-mapper first).",
+            "file": "agents/logic-integrity-auditor.md",
+            "id": "senior-review:logic-integrity-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Second, independent derivation of the codes claims, and attack on the load-bearing assumptions behind findings built from a common artifact. Two modes set by the spawning prompt: derivation blind to X-ray and the map, attack with both. TRIGGER WHEN: /senior-review:team-review Phase 1c runs, or the verification panel spawns Lens 0 for a finding whose premise_provenance is shared-context or mixed. DO NOT TRIGGER WHEN: the task is to find defects (use the dimension auditors), to build the interconnect map (use codebase-xray:semantic-interconnect-mapper), or to judge whether a defect is reachable (Lens 1).",
+            "file": "agents/premise-auditor.md",
+            "id": "senior-review:premise-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviewer for resource ownership and release on the success, error, and cancellation paths: leaks, double-release, use-after-release, unbounded pool growth. TRIGGER WHEN: the diff or target acquires file handles, sockets, streams, DB connections, subprocesses, event listeners, subscriptions, locks, threads, goroutines, timers, object URLs, or GPU and native memory; especially in C, C++, Rust, Go, or async code. DO NOT TRIGGER WHEN: the concern is behavior over time AFTER a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+            "file": "agents/resource-lifecycle-auditor.md",
+            "id": "senior-review:resource-lifecycle-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+            "file": "agents/security-auditor.md",
+            "id": "senior-review:security-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviewer for failure-over-time behavior: missing backoff or cap, errors swallowed until a subsystem dies silently, guards never cleared, notification floods and silence, clock hazards (suspend, DST, throttling). TRIGGER WHEN: the diff or target touches timers, schedulers, polling loops, retry and reconnect logic, queues, cron jobs, background workers, or watchdogs; or the pipeline flagged long-running execution. DO NOT TRIGGER WHEN: the concern is startup and bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+            "file": "agents/temporal-resilience-auditor.md",
+            "id": "senior-review:temporal-resilience-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Framework-agnostic UI timing analyst: React, Angular, Vue, Qt, GTK, Flutter, SwiftUI, Electron, Tauri. TRIGGER WHEN: races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+            "file": "agents/ui-race-auditor.md",
+            "id": "senior-review:ui-race-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Auto-detects the scope, runs its analysis dimensions in parallel, and applies fixes with --fix or lands them with --commit. Reuses X-ray context when present. TRIGGER WHEN: the user asks for a code review, PR review, branch audit, or a security or architecture pass over recent changes; or asks to find and remove dead code, unused exports, unused dependencies, or orphan assets. For workspace tidying decided by the filesystem and git alone (committed build output, `.gitignore`, scratch directories, git state) use `/repo-hygiene:tidy`. DO NOT TRIGGER WHEN: a full multi-phase pipeline is wanted (use /senior-review:team-review) or a single file needs a style pass (use clean-code).",
+            "file": "commands/code-review.md",
+            "name": "senior-review:code-review"
+          },
+          {
+            "description": "Generates a risk assessment, a review checklist, and a lite dead-code and VCS-hygiene pass over the diff, then submits it via gh with --create. TRIGGER WHEN: the user asks to prepare a PR, write a PR description, or open a pull request from the current branch. DO NOT TRIGGER WHEN: reviewing someone elses PR (use /senior-review:code-review with the PR number).",
+            "file": "commands/pr-review.md",
+            "name": "senior-review:pr-review"
+          },
+          {
+            "description": "Six-phase pipeline. Builds X-ray and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.",
+            "file": "commands/team-review.md",
+            "name": "senior-review:team-review"
+          }
+        ],
+        "dependencies": [
+          "repo-hygiene",
+          "codebase-xray",
+          "abstraction-architect",
+          "react-development",
+          "platform-engineering",
+          "typescript-development",
+          "testing"
+        ],
+        "root": "plugins/senior-review",
+        "skills": [
+          {
+            "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
+            "file": "skills/defect-taxonomy/SKILL.md",
+            "id": "senior-review:defect-taxonomy",
+            "name": "defect-taxonomy"
+          },
+          {
+            "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
+            "file": "skills/review-quality-gates/SKILL.md",
+            "id": "senior-review:review-quality-gates",
+            "name": "review-quality-gates"
+          }
+        ]
+      },
+      "stripe": {
+        "agents": [
+          {
+            "description": "Turns a codebases real service costs into a defensible price. TRIGGER WHEN: modeling pricing tiers, calculating unit economics, setting quota or usage limits from consumption percentiles, designing monetization strategy, or projecting revenue, ARPU, LTV or break-even. DO NOT TRIGGER WHEN: implementing Stripe plumbing only (use stripe-integrator), or doing general business strategy not tied to pricing (use business-planner).",
+            "file": "agents/revenue-optimizer.md",
+            "id": "stripe:revenue-optimizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Hands-on implementer that writes the integration code rather than auditing it. TRIGGER WHEN: working with the Stripe API for customers, subscriptions, payments, checkout sessions, invoices, payment intents, products and prices, webhooks, Connect marketplaces, metered billing, tax, SCA or 3D Secure, fraud prevention, or disputes.",
+            "file": "agents/stripe-integrator.md",
+            "id": "stripe:stripe-integrator",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Cross-checks what the dashboard says against what the code actually handles. TRIGGER WHEN: auditing a Stripe webhook setup before launch or after an incident, hunting missing event coverage, signature verification pitfalls, missing idempotency or stale endpoints, or growing the event list for Billing Meters and Entitlements. DO NOT TRIGGER WHEN: implementing webhooks from scratch (use stripe-integrator), or general code review (use senior-review:code-auditor).",
+            "file": "agents/stripe-webhooks-auditor.md",
+            "id": "stripe:stripe-webhooks-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs the stripe-webhooks-auditor agent over the current project. TRIGGER WHEN: the user asks to audit or verify a Stripe webhook setup: endpoint configuration, signature verification, idempotency or event coverage.",
+            "file": "commands/audit-webhooks.md",
+            "name": "stripe:audit-webhooks"
+          }
+        ],
+        "root": "plugins/stripe",
+        "skills": [
+          {
+            "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",
+            "file": "skills/stripe/SKILL.md",
+            "id": "stripe:stripe",
+            "name": "stripe"
+          }
+        ]
+      },
+      "system-utils": {
+        "commands": [
+          {
+            "description": "Propose a plan first, then move or delete only what the user confirms, batch by batch. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies. DO NOT TRIGGER WHEN: the task is about code refactoring (use /clean-code:clean-code or /python-development:python-refactor).",
+            "file": "commands/organize-files.md",
+            "name": "system-utils:organize-files"
+          }
+        ],
+        "root": "plugins/system-utils",
+        "skills": [
+          {
+            "description": "Scope, plan, and execute the reorganization behind approval gates. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up old files, restructuring project directories, separating work from personal files, or automating file cleanup tasks.",
+            "file": "skills/file-organizer/SKILL.md",
+            "id": "system-utils:file-organizer",
+            "name": "file-organizer"
+          }
+        ]
+      },
+      "tauri-development": {
+        "agents": [
+          {
+            "description": "Write, debug, and harden idiomatic systems code. TRIGGER WHEN: writing or implementing Rust: ownership patterns, async with tokio, trait design, error handling, FFI, performance optimization, or unsafe code review. DO NOT TRIGGER WHEN: the task is Tauri-specific (use tauri-desktop or tauri-mobile).",
+            "file": "agents/rust-engineer.md",
+            "id": "tauri-development:rust-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Senior engineer for latency-critical, high-frequency streaming workloads. TRIGGER WHEN: building or reviewing Tauri v2 desktop apps with React: IPC and command design, capabilities and permissions, window and system tray, shell plugin, WebView tuning (WebView2, WKWebView, WebKitGTK), bundling, signing, auto-updates, memory leaks, React-side performance. DO NOT TRIGGER WHEN: mobile targets (use tauri-mobile), Rust outside Tauri (use rust-engineer), React outside Tauri (use react-performance-optimizer).",
+            "file": "agents/tauri-desktop.md",
+            "id": "tauri-development:tauri-desktop",
+            "permissions": []
+          },
+          {
+            "description": "Senior mobile application engineer. TRIGGER WHEN: Tauri 2 work on Android or iOS: environment setup (Android SDK, Xcode, NDK), emulator and ADB testing, plugins (biometric, haptics, barcode, NFC, geolocation, notifications), in-app purchases, OAuth deep links, Play Store and App Store code signing, or CI/CD for device builds.",
+            "file": "agents/tauri-mobile.md",
+            "id": "tauri-development:tauri-mobile",
+            "permissions": []
+          }
+        ],
+        "root": "plugins/tauri-development",
+        "skills": [
+          {
+            "description": "Knowledge base indexing core, desktop, and mobile references. TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.",
+            "file": "skills/tauri/SKILL.md",
+            "id": "tauri-development:tauri",
+            "name": "tauri"
+          }
+        ]
+      },
+      "testing": {
+        "agents": [
+          {
+            "description": "Runs as the testing-quality dimension of /senior-review:team-review and /senior-review:code-review, and as the engine of /testing:test-audit. TRIGGER WHEN: auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement. DO NOT TRIGGER WHEN: tests should be written (use test-writer), or quarantine or consolidation applied (use /testing:test-audit --fix or /testing:test-consolidate).",
+            "file": "agents/test-suite-auditor.md",
+            "id": "testing:test-suite-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Authors behavior-driven suites for existing code, or drives new ones red-green. Auto-detects the framework, and follows the test-hygiene search-before-write protocol instead of creating parallel files. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.",
+            "file": "agents/test-writer.md",
+            "id": "testing:test-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Writes a versioned TEST_AUDIT.md; with --fix, quarantines the rot in gated, revertible commits. TRIGGER WHEN: auditing a test suite, measuring test health, finding dead or flaky or redundant tests, or quarantining failing tests to get CI trustworthy again. DO NOT TRIGGER WHEN: one modules tests are consolidated (use /testing:test-consolidate), or new tests written (use the test-writer agent).",
+            "file": "commands/test-audit.md",
+            "name": "testing:test-audit"
+          },
+          {
+            "description": "Turns overlapping suites into one clean file per source file: BEHAVIOR inventory approved first, originals deleted in the same commit, coverage verified after. TRIGGER WHEN: consolidating, deduping or rewriting the tests of a module, or processing quarantined tests for code being touched. DO NOT TRIGGER WHEN: whole-suite health is measured or quarantined (use /testing:test-audit), or tests written for untested code (use the test-writer agent).",
+            "file": "commands/test-consolidate.md",
+            "name": "testing:test-consolidate"
+          }
+        ],
+        "root": "plugins/testing",
+        "skills": [
+          {
+            "description": "Binding placement rules, plus the measure, quarantine, consolidate remediation ladder for degraded suites. TRIGGER WHEN: creating or placing any test file, choosing between extending an existing test and writing a new one, auditing test-suite health, quarantining failing or flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: writing the test content itself (use mattpocock-skills:tdd), browser E2E mechanics like page objects and waiting (use developer-essentials:e2e-testing-patterns), or pytest specifics (python-developments python-tdd skill).",
+            "file": "skills/test-hygiene/SKILL.md",
+            "id": "testing:test-hygiene",
+            "name": "test-hygiene"
+          }
+        ]
+      },
+      "text-humanizer": {
+        "agents": [
+          {
+            "description": "Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use clean-code:clean-code instead).",
+            "file": "agents/text-humanizer.md",
+            "id": "text-humanizer:text-humanizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Detect the 24 catalogued patterns and edit them out without inventing content; --score adds a self-assessed quality score. TRIGGER WHEN: the user asks to humanize prose/text, remove AI-sounding copy, or rewrite articles/blog posts/documentation for natural voice. DO NOT TRIGGER WHEN: cleaning up source code (use /clean-code:clean-code) or translating text.",
+            "file": "commands/humanize-text.md",
+            "name": "text-humanizer:humanize-text"
+          }
+        ],
+        "root": "plugins/text-humanizer",
+        "skills": [
+          {
+            "description": "Knowledge base of the 24 catalogued patterns, with the ground rules against invented content, the register table and the language policy that govern every rewrite. TRIGGER WHEN: editing or reviewing text to remove AI traces, or when asked to humanize text.",
+            "file": "skills/anti-ai-writing-patterns/SKILL.md",
+            "id": "text-humanizer:anti-ai-writing-patterns",
+            "name": "anti-ai-writing-patterns"
+          }
+        ]
+      },
+      "trading-broker-integration": {
+        "agents": [
+          {
+            "description": "Authority on Interactive Brokers integration: contracts, orders, brackets, data, error verdicts, resilience and deployment, across equities, options, futures, FX, CFDs and crypto. TRIGGER WHEN: building or debugging anything on the TWS API with ib_async, or answering a question about how IBKR behaves. DO NOT TRIGGER WHEN: auditing an existing system end to end (use /trading-broker-integration:ibkr-audit), MetaTrader 5 (use mt5), or broker-agnostic strategy logic.",
+            "file": "agents/ibkr-architect.md",
+            "id": "trading-broker-integration:ibkr-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Architect, harden, and troubleshoot automated retail-broker systems. TRIGGER WHEN: building, implementing, writing, coding, or creating MT5 trading bots, connecting to MT5 terminal via Python, implementing polling event loops, executing orders with correct fill modes, handling MT5 disconnections, deploying MT5 bots on Windows, working with MetaTrader5/aiomql/MQL5-JSON-API/ZeroMQ bridge code, or comparing MT5 vs IBKR approaches.",
+            "file": "agents/mt5-architect.md",
+            "id": "trading-broker-integration:mt5-architect",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "webfetch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "websearch",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Report reliability and production-readiness defects, plus the venue assumptions nobody checked. TRIGGER WHEN: the user asks to review, audit, or validate an IB or TWS trading system: contracts, orders, brackets, pacing, error handling, reconnection, deployment. DO NOT TRIGGER WHEN: building from scratch (use ibkr-architect), answering a single behaviour question (use /trading-broker-integration:ibkr-verify), or MetaTrader 5 (use /trading-broker-integration:mt5-audit).",
+            "file": "commands/ibkr-audit.md",
+            "name": "trading-broker-integration:ibkr-audit"
+          },
+          {
+            "description": "Answer a question about IBKR behaviour with evidence instead of a guess. TRIGGER WHEN: the user asks whether IBKR supports something, why an order was refused, what a code means, or wants a claim about venue behaviour verified against a real gateway. DO NOT TRIGGER WHEN: auditing a whole codebase (use /trading-broker-integration:ibkr-audit), or designing a system from scratch (use the ibkr-architect agent).",
+            "file": "commands/ibkr-verify.md",
+            "name": "trading-broker-integration:ibkr-verify"
+          },
+          {
+            "description": "Report on the reliability, error handling, and production readiness of an existing system. TRIGGER WHEN: the user asks to review, audit, or validate an MT5 Python trading bot (polling loops, fill modes, reconnection, order retcodes, Windows deployment). DO NOT TRIGGER WHEN: building from scratch (use the mt5-architect agent), or auditing an IB system (use /trading-broker-integration:ibkr-audit).",
+            "file": "commands/mt5-audit.md",
+            "name": "trading-broker-integration:mt5-audit"
+          }
+        ],
+        "root": "plugins/trading-broker-integration",
+        "skills": [
+          {
+            "description": "Vendor-neutral vocabulary for programmatic broker integration: the five access archetypes, the second axis separating a single broker from a multi-broker platform, the reference order state machine, session and recovery, and the evidence ladder that decides what a claim about a venue is worth. TRIGGER WHEN: comparing brokers or integration paths, starting an integration against a broker with no dedicated skill, or naming what kind of access path a system uses. DO NOT TRIGGER WHEN: the question is about one specific broker that has its own skill (use the ibkr or mt5 skill), or about strategy, backtesting, or portfolio construction.",
+            "file": "skills/broker-vocabulary/SKILL.md",
+            "id": "trading-broker-integration:broker-vocabulary",
+            "name": "broker-vocabulary"
+          },
+          {
+            "description": "Authoritative reference for Interactive Brokers integration in Python, across every asset class, with tooling to verify venue behaviour against a paper Gateway instead of guessing. TRIGGER WHEN: building, auditing or debugging anything that talks to TWS or IB Gateway via the TWS API and ib_async: contracts, market data, orders, brackets, error codes, reconnection, deployment, or a question about how IBKR actually behaves. DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5), or the IBKR Web API with no TWS connection.",
+            "file": "skills/ibkr/SKILL.md",
+            "id": "trading-broker-integration:ibkr",
+            "name": "ibkr"
+          },
+          {
+            "description": "Knowledge base for the official API, its polling model, and Windows-side production concerns. TRIGGER WHEN: building, implementing, writing, coding, creating, optimizing, or debugging MT5 or MetaTrader 5 trading systems with Python, including the aiomql and ZeroMQ bridge alternatives. DO NOT TRIGGER WHEN: the broker is Interactive Brokers (use ibkr), or the question is about strategy design rather than the terminal and its API.",
+            "file": "skills/mt5/SKILL.md",
+            "id": "trading-broker-integration:mt5",
+            "name": "mt5"
+          }
+        ]
+      },
+      "typescript-development": {
+        "agents": [
+          {
+            "description": "Adversarial reviewer that assumes the annotations are lying. TRIGGER WHEN: auditing TypeScript changes or codebases for type safety, `any` leakage, unsound casts, missing runtime validation at boundaries, assertion abuse, strict-mode and tsconfig drift, non-exhaustive handling, or unsound generics and type guards before a release. DO NOT TRIGGER WHEN: style and naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead-code detection (use knip).",
+            "file": "agents/type-safety-auditor.md",
+            "id": "typescript-development:type-safety-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Hands-on TypeScript 5.x engineer. Ships strict-mode, tested code with pnpm/bun, Vite, Vitest and Zod. TRIGGER WHEN: planning a new TS project, designing architecture, making tech-stack decisions, implementing features, migrating JavaScript to TypeScript, or setting up a monorepo. DO NOT TRIGGER WHEN: the task is React-specific performance optimization (use react-development:react-performance-optimizer).",
+            "file": "agents/typescript-engineer.md",
+            "id": "typescript-development:typescript-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Audit a codebase for type-system erosion and write a markdown report. TRIGGER WHEN: the user asks to review TypeScript for type safety, `any` leakage, unsound casts, tsconfig strictness, exhaustiveness, generics soundness, or missing runtime validation at boundaries. DO NOT TRIGGER WHEN: style review (use typescript-write), React performance (use /react-development:review-react), or dead-code detection (use knip).",
+            "file": "commands/review-typescript.md",
+            "name": "typescript-development:review-typescript"
+          }
+        ],
+        "root": "plugins/typescript-development",
+        "skills": [
+          {
+            "description": "Run Knip to find unused files, exports and types, with per-framework and per-test-runner plugins. TRIGGER WHEN: cleaning up TypeScript/JavaScript codebases, optimizing bundle size, or enforcing strict dependency hygiene in CI. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",
+            "file": "skills/knip/SKILL.md",
+            "id": "typescript-development:knip",
+            "name": "knip"
+          },
+          {
+            "description": "Deep reference for advanced TypeScript. TRIGGER WHEN: migrating JavaScript to TypeScript, bootstrapping a TS project (strict tsconfig, ESLint, Vite/Vitest, pnpm), writing generics, mapped or conditional types, `satisfies`, branded types, discriminated unions or template literal types, designing Zod schemas for runtime validation, building type-safe NestJS APIs, deep React and TypeScript typing, typing LangChain.js, or comparing TS with Java/Python enterprise approaches. DO NOT TRIGGER WHEN: routine TS/JS (use typescript-development:typescript-write), React performance (use react-development:review-react), or dead-code detection (use typescript-development:knip).",
+            "file": "skills/mastering-typescript/SKILL.md",
+            "id": "typescript-development:mastering-typescript",
+            "name": "mastering-typescript"
+          },
+          {
+            "description": "20 rules across 7 categories, each with detection and fix guidance. TRIGGER WHEN: reviewing or hardening TypeScript against type-system erosion: `any` leakage, unsound casts, missing boundary validation, assertion abuse, tsconfig strictness, exhaustiveness and generics soundness. DO NOT TRIGGER WHEN: style and naming review (use typescript-write), or dead-code detection (use knip).",
+            "file": "skills/type-safety-rules/SKILL.md",
+            "id": "typescript-development:type-safety-rules",
+            "name": "type-safety-rules"
+          },
+          {
+            "description": "Apply house coding standards to everyday application work. TRIGGER WHEN: writing or reviewing TypeScript/JavaScript code, including types, generics, async patterns, module boundaries, and style conventions. DO NOT TRIGGER WHEN: React performance (use react-development), or advanced type-system depth (use mastering-typescript).",
+            "file": "skills/typescript-write/SKILL.md",
+            "id": "typescript-development:typescript-write",
+            "name": "typescript-write"
+          }
+        ]
+      },
+      "xterm": {
+        "commands": [
+          {
+            "description": "Scan for known pitfalls, then analyze the architecture for race conditions and fragile assumptions. TRIGGER WHEN: the user reports a bug or asks to audit an existing xterm.js integration (render glitches, key handling, resize, PTY issues, addon conflicts). DO NOT TRIGGER WHEN: implementing a new feature (use /xterm:xterm-implement).",
+            "file": "commands/xterm-debug.md",
+            "name": "xterm:xterm-debug"
+          },
+          {
+            "description": "Read the current setup, then insert the feature without conflicting with what is loaded. TRIGGER WHEN: the user asks to add an xterm.js addon, PTY integration, theme, search, resize, decorations, parser hooks, or framework (React/Vue/Electron/Tauri) wiring. DO NOT TRIGGER WHEN: debugging existing code (use /xterm:xterm-debug).",
+            "file": "commands/xterm-implement.md",
+            "name": "xterm:xterm-implement"
+          }
+        ],
+        "root": "plugins/xterm",
+        "skills": [
+          {
+            "description": "Build, configure, debug, and extend in-page console UIs. TRIGGER WHEN: the user mentions xterm, xterm.js, @xterm/xterm, terminal emulator in the browser, web terminal, WebSSH, in-browser shell, addons like FitAddon, WebglAddon, SearchAddon, AttachAddon, integration with node-pty, ANSI/VT sequences, terminal theming, PTY over WebSocket, custom key handlers, parser hooks, or embedding a terminal in React/Vue/Angular/Electron apps.",
+            "file": "skills/xtermjs-skill/SKILL.md",
+            "id": "xterm:xtermjs-skill",
+            "name": "xtermjs-skill"
+          }
+        ]
+      }
+    },
+    "schema": 1
+  },
+  "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
+  "keywords": [
+    "opencode-plugin"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "daodan",
+  "private": true,
+  "type": "module",
+  "version": "29.0.0"
+}

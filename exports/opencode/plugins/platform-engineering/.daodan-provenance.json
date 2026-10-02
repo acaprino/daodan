@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:34e146b46a2557cb01cb0c4228684bcb21f30dd9b45a592a8269eeda203a466e",
+  "harnessStrategies": {
+    "platform-review": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "platform-engineering",
+  "version": "1.3.1"
+}

@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:8b430ee17e01b9f2f4bec4479893f1824e992b37260f33f527d03cacda1348e3",
+  "harnessStrategies": {
+    "instagram-grab": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "grabber-development",
+  "version": "1.8.1"
+}

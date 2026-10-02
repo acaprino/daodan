@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "peer-review": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        "<plugin-root>/skills/cross-model-peer-review/scripts/server.py"
+      ]
+    }
+  }
+}

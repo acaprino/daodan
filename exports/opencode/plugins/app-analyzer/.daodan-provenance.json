@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:1cf5a0b951399d92173b4f2c8e77c1eda0f1bd8a57436247d21321a7d2dcdb9b",
+  "harnessStrategies": {},
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "app-analyzer",
+  "version": "1.4.1"
+}

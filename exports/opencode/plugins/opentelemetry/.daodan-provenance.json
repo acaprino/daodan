@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:acaea0afcd88155a291fdd05a312bda3a99d9ca3b6c4712ff165411faead5bae",
+  "harnessStrategies": {
+    "otel-audit": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "opentelemetry",
+  "version": "1.4.1"
+}
