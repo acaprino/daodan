@@ -11,7 +11,7 @@ description: 'Drafts a ready-to-post answer, with brand, tone, language, and sec
 
 ## Invocation
 
-Invoke the `reply-to-customer-review` skill and follow its full workflow.
+Invoke the `review-reply-method` skill and follow its full workflow.
 
 ## Arguments
 

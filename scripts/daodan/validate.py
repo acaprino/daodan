@@ -126,10 +126,7 @@ def validate_paths(plugin: PluginSpec) -> list[ValidationIssue]:
 def validate_components(plugin: PluginSpec) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     manifest = plugin.root / "plugin.toml"
-    # Duplicates are checked per kind. Across kinds a repeated name is fine
-    # because no host layout puts two kinds in one namespace: Codex, the one
-    # host that renders both skills and workflows as skills, suffixes workflow
-    # directories precisely so `analyze` can be both.
+    # Duplicates within one kind. Across kinds, see validate_component_kinds.
     for names in (
         plugin.components.skills,
         plugin.components.roles,
@@ -334,6 +331,34 @@ def validate_mcp_servers(plugin: PluginSpec) -> list[ValidationIssue]:
     return issues
 
 
+#: The component kinds that share no name inside a plugin, in report order.
+COMPONENT_KINDS: tuple[str, ...] = ("skills", "roles", "workflows")
+
+
+def validate_component_kinds(plugin: PluginSpec) -> list[ValidationIssue]:
+    """Refuse a name that names two kinds of component inside one plugin.
+
+    OpenCode lists skills and agents in one `@` menu, so a skill and a role of
+    the same name render as two identical entries that insert different things.
+    The rule is general rather than host-specific, because a name meaning two
+    things in one plugin is ambiguous to every reader of a body that cites it.
+    A role beside a same-topic skill takes `-agent`; a skill beside a
+    same-topic workflow takes `-method`.
+    """
+    manifest = plugin.root / "plugin.toml"
+    kinds_by_name: dict[str, list[str]] = {}
+    for kind in COMPONENT_KINDS:
+        for name in dict.fromkeys(getattr(plugin.components, kind)):
+            kinds_by_name.setdefault(name, []).append(kind)
+    return [
+        ValidationIssue(
+            "component-name-shared-across-kinds", manifest, f"{name}: {', '.join(kinds)}"
+        )
+        for name, kinds in sorted(kinds_by_name.items())
+        if len(kinds) > 1
+    ]
+
+
 def validate_plugins(
     plugins: Sequence[PluginSpec], capabilities: AbstractSet[str]
 ) -> list[ValidationIssue]:
@@ -343,6 +368,7 @@ def validate_plugins(
         issues.extend(validate_identity(plugin))
         issues.extend(validate_paths(plugin))
         issues.extend(validate_components(plugin))
+        issues.extend(validate_component_kinds(plugin))
         issues.extend(validate_dependencies(plugin))
         issues.extend(validate_capabilities(plugin, capabilities))
         issues.extend(validate_mcp_servers(plugin))

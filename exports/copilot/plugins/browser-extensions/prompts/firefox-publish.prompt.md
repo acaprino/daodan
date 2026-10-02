@@ -116,4 +116,4 @@ Minimum source-upload contents:
 
 - Scaffolding a new extension -> `/browser-extensions:firefox-scaffold`
 - Pre-submission lint -> `/browser-extensions:firefox-lint`
-- API / manifest / MDN lookups -> `browser-extensions:firefox-extension-dev` agent
+- API / manifest / MDN lookups -> `browser-extensions:firefox-extension-dev-agent` agent

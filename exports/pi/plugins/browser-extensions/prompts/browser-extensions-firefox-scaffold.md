@@ -1,5 +1,5 @@
 ---
-description: 'Generates manifest.json (V3 default), directory layout, content and background scripts, web-ext config and a working popup. TRIGGER WHEN: creating, bootstrapping or scaffolding a new Firefox extension, WebExtension or browser add-on. DO NOT TRIGGER WHEN: features are added to an existing extension (use the firefox-extension-dev agent).'
+description: 'Generates manifest.json (V3 default), directory layout, content and background scripts, web-ext config and a working popup. TRIGGER WHEN: creating, bootstrapping or scaffolding a new Firefox extension, WebExtension or browser add-on. DO NOT TRIGGER WHEN: features are added to an existing extension (use the firefox-extension-dev-agent agent).'
 argument-hint: '<extension-name> [--mv V2|V3] [--sidebar] [--content-script] [--options-page] [--author NAME] [--id GECKO-ID]'
 ---
 
@@ -225,6 +225,6 @@ and to replace placeholder icons (48x48 and 96x96 PNG) before publishing.
 
 ## Synergies
 
-- Full API / manifest / AMO docs -> `browser-extensions:firefox-extension-dev` agent or `firefox-extension-dev` skill
+- Full API / manifest / AMO docs -> `browser-extensions:firefox-extension-dev-agent` agent or `firefox-extension-dev` skill
 - Pre-publish lint -> `/browser-extensions:firefox-lint`
 - Publishing flow -> `/browser-extensions:firefox-publish`

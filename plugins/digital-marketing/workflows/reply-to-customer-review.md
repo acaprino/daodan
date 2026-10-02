@@ -10,7 +10,7 @@ argument-hint: "\"<review text>\" [--brand <name>] [--tone formal|friendly|casua
 
 ## Invocation
 
-Invoke the `reply-to-customer-review` skill and follow its full workflow.
+Invoke the `review-reply-method` skill and follow its full workflow.
 
 ## Arguments
 

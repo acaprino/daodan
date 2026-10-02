@@ -47,7 +47,7 @@ Use the python-refactor-agent to refactor [module/file]
 - Complexity reduction: flattening nested loops/conditionals
 - Dead code removal: unused imports, variables, functions, and classes
 - Documentation: antirez's 9-type comment taxonomy, Google-style docstrings
-- Leverages `python-refactor`, `python-dead-code`, `python-comments`, and `python-performance-optimization` skills
+- Leverages `python-refactor-method`, `python-dead-code`, `python-comments`, and `python-performance-optimization` skills
 
 ---
 
@@ -77,7 +77,7 @@ Use the python-test-engineer to write tests for [module/feature]
 
 ## Skills
 
-### `python-refactor`
+### `python-refactor-method`
 
 Systematic 4-phase refactoring workflow that transforms complex code into clean, maintainable code.
 

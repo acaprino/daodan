@@ -26,7 +26,7 @@ Every candidate is also scored on four lenses, reported as fields and never as c
 
 ## Agents
 
-### `abstraction-architect`
+### `abstraction-architect-agent`
 
 Adversarial auditor with two modes. Global mode censuses the whole codebase from `.codebase-xray/` plus its own discovery pass. Diff mode anchors on the changed files and asks whether the change introduces or aggravates structural entropy relative to the codebase that already exists. Its governing rules: precision over recall governs what is reported, not what is searched; index entries nominate search targets, current source code proves findings.
 
@@ -38,7 +38,7 @@ Adversarial auditor with two modes. Global mode censuses the whole codebase from
 
 **Invocation:**
 ```
-Use the abstraction-architect agent to audit [path] for structural entropy
+Use the abstraction-architect-agent agent to audit [path] for structural entropy
 ```
 Also spawned by `/abstraction-architect:audit` and, in diff mode, as the structural entropy dimension of `/senior-review:team-review` and `/senior-review:code-review`.
 

@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "28.7.2"
+    "version": "29.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -30,7 +30,7 @@
         "./skills/audit-workflow"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "3.0.1"
+      "version": "4.0.0"
     },
     {
       "author": {
@@ -81,7 +81,7 @@
         "./skills/firefox-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/browser-extensions",
-      "version": "1.8.1"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -112,7 +112,7 @@
         "./skills/clean-code-workflow"
       ],
       "source": "./exports/codex/plugins/clean-code",
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "author": {
@@ -192,19 +192,19 @@
       "license": "MIT",
       "name": "digital-marketing",
       "skills": [
-        "./skills/brand-naming",
+        "./skills/brand-naming-method",
         "./skills/brand-naming-workflow",
         "./skills/content-strategy-workflow",
         "./skills/domain-hunter",
         "./skills/ga4-audit-workflow",
         "./skills/ga4-implementation",
         "./skills/llm-seo-audit-workflow",
-        "./skills/reply-to-customer-review",
         "./skills/reply-to-customer-review-workflow",
+        "./skills/review-reply-method",
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "2.3.2"
+      "version": "3.0.0"
     },
     {
       "author": {
@@ -337,7 +337,7 @@
         "./skills/skills-validate-workflow"
       ],
       "source": "./exports/codex/plugins/marketplace-ops",
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "author": {
@@ -466,14 +466,14 @@
         "./skills/python-dead-code",
         "./skills/python-packaging",
         "./skills/python-performance-optimization",
-        "./skills/python-refactor",
+        "./skills/python-refactor-method",
         "./skills/python-refactor-workflow",
         "./skills/python-scaffold-workflow",
         "./skills/python-tdd",
         "./skills/uv-package-manager"
       ],
       "source": "./exports/codex/plugins/python-development",
-      "version": "1.22.1"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -559,7 +559,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "12.0.2"
+      "version": "12.0.3"
     },
     {
       "author": {
@@ -589,7 +589,7 @@
         "./skills/organize-files-workflow"
       ],
       "source": "./exports/codex/plugins/system-utils",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "author": {

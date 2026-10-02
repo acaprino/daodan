@@ -170,7 +170,7 @@ class HostRenderingTests(unittest.TestCase):
         # Codex registers skills by frontmatter name, so the name carries the
         # directory suffix: `codebase-xray` also ships a skill, and a plugin
         # with a skill and a workflow of one name (digital-marketing's
-        # brand-naming) would otherwise register two skills under it.
+        # brand-naming before marketplace 29.0.0) would otherwise register two skills under it.
         self.assertEqual(meta["name"], "analyze-workflow")
         self.assertIn("description", meta)
         self.assertNotIn("argument-hint", meta)

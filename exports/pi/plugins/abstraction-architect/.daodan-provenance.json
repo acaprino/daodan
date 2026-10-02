@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:2fcf1e07f7206779e97b0fdcdb2fc510d2e77ac60178d4c953c80314ce1658d6",
+  "coreDigest": "sha256:8b04c4c81f7231650437542594d1c2fd8aafd7e6d46111b7223fafa92f4759cc",
   "harnessStrategies": {
     "audit": "parallel-subagents"
   },
   "host": "pi",
   "overrides": [],
   "plugin": "abstraction-architect",
-  "version": "3.0.1"
+  "version": "4.0.0"
 }

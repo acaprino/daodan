@@ -64,7 +64,7 @@ With a file, the agent reads it without writing; the command shows the report, t
 
 Consumers across the marketplace:
 
-- **digital-marketing**: `/llm-seo-audit` and the `llm-seo-optimize` agent route AI-sounding copy to `/text-humanizer:humanize-text` to raise E-E-A-T credibility; `reply-to-customer-review` loads the skill directly.
+- **digital-marketing**: `/llm-seo-audit` and the `llm-seo-optimize` agent route AI-sounding copy to `/text-humanizer:humanize-text` to raise E-E-A-T credibility; `review-reply-method` loads the skill directly.
 - **codebase-mapper**: `/docs-create` and `/humanize-docs` run the agent as their final AI-trace-removal pass on generated documentation. `/docs-create` passes the text inline and takes it back text-only; `/humanize-docs` passes the files and has them edited in place.
 - **business**: the `business-planner` agent has the agent rewrite the GTM strategy deliverable in place before hand-off.
 - **clean-code**: routes prose targets here (`/clean-code:clean-code` handles source code, `/text-humanizer:humanize-text` handles text).

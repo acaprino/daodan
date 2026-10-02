@@ -9,7 +9,7 @@ argument-hint: '<brief description or industry> [--languages <lang1,lang2>] [--t
 
 ## Invocation
 
-Invoke the `brand-naming` skill and follow its full workflow.
+Invoke the `brand-naming-method` skill and follow its full workflow.
 
 ## Arguments
 

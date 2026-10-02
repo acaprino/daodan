@@ -33,7 +33,7 @@ REQUIRED_KEYS = ("schema_version", "generated_from_commit",
                  "generated_from_tree", "generated_at", "scope", "concepts")
 
 # Sibling report artifacts that share a directory with the index file but
-# are never passed via --index (see agents/abstraction-architect.md).
+# are never passed via --index (see roles/abstraction-architect-agent.md).
 SIBLING_ARTIFACT_FILENAMES = ("findings.md", "findings-diff.md")
 
 

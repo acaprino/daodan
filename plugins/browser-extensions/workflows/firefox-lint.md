@@ -95,6 +95,6 @@ With `--strict`, treat all warnings as blockers (exit code 1).
 
 ## Synergies
 
-- Full API / manifest details -> `browser-extensions:firefox-extension-dev` agent
+- Full API / manifest details -> `browser-extensions:firefox-extension-dev-agent` agent
 - Pre-AMO publishing workflow -> `/browser-extensions:firefox-publish`
 - New extension scaffolding -> `/browser-extensions:firefox-scaffold`

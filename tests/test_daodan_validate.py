@@ -1,5 +1,6 @@
 """Validation tests for the neutral Daodan control plane."""
 
+import dataclasses
 import sys
 import unittest
 from pathlib import Path
@@ -10,10 +11,21 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.trust import scan_trust  # noqa: E402
-from scripts.daodan.validate import CAPABILITY_REGISTRY, validate_plugins  # noqa: E402
+from scripts.daodan.model import ComponentIndex  # noqa: E402
+from scripts.daodan.validate import (  # noqa: E402
+    CAPABILITY_REGISTRY,
+    validate_component_kinds,
+    validate_plugins,
+)
 
 INVALID = REPO_ROOT / "tests/fixtures/daodan/invalid"
 VALID = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
+
+
+def plugin_with(**components):
+    """The valid fixture plugin with its component index replaced."""
+    plugin = load_plugin(VALID)
+    return dataclasses.replace(plugin, components=ComponentIndex(**components))
 
 
 def validate_fixture(name: str):
@@ -61,6 +73,43 @@ class ValidationTests(unittest.TestCase):
         first = [issue.code for issue in validate_fixture("cyclic-workflow")]
         second = [issue.code for issue in validate_fixture("cyclic-workflow")]
         self.assertEqual(first, second)
+
+
+
+class ComponentKindTests(unittest.TestCase):
+    """One name, one kind, inside a plugin.
+
+    OpenCode lists skills and agents in one `@` menu, so a skill and a role of
+    the same name become two identical entries there. The rule is general
+    because a name that means two things in one plugin is ambiguous on every
+    host, whichever menu happens to collide first.
+    """
+
+    def test_skill_and_role_sharing_a_name_fail(self):
+        issues = validate_component_kinds(plugin_with(skills=("x",), roles=("x",)))
+        self.assertEqual([i.code for i in issues], ["component-name-shared-across-kinds"])
+        self.assertEqual(issues[0].message, "x: skills, roles")
+
+    def test_skill_and_workflow_sharing_a_name_fail(self):
+        issues = validate_component_kinds(plugin_with(skills=("x",), workflows=("x",)))
+        self.assertEqual([i.message for i in issues], ["x: skills, workflows"])
+
+    def test_role_and_workflow_sharing_a_name_fail(self):
+        issues = validate_component_kinds(plugin_with(roles=("x",), workflows=("x",)))
+        self.assertEqual([i.message for i in issues], ["x: roles, workflows"])
+
+    def test_distinct_names_pass(self):
+        plugin = plugin_with(skills=("x-method",), roles=("x-agent",), workflows=("x",))
+        self.assertEqual(validate_component_kinds(plugin), [])
+
+    def test_real_kernels_have_no_cross_kind_homonym(self):
+        kernels = sorted((REPO_ROOT / "plugins").glob("*/plugin.toml"))
+        found = [
+            issue.message
+            for kernel in kernels
+            for issue in validate_component_kinds(load_plugin(kernel.parent))
+        ]
+        self.assertEqual(found, [])
 
 
 if __name__ == "__main__":

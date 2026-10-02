@@ -260,7 +260,7 @@ The full spawn prompt for every agent lives in the `senior-review:review-quality
 | G | API contracts | `general-purpose` | Diff touches API-related files (routes, serializers, OpenAPI/GraphQL/proto specs, DTOs) |
 | H | Data migrations | `general-purpose` | Diff touches migration files |
 | I | React performance | `react-development:react-performance-optimizer` | Diff touches `.tsx`/`.jsx` AND React in dependencies |
-| J | Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness) | `abstraction-architect:abstraction-architect` | Diff adds at least one function/method/class/module/constant table or 5+ line block |
+| J | Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness) | `abstraction-architect:abstraction-architect-agent` | Diff adds at least one function/method/class/module/constant table or 5+ line block |
 | K | TypeScript type safety | `typescript-development:type-safety-auditor` | Diff touches `.ts`/`.tsx` AND `tsconfig.json` at project root |
 | L | Temporal resilience (failure-over-time) | `senior-review:temporal-resilience-auditor` | Diff touches timers, schedulers, polling, retry/reconnect, cron, queue workers, daemons, updaters, watchdogs |
 | M | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` | Diff touches schemas, models, ORM, raw SQL, caches, or transaction boundaries |

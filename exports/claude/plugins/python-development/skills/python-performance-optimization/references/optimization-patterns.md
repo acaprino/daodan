@@ -161,4 +161,4 @@ Threshold heuristic: if profiling shows **a single function consuming > 30% of t
 
 - `python-performance-optimization/SKILL.md` -- decision tree (when to optimize, when not)
 - `async-python-patterns/references/async-patterns.md` -- when async genuinely helps and when it doesn't
-- `python-refactor/references/cognitive_complexity_guide.md` -- complexity refactoring (often resolves perf as a side effect)
+- `python-refactor-method/references/cognitive_complexity_guide.md` -- complexity refactoring (often resolves perf as a side effect)

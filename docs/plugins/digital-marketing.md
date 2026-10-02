@@ -103,7 +103,7 @@ Use the llm-seo-optimize agent to audit [url or local path] for answer-engine op
 
 ## Skills
 
-### `brand-naming`
+### `brand-naming-method`
 
 Brand naming strategist. Generates, filters, scores, and validates brand names through a strategic semantic workflow.
 
@@ -127,11 +127,11 @@ Search domains, compare registrar prices, find promo codes, and get purchase rec
 
 **Source:** Ported from [ReScienceLab/opc-skills](https://github.com/ReScienceLab/opc-skills).
 
-**Includes:** `references/registrars.md` (registrar comparison), `references/spaceship-api.md` (Spaceship API docs) and `scripts/domain_checker.py`, the stdlib RDAP availability checker that `brand-naming` also calls. It reports each domain as AVAILABLE, TAKEN or UNKNOWN, and UNKNOWN never means available.
+**Includes:** `references/registrars.md` (registrar comparison), `references/spaceship-api.md` (Spaceship API docs) and `scripts/domain_checker.py`, the stdlib RDAP availability checker that `brand-naming-method` also calls. It reports each domain as AVAILABLE, TAKEN or UNKNOWN, and UNKNOWN never means available.
 
 ---
 
-### `reply-to-customer-review`
+### `review-reply-method`
 
 Generate professional, empathetic, on-brand replies to online customer reviews. Sentiment analysis, severity detection, adaptive tone, operational suggestions.
 

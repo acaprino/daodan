@@ -1,13 +1,13 @@
 ---
 name: firefox-extension-dev
 description: >
-  Reference knowledge base behind the firefox-extension-dev agent.
+  Reference knowledge base behind the firefox-extension-dev-agent agent.
   TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.
 ---
 
 # Firefox Extension Development References
 
-This skill provides reference files for the `firefox-extension-dev` agent. The agent handles all active development work (scaffolding, coding, debugging, publishing). These reference files serve as its knowledge base.
+This skill provides reference files for the `firefox-extension-dev-agent` agent. The agent handles all active development work (scaffolding, coding, debugging, publishing). These reference files serve as its knowledge base.
 
 ## Reference Files
 

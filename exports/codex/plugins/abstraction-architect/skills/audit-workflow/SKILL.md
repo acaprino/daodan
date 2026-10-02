@@ -54,7 +54,7 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 5. **Resolves the diff (`--diff` only).** Runs `git diff --name-only <base-ref>...HEAD` plus `git diff --name-only` for uncommitted work, and passes the union as `changed_files`. Aborts with a clear message when the path is not a git repository.
 
-6. **Spawns the `abstraction-architect` agent** via the `Agent` tool with `codebase_path`, `mode`, `xray_path`, `concept_index_path`, `changed_files` under `--diff`, and the parsed scope, severity-floor and focus flags.
+6. **Spawns the `abstraction-architect-agent` agent** via the `Agent` tool with `codebase_path`, `mode`, `xray_path`, `concept_index_path`, `changed_files` under `--diff`, and the parsed scope, severity-floor and focus flags.
 
 7. **The agent writes the report** to `<path>/.abstraction-architect/findings.md`, or `findings-diff.md` under `--diff`. In global mode it also rewrites `concept-index.json`. **Diff mode never writes the index.**
 

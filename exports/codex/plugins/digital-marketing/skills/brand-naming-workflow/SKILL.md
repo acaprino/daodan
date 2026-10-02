@@ -11,7 +11,7 @@ description: 'Runs the whole workflow from a brief, with optional language and T
 
 ## Invocation
 
-Invoke the `brand-naming` skill and follow its full workflow.
+Invoke the `brand-naming-method` skill and follow its full workflow.
 
 ## Arguments
 

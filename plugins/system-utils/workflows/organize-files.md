@@ -2,7 +2,7 @@
 description: >
   Propose a plan first, then move or delete only what the user confirms, batch by batch.
   TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies.
-  DO NOT TRIGGER WHEN: the task is about code refactoring (use clean-code or python-refactor).
+  DO NOT TRIGGER WHEN: the task is about code refactoring (use /clean-code:clean-code or /python-development:python-refactor).
 argument-hint: "<path> [find duplicates | by type | by date]"
 ---
 

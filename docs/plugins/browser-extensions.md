@@ -4,7 +4,7 @@
 
 ## Agents
 
-### `firefox-extension-dev`
+### `firefox-extension-dev-agent`
 
 Hands-on Firefox WebExtension developer. Actively writes code, scaffolds projects, generates boilerplate, and fetches live MDN documentation via WebSearch/WebFetch. Use for any creating, debugging, or publishing task.
 
@@ -16,7 +16,7 @@ Hands-on Firefox WebExtension developer. Actively writes code, scaffolds project
 
 **Invocation:**
 ```
-Use the firefox-extension-dev agent to [build/debug/publish] [extension feature]
+Use the firefox-extension-dev-agent agent to [build/debug/publish] [extension feature]
 ```
 
 **Documentation lookup strategy:**
@@ -31,7 +31,7 @@ Use the firefox-extension-dev agent to [build/debug/publish] [extension feature]
 
 ### `firefox-extension-dev`
 
-Firefox WebExtension development knowledge base covering the full extension lifecycle. Loaded by the agent of the same name; also usable standalone for documentation lookup without agent invocation.
+Firefox WebExtension development knowledge base covering the full extension lifecycle. Loaded by the `firefox-extension-dev-agent` agent; also usable standalone for documentation lookup without agent invocation.
 
 | | |
 |---|---|

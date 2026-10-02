@@ -603,7 +603,7 @@ This is the only agent whose question is about the rest of the codebase rather t
 ```
 Agent tool call:
   - description: "Structural entropy review for senior-review command"
-  - subagent_type: "abstraction-architect:abstraction-architect"
+  - subagent_type: "abstraction-architect:abstraction-architect-agent"
   - run_in_background: true
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
