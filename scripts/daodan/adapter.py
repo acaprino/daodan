@@ -18,7 +18,7 @@ from typing import Literal, Mapping
 
 from .model import PluginSpec, WorkflowSpec
 
-HOSTS: tuple[str, ...] = ("claude", "copilot", "codex", "pi")
+HOSTS: tuple[str, ...] = ("claude", "copilot", "codex", "pi", "opencode")
 
 CapabilityState = Literal["native", "adapted", "unsupported"]
 

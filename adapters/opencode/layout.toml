@@ -1,0 +1,35 @@
+[layout]
+root = "exports/opencode"
+
+# OpenCode has no marketplace. A package reaches it only as a plugin, installed
+# with `opencode plugin add`, and the npm `::path:` selector points that install
+# at this directory. So the catalog is the package's own `package.json`, kept
+# under `exports/` so that the repository-root `package.json` stays Pi's.
+marketplace = "exports/opencode/package.json"
+
+plugin_root = "plugins/${plugin}"
+skills = "skills/${skill}/SKILL.md"
+roles = "agents/${role}.md"
+role_template = "agent.md.tmpl"
+workflows = "commands/${workflow}.md"
+team_workflow_template = "team-command.md.tmpl"
+
+# Copied verbatim from templates/ to the layout root once per build. The loader
+# is fixed code driven by the manifest; nothing in it is generated per plugin.
+package_files = "index.js"
+
+# `plugin_manifest` is deliberately absent: the package has one manifest, at
+# its root, and a per-plugin file would ship as something nothing reads.
+
+# The loader substitutes the marker with the absolute plugin directory in every
+# body it registers, so the model normally never sees it. The note covers the
+# files it does not register, such as a reference a skill points at.
+plugin_root_reference = "<plugin-root>"
+plugin_root_note = "`<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded."
+
+# The loader expands `$ARGUMENTS` and `$1` with the same semantics as V2's own
+# command files, so the kernel placeholder maps onto itself and needs no note.
+arguments_reference = "$ARGUMENTS"
+
+# A V2 command file reads description; the name is registered by the loader.
+workflow_frontmatter = "description, argument-hint"

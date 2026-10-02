@@ -20,7 +20,7 @@ from scripts.daodan.load import load_plugin  # noqa: E402
 PLUGIN = "dependency-audit"
 KERNEL = REPO_ROOT / "plugins" / PLUGIN
 
-#: Pi is absent on purpose: it has no per-plugin manifest, so the identity it
+#: Pi and OpenCode are absent on purpose: neither has a per-plugin manifest, so the identity it
 #: can be held to is the one its package records in `.daodan-provenance.json`.
 MANIFEST = {
     "claude": ".claude-plugin/plugin.json",
@@ -33,16 +33,18 @@ WORKFLOW_ENTRYPOINT = {
     "copilot": "prompts/deps-audit.prompt.md",
     "codex": "skills/deps-audit-workflow/SKILL.md",
     "pi": "prompts/dependency-audit-deps-audit.md",
+    "opencode": "commands/deps-audit.md",
 }
 
 PROVENANCE = ".daodan-provenance.json"
 
-#: What each host's workflow frontmatter opens with. Pi carries no `name`,
-#: because there the command is the filename.
+#: What each host's workflow frontmatter opens with. Pi and OpenCode carry no
+#: `name`: on Pi the command is the filename, on OpenCode the loader names it.
 FRONTMATTER_PREFIX = {
     "copilot": "---\nname: deps-audit\n",
     "codex": "---\nname: deps-audit-workflow\n",
     "pi": "---\ndescription:",
+    "opencode": "---\ndescription:",
 }
 
 SKILL_RESOURCES = (

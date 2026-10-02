@@ -25,6 +25,9 @@ CATALOG_PATH = {
     # Pi has no marketplace: its catalog is the package manifest at the root of
     # the repository, which is what `pi install git:` reads.
     "pi": "package.json",
+    # OpenCode has no marketplace either: its catalog is the plugin package's
+    # own manifest, whose `daodan` key names every plugin the loader registers.
+    "opencode": "exports/opencode/package.json",
 }
 
 
@@ -40,6 +43,8 @@ def catalog_names(host: str) -> set[str]:
     document = catalog(host)
     if "plugins" in document:
         return {entry["name"] for entry in document["plugins"]}
+    if "daodan" in document:
+        return set(document["daodan"]["plugins"])
     return globbed_names(document)
 
 

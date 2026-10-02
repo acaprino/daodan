@@ -22,7 +22,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
-from scripts.daodan.render import render_plugin  # noqa: E402
+from scripts.daodan.render import opencode_permissions, render_plugin  # noqa: E402
 
 ADAPTERS = REPO_ROOT / "adapters"
 XRAY = REPO_ROOT / "plugins/codebase-xray"
@@ -72,6 +72,7 @@ class HostRenderingTests(unittest.TestCase):
             "copilot": f"agents/{workflow}-coordinator.agent.md",
             "codex": f"skills/{workflow}-workflow/SKILL.md",
             "pi": f"prompts/{plugin}-{workflow}.md",
+            "opencode": f"commands/{workflow}.md",
         }
         return _read(self.package(host, plugin) / layout[host])
 
@@ -191,6 +192,55 @@ class HostRenderingTests(unittest.TestCase):
                 harness = self.harness(host, "codebase-xray", "team-analyze")
                 self.assertIn("<arguments>", harness)
                 self.assertIn("Wherever `<arguments>` appears", harness)
+
+    # -- opencode ----------------------------------------------------------
+
+    def test_opencode_agent_is_a_v2_subagent(self):
+        text = _read(self.package("opencode", "senior-review") / "agents/code-auditor.md")
+        head = text.split("\n---\n", 1)[0]
+        meta = _frontmatter(text)
+        self.assertEqual(meta["mode"], "subagent")
+        self.assertIn("permissions:", head)
+        self.assertNotIn("\ntools:", head)
+        self.assertNotIn("\nmodel:", head)
+        self.assertNotIn("\ncolor:", head)
+
+    def test_opencode_permissions_deny_first_and_scope_the_package(self):
+        rules = opencode_permissions("Read, Grep, Bash, Grep")
+        self.assertEqual(rules[0], {"action": "*", "resource": "*", "effect": "deny"})
+        self.assertEqual([rule["action"] for rule in rules[1:4]], ["read", "grep", "shell"])
+        self.assertIn({"action": "skill", "resource": "*", "effect": "allow"}, rules)
+        self.assertEqual(
+            rules[-1],
+            {"action": "external_directory", "resource": "<package-root>/**", "effect": "allow"},
+        )
+        self.assertNotIn(
+            {"action": "external_directory", "resource": "*", "effect": "allow"}, rules
+        )
+
+    def test_opencode_role_without_tools_gets_no_rules(self):
+        self.assertEqual(opencode_permissions(""), [])
+
+    def test_opencode_team_command_dispatches_with_the_subagent_tool(self):
+        text = self.harness("opencode", "senior-review", "team-review")
+        self.assertIn("`subagent` tool", text)
+        self.assertIn('agent: "senior-review:', text)
+        self.assertIn("background: true", text)
+        self.assertNotIn("pi install", text)
+        self.assertRegex(text, r"\$ARGUMENTS\b")
+
+    def test_opencode_never_sees_the_claude_plugin_root_variable(self):
+        texts = self.markdown("opencode", "codebase-xray")
+        for name, text in texts.items():
+            self.assertNotIn("CLAUDE_PLUGIN_ROOT", text, name)
+        self.assertIn(
+            "<plugin-root>/skills/xray-method/scripts/", texts["skills/xray-method/SKILL.md"]
+        )
+
+    def test_opencode_command_bodies_use_no_shell_template_syntax(self):
+        for plugin in ("codebase-xray", "senior-review"):
+            for path in self.package("opencode", plugin).glob("commands/*.md"):
+                self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
 
 
 if __name__ == "__main__":

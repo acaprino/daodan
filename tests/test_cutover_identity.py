@@ -22,6 +22,7 @@ CATALOGS = {
     # Pi has no marketplace: its catalog is the package manifest at the root,
     # which carries the identity and the version but lists no plugin.
     "pi": REPO_ROOT / "package.json",
+    "opencode": REPO_ROOT / "exports/opencode/package.json",
 }
 
 IDENTITY = "daodan"

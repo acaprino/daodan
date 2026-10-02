@@ -156,9 +156,10 @@ def _copy(source: Path, destination: Path) -> None:
         shutil.copyfile(source, destination)
 
 
-#: Neutral role tools, mapped onto one host's vocabulary. The kernel never names
-#: a host tool, so this table is where a Claude-shaped agent body becomes a
-#: Copilot-shaped one.
+#: Neutral role tools, mapped onto each host's vocabulary. The kernel never names
+#: a host tool, so these tables are where a Claude-shaped agent becomes a
+#: Copilot- or OpenCode-shaped one. They sit together so that a tool added to one
+#: is visibly missing from the other.
 COPILOT_TOOLS = {
     "Read": "search",
     "Glob": "search",
@@ -172,6 +173,27 @@ COPILOT_TOOLS = {
     "Agent": "agent",
     "Task": "agent",
 }
+
+#: OpenCode V2 permission actions. A V2 permission list is ordered and the last
+#: matching rule wins.
+OPENCODE_PERMISSIONS = {
+    "Read": "read",
+    "Glob": "glob",
+    "Grep": "grep",
+    "Write": "edit",
+    "Edit": "edit",
+    "NotebookEdit": "edit",
+    "Bash": "shell",
+    "WebFetch": "webfetch",
+    "WebSearch": "websearch",
+    "Agent": "subagent",
+    "Task": "subagent",
+}
+
+#: The marker the OpenCode loader replaces with the installed package's absolute
+#: path. A rule scoped to it is how a role reads its own skill references, which
+#: live in OpenCode's package cache, outside the project.
+OPENCODE_PACKAGE_ROOT = "<package-root>"
 
 
 def _frontmatter(text: str) -> tuple[dict[str, str], str]:
@@ -203,6 +225,54 @@ def _frontmatter(text: str) -> tuple[dict[str, str], str]:
 def _one_line(value: str) -> str:
     """Frontmatter scalars are rendered inline, so they may not carry breaks or quotes."""
     return " ".join(value.replace("'", "").split())
+
+
+def _declared_tools(value: str) -> list[str]:
+    return [item.strip() for item in value.strip("[] ").split(",") if item.strip()]
+
+
+def opencode_permissions(tools: str) -> list[dict[str, str]]:
+    """A role's `tools` line as an OpenCode V2 permission list.
+
+    A role with no `tools` line declares no restriction and gets no rules, so
+    it inherits V2's defaults. Otherwise everything is denied first and each
+    declared tool allowed after it, in first-seen order. Two rules always
+    follow: `skill`, because every role may load a skill, and an
+    `external_directory` allowance scoped to the package, because the leading
+    deny would otherwise refuse the role the very references its body tells it
+    to read. That allowance is never `*`.
+    """
+    declared = _declared_tools(tools)
+    if not declared:
+        return []
+    rules = [{"action": "*", "resource": "*", "effect": "deny"}]
+    seen: set[str] = set()
+    for item in declared:
+        action = OPENCODE_PERMISSIONS.get(item)
+        if action and action not in seen:
+            seen.add(action)
+            rules.append({"action": action, "resource": "*", "effect": "allow"})
+    rules.append({"action": "skill", "resource": "*", "effect": "allow"})
+    rules.append(
+        {
+            "action": "external_directory",
+            "resource": f"{OPENCODE_PACKAGE_ROOT}/**",
+            "effect": "allow",
+        }
+    )
+    return rules
+
+
+def _yaml_rules(rules: Sequence[Mapping[str, str]]) -> str:
+    """An inline YAML list for frontmatter, empty when there is nothing to list."""
+    if not rules:
+        return " []"
+    lines = [""]
+    for rule in rules:
+        lines.append(f"  - action: \"{rule['action']}\"")
+        lines.append(f"    resource: \"{rule['resource']}\"")
+        lines.append(f"    effect: {rule['effect']}")
+    return "\n".join(lines)
 
 
 def _copilot_tools(value: str) -> str:
@@ -571,6 +641,9 @@ def render_plugin(
                             "name": meta.get("name", role),
                             "description": _one_line(meta.get("description", "")),
                             "tools": _copilot_tools(meta.get("tools", "")),
+                            "permissions": _yaml_rules(
+                                opencode_permissions(meta.get("tools", ""))
+                            ),
                             "body": body.strip() + "\n",
                         },
                     ),
