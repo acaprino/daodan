@@ -1,8 +1,14 @@
 # Claude Code Agent Teams — Best Practices Reference
 
-> Cross-cutting knowledge base for designing, reviewing, and restructuring agentic teams in Claude Code. Used to inform changes to the team pipelines in this marketplace (senior-review, codebase-xray, project-knowledge, research) and the upstream wshobson/agents agent-teams plugin they build on, plus any agent that participates in a multi-agent pipeline.
+> Cross-cutting knowledge base for designing, reviewing, and restructuring agentic teams in Claude Code. Used to inform changes to the team pipelines in this marketplace (project-lifecycle, senior-review, review-plus, codebase-xray, project-knowledge, research) and the upstream wshobson/agents agent-teams plugin they build on, plus any agent that participates in a multi-agent pipeline.
 >
 > **Snapshot date:** 2026-05-16. Re-verify when Claude Code crosses a minor version or when the agent-teams feature flag is graduated out of experimental.
+
+The vendor-specific setup, limits and cost figures below retain that dated
+snapshot. Daodan's current execution contract comes from its kernels and host
+adapters. Neutral roles and workflows state ownership, isolated delivery and
+barriers; native task/tool instructions belong to the adapter. Compilation proves
+package structure, while installed-host behavior requires a separate runtime probe.
 
 ## TL;DR
 
@@ -97,7 +103,7 @@ Every teammate spawn prompt must include:
 2. **Scope** as explicit file / directory ownership ("you own `src/auth/`, do not touch `src/api/`").
 3. **Context references** — pointers to specific files or sections (`CLAUDE.md` references, X-ray output paths, interconnect map anchors) the teammate must read before producing work.
 4. **Output contract** — what they produce, where it goes (file path), in what format. If a downstream agent reads it, say so.
-5. **Completion protocol** — for example: "When done, call `TaskUpdate` to mark completed before claiming the next task."
+5. **Completion protocol**: deliver the assigned report or an explicit failure before the phase closes. A native Claude adapter can bind task-status updates to its available mechanism; neutral kernel bodies do not name that tool.
 
 ## Team sizing
 
@@ -122,14 +128,41 @@ Native hooks let you enforce rules without changing agent prompts:
 
 Pattern: use `TaskCompleted` to run lint / type-check / test before allowing a task to close. Converts "trust and hope" into "trust and verify".
 
+## Pipeline Conventions
+
+The runtime rules live in `senior-review:review-quality-gates` and the reviewer
+roles. This development reference explains their purpose:
+
+- **Scope budget.** Bound an unproductive search and return the examined scope;
+  an exhausted reading budget describes a coverage limit rather than project health.
+- **No-findings protocol.** A concrete report of what was examined is a valid
+  delivery. Silence is missing evidence, and inventing a finding is not completion.
+- **Cross-Reviewer Notes.** A reviewer can report observations for another
+  dimension without expanding its own ownership. The coordinator routes those
+  notes after independent delivery; workers do not exchange findings beforehand.
+- **Interconnect anchors.** A map citation shows which shared context informed
+  a claim. It supplements source evidence and premise provenance; a high citation
+  count does not demonstrate correctness or coverage.
+
 ## Verification panel + completeness critic (review pipelines)
 
-Review pipelines (`/senior-review:team-review`, `/senior-review:code-review`) close with two quality gates whose canonical definition lives in the `senior-review:review-quality-gates` skill (`## Adversarial Verification Panel`, `## Completeness Critic`):
+Universal review (`/senior-review:team-review`, `/senior-review:code-review`) and
+the extended `review-plus` entries use the same canonical
+[`senior-review:review-quality-gates`](../../plugins/senior-review/skills/review-quality-gates/SKILL.md)
+through `review-consolidation`. The canonical panel and completeness critic are
+loaded methods, rather than copied detection prompts:
 
-- **3-lens panel.** Each surviving finding is judged by three parallel verifiers with distinct mandates (reachability/correctness, false-positive causes, severity calibration). A finding survives on a 2-of-2 REAL vote from lenses 1-2; a tie leaves it `contested` rather than killing a possibly-real bug.
+- **4-lens panel.** Lens 0 challenges the load-bearing premise when its provenance or quantifiers require it. A refuted premise discards the finding before the remaining lenses. Reachability/correctness and false-positive lenses 1-2 run independently in parallel; two REAL votes retain a finding, two FALSE_POSITIVE votes discard it, and an incomplete or split vote leaves it `contested`. Lens 3 calibrates severity only for findings that survive lenses 1-2.
 - **Completeness critic.** A final agent reports coverage gaps (dimensions not run, in-scope files no reviewer cited, unverified assumptions, uncovered high-risk hot-spots) and, for a high-risk uncovered area, triggers one bounded follow-up round.
 
-The gate is default-on with a finding-count cost guard (threshold 25), a `--fast` opt-out, and a `--rigorous` force-full flag. In the prose/Agent substrate the cost guard is a finding-count proxy, not a token budget. A future Workflow-tool rewire replaces the proxy with a real budget and makes the majority vote and degradation deterministic.
+The gates are default-on for code/team review, with a finding-count cost guard
+(threshold 25), a `--fast` opt-out and a `--rigorous` force-full flag. The cost
+guard is a finding-count proxy, not an enforced token budget. Workers read only
+coordinator-declared inputs: independent reviewers do not read peer results before
+delivery, while downstream verifiers and critics receive the findings assigned to
+them. Generic isolated tasks bind to `project-protocol:isolated-worker`; named
+specialists retain their owner-qualified role. A sidecar's dispatch table declares
+the roles its loaded methods can use independently of phase scheduling.
 
 ## Hard limits (as of 2026-05)
 
@@ -152,7 +185,7 @@ The gate is default-on with a finding-count cost guard (threshold 25), a `--fast
 5. Set explicit task dependencies (`addBlockedBy` / `addBlocks`) when prerequisites exist (migrations → routes → tests).
 6. Activate **delegate mode** on the lead when you observe lead-implementing-itself.
 7. Install `TaskCompleted` hooks for lint / type / test gating before close.
-8. Include the operational instruction "When done, call `TaskUpdate` to mark completed" in every teammate spawn prompt — task-status lag is a known bug.
+8. Require an explicit delivered/failed result and the expected output file in every worker brief. Keep native task-status instructions in the host adapter.
 9. Default to **subagents** (single-session) and escalate to a team only when teammates need to talk to each other.
 10. For pipelines like `/team-review`, give each reviewer an explicit output file path and require writing to disk. Returning report text only forces a fragile fallback.
 
@@ -192,15 +225,26 @@ The gate is default-on with a finding-count cost guard (threshold 25), a `--fast
 
 ## How this applies to this repo
 
-This reference is the source of truth for any change to:
+Use this reference's design guidance alongside the current kernel contracts and
+adapter bindings when changing:
 
 - `plugins/codebase-xray/` — partition worker and synthesizer agents that participate in `/team-analyze`.
 - `plugins/senior-review/` — every reviewer agent that participates in `/team-review` Phase 2.
+- `plugins/review-plus/`: specialist selections composed with the canonical senior review methods.
+- `plugins/project-lifecycle/` and `plugins/project-protocol/`: specialist dispatch, generic isolated tasks, delivery accounting and candidate gates.
 - `plugins/project-knowledge/`: assigned writers in the file/audience guide plan.
 - `plugins/research/` — `/research:team-research` is the lead; `deep-researcher` investigates one sub-question per parallel wave; `quick-searcher` handles single-fact lookups and verifier duty.
 - Any new pipeline command that spawns multiple agents.
 
-Before merging a change that touches an agent body, frontmatter `tools`, or a pipeline command, cross-check against the **Operational do's and don'ts** section above. Before introducing a new team preset, cross-check against **When to use a team (and when not to)**.
+Before merging a change to a role body, frontmatter `tools` or workflow, check
+the ownership and delivery guidance above, then validate the workflow's declared
+roles, isolation and barriers against its adapter. Providers are required local
+dependencies; a missing selected worker remains a failed delivery. Coordinator-
+assigned intermediate reports are writable only by their owner, and the final
+report has one writer in its declaring phase. Before introducing a new team preset,
+cross-check against **When to use a team (and when not to)**. Claude snapshot
+instructions do not override the host-neutral vocabulary gate or establish that a
+hook is attached to an installed runtime.
 
 ## Sources
 

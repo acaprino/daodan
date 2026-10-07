@@ -52,6 +52,11 @@ jobs:
       - name: Validate before building
         run: python -m unittest discover -s tests
 
+      - name: Verify documentation and instruction parity
+        run: |
+          python scripts/sync_plugin_docs.py --check
+          python scripts/sync_codex_instructions.py --check
+
       - name: Build every native marketplace
         run: python scripts/daodan_build.py
 

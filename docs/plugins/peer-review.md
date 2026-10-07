@@ -4,6 +4,10 @@
 
 This page is the reference. [**One run end to end**](peer-review-walkthrough.md) is the narrative companion: a single worked invocation from the command line to the verdict, with the packet, the consent gate, every challenge round, certification and the corrective round shown as they are actually written, and one finding taken to each of the seven terminal states.
 
+Command examples and named tools in this guide use Claude notation. For other
+hosts, use the entry points and bindings in the source-derived reference below
+and [host setup](../hosts.md).
+
 ## Prerequisites
 
 `superpowers@claude-plugins-official` is a hard, qualified dependency (the `respondent` agent loads `superpowers:receiving-code-review` and stops if it is unavailable):
@@ -18,15 +22,15 @@ Beyond that, the plugin needs `uv` on PATH, Python 3.11 or later, and one API ke
 
 Three steps: install the plugin, write a profiles file, export the key it names.
 
-**1. Install.** The MCP server needs no registration of its own:
+**1. Install on Claude.** Claude discovers the generated MCP declaration on installation:
 
 ```bash
 claude plugin install peer-review@daodan
 ```
 
-The plugin ships a plugin-root `.mcp.json` declaring one stdio server that runs `uv run --script ${CLAUDE_PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py`, and Claude Code auto-discovers it on install. Check `/mcp`: `peer-review` should be listed as connected. If it is not, the README's manual fallback registers the same definition at user scope with the cache path substituted for `${CLAUDE_PLUGIN_ROOT}`. The declaration lives in the kernel's `plugin.toml` (`[[mcp.servers]]`) and the compiler renders the manifest; on Codex and Copilot, which do not start a plugin-declared server on their own, the package carries the same server file and the review workflow opens with a note giving the exact command to register under the name `peer-review`.
+The declaration lives in the kernel's `plugin.toml` (`[[mcp.servers]]`). The Claude adapter renders `.mcp.json` at the installed plugin root, with `uv run --script ${CLAUDE_PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py`. In Claude, check `/mcp` for a connected `peer-review` server; the README's fallback registers the same definition at user scope if discovery fails. OpenCode V2 registers the server from its generated package manifest. Codex, Copilot and Pi bundle the same server file but do not have a verified plugin-declared autostart path: their workflow opens with the exact manual registration command. Check availability before beginning a run; package installation alone does not establish a connected MCP server.
 
-**2. Write a profiles file.** Copy the shipped `plugins/peer-review/skills/cross-model-peer-review/scripts/profiles.example.json` to one of three locations. The server checks them in this order and the first file that exists wins, with no merging of the others:
+**2. Write a profiles file.** Copy [profiles.example.json](../../plugins/peer-review/skills/cross-model-peer-review/scripts/profiles.example.json), bundled under the `cross-model-peer-review` skill, to one of three locations. The server checks them in this order and the first file that exists wins, with no merging of the others:
 
 | Order | Location | Scope |
 |---|---|---|
@@ -182,7 +186,7 @@ The plugin is one conforming binding of a protocol it does not own, and the laye
 | Layer | What it is | Where |
 |---|---|---|
 | Protocol | Harness-independent, provider-independent. Fifteen numbered requirements (R1-R15), a nine-state finding lifecycle, packet anatomy, three round prompts. Names no tool, vendor, model, or transport | `plugins/peer-review/skills/cross-model-peer-review/references/` |
-| Claude Code binding | This plugin's implementation of the protocol | `workflows/review.md`, `roles/brief-builder.md`, `roles/packet-builder.md`, `roles/respondent.md`, `skills/cross-model-peer-review/` |
+| Daodan workflow binding | This plugin's implementation, rendered through each host adapter | `workflows/review.md`, `roles/brief-builder.md`, `roles/packet-builder.md`, `roles/respondent.md`, `skills/cross-model-peer-review/` |
 | Transport | Two stateless MCP tools, `peer_profiles` and `peer_ask`, against any OpenAI-compatible endpoint | `skills/cross-model-peer-review/scripts/server.py` |
 
 The protocol is the product; everything else here is its Claude Code implementation.
@@ -234,3 +238,91 @@ STANDOFF is reserved for genuine substantive survival; every procedural failure 
 The end-to-end deliberation has not been run yet: the plugin was registered mid-session while it was being built, so no session with a live, connected MCP server and a real challenger API key has driven a full `/peer-review:review` invocation. The MCP handshake and the Phase 0 availability gate were verified directly against the shipped server, and CI is green, but the real cross-model dialectic itself is unproven, not merely undocumented. Treat the plugin as shipped-but-not-yet-accepted until that run happens; the runbook to close it out is at the end of `evals/peer-review/cases.md`.
 
 **Related:** [senior-review](senior-review.md) (diff and PR review; `review-quality-gates` states the same shared-context provenance rule for reviewers inside one pipeline)
+
+<!-- daodan:reference:start -->
+## Source-derived reference
+
+Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
+this block; keep explanations above it. `--check` detects stale references.
+
+**Version:** `2.4.1`. **Source:** [plugin.toml](<../../plugins/peer-review/plugin.toml>).
+
+### Required dependencies
+
+Every listed plugin dependency is mandatory. Transitive requirements remain
+mandatory when using this plugin alone. The local closure includes this plugin.
+
+| Requirement | Plugins |
+|---|---|
+| Direct local | None |
+| Direct external | `superpowers@claude-plugins-official` |
+| Local closure (1) | [peer-review](<peer-review.md>) |
+| External closure (1) | `superpowers@claude-plugins-official` |
+
+External bundles are separate upstream installations, not copied local skills.
+See [host setup](<../hosts.md>) for selection and availability requirements.
+
+**Required capabilities:** `repository.read`, `repository.write`, `contexts.isolate`, `roles.dispatch`, `mcp.servers`.
+**Optional capabilities:** `execution.parallel`.
+Optional capabilities are host mechanisms, not optional local plugin dependencies.
+
+### Registered components
+
+Names below are kernel IDs. Host entry points and paths follow the adapter
+mapping in [the host reference](<../hosts.md>).
+The source links carry the complete instructions and accepted arguments.
+
+| Kind | ID | Purpose and trigger | Source |
+|---|---|---|---|
+| Skill | `peer-review:cross-model-peer-review` | Doctrine for putting a plan, a spec, or a session's own decisions in front of a second model family: when the cost is earned, the GIVEN versus DERIVED provenance rules, when to skip it. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external challenge, or interpreting a verdict's standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review), or running same-family multi-reviewer pipelines (use senior-review:review-quality-gates). | [cross-model-peer-review](<../../plugins/peer-review/skills/cross-model-peer-review/SKILL.md>) |
+| Role | `peer-review:brief-builder` | Materializes a session's context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b. DO NOT TRIGGER WHEN: the run already has a plan or spec on disk (Phase 0b is skipped). | [brief-builder](<../../plugins/peer-review/roles/brief-builder.md>) |
+| Role | `peer-review:packet-builder` | Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1. | [packet-builder](<../../plugins/peer-review/roles/packet-builder.md>) |
+| Role | `peer-review:respondent` | Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those). | [respondent](<../../plugins/peer-review/roles/respondent.md>) |
+| Workflow | `peer-review:review` | Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the session's context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the session's own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session. | [review](<../../plugins/peer-review/workflows/review.md>) |
+
+### Workflow contracts
+
+Contracts describe observable outputs; Markdown bodies define decisions,
+flags, safety gates and execution. Declared `invoke` execution is unsupported.
+
+#### `peer-review:review`
+
+**Arguments:** <code>[&lt;path-to-plan-or-spec&gt; &#124; &lt;topic&gt;] [--challenger=&lt;profile&gt;] [--rounds=N] [--dry-run] [--apply]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `review-completed` |
+| Artifacts | `review-report` |
+| Schemas | None declared |
+| Declared workers | None |
+| Composed worker isolation | See phase isolation below |
+| Task-specific isolated workers | Not declared |
+| Sidecar | [review.toml](<../../plugins/peer-review/workflows/review.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+### Host exports
+
+Package paths and coordination are derived from the host adapters. `native`
+and `adapted` describe bindings, not successful installed-host execution.
+
+The selected strategy is an adapter binding even for a flat workflow body.
+A dispatch harness is rendered only for declared method workers, task-specific
+workers or phase fan-out; the host reference explains the entry artifacts.
+
+| Host | Package | Binding | Selected workflow strategy |
+|---|---|---|---|
+| claude | [exports/claude/plugins/peer-review](<../../exports/claude/plugins/peer-review>) | `native` | `review: native-team` |
+| copilot | [exports/copilot/plugins/peer-review](<../../exports/copilot/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
+| codex | [exports/codex/plugins/peer-review](<../../exports/codex/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
+| pi | [exports/pi/plugins/peer-review](<../../exports/pi/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
+| opencode | [exports/opencode/plugins/peer-review](<../../exports/opencode/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
+
+### Additional shipped contracts and mechanisms
+
+- MCP server `peer-review`: `uv`, `run`, `--script`, `${CLAUDE_PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py`. Host registration differs; see the host reference.
+
+<!-- daodan:reference:end -->

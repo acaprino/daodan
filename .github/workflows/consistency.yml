@@ -37,6 +37,11 @@ jobs:
       - name: Host vocabulary lint
         run: python scripts/lint_host_vocabulary.py
 
+      - name: Plugin documentation and instruction parity
+        run: |
+          python scripts/sync_plugin_docs.py --check
+          python scripts/sync_codex_instructions.py --check
+
       - name: Unit and contract tests
         run: python -m unittest discover -s tests -v
 

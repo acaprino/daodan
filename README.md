@@ -77,6 +77,11 @@ Use an existing released tag in place of <metadata.version>.
 See [host distribution and migration](docs/migration-from-claude-code-daodan.md)
 and [the harness migration](docs/migration-to-coherent-harness.md).
 
+The [complete plugin catalog](docs/catalog.md) lists every registered skill, role
+and workflow through its plugin page, with mandatory direct and transitive
+dependencies. The [host reference](docs/hosts.md) explains the corresponding
+commands, paths, installation requirements and runtime limits on each host.
+
 ## Canonical owners
 
 | Plugin | Responsibility |
@@ -149,6 +154,7 @@ python scripts/daodan_build.py
 python scripts/daodan_build.py --check --support
 python -m unittest discover -s tests
 python scripts/sync_codex_instructions.py --check
+python scripts/sync_plugin_docs.py --check
 ```
 
 Follow [CLAUDE.md](CLAUDE.md) for dependency, version and publication rules.

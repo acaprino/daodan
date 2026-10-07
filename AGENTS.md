@@ -110,6 +110,12 @@ When a change legitimately trips a linter, fix the declaration or the reference,
 
 ### The publication workflow, which writes rather than checks
 
+Both CI workflows also run the documentation and instruction parity gates:
+`python scripts/sync_plugin_docs.py --check` and
+`python scripts/sync_codex_instructions.py --check`. A source change that alters a
+registered component, dependency closure, contract, adapter binding or repository
+instruction must regenerate the corresponding documentation before publication.
+
 `.github/workflows/publish-marketplaces.yml` is the only workflow here that pushes. On every push to `master` it rebuilds every marketplace, verifies the built tree reproduces, and commits the result as "Publish native Daodan marketplaces". It publishes every host or none, and the final `--check` runs before the commit rather than after it.
 
 Its last step publishes a GitHub Release, `v<metadata.version>`, on the commit it just published. The step is keyed on the version rather than on the push, so it creates a release exactly once per marketplace version and does nothing on a push that bumps nothing. The release carries no asset, because the install path is the marketplace registration and always was: the tag exists so a version can be traced to a commit, and so a curated-directory submission has an immutable revision to pin.
@@ -118,7 +124,7 @@ It runs under a `concurrency` group so two pushes cannot each build against a di
 
 It needs repository-level `default_workflow_permissions: write` (**Settings**, **Actions**, **General**, **Workflow permissions**). A workflow's own `permissions:` block cannot grant more than that ceiling, so without it `git push` and any release step answer 403 with no other symptom. That setting is invisible in every file here; check it before the workflow when publication starts failing on permissions.
 
-GitHub does not start a workflow from a push made with `GITHUB_TOKEN`, so the bot's publication commit triggers nothing at all. The consequence to keep in mind is that **`consistency.yml` never sees a publication commit**. That is covered rather than missed, because the publication job runs the same checks before committing, but a check added to `consistency.yml` alone will silently not apply to the tree as published.
+GitHub does not start a workflow from a push made with `GITHUB_TOKEN`, so the bot's publication commit triggers nothing at all. **`consistency.yml` never sees a publication commit**. The publication job runs the unit suite, documentation and instruction parity gates, rebuild and deterministic drift check before committing. The remaining consistency linters are separate checks on the initiating source commit. A gate intended to validate the bot's published tree must also run in the publication workflow; adding it only to consistency does not provide that coverage.
 
 ### Distribution
 
@@ -149,6 +155,18 @@ OpenCode Desktop needs nothing of its own: it bundles the V2 CLI and runs it as 
 There is no extension, no `.vsix` and no packaging job. The VS Code extension that used to carry the Copilot port was a workaround from before Copilot read plugin marketplaces, and it was removed at the universal cutover along with its release workflow and its skill-copy lifecycle. Historical GitHub Release assets are left untouched and are unsupported: they predate the universal migration and nothing rebuilds them. What the Releases page carries now is one assetless tag per published marketplace version, `v<metadata.version>`, written by `publish-marketplaces.yml`. It is a record of which commit a version shipped from, never an install path, and it is never hand-created: bump `metadata.version`, push, and the workflow tags it. `docs/migration-from-claude-code-daodan.md` holds the one-time migration and the rollback rule: roll back with a revert plus a **new** patch version, never by reusing a published version and never by renaming the repository back.
 
 ## Documentation
+
+`docs/catalog.md` and the marked reference blocks in every `docs/plugins/<name>.md`
+are derived from kernel manifests, component frontmatter, workflow sidecars and
+adapter bindings by `python scripts/sync_plugin_docs.py`. They cover the complete
+component inventory, direct and transitive mandatory dependencies, workflow
+contracts and host package paths. Edit explanations outside the markers, then
+regenerate the references after changing their source facts. `--check` is a
+read-only drift gate in both consistency and publication workflows, alongside
+the Codex instruction parity gate. It fails when a plugin page is missing or a
+generated reference is stale. `docs/hosts.md` explains installation, selection,
+entry-point mapping, environments, MCP, dispatch and enforcement limits. These
+references document compiled support; they do not establish live host behavior.
 
 `docs/plugins/` contains per-plugin documentation. `docs/references/` holds cross-cutting knowledge bases that inform changes across multiple plugins — notably [`agent-teams-best-practices.md`](docs/references/agent-teams-best-practices.md), the source of truth when restructuring any plugin that spawns multi-agent teams or pipeline reviewers (`senior-review`, `project-knowledge`, `research`, `codebase-xray`). `evals/` holds eval harnesses: development assets, never shipped, not registered in `marketplace.json`. `evals/senior-review/` measures review recall against ground-truth bugs (cases plus scoring protocol). `evals/ai-tooling/` is a different shape, because that plugin has no bugs to recall: its 15 cases assert **behavioral invariants** (the frontier is never auto-picked, a contract survives optimization, an installed SDK outranks a bundled reference, an every-call rule uses a `PreToolUse` hook) so that a later edit cannot quietly remove one. Assertions target the philosophy, never the wording, and a case that fails once keeps its case forever. `evals/research/` follows the `ai-tooling` shape for the deep-research pipeline (marketplace 25.0.0). `evals/codebase-xray/` does the same for the X-ray pipeline (marketplace 26.4.0): eleven behavioural-invariant cases (Phase 0 at every depth, run isolation, parsers over hand reading, forbidden files never quoted, claims cite evidence and carry a status, partition ownership, scope authorization and mapper scope in team mode, incremental runs carry unaffected claims forward and re-derive only what changed, declared coverage with stylesheets parsed and scanned), the first nine written after the 2026-09-03 review; `evals/codebase-xray/RESULTS.md` records which have run. The script half of that plugin is pinned mechanically instead: `tests/test_xray_scripts.py` runs the regex fallback on CI and the tree-sitter path wherever it is installed, `tests/test_xray_snapshot.py` pins the incremental snapshot, and `tests/test_xray_stylesheet.py` the stylesheet adapter and the cascade scan.
 

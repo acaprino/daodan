@@ -1,7 +1,7 @@
 """What the publication workflow must and must not do.
 
 The mirror workflow it replaces wrote one host's export. This one writes all
-three or none, because a marketplace where one host is a commit ahead of the
+five or none, because a marketplace where one host is a commit ahead of the
 others is the drift the whole compiler exists to prevent.
 
 Its release step is pinned here for the same reason the guard above it is. A
@@ -65,6 +65,12 @@ class PublishWorkflowContractTests(unittest.TestCase):
         text = workflow_text(PUBLISH)
         self.assertIn("scripts/daodan_build.py --check", text)
         self.assertIn("scripts/daodan_build.py", text)
+        for path in (CONSISTENCY, PUBLISH):
+            with self.subTest(workflow=path.name):
+                source = workflow_text(path)
+                self.assertIn("scripts/sync_plugin_docs.py --check", source)
+                self.assertIn("scripts/sync_codex_instructions.py --check", source)
+        self.assertLess(text.index("scripts/sync_plugin_docs.py --check"), text.index("git commit"))
 
     def test_publication_stages_every_host(self):
         text = workflow_text(PUBLISH)

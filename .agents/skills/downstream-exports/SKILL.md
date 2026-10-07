@@ -44,7 +44,7 @@ The core owns roles, workflow dependencies, required context isolation, joins an
 | roles | `agents/<role>.md` | `agents/<role>.agent.md` | `roles/<role>.md` | `skills/<plugin>-<role>/SKILL.md` | `agents/<role>.md`, registered as agent `<plugin>:<role>` |
 | workflows | `commands/<workflow>.md` | `prompts/<workflow>.prompt.md` | `skills/<workflow>-workflow/SKILL.md` | `prompts/<plugin>-<workflow>.md` | `commands/<workflow>.md`, registered as `/<plugin>:<workflow>` |
 | skills | `skills/<skill>/SKILL.md` | same | same | same | same, registered as `<plugin>:<skill>` |
-| source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `source = "local"` plus `path` | a glob, not a reference | `root` in the manifest's `daodan` key |
+| source reference | `./exports/claude/plugins/<name>` | `./exports/copilot/plugins/<name>` | `./exports/codex/plugins/<name>` in `source` | a glob, not a reference | `root` in the manifest's `daodan` key |
 
 Pi and OpenCode are the hosts with no marketplace and no per-plugin manifest. On Pi three of those
 cells are unlike the others and each is load-bearing. Its catalog is an npm-shaped `package.json` at the
@@ -52,7 +52,7 @@ cells are unlike the others and each is load-bearing. Its catalog is an npm-shap
 registers by globbing `./exports/pi/plugins/*/skills` and `.../prompts` rather than by naming
 anything. `plugin_manifest` is absent from its layout, which is what makes that key optional in the
 renderer. And its roles render as skills carrying `disable-model-invocation: true`: Pi lists every
-registered skill's name and description in the system prompt, so the flag is what keeps 76 roles
+registered skill's name and description in the system prompt, so the flag is what keeps role bodies
 from costing that budget in every session while staying loadable, and it is also what makes a
 role-only plugin such as `app-analyzer` exist at all on a host with no agent concept.
 
@@ -82,19 +82,53 @@ Three decisions in that loader are contracts. **IDs follow Claude** (`senior-rev
 because V2 registers commands and agents by free string and the kernels already write that form; a
 probe item records whether the `skill` and `subagent` tools accept the colon. **Selection is a loader
 option that the dependency policy outranks**: `options.plugins` brings its transitive closure of local
-dependencies and `options.exclude` never removes a plugin a selected one needs, both logged. **A role's
-permission list starts with a deny-all and ends with an `external_directory` allowance scoped to
-`<package-root>/**`**, which the loader resolves: the package lives in OpenCode's cache, outside every
-project, so without it a role is refused the very references its body tells it to read. Roles carry
+dependencies and `options.exclude` never removes a plugin a selected one needs, both logged. **A role
+with declared tools starts its permission list with deny-all, then allows those tools and skill
+loading. Every role ends with an `external_directory` allowance scoped to `<package-root>/**`**.
+A role without a tools restriction retains host defaults plus that package allowance. The loader
+resolves it: the package lives in OpenCode's cache, outside every project, so without it a role is
+refused the references its body tells it to read. Roles carry
 neither `model` (V2's subagent default already inherits) nor `color` (V2 takes hex, the kernels names).
 
 Codex suffixes workflow directories with `-workflow` on purpose: it is the one host that renders both skills and workflows as skills, and before marketplace 29.0.0 a plugin could have a skill and a workflow of the same name (`digital-marketing:brand-naming` did), which would have collided on disk. The frontmatter `name` carries the same suffix, through the layout's `workflow_name` key, because Codex resolves a skill by that name rather than by its directory: until marketplace 28.5.0 the directory was suffixed and the name was not, so `brand-naming` registered two skills under one name.
+
+Codex's catalog `source` is the relative package path itself. Do not restore the older
+`source = "local"` plus `path` object: `scripts/daodan/catalogs.py` records that the native
+catalog accepted the marketplace but could not find its plugins with that shape.
 
 Since marketplace 29.0.0 a name may not repeat across kinds at all: `validate_component_kinds` fails the build on a skill, role or workflow sharing a name inside one plugin. OpenCode is what forced it, because its `@` menu lists skills and agents together. A role beside a same-topic skill takes `-agent`, a skill beside a same-topic workflow takes `-method`. The Codex suffix is now redundant and stays anyway: removing it would rename every Codex workflow skill a user already has installed.
 
 ## Harness rendering
 
-A workflow whose phases fan out is not copied, it is rendered through that host's harness template, which wraps the neutral body with the dispatch obligations the contract requires: isolated worker contexts, the delivery barrier, the single-writer rule for the report, and a **dispatch plan**. The templates are `claude/templates/team-workflow.md.tmpl`, `copilot/templates/coordinator.agent.md.tmpl` (plus `worker.agent.md.tmpl` for the roles), `codex/templates/subagent-workflow.SKILL.md.tmpl`, `pi/templates/team-prompt.md.tmpl` (plus `role.SKILL.md.tmpl`) and `opencode/templates/team-command.md.tmpl` (plus `agent.md.tmpl`). The OpenCode harness names the native `subagent` tool and `background: true` for one phase's workers, and has no missing-tool branch: isolation is native there, so a `subagent` call that answers with an unknown agent is a broken install, stopped and reported.
+A workflow receives a harness when its sidecar declares `[dispatch].roles`, permits
+`[dispatch].inline_workers`, or has a phase with `fanout` or `fanout_from`. A composed method
+therefore receives its worker bindings even when the scheduling graph has no fan-out. The host
+template wraps the neutral body with isolated worker contexts, the delivery barrier, the
+single-writer rule for the final report, and a **dispatch plan**. The templates are
+`claude/templates/team-workflow.md.tmpl`, `copilot/templates/coordinator.agent.md.tmpl` (plus
+`worker.agent.md.tmpl` for roles), `codex/templates/subagent-workflow.SKILL.md.tmpl`,
+`pi/templates/team-prompt.md.tmpl` (plus `role.SKILL.md.tmpl`) and
+`opencode/templates/team-command.md.tmpl` (plus `agent.md.tmpl`). OpenCode names the native
+`subagent` tool and `background: true` for one phase's workers. An unknown agent stops the run
+as a broken install.
+
+`[dispatch].isolated` and `inline_workers` also feed coordination selection, independently of
+phase isolation. `inline_workers` exposes only `project-protocol/isolated-worker` for a full
+method-owned task, scope, authorization, budget and report path; it never exposes the entire
+role registry. Extra named workers use `plugin/role` references and must have a direct required
+provider dependency. The registry validates the provider and role before rendering.
+
+Named-agent adapters (Claude, Copilot, OpenCode) bind installed owner-qualified agent IDs.
+Inline-prompt adapters (Codex, Pi) load local roles from their rendered role location and ship
+referenced external role bodies under `contracts/dispatch/<owner>/<role>.md`. Those are generated
+resources, with owner, provider version and source digest, never registered skills or agents.
+Their helper references resolve against the owning plugin's installed skill, not against the
+coordinator or the generated resource's directory. Edit the owner's canonical role to change one.
+
+The wrapper requires each worker's recorded `delivered` or `failed` outcome before a phase can
+close. Independent reviewers receive coordinator-declared inputs and cannot read peer results
+before their own delivery. Intermediate report paths are assigned explicitly; the final report
+has one exclusive owner in its declaring phase.
 
 The Pi template is the one that branches, and the branch is a contract rather than a courtesy. Its `subagent` tool is not part of Pi's core, so the template states what to do when none is available and makes the answer depend on the isolation the workflow declared: `required` stops and asks for `pi install npm:pi-subagents`, `shared` may run the phases in one context and say so. Running a review pipeline serially in one context is the loss of isolation rather than a lesser form of it, so collapsing those two branches would produce a report claiming a contract it did not meet.
 
@@ -122,15 +156,58 @@ Pi and OpenCode are the hosts besides Claude whose arguments placeholder maps on
 
 Claude's keys map each placeholder onto itself and carry no note, so its packages are unchanged by this pass. Only the `${CLAUDE_PLUGIN_ROOT}` form is rewritten; a bare `$CLAUDE_PLUGIN_ROOT` would pass through and fail `tests/test_daodan_host_rendering.py`.
 
-A workflow that does not fan out is rendered under host frontmatter from the `workflow_frontmatter` layout key, which lists the keys the host reads in order: Claude has none and gets the kernel file verbatim, Codex gets `name` and `description` with the argument hint moved into the body as an `Arguments:` line, Copilot gets `name`, `description` and `argument-hint`, which its prompt files support.
+A workflow without declared dispatch workers or phase fan-out is rendered under host frontmatter
+from the `workflow_frontmatter` layout key: Claude has none and gets the kernel file verbatim;
+Codex gets `name` and `description` with the argument hint moved into the body as an `Arguments:`
+line; Copilot gets `name`, `description` and `argument-hint`. For a dispatched Copilot workflow,
+the prompt remains the entry point and the compiler also registers its `*-coordinator` agent.
 
 Which strategy each host selected is recorded per package in `.daodan-provenance.json`, together with the kernel digest and any overrides applied. Topology names may differ between hosts; contract assertions may not.
+
+## Shared contracts and composition
+
+`[contracts].exports` declares a kernel's public `contracts/` files. Local
+`[contract].schemas` still refers to a workflow's own plugin. A shared reference such as
+`project-protocol/contracts/work.toml` belongs in `[contract].shared_schemas`; its provider must
+be a direct required dependency and the target must be explicitly exported. The provider package
+carries the canonical file. Consumers' shipped `contracts/<workflow>.workflow.toml` sidecars
+retain the qualified reference; the compiler does not create another hand-authored schema copy.
+
+Project-protocol owns work records and project results. Senior-review's domain contracts remain
+in senior-review. Shared operational records do not replace native findings and review ledgers.
+
+The compiler renders entry-point methods and dispatch instructions; it does not execute a
+workflow from another workflow. Nonempty `invoke` is rejected. A coordinator loads the canonical
+specialist skill and binds its declared workers. The existing X-ray entry is an explicitly
+documented same-context method step, not a general-purpose `invoke` executor.
+
+## Installation and mandatory dependencies
+
+Register the repository root on Claude, Copilot or Codex and install `<plugin>@daodan`. Their
+generated catalogs declare required dependencies and derive the foreign-marketplace trust
+allowlist from qualified `plugin@marketplace` references. Local dependencies are always required,
+never optional, with no runtime installed-check fallback. Installation must provide the complete
+transitive dependency closure before an entry runs.
+
+Pi installs the repository package at a released tag. Settings may filter prompt and skill globs,
+but the root manifest has no per-plugin dependency solver: include the complete local closure
+when selecting plugins. OpenCode installs `exports/opencode` at the same tag. Its loader computes
+the local closure of `options.plugins` and prevents `options.exclude` from removing required
+providers. Neither package installs plugins from external marketplaces automatically; those
+qualified dependencies must be provisioned in a form the host can load. Pi's companion packages
+are an additional runtime requirement, not local Daodan plugin dependencies.
+
+The user-facing installation, command mapping and environment limits live in
+[`docs/hosts.md`](../../../docs/hosts.md). It describes repository implementation; fixture probes
+recorded under `tests/host-probes/` do not prove a new lifecycle run on an installed host.
 
 ## Overrides are a last resort, and they expire
 
 An override replaces one rendered file for one host, and it carries the digest of the neutral source it was reviewed against. When that source moves, the override is reported `stale-override` and the build fails until a human re-reads it. An override may select a different declared mechanism; it may never add a tool, MCP server, LSP server, hook or capability the kernel did not declare (`override-capability-escalation`), and it may not quietly drop a contract the workflow declares (`override-drops-contract`).
 
-There are currently no overrides at all. Every host divergence so far was expressible through the generic templates, which is the outcome the gate exists to make visible rather than to encourage. Reach for one only after establishing that a *behavioural contract* cannot be rendered generically. A different topology is not a reason; a different meaning is.
+Generic templates express the shipped host differences. Reach for an override only after
+establishing that a *behavioural contract* cannot be rendered generically. A different topology
+is not a reason; a different meaning is.
 
 ## MCP servers: a manifest where the host starts them, a note where it does not
 
@@ -159,7 +236,22 @@ A neutral policy under `plugins/<name>/policies/` says what must hold. An adapte
 
 - **A plugin-level hook is session-global.** `hooks/hooks.json`, which Claude Code and Codex both read, fires for every tool call of every agent while the plugin is enabled. A confinement rule there would refuse every write outside `.codebase-xray/` in every session. A confinement policy can never ship as a plugin hook, on any host.
 - **Per-agent hooks are the right mechanism and are not yet safe to generate.** Claude agent frontmatter and VS Code custom agents accept a `hooks:` block scoped to that agent. A hook command that fails to find its script does not fail open: a non-zero exit blocks that worker's every tool call, and `${CLAUDE_PLUGIN_ROOT}` is not reliably expanded in agent-frontmatter hook commands. Copilot CLI does not run plugin hooks at all (github/copilot-cli#2540).
-- **So the policy is prompt-level everywhere**, carried by the worker prompts and the ownership contracts in the roles, and the kernel's `write-confinement.toml` says so in its `[enforcement]` table. Wire a mechanism only after a host probe shows a per-agent hook running from an installed plugin, and wrap the command so a missing script allows rather than blocks.
+- **Agent-tool confinement stays prompt-level on all five hosts**, carried by worker prompts,
+  ownership contracts and the policy's `[enforcement]` table. The shipped Copilot guard is not
+  wired. Wire a mechanism only after a host probe shows a per-agent hook running from an
+  installed plugin, and wrap the command so a missing script allows rather than blocks.
+
+Project-lifecycle's `run-write-confinement` is also prompt-level (`mechanical_wired = false`).
+Project-protocol's run-state helper and lifecycle artifact helpers independently reject escaping
+paths, links and unsafe output identities mechanically. That enforcement covers operations
+performed through those helpers, not arbitrary writes by other agent tools, semantic truth of a
+report, or the provenance of human permission.
+
+Project run output defaults to `.daodan/runs/<id>/`. A dedicated alternative root is allowed
+only inside the identified project, is not the project root, and carries `.daodan-root`.
+Tri-Tech Code is an external OpenCode consumer, not a sixth adapter. Private app storage outside
+the project is unsupported until a separate permission binding is proved: generated OpenCode
+role allowances cover the installed package, not an arbitrary app data directory.
 
 ## Content that deliberately keeps host-as-subject vocabulary
 

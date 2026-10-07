@@ -19,6 +19,11 @@ A "custom plugin" is any plugin NOT listed in the sync table of the `upstream-sy
 
 Custom plugins decay differently than vendored ones. There is no upstream commit to diff against. Versions, framework recommendations, breaking-change notes, and "current as of 2026" claims become stale silently. The maintenance protocol below is the antidote.
 
+Refresh the hand-authored kernel under `plugins/<name>/`: `plugin.toml`, `roles/`,
+`workflows/` with their TOML sidecars, `skills/`, `contracts/` and `policies/`.
+Host mechanisms live under `adapters/`. Exports and root marketplace catalogs are
+generated; correct their source and rebuild rather than editing package copies.
+
 ## Freshness risk classes
 
 Classify each plugin into one of four classes. The class determines refresh cadence and triage priority.
@@ -28,7 +33,7 @@ Classify each plugin into one of four classes. The class determines refresh cade
 | **Very fast** | Versions bump every few months; breaking changes are common; ecosystem reshuffles | Every 3 months | rag-development (embedding models, rerankers, vector DBs), digital-marketing/ga4-implementation (Consent Mode, GA4 events), react-development (React 19, Vercel guidance) |
 | **Fast** | Framework releases 2-3x per year; APIs evolve | Every 6 months | libgdx-development, opentelemetry, tauri-development, stripe (API additions, webhook event types), grabber-development (anti-bot vendor moves), browser-extensions, pwa-expert (browser version churn, WebKit feature rollout, framework PWA library churn), text-humanizer (Wikipedia's signs page and the upstream humanizer both change monthly) |
 | **Moderate** | Major releases ~yearly; breaking changes rare | Every 12 months | trading-broker-integration, csp (OR-Tools), python-development, typescript-development, messaging (RabbitMQ majors), obsidian-development, abstraction-architect (theory is stable; URL list in further-reading.md decays on a yearly cadence) |
-| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, business, clean-code, codebase-xray, platform-engineering, testing methodology, xterm, app-analyzer |
+| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, project-protocol, senior-review, review-plus, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, business, clean-code, codebase-xray, platform-engineering, testing methodology, xterm, app-analyzer |
 
 If unsure, default to "Fast" (6 months). Reclassify after the first refresh based on how much actually changed.
 
@@ -41,7 +46,7 @@ A refresh that corrects today's facts leaves the same trap set for the next read
 Two mechanics from that pass are reusable:
 
 - **Mark what you could not confirm.** A claim that fails documentation resolution during a refresh is unconfirmed, not confirmed-absent. Tag it `*(verify)*` in place instead of deleting it or leaving it to read as verified. The tag is also the next refresh's work queue.
-- **Prefer relative and substituted paths over repo paths.** `${CLAUDE_PLUGIN_ROOT}/...` and skill-relative `references/...` survive installation; `plugins/<name>/...` resolves only in a checkout of this repo. `python scripts/lint_bundled_paths.py` enforces this and carries the pre-existing debt as a baseline.
+- **Prefer relative and substituted paths over repo paths.** `${CLAUDE_PLUGIN_ROOT}/...` and skill-relative `references/...` survive installation; `plugins/<name>/...` resolves only in a checkout of this repo. `python scripts/lint_bundled_paths.py` enforces this against shipped resources; its bundled-path baselines are empty. Cross-plugin consumers load the owner's named skill instead of reaching into its files.
 
 Where a refresh produces a behavioral invariant worth keeping (the frontier is never auto-picked; the installed SDK outranks the bundled reference), add a case to that plugin's harness under `evals/` rather than trusting the next reader to notice. `evals/ai-tooling/` is the pattern.
 
@@ -53,7 +58,7 @@ Predictable hot spots, in priority order:
 2. **SKILL.md** -- "Quick Start" steps name install commands with versions
 3. **References** -- changelog / breaking-changes sections; benchmark numbers; "as of YYYY" lines
 4. **Audit command** -- checklists referencing specific version-gated features
-5. **Marketplace.json description** -- if the description name-drops versions (e.g. "RabbitMQ 4.x coverage")
+5. **plugin.toml description** -- if the description name-drops versions (e.g. "RabbitMQ 4.x coverage"); catalogs derive it from this declaration
 
 The agent and SKILL.md are the highest-value targets per minute of refresh effort. Reference files matter less for typical users (progressively disclosed) but matter most for power users.
 
@@ -84,7 +89,7 @@ Steps to refresh a custom plugin. Same protocol regardless of risk class; only t
 
 3. **Surgical Edits only**. Do not rewrite whole files. Replace specific lines and sentences. Preserve structure so future refreshes have stable anchors.
 
-4. **Bump versions**. Patch bump for fact updates (`1.2.3 -> 1.2.4`). Minor bump if a new section, file, or reference was added (`1.2.3 -> 1.3.0`). Always bump `metadata.version` too (patch is fine unless the marketplace shape itself changed).
+4. **Bump versions**. Bump `version` in each changed kernel's `plugin.toml`: patch for fact updates (`1.2.3 -> 1.2.4`), minor if a new section, file, or reference was added (`1.2.3 -> 1.3.0`). Bump `metadata.version` in `.claude-plugin/marketplace.json` too (patch is fine unless the marketplace shape itself changed). This metadata field is the compiler's version input; the catalog entries remain generated. Rebuild every host with `python scripts/daodan_build.py` and regenerate the component/dependency reference with `python scripts/sync_plugin_docs.py` when a kernel changes. Before publication, run `python scripts/daodan_build.py --check`, `python scripts/sync_plugin_docs.py --check` and the required repository gates.
 
 5. **Commit the evidence, not only the conclusion.** A refresh commits three files under `docs/superpowers/specs/`, beside its design record and named for the same date: the research prompt as it was run, the researcher's report verbatim, and a per-source verification file saying which sources were checked against their primary pages, which were corrected, and which were not verified at all. Each carries the sha256 of its body.
 
@@ -94,7 +99,7 @@ Steps to refresh a custom plugin. Same protocol regardless of risk class; only t
    ```
    Refresh <plugin-name> for <framework> v<new-version> (v<plugin-version>)
    ```
-   This makes the git log a searchable record of which plugins got attention when. Use this to decide what to refresh next: anything not touched in a full risk-class cadence is overdue.
+   Commit the changed kernels, evidence and all regenerated exports/catalogs and documentation references together. If repository workflow skills changed, regenerate their native Codex adaptations with `python scripts/sync_codex_instructions.py` and check parity with `--check`. This makes the git log a searchable record of which plugins got attention when. Use this to decide what to refresh next: anything not touched in a full risk-class cadence is overdue.
 
 ## Triage on demand
 
@@ -105,7 +110,8 @@ When you sit down to do a refresh pass and don't know where to start:
 git log --since="6 months ago" --name-only --pretty=format: -- plugins/ \
   | grep -v "^$" | awk -F/ '{print $2}' | sort -u > /tmp/recently-touched.txt
 
-# Compare against the full plugin list in marketplace.json. The difference is your work queue.
+# Compare against plugins/*/plugin.toml, the authoritative kernel inventory.
+# The difference is your work queue.
 ```
 
 Refresh the "Very fast" and "Fast" classes first if any are on the work queue; defer "Moderate" and "Slow" classes unless something specific prompted the review.

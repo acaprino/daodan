@@ -2,6 +2,10 @@
 
 > Catch bugs before they ship. Twelve specialized agents: eleven review code quality, security, UI timing, distributed flows, startup cycles, temporal resilience (failure-over-time), data integrity (persistence semantics), resource lifecycle (ownership and release), cross-component logic integrity, formal API contracts, and codebase hygiene in parallel, and the twelfth, `premise-auditor`, derives the code's claims a second time, independently, and attacks the premises findings stand on. The reviewers read a shared contract/invariant map built by `codebase-xray:semantic-interconnect-mapper`, which is why they find bugs that are invisible from local-only inspection. Backed by a comprehensive defect taxonomy knowledge base with 140+ defect patterns and CWE/OWASP mappings. `/senior-review:team-review` runs all of it as a single pipeline, with an adversarial verification panel and a completeness critic as quality gates before the report ships.
 
+Command examples and named tools in this guide use Claude notation. For other
+hosts, use the entry points and bindings in the source-derived reference below
+and [host setup](../hosts.md).
+
 ## Agents
 
 ### `code-auditor`
@@ -292,7 +296,7 @@ Comprehensive defect knowledge base with 16 macro-categories and 140+ subcategor
 
 ### `review-quality-gates`
 
-Quality gates for multi-reviewer code review pipelines: the context-sharing pattern that lets reviewers cite a shared interconnect map instead of re-reading code from scratch, the adversarial verification panel that re-judges every consolidated finding, the completeness critic that reports what the review failed to cover, evidence classes for quantitative claims, and the delivery gate. Consumed by `/senior-review:team-review` (Phases 1, 3, 4b, 4c, 5) and `/senior-review:code-review` (Steps 4b/4c). Since 8.0.0 the skill also carries three `references/` files (`code-review-agents.md`, `code-review-fix-loop.md`, `code-review-output.md`) that hold the full agent prompts, fix-loop workflow, and output templates of `/senior-review:code-review`, loaded on demand so the command itself stays thin (about 350-400 lines).
+Quality gates for multi-reviewer code review pipelines: shared-context provenance, the adversarial verification panel, the completeness critic, evidence classes for quantitative claims, and the delivery gate. The canonical review methods load these rules and the `code-review-agents.md`, `code-review-fix-loop.md` and `code-review-output.md` references on demand. Entry-point workflows only select a variant and prepare its inputs; they do not carry a second copy of the review engine.
 
 **Shared-Context Provenance Rule:** the skill's first-level invariant, and the reason the rest of this section reads the way it does. Evidence derived from a shared artifact cannot independently corroborate the claims in that same artifact: N reviewers agreeing on a premise they were all handed is one observation, not N. Three consequences bind every gate: a reviewer that consumed a claim has not verified it, agreement across a shared premise is an **echo** that raises neither confidence nor severity, and no metric may reward agreement with a shared artifact.
 
@@ -302,13 +306,19 @@ Quality gates for multi-reviewer code review pipelines: the context-sharing patt
 
 **Evidence Classes:** any finding that quantifies damage labels the number `measured` (harness, simulation, logs, with the method stated) or `derived` (computed by reading the code). A `derived` number alone cannot justify Critical severity, and no finding can be closed as acceptable ("bounded", "low traffic") without also answering the **user-visible-consequence question**: what does the user see, and when? "Nothing, silently" escalates severity rather than closing the finding.
 
-**Delivery Gate:** consolidation does not start until every spawned reviewer has delivered its findings file or an explicit no-findings report; a silent reviewer is nudged once, then salvaged and reported as **degraded**, never presented as clean. Before the report is finalized, the post-review `git status --porcelain` is diffed against the pre-review snapshot and anything the review created outside its session directory (probe scripts, measurement harnesses) is removed and noted.
+**Delivery Gate:** every spawned reviewer is accounted for by a findings file, an explicit no-findings report or a failed delivery. A silent reviewer is nudged once; collected partial output remains marked undelivered and the dimension is **degraded**, never presented as clean. Workspace cleanup uses the run's owned-file manifest and hashes, preserving preexisting files, foreign edits, unresolved evidence and resume data. An unchanged owned probe can be removed only after its conditions, commands, outcomes and limitations are retained in the report and its evidence references still resolve. Persistent run retention belongs to the caller's consolidate path.
 
 **Completeness Critic:** one agent checks coverage against a fixed gap taxonomy (dimensions warranted but not run, in-scope files cited by no finding, unverified interconnect assumptions untouched by any finding, high-risk hot-spots with zero findings, and findings closed on a metric alone without a stated user-visible consequence) and may trigger one bounded follow-up round for the single highest-risk gap it names.
 
 **Reviewer Pipeline Conventions:** every Phase 2 reviewer carries a scope budget (stops after ~15 file reads without a finding), a no-findings protocol (a clean "examined X, Y, Z: no issues" report is valid, not a failure), and a `## Cross-Reviewer Notes` section for observations that belong to another dimension.
 
 ---
+
+### Reusable review methods
+
+`review-preparation` resolves the variant's scope, flags, exact snapshot and shared context. `review-method` owns the code-review, team-review and pr-review procedures. `review-consolidation` accounts for core and extension deliveries, applies the same provenance and verification rules, and writes the native report with a `project-result` envelope. The seven review-domain schemas retain their own finding and evidence meanings; [project-protocol](project-protocol.md) owns operational state and candidate validation.
+
+`application-cleanup-method` exposes the former Step 7c subtraction procedure to reviews and lifecycle plans. Its inputs include accepted findings and severities, completed targeted fixes where needed, a clean exclusively owned isolated worktree, meaningful build/test gates and commit authorization. It does not add another auditor.
 
 ## Commands
 
@@ -339,7 +349,7 @@ Multi-dimensional code review as a **6-phase pipeline**: independent evidence di
 | 4. Consolidation | Deduplicates findings, resolves severity conflicts, weighs agreement by premise provenance (independent agreement corroborates, shared-premise agreement is an echo), collects `[MAP-GAP]` findings as mapper coverage gaps, organizes by severity; writes `.team-review/99-consolidated.md` |
 | 4b. Adversarial verification | Quality gate, see `review-quality-gates` above (skipped with `--fast`) |
 | 4c. Completeness critic | Quality gate, see `review-quality-gates` above (skipped with `--fast`) |
-| 5. Report & cleanup | Workspace hygiene check against the pre-review `git status` snapshot, then the consolidated report with the map-utilization number, the premise metrics, and the corroborated-versus-echo counts; `.team-review/` is preserved for later reference |
+| 5. Report & cleanup | Compare the complete workspace baseline and owned-artifact manifest; preserve conclusions before removing unchanged owned probes. Report map utilization, premise metrics, corroboration and echoes; preserve `.team-review/` for later reference |
 
 **Always-on dimensions:** security, architecture, logic integrity (skipped under `--no-context`), codebase hygiene (`cleanup-auditor`), workspace hygiene (`repo-hygiene:workspace-auditor`: filesystem garbage, generated artifacts tracked in VCS, `.gitignore` completeness, scratch and pipeline-output directories, orphan doc-assets, git auxiliary state; disjoint from codebase hygiene by construction).
 
@@ -358,13 +368,13 @@ Multi-dimensional code review as a **6-phase pipeline**: independent evidence di
 
 ### `/senior-review:code-review`
 
-Unified code review that auto-detects scope: uncommitted/staged changes, recent commits, PR number, or branch diff. Dispatches up to 15 agents in parallel (A, B, B2, then C through N): always-on code audit (A), security (B), lite dead-code and VCS hygiene scoped to the diff (B2), and git history (E), plus conditional UI races, platform / runtime integration, testing, API contracts, data migrations, React performance, structural entropy, TypeScript type safety, temporal resilience, data integrity, and resource lifecycle. The command holds the dispatch table and conditions; the full agent prompts, fix-loop workflow, and output templates load on demand from the `review-quality-gates` skill's `references/` files (progressive disclosure, since 8.0.0).
+Unified code review that auto-detects scope: uncommitted/staged changes, recent commits, PR number, or branch diff. The canonical `review-method` selects twelve review slots: always-on code audit (A), security (B), lite dead-code and VCS hygiene scoped to the diff (B2), and git history (E), plus conditional UI races (C), testing (F), API contracts (G), data migrations (H), structural entropy (J), temporal resilience (L), data integrity (M) and resource lifecycle (N). Named specialists retain their owner-qualified roles; inline history, hygiene, verification, critic and fix tasks use `project-protocol:isolated-worker`. React performance, TypeScript type safety and platform integration are the additional dimensions of [review-plus](review-plus.md).
 
 Agent J is the structural-entropy review, `abstraction-architect:abstraction-architect-agent`. It runs whenever the diff adds code (at least one function, method, class, module, constant table, or block longer than roughly five lines) and is skipped only for diffs that are purely deletions, renames, formatting, or config edits. It is the one agent whose question is about the rest of the codebase: it takes the diff as an anchor and asks whether the diff adds a second place where a concept the codebase already owns now lives. It covers seven dimensions over two evidence tracks. The knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, seeded by `.abstraction-architect/concept-index.json` when one exists; without it the agent works from diff-anchored discovery and says so. The form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, and the Rule of Three applies only to missed unification. `code-auditor` keeps the single-file abstraction smells.
 
 **Invoke:** `/senior-review:code-review [PR number | --branch <name> | --commits N] [--fix] [--commit] [--auto-comment] [--strict] [--fast] [--rigorous]`. `--strict` makes any Critical finding force a `Not ready` verdict; `--fast` skips the verification panel and the completeness critic; `--rigorous` verifies every finding above the confidence floor, ignoring the cost guard.
 
-**Fix flags (8.0.0, breaking):** `--fix` applies the fixes and verifies (build+test) but commits nothing, leaving the working tree for the user to review. `--commit` implies `--fix` and adds the commits: one per fix or batch in Step 7b, one per phase in Step 7c. The Step 7c bulk cleanup runs only under `--commit`, because its per-phase commits are its revert mechanism.
+**Fix flags:** `--fix` applies scoped fixes and verifies the candidate without committing. `--commit` implies `--fix` and permits commits: one per fix or batch in Step 7b, one per phase in Step 7c. Bulk application cleanup is commit-only and requires an exclusively owned clean isolated worktree. Each phase captures its recovery SHA before editing, gates the candidate before committing and preserves earlier successful phases. Recovery follows project-protocol; published changes require an authorized revert.
 
 ```
 /senior-review:code-review                     # auto-detect: uncommitted changes or branch diff
@@ -420,3 +430,149 @@ Analyze current branch changes, generate a PR description with risk assessment a
 ---
 
 **Related:** `/senior-review:team-review` uses these agents directly | [repo-hygiene](repo-hygiene.md) (workspace tidying, `/repo-hygiene:tidy`) | [typescript-development](typescript-development.md) (Knip for dead code) | [python-development](python-development.md) (vulture/ruff for dead code)
+
+<!-- daodan:reference:start -->
+## Source-derived reference
+
+Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
+this block; keep explanations above it. `--check` detects stale references.
+
+**Version:** `13.0.0`. **Source:** [plugin.toml](<../../plugins/senior-review/plugin.toml>).
+
+### Required dependencies
+
+Every listed plugin dependency is mandatory. Transitive requirements remain
+mandatory when using this plugin alone. The local closure includes this plugin.
+
+| Requirement | Plugins |
+|---|---|
+| Direct local | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [project-protocol](<project-protocol.md>), [repo-hygiene](<repo-hygiene.md>), [testing](<testing.md>) |
+| Direct external | None |
+| Local closure (6) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [project-protocol](<project-protocol.md>), [repo-hygiene](<repo-hygiene.md>), [senior-review](<senior-review.md>), [testing](<testing.md>) |
+| External closure (2) | `developer-essentials@claude-code-workflows`, `mattpocock-skills@mattpocock` |
+
+External bundles are separate upstream installations, not copied local skills.
+See [host setup](<../hosts.md>) for selection and availability requirements.
+
+**Required capabilities:** `repository.read`, `shell.execute`, `repository.write`, `contexts.isolate`, `roles.dispatch`.
+**Optional capabilities:** `execution.parallel`.
+Optional capabilities are host mechanisms, not optional local plugin dependencies.
+
+### Registered components
+
+Names below are kernel IDs. Host entry points and paths follow the adapter
+mapping in [the host reference](<../hosts.md>).
+The source links carry the complete instructions and accepted arguments.
+
+| Kind | ID | Purpose and trigger | Source |
+|---|---|---|---|
+| Skill | `senior-review:defect-taxonomy` | 16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor. | [defect-taxonomy](<../../plugins/senior-review/skills/defect-taxonomy/SKILL.md>) |
+| Skill | `senior-review:review-quality-gates` | Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that). | [review-quality-gates](<../../plugins/senior-review/skills/review-quality-gates/SKILL.md>) |
+| Skill | `senior-review:review-method` | Canonical universal review engine used by code-review, team-review, pr-review and review-plus. | [review-method](<../../plugins/senior-review/skills/review-method/SKILL.md>) |
+| Skill | `senior-review:review-preparation` | Prepare the existing code, team or PR review inputs without writing another detection prompt. | [review-preparation](<../../plugins/senior-review/skills/review-preparation/SKILL.md>) |
+| Skill | `senior-review:review-consolidation` | Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. | [review-consolidation](<../../plugins/senior-review/skills/review-consolidation/SKILL.md>) |
+| Skill | `senior-review:application-cleanup-method` | Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. | [application-cleanup-method](<../../plugins/senior-review/skills/application-cleanup-method/SKILL.md>) |
+| Role | `senior-review:api-contract-auditor` | Auditor for declared interfaces versus the code behind them. TRIGGER WHEN: checking OpenAPI, Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs, or Pydantic models for drift against the implementation; a PR that touches an API surface; backwards compatibility before a release; or the interconnect map has a `## Contracts (formal)` section. DO NOT TRIGGER WHEN: there is no contract file (use code-auditor), the concern is cross-service runtime flow (use distributed-flow-auditor), or invariants beyond the contract surface (use logic-integrity-auditor). | [api-contract-auditor](<../../plugins/senior-review/roles/api-contract-auditor.md>) |
+| Role | `senior-review:chicken-egg-detector` | Detects the chicken-and-egg cycle where component A needs B ready while B needs A: cold-start hangs, deadlocks, hidden temporal coupling. TRIGGER WHEN: the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck. DO NOT TRIGGER WHEN: the concern is runtime flow with no initialization phase (use distributed-flow-auditor). | [chicken-egg-detector](<../../plugins/senior-review/roles/chicken-egg-detector.md>) |
+| Role | `senior-review:cleanup-auditor` | Always-on hygiene dimension of /senior-review:team-review. TRIGGER WHEN: the user asks for a cleanup review, technical-debt audit, dead code, orphan assets, unused dependencies, stale docs and historical artifacts, or leftovers of finished work (migrations, debug tooling). DO NOT TRIGGER WHEN: the user wants removal (use /senior-review:code-review --commit, Step 7c), workspace hygiene decided by the filesystem and git alone such as generated artifacts tracked in VCS, `.gitignore`, scratch directories, stale branches, stashes or worktrees (use repo-hygiene:workspace-auditor or /repo-hygiene:tidy), architecture or security review (use code-auditor or security-auditor), or one language only (use typescript-development:knip or python-development:python-dead-code). | [cleanup-auditor](<../../plugins/senior-review/roles/cleanup-auditor.md>) |
+| Role | `senior-review:code-auditor` | Hunts coupling violations, broken abstractions, resource leaks, stale caches, and anti-patterns. TRIGGER WHEN: the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check. DO NOT TRIGGER WHEN: the task is security-specific auditing (use security-auditor). | [code-auditor](<../../plugins/senior-review/roles/code-auditor.md>) |
+| Role | `senior-review:data-integrity-auditor` | Persistence-layer reviewer: impossible or inconsistent stored state. TRIGGER WHEN: the diff or target touches schemas, models, ORM entities, repositories, raw SQL, caches, or transaction boundaries; or the concern is partial writes, read-modify-write races, uniqueness enforced in code but not in the database, cache and database divergence, or eventual consistency consumed as strong. DO NOT TRIGGER WHEN: the concern is domain rules and state machines (use logic-integrity-auditor), migration mechanics (the data-migrations dimension), or cross-service message flows (use distributed-flow-auditor). | [data-integrity-auditor](<../../plugins/senior-review/roles/data-integrity-auditor.md>) |
+| Role | `senior-review:distributed-flow-auditor` | Hunts cascading timeout violations, missing idempotency, broken saga compensation, message ordering bugs, and split-brain risks. TRIGGER WHEN: the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review. | [distributed-flow-auditor](<../../plugins/senior-review/roles/distributed-flow-auditor.md>) |
+| Role | `senior-review:logic-integrity-auditor` | Cross-component reviewer for the guarantees recorded in `.team-review/02-interconnect.md`: ordering, idempotency, state machines, terminal states, domain rules, implicit assumptions. TRIGGER WHEN: /senior-review:team-review Phase 2 runs (always-on in the review preset), or the user asks for a logic, contract, or invariant audit. DO NOT TRIGGER WHEN: the task is surface-level style or lint review (use code-auditor), pure security auditing (use security-auditor), or the interconnect map does not exist yet (run semantic-interconnect-mapper first). | [logic-integrity-auditor](<../../plugins/senior-review/roles/logic-integrity-auditor.md>) |
+| Role | `senior-review:premise-auditor` | Second, independent derivation of the code's claims, and attack on the load-bearing assumptions behind findings built from a common artifact. Two modes set by the spawning prompt: derivation blind to X-ray and the map, attack with both. TRIGGER WHEN: /senior-review:team-review Phase 1c runs, or the verification panel spawns Lens 0 for a finding whose premise_provenance is shared-context or mixed. DO NOT TRIGGER WHEN: the task is to find defects (use the dimension auditors), to build the interconnect map (use codebase-xray:semantic-interconnect-mapper), or to judge whether a defect is reachable (Lens 1). | [premise-auditor](<../../plugins/senior-review/roles/premise-auditor.md>) |
+| Role | `senior-review:resource-lifecycle-auditor` | Reviewer for resource ownership and release on the success, error, and cancellation paths: leaks, double-release, use-after-release, unbounded pool growth. TRIGGER WHEN: the diff or target acquires file handles, sockets, streams, DB connections, subprocesses, event listeners, subscriptions, locks, threads, goroutines, timers, object URLs, or GPU and native memory; especially in C, C++, Rust, Go, or async code. DO NOT TRIGGER WHEN: the concern is behavior over time AFTER a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor). | [resource-lifecycle-auditor](<../../plugins/senior-review/roles/resource-lifecycle-auditor.md>) |
+| Role | `senior-review:security-auditor` | Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer). | [security-auditor](<../../plugins/senior-review/roles/security-auditor.md>) |
+| Role | `senior-review:temporal-resilience-auditor` | Reviewer for failure-over-time behavior: missing backoff or cap, errors swallowed until a subsystem dies silently, guards never cleared, notification floods and silence, clock hazards (suspend, DST, throttling). TRIGGER WHEN: the diff or target touches timers, schedulers, polling loops, retry and reconnect logic, queues, cron jobs, background workers, or watchdogs; or the pipeline flagged long-running execution. DO NOT TRIGGER WHEN: the concern is startup and bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor). | [temporal-resilience-auditor](<../../plugins/senior-review/roles/temporal-resilience-auditor.md>) |
+| Role | `senior-review:ui-race-auditor` | Framework-agnostic UI timing analyst: React, Angular, Vue, Qt, GTK, Flutter, SwiftUI, Electron, Tauri. TRIGGER WHEN: races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders. | [ui-race-auditor](<../../plugins/senior-review/roles/ui-race-auditor.md>) |
+| Workflow | `senior-review:code-review` | Auto-detects the scope, runs its analysis dimensions in parallel, and applies fixes with --fix or lands them with --commit. Reuses X-ray context when present. TRIGGER WHEN: the user asks for a code review, PR review, branch audit, or a security or architecture pass over recent changes; or asks to find and remove dead code, unused exports, unused dependencies, or orphan assets. For workspace tidying decided by the filesystem and git alone (committed build output, `.gitignore`, scratch directories, git state) use `/repo-hygiene:tidy`. DO NOT TRIGGER WHEN: a full multi-phase pipeline is wanted (use /senior-review:team-review) or a single file needs a style pass (use clean-code). | [code-review](<../../plugins/senior-review/workflows/code-review.md>) |
+| Workflow | `senior-review:pr-review` | Generates a risk assessment, a review checklist, and a lite dead-code and VCS-hygiene pass over the diff, then submits it via gh with --create. TRIGGER WHEN: the user asks to prepare a PR, write a PR description, or open a pull request from the current branch. DO NOT TRIGGER WHEN: reviewing someone else's PR (use /senior-review:code-review with the PR number). | [pr-review](<../../plugins/senior-review/workflows/pr-review.md>) |
+| Workflow | `senior-review:team-review` | Six-phase pipeline. Builds X-ray and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available. | [team-review](<../../plugins/senior-review/workflows/team-review.md>) |
+
+### Workflow contracts
+
+Contracts describe observable outputs; Markdown bodies define decisions,
+flags, safety gates and execution. Declared `invoke` execution is unsupported.
+
+#### `senior-review:code-review`
+
+**Arguments:** <code>[PR number &#124; --branch &lt;name&gt; &#124; --commits N] [--fix] [--commit] [--auto-comment] [--strict] [--fast] [--rigorous]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `code-review-completed` |
+| Artifacts | `code-review-report` |
+| Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
+| Declared workers | `abstraction-architect/abstraction-architect-agent`, `project-protocol/isolated-worker`, `senior-review/code-auditor`, `senior-review/data-integrity-auditor`, `senior-review/premise-auditor`, `senior-review/resource-lifecycle-auditor`, `senior-review/security-auditor`, `senior-review/temporal-resilience-auditor`, `senior-review/ui-race-auditor`, `testing/test-suite-auditor` |
+| Composed worker isolation | Required |
+| Task-specific isolated workers | Allowed through the protocol role |
+| Sidecar | [code-review.toml](<../../plugins/senior-review/workflows/code-review.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+#### `senior-review:pr-review`
+
+**Arguments:** `[--base main] [--create] [--split-check] [--strict-mode]`
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository` |
+| Outcomes | `pr-review-completed` |
+| Artifacts | `pr-review-report` |
+| Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
+| Declared workers | `project-protocol/isolated-worker`, `senior-review/code-auditor`, `senior-review/premise-auditor`, `senior-review/security-auditor` |
+| Composed worker isolation | Required |
+| Task-specific isolated workers | Allowed through the protocol role |
+| Sidecar | [pr-review.toml](<../../plugins/senior-review/workflows/pr-review.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `run` | None | None | `shared` | None declared | `preferred` |
+
+#### `senior-review:team-review`
+
+**Arguments:** <code>&lt;target&gt; [--reviewers auto&#124;security,performance,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]</code>
+
+| Contract | Value |
+|---|---|
+| Inputs | `repository`, `review-brief` |
+| Outcomes | `reviewers-use-isolated-contexts`, `every-selected-dimension-is-dispatched-exactly-once`, `every-expected-reviewer-is-delivered-or-failed`, `consolidation-runs-only-after-the-delivery-barrier`, `cross-examination-runs-in-fresh-contexts`, `every-retained-finding-carries-evidence`, `only-the-consolidator-writes-the-final-report` |
+| Artifacts | `final-report` |
+| Schemas | [contracts/review-brief.toml](<../../plugins/senior-review/contracts/review-brief.toml>), [contracts/reviewer-binding.toml](<../../plugins/senior-review/contracts/reviewer-binding.toml>), [contracts/reviewer-selection.toml](<../../plugins/senior-review/contracts/reviewer-selection.toml>), [contracts/evidenced-finding.toml](<../../plugins/senior-review/contracts/evidenced-finding.toml>), [contracts/reviewer-result.toml](<../../plugins/senior-review/contracts/reviewer-result.toml>), [contracts/delivery-ledger.toml](<../../plugins/senior-review/contracts/delivery-ledger.toml>), [contracts/final-report.toml](<../../plugins/senior-review/contracts/final-report.toml>), [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
+| Declared workers | `abstraction-architect/abstraction-architect-agent`, `codebase-xray/semantic-interconnect-mapper`, `project-protocol/isolated-worker`, `repo-hygiene/workspace-auditor`, `senior-review/api-contract-auditor`, `senior-review/chicken-egg-detector`, `senior-review/cleanup-auditor`, `senior-review/code-auditor`, `senior-review/data-integrity-auditor`, `senior-review/distributed-flow-auditor`, `senior-review/logic-integrity-auditor`, `senior-review/premise-auditor`, `senior-review/resource-lifecycle-auditor`, `senior-review/security-auditor`, `senior-review/temporal-resilience-auditor`, `senior-review/ui-race-auditor`, `testing/test-suite-auditor` |
+| Composed worker isolation | Required |
+| Task-specific isolated workers | Allowed through the protocol role |
+| Sidecar | [team-review.toml](<../../plugins/senior-review/workflows/team-review.toml>) |
+
+| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
+|---|---|---|---|---|---|
+| `scope` | None | None | `shared` | None declared | `preferred` |
+| `context-building` | `scope` | None | `shared` | None declared | `preferred` |
+| `dimension-detection` | `context-building` | None | `shared` | None declared | `preferred` |
+| `independent-review` | `dimension-detection` | `per item in selection:reviewers` | `required` | `all-delivered` | `preferred` |
+| `delivery-accounting` | `independent-review` | None | `shared` | None declared | `preferred` |
+| `initial-consolidation` | `delivery-accounting` | None | `shared` | None declared | `preferred` |
+| `cross-examination` | `initial-consolidation` | `role:premise-auditor`, `role:logic-integrity-auditor` | `required` | `all-delivered` | `preferred` |
+| `consolidation` | `cross-examination` | `code-auditor` | `required` | None declared | `preferred` |
+| `report-delivery` | `consolidation` | None | `shared` | None declared | `preferred` |
+
+### Host exports
+
+Package paths and coordination are derived from the host adapters. `native`
+and `adapted` describe bindings, not successful installed-host execution.
+
+The selected strategy is an adapter binding even for a flat workflow body.
+A dispatch harness is rendered only for declared method workers, task-specific
+workers or phase fan-out; the host reference explains the entry artifacts.
+
+| Host | Package | Binding | Selected workflow strategy |
+|---|---|---|---|
+| claude | [exports/claude/plugins/senior-review](<../../exports/claude/plugins/senior-review>) | `native` | `code-review: native-team`, `pr-review: native-team`, `team-review: native-team` |
+| copilot | [exports/copilot/plugins/senior-review](<../../exports/copilot/plugins/senior-review>) | `native` | `code-review: parallel-subagents`, `pr-review: parallel-subagents`, `team-review: parallel-subagents` |
+| codex | [exports/codex/plugins/senior-review](<../../exports/codex/plugins/senior-review>) | `adapted` | `code-review: parallel-subagents`, `pr-review: parallel-subagents`, `team-review: parallel-subagents` |
+| pi | [exports/pi/plugins/senior-review](<../../exports/pi/plugins/senior-review>) | `adapted` | `code-review: parallel-subagents`, `pr-review: parallel-subagents`, `team-review: parallel-subagents` |
+| opencode | [exports/opencode/plugins/senior-review](<../../exports/opencode/plugins/senior-review>) | `native` | `code-review: parallel-subagents`, `pr-review: parallel-subagents`, `team-review: parallel-subagents` |
+
+<!-- daodan:reference:end -->

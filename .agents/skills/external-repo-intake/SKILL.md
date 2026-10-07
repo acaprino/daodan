@@ -3,7 +3,7 @@ name: external-repo-intake
 description: >
   Workflow for the FIRST vendoring of content from an external GitHub repository into this
   marketplace: classification, the four decision dimensions, the license compliance gate,
-  fetch and inspect, convention adaptation, wiring the content into agents and commands,
+  fetch and inspect, convention adaptation, wiring the content into roles and workflows,
   tracking, and the commit shape.
   TRIGGER WHEN: the user asks to "import", "pull", "vendor", "cherry-pick", or "borrow from"
   an external GitHub repository that is not already registered in the sync table of the
@@ -20,7 +20,16 @@ When the user asks to "import", "pull", "vendor", "cherry-pick", or "borrow from
 
 ## 1. Classify the operation
 
-We do not fork, submodule, or add runtime dependencies. The only intake mode for this marketplace is **vendoring**: a one-shot or tracked copy of upstream content into our tree, with attribution preserved and the content adapted to our conventions.
+The intake mode is **vendoring**: a one-shot or tracked copy of upstream content
+into a neutral kernel, with attribution preserved and content adapted to our
+conventions. It creates no fork or submodule. Runtime dependencies remain explicit
+`plugin.toml` declarations: a runtime reference to another local plugin requires
+that plugin in `[dependencies].required`; local optional dependencies and generic
+fallbacks for missing required plugins are forbidden.
+
+Local source lives under `plugins/<name>/`: `plugin.toml`, `roles/`, `workflows/`
+with TOML sidecars, `skills/`, `contracts/` and `policies/`. Host bindings live in
+`adapters/`. Native package copies under `exports/` and root catalogs are generated.
 
 | Sub-mode | When to pick | Example |
 |---|---|---|
@@ -33,7 +42,9 @@ Combinations are normal (the `wshobson/agents` intake used cherry-pick plus hybr
 
 ## 2. Decide the four dimensions
 
-Before writing any file, lock down each dimension. State them back to the user via `AskUserQuestion` whenever a meaningful choice exists.
+Before writing any file, resolve each dimension from the task's authorization and
+existing decisions. Ask through the host's question mechanism only when a material
+choice remains unresolved; do not request the same approval again for a new owner.
 
 | Dimension | Question | Common answers |
 |---|---|---|
@@ -73,14 +84,14 @@ Before saving any derived file, scan for and rewrite:
 - **Emoji**: remove if the destination plugin's existing files have none.
 - **Upstream-specific cross-references**: rewrite `[reference/foo.md](foo.md)` style links to point at the local destination path (or remove if the target was not imported). Rewrite `{{template_vars}}` and references to upstream-only commands.
 - **Namespace prefixes**: rewrite upstream `<their-plugin>:X` skill references to the local `<our-plugin>:X` equivalent, or drop them when we vendor no equivalent.
-- **Stale tool names** in team-related imports: `Teammate` / `Task tool to spawn` -> `Agent tool`; explicit `TeamCreate` / `TeamDelete` steps -> rewrite to implicit team formation (the team forms when the first teammate is spawned) and automatic cleanup at session end (both tools were removed in Claude Code 2.1.178).
+- **Host tool primitives** in team-related imports: express isolated dispatch, file ownership, delivery status, barriers and report ownership in neutral Markdown and workflow sidecars. The host adapter supplies its native mechanism. Do not replace an upstream Claude tool name with another native tool name in a kernel; run the host-vocabulary linter.
 
-## 6. Wire the new content into existing agents and commands
+## 6. Wire the new content into existing roles and workflows
 
 Importing content that no agent reads is wasted work. After saving derived files:
 
-1. Add a `## References Library` (or equivalent) entry in the host plugin's `SKILL.md` that indexes every new/extended reference with a one-line topic description.
-2. Update any command or agent that should now consult the new references. Add explicit `Read plugins/<plugin>/skills/.../<file>.md` instructions in the relevant prompt sections.
+1. Keep runtime references and helpers under `skills/<skill>/` and index them in that skill's `SKILL.md` with a one-line topic description. Kernel-root references, scripts and MCP directories are not shipped.
+2. Update roles or workflows that consult the material. Own-plugin paths use `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/...` or skill-relative `references/...`. Cross-plugin consumers load the owner's named skill, with its required dependency declared; they never reach into another plugin's files by path. Declare role bindings in the workflow's phases or dispatch table when a loaded method needs them.
 3. Avoid preloading discipline: the consumers must read references on-demand, not all upfront. State this in the wiring text.
 
 ## 7. Decide on tracking and re-sync
@@ -98,14 +109,15 @@ Never add a sync-table row for anything listed under "Deliberately not vendored"
 
 ## 8. Version bump and commit
 
-- Bump every plugin whose `version` in `marketplace.json` had content added.
-- Bump `metadata.version` (minor bump for first-time intake of a new upstream; patch bump for follow-up reworks of an existing intake).
-- Single commit with the imported files, the local edits, the SKILL.md wiring, the sync-table update in `.agents/skills/upstream-sync/SKILL.md`, and the version bumps together.
+- Bump `version` in every changed kernel's `plugins/<name>/plugin.toml`.
+- Bump `metadata.version` in `.claude-plugin/marketplace.json` (minor bump for first-time intake of a new upstream; patch bump for follow-up reworks of an existing intake). Catalog entries remain generated.
+- Rebuild every host with `python scripts/daodan_build.py` and regenerate the component/dependency reference with `python scripts/sync_plugin_docs.py` when a kernel changes. Regenerate repository workflow skills' native Codex adaptations with `python scripts/sync_codex_instructions.py` when their canonical copies changed.
+- Single commit with imported kernel files, local edits, SKILL.md wiring, the sync-table update, version bumps and all regenerated exports/catalogs, documentation references and instruction copies together.
 - Commit message: `Cherry-pick / Vendor / Import <subject> from <owner>/<repo> (v<new>)` with a short description block listing new files, merged sections, license, and attribution date.
 
 ## 9. Verification before push
 
 - `grep` derived files for any leftover upstream-only references, stale tool names, or dash-aside constructs.
-- Validate `marketplace.json` JSON syntax.
+- Before publication, run `python scripts/daodan_build.py --check`, `python scripts/sync_plugin_docs.py --check`, `python scripts/sync_codex_instructions.py --check` and the repository's required dependency, bundled-path, registration, fact-anchor, host-vocabulary and test gates.
 - `git status` shows nothing in `.upstream-scratch/` staged.
 - `git diff --stat` to sanity-check scope.

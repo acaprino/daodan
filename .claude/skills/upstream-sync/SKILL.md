@@ -15,6 +15,11 @@ description: >
 
 Some plugins are ported from external repositories and should be kept in sync with their upstream source. When asked to update one of these plugins, fetch the latest content from the upstream URL using `gh api` and apply any changes, then follow the standard marketplace update workflow in `CLAUDE.md`.
 
+Local sync targets are neutral kernels: `plugin.toml`, `roles/`, `workflows/` with
+TOML sidecars, `skills/`, `contracts/` and `policies/`. Host-specific mechanisms
+belong in `adapters/`; `exports/` and root catalogs are generated. Upstream
+`agents/` and `commands/` paths describe that upstream's layout, not local source.
+
 Nothing listed under "Deliberately not vendored" in `CLAUDE.md` belongs in the table below. Those areas were removed and delegated on purpose; do not add rows for them on a future pass. The former `obra/superpowers` export row was retired with the VS Code extension and stays retired.
 
 ## Default upstream-update strategy
@@ -36,27 +41,27 @@ When the user asks for "upstream updates" (or similar), this is the default work
    - Namespace replacements (upstream `<their-plugin>:X` -> local `<our-plugin>:X`)
    - Local-only sections (e.g., `## Ecosystem Integration` blocks added during earlier syncs)
 
-4. **For judgment calls**, ask the user via `AskUserQuestion`:
+4. **For unresolved material choices**, ask the user through the host's question mechanism. Reuse the accepted scope and existing decisions:
    - When upstream rewrote a section we also evolved (merge vs keep vs overwrite)
    - When upstream adds a feature that conflicts with local direction
    - When a file is flagged as "major drift"
 
 5. **Apply targeted Edits, not Writes** - prefer surgical edits that fix specific bugs (stale tool names, added items in a list) over replacing whole files. Only use Write for new files or when the entire file is being replaced.
 
-6. **Watch for stale tool names** (common drift source): `` `Teammate` tool `` / `` `Task` tool to spawn `` -> fix to `` `Agent` tool ``; `` `TeamCreate` `` / `` `TeamDelete` `` / `` Call `Teammate` cleanup `` / `` operation: "spawnTeam" `` -> rewrite to implicit team formation on first spawn and automatic cleanup at session end (Claude Code 2.1.178 removed TeamCreate/TeamDelete). Grep team-related imports after any sync to catch these.
+6. **Keep imported behavior host-neutral.** A kernel states ownership, isolated delivery, barriers and evidence requirements without naming native team or tool primitives. Translate upstream spawn/coordination instructions into those obligations and declared phase/dispatch metadata. Put a host-specific mechanism in that host's adapter only when supported by its binding and evidence. Run the host-vocabulary linter after team-related imports; replacing one Claude tool name with another in a kernel does not make it portable.
 
-7. **Version bump and commit** - bump each touched plugin's `version` in `.claude-plugin/marketplace.json`, bump `metadata.version`, and commit everything together with a descriptive message like "Sync upstream updates for X and Y (vN.N.N)". Push to master.
+7. **Version bump and rebuild** - bump each touched plugin's `version` in `plugins/<name>/plugin.toml` and `metadata.version` in `.claude-plugin/marketplace.json`. Rebuild every host with `python scripts/daodan_build.py` and regenerate the component/dependency reference with `python scripts/sync_plugin_docs.py` when a kernel changes; catalog entries and exports are generated, never hand-merged.
 
-8. **Verify** - run `Grep` for any remaining stale tool names, confirm marketplace.json is consistent, then `git status` / `git diff --stat` before committing.
+8. **Verify and commit** - run `python scripts/daodan_build.py --check`, `python scripts/sync_plugin_docs.py --check` and the required repository gates before publication, check named consumers and bundled paths, then inspect `git status` / `git diff --stat`. If repository workflow skills changed, regenerate their native Codex adaptations with `python scripts/sync_codex_instructions.py` and check parity with `--check`. Commit kernels, regenerated exports/catalogs, documentation references and instruction copies together with a descriptive message like "Sync upstream updates for X and Y (vN.N.N)". Push to master under the task's publication authorization.
 
 
 | Plugin | Upstream source | Files to sync |
 |--------|----------------|---------------|
-| `codebase-xray` (inspiration) | `gsd-build/get-shit-done` - `agents/gsd-codebase-mapper.md` | `plugins/codebase-xray/commands/analyze.md` (patterns adopted, not direct copy) |
+| `codebase-xray` (inspiration) | `gsd-build/get-shit-done` - `agents/gsd-codebase-mapper.md` | `plugins/codebase-xray/workflows/analyze.md` (patterns adopted, not direct copy) |
 | `react-development` (react-best-practices) | `vercel-labs/agent-skills` - `skills/react-best-practices/` | `plugins/react-development/skills/react-best-practices/SKILL.md`, `plugins/react-development/skills/react-best-practices/references.md`, `plugins/react-development/skills/react-best-practices/rules/*.md` |
 | `digital-marketing` (domain-hunter) | `ReScienceLab/opc-skills` - `skills/domain-hunter/` | `plugins/digital-marketing/skills/domain-hunter/SKILL.md`, `plugins/digital-marketing/skills/domain-hunter/references/registrars.md`, `plugins/digital-marketing/skills/domain-hunter/references/spaceship-api.md`, `plugins/digital-marketing/skills/domain-hunter/examples/auto-video-editing-domain.md` |
 | `docker` (multi-stage-dockerfile) | `github/awesome-copilot` - `skills/multi-stage-dockerfile/SKILL.md` | `plugins/docker/skills/multi-stage-dockerfile/SKILL.md` |
-| `codebase-xray` (semantic-interconnect-mapper) | `wshobson/agents` - `plugins/agent-orchestration/agents/context-manager.md` (pattern cherry-picked, not a direct copy) | `plugins/codebase-xray/agents/semantic-interconnect-mapper.md`. Owned by `senior-review` until marketplace 16.0.0. |
+| `codebase-xray` (semantic-interconnect-mapper) | `wshobson/agents` - `plugins/agent-orchestration/agents/context-manager.md` (pattern cherry-picked, not a direct copy) | `plugins/codebase-xray/roles/semantic-interconnect-mapper.md`. Owned by `senior-review` until marketplace 16.0.0. |
 | `typescript-development` (mastering-typescript) | `SpillwaveSolutions/mastering-typescript-skill` - `mastering-typescript/` | `plugins/typescript-development/skills/mastering-typescript/SKILL.md`, `plugins/typescript-development/skills/mastering-typescript/references/*.md`, `plugins/typescript-development/skills/mastering-typescript/scripts/validate-setup.sh`, `plugins/typescript-development/skills/mastering-typescript/assets/tsconfig-template.json`, `plugins/typescript-development/skills/mastering-typescript/assets/eslint-template.js`. Adaptation on sync: SKILL.md frontmatter is rewritten to local convention (keep only `name` and `description`; strip upstream `version`, `category`, `triggers`, `author`, `license`, `tags`). Description uses `description: >` multiline form with explicit TRIGGER WHEN / DO NOT TRIGGER WHEN routing, scoping this skill to enterprise/advanced TS work (advanced type system, JS-to-TS migration, toolchain bootstrap, Zod, deep React + TS, NestJS, LangChain.js) and routing routine TS/JS writes to `typescript-development:typescript-write`, React perf to `react-development:review-react`, and dead-code to `typescript-development:knip`. Without this rewrite the skill failed to auto-activate on its core scenarios because upstream's single-paragraph "Use when..." description loses the router race against `typescript-write` (added in v2.1.0). The local `Source: ...` attribution line at the top of SKILL.md and the body content are NOT subject to upstream-driven frontmatter changes on future syncs. |
 | `kotlin-development` (full vendor, MIT) | `Jeffallan/claude-skills` - `skills/kotlin-specialist/` | `plugins/kotlin-development/skills/kotlin-specialist/SKILL.md`, `plugins/kotlin-development/skills/kotlin-specialist/references/{coroutines-flow,multiplatform-kmp,android-compose,ktor-server,dsl-idioms}.md`. Adaptation on sync: strip upstream extra frontmatter fields (`license`, `metadata.author`, `version`, `domain`, `triggers`, `role`, `scope`, `output-format`, `related-skills`); keep only `name` and `description` in local frontmatter; rewrite upstream single-paragraph `description` into local `description: >` multiline form with TRIGGER WHEN / DO NOT TRIGGER WHEN. Add MIT attribution header comment immediately after the frontmatter on SKILL.md and at the top of every reference file. Drop the upstream `[Documentation](https://jeffallan.github.io/...)` link at the bottom of SKILL.md. Single-connector em-dashes ("X — Y") in code comments are preserved as-is (they are NOT bracketed asides). |
 | `project-knowledge` (Karpathy principles, MIT) | `multica-ai/andrej-karpathy-skills`: `skills/karpathy-guidelines/SKILL.md` | Principles 1-4 retain upstream attribution in `plugins/project-knowledge/skills/instructions-method/references/working-principles.md`. Their sub-bullets and principle 5 are local. Creation uses the block when equivalent project guidance is absent; maintenance preserves equivalent guidance. Update the canonical reference and the instruction example together when their shared facts change; generated instruction files remain the target project's concern. |
@@ -77,7 +82,10 @@ gh api "repos/<owner>/<repo>/contents/<dir>" --jq '.[].name' | while read f; do
 done
 ```
 
-After fetching, compare with the local file, apply changes while preserving local additions (attribution headers, frontmatter conventions, namespace replacements, no-dash-aside style), bump the plugin and `metadata.version`, commit + push.
+After fetching, compare with the local kernel file, preserve local additions
+(attribution headers, frontmatter conventions, namespace replacements,
+no-dash-aside style), then follow the version, rebuild, verification and authorized
+publication steps above.
 
 **Non-obvious per-plugin sync notes** (read alongside the sync table):
 
