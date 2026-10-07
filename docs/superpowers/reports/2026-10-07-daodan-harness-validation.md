@@ -1,7 +1,8 @@
 # Coherent harness validation
 
-Candidate release: Daodan 30.0.1. Baseline: e9157e98. The initial 30.0.0 candidate
-was pushed and failed CI before release publication.
+Published release: Daodan 30.0.1. Baseline: e9157e98. The initial 30.0.0 candidate
+was pushed and failed CI before release publication. The correction is committed
+as d51a9e51e23a89fbffef7edb58dfe2a188665334, without rewriting pushed history.
 
 The marketplace now exposes five complete project paths and canonical owners for
 operational records, durable knowledge, universal review, extended review and tests.
@@ -77,6 +78,16 @@ the final rebuild: 2 tests passed, with no skips. The final deterministic drift,
 dependency, bundled-path, registration, fact-anchor, host-vocabulary and instruction
 parity checks pass.
 
+Final Linux CI on Python 3.11 runs 466 tests in 15.421 seconds: 460 pass and
+6 skip. The Windows junction scenarios are exercised separately above. The
+[consistency workflow](https://github.com/acaprino/daodan/actions/runs/37647703146)
+passes all jobs. The
+[publication workflow](https://github.com/acaprino/daodan/actions/runs/37647703112)
+passes and creates the assetless
+[v30.0.1 release](https://github.com/acaprino/daodan/releases/tag/v30.0.1) on the
+exact corrected source commit. These results establish CI and package publication,
+not installed-agent behavior.
+
 Two fresh reviewers examined domain integration and operational safety. Confirmed
 findings produced these changes:
 
@@ -132,3 +143,5 @@ Subsystem workers separately recorded removal of 44,681 and 59,214 owned content
 bytes. These are content totals, not measurements of physical space recovered.
 Local final gates are complete; Git publication and release status are
 reported separately by the publication workflow and the delivery message.
+Patch fixtures clean themselves up. The verified, empty session-owned patch-test
+directory was also removed after its results were recorded.
