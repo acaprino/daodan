@@ -32,6 +32,7 @@ Thumbs.db
 .marketplace-review/
 .frontend-review/
 .peer-review/
+.playwright-mcp/
 
 # Distribution archives never belong in the tree
 plugins/**/*.zip
