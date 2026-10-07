@@ -4,9 +4,12 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "plugins/project-lifecycle/skills/lifecycle-method/scripts/artifacts.py"
@@ -172,6 +175,33 @@ class ArtifactRetention(unittest.TestCase):
         plan = self.plan()
         self.assertEqual(plan["items"], [])
         self.assertTrue(self.data.exists())
+
+    @unittest.skipUnless(os.name == "nt", "Windows junctions are unavailable on this platform")
+    def test_junction_alias_cannot_plan_removal_of_required_evidence_without_new_pathlib_api(self):
+        original = self.data.read_bytes()
+        report = json.loads(self.report.read_text())
+        report["required_artifacts"] = ["outputs/large.bin"]
+        self.report.write_text(json.dumps(report))
+        alias = self.run / "alias"
+        environment = {**os.environ, "DAODAN_JUNCTION_LINK": str(alias), "DAODAN_JUNCTION_TARGET": str(self.data.parent)}
+        created = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+             "New-Item -ItemType Junction -Path $env:DAODAN_JUNCTION_LINK -Target $env:DAODAN_JUNCTION_TARGET | Out-Null"],
+            env=environment, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        if created.returncode:
+            self.skipTest(f"junction unavailable: {created.stderr}")
+        manifest = json.loads(self.manifest.read_text())
+        manifest["artifacts"][0]["path"] = "alias/large.bin"
+        self.manifest.write_text(json.dumps(manifest))
+
+        def absent_junction_api(_self):
+            raise AttributeError("Path.is_junction is unavailable before Python 3.12")
+
+        with patch.object(Path, "is_junction", property(absent_junction_api), create=True):
+            with self.assertRaises(artifacts.RetentionError):
+                self.plan()
+        self.assertEqual(self.data.read_bytes(), original)
+        self.assertFalse((self.run / "quarantine").exists())
 
     def test_symlink_and_hardlink_rejected(self):
         import os

@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "project-lifecycle"
-version = "1.0.0"
+version = "1.0.1"
 description = "Complete AI development lifecycle: assess coherence, repair an evidenced plan, implement changes, verify their consequences, and consolidate experiments and owned artifacts. Uses canonical specialist methods, exact run identities and honest coverage."
 license = "MIT"
 

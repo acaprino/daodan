@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:8b3d6f22cc8b2555cd72e80be8c873a7cc67d0045824b11e315adabc7139c6a8",
+  "coreDigest": "sha256:b25511b6d760b4cb0734ee85b044ee03d709162072a6e68689a5e0a42894b9dc",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "project-protocol",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

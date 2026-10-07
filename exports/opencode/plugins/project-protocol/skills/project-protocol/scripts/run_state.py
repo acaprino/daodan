@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 import tomllib
@@ -53,7 +54,12 @@ def no_links(path, boundary):
     if not current.is_relative_to(boundary):
         raise ProtocolError("Path escapes its declared root")
     for item in (current, *current.parents):
-        if item.is_symlink() or (hasattr(item, "is_junction") and item.is_junction()):
+        try:
+            metadata = item.lstat()
+        except FileNotFoundError:
+            metadata = None
+        if metadata is not None and (stat.S_ISLNK(metadata.st_mode)
+                                     or getattr(metadata, "st_file_attributes", 0) & 0x400):
             raise ProtocolError(f"Link is not an owned writable path: {item.name}")
         if item == boundary:
             break

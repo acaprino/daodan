@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "30.0.0"
+    "version": "30.0.1"
   },
   "name": "daodan",
   "owner": {
@@ -434,7 +434,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -448,7 +448,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/codex/plugins/project-protocol",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {

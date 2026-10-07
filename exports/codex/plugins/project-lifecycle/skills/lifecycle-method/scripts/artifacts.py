@@ -42,12 +42,14 @@ def _read(path: Path) -> dict:
 def _no_link(path: Path) -> None:
     if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
         raise RetentionError(f"Links are not retention targets: {path}")
-    if path.exists():
-        stat = path.stat()
-        if getattr(stat, "st_file_attributes", 0) & 0x400:
-            raise RetentionError(f"Reparse points are not retention targets: {path}")
-        if path.is_file() and stat.st_nlink != 1:
-            raise RetentionError(f"Hardlinked file is not exclusively owned: {path}")
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return
+    if getattr(metadata, "st_file_attributes", 0) & 0x400:
+        raise RetentionError(f"Reparse points are not retention targets: {path}")
+    if path.is_file() and metadata.st_nlink != 1:
+        raise RetentionError(f"Hardlinked file is not exclusively owned: {path}")
 
 
 def _root(run: Path) -> tuple[Path, str]:
@@ -103,7 +105,7 @@ def _path(root: Path, relative: str, *, missing: bool = False) -> Path:
 
 def _key(root: Path, relative: str) -> str:
     """One path identity for protected records, including Windows case aliases."""
-    return os.path.normcase(str(_path(root, relative, missing=True)))
+    return os.path.normcase(str(_path(root, relative, missing=True).resolve()))
 
 
 def _inside(root: Path, path: Path) -> tuple[Path, str]:

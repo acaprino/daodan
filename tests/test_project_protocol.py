@@ -12,6 +12,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/scripts/run_state.py"
@@ -41,7 +42,7 @@ class ProjectProtocolTests(unittest.TestCase):
             os.chmod(path, stat.S_IWRITE)
             function(path)
         self.assertTrue(self.temp.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()))
-        shutil.rmtree(self.temp, onexc=writable_remove)
+        shutil.rmtree(self.temp, onerror=writable_remove)
 
     def invoke(self, command, payload=None, extra=(), ok=True):
         self.assertTrue(SCRIPT.is_file(), "The protocol CLI must ship with its skill")
@@ -182,6 +183,37 @@ class ProjectProtocolTests(unittest.TestCase):
             self.skipTest(f"symlink unavailable: {error}")
         self.invoke("init", self.payload, ("--out", "linked"), ok=False)
         self.assertEqual(list(outside.iterdir()), [])
+
+    @unittest.skipUnless(os.name == "nt", "Windows junctions are unavailable on this platform")
+    def test_owned_report_junction_is_rejected_without_the_new_pathlib_api(self):
+        self.init()
+        outside = self.temp / "foreign-evidence"
+        outside.mkdir()
+        report = outside / "report.md"
+        report.write_text("Keep this evidence unchanged\n")
+        junction = self.project / ".daodan/runs/test-run/reports"
+        environment = {**os.environ, "DAODAN_JUNCTION_LINK": str(junction), "DAODAN_JUNCTION_TARGET": str(outside)}
+        created = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+             "New-Item -ItemType Junction -Path $env:DAODAN_JUNCTION_LINK -Target $env:DAODAN_JUNCTION_TARGET | Out-Null"],
+            env=environment, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        if created.returncode:
+            self.skipTest(f"junction unavailable: {created.stderr}")
+
+        def absent_junction_api(_self):
+            raise AttributeError("Path.is_junction is unavailable before Python 3.12")
+
+        # The target is a real junction. Only the newer convenience API is absent.
+        with patch.object(Path, "is_junction", property(absent_junction_api), create=True):
+            delivery = {"deliveries": {"audit": {"status": "delivered", "output": "reports/report.md"}}}
+            failure = self.invoke("update", delivery, ("--expected-revision", "0"), ok=False)
+            self.assertIn("Link is not an owned", failure.stderr)
+            self.assertEqual(report.read_text(), "Keep this evidence unchanged\n")
+            report.unlink()
+            outside.rmdir()
+            failure = self.invoke("update", delivery, ("--expected-revision", "0"), ok=False)
+            self.assertIn("Link is not an owned", failure.stderr)
+        self.assertEqual(self.invoke("show")["revision"], 0)
 
     def test_interruption_is_persisted_and_resume_reports_unfinished_delivery(self):
         self.init()

@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: project-protocol:isolated-worker; version: 1.0.0; source-sha256: 9db4a0ac4f75508af8606eec52a4beae10af90d28be4434d79b32cf42aec7854. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-protocol:isolated-worker; version: 1.0.1; source-sha256: 9db4a0ac4f75508af8606eec52a4beae10af90d28be4434d79b32cf42aec7854. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-protocol`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<project-protocol-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-protocol`: qualify it with that owner's namespace. The owning plugin's registered skills are `project-protocol:project-protocol`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

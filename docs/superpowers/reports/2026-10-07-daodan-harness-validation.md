@@ -1,6 +1,7 @@
 # Coherent harness validation
 
-Candidate release: Daodan 30.0.0. Baseline: e9157e98.
+Candidate release: Daodan 30.0.1. Baseline: e9157e98. The initial 30.0.0 candidate
+was pushed and failed CI before release publication.
 
 The marketplace now exposes five complete project paths and canonical owners for
 operational records, durable knowledge, universal review, extended review and tests.
@@ -31,14 +32,14 @@ used an unwritable system temporary directory; it was rerun with the bundled
 Python and a dedicated ignored workspace temporary directory. Environment failures
 were not treated as product defects.
 
-Final frozen-source suite: 464 tests, 459 passed and 5 skipped, in 210.903 seconds.
+Initial frozen-source suite: 464 tests, 459 passed and 5 skipped, in 210.903 seconds.
 The two hardlink cases skipped by the sandbox were then rerun with filesystem
 permission on exclusively owned temporary fixtures; both passed. Three cases
 remain unavailable here: the POSIX executable-bit scenario and two optional
 tree-sitter language parsers. The POSIX regression is retained for Linux CI, and
 the parser fallback paths were exercised.
 
-All five host packages rebuild and reproduce at marketplace 30.0.0. There are 41
+All five host packages rebuild and reproduce at marketplace 30.0.1. There are 41
 kernels and 41 packages per host, with no retired knowledge package directory.
 Support binding reports no unsupported required component. Dependency validation
 accounts for 250 cross-plugin runtime references. Registration, bundled paths,
@@ -52,6 +53,29 @@ binding gap. These were repaired in source rather than baselined away. The final
 whole suite and drift gate were rerun after the fixes.
 
 ## Independent whole-change findings
+
+The first Linux CI run exposed a test-fixture cleanup incompatibility with its
+Python 3.11 runtime: `shutil.rmtree(onexc=...)` requires Python 3.12. The cleanup
+callback now uses the supported `onerror` argument. That targeted suite passes
+locally: 34 cases with two platform skips. A compatibility audit also found that
+Python 3.11 lacks Path.is_junction on Windows. Both the protocol and retention
+helpers now check lstat reparse-point attributes independently of that API. Their patch and release versions
+advance rather than rewriting the already pushed commit. CI is rerun on 30.0.1.
+
+Corrected protocol suite: 35 cases pass locally (three sandbox/platform skips).
+The new junction case was separately exercised on a real owned Windows junction
+with the newer junction API unavailable. It reproduced the old escape and confirms
+the corrected helper refuses both live and dangling junctions, preserving external
+evidence and the previous record revision. Final packages rebuild at 30.0.1.
+The retention helper has the same attribute check. Its 22-case suite passes;
+a real same-run junction alias to required evidence is independently rejected
+while preserving the exact protected bytes. Protection keys resolve actual paths
+before comparison.
+
+Both new junction regressions were rerun together on real Windows junctions after
+the final rebuild: 2 tests passed, with no skips. The final deterministic drift,
+dependency, bundled-path, registration, fact-anchor, host-vocabulary and instruction
+parity checks pass.
 
 Two fresh reviewers examined domain integration and operational safety. Confirmed
 findings produced these changes:
@@ -106,5 +130,5 @@ this cleanup. The final owned scratch inventory contained 129 files and 137,226
 content bytes, plus one link used to exercise the ancestor-escape regression.
 Subsystem workers separately recorded removal of 44,681 and 59,214 owned content
 bytes. These are content totals, not measurements of physical space recovered.
-Final gates are complete; Git publication and release status are
+Local final gates are complete; Git publication and release status are
 reported separately by the publication workflow and the delivery message.
