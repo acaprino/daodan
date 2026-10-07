@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Alfio Caprino"
+  },
+  "description": "Canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work.",
+  "license": "MIT",
+  "name": "project-protocol",
+  "version": "1.0.0"
+}

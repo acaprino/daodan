@@ -120,4 +120,4 @@ Deterministic activation-quality checks plus AI-powered body review for all skil
 
 ---
 
-**Related:** [project-setup](project-setup.md) (CLAUDE.md management)
+**Related:** [project-knowledge](project-knowledge.md) (CLAUDE.md management)

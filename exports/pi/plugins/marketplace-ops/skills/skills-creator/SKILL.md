@@ -6,6 +6,17 @@ description: >
   DO NOT TRIGGER WHEN: editing or updating an existing component, or auditing marketplace integrity (use marketplace-audit instead).
 ---
 
+## Source profile preflight
+
+Load marketplace-ops:kernel-marketplace before this procedure. Detect the target's
+source model from its manifests and instructions. For daodan/v1 neutral kernels,
+follow that skill's operation-specific procedure and finish there. Generated
+exports and catalog entries are inspected as output, never authored as source.
+The procedure below applies only to a legacy Claude marketplace with hand-authored
+agents/ and commands/. It must not be applied to a neutral kernel checkout.
+
+
+
 # Skills Creator
 
 Create new Claude Code plugin components (skills, agents, commands, full plugins) with proper conventions and real content. Marketplace-agnostic: read the target `.claude-plugin/marketplace.json` and `CLAUDE.md` for project-specific conventions (author, license, category taxonomy) before scaffolding.

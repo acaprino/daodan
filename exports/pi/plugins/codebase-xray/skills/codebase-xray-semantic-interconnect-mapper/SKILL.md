@@ -1,6 +1,6 @@
 ---
 name: codebase-xray-semantic-interconnect-mapper
-description: 'Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own. TRIGGER WHEN: spawned by /codebase-xray:team-analyze, /senior-review:team-review or /codebase-mapper:map-codebase, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-xray/ nor codebase-explorers context-brief.md), or the task is a surface-level operation that does not need the map.'
+description: 'Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own. TRIGGER WHEN: spawned by /codebase-xray:team-analyze, /senior-review:team-review or /project-knowledge:guide, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-xray/ nor codebase-explorers context-brief.md), or the task is a surface-level operation that does not need the map.'
 disable-model-invocation: true
 ---
 
@@ -33,11 +33,11 @@ Before starting, locate and read these inputs. The invoking command specifies wh
    - `05-risks.md` -- anti-patterns, red flags identified
    - If full-depth ran, also: `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`
 
-   **1b. Context brief** (used by `/map-codebase`): a markdown file produced by `codebase-explorer`, typically at `.codebase-map/_internal/context-brief.md`. It covers project purpose, tech stack, directory structure, entry points, data model, main workflows.
+   **1b. Context brief** (used by `/project-knowledge:guide`): the scoped context_path supplied by the caller, produced by its codebase-explorer inside the owned run. It covers project purpose, tech stack, directory structure, entry points, data model and workflows within the requested scope.
 
    Read whichever source the prompt points you to. If neither is available, stop and report the missing prerequisite.
 
-2. **Target files**: the files in scope (provided in your task prompt). For `/team-review` this is a diff or a small file set; for `/map-codebase` this is the whole project; for `/team-analyze` it is the cross-partition surface only: the symbols in `02-interfaces.md ## Cross-Partition Exports`, the flows in `03-flows.md ## Cross-Partition Flows`, the contracts in `04-semantics.md ## Hidden Contracts (cross-partition)` and the risks in `05-risks.md ## Cross-Partition Risk Attribution`, plus the source those sections cite. Partition-internal contracts are the partition workers' output already; re-deriving them here is what blows the length cap.
+2. **Target files**: the explicit files/scope in the task prompt. Review uses its declared diff or file set; a knowledge guide uses the requested document/project scope, not an automatic whole-project sweep. Team X-ray uses only the cross-partition surface: symbols in `02-interfaces.md ## Cross-Partition Exports`, flows in `03-flows.md ## Cross-Partition Flows`, contracts in `04-semantics.md ## Hidden Contracts (cross-partition)`, risks in `05-risks.md ## Cross-Partition Risk Attribution` and their cited source. Partition-internal contracts are already owned by partition workers.
 
 3. **Repo context** (as needed regardless of source):
    - Callers outside the target: Grep for target symbols across repo (2-3 hop call graph)
@@ -164,7 +164,7 @@ This is the blast radius the reviewer uses to calibrate severity.
 
 Write a single file to the path specified in your prompt. Default paths by invoker:
 - `/team-review`: `.team-review/02-interconnect.md`
-- `/map-codebase`: `.codebase-map/_internal/interconnect.md`
+- `/project-knowledge:guide`: the caller's explicit owned report_path inside its run
 - `/team-analyze`: `.codebase-xray/runs/<run-id>/08-interconnect-map.md`
 
 Follow this exact structure with stable anchors regardless of output path:

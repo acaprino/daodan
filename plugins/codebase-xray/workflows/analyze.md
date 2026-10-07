@@ -2,7 +2,7 @@
 description: >
   Run an X-ray: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support.
   TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot.
-  DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /codebase-mapper:map-codebase) or a shallow overview.
+  DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide) or a shallow overview.
 argument-hint: "<target path> [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite|full] [--run-name <name>] [--update] [--no-update]"
 ---
 
@@ -643,7 +643,7 @@ After Phase 7 completes:
 `changes.md`, `changes.json` and `snapshot/` stay in the run directory and are never mirrored: the root mirror is the latest-state contract, and history lives under `runs/`.
 
 2. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed` to this run-id.
-3. The root mirror is what downstream consumers (`/senior-review:team-review`, `/senior-review:code-review`, `/codebase-mapper:map-codebase`, `/project-setup:create-claude-md`, `/project-setup:maintain-claude-md`) read. The run directory stays intact for history and comparison.
+3. The root mirror is what downstream consumers (`/senior-review:team-review`, `/senior-review:code-review`, `/project-knowledge:guide`, `/project-knowledge:instructions --create`, `/project-knowledge:instructions --fix`) read. The run directory stays intact for history and comparison.
 
 If the analysis is aborted or fails, remove the run from `active` in `runs.json` and leave the root mirror untouched.
 
@@ -699,42 +699,16 @@ RECOMMENDED (improve when possible):
 
 Each action must reference the specific finding and file from the analysis (e.g., "Fix missing input validation in `src/auth/login.py:45` - see 05-risks.md").
 
-### Next Steps Menu
+### Next steps
 
-After presenting the action plan, ask the user:
+The analysis ends with its evidence, coverage and action plan. Offer the user the
+appropriate development, knowledge or specialist path as a separate task. Do not
+apply application fixes inside an X-ray run: it owns only its analysis artifacts.
+Comments, type annotations, stale references and document changes require their
+own scope, authorization, baseline and verification.
 
-```
-What would you like to do next?
-
-1. Start fixing - execute the action plan (all or selected items)
-2. Apply quick fixes - fix stale comments, outdated references, type hints, and naming issues directly in code
-3. Analyze further - run additional phases or re-analyze specific areas (a new run alongside this one is fine)
-4. Generate documentation - the analysis output is now available as
-   technical ground truth for downstream documentation generators:
-   4a. CLAUDE.md - create or update the project's CLAUDE.md using this
-       analysis as the structure backbone
-       (suggests: /project-setup:create-claude-md if CLAUDE.md is absent,
-        otherwise /project-setup:maintain-claude-md)
-   4b. Codebase map - generate the full 10-document human-readable
-       narrative guide (suggests: /codebase-mapper:map-codebase)
-   4c. API / interface docs - generate documentation for one or more
-       formal interfaces (suggests: /codebase-mapper:docs-create with the
-       relevant flag, e.g. --interfaces, --architecture, --data-model)
-5. Export report - save the final report in a different format
-6. Nothing for now - end the session
-```
-
-Wait for the user's choice before proceeding. If the user picks option 1, confirm which actions to execute and in what order before starting.
-
-If the user picks option 4 (any sub-option), the downstream command auto-detects the published `.codebase-xray/` mirror on its pre-flight and offers to ingest it as the technical source. The user does not need to pass any flag manually -- detection is automatic. If the user picks 4a and `CLAUDE.md` already exists, route to `/project-setup:maintain-claude-md` (audit + improve); otherwise route to `/project-setup:create-claude-md` (fresh generation).
-
-If the user picks option 2, use the dedicated scripts for safe, automated fixes:
-
-1. **Comment cleanup:** Run `rewrite_comments.py rewrite <file> --apply --backup` for each file flagged in Phase 6. The script handles backup, lexer-safe removal of trivial/backup comments, and auto-formatting. Works on Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust; stylesheets are analyzed, never rewritten. Do NOT manually edit comments with the Edit tool when the script supports the language.
-2. **Type hint / annotation fixes:** Apply these with the Edit tool one file at a time, verifying syntax after each change.
-3. **Stale references:** Update outdated names/references in comments using targeted Edit tool replacements.
-
-Present a summary of changes made after applying fixes. For languages outside the supported set (Python/Java/JS/TS/SQL/PL-SQL/Rust), fall back to targeted Edit tool changes with explicit before/after diffs shown to the user. Stylesheet comments are reported only: never remove or rewrite them, by script or by hand, because in plain CSS a `//` line belongs to the next rule's prelude and deleting it can make a dropped rule apply.
+Keep the exact run directory and source snapshot in every downstream reference.
+A mutable root mirror is suitable only for an explicitly latest-state consumer.
 
 ## Quick Examples
 

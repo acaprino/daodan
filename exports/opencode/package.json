@@ -486,490 +486,21 @@
         ],
         "commands": [
           {
-            "description": "Readability-only rewrite of existing source. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, or make code more maintainable without changing behavior. DO NOT TRIGGER WHEN: the target is prose or text (use /text-humanizer:humanize-text), or deep architectural refactoring (use /python-development:python-refactor).",
+            "description": "Readability-only rewrite of existing source. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, or make code more maintainable without changing behavior. DO NOT TRIGGER WHEN: the target is prose or text (use /text-humanizer:humanize-text), or deep architectural refactoring (return to the development plan).",
             "file": "commands/clean-code.md",
             "name": "clean-code:clean-code"
           }
         ],
-        "root": "plugins/clean-code"
-      },
-      "codebase-mapper": {
-        "agents": [
-          {
-            "description": "Explores an unfamiliar project and writes .codebase-map/_internal/context-brief.md from README, configs, package manifests, entry points, and directory structure. TRIGGER WHEN: spawned by the /codebase-mapper:map-codebase pipeline in Phase 1 to build the brief the writer agents consume. DO NOT TRIGGER WHEN: invoked outside it; for direct exploration use the built-in Explore subagent.",
-            "file": "agents/codebase-explorer.md",
-            "id": "codebase-mapper:codebase-explorer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "shell",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Writes 10-configuration-guide.md (environment setup, configuration scenarios, common operations, troubleshooting) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
-            "file": "agents/config-writer.md",
-            "id": "codebase-mapper:config-writer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Rewrites technical docs into clear, scannable narrative. TRIGGER WHEN: documentation exists but reads like a wall of text or AI output. DO NOT TRIGGER WHEN: humanizing prose or articles rather than technical docs (use text-humanizer:text-humanizer), or generating new documentation from source code (use codebase-mapper:documentation-engineer).",
-            "file": "agents/doc-humanizer.md",
-            "id": "codebase-mapper:doc-humanizer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Documentation engineer for a single dimension or a whole project, generation or drift audit. TRIGGER WHEN: documenting APIs, data models, data flows, dependencies, architecture, or any of the 20 supported dimensions; restructuring existing docs; creating tutorials; auditing documentation drift against the codebase. DO NOT TRIGGER WHEN: pure prose or style rewriting of existing docs (use codebase-mapper:doc-humanizer), a full multi-document narrative project guide (use /codebase-mapper:map-codebase), or a public-facing README (use docs:readme-craft).",
-            "file": "agents/documentation-engineer.md",
-            "id": "codebase-mapper:documentation-engineer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "webfetch",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "websearch",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Writes 05-workflows.md (user and system flows, with flowcharts and sequence diagrams) and 06-data-model.md (data structures, with ER diagrams) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
-            "file": "agents/flow-writer.md",
-            "id": "codebase-mapper:flow-writer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Reviews the 10 generated documents for consistency, adds cross-references, uniformizes tone, flags gaps and contradictions, and produces INDEX.md. TRIGGER WHEN: spawned by the /codebase-mapper:map-codebase pipeline in Phase 3, after all writer agents complete. DO NOT TRIGGER WHEN: invoked outside it (the 10 writer outputs are not in .codebase-map/).",
-            "file": "agents/guide-reviewer.md",
-            "id": "codebase-mapper:guide-reviewer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Writes 07-getting-started.md (developer onboarding steps) and 08-open-questions.md (knowledge gaps) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
-            "file": "agents/onboarding-writer.md",
-            "id": "codebase-mapper:onboarding-writer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Writes 09-project-anatomy.md (config files, environment variables, startup scripts, annotated directory tree) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
-            "file": "agents/ops-writer.md",
-            "id": "codebase-mapper:ops-writer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Writes 01-overview.md (project narrative with a mindmap diagram) and 02-features.md (feature catalog) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
-            "file": "agents/overview-writer.md",
-            "id": "codebase-mapper:overview-writer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Writes 03-tech-stack.md (technologies and dependencies) and 04-architecture.md (code organization and layers, with component diagrams) for the /codebase-mapper:map-codebase pipeline, from the context brief. TRIGGER WHEN: spawned by that pipeline in Phase 2. DO NOT TRIGGER WHEN: invoked outside it (there is no context brief in .codebase-map/_internal/ to read).",
-            "file": "agents/tech-writer.md",
-            "id": "codebase-mapper:tech-writer",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "grep",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          }
-        ],
-        "commands": [
-          {
-            "description": "Documents a project from its source, on one dimension or many. TRIGGER WHEN: the user asks to create technical documentation, API docs, architecture guides, data model / schema docs, data flow / pipeline docs, dependency maps, or any new documentation for a codebase. DO NOT TRIGGER WHEN: the user wants to audit existing docs (use /codebase-mapper:docs-maintain) or just a README (use /docs:maintain-readme) or a full multi-document project guide (use /codebase-mapper:map-codebase).",
-            "file": "commands/docs-create.md",
-            "name": "codebase-mapper:docs-create"
-          },
-          {
-            "description": "Checks shipped documentation against the code and plans the fixes. TRIGGER WHEN: the user asks to audit, update, or verify existing technical docs against the current codebase, or to detect documentation drift on any of the 20 dimensions (endpoints removed but still documented, env vars renamed, schema fields added/dropped, dependencies upgraded, alerts removed, etc.). DO NOT TRIGGER WHEN: creating new docs from scratch (use /codebase-mapper:docs-create) or humanizing prose style (use /codebase-mapper:humanize-docs).",
-            "file": "commands/docs-maintain.md",
-            "name": "codebase-mapper:docs-maintain"
-          },
-          {
-            "description": "Edits documentation in place for a human reader. TRIGGER WHEN: the user asks to humanize existing docs, improve scannability, or rewrite dense technical writing for progressive disclosure. DO NOT TRIGGER WHEN: humanizing prose/articles (use /text-humanizer:humanize-text) or creating new docs (use /codebase-mapper:docs-create).",
-            "file": "commands/humanize-docs.md",
-            "name": "codebase-mapper:humanize-docs"
-          },
-          {
-            "description": "Writes a plain-language executive summary (00), 10 numbered narrative documents with Mermaid diagrams (01-10), a glossary (11) and an INDEX.md entry point into .codebase-map/. TRIGGER WHEN: the user asks to onboard to an unfamiliar project, generate a codebase tour, or produce a full narrative guide for new contributors. DO NOT TRIGGER WHEN: the user wants structured AST/dependency analysis (use /codebase-xray:analyze) or just API docs (use /codebase-mapper:docs-create).",
-            "file": "commands/map-codebase.md",
-            "name": "codebase-mapper:map-codebase"
-          },
-          {
-            "description": "Multi-agent variant of /codebase-mapper:map-codebase with the same document set (00-11 plus INDEX.md): one explorer, a project profile confirmation, 6 writers at once as a tracked team, then a review pass producing the glossary and INDEX.md. TRIGGER WHEN: the user wants a codebase guide built by parallel writers, typically on a large project.",
-            "file": "commands/team-codebase-map.md",
-            "name": "codebase-mapper:team-codebase-map"
-          }
-        ],
         "dependencies": [
-          "codebase-xray",
-          "text-humanizer",
-          "senior-review"
+          "project-protocol"
         ],
-        "root": "plugins/codebase-mapper",
+        "root": "plugins/clean-code",
         "skills": [
           {
-            "description": "Writing guidelines, tone rules, and diagram conventions for this plugins project guides. TRIGGER WHEN: referenced by codebase-mapper pipeline agents (codebase-explorer, overview-writer, tech-writer, flow-writer, onboarding-writer, ops-writer, config-writer, guide-reviewer) during document generation. DO NOT TRIGGER WHEN: outside the /map-codebase pipeline (general documentation work should use docs:readme-craft or codebase-mapper:docs-create).",
-            "file": "skills/codebase-mapper/SKILL.md",
-            "id": "codebase-mapper:codebase-mapper",
-            "name": "codebase-mapper"
+            "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery.",
+            "file": "skills/readability-method/SKILL.md",
+            "id": "clean-code:readability-method",
+            "name": "readability-method"
           }
         ]
       },
@@ -1159,7 +690,7 @@
             ]
           },
           {
-            "description": "Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own. TRIGGER WHEN: spawned by /codebase-xray:team-analyze, /senior-review:team-review or /codebase-mapper:map-codebase, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-xray/ nor codebase-explorers context-brief.md), or the task is a surface-level operation that does not need the map.",
+            "description": "Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own. TRIGGER WHEN: spawned by /codebase-xray:team-analyze, /senior-review:team-review or /project-knowledge:guide, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-xray/ nor codebase-explorers context-brief.md), or the task is a surface-level operation that does not need the map.",
             "file": "agents/semantic-interconnect-mapper.md",
             "id": "codebase-xray:semantic-interconnect-mapper",
             "permissions": [
@@ -1203,7 +734,7 @@
         ],
         "commands": [
           {
-            "description": "Run an X-ray: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support. TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /codebase-mapper:map-codebase) or a shallow overview.",
+            "description": "Run an X-ray: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support. TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide) or a shallow overview.",
             "file": "commands/analyze.md",
             "name": "codebase-xray:analyze"
           },
@@ -1216,7 +747,7 @@
         "root": "plugins/codebase-xray",
         "skills": [
           {
-            "description": "X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: encountering an unfamiliar codebase, needing pre-review technical context, before a major refactor, or when documentation is stale or missing. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /codebase-mapper:map-codebase), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+            "description": "X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: encountering an unfamiliar codebase, needing pre-review technical context, before a major refactor, or when documentation is stale or missing. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
             "file": "skills/xray-method/SKILL.md",
             "id": "codebase-xray:xray-method",
             "name": "xray-method"
@@ -1420,24 +951,6 @@
             "file": "skills/multi-stage-dockerfile/SKILL.md",
             "id": "docker:multi-stage-dockerfile",
             "name": "multi-stage-dockerfile"
-          }
-        ]
-      },
-      "docs": {
-        "commands": [
-          {
-            "description": "Verify every claim, path, count, and badge against the codebase before changing anything. TRIGGER WHEN: the user asks to audit, update, or improve an existing README.md: fix stale stats/links, reorganize sections, or apply readme-craft best practices. DO NOT TRIGGER WHEN: creating a new README (use the docs:readme-craft skill), or non-README docs (use /codebase-mapper:docs-maintain).",
-            "file": "commands/maintain-readme.md",
-            "name": "docs:maintain-readme"
-          }
-        ],
-        "root": "plugins/docs",
-        "skills": [
-          {
-            "description": "Author the front door of an open-source repository: detect stack and structure, gather missing metadata, then write the file. TRIGGER WHEN: the user asks to write, create, draft, or scaffold a README.md for a project (English or Italian phrasing: \"readme\", \"write a readme\", \"create readme\", \"scrivi il readme\", \"crea il readme\"). DO NOT TRIGGER WHEN: auditing an existing README (use /docs:maintain-readme), or non-README docs (use /codebase-mapper:docs-create).",
-            "file": "skills/readme-craft/SKILL.md",
-            "id": "docs:readme-craft",
-            "name": "readme-craft"
           }
         ]
       },
@@ -1913,6 +1426,12 @@
             "file": "skills/skills-creator/SKILL.md",
             "id": "marketplace-ops:skills-creator",
             "name": "skills-creator"
+          },
+          {
+            "description": "Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages. TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports. DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages.",
+            "file": "skills/kernel-marketplace/SKILL.md",
+            "id": "marketplace-ops:kernel-marketplace",
+            "name": "kernel-marketplace"
           }
         ]
       },
@@ -2215,12 +1734,12 @@
           }
         ]
       },
-      "project-setup": {
+      "project-knowledge": {
         "agents": [
           {
-            "description": "Check ground truth: obsolete claims, an evergreen project-structure section, and proportional sizing. TRIGGER WHEN: creating, reviewing, or improving CLAUDE.md files.",
-            "file": "agents/claude-md-auditor.md",
-            "id": "project-setup:claude-md-auditor",
+            "description": "Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately.",
+            "file": "agents/codebase-explorer.md",
+            "id": "project-knowledge:codebase-explorer",
             "permissions": [
               {
                 "action": "*",
@@ -2253,7 +1772,425 @@
                 "resource": "*"
               },
               {
-                "action": "webfetch",
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Restructure existing technical documents for their planned readers without changing facts, code examples or author voice; voice editing belongs to text-humanizer.",
+            "file": "agents/doc-humanizer.md",
+            "id": "project-knowledge:doc-humanizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode.",
+            "file": "agents/documentation-engineer.md",
+            "id": "project-knowledge:documentation-engineer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Document scoped user and data flows from verified call paths and contracts.",
+            "file": "agents/flow-writer.md",
+            "id": "project-knowledge:flow-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer.",
+            "file": "agents/guide-reviewer.md",
+            "id": "project-knowledge:guide-reviewer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files.",
+            "file": "agents/instructions-auditor.md",
+            "id": "project-knowledge:instructions-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Write verified reader-specific onboarding and real open questions.",
+            "file": "agents/onboarding-writer.md",
+            "id": "project-knowledge:onboarding-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Own operational reference and configuration how-to, absorbing the former config writers techniques.",
+            "file": "agents/ops-writer.md",
+            "id": "project-knowledge:ops-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Explain the project and implemented features for planned audiences.",
+            "file": "agents/overview-writer.md",
+            "id": "project-knowledge:overview-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Document the verified stack, architecture and data model in planned files.",
+            "file": "agents/tech-writer.md",
+            "id": "project-knowledge:tech-writer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
                 "effect": "allow",
                 "resource": "*"
               },
@@ -2272,17 +2209,162 @@
         ],
         "commands": [
           {
-            "description": "Ask the questionnaire first, then write a file sized to the codebase. TRIGGER WHEN: the user asks to create/generate/scaffold a CLAUDE.md for a project that doesnt have one. DO NOT TRIGGER WHEN: auditing or updating an existing one (use /project-setup:maintain-claude-md).",
-            "file": "commands/create-claude-md.md",
-            "name": "project-setup:create-claude-md"
+            "description": "Audit, create or maintain the projects authoritative durable instructions.",
+            "file": "commands/instructions.md",
+            "name": "project-knowledge:instructions"
           },
           {
-            "description": "Surface every drift and let the user decide each one. TRIGGER WHEN: the user asks to audit, update, verify, or improve an existing CLAUDE.md against the current codebase. DO NOT TRIGGER WHEN: creating one from scratch (use /project-setup:create-claude-md).",
-            "file": "commands/maintain-claude-md.md",
-            "name": "project-setup:maintain-claude-md"
+            "description": "Create or update a proportional audience-specific project guide using an owned file plan.",
+            "file": "commands/guide.md",
+            "name": "project-knowledge:guide"
+          },
+          {
+            "description": "Audit documentation drift and apply authorized evidence-backed maintenance.",
+            "file": "commands/maintain.md",
+            "name": "project-knowledge:maintain"
+          },
+          {
+            "description": "Audit, create or maintain README.md without losing facts or author voice.",
+            "file": "commands/readme.md",
+            "name": "project-knowledge:readme"
           }
         ],
-        "root": "plugins/project-setup"
+        "dependencies": [
+          "project-protocol",
+          "codebase-xray",
+          "text-humanizer",
+          "senior-review"
+        ],
+        "root": "plugins/project-knowledge",
+        "skills": [
+          {
+            "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
+            "file": "skills/project-knowledge/SKILL.md",
+            "id": "project-knowledge:project-knowledge",
+            "name": "project-knowledge"
+          },
+          {
+            "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target hosts established instruction file. Provides an explicit audit-only method.",
+            "file": "skills/instructions-method/SKILL.md",
+            "id": "project-knowledge:instructions-method",
+            "name": "instructions-method"
+          },
+          {
+            "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
+            "file": "skills/readme-craft/SKILL.md",
+            "id": "project-knowledge:readme-craft",
+            "name": "readme-craft"
+          }
+        ]
+      },
+      "project-lifecycle": {
+        "commands": [
+          {
+            "description": "Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.",
+            "file": "commands/assess.md",
+            "name": "project-lifecycle:assess"
+          },
+          {
+            "description": "Apply an identified repair plan through canonical owners and verified phase gates. TRIGGER WHEN: the user requests lifecycle repair or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.",
+            "file": "commands/repair.md",
+            "name": "project-lifecycle:repair"
+          },
+          {
+            "description": "Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.",
+            "file": "commands/change.md",
+            "name": "project-lifecycle:change"
+          },
+          {
+            "description": "Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.",
+            "file": "commands/verify.md",
+            "name": "project-lifecycle:verify"
+          },
+          {
+            "description": "Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.",
+            "file": "commands/consolidate.md",
+            "name": "project-lifecycle:consolidate"
+          }
+        ],
+        "dependencies": [
+          "project-protocol",
+          "project-knowledge",
+          "senior-review",
+          "testing",
+          "abstraction-architect",
+          "codebase-xray",
+          "repo-hygiene",
+          "clean-code",
+          "text-humanizer"
+        ],
+        "root": "plugins/project-lifecycle",
+        "skills": [
+          {
+            "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.",
+            "file": "skills/lifecycle-method/SKILL.md",
+            "id": "project-lifecycle:lifecycle-method",
+            "name": "lifecycle-method"
+          }
+        ]
+      },
+      "project-protocol": {
+        "agents": [
+          {
+            "description": "Isolated task worker for a coordinator-owned method. Executes the supplied concrete task within its owned scope and returns an actual evidence report.",
+            "file": "agents/isolated-worker.md",
+            "id": "project-protocol:isolated-worker",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "root": "plugins/project-protocol",
+        "skills": [
+          {
+            "description": "Canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before recording, resuming or closing a project intervention.",
+            "file": "skills/project-protocol/SKILL.md",
+            "id": "project-protocol:project-protocol",
+            "name": "project-protocol"
+          }
+        ]
       },
       "pwa-expert": {
         "agents": [
@@ -2374,7 +2456,7 @@
       "python-development": {
         "agents": [
           {
-            "description": "Hands-on Python 3.12+ engineer. Ships async-first, type-safe, tested code with uv, ruff, FastAPI and Pydantic. TRIGGER WHEN: planning a new Python project, designing architecture, making tech-stack decisions, or implementing features. DO NOT TRIGGER WHEN: the task is writing tests (use python-test-engineer) or isolated refactoring (use python-refactor-agent).",
+            "description": "Hands-on Python 3.12+ engineer. Ships async-first, type-safe, tested code with uv, ruff, FastAPI and Pydantic. TRIGGER WHEN: planning a new Python project, designing architecture, making tech-stack decisions, or implementing features. DO NOT TRIGGER WHEN: the task is writing tests (use testing:test-writer) or isolated refactoring (use python-refactor-agent).",
             "file": "agents/python-engineer.md",
             "id": "python-development:python-engineer",
             "permissions": [
@@ -2416,51 +2498,9 @@
             ]
           },
           {
-            "description": "Modernize legacy Python in place. TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings. DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use python-test-engineer).",
+            "description": "Modernize legacy Python in place. TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings. DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use testing:test-writer).",
             "file": "agents/python-refactor-agent.md",
             "id": "python-development:python-refactor-agent",
-            "permissions": [
-              {
-                "action": "*",
-                "effect": "deny",
-                "resource": "*"
-              },
-              {
-                "action": "read",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "edit",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "shell",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "glob",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "skill",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "external_directory",
-                "effect": "allow",
-                "resource": "<package-root>/**"
-              }
-            ]
-          },
-          {
-            "description": "Write behavior-driven suites and drive TDD workflows in Python. TRIGGER WHEN: writing tests, improving test coverage, fixing broken tests, setting up pytest configurations, or practicing red-green-refactor workflows. DO NOT TRIGGER WHEN: building new features from scratch or designing system architecture (use python-engineer).",
-            "file": "agents/python-test-engineer.md",
-            "id": "python-development:python-test-engineer",
             "permissions": [
               {
                 "action": "*",
@@ -2502,7 +2542,7 @@
         ],
         "commands": [
           {
-            "description": "Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use python-development:python-tdd).",
+            "description": "Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use testing:test-writer with pytest-patterns context).",
             "file": "commands/python-audit.md",
             "name": "python-development:python-audit"
           },
@@ -2517,6 +2557,10 @@
             "name": "python-development:python-scaffold"
           }
         ],
+        "dependencies": [
+          "testing",
+          "project-protocol"
+        ],
         "root": "plugins/python-development",
         "skills": [
           {
@@ -2526,7 +2570,7 @@
             "name": "async-python-patterns"
           },
           {
-            "description": "Deep reference for the data layer of a production service. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+; migrating a codebase from Pydantic v1 to v2; choosing between `Annotated[Decimal, ...]` and `condecimal` for money; hitting v2 validator, serialization or performance surprises; designing FastAPI request/response schemas or error envelopes. DO NOT TRIGGER WHEN: the task is Python testing (use python-tdd) or non-Python schema work (use typescript-development).",
+            "description": "Deep reference for the data layer of a production service. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+; migrating a codebase from Pydantic v1 to v2; choosing between `Annotated[Decimal, ...]` and `condecimal` for money; hitting v2 validator, serialization or performance surprises; designing FastAPI request/response schemas or error envelopes. DO NOT TRIGGER WHEN: the task is Python testing (use pytest-patterns) or non-Python schema work (use typescript-development).",
             "file": "skills/pydantic-v2/SKILL.md",
             "id": "python-development:pydantic-v2",
             "name": "pydantic-v2"
@@ -2562,10 +2606,10 @@
             "name": "python-refactor-method"
           },
           {
-            "description": "Generate suites that pin behavior instead of implementation. TRIGGER WHEN: writing Python tests, improving coverage, reviewing test quality, or practicing red-green-refactor workflows with pytest. DO NOT TRIGGER WHEN: the target is non-Python (use mattpocock-skills:tdd for other languages, or developer-essentials:e2e-testing-patterns for browser E2E).",
-            "file": "skills/python-tdd/SKILL.md",
-            "id": "python-development:python-tdd",
-            "name": "python-tdd"
+            "description": "Python-specific pytest fixtures, async tests, parametrization, mocks and framework configuration. Load as technical context for testing:test-writer or Python development; universal test principles and TDD belong to testing.",
+            "file": "skills/pytest-patterns/SKILL.md",
+            "id": "python-development:pytest-patterns",
+            "name": "pytest-patterns"
           },
           {
             "description": "Handle virtual environments, lockfiles and interpreter version pinning. TRIGGER WHEN: setting up Python projects, managing dependencies, migrating off pip/poetry, or optimizing Python development workflows with uv.",
@@ -2939,6 +2983,45 @@
             "file": "skills/web-search-techniques/SKILL.md",
             "id": "research:web-search-techniques",
             "name": "web-search-techniques"
+          }
+        ]
+      },
+      "review-plus": {
+        "commands": [
+          {
+            "description": "Extended code-review through senior-reviews canonical engine with React, TypeScript and platform dimensions.",
+            "file": "commands/code-review.md",
+            "name": "review-plus:code-review"
+          },
+          {
+            "description": "Extended team-review through senior-reviews canonical engine with React, TypeScript and platform dimensions.",
+            "file": "commands/team-review.md",
+            "name": "review-plus:team-review"
+          },
+          {
+            "description": "Extended pr-review through senior-reviews canonical engine with React, TypeScript and platform dimensions.",
+            "file": "commands/pr-review.md",
+            "name": "review-plus:pr-review"
+          }
+        ],
+        "dependencies": [
+          "senior-review",
+          "react-development",
+          "typescript-development",
+          "platform-engineering",
+          "repo-hygiene",
+          "codebase-xray",
+          "abstraction-architect",
+          "testing",
+          "project-protocol"
+        ],
+        "root": "plugins/review-plus",
+        "skills": [
+          {
+            "description": "Extend universal review with mandatory signal-selected specialist roles, without copying the senior engine.",
+            "file": "skills/extended-review-method/SKILL.md",
+            "id": "review-plus:extended-review-method",
+            "name": "extended-review-method"
           }
         ]
       },
@@ -3525,10 +3608,8 @@
           "repo-hygiene",
           "codebase-xray",
           "abstraction-architect",
-          "react-development",
-          "platform-engineering",
-          "typescript-development",
-          "testing"
+          "testing",
+          "project-protocol"
         ],
         "root": "plugins/senior-review",
         "skills": [
@@ -3543,6 +3624,30 @@
             "file": "skills/review-quality-gates/SKILL.md",
             "id": "senior-review:review-quality-gates",
             "name": "review-quality-gates"
+          },
+          {
+            "description": "Canonical universal review engine used by code-review, team-review, pr-review and review-plus.",
+            "file": "skills/review-method/SKILL.md",
+            "id": "senior-review:review-method",
+            "name": "review-method"
+          },
+          {
+            "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
+            "file": "skills/review-preparation/SKILL.md",
+            "id": "senior-review:review-preparation",
+            "name": "review-preparation"
+          },
+          {
+            "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
+            "file": "skills/review-consolidation/SKILL.md",
+            "id": "senior-review:review-consolidation",
+            "name": "review-consolidation"
+          },
+          {
+            "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates.",
+            "file": "skills/application-cleanup-method/SKILL.md",
+            "id": "senior-review:application-cleanup-method",
+            "name": "application-cleanup-method"
           }
         ]
       },
@@ -3918,23 +4023,38 @@
         ],
         "commands": [
           {
-            "description": "Writes a versioned TEST_AUDIT.md; with --fix, quarantines the rot in gated, revertible commits. TRIGGER WHEN: auditing a test suite, measuring test health, finding dead or flaky or redundant tests, or quarantining failing tests to get CI trustworthy again. DO NOT TRIGGER WHEN: one modules tests are consolidated (use /testing:test-consolidate), or new tests written (use the test-writer agent).",
+            "description": "Writes a versioned TEST_AUDIT.md; with --fix, quarantines the rot in gated, revertible commits. TRIGGER WHEN: auditing a test suite, measuring test health, finding dead or flaky or redundant tests, or diagnosing failure causes and proposing temporary quarantine. DO NOT TRIGGER WHEN: one modules tests are consolidated (use /testing:test-consolidate), or new tests written (use the test-writer agent).",
             "file": "commands/test-audit.md",
             "name": "testing:test-audit"
           },
           {
-            "description": "Turns overlapping suites into one clean file per source file: BEHAVIOR inventory approved first, originals deleted in the same commit, coverage verified after. TRIGGER WHEN: consolidating, deduping or rewriting the tests of a module, or processing quarantined tests for code being touched. DO NOT TRIGGER WHEN: whole-suite health is measured or quarantined (use /testing:test-audit), or tests written for untested code (use the test-writer agent).",
+            "description": "Turns overlapping suites into one clean file per source file: BEHAVIOR inventory approved first, originals deleted in the same commit, behavioral protection verified before commit. TRIGGER WHEN: consolidating, deduping or rewriting the tests of a module, or processing quarantined tests for code being touched. DO NOT TRIGGER WHEN: whole-suite health is measured or quarantined (use /testing:test-audit), or tests written for untested code (use the test-writer agent).",
             "file": "commands/test-consolidate.md",
             "name": "testing:test-consolidate"
           }
         ],
+        "dependencies": [
+          "project-protocol"
+        ],
         "root": "plugins/testing",
         "skills": [
           {
-            "description": "Binding placement rules, plus the measure, quarantine, consolidate remediation ladder for degraded suites. TRIGGER WHEN: creating or placing any test file, choosing between extending an existing test and writing a new one, auditing test-suite health, quarantining failing or flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: writing the test content itself (use mattpocock-skills:tdd), browser E2E mechanics like page objects and waiting (use developer-essentials:e2e-testing-patterns), or pytest specifics (python-developments python-tdd skill).",
+            "description": "Binding placement rules, plus the measure, quarantine, consolidate remediation ladder for degraded suites. TRIGGER WHEN: creating or placing any test file, choosing between extending an existing test and writing a new one, auditing test-suite health, quarantining failing or flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: writing the test content itself (use mattpocock-skills:tdd), browser E2E mechanics like page objects and waiting (use developer-essentials:e2e-testing-patterns).",
             "file": "skills/test-hygiene/SKILL.md",
             "id": "testing:test-hygiene",
             "name": "test-hygiene"
+          },
+          {
+            "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence.",
+            "file": "skills/test-preparation/SKILL.md",
+            "id": "testing:test-preparation",
+            "name": "test-preparation"
+          },
+          {
+            "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance.",
+            "file": "skills/test-remediation-method/SKILL.md",
+            "id": "testing:test-remediation-method",
+            "name": "test-remediation-method"
           }
         ]
       },
@@ -4299,7 +4419,7 @@
     },
     "schema": 1
   },
-  "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
+  "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
   "keywords": [
     "opencode-plugin"
   ],
@@ -4308,5 +4428,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "29.0.0"
+  "version": "30.0.0"
 }

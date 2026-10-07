@@ -9,6 +9,14 @@ model: inherit
 color: blue
 ---
 
+## Common operational method
+
+Load the `clean-code:readability-method` skill and `project-protocol:project-protocol`.
+When the caller already supplies its prepared scope, baseline and accepted preview,
+reuse them rather than re-running approval or preparation. Preserve the exact
+pre-edit snapshot before mutation and bind required checks to the candidate.
+
+
 # Clean Code Agent
 
 Rewrite source code to make it readable and maintainable. **Zero behavior changes: this is the #1 priority.**
@@ -82,7 +90,7 @@ Changes will include:
 Proceed?
 ```
 
-**Wait for confirmation before making any changes.**
+**Reuse the caller's accepted preview and scope. Ask only when a proposed change exceeds that authorization.**
 
 ## Phase 4: Transform
 
@@ -121,7 +129,7 @@ What to keep:
 
 ## Phase 5: Validate
 
-After transforming each file, run these checks in order. If any check fails, **immediately revert the file** with `git restore <file>` and report the failure.
+After transforming each file, run these checks in order. If a required check fails, use `project-protocol:project-protocol` to restore only your exact saved pre-edit content. Preserve prior edits; a foreign-writer hash change is a conflict, never permission to overwrite. Report the failed candidate and verified recovery.
 
 ### 5a. Type checker
 
@@ -143,15 +151,11 @@ Grep the OLD name of every renamed symbol in `.json`, `.yaml`, `.yml`, `.toml`, 
 
 If no tests AND no type checker are available, do NOT proceed unless the user passes `--force`. Tell the user: "No tests or type checker found. Use `--force` to proceed, or set up validation first."
 
-## Phase 6: Commit
+## Phase 6: Deliver
 
-After validation passes for each file or logical group:
-
-```bash
-git add <specific-files> && git commit -m "clean-code: [file]: [what changed]"
-```
-
-**Never use `git add -A`**: always stage specific files to avoid committing unintended changes.
+Return the owned file list, candidate snapshot and gate evidence to the caller.
+Commit only under explicit authorization after the candidate gate passes; stage
+only owned files. Recovery of a published change requires an authorized revert.
 
 ## Phase 7: Report
 
@@ -176,12 +180,11 @@ Report suggestions as **recommendations**, not as changes made.
 
 - **clean-code-agent** (this agent): Multi-language readability pass. Renames variables, improves comments, simplifies structure. Use for: "make this readable", "clean up naming", "simplify this code".
 - **text-humanizer** (text-humanizer plugin): Prose/text AI trace removal. Use for: "make this text sound human".
-- **python-refactor-method** skill (python-development plugin): Python-only deep restructuring with metrics and SOLID principles. Use for: "refactor this module", "reduce complexity".
 
-**Escalation path:** clean-code-agent -> python-refactor-method (from safest to most thorough).
+Architectural changes return to the caller's development plan.
 
 ## Parallelism
 
-For projects with >10 files, use Task to process independent files in parallel.
+For projects with >10 files, dispatch isolated workers for disjoint owned file sets, using the host coordination mechanism.
 Each sub-task receives: file content + domain + these rules.
-Each sub-task must validate independently before committing.
+Each worker validates its candidate and delivers evidence; the caller controls commits.

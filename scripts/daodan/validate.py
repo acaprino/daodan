@@ -15,9 +15,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import AbstractSet, Sequence
+from typing import AbstractSet, Mapping, Sequence
 
-from .model import PluginSpec
+from .model import INLINE_WORKER_REFERENCE, PluginSpec
 
 KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -175,7 +175,9 @@ def validate_components(plugin: PluginSpec) -> list[ValidationIssue]:
     return issues
 
 
-def validate_dependencies(plugin: PluginSpec) -> list[ValidationIssue]:
+def validate_dependencies(
+    plugin: PluginSpec, registry: Mapping[str, PluginSpec] | None = None
+) -> list[ValidationIssue]:
     """Static fan-out roles must resolve inside this plugin or a required dependency.
 
     There is no optional local dependency by policy, so a role that resolves
@@ -185,26 +187,81 @@ def validate_dependencies(plugin: PluginSpec) -> list[ValidationIssue]:
     roles = set(plugin.components.roles)
     dependencies = set(plugin.required_dependencies)
     for workflow in plugin.workflows:
+        references = [f"role:{role}" for role in workflow.dispatch.roles]
+        if workflow.dispatch.inline_workers:
+            references.append(f"role:{INLINE_WORKER_REFERENCE}")
+        if workflow.dispatch.roles or workflow.dispatch.inline_workers:
+            if "roles.dispatch" not in plugin.capabilities.required:
+                issues.append(ValidationIssue("dispatch-without-capability", workflow.entrypoint,
+                                              "Method dispatch requires roles.dispatch"))
+        if len(set(workflow.dispatch.roles)) != len(workflow.dispatch.roles):
+            issues.append(ValidationIssue("duplicate-dispatch-role", workflow.entrypoint, "Duplicate method role"))
+        for reference in workflow.dispatch.roles:
+            owner, separator, role = reference.partition("/")
+            if (not KEBAB.fullmatch(owner) or (separator and not KEBAB.fullmatch(role))):
+                issues.append(ValidationIssue("invalid-dispatch-role", workflow.entrypoint, reference))
         for phase in workflow.phases:
-            references = list(phase.fanout)
+            references.extend(phase.fanout)
             if phase.role is not None:
                 references.append(f"role:{phase.role}")
-            for reference in references:
-                kind, name = _split_reference(reference)
-                if kind != "role":
-                    continue
-                owner, separator, role = name.partition("/")
-                if separator:
-                    if owner not in dependencies:
-                        issues.append(
-                            ValidationIssue(
-                                "undeclared-dependency", workflow.entrypoint, reference
-                            )
-                        )
-                elif name not in roles:
+        for reference in references:
+            kind, name = _split_reference(reference)
+            if kind != "role":
+                continue
+            owner, separator, role = name.partition("/")
+            if separator:
+                if owner != plugin.name and owner not in dependencies:
                     issues.append(
-                        ValidationIssue("unknown-role", workflow.entrypoint, reference)
+                        ValidationIssue("undeclared-dependency", workflow.entrypoint, reference)
                     )
+                elif registry is not None:
+                    provider = registry.get(owner)
+                    if provider is None:
+                        issues.append(ValidationIssue("unknown-role-provider", workflow.entrypoint, reference))
+                    elif role not in provider.components.roles:
+                        issues.append(ValidationIssue("unknown-role", workflow.entrypoint, reference))
+            elif name not in roles:
+                issues.append(ValidationIssue("unknown-role", workflow.entrypoint, reference))
+    return issues
+
+
+def validate_contract_exports(
+    plugin: PluginSpec, registry: Mapping[str, PluginSpec]
+) -> list[ValidationIssue]:
+    """A shared schema is a declared provider resource, never a copied consumer file."""
+    issues: list[ValidationIssue] = []
+    manifest = plugin.root / "plugin.toml"
+    seen: set[Path] = set()
+    for exported in plugin.contract_exports:
+        if exported in seen:
+            issues.append(ValidationIssue("duplicate-contract-export", manifest, exported.as_posix()))
+        seen.add(exported)
+        if (_is_escaping(exported.as_posix()) or len(exported.parts) < 2
+                or exported.parts[0] != "contracts" or exported.suffix != ".toml"):
+            issues.append(ValidationIssue("invalid-contract-export", manifest, exported.as_posix()))
+            continue
+        resource = plugin.root / exported
+        if not resource.is_file():
+            issues.append(ValidationIssue("missing-contract-export", manifest, exported.as_posix()))
+        elif not resource.resolve().is_relative_to(plugin.root.resolve()):
+            issues.append(ValidationIssue("invalid-contract-export", manifest, exported.as_posix()))
+    for workflow in plugin.workflows:
+        for reference in workflow.contract.shared_schemas:
+            owner, separator, path = reference.partition("/")
+            candidate = Path(path)
+            if (not separator or not KEBAB.fullmatch(owner) or _is_escaping(path)
+                    or len(candidate.parts) < 2 or candidate.parts[0] != "contracts"
+                    or candidate.suffix != ".toml"):
+                issues.append(ValidationIssue("invalid-shared-schema", workflow.entrypoint, reference))
+                continue
+            if owner not in plugin.required_dependencies:
+                issues.append(ValidationIssue("undeclared-schema-provider", workflow.entrypoint, reference))
+                continue
+            provider = registry.get(owner)
+            if provider is None:
+                issues.append(ValidationIssue("unknown-schema-provider", workflow.entrypoint, reference))
+            elif candidate not in provider.contract_exports:
+                issues.append(ValidationIssue("unexported-shared-schema", workflow.entrypoint, reference))
     return issues
 
 
@@ -256,6 +313,8 @@ def validate_execution_contracts(plugin: PluginSpec) -> list[ValidationIssue]:
         produced = {item for phase in workflow.phases for item in phase.produces}
         independent = INDEPENDENT_REVIEW_OUTCOME in workflow.contract.outcomes
         for phase in workflow.phases:
+            if phase.invoke is not None:
+                issues.append(ValidationIssue("unsupported-workflow-invoke", workflow.entrypoint, phase.id))
             has_fanout = bool(phase.fanout or phase.fanout_from)
             if phase.fanout and phase.fanout_from:
                 issues.append(ValidationIssue("ambiguous-fanout", workflow.entrypoint, phase.id))
@@ -364,12 +423,14 @@ def validate_plugins(
 ) -> list[ValidationIssue]:
     """Run every pass over every plugin, in a fixed order."""
     issues: list[ValidationIssue] = []
+    registry = {plugin.name: plugin for plugin in plugins}
     for plugin in plugins:
         issues.extend(validate_identity(plugin))
         issues.extend(validate_paths(plugin))
         issues.extend(validate_components(plugin))
         issues.extend(validate_component_kinds(plugin))
-        issues.extend(validate_dependencies(plugin))
+        issues.extend(validate_dependencies(plugin, registry))
+        issues.extend(validate_contract_exports(plugin, registry))
         issues.extend(validate_capabilities(plugin, capabilities))
         issues.extend(validate_mcp_servers(plugin))
         issues.extend(validate_workflow_graph(plugin))

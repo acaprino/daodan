@@ -220,7 +220,7 @@ Before proceeding with refactoring:
 
 - [ ] All high-priority issues identified
 - [ ] Risk assessment completed
-- [ ] Test coverage adequate (>80% recommended)
+- [ ] Observable contracts, independent failure modes and bugfix regressions have justified surviving protection
 - [ ] Refactoring plan reviewed by team
 - [ ] Time estimate approved
 - [ ] Dependencies documented

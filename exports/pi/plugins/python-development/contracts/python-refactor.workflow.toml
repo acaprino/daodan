@@ -11,3 +11,5 @@ inputs = ["repository"]
 outcomes = ["python-refactor-completed"]
 artifacts = ["python-refactor-report"]
 schemas = []
+
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

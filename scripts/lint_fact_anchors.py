@@ -56,6 +56,16 @@ from pathlib import Path
 _COUNT = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)"
 
 ANCHORS = {
+    "test-layer-ownership": (
+        "plugins/testing/skills/test-hygiene/SKILL.md",
+        r"(?m)^Test ownership: ([^\n]+)$",
+        "Unit and flow ownership must agree in canonical testing and independently loaded instruction blocks",
+    ),
+    "working-principle-shared-concept-owner": (
+        "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+        r"### 5\. Centralize Shared Logic\n([^\n]+)",
+        "Shared concept ownership rule: instruction examples and the canonical working block must agree",
+    ),
     "constraint-saturation-threshold": (
         "plugins/ai-tooling/roles/prompt-engineer.md",
         rf"(?:above|over)\s+({_COUNT})\s+simultaneously\s+verifiable\s+constraints",

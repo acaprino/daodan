@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "csp"
-version = "1.4.0"
+version = "1.4.1"
 description = "Constraint Satisfaction Problems and combinatorial optimization with Google OR-Tools CP-SAT solver"
 license = "MIT"
 

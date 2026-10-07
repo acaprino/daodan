@@ -6,6 +6,17 @@ description: >
 argument-hint: "<plugin-name> [--with-agent] [--with-skill] [--with-command] [--category <cat>] [--author <name>]"
 ---
 
+## Source profile preflight
+
+Load marketplace-ops:kernel-marketplace before this procedure. Detect the target's
+source model from its manifests and instructions. For daodan/v1 neutral kernels,
+follow that skill's operation-specific procedure and finish there. Generated
+exports and catalog entries are inspected as output, never authored as source.
+The procedure below applies only to a legacy Claude marketplace with hand-authored
+agents/ and commands/. It must not be applied to a neutral kernel checkout.
+
+
+
 # Scaffold New Plugin
 
 Create a new plugin following the standard Claude Code plugin conventions (works against any marketplace with a `.claude-plugin/marketplace.json` registry).

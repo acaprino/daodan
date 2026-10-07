@@ -14,9 +14,9 @@ passes, each independently reported. Exits non-zero if any fails.
                     that silently broke ai-tooling until marketplace 12.0.2);
                     qualified names must be name@marketplace with both halves
                     non-empty, and must not shadow a local plugin
-  2. runtime refs   every runtime cross-plugin reference (agent spawn or skill
-                    load) is declared in the owning plugin's dependencies or
-                    optionalDependencies
+  2. runtime refs   every runtime cross-plugin reference (role dispatch, skill
+                    load or shared schema) is declared by its kernel, and an
+                    explicit role or shared schema resolves to its provider
   3. forbidden edge nothing in codebase-xray references a senior-review
                     component at runtime. Prose next-steps suggestions are
                     fine; a spawn or skill load is the edge the old dependency
@@ -51,25 +51,34 @@ passes, each independently reported. Exits non-zero if any fails.
 What counts as a runtime reference:
 
   - a `subagent_type:` line naming plugin:agent (an Agent spawn)
+  - a neutral `role: plugin:agent` worker brief
   - a spawn/dispatch instruction naming plugin:component on the same line
   - a skill-load instruction (load/invoke/use + "skill") naming plugin:skill
+  - a workflow sidecar's phase.role or role-valued phase.fanout binding
+  - a workflow sidecar's dispatch.roles and explicit inline worker binding
+  - a workflow sidecar's contract.shared_schemas provider/path binding
+
+Plugin manifests are authoritative. Catalogs are generated output and may be
+stale while kernels are being changed. Sidecars are parsed as TOML; their
+fanout_from selections and local schemas do not create dependency edges.
 
 Slash-command mentions (/plugin:command) are user-facing suggestions, not
 runtime edges, and are deliberately not extracted. TRIGGER WHEN / DO NOT
 TRIGGER WHEN lines are routing descriptions, never runtime. Tokens whose
 prefix is not a known namespace (local plugin or the base name of a qualified
-external dependency) are ignored.
+external dependency) are ignored in heuristic prose, but an unknown provider
+in an explicit neutral role or schema binding is an error.
 
     python scripts/lint_dependency_graph.py --refs
 
 prints the extracted runtime edges instead of linting, for maintenance.
 """
-import json
 import re
 import sys
+import tomllib
+from dataclasses import dataclass
 from pathlib import Path
 
-MARKETPLACE = Path(".claude-plugin/marketplace.json")
 PLUGINS = Path("plugins")
 
 # Runtime edges that must never exist, regardless of declarations.
@@ -113,13 +122,21 @@ def report(name, problems):
         print(f"ok    {name}")
 
 
-def load_marketplace():
-    data = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
+def load_plugins():
+    """Read the hand-authored declarations, independently of generated catalogs."""
     plugins = {}
-    for entry in data["plugins"]:
-        plugins[entry["name"]] = {
-            "dependencies": entry.get("dependencies", []),
-            "optionalDependencies": entry.get("optionalDependencies", []),
+    for path in sorted(PLUGINS.glob("*/plugin.toml")):
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+        name = data.get("name")
+        if name != path.parent.name:
+            raise ValueError(f"{path.as_posix()}: name must match its kernel directory")
+        dependencies = data.get("dependencies", {})
+        components = data.get("components", {})
+        plugins[name] = {
+            "dependencies": dependencies.get("required", []),
+            "optionalDependencies": dependencies.get("optional", []),
+            "roles": set(components.get("roles", [])),
+            "contract_exports": set(data.get("contracts", {}).get("exports", [])),
         }
     return plugins
 
@@ -135,13 +152,99 @@ SKILL_LINE = re.compile(r"\bskill", re.IGNORECASE)
 SKILL_VERB = re.compile(r"\b(load|invoke|use|run)\b", re.IGNORECASE)
 ROUTING_LINE = re.compile(r"TRIGGER WHEN", re.IGNORECASE)
 DEGRADE_NOTE = re.compile(r"not installed|\bskip|\boptional", re.IGNORECASE)
+NEUTRAL_ROLE = re.compile(
+    r"^\s*(?:-\s*)?role\s*:\s*[\"'`]?"
+    r"([a-z0-9]+(?:-[a-z0-9]+)*):([a-z0-9]+(?:-[a-z0-9]+)*)"
+    r"(?=[\"'`\s,}]|$)")
+ROLE_BINDING = re.compile(
+    r"^([a-z0-9]+(?:-[a-z0-9]+)*)/([a-z0-9]+(?:-[a-z0-9]+)*)$")
+
+
+@dataclass(frozen=True)
+class Reference:
+    owner: str
+    path: Path
+    line_no: int
+    namespace: str
+    kind: str
+    lines: list[str]
+    target: str | None = None
+
+
+def _field_lines(lines, key):
+    return [i for i, line in enumerate(lines, start=1)
+            if re.match(rf"^\s*{re.escape(key)}\s*=", line)]
+
+
+def _role_reference(owner, path, line_no, value, lines, *, fanout=False):
+    """Resolve only the role binding grammar used by neutral workflow phases."""
+    if not isinstance(value, str):
+        raise ValueError(f"{path.as_posix()}:{line_no}: role binding must be a string")
+    if fanout:
+        kind, separator, name = value.partition(":")
+        if separator:
+            if kind != "role":
+                return None
+            value = name
+    if "/" not in value:
+        return None  # local role, checked by the compiler
+    match = ROLE_BINDING.fullmatch(value)
+    if not match:
+        raise ValueError(f"{path.as_posix()}:{line_no}: invalid role binding '{value}'")
+    namespace, target = match.groups()
+    if namespace == owner:
+        return None
+    return Reference(owner, path, line_no, namespace, "phase-role", lines, target)
+
+
+def _sidecar_references(path):
+    """Use parsed fields, never arbitrary TOML strings or artifact selections."""
+    owner = path.relative_to(PLUGINS).parts[0]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    data = tomllib.loads("\n".join(lines))
+    role_lines = iter(_field_lines(lines, "role"))
+    fanout_lines = iter(_field_lines(lines, "fanout"))
+    refs = []
+    dispatch = data.get("dispatch", {})
+    line_no = next(iter(_field_lines(lines, "roles")), 1)
+    for value in dispatch.get("roles", []):
+        reference = _role_reference(owner, path, line_no, value, lines)
+        if reference:
+            refs.append(reference)
+    if dispatch.get("inline_workers") is True:
+        line_no = next(iter(_field_lines(lines, "inline_workers")), 1)
+        reference = _role_reference(owner, path, line_no, "project-protocol/isolated-worker", lines)
+        if reference:
+            refs.append(reference)
+    for phase in data.get("phases", []):
+        if "role" in phase:
+            reference = _role_reference(
+                owner, path, next(role_lines, 1), phase["role"], lines)
+            if reference:
+                refs.append(reference)
+        if "fanout" in phase:
+            line_no = next(fanout_lines, 1)
+            for value in phase["fanout"]:
+                reference = _role_reference(owner, path, line_no, value, lines, fanout=True)
+                if reference:
+                    refs.append(reference)
+    line_no = next(iter(_field_lines(lines, "shared_schemas")), 1)
+    for value in data.get("contract", {}).get("shared_schemas", []):
+        if not isinstance(value, str):
+            raise ValueError(f"{path.as_posix()}:{line_no}: shared schema must be a string")
+        namespace, separator, target = value.partition("/")
+        candidate = Path(target)
+        if (not separator or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", namespace)
+                or candidate.is_absolute() or ".." in candidate.parts
+                or len(candidate.parts) < 2 or candidate.parts[0] != "contracts"
+                or candidate.suffix != ".toml" or "\\" in value):
+            raise ValueError(f"{path.as_posix()}:{line_no}: invalid shared schema '{value}'")
+        refs.append(Reference(owner, path, line_no, namespace, "shared-schema", lines, target))
+    return refs
 
 
 def extract_references(plugins):
-    """Yield (owner, path, line_no, namespace, kind, lines) for runtime refs.
-
-    kind is "spawn" or "skill-load". Prose mentions are dropped here.
-    """
+    """Extract executable bindings and narrowly recognized prose instructions."""
     namespaces = set(plugins)
     for meta in plugins.values():
         for entry in meta["dependencies"] + meta["optionalDependencies"]:
@@ -155,6 +258,12 @@ def extract_references(plugins):
         for i, line in enumerate(lines, start=1):
             if ROUTING_LINE.search(line):
                 continue  # TRIGGER WHEN routing labels are prose
+            neutral_role = NEUTRAL_ROLE.match(line)
+            if neutral_role:
+                ns, target = neutral_role.groups()
+                if ns != owner:
+                    refs.append(Reference(owner, md, i, ns, "neutral-role", lines, target))
+                continue
             for m in TOKEN.finditer(line):
                 ns = m.group(1)
                 if ns not in namespaces or ns == owner:
@@ -165,7 +274,9 @@ def extract_references(plugins):
                     kind = "skill-load"
                 else:
                     continue  # prose mention, not enforced
-                refs.append((owner, md, i, ns, kind, lines))
+                refs.append(Reference(owner, md, i, ns, kind, lines))
+    for sidecar in sorted(PLUGINS.glob("*/workflows/*.toml")):
+        refs.extend(_sidecar_references(sidecar))
     return refs
 
 
@@ -193,35 +304,62 @@ def check_declarations(plugins):
 def check_runtime_refs(plugins, refs):
     problems = []
     unregistered = set()
-    for owner, path, line_no, ns, kind, _lines in refs:
+    for reference in refs:
+        owner, path, line_no, ns, kind = (
+            reference.owner, reference.path, reference.line_no,
+            reference.namespace, reference.kind)
         rel = path.as_posix()
         if (rel, ns) in ALLOWLIST:
             continue
         if owner not in plugins:
-            # Files on disk under plugins/<owner>/ with no marketplace.json
-            # entry. Nothing here can be judged, since the declarations to
-            # check against do not exist yet. Report it once and keep going:
-            # crashing would abort the scan and hide every later undeclared
-            # reference. lint_plugin_registration.py owns this condition.
+            # A body without a kernel manifest has no declarations to check.
+            # Keep scanning so it cannot hide later dependency violations.
             unregistered.add(owner)
             continue
-        declared = {dep_base(e) for e in plugins[owner]["dependencies"]}
-        declared |= {dep_base(e) for e in plugins[owner]["optionalDependencies"]}
+        required = {dep_base(e) for e in plugins[owner]["dependencies"]}
+        declared = required | {dep_base(e) for e in plugins[owner]["optionalDependencies"]}
         if ns not in declared:
             problems.append(
                 f"{rel}:{line_no} {kind} of '{ns}:*' but '{ns}' is not in "
                 f"{owner}'s dependencies or optionalDependencies")
+        if kind == "phase-role" and ns not in required:
+            problems.append(
+                f"{rel}:{line_no} phase role provider '{ns}' must be a "
+                f"required dependency of {owner}")
+        if reference.target is not None:
+            provider = plugins.get(ns)
+            if provider is None and not any(
+                    "@" in entry and dep_base(entry) == ns
+                    for entry in plugins[owner]["dependencies"]
+                    + plugins[owner]["optionalDependencies"]):
+                problems.append(f"{rel}:{line_no} {kind} names unknown provider '{ns}'")
+            elif provider is not None:
+                if kind == "shared-schema":
+                    if reference.target not in provider["contract_exports"]:
+                        problems.append(
+                            f"{rel}:{line_no} shared schema '{ns}/{reference.target}' "
+                            "is not exported by its provider")
+                elif reference.target not in provider["roles"]:
+                    problems.append(
+                        f"{rel}:{line_no} role '{ns}/{reference.target}' "
+                        "is not declared by its provider")
+            if kind == "shared-schema" and ns not in plugins[owner]["dependencies"]:
+                problems.append(
+                    f"{rel}:{line_no} shared schema provider '{ns}' must be a "
+                    f"required dependency of {owner}")
     for owner in sorted(unregistered):
         problems.append(
-            f"plugins/{owner}: has runtime references but no entry in "
-            f".claude-plugin/marketplace.json; its declarations cannot be "
-            f"checked until it is registered (see lint_plugin_registration.py)")
+            f"plugins/{owner}: has runtime references but no plugin.toml; "
+            f"its dependency declarations cannot be checked")
     return problems
 
 
 def check_forbidden_edges(refs):
     problems = []
-    for owner, path, line_no, ns, kind, _lines in refs:
+    for reference in refs:
+        owner, path, line_no, ns, kind = (
+            reference.owner, reference.path, reference.line_no,
+            reference.namespace, reference.kind)
         for src, dst, reason in FORBIDDEN_EDGES:
             if owner == src and ns == dst:
                 problems.append(
@@ -232,8 +370,13 @@ def check_forbidden_edges(refs):
 
 def check_degrade_notes(plugins, refs):
     problems = []
-    for owner, path, line_no, ns, kind, lines in refs:
-        if kind != "spawn":
+    for reference in refs:
+        owner, path, line_no, ns, kind, lines = (
+            reference.owner, reference.path, reference.line_no,
+            reference.namespace, reference.kind, reference.lines)
+        # Static phase bindings must be required dependencies. A skip prompt in
+        # TOML would be the wrong remedy; optional external spawns live in bodies.
+        if kind not in {"spawn", "neutral-role"} or owner not in plugins:
             continue
         optional = {dep_base(e) for e in plugins[owner]["optionalDependencies"]}
         if ns not in optional:
@@ -356,7 +499,7 @@ def check_deps_are_used(plugins, refs):
     it. Those are legitimate and must be declared, so name them here with the
     artifact that carries the contract.
     """
-    used = {(owner, ns) for owner, _p, _l, ns, _k, _lines in refs}
+    used = {(reference.owner, reference.namespace) for reference in refs}
     problems = []
     for name, meta in plugins.items():
         for dep in meta["dependencies"]:
@@ -365,8 +508,8 @@ def check_deps_are_used(plugins, refs):
             if (name, dep) in used or (name, dep) in ARTIFACT_DEPENDENCIES:
                 continue
             problems.append(
-                f"{name}: declares '{dep}' but never spawns it, loads a skill "
-                f"from it, or declares an artifact contract with it. A prose "
+                f"{name}: declares '{dep}' but never dispatches a role, loads a skill "
+                f"or imports a shared schema from it, or declares an artifact contract. A prose "
                 f"pointer is not a dependency: drop the declaration, or add it "
                 f"to ARTIFACT_DEPENDENCIES with the artifact that carries the "
                 f"contract")
@@ -384,20 +527,27 @@ def check_self_edges(plugins):
 
 
 def main():
-    if not MARKETPLACE.is_file() or not PLUGINS.is_dir():
-        sys.exit("run from the repository root: .claude-plugin/marketplace.json not found")
+    if not PLUGINS.is_dir():
+        sys.exit("run from the repository root: plugins directory not found")
 
-    plugins = load_marketplace()
-    refs = extract_references(plugins)
+    try:
+        plugins = load_plugins()
+        refs = extract_references(plugins)
+    except (OSError, ValueError, tomllib.TOMLDecodeError) as error:
+        sys.exit(f"cannot read kernel dependency bindings: {error}")
 
     if "--refs" in sys.argv[1:]:
-        for owner, path, line_no, ns, kind, _lines in refs:
-            print(f"{owner} -> {ns}  ({kind})  {path.as_posix()}:{line_no}")
+        for reference in refs:
+            print(f"{reference.owner} -> {reference.namespace}  ({reference.kind})  "
+                  f"{reference.path.as_posix()}:{reference.line_no}")
         return
 
-    spawns = sum(1 for r in refs if r[4] == "spawn")
+    spawns = sum(1 for reference in refs
+                 if reference.kind in {"spawn", "neutral-role", "phase-role"})
+    schemas = sum(1 for reference in refs if reference.kind == "shared-schema")
     print(f"{len(plugins)} plugins, {len(refs)} runtime cross-plugin references "
-          f"({spawns} spawns, {len(refs) - spawns} skill loads)\n")
+          f"({spawns} role dispatches, {schemas} shared schemas, "
+          f"{len(refs) - spawns - schemas} skill loads)\n")
 
     report("declarations", check_declarations(plugins))
     report("runtime refs", check_runtime_refs(plugins, refs))

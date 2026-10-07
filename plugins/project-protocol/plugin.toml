@@ -1,0 +1,21 @@
+schema = "daodan/v1"
+name = "project-protocol"
+version = "1.0.0"
+description = "Canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute"]
+optional = []
+
+[dependencies]
+required = []
+
+[components]
+skills = ["project-protocol"]
+roles = ["isolated-worker"]
+workflows = []
+policies = []
+
+[contracts]
+exports = ["contracts/work.toml", "contracts/project-result.toml"]

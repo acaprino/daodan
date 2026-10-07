@@ -422,7 +422,7 @@ python rewrite_comments.py scan src/ --recursive
 python rewrite_comments.py report src/ --output comment_health.md
 
 # Apply recommended deletions (with backup)
-python rewrite_comments.py rewrite src/main.py --apply --backup
+python rewrite_comments.py analyze src/main.py --report
 ```
 
 ---

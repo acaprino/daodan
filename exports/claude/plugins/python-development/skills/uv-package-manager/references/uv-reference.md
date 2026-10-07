@@ -150,4 +150,4 @@ print(requests.get("https://httpbin.org/json").json())
 
 - `uv-package-manager/SKILL.md` -- the architectural opinions and migration playbook
 - `python-packaging/references/packaging-guide.md` -- the publish side that uv supports via `uv build` + `uv publish`
-- `python-tdd/references/framework-config.md` -- pytest config in the same `pyproject.toml`
+- `pytest-patterns/references/framework-config.md` -- pytest config in the same `pyproject.toml`

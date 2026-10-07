@@ -1,6 +1,7 @@
 """CLI behaviour tests for the Daodan compiler."""
 
 import io
+import json
 import shutil
 import sys
 import tempfile
@@ -99,6 +100,67 @@ class CompilerCliTests(unittest.TestCase):
     def test_support_table_names_every_host(self):
         report = build_repository(self.root, ("claude", "copilot", "codex"), check=True)
         self.assertEqual({item.host for item in report.support}, {"claude", "copilot", "codex"})
+
+    def test_retired_generated_plugin_is_drift_then_removed_on_every_host(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        shutil.rmtree(self.root / "plugins/example")
+        code, output = self.run_cli("--check")
+        self.assertEqual(code, 1)
+        self.assertIn("plugins/example", output.replace("\\", "/"))
+        code, output = self.run_cli()
+        self.assertEqual(code, 0, output)
+        for host in ("claude", "copilot", "codex", "pi", "opencode"):
+            self.assertFalse((self.root / "exports" / host / "plugins/example").exists())
+        self.assertEqual(self.run_cli("--check")[0], 0)
+
+    def test_failed_validation_preserves_retired_and_current_outputs(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        shutil.copytree(VALID, self.root / "plugins/remaining")
+        manifest = self.root / "plugins/remaining/plugin.toml"
+        manifest.write_text(manifest.read_text().replace('name = "example"', 'name = "remaining"')
+                            .replace('"repository.read"', '"telepathy.read"'))
+        shutil.rmtree(self.root / "plugins/example")
+        before = {path.relative_to(self.root): path.read_bytes() for path in self.root.rglob("*")
+                  if path.is_file() and "plugins" not in path.relative_to(self.root).parts[:1]}
+        self.assertEqual(self.run_cli()[0], 1)
+        for path, content in before.items():
+            self.assertEqual((self.root / path).read_bytes(), content)
+        for host in ("claude", "copilot", "codex", "pi", "opencode"):
+            self.assertTrue((self.root / "exports" / host / "plugins/example").is_dir())
+
+    def test_unknown_or_mismatched_output_directory_is_never_pruned(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        unknown = self.root / "exports/claude/plugins/user-files"
+        unknown.mkdir()
+        (unknown / "important.txt").write_text("preserve")
+        self.assertEqual(self.run_cli()[0], 1)
+        self.assertEqual((unknown / "important.txt").read_text(), "preserve")
+
+    def test_mismatched_provenance_cannot_authorize_retirement(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        shutil.rmtree(self.root / "plugins/example")
+        provenance = self.root / "exports/claude/plugins/example/.daodan-provenance.json"
+        document = json.loads(provenance.read_text())
+        document["host"] = "codex"
+        provenance.write_text(json.dumps(document))
+        code, output = self.run_cli()
+        self.assertEqual(code, 1)
+        self.assertIn("unsafe-generated-output", output)
+        for host in ("claude", "copilot", "codex", "pi", "opencode"):
+            self.assertTrue((self.root / "exports" / host / "plugins/example").is_dir())
+
+    def test_linked_output_root_is_refused_without_touching_target(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        generated = self.root / "exports/claude/plugins"
+        target = self.root / "outside-generated"
+        shutil.move(generated, target)
+        try:
+            generated.symlink_to(target, target_is_directory=True)
+        except OSError as error:
+            self.skipTest(f"symlink unavailable: {error}")
+        before = {path.relative_to(target): path.read_bytes() for path in target.rglob("*") if path.is_file()}
+        self.assertEqual(self.run_cli()[0], 1)
+        self.assertEqual({path.relative_to(target): path.read_bytes() for path in target.rglob("*") if path.is_file()}, before)
 
 
 if __name__ == "__main__":

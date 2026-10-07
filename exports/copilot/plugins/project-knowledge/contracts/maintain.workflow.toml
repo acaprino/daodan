@@ -1,0 +1,19 @@
+name = "maintain"
+entrypoint = "maintain.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:maintain-report"]
+
+[dispatch]
+roles = ["project-knowledge/documentation-engineer","project-knowledge/guide-reviewer"]
+isolated = true
+inline_workers = false
+
+[contract]
+inputs = ["repository", "scope", "authorizations"]
+outcomes = ["maintain-delivered", "maintain-failed"]
+artifacts = ["maintain-report"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

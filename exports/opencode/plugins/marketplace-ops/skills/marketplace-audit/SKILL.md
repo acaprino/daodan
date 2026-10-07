@@ -8,6 +8,17 @@ description: >
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
 
+## Source profile preflight
+
+Load marketplace-ops:kernel-marketplace before this procedure. Detect the target's
+source model from its manifests and instructions. For daodan/v1 neutral kernels,
+follow that skill's operation-specific procedure and finish there. Generated
+exports and catalog entries are inspected as output, never authored as source.
+The procedure below applies only to a legacy Claude marketplace with hand-authored
+agents/ and commands/. It must not be applied to a neutral kernel checkout.
+
+
+
 # Marketplace Audit
 
 Run a comprehensive structural validation of any Claude Code plugin marketplace. Works against any project that follows the standard `.claude-plugin/marketplace.json` + `plugins/<name>/` layout.

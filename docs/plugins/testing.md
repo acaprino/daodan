@@ -4,6 +4,11 @@
 
 ## Required dependencies
 
+The shared local protocol owns run identity, snapshots, delivery accounting and
+candidate gates. The two upstream methods below must resolve on the active host
+before an action needs them. The install examples apply to Claude; generated
+packages alone do not establish upstream availability on every host.
+
 Both are upstream plugins, delegated as of marketplace 18.0.0 (the local vendored copies of `tdd` and `e2e-testing-patterns` were removed):
 
 ```bash
@@ -33,7 +38,7 @@ Generates focused, behavior-driven test suites or guides interactive TDD session
 | **Use for** | Writing tests for existing code, TDD for new features |
 | **Modes** | Generate (write complete test suite) or Interactive TDD (guide red-green-refactor cycle) |
 
-Since plugin 2.0.0 it is bound by the test-hygiene search-before-write protocol: before creating any test file it locates the existing test file for the target source file and extends it. Parallel test files, skip markers to get green, and softened assertions are explicit anti-patterns.
+Search for the existing owner at the intended layer before writing. Unit ownership follows source; integration, contract and e2e ownership follows behavior. Oracles require a requirement or independent evidence. Parallel owners, skips to get green and unsupported weakened assertions are anti-patterns.
 
 ### `test-suite-auditor`
 
@@ -67,13 +72,20 @@ The plugin's knowledge base: why suites degrade under agentic coding, the 7 bind
 | `remediation-workflow.md` | TEST_AUDIT.md format, quarantine protocol and lifecycle, per-module consolidation, safety-net e2e tests, mutation-testing guidance (weekly job, no runner shipped) |
 | `runner-playbook.md` | Per-runner detection and measurement commands (pytest, Vitest, Jest, Mocha, go test, cargo test, JUnit, dotnet, RSpec, PHPUnit) plus flaky-detection methods |
 
+`test-preparation` exposes runner/configuration/source mapping to coordinators.
+Missing runners or suites produce diagnosis and configuration/authoring actions.
+`test-remediation-method` classifies product defect, disproven oracle, environment,
+flakiness and unknown causes before selecting a remedy. Quarantine records evidence,
+owner, residual protection and return condition. A green suite is not sufficient
+evidence of a trustworthy suite.
+
 ---
 
 ## Commands
 
 ### `/testing:test-audit`
 
-Whole-suite health audit producing a versioned `TEST_AUDIT.md` (counts, runtime, skipped, failing, flaky, orphans, layer distribution, slowest tests, per-module coverage, with deltas per run). With `--fix`, quarantines accepted categories into `tests/_quarantine/` (excluded from CI, ledger per file, one commit per category, suite gate between batches, hard restore on failure). The category acceptance gate is never bypassed by any flag.
+Whole-suite health audit producing a versioned `TEST_AUDIT.md`: inventory, runtime, skipped, failing, flaky, orphan and layer evidence, with unavailable measurements declared. `--fix` uses the canonical diagnosis and remediation method, rather than treating a failing test as automatically disposable. Actual product regressions stay protected. Authorized quarantine records risk and return conditions; failure recovery preserves existing and foreign edits.
 
 ```
 /testing:test-audit [path] [--fix] [--yes] [--no-run] [--runner <cmd>] [--scope <subpath>]
@@ -81,7 +93,7 @@ Whole-suite health audit producing a versioned `TEST_AUDIT.md` (counts, runtime,
 
 ### `/testing:test-consolidate`
 
-Per-module consolidation: inventories the BEHAVIORS the module's tests cover (table with duplicates, contradictions, implementation-coupling, never-failing flags), gets keep/delete lists approved, rewrites one test file per source file, deletes the originals in the same commit, and verifies module coverage did not drop (revert on failure). Also processes the module's quarantine backlog.
+Consolidation inventories behavior, independent failure modes and regression provenance before rewriting. Every surviving protection has a justified owner at its layer. Replacement and retirement share one authorized candidate and commit; unresolved meaning remains open. Counts and line coverage guide investigation and do not prove equivalence. Refactors and migrations retarget meaningful protection instead of retiring it solely because its original file moved.
 
 ```
 /testing:test-consolidate <module-path> [--runner <cmd>] [--coverage-cmd <cmd>] [--dry-run]
@@ -89,4 +101,4 @@ Per-module consolidation: inventories the BEHAVIORS the module's tests cover (ta
 
 ---
 
-**Related:** [python-development](python-development.md) (Python-specific TDD with pytest) | [senior-review](senior-review.md) (hard-depends on this plugin and spawns `test-suite-auditor` as its testing dimension whenever the change touches test files) | [project-setup](project-setup.md) (injects the condensed Test-Suite Rules block into target projects' CLAUDE.md)
+**Related:** [python-development](python-development.md) (Python-specific pytest techniques) | [senior-review](senior-review.md) (hard-depends on this plugin and dispatches `test-suite-auditor` for relevant test changes) | [project-knowledge](project-knowledge.md) (offers condensed rules for scoped project instructions, preserving equivalent existing policy)

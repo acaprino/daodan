@@ -11,3 +11,5 @@ inputs = ["repository"]
 outcomes = ["test-audit-completed"]
 artifacts = ["test-audit-report"]
 schemas = []
+
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

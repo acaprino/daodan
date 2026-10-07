@@ -27,13 +27,15 @@ above decides what happens, and the two cases are not interchangeable:
 
 Harness obligations, none of them optional:
 
-- Every dispatched worker runs in its own context, and never reads another worker's result.
+- Every dispatched worker runs in its own context and reads only coordinator-declared inputs.
+  Independent reviewers never read peer results before their own delivery.
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, and only as the plan says: `partition-behavior-worker`, `partition-quality-worker`, `partition-structure-worker`, `partition-synthesizer`, `semantic-interconnect-mapper`
-- Only the phase that declares the report artifact may write it.
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `partition-behavior-worker`, `partition-quality-worker`, `partition-structure-worker`, `partition-synthesizer`, `semantic-interconnect-mapper`
+- Workers may write only intermediate reports explicitly assigned by the coordinator.
+  The final report artifact has one exclusive owner in its declaring phase.
 
 Dispatch plan:
 
@@ -44,9 +46,15 @@ Dispatch plan:
 5. `interconnect`: one `semantic-interconnect-mapper` in an isolated context; needs `behavior`; consumes `artifact:partition-behavior`; produces `artifact:interconnect-map`.
 6. `synthesis`: one `partition-synthesizer` in an isolated context; needs `behavior`, `quality`, `interconnect`; consumes `artifact:partition-structure`, `artifact:partition-behavior`, `artifact:partition-quality`, `artifact:interconnect-map`; produces `artifact:xray-report`.
 
-Role bodies ship with this package as skills named `codebase-xray-<role>`, hidden from the model's
-skill list and loaded on demand. The phase graph and the record schemas are in
-`contracts/team-analyze.workflow.toml`.
+Role body bindings (load the complete body only for the selected worker):
+
+- `partition-behavior-worker`: read `skills/codebase-xray-partition-behavior-worker/SKILL.md` inside this package and pass its complete body verbatim.
+- `partition-quality-worker`: read `skills/codebase-xray-partition-quality-worker/SKILL.md` inside this package and pass its complete body verbatim.
+- `partition-structure-worker`: read `skills/codebase-xray-partition-structure-worker/SKILL.md` inside this package and pass its complete body verbatim.
+- `partition-synthesizer`: read `skills/codebase-xray-partition-synthesizer/SKILL.md` inside this package and pass its complete body verbatim.
+- `semantic-interconnect-mapper`: read `skills/codebase-xray-semantic-interconnect-mapper/SKILL.md` inside this package and pass its complete body verbatim.
+
+The phase graph and record-schema references are in `contracts/team-analyze.workflow.toml`.
 
 ## Method
 
@@ -402,7 +410,7 @@ Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On fail
 ## Phase 4: Publish, Completion & Next Steps Menu
 
 1. Update `$RUN_DIR/state.json`: `status: "complete"`, `completed_at: <ISO_TIMESTAMP>`.
-2. **Publish** (skip if `--skip-synthesis`): copy `$RUN_DIR/01-*.md` .. `$RUN_DIR/07-final-report.md` (those that exist), `$RUN_DIR/08-interconnect-map.md` (if Phase 3 ran), and `$RUN_DIR/state.json` to the `.codebase-xray/` root, overwriting the previous mirror. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed`. The root mirror is the downstream contract for `/senior-review:team-review`, `/codebase-mapper:map-codebase`, and `/project-setup:create-claude-md`.
+2. **Publish** (skip if `--skip-synthesis`): copy `$RUN_DIR/01-*.md` .. `$RUN_DIR/07-final-report.md` (those that exist), `$RUN_DIR/08-interconnect-map.md` (if Phase 3 ran), and `$RUN_DIR/state.json` to the `.codebase-xray/` root, overwriting the previous mirror. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed`. The root mirror is the downstream contract for `/senior-review:team-review`, `/project-knowledge:guide`, and `/project-knowledge:instructions --create`.
 3. No worker may still be writing after publish. Every dispatched worker has been recorded `delivered` or `failed` by now, and the harness owns whatever cleanup its workers need.
 4. Present summary:
 
@@ -429,24 +437,11 @@ Summary:
 
 On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.codebase-xray/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
 
-5. Show Next Steps Menu:
-
-```
-What would you like to do next?
-
-1. Start fixing — execute the action plan
-2. Apply quick fixes
-3. Analyze further — re-run a single partition (as a new run)
-4. Generate documentation
-   4a. CLAUDE.md (suggests /project-setup:create-claude-md or maintain-claude-md)
-   4b. Codebase map (suggests /codebase-mapper:map-codebase)
-   4c. API / interface docs (suggests /codebase-mapper:docs-create)
-5. Run code review — launch /senior-review:team-review (will reuse the published .codebase-xray/ mirror + 08-interconnect-map.md)
-6. Export report
-7. Nothing for now
-```
-
-Wait for user choice before proceeding.
+5. Present independent next-step suggestions, with the exact run directory and
+source snapshot attached. Project instructions use /project-knowledge:instructions
+with --create or --fix as authorized; guides use /project-knowledge:guide.
+Development fixes and review are separate scoped tasks. Do not apply quick fixes
+or write durable project documents inside this confined analysis run.
 
 ## Resume Logic
 

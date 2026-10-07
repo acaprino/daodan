@@ -1,6 +1,6 @@
 ---
 name: python-audit-workflow
-description: 'Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use python-development:python-tdd).'
+description: 'Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use testing:test-writer with pytest-patterns context).'
 ---
 
 > Arguments: `<path> [--strict] [--skip-types] [--skip-coverage]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -83,7 +83,7 @@ uv run pytest --cov=src --cov-report=json:.python-audit/coverage.json --cov-repo
 ```
 
 Flag:
-- Overall line coverage < 80%
+- Required behavioral protection gaps; line coverage is supporting evidence, not a universal quota
 - Files with 0% coverage (genuinely untested vs excluded)
 - Branch coverage delta (if measured)
 
@@ -99,7 +99,7 @@ Write consolidated report to `.python-audit/REPORT.md`:
 - Types: <N> errors in <K> files
 - Dead code: <N> unused items (confidence >= 80%)
 - Complexity: <K> functions exceed threshold
-- Coverage: <P>% (target 80%)
+- Coverage: <P>% (descriptive; project policy where declared)
 
 ## Critical (fix before release)
 - [path:line] <issue> -- <why it matters>
@@ -129,5 +129,5 @@ Return exit code 1 if any critical issues are present and `--strict` is set; oth
 
 - Deep refactoring with metrics -> `/python-development:python-refactor`
 - Dead code removal only -> `/senior-review:code-review --commit`
-- Adding tests to raise coverage -> `python-development:python-tdd` skill
-- CLAUDE.md updates after cleanup -> `/project-setup:maintain-claude-md`
+- Missing behavior checks -> `testing:test-writer` with `python-development:pytest-patterns` technical context
+- CLAUDE.md updates after cleanup -> `/project-knowledge:instructions`

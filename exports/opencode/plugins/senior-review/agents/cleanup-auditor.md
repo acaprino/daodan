@@ -148,7 +148,7 @@ For each, grep `import .* from ['"]${pkg}` at top-level (not inside `React.lazy`
 Always reportable, but FP-rate is high; surface as detection findings, never as auto-removable. The `docs` cleanup phase is report-only unless the user explicitly opts into removal, and it gates every plan, ADR, and archive folder behind a per-item confirmation.
 
 **Completed / abandoned plans:**
-- Scan `docs/plans/`, `plans/`, `.plans/`, root `PLAN.md`.
+- Discover planning/decision/report paths from project instructions, supplied inventory and tracked documentation before scanning. The conventional roots `docs/plans/`, `plans/`, `.plans/` and root `PLAN.md` are leads, not an exhaustive directory list. Include project-specific plan roots and nested documentation.
 - Per file, capture: explicit `status:` frontmatter (`done`, `complete`, `implemented`, `archived`, `superseded`); checklist completion ratio (`grep -c '- \[x\]'` vs `- \[ \]`); last-modified date (`git log -1 --format='%ai' -- <file>`); references to non-existent files (Grep plan body for path-like tokens and verify each with `Test-Path`).
 - Candidate when: status marker says done, OR (>= 100% checklist + idle > 90 days), OR (> 50% referenced files missing).
 

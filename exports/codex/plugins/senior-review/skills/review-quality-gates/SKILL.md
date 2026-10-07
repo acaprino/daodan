@@ -166,7 +166,7 @@ This section is the source of truth. `/senior-review:team-review` (Phase 4b) and
 
 ### The four lenses
 
-Spawn one `Agent` per lens per finding. Use `subagent_type: general-purpose` for lenses 1-3 and `subagent_type: senior-review:premise-auditor` for lens 0. Omit `model` for lenses 0, 1 and 2 so they inherit the session model (reasoning-heavy), `model: sonnet` for lens 3 (calibration).
+Spawn one `Agent` per lens per finding. Use `role: general-purpose` for lenses 1-3 and `role: senior-review:premise-auditor` for lens 0. Omit `model` for lenses 0, 1 and 2 so they inherit the session model (reasoning-heavy), `model: sonnet` for lens 3 (calibration).
 
 **Lens 3 is gated.** Lenses 1 and 2 run first, in parallel across findings (`run_in_background: true`). Lens 3 (severity calibration) is spawned only for findings that survive them (REAL from both, or the tie that marks them `contested`). Calibrating the severity of a finding the panel is about to discard is spend for nothing; the gate cuts roughly a third of the verifier calls with no change to the survival semantics. Findings killed by lenses 1-2 never reach lens 3 and keep their original severity in the `filtered` record.
 
@@ -176,7 +176,7 @@ Lens 0 runs for findings whose `premise_provenance` is `shared-context` or `mixe
 
 The quantifier route exists because sharing is how an over-scoped premise *spreads*, not how it is *born*. The incident this pipeline was built from was a true local observation ("no credential-bearing response path exists") generalized to all paths by a reviewer that had read only one of them. Declared honestly as `independent`, it would pass a provenance-only gate untouched. A universal claim is exactly the claim one counterexample kills, which is the thing Lens 0 is good at.
 
-**Lens 0 prompt (Premise Challenge):** spawn with `subagent_type: senior-review:premise-auditor`, mode 2, inheriting the session model.
+**Lens 0 prompt (Premise Challenge):** spawn with `role: senior-review:premise-auditor`, mode 2, inheriting the session model.
 
 ```
 Mode 2: adversarial premise challenge.
@@ -402,10 +402,20 @@ Value that never gets delivered, and debris that gets left behind, both degrade 
 
 Consolidation (team-review Phase 3 / code-review Step 4) does not start until every spawned reviewer has produced one of exactly two artifacts: its findings file, or an explicit no-findings report ("examined X, Y, Z -- no issues"). Neither silence nor an idle agent counts as either one.
 
-- A reviewer idle past a reasonable deadline gets **one** direct nudge (`SendMessage` in team mode; reading the task output in background-agent mode).
+- A reviewer idle past a reasonable deadline gets **one** direct nudge (direct worker communication in team mode; reading the task output in background-agent mode).
 - If it stays silent, the orchestrator salvages whatever task output exists, saves it to the findings path marked `[undelivered -- collected by orchestrator]`, and the final report lists the dimension as **degraded**, never as clean.
 - A dimension with no artifact at all is reported as **not delivered**: the review has a known blind spot and says so. This is the only way a matched dimension can go missing, since every reviewer this pipeline spawns comes from a hard dependency and is always installed.
 
 ### The work tree is left as found
 
-The pre-review `git status --porcelain` snapshot (recorded at scope time) is diffed against the post-review state before the report is finalized. Anything created by the review outside its session directory (`.team-review/` or the command's equivalent) -- probe scripts, measurement harnesses, scratch fixtures -- is removed, and the removal is noted in the report. Measurement evidence belongs in the finding (numbers, method, `measured` label), never as a file in the repository. This is the enforcement arm of the `measured` evidence class above: measure freely, keep the numbers, leave no trace.
+Compare the complete pre-review workspace snapshot with the final state. A new
+file in status is not proof the review owns it. Workers keep an explicit manifest
+of files they created, with original absence and final hashes; foreign or changed
+files are preserved and reported. Keep probes inside the owned run root.
+
+Before removing an unchanged owned temporary artifact, preserve its conditions,
+commands, outcomes, errors and limitations in the native report and verify every
+remaining evidence reference still resolves. Preserve unresolved evidence and
+resume data. Broad cleanup or Git clean is forbidden. Persistent run retention
+belongs to the caller's consolidate path; the review returns the owned manifest
+and report, rather than deleting arbitrary repository residue on status alone.

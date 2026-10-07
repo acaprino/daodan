@@ -1,0 +1,15 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:1aa1f2bfc2d144d23c59a9ee51252aaa21fa7cfc04931dd10c0c88a315928b29",
+  "harnessStrategies": {
+    "assess": "native-team",
+    "change": "native-team",
+    "consolidate": "native-team",
+    "repair": "native-team",
+    "verify": "native-team"
+  },
+  "host": "claude",
+  "overrides": [],
+  "plugin": "project-lifecycle",
+  "version": "1.0.0"
+}

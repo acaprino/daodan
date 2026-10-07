@@ -1,0 +1,22 @@
+name = "review"
+entrypoint = "review.md"
+
+[[phases]]
+id = "prepare"
+produces = ["selection:inspectors"]
+
+[[phases]]
+id = "inspect"
+needs = ["prepare"]
+role = "provider/inspector"
+fanout_from = "selection:inspectors"
+isolation = "required"
+join = "all-delivered"
+produces = ["artifact:result"]
+
+[contract]
+inputs = ["repository"]
+outcomes = ["reviewers-use-isolated-contexts"]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["provider/contracts/result.toml"]

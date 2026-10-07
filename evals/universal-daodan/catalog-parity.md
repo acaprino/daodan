@@ -1,9 +1,8 @@
-# Catalog parity: 40 plugins, five hosts
+# Historical catalog parity and host probes
 
-Every plugin under `plugins/` is a neutral content kernel, and every host catalog lists all 40 at the
-same version. This file records the compiler's parity table and the host smoke results.
+This record describes the universal migration through marketplace 29.0.0, with 40 kernels. Its table and installed-host observations are historical evidence, not assertions about the current harness. Marketplace 30.0.0 validation is recorded in [the harness validation report](../../docs/superpowers/reports/2026-10-07-daodan-harness-validation.md). Current kernel/catalog parity is enforced by `tests/test_universal_catalog_parity.py` against the actual manifest set.
 
-## Compiler parity
+## Historical compiler parity
 
 Produced by `python scripts/daodan_build.py --check --support`. `native` means the host binds every
 required capability directly; `adapted` means at least one is satisfied through a host mechanism the

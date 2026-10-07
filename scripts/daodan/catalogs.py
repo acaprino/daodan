@@ -19,8 +19,8 @@ from .model import PluginSpec
 CATALOG_NAME = "daodan"
 
 CATALOG_DESCRIPTION = (
-    "The Daodan: agents, skills and workflows that augment a coding agent into a "
-    "specialized toolkit."
+    "Daodan: a coherent AI development harness for project changes, meaningful "
+    "tests, durable knowledge and verified evidence, with independent specialists."
 )
 
 OWNER = {"name": "Alfio Caprino"}

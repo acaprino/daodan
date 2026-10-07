@@ -1,0 +1,19 @@
+schema = "daodan/v1"
+name = "project-lifecycle"
+version = "1.0.0"
+description = "Complete AI development lifecycle: assess coherence, repair an evidenced plan, implement changes, verify their consequences, and consolidate experiments and owned artifacts. Uses canonical specialist methods, exact run identities and honest coverage."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute", "contexts.isolate", "roles.dispatch"]
+optional = ["execution.parallel"]
+
+[dependencies]
+required = ["project-protocol", "project-knowledge", "senior-review", "testing", "abstraction-architect", "codebase-xray", "repo-hygiene", "clean-code", "text-humanizer", "superpowers@claude-plugins-official"]
+
+[components]
+skills = ["lifecycle-method"]
+roles = []
+workflows = ["assess", "repair", "change", "verify", "consolidate"]
+policies = ["run-write-confinement"]
+

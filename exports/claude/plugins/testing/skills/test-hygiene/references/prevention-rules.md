@@ -4,7 +4,7 @@ The full protocol behind each binding rule in SKILL.md. These rules are written 
 
 ## 1. Search before writing (the protocol)
 
-Before creating ANY test file, run this sequence and act on the first hit:
+Before creating ANY test file, identify its layer and behavioral owner. For unit tests use the source-file search below. For integration, contract and e2e tests search for the intended flow, endpoint or contract; a source module already covered at another layer does not prevent a justified new behavioral scope.
 
 1. **Derive the expected test path** from the source path using the project's convention (see rule 2). If a file exists there, extend it. Done.
 2. **Glob for name variants** of the target source file `<name>` across the test tree: `test_<name>*`, `<name>.test.*`, `<name>.spec.*`, `<name>_test.*`.
@@ -15,7 +15,7 @@ Preference order when a hit exists:
 
 1. Add a case to an existing test group (describe block, test class, parametrize list) covering the same behavior area.
 2. Add a new test group to the existing file for the module.
-3. Create a new file ONLY when the module has no tests anywhere.
+3. Create a new unit file only when that source owner has no unit file. Higher-layer files require an uncovered behavioral scope, not a source module without tests anywhere.
 
 Creating `test_foo_extra.py` next to `test_foo.py` is never acceptable. If the existing file is misplaced relative to the convention, move it as part of the same change instead of forking it.
 
@@ -65,18 +65,22 @@ The full treatment lives in the `mattpocock-skills:tdd` skill (behavior-first de
 | Rust | `#[ignore]` |
 | .NET | `[Skip]`, `Skip = "..."` |
 
-A skipped test is a lie in both directions: it looks like coverage in the file listing and like health in the CI output. The only sanctioned alternative to fixing a broken test immediately is quarantine (see `remediation-workflow.md`): the file moves to `tests/_quarantine/` with a ledger entry stating why and when. `.only` markers are worse than skips (they silently disable the rest of the file) and are always a defect.
+A skip needs a justified condition, owner and visible limitation. Supported-platform
+guards and explicitly tracked expected failures can be legitimate; age alone is
+not a quarantine verdict. `.only` that unintentionally suppresses the suite is a
+defect. Classify underlying failures before any temporary quarantine.
 
 ## 7. Never weaken an assertion
 
-Widening a numeric tolerance, replacing an equality with a truthiness check, deleting an assert, or wrapping one in a try/except to make CI pass is falsifying the safety net. When a test fails after a change, there are exactly three honest moves:
+Do not weaken tolerances, assertions or failure handling simply to get green.
+Load the `testing:test-remediation-method` skill for the canonical classification before
+changing or quarantining a red test. A wrong oracle can be corrected with independent
+evidence; a true product regression stays active. Unknown cause remains open.
 
-1. **The code is wrong**: fix the code.
-2. **The test's expectation is outdated**: change the assertion AND say so explicitly in the commit message, with the reason the old expectation no longer holds.
-3. **Unclear which**: quarantine the test with the question recorded in the ledger, and keep the change that triggered it under review.
+## 8. Retire tests with retired behavior
 
-Evaluate whether the test is obsolete BEFORE adapting the code to satisfy it. Silently adapting either side is how contradictory tests are born.
-
-## 8. Delete tests with the feature
-
-When a feature, endpoint, flag, or module is removed, its tests are removed in the same commit. Tests for deleted code do not fail; they keep passing against mocks of things that no longer exist, which is why orphan detection needs an audit (dimension D2 of the test-suite-auditor) instead of CI. Deleting them at removal time costs one Grep; finding them six months later costs an investigation.
+Remove a test only when its behavior is explicitly retired or its exact failure
+mode has justified replacement protection in the same candidate. Moving a module,
+migrating storage, renaming an endpoint or refactoring implementation does not
+retire the contract. Follow usages and bugfix history before calling a test orphan;
+retarget the existing protection instead of silently deleting it.

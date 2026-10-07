@@ -18,6 +18,16 @@ argument-hint: '<target file or directory> [--strict-mode]'
 5. **Never enter plan mode.** Execute immediately.
 6. **One pattern at a time.** Don't combine multiple refactorings in a single edit.
 
+## Operational preflight
+
+Load the `python-development:python-refactor-method` skill and
+`project-protocol:project-protocol` before mutation. Existing plan authorization
+can satisfy the approval checkpoint; do not ask again for the same accepted scope.
+All checkpoints and native reports are bound to the same current snapshot.
+Required unavailable local checks need an authorized same-snapshot remote gate.
+Recover only this phase's edits from preserved pre-edit content; hard reset requires
+an exclusively owned clean isolated worktree and the captured `pre_phase_sha`.
+
 ## Pre-flight
 
 ### 1. Check for existing session
@@ -166,7 +176,8 @@ For each refactoring step:
    ```bash
    pytest [test files] -v
    ```
-3. If tests pass: commit the change and continue
+3. If required candidate gates pass: commit only when authorized, then continue;
+   otherwise deliver the verified owned edits without committing
 4. If tests fail: REVERT the change, report the failure, ask the user how to proceed
 
 Log each step to `.python-refactor/03-execution.md`:
@@ -245,6 +256,6 @@ Next steps:
 
 ## Related Skills
 
-- `python-tdd` -- Set up tests before refactoring
+- `pytest-patterns` -- Set up tests before refactoring
 - `python-performance-optimization` -- Profile if performance-critical
 - `async-python-patterns` -- For async code refactoring

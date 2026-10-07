@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "python-development"
-version = "2.0.0"
-description = "Python development toolkit: TDD with pytest, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report"
+version = "3.0.0"
+description = "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report"
 license = "MIT"
 
 [capabilities]
@@ -9,10 +9,10 @@ required = ["repository.read", "shell.execute", "repository.write", "contexts.is
 optional = ["execution.parallel"]
 
 [dependencies]
-required = []
+required = ["testing", "project-protocol"]
 
 [components]
-skills = ["async-python-patterns", "pydantic-v2", "python-comments", "python-dead-code", "python-packaging", "python-performance-optimization", "python-refactor-method", "python-tdd", "uv-package-manager"]
-roles = ["python-engineer", "python-refactor-agent", "python-test-engineer"]
+skills = ["async-python-patterns", "pydantic-v2", "python-comments", "python-dead-code", "python-packaging", "python-performance-optimization", "python-refactor-method", "pytest-patterns", "uv-package-manager"]
+roles = ["python-engineer", "python-refactor-agent"]
 workflows = ["python-audit", "python-refactor", "python-scaffold"]
 policies = []

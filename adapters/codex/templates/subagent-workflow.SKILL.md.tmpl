@@ -13,24 +13,29 @@ Selected topology: **${strategy}**, with role delivery by **${role_delivery}**. 
 runtime subagent per dispatched worker. When role delivery is `inline-prompt`, paste that role's
 Markdown body into the dispatch prompt verbatim: the worker must receive the whole role, not a
 summary of it.
+Declared worker isolation: **${isolation}**.
 
 Harness obligations, none of them optional:
 
-- Every dispatched worker runs in its own subagent context, and never reads another worker's
-  result.
+- Every dispatched worker runs in its own subagent context and reads only coordinator-declared inputs.
+  Independent reviewers never read peer results before their own delivery.
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, and only as the plan says: ${roles}
-- Only the phase that declares the report artifact may write it.
+- Dispatch only roles from this set, as the phase graph or loaded method requires: ${roles}
+- Workers may write only intermediate reports explicitly assigned by the coordinator.
+  The final report artifact has one exclusive owner in its declaring phase.
 
 Dispatch plan:
 
 ${dispatch_plan}
 
-Role bodies ship with this package under `roles/`, and the phase graph and record schemas under
-`contracts/${workflow}.workflow.toml`.
+Role body bindings (load the complete body only for the selected worker):
+
+${role_bindings}
+
+The phase graph and record-schema references ship under `contracts/${workflow}.workflow.toml`.
 
 ## Method
 

@@ -3,11 +3,21 @@ name: python-refactor-agent
 description: >
   Modernize legacy Python in place.
   TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings.
-  DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use python-test-engineer).
+  DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use testing:test-writer).
 tools: Read, Write, Edit, Bash, Glob
 model: inherit
 color: green
 ---
+
+## Execution preflight
+
+Load the `project-protocol:project-protocol` skill before mutation. Preserve the caller's
+existing edits, explicit scope and baseline; bind verification to the candidate
+snapshot and recover only owned changes on failure. Commit only when authorized.
+Load the `testing:test-hygiene` skill; delegate test authoring to `testing:test-writer` with
+`python-development:pytest-patterns` as technical context. Existing red tests need
+cause classification before changing their assertions.
+
 
 # ROLE
 

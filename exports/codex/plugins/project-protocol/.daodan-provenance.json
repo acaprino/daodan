@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:8b3d6f22cc8b2555cd72e80be8c873a7cc67d0045824b11e315adabc7139c6a8",
+  "harnessStrategies": {},
+  "host": "codex",
+  "overrides": [],
+  "plugin": "project-protocol",
+  "version": "1.0.0"
+}

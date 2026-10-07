@@ -1,5 +1,5 @@
 {
-  "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
+  "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
   "keywords": [
     "pi-package"
   ],
@@ -13,5 +13,5 @@
     ]
   },
   "private": true,
-  "version": "29.0.0"
+  "version": "30.0.0"
 }

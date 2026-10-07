@@ -170,5 +170,5 @@ result = next(iter(done)).result()
 ## Related
 
 - `async-python-patterns/SKILL.md` -- the architectural opinions (TaskGroup over gather, when threading wins, structured concurrency)
-- `python-tdd/references/framework-config.md` -- pytest-asyncio configuration
+- `pytest-patterns/references/framework-config.md` -- pytest-asyncio configuration
 - `python-performance-optimization` skill -- profiling async code

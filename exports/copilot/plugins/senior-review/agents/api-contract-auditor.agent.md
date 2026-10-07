@@ -164,7 +164,7 @@ Write findings grouped by severity. Every finding includes spec citation + imple
 - Implicit contracts, domain rules, invariants -> `logic-integrity-auditor`
 - Source-of-truth map for what contracts exist -> `semantic-interconnect-mapper` output at `.team-review/02-interconnect.md` (`## Contracts` section)
 - Schema-first Python validation patterns -> `python-development:python-engineer` (Pydantic v2 models)
-- TypeScript schema-first patterns -> `typescript-development:mastering-typescript` skill (Zod, io-ts, valibot)
+- Schema-first patterns: inspect the project's declared validator and contract source (for example Zod, io-ts or valibot) without requiring a language-specific review plugin.
 - Security implications of leaked fields or weakened auth -> `senior-review:security-auditor`
 
 ## Pipeline Conventions

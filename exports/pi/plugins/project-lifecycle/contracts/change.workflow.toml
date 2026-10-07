@@ -1,0 +1,27 @@
+name = "change"
+entrypoint = "change.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work"]
+
+[[phases]]
+id = "execute"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:work"]
+produces = ["artifact:result"]
+
+[dispatch]
+roles = ["project-knowledge/codebase-explorer","project-knowledge/doc-humanizer","project-knowledge/documentation-engineer","project-knowledge/flow-writer","project-knowledge/guide-reviewer","project-knowledge/onboarding-writer","project-knowledge/ops-writer","project-knowledge/overview-writer","project-knowledge/tech-writer","project-knowledge/instructions-auditor","codebase-xray/semantic-interconnect-mapper","text-humanizer/text-humanizer","senior-review/code-auditor","senior-review/security-auditor","senior-review/ui-race-auditor","senior-review/temporal-resilience-auditor","senior-review/data-integrity-auditor","senior-review/resource-lifecycle-auditor","senior-review/premise-auditor","abstraction-architect/abstraction-architect-agent","testing/test-writer","testing/test-suite-auditor","senior-review/cleanup-auditor"]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = ["project", "objective", "scope", "authorization"]
+outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]
+

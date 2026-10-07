@@ -22,7 +22,7 @@ Load the `test-hygiene` skill of this plugin before starting; its `references/ru
 3. **Scale Scrutiny.** Match findings to suite size. A small healthy suite with 0 findings is a valid result. Do NOT invent findings to meet a quota.
 4. **Grep Before Flagging.** Before marking a test orphan or duplicate, run the confirming search against the source tree (including moved-path checks via `git log --follow`). False positives waste user time and poison trust in the audit.
 5. **Separate False-Positive Candidates.** Parametrized and table-driven tests, shared behavior specs, contract tests intentionally duplicated across service boundaries, and framework-convention files (`conftest.py`, fixture modules, test helpers) go in their own section. Never present them as confirmed findings.
-6. **Point to the Fix Path.** Each finding ends with `Fix path:`, naming either a `/testing:test-audit --fix` quarantine category (`orphan`, `failing`, `flaky`, `skipped`) or `/testing:test-consolidate <module>`.
+6. **Point to the real owner.** Each finding names its cause and action: product implementation fix, oracle repair by `testing:test-writer`, environment/configuration repair, additional behavioral test authoring, accepted consolidation or eligible temporary quarantine. Unknown cause remains open, not a quarantine shortcut.
 
 ## EXECUTION MODES
 
@@ -30,6 +30,17 @@ The spawning prompt controls two switches; respect both:
 
 - **`--no-run` semantics**: when the prompt says not to execute the suite (typical inside a code review), skip every command marked RUNS in the runner playbook, reuse metrics the prompt provides (or CI history via `gh`), and mark D4/D9 metrics as `stale` or `not measured` instead of improvising.
 - **Scope**: when the prompt names modules or a diff, run D2 to D8 only on tests owned by those modules and keep D1/D9 statistics suite-wide for context. When unscoped (spawned by `/testing:test-audit`), audit the whole suite.
+
+## Preparation and failure truth
+
+Load the `testing:test-preparation` skill when the caller has not supplied its input bundle.
+Do not run its measurements twice; preserve caller run permission and snapshot.
+Missing runner/configuration/suite is an explicit finding with inspected signals
+and a named fix owner. Static dimensions still run where inputs permit.
+Classify failures against an independently justified product contract before
+suggesting disposition. A green assertion that merely echoes implementation can
+be a wrong oracle; a red regression can be correct. Preserve separate failure
+modes and bugfix provenance even when line coverage is identical.
 
 ## DETECTION PIPELINE
 
@@ -40,7 +51,7 @@ Execute in order. Skip a dimension when its signal is absent and say so in the s
 1. Detect the runner(s) per the playbook; list test files per layer directory (`unit`, `integration`, `e2e`, or project equivalents).
 2. Count files and cases per layer (list-tests command, no run needed).
 3. **Placement violations**: unit-layer test files that mirror no source path under the project convention; two or more test files at the SAME layer owning the same target (same source file at unit, same behavioral scope at integration/e2e), the parallel-file violation of prevention rule 1. Integration, contract, and e2e files are behavior-owned and legitimately span several source modules; multi-module reach at those layers is not a finding.
-4. **Pyramid shape**: layer ratios against the budgets in the test-hygiene skill; an e2e layer larger than unit, or a unit layer with I/O imports (database drivers, HTTP clients), is a finding.
+4. **Layer fitness**: inspect runtime against the project budget and actual boundary isolation. Test-count ratios alone are not findings. An I/O import alone is a lead; verify whether execution crosses a real boundary before proposing a layer change.
 
 ### D2: Orphan tests
 
@@ -48,7 +59,7 @@ For each test file, resolve the source module(s) it targets. Imports are authori
 
 1. Glob for the source file. Present: not an orphan.
 2. Absent: Grep the source tree for the module's basename and class/function names (it may have moved), and check `git log --follow --diff-filter=D` for a deletion.
-3. Only a confirmed deletion or a zero-hit sweep makes the finding. Report the evidence line.
+3. Confirm whether the behavior was retired or migrated. A deleted source path or zero-hit sweep is insufficient when a refactor, rename, dynamic binding or migration preserves the contract. Retarget meaningful protection; only confirmed retired behavior or redundant replacement makes an orphan finding. Report the evidence and bugfix history.
 
 ### D3: Skipped and disabled
 
@@ -65,12 +76,12 @@ For each test file, resolve the source module(s) it targets. Imports are authori
 ### D5: Duplicate and overlapping coverage
 
 1. Cluster test cases by imported source module (from D2's resolution), never by filename prefix or similarity. A test file that exercises several source modules belongs to several clusters, one per module. A prefix family (`test_foo_*.py`) whose members import different modules is the case name-based clustering misses: each member must be compared against the owning test file of the module it imports, which usually shares no name with it.
-2. Within a cluster, compare test names, assert targets, and setup shape. Same behavior asserted in more than one file, or repeated with cosmetic variation in one file, is a duplicate finding.
+2. Within a cluster, compare observable contracts, input/state classes, independent failure modes, oracle sources and bugfix provenance. Names/assert shape are leads only. Confirm duplication only when the same failure mode has equivalent independent protection and neither test adds justified regression evidence.
 3. Cross-layer overlap is not duplication by itself. Flag it only when two tests protect substantially the same failure mode through substantially the same observable contract without adding independent risk coverage (same input class, same assertion target, no new dependency reality). A unit test of a calculation and an integration test of its persistence are defense in depth, not a pair. Confirmed same-failure-mode duplication across layers remains the highest-value duplicate to surface; name every location.
 
 ### D6: Contradictory tests
 
-Within a cluster, hunt pairs asserting incompatible outcomes for the same input/state. Typical shape: one test passes only because its mocks differ from the other's, so both are green while disagreeing about the behavior. Report both locations and state what each claims; one of them is lying about the system.
+Within a cluster, hunt pairs asserting incompatible outcomes for the same input/state. Verify whether different supported versions, boundary assumptions or migration stages justify the difference. Report both locations and the authorized independent contract; current implementation or majority agreement does not choose the correct oracle. An unresolved ruling remains open.
 
 ### D7: Implementation-coupled tests
 
@@ -81,7 +92,7 @@ Grep within test bodies for:
 - Private access (name-mangled attributes, `_private` reads, `@ts-expect-error` around internals, reflection).
 - Snapshot tests of internal structures (serialized state objects rather than rendered output).
 
-Each is a finding referencing prevention rule 5; these are the tests that break on every refactor and get regenerated instead of repaired.
+Each is a candidate referencing prevention rule 5. Verify an observable contract and whether the technique is justified by a real boundary or diagnostic regression. Preserve meaningful failure-mode protection when proposing a rewrite; private access or an internal mock alone does not justify deletion.
 
 ### D8: Never-failing tests
 
@@ -99,9 +110,9 @@ Each is a finding referencing prevention rule 5; these are the tests that break 
 
 ## SEVERITY
 
-- **CRITICAL**: Contradictory tests masking a real defect (D6 pair where one documents the actual production behavior); assertions weakened in history to make CI pass (`git log -p` evidence of tolerance widening or assert deletion without justification).
+- **CRITICAL**: Contradictory tests masking a real defect established by an independent contract/oracle; assertions weakened in history to make CI pass (`git log -p` evidence of tolerance widening or assert deletion without justification).
 - **HIGH**: Tests failing on current main; confirmed flaky tests; orphan test files; never-failing tests covering critical paths; any `.only`/`fit`/`fdescribe` marker.
-- **MEDIUM**: Duplicate coverage (including cross-layer); placement violations and parallel files; skip markers older than 30 days; implementation-coupled tests on actively changing modules.
+- **MEDIUM**: Confirmed duplicate failure-mode protection; placement violations and unexplained parallel files; unjustified skips with impact evidence; implementation-coupled tests causing evidenced churn. Skip age alone is an investigation signal.
 - **LOW**: Slow-test hot spots within budget; naming drift; implementation-coupled tests on frozen modules; single small duplicates.
 
 ## OUTPUT FORMAT
@@ -112,6 +123,7 @@ Each is a finding referencing prevention rule 5; these are the tests that break 
 **Scope:** [whole suite | modules | diff range]
 **Runner(s):** [detected]
 **Execution:** [full run | reruns N | no-run (reasons)]
+**Runner diagnosis:** [available | runner-missing | configuration-disabled | suite-absent | detection-unresolved]
 **Dimensions scanned:** D1 inventory | D2 orphans | D3 skipped | D4 failing/flaky | D5 duplicates | D6 contradictions | D7 impl-coupled | D8 never-failing | D9 runtime/coverage
 
 ---
@@ -122,7 +134,9 @@ Each is a finding referencing prevention rule 5; these are the tests that break 
 - **Location:** `file:line`
 - **Evidence:** [command output line, git log line, or the pair of asserts]
 - **Impact:** [one sentence]
-- **Fix path:** [`/testing:test-audit --fix` category `<orphan|failing|flaky|skipped>` | `/testing:test-consolidate <module>`]
+- **Cause:** [product-defect | wrong-oracle | environment | intermittent | unknown]
+- **Fix path / owner:** [implementation owner | testing:test-writer oracle/authoring | environment/configuration owner | consolidation | eligible quarantine]
+- **Protected behavior / failure mode / bugfix provenance:** [evidence or explicitly unknown]
 
 *(continue by severity)*
 
@@ -146,7 +160,7 @@ Each is a finding referencing prevention rule 5; these are the tests that break 
 
 ### Recommended Remediation Order
 
-1. `/testing:test-audit --fix` for the quarantine categories found (orphan first, then skipped, failing, flaky)
+1. Resolve product/oracle/environment diagnoses and missing runner/configuration/absent-suite findings; keep unresolved protection visible
 2. `/testing:test-consolidate <module>` for the worst modules by D5/D7 density: [ranked list]
 3. [Coverage-absence modules worth new tests, if D9 found any]
 ```

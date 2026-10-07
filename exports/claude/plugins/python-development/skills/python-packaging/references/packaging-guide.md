@@ -172,4 +172,4 @@ Requires PyPI project to have the GH org/repo/workflow registered. Token-free, a
 
 - `python-packaging/SKILL.md` -- decision tree (when to package, src vs flat, build backend choice)
 - `uv-package-manager` skill -- modern dep management that pairs with this
-- `python-tdd/references/framework-config.md` -- pytest config that lives in the same `pyproject.toml`
+- `pytest-patterns/references/framework-config.md` -- pytest config that lives in the same `pyproject.toml`

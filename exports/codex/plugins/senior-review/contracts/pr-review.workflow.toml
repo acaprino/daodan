@@ -1,6 +1,15 @@
 name = "pr-review"
 entrypoint = "pr-review.md"
 
+[dispatch]
+roles = [
+  "senior-review/code-auditor",
+  "senior-review/security-auditor",
+  "senior-review/premise-auditor",
+]
+isolated = true
+inline_workers = true
+
 [[phases]]
 id = "run"
 isolation = "shared"
@@ -11,3 +20,5 @@ inputs = ["repository"]
 outcomes = ["pr-review-completed"]
 artifacts = ["pr-review-report"]
 schemas = []
+
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

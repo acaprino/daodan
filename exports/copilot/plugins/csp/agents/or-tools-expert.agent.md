@@ -162,7 +162,7 @@ Master constraint programmer -- modeling, solving, and deploying optimization pr
 
 ## Synergies with Other Plugins
 - **python-development:python-engineer** (agent): Python best practices for model code structure and organization
-- **python-development:python-tdd** (skill): Testing optimization models and validating solutions
+- **python-development:pytest-patterns** (related skill): Python test techniques for optimization models; universal authoring is owned by testing
 - **python-development:python-performance-optimization** (skill): Profiling solver performance and bottleneck identification
 
 ## Common Patterns

@@ -20,6 +20,7 @@ from .model import (
     CapabilityRequirements,
     ComponentIndex,
     ContractSpec,
+    DispatchSpec,
     McpServerSpec,
     ModelError,
     PhaseSpec,
@@ -38,6 +39,7 @@ PLUGIN_KEYS = frozenset(
         "dependencies",
         "components",
         "mcp",
+        "contracts",
     }
 )
 PLUGIN_REQUIRED_KEYS = ("schema", "name", "version", "description", "license")
@@ -49,7 +51,8 @@ COMPONENT_KEYS = frozenset({"skills", "roles", "workflows", "policies"})
 MCP_KEYS = frozenset({"servers"})
 MCP_SERVER_KEYS = frozenset({"name", "command", "args"})
 
-WORKFLOW_KEYS = frozenset({"name", "entrypoint", "phases", "contract"})
+WORKFLOW_KEYS = frozenset({"name", "entrypoint", "phases", "contract", "dispatch"})
+DISPATCH_KEYS = frozenset({"roles", "isolated", "inline_workers"})
 PHASE_KEYS = frozenset(
     {
         "id",
@@ -65,7 +68,8 @@ PHASE_KEYS = frozenset(
         "produces",
     }
 )
-CONTRACT_KEYS = frozenset({"inputs", "outcomes", "artifacts", "schemas"})
+CONTRACT_KEYS = frozenset({"inputs", "outcomes", "artifacts", "schemas", "shared_schemas"})
+CONTRACT_EXPORT_KEYS = frozenset({"exports"})
 
 
 def _read(path: Path) -> Mapping[str, Any]:
@@ -124,6 +128,7 @@ def load_contract(path: Path, table: Mapping[str, Any]) -> ContractSpec:
         outcomes=_strings(path, table, "outcomes", "contract"),
         artifacts=_strings(path, table, "artifacts", "contract"),
         schemas=schemas,
+        shared_schemas=_strings(path, table, "shared_schemas", "contract"),
     )
 
 
@@ -176,12 +181,21 @@ def load_workflow(path: Path, workflow_directory: Path) -> WorkflowSpec:
     contract_table = table["contract"]
     if not isinstance(contract_table, dict):
         raise ModelError(path, "[contract] must be a table")
+    dispatch_table = table.get("dispatch", {})
+    if not isinstance(dispatch_table, dict):
+        raise ModelError(path, "[dispatch] must be a table")
+    _reject_unknown(path, dispatch_table, DISPATCH_KEYS, "dispatch")
+    for key in ("isolated", "inline_workers"):
+        if key in dispatch_table and not isinstance(dispatch_table[key], bool):
+            raise ModelError(path, f"dispatch.{key} must be a boolean")
 
     return WorkflowSpec(
         name=_string(path, table, "name", "workflow"),
         entrypoint=entrypoint,
         phases=tuple(load_phase(path, phase) for phase in phases),
         contract=load_contract(path, contract_table),
+        dispatch=DispatchSpec(_strings(path, dispatch_table, "roles", "dispatch"),
+                              dispatch_table.get("isolated", False), dispatch_table.get("inline_workers", False)),
     )
 
 
@@ -252,6 +266,15 @@ def load_plugin(path: Path) -> PluginSpec:
         for name in components.workflows
     )
 
+    export_table = table.get("contracts", {})
+    if not isinstance(export_table, dict):
+        raise ModelError(manifest, "[contracts] must be a table")
+    _reject_unknown(manifest, export_table, CONTRACT_EXPORT_KEYS, "contracts")
+    exports = tuple(
+        _relative(manifest, item, "contracts.exports")
+        for item in _strings(manifest, export_table, "exports", "contracts")
+    )
+
     return PluginSpec(
         root=root,
         schema=schema,
@@ -264,4 +287,5 @@ def load_plugin(path: Path) -> PluginSpec:
         components=components,
         workflows=workflows,
         mcp_servers=load_mcp_servers(manifest, table),
+        contract_exports=exports,
     )

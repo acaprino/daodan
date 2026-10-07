@@ -361,7 +361,7 @@ Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On fail
 ## Phase 4: Publish, Completion & Next Steps Menu
 
 1. Update `$RUN_DIR/state.json`: `status: "complete"`, `completed_at: <ISO_TIMESTAMP>`.
-2. **Publish** (skip if `--skip-synthesis`): copy `$RUN_DIR/01-*.md` .. `$RUN_DIR/07-final-report.md` (those that exist), `$RUN_DIR/08-interconnect-map.md` (if Phase 3 ran), and `$RUN_DIR/state.json` to the `.codebase-xray/` root, overwriting the previous mirror. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed`. The root mirror is the downstream contract for `/senior-review:team-review`, `/codebase-mapper:map-codebase`, and `/project-setup:create-claude-md`.
+2. **Publish** (skip if `--skip-synthesis`): copy `$RUN_DIR/01-*.md` .. `$RUN_DIR/07-final-report.md` (those that exist), `$RUN_DIR/08-interconnect-map.md` (if Phase 3 ran), and `$RUN_DIR/state.json` to the `.codebase-xray/` root, overwriting the previous mirror. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed`. The root mirror is the downstream contract for `/senior-review:team-review`, `/project-knowledge:guide`, and `/project-knowledge:instructions --create`.
 3. No worker may still be writing after publish. Every dispatched worker has been recorded `delivered` or `failed` by now, and the harness owns whatever cleanup its workers need.
 4. Present summary:
 
@@ -388,24 +388,11 @@ Summary:
 
 On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.codebase-xray/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
 
-5. Show Next Steps Menu:
-
-```
-What would you like to do next?
-
-1. Start fixing — execute the action plan
-2. Apply quick fixes
-3. Analyze further — re-run a single partition (as a new run)
-4. Generate documentation
-   4a. CLAUDE.md (suggests /project-setup:create-claude-md or maintain-claude-md)
-   4b. Codebase map (suggests /codebase-mapper:map-codebase)
-   4c. API / interface docs (suggests /codebase-mapper:docs-create)
-5. Run code review — launch /senior-review:team-review (will reuse the published .codebase-xray/ mirror + 08-interconnect-map.md)
-6. Export report
-7. Nothing for now
-```
-
-Wait for user choice before proceeding.
+5. Present independent next-step suggestions, with the exact run directory and
+source snapshot attached. Project instructions use /project-knowledge:instructions
+with --create or --fix as authorized; guides use /project-knowledge:guide.
+Development fixes and review are separate scoped tasks. Do not apply quick fixes
+or write durable project documents inside this confined analysis run.
 
 ## Resume Logic
 

@@ -1,8 +1,8 @@
 # Code-review agent prompts (Agents A-N)
 
 Full spawn prompts for `/senior-review:code-review` Step 3. The command's dispatch
-table names each agent, its `subagent_type`, and its run condition; this file holds
-the complete `Agent tool call` block to use verbatim (with the shared Intent and
+table names each agent, its `role`, and its run condition; this file holds
+the complete isolated worker brief (with the shared Intent and
 Diff Scope instructions substituted in). Loaded on demand by the command; not used
 by `/senior-review:team-review`, whose reviewers carry their prompts in their agent
 definitions.
@@ -10,9 +10,9 @@ definitions.
 ### Agent A: Code Audit (Architecture + Failure Flow + Pattern Consistency + Scoring)
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Code audit for senior-review command"
-  - subagent_type: "senior-review:code-auditor"
+  - role: "senior-review:code-auditor"
   - run_in_background: true
   - prompt: |
     Perform a comprehensive code audit of the following changes covering architecture,
@@ -67,9 +67,9 @@ Agent tool call:
 ### Agent B: Security Assessment
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Security review for senior-review command"
-  - subagent_type: "senior-review:security-auditor"
+  - role: "senior-review:security-auditor"
   - run_in_background: true
   - prompt: |
     Review the following code changes for security vulnerabilities.
@@ -116,9 +116,9 @@ not available at this perimeter, because a stale ignore rule or an old stash
 cannot have been caused by the diff under review.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Dead code and diff-scoped VCS hygiene detection for senior-review command"
-  - subagent_type: "general-purpose"
+  - role: "general-purpose"
   - run_in_background: true
   - prompt: |
     Detect dead code, unused parameters, and VCS hygiene defects in the files
@@ -282,9 +282,9 @@ Agent tool call:
 **Only run this agent if the changed files include UI/frontend code** (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.component.ts`, `.qml`, or files containing scroll/focus/layout manipulation).
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "UI race condition analysis for senior-review command"
-  - subagent_type: "senior-review:ui-race-auditor"
+  - role: "senior-review:ui-race-auditor"
   - run_in_background: true
   - prompt: |
     Analyze the following UI code changes for race conditions between async rendering,
@@ -333,63 +333,14 @@ Agent tool call:
     (T0->T1->...->RESULT), file + line, confidence (0-100), concrete fix.
 ```
 
-### Agent D: Platform Engineering Review
-
-**Only run this agent if fullstack app signals were detected** (2+ signals from auto-detection in Step 1). Skip entirely for libraries, CLI tools, or single-layer projects.
-
-`platform-engineering` is a hard dependency of `senior-review`, so this agent is always available. Skip the dimension only when the fullstack signal did not match.
-
-```
-Agent tool call:
-  - description: "Platform engineering review for senior-review command"
-  - subagent_type: "platform-engineering:platform-reviewer"
-  - run_in_background: true
-  - prompt: |
-    Review the following code changes against the platform-engineering rulebook.
-    You have both the diff AND the full file contents for context.
-
-    ## Platforms Detected
-    [list detected platform signals: SPA, PWA, Mobile, Electron, Tauri]
-
-    ## Changed Files
-    [list of changed code files]
-
-    ## Full File Contents
-    [paste full contents of each changed file]
-
-    ## Diff
-    [paste the git diff output]
-
-    ## Instructions
-    Evaluate the CHANGED code against platform-engineering rules:
-    1. **Server validation**: Is business logic (prices, discounts, eligibility)
-       validated server-side? Are client-only checks trusted?
-    2. **Auth token storage**: Are JWTs in localStorage? Missing httpOnly/Secure/SameSite?
-       OAuth flow correct for the platform?
-    3. **API security**: Unauthenticated endpoints? Missing rate limiting? Permissive CORS?
-       Verbose error responses? GraphQL introspection exposed?
-    4. **XSS/CSP**: Weak or missing CSP? dangerouslySetInnerHTML with user data?
-       unsafe-inline/unsafe-eval?
-    5. **Secrets exposure**: API keys in frontend bundles? REACT_APP_/VITE_/NEXT_PUBLIC_ secrets?
-    6. **Architecture**: Business logic in client code? Missing API versioning? Missing pagination?
-       Direct DB connections from client?
-    7. **Performance**: Bundle size over budget? Missing code splitting? Unoptimized images?
-       N+1 queries? Missing connection pooling?
-    8. **Platform-specific**: Electron (nodeIntegration, contextIsolation, sandbox)?
-       Tauri (overly permissive commands)? Mobile (cert pinning, memory leaks)?
-
-    For each finding: severity (MUST/DO/DON'T), file + line, confidence (0-100),
-    real-world incident reference if applicable, concrete fix.
-```
-
 ### Agent E: Git Blame & History Analysis
 
 Run in parallel with Agents A-D. Provides historical context that other agents lack.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Git blame and history analysis for senior-review command"
-  - subagent_type: "general-purpose"
+  - role: "general-purpose"
   - run_in_background: true
   - prompt: |
     Analyze the git history and blame data for the following changed files to find
@@ -444,9 +395,9 @@ Agent tool call:
 The `testing` plugin is a hard dependency of `senior-review`, so `testing:test-suite-auditor` is always available. There is no generic fallback variant: a spawn failure here means a broken install, not a missing optional plugin.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Testing review for senior-review command"
-  - subagent_type: "testing:test-suite-auditor"
+  - role: "testing:test-suite-auditor"
   - run_in_background: true
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
@@ -475,9 +426,9 @@ Agent tool call:
 **Only run this agent if the diff touches API-related files** (route definitions, serializers, type signatures, API versioning, OpenAPI/Swagger specs, GraphQL schemas).
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "API contract review for senior-review command"
-  - subagent_type: "general-purpose"
+  - role: "general-purpose"
   - run_in_background: true
   - prompt: |
     Review the API contract changes for backwards compatibility and correctness.
@@ -512,9 +463,9 @@ Agent tool call:
 **Only run this agent if the diff touches migration files** (database migrations, schema changes, backfill scripts, Alembic/Django/Rails/Prisma migration files).
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Data migrations review for senior-review command"
-  - subagent_type: "general-purpose"
+  - role: "general-purpose"
   - run_in_background: true
   - prompt: |
     Review the database migration changes for safety and correctness.
@@ -546,52 +497,6 @@ Agent tool call:
     description, suggested fix.
 ```
 
-### Agent I: React Performance Review (conditional)
-
-**Only run this agent if the diff touches `.tsx` or `.jsx` files AND the project has React as a dependency** (check `package.json` for `react` in dependencies/devDependencies).
-
-`react-development` is a hard dependency of `senior-review`, so this agent is always available. Skip the dimension only when the React signal did not match.
-
-```
-Agent tool call:
-  - description: "React performance review for senior-review command"
-  - subagent_type: "react-development:react-performance-optimizer"
-  - run_in_background: true
-  - prompt: |
-    Review the following React code changes for performance issues,
-    anti-patterns, and optimization opportunities.
-
-    [Include shared instructions: Intent + Diff Scope]
-
-    ## Changed Files
-    [list of changed .tsx/.jsx files]
-
-    ## Full File Contents
-    [paste full contents of each changed React file]
-
-    ## Diff
-    [paste the git diff output]
-
-    ## Instructions
-    Analyze the CHANGED React code for:
-    1. **React Compiler compatibility** -- patterns that break automatic memoization
-       (external mutables, dynamic property access, non-idiomatic hooks)
-    2. **Server Components** -- client-only APIs in server components, missing
-       'use client' directives, unnecessary client boundaries
-    3. **Re-render optimization** -- missing keys, unstable references in props,
-       inline object/function creation in render, expensive computations without
-       useMemo/useCallback where warranted
-    4. **State management** -- derived state that should be computed, unnecessary
-       state, state that belongs higher/lower in the tree
-    5. **Bundle impact** -- large imports that could be lazy-loaded, barrel file
-       re-exports pulling in unused code
-    6. **External store subscriptions** -- useSyncExternalStore patterns,
-       tearing risks with concurrent features
-
-    For each finding: severity (Critical/High/Medium/Low), file + line, confidence (0-100),
-    description, concrete fix with code example.
-```
-
 ### Agent J: Structural Entropy Review (conditional)
 
 **Run this agent whenever the diff adds code**, meaning at least one added function, method, class, module, constant table, or block longer than roughly five lines. Skip it for diffs that are purely deletions, renames, formatting, or config edits.
@@ -601,9 +506,9 @@ This is the only agent whose question is about the rest of the codebase rather t
 `abstraction-architect` is a hard dependency of `senior-review`, so this agent is always available. Skip the dimension only when the diff adds no code. There is no fallback and none is needed: the check depends on that agent's dimension catalog, evidence gates and decision frame, and a freelance grep for similar names produces false positives that cost more than the finding is worth.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Structural entropy review for senior-review command"
-  - subagent_type: "abstraction-architect:abstraction-architect-agent"
+  - role: "abstraction-architect:abstraction-architect-agent"
   - run_in_background: true
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
@@ -644,49 +549,6 @@ Agent tool call:
     behavioral difference if any, and the suggested direction in one sentence.
 ```
 
-### Agent K: TypeScript Type-Safety Review (conditional)
-
-**Only run this agent if the diff touches `.ts` or `.tsx` files AND `tsconfig.json` exists at the project root.** On React projects both Agent I and Agent K run: the charters are orthogonal (performance vs type safety) and consolidation deduplicates any collision.
-
-`typescript-development` is a hard dependency of `senior-review`, so this agent is always available. Skip the dimension only when the TypeScript signal did not match.
-
-```
-Agent tool call:
-  - description: "TypeScript type-safety review for senior-review command"
-  - subagent_type: "typescript-development:type-safety-auditor"
-  - run_in_background: true
-  - prompt: |
-    Review the following TypeScript changes for type-system erosion.
-
-    [Include shared instructions: Intent + Diff Scope]
-
-    ## Changed Files
-    [list of changed .ts/.tsx files]
-
-    ## tsconfig
-    [paste tsconfig.json and any extended configs]
-
-    ## Full File Contents
-    [paste full contents of each changed TypeScript file]
-
-    ## Diff
-    [paste the git diff output]
-
-    ## Instructions
-    Analyze the CHANGED TypeScript code for:
-    1. **Any erosion**: explicit any, untyped JSON.parse and response.json() results, any generic defaults
-    2. **Unsound casts**: shape-changing as casts without runtime checks, as unknown as bypasses
-    3. **Boundary validation**: HTTP payloads, queue messages, storage reads, and env access reaching typed code without a schema parse or guard
-    4. **Assertion abuse**: unjustified non-null assertions, @ts-ignore instead of @ts-expect-error with reason
-    5. **Configuration drift**: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes missing or weakened by this diff
-    6. **Exhaustiveness**: discriminated-union switches without never defaults, lookup tables without satisfies
-    7. **Generics soundness**: unconstrained exported type parameters, type predicates that do not verify the shape they claim
-
-    Cite rule ids from the type-safety-rules skill in every finding.
-    For each finding: severity (Critical/High/Medium/Low), file + line, confidence (0-100),
-    description, concrete fix with a code example.
-```
-
 ### Agent L: Temporal Resilience Review (conditional)
 
 **Only run this agent if the diff touches long-running or scheduled execution machinery**: timers (`setInterval`/`setTimeout` chains, cron), polling loops, retry/reconnect/backoff logic, queue workers, background daemons, updaters, watchdogs, or heartbeats. Detection: grep the diff for `setInterval|setTimeout|cron|schedule|retry|reconnect|backoff|watchdog|heartbeat|keepalive|poll|daemon|updater`. This agent lives in `senior-review` itself, so there is no plugin-availability check.
@@ -694,9 +556,9 @@ Agent tool call:
 This dimension exists because the synchronous lenses (A through K) each see the code in an instant; none of them owns the question "what does the user see after this has been failing for a day". Resilience findings otherwise fall on the seam between architecture and performance, and each reviewer sees only half.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Temporal resilience review for senior-review command"
-  - subagent_type: "senior-review:temporal-resilience-auditor"
+  - role: "senior-review:temporal-resilience-auditor"
   - run_in_background: true
   - prompt: |
     Review the following changes for failure-over-time behavior.
@@ -737,9 +599,9 @@ Agent tool call:
 This dimension is distinct from logic integrity: a domain rule violated in application logic is theirs; a store that can be MADE to hold an impossible state (the invariant lives in code, not in the schema, and a race or out-of-band write gets past it) is this agent's territory.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Data integrity review for senior-review command"
-  - subagent_type: "senior-review:data-integrity-auditor"
+  - role: "senior-review:data-integrity-auditor"
   - run_in_background: true
   - prompt: |
     Review the following changes for persistence-semantics defects.
@@ -778,9 +640,9 @@ Agent tool call:
 **Only run this agent if the diff acquires or manages resources**: files, sockets, streams, DB connections, subprocesses, event listeners, subscriptions, locks, tasks/threads/goroutines, timers, or object URLs. Weight the signal higher for manual-resource languages (C/C++/Rust/Go) and async-heavy code. Detection: grep the diff for `open\(|createReadStream|createWriteStream|socket|getConnection|acquire|addEventListener|subscribe\(|lock|mutex|semaphore|new Worker|subprocess|Popen|spawn\(|go func|tokio::spawn|asyncio\.create_task|createObjectURL`. This agent lives in `senior-review` itself, so there is no plugin-availability check.
 
 ```
-Agent tool call:
+Isolated worker brief:
   - description: "Resource lifecycle review for senior-review command"
-  - subagent_type: "senior-review:resource-lifecycle-auditor"
+  - role: "senior-review:resource-lifecycle-auditor"
   - run_in_background: true
   - prompt: |
     Review the following changes for resource ownership and release defects.
@@ -809,4 +671,3 @@ Agent tool call:
     the exhaustion scenario, concrete fix preferring structural constructs
     (with/defer/finally/RAII/AbortController/effect cleanup).
 ```
-

@@ -46,14 +46,25 @@ Transform complex Python into clear, maintainable code while preserving correctn
 - **NO MAGIC** -- no framework magic, no metaprogramming unless absolutely necessary.
 - **VALIDATE CONTINUOUSLY** -- static analysis + tests after each logical change.
 
+## Operational preflight and recovery
+
+Load the `project-protocol:project-protocol` skill before execution. Reuse an authorized
+plan only for its current scope/snapshot. Record existing tracked/untracked edits,
+owned files, baseline and required commands/configurations; capture `pre_phase_sha`
+and pre-edit contents immediately before each phase. A remote gate must match
+the exact candidate snapshot and required lane/job, not merely the current branch.
+Path-scoped recovery restores saved pre-edit content and preserves unrelated edits.
+Hard reset is available only in an exclusively owned clean isolated worktree.
+If another writer changed an owned file, halt with the conflict instead of overwriting.
+
 ## Regression prevention (MANDATORY)
 
 **Refactoring must NEVER introduce regressions.** Read `references/REGRESSION_PREVENTION.md` before any session.
 
 Before each session:
-- Test suite passes 100%
-- Coverage ≥ 80% on target code (write tests FIRST if not)
-- Golden outputs captured for critical edge cases
+- Required baseline checks pass for the exact starting snapshot, or the affected phase remains open
+- Protected behaviors, independent failure modes and bugfix regressions inventoried; fill relevant gaps before the affected transformation, without a coverage quota
+- Characterization outputs captured for critical edge cases and checked against the authorized contract; observed behavior does not make a known bug correct
 - Static analysis baseline saved
 
 After EACH micro-change (not at the end -- every single one):
@@ -61,7 +72,7 @@ After EACH micro-change (not at the end -- every single one):
 - `pytest -x` → all passing
 - Spot check 1 edge case for unchanged behavior
 
-If ANY check fails: **STOP → REVERT → ANALYZE → FIX APPROACH → RETRY**.
+If a required check fails, stop and use the common protocol to restore the exact owned pre-phase state. Preserve preceding successful work and all preexisting edits; analyze before a new candidate.
 
 ANY REGRESSION = TOTAL FAILURE.
 
@@ -116,7 +127,7 @@ ANY REGRESSION = TOTAL FAILURE.
 - NEVER skip the migration checklist for destructive changes
 - Run static analysis BEFORE tests
 - One pattern at a time -- never mix multiple refactoring patterns in a single change
-- Atomic commits -- each migration step gets its own commit
+- Atomic candidates; commit each migration step only when explicitly authorized and its candidate gate passed
 - Stop on ANY error (static analysis OR test failure) → immediate fix/revert
 
 #### Recommended order
@@ -235,7 +246,7 @@ Full guide: `references/REGRESSION_PREVENTION.md`. Key traps:
 
 ## Integration
 
-- **python-tdd** -- set up tests before refactoring, validate coverage after
+- Load the `testing:test-hygiene` skill and use `testing:test-writer` for needed behavior checks; `pytest-patterns` supplies Python mechanics
 - **python-performance-optimization** -- deep profiling before/after
 - **python-packaging** -- handle pyproject.toml + distribution if refactoring a library
 - **uv-package-manager** -- `uv run ruff`, `uv run complexipy` for tool execution

@@ -22,8 +22,6 @@ What is deliberately NOT flagged:
 
   - `marketplace-ops` and `ai-tooling`'s `agent-sdk-builder` skill, whose
     subject matter IS the agent tooling (CLAUDE.md: never de-brand them)
-  - `project-setup/examples/`, which ships example CLAUDE.md files about the
-    Claude Code host by design
   - generic words such as "spawn", "dispatch", "worker" and "orchestrator",
     which name the obligation rather than a host's implementation of it
 
@@ -50,23 +48,14 @@ TOKENS = re.compile(
 SUBJECT_MATTER = (
     "plugins/marketplace-ops/",
     "plugins/ai-tooling/skills/agent-sdk-builder/",
-    "plugins/project-setup/examples/",
 )
 
 # File -> occurrence count when the linter landed. Fix a file, delete its entry.
 # Never raise a count to make a build pass.
 GRANDFATHERED: dict[str, int] = {
-    "plugins/codebase-mapper/workflows/docs-create.md": 2,
-    "plugins/codebase-mapper/workflows/humanize-docs.md": 2,
-    "plugins/codebase-mapper/workflows/team-codebase-map.md": 18,
     "plugins/digital-marketing/workflows/content-strategy.md": 3,
     "plugins/peer-review/workflows/review.md": 3,
     "plugins/react-development/workflows/review-react.md": 1,
-    "plugins/senior-review/skills/review-quality-gates/SKILL.md": 4,
-    "plugins/senior-review/skills/review-quality-gates/references/code-review-agents.md": 16,
-    "plugins/senior-review/skills/review-quality-gates/references/code-review-fix-loop.md": 1,
-    "plugins/senior-review/workflows/code-review.md": 3,
-    "plugins/senior-review/workflows/pr-review.md": 2,
     "plugins/typescript-development/workflows/review-typescript.md": 1,
 }
 

@@ -1,0 +1,14 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:9497f5f1e81ad6565b9dc26bde1bbe148d9e8989d719c7bd65f61a2495b76831",
+  "harnessStrategies": {
+    "guide": "parallel-subagents",
+    "instructions": "parallel-subagents",
+    "maintain": "parallel-subagents",
+    "readme": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "project-knowledge",
+  "version": "1.0.0"
+}

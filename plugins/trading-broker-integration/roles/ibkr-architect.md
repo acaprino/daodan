@@ -411,4 +411,4 @@ async def reconnect_loop(ib, host, port, client_id, base=2.0, cap=60.0, attempts
 ## Synergies
 
 - **python-development:async-python-patterns** - asyncio patterns for `ib_async` event loops
-- **python-development:python-tdd** - contract-testing handler signatures and the domain boundary
+- **python-development:pytest-patterns**: Python techniques for handler/domain contract tests; meaningful authoring remains testing's responsibility

@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "project-knowledge"
+version = "1.0.0"
+description = "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
+optional = ["execution.parallel"]
+
+[dependencies]
+required = ["project-protocol", "codebase-xray", "text-humanizer", "senior-review"]
+
+[components]
+skills = ["project-knowledge", "instructions-method", "readme-craft"]
+roles = ["codebase-explorer", "doc-humanizer", "documentation-engineer", "flow-writer", "guide-reviewer", "instructions-auditor", "onboarding-writer", "ops-writer", "overview-writer", "tech-writer"]
+workflows = ["instructions", "guide", "maintain", "readme"]
+policies = []

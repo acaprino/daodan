@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f2f8fb248b80dd5770aad387f2750eaffbc4f0ab1aeb3087a180813bcf72e2d8",
+  "coreDigest": "sha256:811210987e2bec76b102b802ad4c1e0b7bdc192f193ae82987130b1557ad6aa4",
   "harnessStrategies": {
     "humanize-text": "parallel-subagents"
   },
   "host": "pi",
   "overrides": [],
   "plugin": "text-humanizer",
-  "version": "1.2.0"
+  "version": "1.2.1"
 }

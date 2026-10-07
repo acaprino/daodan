@@ -152,55 +152,16 @@ The markdown output follows the template in `templates/analysis_report.md` and p
 | **debt** | BAD | TODO/FIXME without plan | Rewrite/Resolve |
 | **backup** | BAD | Commented-out code | Delete |
 
-## Comment Quality Workflow
+## Comment quality analysis
 
-```
-1. SCAN
-   - Run: rewrite_comments.py scan <dir> --recursive
-   - Review files with most issues
-   - Generate: rewrite_comments.py report <dir> --output report.md
+1. Scan and analyze comment issues; write a report inside the run.
+2. Verify the finding in source, distinguish useful context from repetition.
+3. Propose a change with the affected path and reason. Do not apply it in X-ray.
+4. A separate authorized readability/development task performs and verifies edits.
 
-2. TRIAGE
-   - Identify high-priority files (critical modules)
-   - Focus on DEBT comments (convert to issues or design docs)
-   - Plan bulk TRIVIAL/BACKUP deletions
+## Documentation diagnosis
 
-3. REWRITE
-   - Run: rewrite_comments.py rewrite <file> --apply --backup
-   - Review changes in diff
-   - Verify no functional changes
-
-4. VERIFY
-   - Run tests to confirm no breakage
-   - Re-scan to confirm improvements
-   - Update comment_health.md report
-```
-
-## Documentation Maintenance Workflow
-
-When invoking Phase 6 documentation maintenance, follow this sequence:
-
-```
-1. PLANNING
-   - Run: doc_review.py scan --path docs/
-   - Review health report
-   - Identify priority fixes (broken links, obsolete files)
-   - Create todo list with specific actions
-
-2. EXECUTION (in batches)
-   - Batch 1: Fix broken links
-     - Run: doc_review.py validate-links --fix
-   - Batch 2: Verify critical docs against source
-     - Run: doc_review.py verify --doc <file> --source <code>
-   - Batch 3: Delete obsolete files
-     - Manual review + deletion
-   - Batch 4: Update navigation indexes
-     - Run: doc_review.py update-indexes
-   - Batch 5: Update timestamps
-     - Set last_updated on verified files
-
-3. VERIFICATION
-   - Run: doc_review.py scan (confirm improvements)
-   - Run: doc_review.py validate-links (confirm zero broken)
-   - Generate final doc_health_report.json
-```
+1. Scan health and validate links without fix flags.
+2. Compare claims with current source and the declared requirement.
+3. Report obsolete candidates, broken links and stale navigation with evidence.
+4. Write results inside the run. Knowledge maintenance owns application and review.

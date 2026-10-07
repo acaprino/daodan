@@ -7,8 +7,8 @@
     "ui-ux-pro-max-skill"
   ],
   "metadata": {
-    "description": "The Daodan: agents, skills and workflows that augment a coding agent into a specialized toolkit.",
-    "version": "29.0.0"
+    "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
+    "version": "30.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -133,50 +133,17 @@
       "commands": [
         "./commands/clean-code.md"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "project-protocol"
+      ],
       "description": "Rewrites source code to be more readable and human-friendly without changing behavior - improves naming, removes AI boilerplate, simplifies structure, and adds clarity comments",
       "license": "MIT",
       "name": "clean-code",
-      "source": "./exports/claude/plugins/clean-code",
-      "version": "1.3.2"
-    },
-    {
-      "agents": [
-        "./agents/codebase-explorer.md",
-        "./agents/config-writer.md",
-        "./agents/doc-humanizer.md",
-        "./agents/documentation-engineer.md",
-        "./agents/flow-writer.md",
-        "./agents/guide-reviewer.md",
-        "./agents/onboarding-writer.md",
-        "./agents/ops-writer.md",
-        "./agents/overview-writer.md",
-        "./agents/tech-writer.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "commands": [
-        "./commands/docs-create.md",
-        "./commands/docs-maintain.md",
-        "./commands/humanize-docs.md",
-        "./commands/map-codebase.md",
-        "./commands/team-codebase-map.md"
-      ],
-      "dependencies": [
-        "agent-teams@claude-code-workflows",
-        "codebase-xray",
-        "text-humanizer",
-        "senior-review"
-      ],
-      "description": "Human-readable codebase guide generator: explores unfamiliar projects, builds a structured interconnect map (contracts, invariants, domain rules, integration hot-spots) via the codebase-xray semantic-interconnect-mapper, then autonomously profiles the project (type, audience, register) and produces audience-adaptive narrative documents with Mermaid diagrams that cite the map, including a plain-language executive summary and a domain glossary so the guide is comprehensible by everyone. Includes documentation-reality drift detection in the review phase, plus standalone documentation creation, maintenance, and humanization with bottom-up code analysis. Both docs-create and docs-maintain cover 20 documentation dimensions; docs-maintain runs a structured per-dimension drift audit (added/removed/renamed/retyped) instead of generic outdated-text matching.",
-      "license": "MIT",
-      "name": "codebase-mapper",
       "skills": [
-        "./skills/codebase-mapper"
+        "./skills/readability-method"
       ],
-      "source": "./exports/claude/plugins/codebase-mapper",
-      "version": "3.1.1"
+      "source": "./exports/claude/plugins/clean-code",
+      "version": "2.0.0"
     },
     {
       "agents": [
@@ -194,14 +161,14 @@
         "./commands/team-analyze.md"
       ],
       "dependencies": [],
-      "description": "Multi-language systematic codebase X-ray analysis (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS) - analyzes architecture, traces data flows, detects anti-patterns, and generates structured documentation for onboarding, architecture review, or code documentation. Root of the review and documentation dependency graph: it also owns the semantic interconnect mapper (contracts / invariants / domain rules / assumptions) that team-review and codebase-mapper both consume. Concurrent-safe: every analysis is an isolated run under .codebase-xray/runs/ published to a stable root mirror. The Next Steps menu wires the output into downstream documentation generators (CLAUDE.md, codebase map, interface docs) as a technical-reference backbone. Renamed from deep-dive-analysis in 2.0.0. Runs are incremental: each records a structural snapshot of the tree it analyzed, and a later run diffs it against the worktree, carries unaffected claims forward and re-derives only what changed.",
+      "description": "Multi-language systematic codebase X-ray analysis (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS) - analyzes architecture, traces data flows, detects anti-patterns, and generates structured documentation for onboarding, architecture review, or code documentation. Root of the review and documentation dependency graph: it also owns the semantic interconnect mapper (contracts / invariants / domain rules / assumptions) that team-review and project-knowledge both consume. Concurrent-safe: every analysis is an isolated run under .codebase-xray/runs/ published to a stable root mirror. The Next Steps menu wires the output into downstream documentation generators (CLAUDE.md, codebase map, interface docs) as a technical-reference backbone. Renamed from deep-dive-analysis in 2.0.0. Runs are incremental: each records a structural snapshot of the tree it analyzed, and a later run diffs it against the worktree, carries unaffected claims forward and re-derives only what changed.",
       "license": "MIT",
       "name": "codebase-xray",
       "skills": [
         "./skills/xray-method"
       ],
       "source": "./exports/claude/plugins/codebase-xray",
-      "version": "4.2.1"
+      "version": "5.0.0"
     },
     {
       "agents": [
@@ -215,7 +182,7 @@
       "license": "MIT",
       "name": "csp",
       "source": "./exports/claude/plugins/csp",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": {
@@ -281,23 +248,6 @@
       ],
       "source": "./exports/claude/plugins/docker",
       "version": "1.4.0"
-    },
-    {
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "commands": [
-        "./commands/maintain-readme.md"
-      ],
-      "dependencies": [],
-      "description": "README and project documentation authoring - craft magnetic, top-tier README.md files with progressive disclosure, hero sections, badges, quick start, feature tables, Mermaid diagrams, and community sections",
-      "license": "MIT",
-      "name": "docs",
-      "skills": [
-        "./skills/readme-craft"
-      ],
-      "source": "./exports/claude/plugins/docs",
-      "version": "1.2.1"
     },
     {
       "author": {
@@ -417,11 +367,12 @@
       "license": "MIT",
       "name": "marketplace-ops",
       "skills": [
+        "./skills/kernel-marketplace",
         "./skills/marketplace-audit",
         "./skills/skills-creator"
       ],
       "source": "./exports/claude/plugins/marketplace-ops",
-      "version": "2.3.1"
+      "version": "2.4.0"
     },
     {
       "agents": [
@@ -523,21 +474,91 @@
     },
     {
       "agents": [
-        "./agents/claude-md-auditor.md"
+        "./agents/codebase-explorer.md",
+        "./agents/doc-humanizer.md",
+        "./agents/documentation-engineer.md",
+        "./agents/flow-writer.md",
+        "./agents/guide-reviewer.md",
+        "./agents/instructions-auditor.md",
+        "./agents/onboarding-writer.md",
+        "./agents/ops-writer.md",
+        "./agents/overview-writer.md",
+        "./agents/tech-writer.md"
       ],
       "author": {
         "name": "Alfio Caprino"
       },
       "commands": [
-        "./commands/create-claude-md.md",
-        "./commands/maintain-claude-md.md"
+        "./commands/guide.md",
+        "./commands/instructions.md",
+        "./commands/maintain.md",
+        "./commands/readme.md"
       ],
-      "dependencies": [],
-      "description": "Project configuration and setup tools including CLAUDE.md creation and maintenance with ground truth validation. The maintain flow preserves existing references and information by default: removal requires cross-verification proving the content false or obsolete (else: keep, extract to docs/, or ask the user). It surfaces every single drift to the user via AskUserQuestion before applying any change (no batch-auto-fix, default on unanswered = leave unchanged). Includes a Phase 4b internal-duplication detection pass: file paths, pointers, and external resources are counted across the document; reference outliers (one path appearing N>1 times while peers appear once), conceptual restatements, and weak-justification duplicates (e.g., 'scannability' for jumping readers) are surfaced as per-drift questions with all N occurrences, peer-group comparison, and concrete merge/keep/cross-reference/extract options. Dedup merges are treated as deletions and require explicit per-item approval. Enforces a hard 40,000-character cap on CLAUDE.md (Claude Code performance warning threshold) by extracting bloated sections to docs/ via thin pointers. The project-structure section is required to document the EVERGREEN shape (top-level layout + repeating structural patterns + role per category), not an exhaustive file-by-file tree; file-by-file annotation is justified only where names alone are ambiguous, where the file is a key entry point, or to disambiguate siblings. Exhaustive file-by-file trees in existing CLAUDE.md files are flagged as Medium consolidation candidates (high decay risk, tokens without evergreen value) and surfaced as per-finding questions (consolidate / extract to docs/ / keep / skip), never collapsed autonomously. Generated CLAUDE.md files always include a canonical Working Principles section with 5 principles (4 inspired by upstream agentic-coding meta-rules: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution; plus the locally authored Centralize Shared Logic for DRY / Single Source of Truth across external calls and cross-cutting concerns). Each of principles 1-4 ships with 3 inline sub-bullets covering the deeper meta-rules (root-cause analysis, evergreen tests, surgical diffs) so the block is self-contained and never linked out. The create/maintain flows auto-detect .codebase-xray/ output and offer to ingest it as the technical-reference backbone. When the project has a test suite, generated CLAUDE.md files also carry a canonical Test-Suite Rules block (7 binding rules condensed from the testing plugin's hygiene knowledge base: search before writing, mirrored placement, explicit layers, behavior over implementation, no skip markers, assertion integrity, delete tests with the feature), offered on create and verified on audit; projects without tests do not get the block.",
+      "dependencies": [
+        "project-protocol",
+        "codebase-xray",
+        "text-humanizer",
+        "senior-review"
+      ],
+      "description": "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle.",
       "license": "MIT",
-      "name": "project-setup",
-      "source": "./exports/claude/plugins/project-setup",
-      "version": "2.0.1"
+      "name": "project-knowledge",
+      "skills": [
+        "./skills/instructions-method",
+        "./skills/project-knowledge",
+        "./skills/readme-craft"
+      ],
+      "source": "./exports/claude/plugins/project-knowledge",
+      "version": "1.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "commands": [
+        "./commands/assess.md",
+        "./commands/change.md",
+        "./commands/consolidate.md",
+        "./commands/repair.md",
+        "./commands/verify.md"
+      ],
+      "dependencies": [
+        "project-protocol",
+        "project-knowledge",
+        "senior-review",
+        "testing",
+        "abstraction-architect",
+        "codebase-xray",
+        "repo-hygiene",
+        "clean-code",
+        "text-humanizer",
+        "superpowers@claude-plugins-official"
+      ],
+      "description": "Complete AI development lifecycle: assess coherence, repair an evidenced plan, implement changes, verify their consequences, and consolidate experiments and owned artifacts. Uses canonical specialist methods, exact run identities and honest coverage.",
+      "license": "MIT",
+      "name": "project-lifecycle",
+      "skills": [
+        "./skills/lifecycle-method"
+      ],
+      "source": "./exports/claude/plugins/project-lifecycle",
+      "version": "1.0.0"
+    },
+    {
+      "agents": [
+        "./agents/isolated-worker.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work.",
+      "license": "MIT",
+      "name": "project-protocol",
+      "skills": [
+        "./skills/project-protocol"
+      ],
+      "source": "./exports/claude/plugins/project-protocol",
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -566,8 +587,7 @@
     {
       "agents": [
         "./agents/python-engineer.md",
-        "./agents/python-refactor-agent.md",
-        "./agents/python-test-engineer.md"
+        "./agents/python-refactor-agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -577,23 +597,26 @@
         "./commands/python-refactor.md",
         "./commands/python-scaffold.md"
       ],
-      "dependencies": [],
-      "description": "Python development toolkit: TDD with pytest, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report",
+      "dependencies": [
+        "testing",
+        "project-protocol"
+      ],
+      "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report",
       "license": "MIT",
       "name": "python-development",
       "skills": [
         "./skills/async-python-patterns",
         "./skills/pydantic-v2",
+        "./skills/pytest-patterns",
         "./skills/python-comments",
         "./skills/python-dead-code",
         "./skills/python-packaging",
         "./skills/python-performance-optimization",
         "./skills/python-refactor-method",
-        "./skills/python-tdd",
         "./skills/uv-package-manager"
       ],
       "source": "./exports/claude/plugins/python-development",
-      "version": "2.0.0"
+      "version": "3.0.0"
     },
     {
       "agents": [
@@ -654,7 +677,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/claude/plugins/repo-hygiene",
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "agents": [
@@ -676,6 +699,35 @@
       ],
       "source": "./exports/claude/plugins/research",
       "version": "6.2.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "commands": [
+        "./commands/code-review.md",
+        "./commands/pr-review.md",
+        "./commands/team-review.md"
+      ],
+      "dependencies": [
+        "senior-review",
+        "react-development",
+        "typescript-development",
+        "platform-engineering",
+        "repo-hygiene",
+        "codebase-xray",
+        "abstraction-architect",
+        "testing",
+        "project-protocol"
+      ],
+      "description": "Extended review using the canonical senior-review engine with mandatory signal-selected React performance, TypeScript type safety and platform integration specialists.",
+      "license": "MIT",
+      "name": "review-plus",
+      "skills": [
+        "./skills/extended-review-method"
+      ],
+      "source": "./exports/claude/plugins/review-plus",
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -704,20 +756,22 @@
         "repo-hygiene",
         "codebase-xray",
         "abstraction-architect",
-        "react-development",
-        "platform-engineering",
-        "typescript-development",
-        "testing"
+        "testing",
+        "project-protocol"
       ],
-      "description": "Multi-agent code review orchestration with unified code auditing (architecture, failure flow, pattern analysis, scoring), security auditing, UI race condition detection, distributed flow analysis, platform engineering review, codebase-hygiene auditing (dead code + orphan assets + phantom/unused deps + barrel-file and eager-bundle bloat + stale documentation and historical artifacts + lifecycle archaeology), with workspace hygiene (generated artifacts tracked in VCS, .gitignore, scratch directories, git auxiliary state) left to repo-hygiene's workspace-auditor dimension, a lite dead-code and VCS-hygiene pass in code-review and pr-review plus incremental-phase removal inside the code-review fix loop with commit-per-category and build+test gates, logic-integrity auditing for cross-component contract violations driven by the interconnect map that codebase-xray produces, git blame/history analysis, temporal-resilience auditing (failure-over-time: uncapped retries, silent subsystem death, user-invisible degradation, clock/suspend hazards), data-integrity auditing (persistence semantics: application-only invariants, lost updates, cache/DB divergence), resource-lifecycle auditing (ownership and release across success/error/cancellation), all signal-activated, evidence classes for quantitative claims (measured vs derived) and a user-visible-consequence gate on metric-based closures, a delivery gate (every reviewer delivers or is reported degraded; the work tree is left as found), epistemic independence between the context pipeline and the reviewers that consume it: every finding declares the load-bearing premise it stands on and whether that premise was derived independently or inherited from shared context, a premise auditor derives a second set of claims blind to the X-ray output, the interconnect map carries a per-row status including disputed, consolidation reports agreement inherited from a shared premise as an echo rather than as corroboration, finding validation with false-positive filtering (a 4-lens panel: premise veto gated on provenance and requiring a file:line counterexample, then reachability and refutation, with severity calibration gated on survival), committable PR suggestions, pre-review skip logic, intent-driven review, confidence gating, cross-agent deduplication, pre-existing issue separation, verdict system, interactive fix loop (--fix edits and verifies, --commit adds the commits and gates the bulk cleanup), and signal-activated reviewers for testing quality (test-suite-auditor), TypeScript type safety (type-safety-auditor), API contracts, and data migrations, all backed by hard dependencies so a dimension is skipped only when the change shows no signal for it. Backed by a comprehensive defect taxonomy knowledge base (140+ defect patterns, CWE/OWASP mappings, plus a dedicated logic-integrity reference).",
+      "description": "Universal evidence-aware code, team and PR review; canonical preparation, consolidation and commit-only application cleanup; testing, structural entropy and workspace hygiene. Specialist React, TypeScript and platform review is owned by review-plus. Seven native review schemas preserve finding provenance and delivery accounting.",
       "license": "MIT",
       "name": "senior-review",
       "skills": [
+        "./skills/application-cleanup-method",
         "./skills/defect-taxonomy",
+        "./skills/review-consolidation",
+        "./skills/review-method",
+        "./skills/review-preparation",
         "./skills/review-quality-gates"
       ],
       "source": "./exports/claude/plugins/senior-review",
-      "version": "12.0.3"
+      "version": "13.0.0"
     },
     {
       "agents": [
@@ -756,7 +810,7 @@
         "./skills/file-organizer"
       ],
       "source": "./exports/claude/plugins/system-utils",
-      "version": "2.1.1"
+      "version": "2.1.2"
     },
     {
       "agents": [
@@ -791,16 +845,19 @@
       ],
       "dependencies": [
         "mattpocock-skills@mattpocock",
-        "developer-essentials@claude-code-workflows"
+        "developer-essentials@claude-code-workflows",
+        "project-protocol"
       ],
-      "description": "Test-suite hygiene and generation toolkit - binding test-hygiene rules (search-before-write protocol, mirror-the-source placement, deterministic ownership per layer, explicit layers with budgets, no skip markers, assertion integrity, delete tests with the feature), a report-only test-suite-auditor agent (orphan, skipped, failing, flaky, duplicate, contradictory, implementation-coupled and never-failing test detection plus layer and runtime/coverage distribution), /test-audit with a versioned TEST_AUDIT.md and gated quarantine to tests/_quarantine/, /test-consolidate with behavior-inventory approval, same-commit rewrite plus delete and a coverage gate, and a test-writer agent that generates behavior-driven test suites and extends existing test files instead of creating parallel ones. TDD methodology and browser E2E patterns are delegated to hard dependencies: mattpocock-skills (tdd) and developer-essentials (e2e-testing-patterns)",
+      "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
       "license": "MIT",
       "name": "testing",
       "skills": [
-        "./skills/test-hygiene"
+        "./skills/test-hygiene",
+        "./skills/test-preparation",
+        "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "2.3.0"
+      "version": "3.0.0"
     },
     {
       "agents": [
@@ -813,14 +870,14 @@
         "./commands/humanize-text.md"
       ],
       "dependencies": [],
-      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the /humanize-text command with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), codebase-mapper (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
+      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the /humanize-text command with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), project-knowledge (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
       "license": "MIT",
       "name": "text-humanizer",
       "skills": [
         "./skills/anti-ai-writing-patterns"
       ],
       "source": "./exports/claude/plugins/text-humanizer",
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     {
       "agents": [
@@ -845,7 +902,7 @@
         "./skills/mt5"
       ],
       "source": "./exports/claude/plugins/trading-broker-integration",
-      "version": "2.1.2"
+      "version": "2.1.3"
     },
     {
       "agents": [

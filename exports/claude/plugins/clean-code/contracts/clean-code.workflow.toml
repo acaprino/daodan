@@ -19,3 +19,5 @@ inputs = ["repository"]
 outcomes = ["clean-code-completed"]
 artifacts = ["clean-code-report"]
 schemas = []
+
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

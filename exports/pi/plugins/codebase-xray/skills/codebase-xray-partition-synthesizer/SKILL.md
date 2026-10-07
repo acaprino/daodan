@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # Partition Synthesizer
 
-You consolidate the partition outputs produced by the three partition-worker types into a backward-compatible `01..07.md` set inside the run directory. After the orchestrator publishes it to the `.codebase-xray/` root, downstream consumers (`team-review`, `codebase-mapper`, `project-setup:create-claude-md`) cannot distinguish your output from a classic single-agent analysis — that compatibility is your hard requirement. Keep the file names and `##` section anchors below exactly as specified.
+You consolidate the partition outputs produced by the three partition-worker types into a backward-compatible `01..07.md` set inside the run directory. After the orchestrator publishes it to the `.codebase-xray/` root, downstream consumers (`team-review`, `project-knowledge`, `project-knowledge:instructions --create`) cannot distinguish your output from a classic single-agent analysis — that compatibility is your hard requirement. Keep the file names and `##` section anchors below exactly as specified.
 
 ## INPUTS
 

@@ -1,0 +1,82 @@
+name = "assess"
+entrypoint = "assess.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work", "selection:cleanup", "selection:tests", "selection:structure", "selection:instructions", "selection:workspace"]
+
+[[phases]]
+id = "audit-cleanup"
+needs = ["prepare"]
+role = "senior-review/cleanup-auditor"
+fanout_from = "selection:cleanup"
+isolation = "required"
+join = "all-delivered"
+concurrency = "preferred"
+consumes = ["artifact:work"]
+produces = ["artifact:cleanup-report"]
+
+[[phases]]
+id = "audit-tests"
+needs = ["prepare"]
+role = "testing/test-suite-auditor"
+fanout_from = "selection:tests"
+isolation = "required"
+join = "all-delivered"
+concurrency = "preferred"
+consumes = ["artifact:work"]
+produces = ["artifact:tests-report"]
+
+[[phases]]
+id = "audit-structure"
+needs = ["prepare"]
+role = "abstraction-architect/abstraction-architect-agent"
+fanout_from = "selection:structure"
+isolation = "required"
+join = "all-delivered"
+concurrency = "preferred"
+consumes = ["artifact:work"]
+produces = ["artifact:structure-report"]
+
+[[phases]]
+id = "audit-instructions"
+needs = ["prepare"]
+role = "project-knowledge/instructions-auditor"
+fanout_from = "selection:instructions"
+isolation = "required"
+join = "all-delivered"
+concurrency = "preferred"
+consumes = ["artifact:work"]
+produces = ["artifact:instructions-report"]
+
+[[phases]]
+id = "audit-workspace"
+needs = ["prepare"]
+role = "repo-hygiene/workspace-auditor"
+fanout_from = "selection:workspace"
+isolation = "required"
+join = "all-delivered"
+concurrency = "preferred"
+consumes = ["artifact:work"]
+produces = ["artifact:workspace-report"]
+
+[[phases]]
+id = "plan"
+needs = ["audit-cleanup", "audit-tests", "audit-structure", "audit-instructions", "audit-workspace"]
+isolation = "shared"
+consumes = ["artifact:cleanup-report", "artifact:tests-report", "artifact:structure-report", "artifact:instructions-report", "artifact:workspace-report"]
+produces = ["artifact:plan", "artifact:result"]
+
+[dispatch]
+roles = ["project-knowledge/instructions-auditor","project-knowledge/documentation-engineer","project-knowledge/guide-reviewer"]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = ["project", "objective", "scope", "authorization"]
+outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]
+

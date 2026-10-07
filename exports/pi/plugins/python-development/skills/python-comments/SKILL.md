@@ -267,6 +267,6 @@ See `references/examples/audit-mode-examples.md` for complete report examples.
 ## Integration with Same-Package Skills
 
 - **python-refactor-method** - Refactoring may require updating comments. Run write mode after refactoring to update docstrings
-- **python-tdd** - Test docstrings benefit from type 1 (function) comments. Audit mode can assess test documentation
+- **pytest-patterns** - Test docstrings benefit from type 1 (function) comments. Audit mode can assess test documentation
 - **python-performance-optimization** - Performance-critical code benefits from type 4 (teacher) comments explaining algorithm choices
 - **python-packaging** - Package-level documentation (`__init__.py` docstrings) follows type 1+2 patterns

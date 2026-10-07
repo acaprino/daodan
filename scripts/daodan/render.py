@@ -23,7 +23,7 @@ from typing import Mapping, Sequence
 
 from .adapter import HostAdapter, resolve_support, select_coordination
 from .catalogs import OWNER
-from .model import PluginSpec, WorkflowSpec
+from .model import INLINE_WORKER_REFERENCE, PluginSpec, WorkflowSpec
 from .overrides import OverrideSpec
 from .provenance import ADAPTER_VERSION, write_provenance
 from .templates import render_path, render_template
@@ -495,7 +495,7 @@ def _names(items) -> str:
     return ", ".join(quoted[:-1]) + " and " + quoted[-1]
 
 
-def _dispatch_plan(workflow: WorkflowSpec) -> str:
+def _dispatch_plan(workflow: WorkflowSpec, role_ids: Mapping[str, str] | None = None) -> str:
     """The phase graph as dispatch instructions, one numbered line per phase.
 
     The harness header used to say "dispatch the selected roles, once each",
@@ -504,11 +504,12 @@ def _dispatch_plan(workflow: WorkflowSpec) -> str:
     how many workers, in what context, behind which barrier and after what.
     """
     lines = []
+    role_ids = role_ids or {}
     for number, phase in enumerate(workflow.phases, 1):
         clauses = []
         isolated = phase.isolation == "required"
         if phase.fanout_from:
-            unit = f"one `{phase.role}`" if phase.role else "one worker"
+            unit = f"one `{role_ids.get(phase.role, phase.role)}`" if phase.role else "one worker"
             binding = (
                 ""
                 if phase.role
@@ -520,14 +521,15 @@ def _dispatch_plan(workflow: WorkflowSpec) -> str:
                 f"{CONCURRENCY_WORDS[phase.concurrency]}"
             )
         elif phase.fanout:
-            roles = sorted(reference.partition(":")[2] or reference for reference in phase.fanout)
+            references = (reference.partition(":")[2] or reference for reference in phase.fanout)
+            roles = sorted(role_ids.get(reference, reference) for reference in references)
             context = "each in its own isolated context" if isolated else "in the orchestrating context"
             clauses.append(
                 f"{_names(roles)}, once each, {context}, {CONCURRENCY_WORDS[phase.concurrency]}"
             )
         elif phase.role:
             context = "in an isolated context" if isolated else "in the orchestrating context"
-            clauses.append(f"one `{phase.role}` {context}")
+            clauses.append(f"one `{role_ids.get(phase.role, phase.role)}` {context}")
         else:
             clauses.append("runs in the orchestrating context")
         if phase.fanout or phase.fanout_from:
@@ -563,6 +565,7 @@ def render_plugin(
     destination: Path,
     overrides: Sequence[OverrideSpec] = (),
     adapters_root: Path | None = None,
+    plugin_registry: Mapping[str, PluginSpec] | None = None,
 ) -> RenderResult:
     """Render one neutral plugin into one host's package layout.
 
@@ -603,6 +606,9 @@ def render_plugin(
     # starts it, and a note on every workflow of the plugin on a host that
     # needs the user to register it.
     mcp_notes = _mcp_rendering(plugin, adapter, staging_root)
+
+    for exported in plugin.contract_exports:
+        _copy(plugin.root / exported, staging_root / exported)
 
     for skill in plugin.components.skills:
         source_directory = plugin.root / "skills" / skill
@@ -681,13 +687,19 @@ def render_plugin(
             adapter.layout["workflows"], {**context, "workflow": workflow.name}
         )
         override = replacements.get(f"workflow:{workflow.name}")
-        fans_out = any(phase.fanout or phase.fanout_from for phase in workflow.phases)
+        fans_out = (bool(workflow.dispatch.roles) or workflow.dispatch.inline_workers
+                    or any(phase.fanout or phase.fanout_from for phase in workflow.phases))
         source = plugin.root / workflow.entrypoint
         if override is not None:
             _copy(override.root / override.replacement, target)
             applied.append(override.source)
         elif fans_out:
-            harness = _harness_context(plugin, workflow, strategy, adapter, source, context)
+            role_ids, body_bindings = _dispatch_bindings(
+                plugin, workflow, strategy, adapter, staging_root, plugin_registry
+            )
+            harness = _harness_context(
+                plugin, workflow, strategy, adapter, source, context, role_ids, body_bindings
+            )
             hint = harness.pop("hint")
             team_template = _template(
                 adapters_root, adapter.host, adapter.layout.get("team_workflow_template")
@@ -784,25 +796,30 @@ def _harness_context(
     adapter: HostAdapter,
     source: Path,
     context: dict,
+    role_ids: Mapping[str, str] | None = None,
+    body_bindings: str = "",
 ) -> dict:
     """Everything a host harness template may substitute, plus the argument hint.
 
     The hint is not a template key: the caller pops it and hands it to the
     host-text pass, which explains the arguments placeholder once per file.
     """
-    roles = []
+    roles = list(workflow.dispatch.roles)
+    if workflow.dispatch.inline_workers:
+        roles.append(INLINE_WORKER_REFERENCE)
     for phase in workflow.phases:
         for reference in phase.fanout:
             roles.append(reference.partition(":")[2] or reference)
         if phase.role:
             roles.append(phase.role)
-    if any(phase.fanout_from for phase in workflow.phases):
+    if any(phase.fanout_from and not phase.role for phase in workflow.phases):
         # Dynamic selection: which roles run is decided at runtime, so the
         # harness must be allowed to reach every role this plugin declares.
         roles.extend(plugin.components.roles)
     if not roles:
         roles = list(plugin.components.roles)
-    ordered = sorted(set(roles))
+    role_ids = role_ids or {}
+    ordered = sorted({role_ids.get(role, role) for role in roles})
     fanout_phase = next(
         (phase for phase in workflow.phases if phase.fanout or phase.fanout_from),
         workflow.phases[0],
@@ -815,16 +832,92 @@ def _harness_context(
         "description": _one_line(meta.get("description", plugin.description)),
         "strategy": strategy.name,
         "role_delivery": strategy.role_delivery,
-        "isolation": fanout_phase.isolation,
+        "isolation": "required" if workflow.dispatch.isolated or workflow.dispatch.inline_workers else fanout_phase.isolation,
         "join": fanout_phase.join or "all-delivered",
         "roles": ", ".join(f"`{item}`" for item in ordered),
         "agents": ", ".join(f"'{item}'" for item in ordered),
         "tools": _coordinator_tools(plugin, adapter),
-        "dispatch_plan": _dispatch_plan(workflow),
+        "dispatch_plan": _dispatch_plan(workflow, role_ids),
+        "role_bindings": body_bindings,
         "companion": _isolation_companion(adapter),
         "body": body.strip() + "\n",
         "hint": _unquote(meta.get("argument-hint", "")).strip() or None,
     }
+
+
+def _dispatch_bindings(
+    plugin: PluginSpec, workflow: WorkflowSpec, strategy, adapter: HostAdapter,
+    staging: Path, registry: Mapping[str, PluginSpec] | None,
+) -> tuple[dict[str, str], str]:
+    """Bind declared external roles; inline bodies are generated resources, not components.
+
+    A dependency owns the sole hand-authored role. Codex and Pi need that body
+    verbatim in an isolated prompt, so the compiler ships only the referenced
+    roles under contracts/dispatch. Those files carry owner and source digest
+    and never register as skills or agents. Named-agent adapters copy no body.
+    """
+    references: set[str] = set(workflow.dispatch.roles)
+    if workflow.dispatch.inline_workers:
+        references.add(INLINE_WORKER_REFERENCE)
+    for phase in workflow.phases:
+        references.update(reference.partition(":")[2] or reference for reference in phase.fanout)
+        if phase.role:
+            references.add(phase.role)
+        if phase.fanout_from and not phase.role:
+            references.update(plugin.components.roles)
+    providers = dict(registry or {})
+    providers[plugin.name] = plugin
+    ids: dict[str, str] = {}
+    bindings: list[str] = []
+    for reference in sorted(references):
+        owner, separator, role = reference.partition("/")
+        if not separator:
+            owner, role = plugin.name, reference
+        if owner != plugin.name and owner not in plugin.required_dependencies:
+            raise RenderError(f"{plugin.name}: undeclared role provider {owner}")
+        provider = providers.get(owner)
+        if provider is None:
+            # Compatibility for callers rendering a single real kernel. The
+            # production build supplies the complete registry explicitly.
+            from .load import load_plugin
+            source_root = plugin.root.parent / owner
+            if not (source_root / "plugin.toml").is_file():
+                raise RenderError(f"{plugin.name}: unknown role provider {owner}")
+            provider = load_plugin(source_root)
+            providers[owner] = provider
+        if role not in provider.components.roles:
+            raise RenderError(f"{plugin.name}: unknown role {owner}/{role}")
+        identity = f"{owner}:{role}" if owner != plugin.name else role
+        ids[reference] = identity
+        if strategy.role_delivery != "inline-prompt":
+            bindings.append(f"- `{identity}`: dispatch the installed `{owner}:{role}` agent by its qualified identity.")
+            continue
+        if owner == plugin.name:
+            relative = render_path(adapter.layout["roles"], {"plugin": owner, "role": role})
+            bindings.append(f"- `{identity}`: read `{relative.as_posix()}` inside this package and pass its complete body verbatim.")
+            continue
+        relative = Path("contracts/dispatch") / owner / f"{role}.md"
+        source = provider.root / "roles" / f"{role}.md"
+        text = source.read_text(encoding="utf-8").replace("\r\n", "\n")
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        owned_skills = ", ".join(f"`{owner}:{skill}`" for skill in provider.components.skills) or "none declared"
+        resource = (
+            f"<!-- Generated dispatch body. Owner: {owner}:{role}; version: {provider.version}; "
+            f"source-sha256: {digest}. Edit the owner's kernel, never this resource. -->\n\n"
+            f"This body belongs to `{owner}`. Where it names its plugin root, resolve the root from "
+            f"that installed plugin's named skill; it is not the coordinator's root. "
+            f"`<{owner}-plugin-root>` names that owner root. Any unqualified skill load "
+            f"in the body belongs to `{owner}`: qualify it with that owner's namespace. "
+            f"The owning plugin's registered skills are {owned_skills}. Resolve an owner's "
+            f"helper from the skill's installed location, never from this generated resource's parent.\n\n"
+            + text.replace("${CLAUDE_PLUGIN_ROOT}", f"<{owner}-plugin-root>")
+        )
+        _write_markdown(staging / relative, resource, adapter)
+        bindings.append(f"- `{identity}`: read `{relative.as_posix()}` inside this package and pass its complete role body verbatim.")
+    if workflow.dispatch.inline_workers:
+        bindings.append("- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, "
+                        "owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.")
+    return ids, "\n".join(bindings)
 
 
 def _rename_with_retry(source: Path, destination: Path, attempts: int = 10) -> None:
@@ -891,6 +984,7 @@ def publish_plugin(
     live: Path,
     overrides: Sequence[OverrideSpec] = (),
     adapters_root: Path | None = None,
+    plugin_registry: Mapping[str, PluginSpec] | None = None,
 ) -> RenderResult:
     """Render into a temporary sibling of ``live`` and publish it atomically."""
     live = Path(live)
@@ -898,7 +992,7 @@ def publish_plugin(
     staging = live.parent / f".{live.name}.{uuid.uuid4().hex}.staging"
     staging.mkdir()
     try:
-        result = render_plugin(plugin, adapter, staging, overrides, adapters_root)
+        result = render_plugin(plugin, adapter, staging, overrides, adapters_root, plugin_registry)
         replace_tree(staging, live)
     finally:
         shutil.rmtree(staging, ignore_errors=True)

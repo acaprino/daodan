@@ -166,7 +166,8 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
 
 def _workflow_demands(workflow: WorkflowSpec) -> tuple[bool, bool, bool]:
     """Return (needs isolation, needs parallelism, forbids parallelism)."""
-    needs_isolation = any(phase.isolation == "required" for phase in workflow.phases)
+    needs_isolation = (workflow.dispatch.isolated or workflow.dispatch.inline_workers
+                       or any(phase.isolation == "required" for phase in workflow.phases))
     fanout_phases = [phase for phase in workflow.phases if phase.fanout or phase.fanout_from]
     needs_parallel = any(phase.concurrency == "required" for phase in fanout_phases)
     forbids_parallel = any(phase.concurrency == "forbidden" for phase in workflow.phases)

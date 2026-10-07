@@ -1,6 +1,21 @@
 name = "code-review"
 entrypoint = "code-review.md"
 
+[dispatch]
+roles = [
+  "senior-review/code-auditor",
+  "senior-review/security-auditor",
+  "senior-review/ui-race-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/premise-auditor",
+  "testing/test-suite-auditor",
+  "abstraction-architect/abstraction-architect-agent",
+]
+isolated = true
+inline_workers = true
+
 [[phases]]
 id = "run"
 isolation = "shared"
@@ -11,3 +26,5 @@ inputs = ["repository"]
 outcomes = ["code-review-completed"]
 artifacts = ["code-review-report"]
 schemas = []
+
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

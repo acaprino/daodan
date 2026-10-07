@@ -111,16 +111,22 @@ global sources get a note at most, because they are not the repository's to chan
 ### C5 Scratch and pipeline-output directories
 
 ```bash
-for d in .upstream-scratch .codebase-xray .team-review .codebase-map .research .brainstorm \
+for d in .upstream-scratch .codebase-xray .daodan .team-review .codebase-map .research .brainstorm \
          .peer-review .frontend-review tmp temp scratch _wip wip _drafts; do
   [ -d "$d" ] && echo "$d"
 done
 ls NOTES.md TODO.md SCRATCH.md 2>/dev/null
 ```
 
+Protected protocol roots: never propose removing .daodan/ or .codebase-xray/.
+Also protect any directory containing a .daodan-root sentinel and its ancestors.
+Recognize these by name/sentinel presence only. Do not parse work.json, classify
+runs or infer retention eligibility. Lifecycle consolidation owns that decision.
+Apply this exclusion before the ordinary three states below.
+
 Three states, three dispositions:
 
-- **Untracked and already ignored**: local clutter only. LOW, removable without a commit, except `.codebase-xray`, whose removal also discards the X-ray run lineage and forces the next analysis to run full instead of incremental.
+- **Untracked and already ignored**: local clutter only. LOW. Protected roots are excluded. Other untracked candidates can only move to quarantine under the accepted tidy plan.
 - **Tracked**: clutters every clone. HIGH, `git rm -r` plus an ignore entry.
 - **Tracked and already ignored**: an impossible state that means the file was committed
   before the pattern existed. Sanity-check before acting.

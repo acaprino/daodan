@@ -7,6 +7,13 @@ description: >
 
 # File Organizer
 
+Operate on personal/document folders and inactive archives. Exclude active
+repositories from generic file reorganization: their source layout, tests,
+instructions and run artifacts have project-specific ownership and verification.
+Never treat a repository's similarly named files as removable duplicates by hash
+or age alone. Report that boundary and hand the project back to its development
+or repository-hygiene process without moving its contents.
+
 ## Instructions
 
 ### 1. Understand Scope

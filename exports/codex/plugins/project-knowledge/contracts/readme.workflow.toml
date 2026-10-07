@@ -1,0 +1,19 @@
+name = "readme"
+entrypoint = "readme.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:readme-report"]
+
+[dispatch]
+roles = ["text-humanizer/text-humanizer"]
+isolated = true
+inline_workers = false
+
+[contract]
+inputs = ["repository", "scope", "authorizations"]
+outcomes = ["readme-delivered", "readme-failed"]
+artifacts = ["readme-report"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

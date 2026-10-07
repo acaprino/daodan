@@ -9,6 +9,10 @@ description: 'Propose a plan first, then move or delete only what the user confi
 
 # File Organizer
 
+This entry organizes personal/document folders or inactive archives. An active
+repository needs its project-specific development and hygiene process; do not
+rearrange its source, tests, instructions or run artifacts through this organizer.
+
 Use the `file-organizer` skill to organize, cleanup, and restructure:
 
 <arguments>

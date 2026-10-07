@@ -85,7 +85,7 @@ ATTRIBUTION = re.compile(
 PATH_REF = re.compile(r"plugins/([a-z0-9][a-z0-9-]*)/([A-Za-z0-9_][A-Za-z0-9_./-]*)")
 
 # The two reference roots that account for most of the baseline below.
-AUDIENCE = "plugins/codebase-mapper/skills/codebase-mapper/references/audience-adaptation.md"
+AUDIENCE = "plugins/project-knowledge/skills/project-knowledge/references/audience-adaptation.md"
 TAXONOMY = "plugins/senior-review/skills/defect-taxonomy/references/"
 
 # Debt recorded when a linter lands, keyed by file AND exact path string so a NEW

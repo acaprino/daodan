@@ -1,6 +1,6 @@
 # Python Development Plugin
 
-> Stop wrestling with boilerplate. Get production-ready Python projects scaffolded in seconds, with built-in refactoring workflows and testing patterns that enforce best practices.
+Python implementation, scaffolding, refactoring and framework techniques. Test ownership, validity and retirement belong to [testing](testing.md); Python contributes pytest techniques to that common method.
 
 ## Agents
 
@@ -51,27 +51,7 @@ Use the python-refactor-agent to refactor [module/file]
 
 ---
 
-### `python-test-engineer`
-
-Expert Python test engineer. Writes focused, behavior-driven pytest suites, handles TDD workflows, and improves code coverage.
-
-| | |
-|---|---|
-| **Model** | `inherit` |
-| **Use for** | Writing tests, improving test coverage, fixing broken tests, setting up pytest configurations, red-green-refactor workflows |
-
-**Invocation:**
-```
-Use the python-test-engineer to write tests for [module/feature]
-```
-
-**Capabilities:**
-- Testing frameworks: pytest, unittest, coverage, tox, nox
-- Mocking: unittest.mock, pytest-mock, patching external APIs and databases
-- Fixtures: reusable, modular pytest fixtures for database setup, API clients, mock data
-- TDD workflow: Red-Green-Refactor cycles
-- Pytest infrastructure rules: conftest execution order, mock placement strategy, mock target resolution, test marker discipline
-- Leverages the `python-tdd` skill for best practices
+Test work dispatches `testing:test-writer` or `testing:test-suite-auditor`. The retired `python-test-engineer` has no replacement role inside this plugin. Load `pytest-patterns` for Python fixture, mocking and runner details while using the canonical testing owner.
 
 ---
 
@@ -99,13 +79,13 @@ Systematic 4-phase refactoring workflow that transforms complex code into clean,
 - OOP transformation patterns
 - Regression prevention checklists
 
-**Synergy:** Works with `python-tdd` and `python-performance-optimization`
+**Synergy:** Uses `pytest-patterns`, the common testing method and `python-performance-optimization`.
 
 ---
 
-### `python-tdd`
+### `pytest-patterns`
 
-Testing strategies with pytest, fixtures, mocking, and TDD.
+Python techniques for pytest, fixtures, mocking and runners. Behavioral oracles come from the requirement or independent evidence. Test counts and coverage percentages do not establish correctness.
 
 | | |
 |---|---|

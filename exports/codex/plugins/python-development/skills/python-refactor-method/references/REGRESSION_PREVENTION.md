@@ -9,22 +9,13 @@
 
 **Do NOT start ANY refactoring until ALL of these are verified:**
 
-### 1. Test Coverage Assessment
+### 1. Meaningful protection assessment
 
-```bash
-# Check current coverage
-pytest --cov=<module> --cov-report=term-missing
-
-# Minimum coverage required to proceed
-# - >= 80%: Proceed with normal caution
-# - 60-80%: Proceed but add tests BEFORE each modification
-# - < 60%: STOP! Write tests BEFORE refactoring
-```
-
-- [ ] Coverage >= 80% on target functions?
-- [ ] If NO -> **Write tests FIRST, THEN refactor**
-- [ ] Existing test suite passes at 100%?
-- [ ] Tests exist for ALL critical edge cases?
+Load the `testing:test-hygiene` skill and inventory observable contracts, independently
+justified oracles, distinct failure modes and bugfix provenance. Coverage is
+supporting evidence; there is no universal threshold that permits refactoring.
+Use `testing:test-writer` to fill relevant missing protection before changing the
+affected behavior. Bind required baseline checks to the exact starting snapshot.
 
 ### 2. Behavioral Baseline Capture
 
@@ -373,17 +364,15 @@ echo "=== REGRESSION CHECK COMPLETE ==="
 3. **Performance degradation > 10%** without approval
 4. **Behavioral change detected** (golden master mismatch)
 
-### How to Rollback
+### How to recover the failed phase
 
-```bash
-# If using git (recommended: atomic commits for each micro-change)
-git checkout -- <file>           # Discard uncommitted changes
-git revert HEAD                   # Revert last commit
-git reset --hard HEAD~1           # Nuclear option: discard last commit entirely
-
-# If not using git: ALWAYS keep backups
-cp <file> <file>.backup_YYYYMMDD_HHMM  # Before each session
-```
+Load the `project-protocol:project-protocol` skill for its canonical recovery procedure.
+Restore only the owned phase edits from saved pre-edit contents. Preserve all
+preexisting changes, foreign files and earlier successful phases. Use the captured
+`pre_phase_sha` only in an exclusively owned clean isolated worktree without foreign
+changes. Never infer recovery from the preceding commit. Verify the restored
+snapshot; conflict with another writer requires stopping rather than overwriting.
+Published owned changes require an authorized revert and a recovery gate.
 
 ### Post-Rollback Analysis
 
@@ -402,7 +391,7 @@ cp <file> <file>.backup_YYYYMMDD_HHMM  # Before each session
 **Prevention for future:**
 - [ ] Add specific test case for this scenario
 - [ ] Add to pre-change checklist
-- [ ] Update golden master if needed
+- [ ] Review characterization against the authorized contract; do not update expected output merely to accept changed behavior
 ```
 
 ---
@@ -485,7 +474,7 @@ def get_user(user_id):
 +-------------------------------------------------------------+
 | BEFORE ANY CHANGE:                                            |
 | [ ] Tests passing 100%?                                       |
-| [ ] Coverage >= 80% on target code?                           |
+| [ ] Meaningful failure-mode protection reviewed?                           |
 | [ ] Golden outputs captured?                                  |
 | [ ] Edge cases identified?                                    |
 +-------------------------------------------------------------+

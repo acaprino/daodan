@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "review-plus"
+version = "1.0.0"
+description = "Extended review using the canonical senior-review engine with mandatory signal-selected React performance, TypeScript type safety and platform integration specialists."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "shell.execute", "repository.write", "contexts.isolate", "roles.dispatch"]
+optional = ["execution.parallel"]
+
+[dependencies]
+required = ["senior-review", "react-development", "typescript-development", "platform-engineering", "repo-hygiene", "codebase-xray", "abstraction-architect", "testing", "project-protocol"]
+
+[components]
+skills = ["extended-review-method"]
+roles = []
+workflows = ["code-review", "team-review", "pr-review"]
+policies = []

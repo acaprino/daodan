@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "consumer"
+version = "1.0.0"
+description = "Cross-plugin consumer fixture"
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "roles.dispatch", "contexts.isolate"]
+optional = ["execution.parallel"]
+
+[dependencies]
+required = ["provider"]
+
+[components]
+skills = []
+roles = []
+workflows = ["review"]
+policies = []

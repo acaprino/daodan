@@ -33,6 +33,7 @@ ALLOWED_KEYS: frozenset[str] = frozenset(
         "tools",
         "agents",
         "roles",
+        "role_bindings",
         "strategy",
         "role_delivery",
         "isolation",

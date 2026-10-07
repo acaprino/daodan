@@ -1,0 +1,7 @@
+schema = "daodan/record/v1"
+name = "result"
+required = ["status"]
+
+[fields.status]
+type = "enum"
+values = ["delivered", "failed"]

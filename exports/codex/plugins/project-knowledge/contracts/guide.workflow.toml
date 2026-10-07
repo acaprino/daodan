@@ -1,0 +1,19 @@
+name = "guide"
+entrypoint = "guide.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:guide-report"]
+
+[dispatch]
+roles = ["project-knowledge/codebase-explorer","project-knowledge/doc-humanizer","project-knowledge/documentation-engineer","project-knowledge/flow-writer","project-knowledge/guide-reviewer","project-knowledge/onboarding-writer","project-knowledge/ops-writer","project-knowledge/overview-writer","project-knowledge/tech-writer","codebase-xray/semantic-interconnect-mapper","text-humanizer/text-humanizer"]
+isolated = true
+inline_workers = false
+
+[contract]
+inputs = ["repository", "scope", "authorizations"]
+outcomes = ["guide-delivered", "guide-failed"]
+artifacts = ["guide-report"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

@@ -1,0 +1,21 @@
+schema = "daodan/v1"
+name = "provider"
+version = "1.0.0"
+description = "Cross-plugin contract and role fixture"
+license = "MIT"
+
+[capabilities]
+required = ["repository.read"]
+optional = []
+
+[dependencies]
+required = []
+
+[components]
+skills = ["tools"]
+roles = ["inspector"]
+workflows = []
+policies = []
+
+[contracts]
+exports = ["contracts/result.toml"]

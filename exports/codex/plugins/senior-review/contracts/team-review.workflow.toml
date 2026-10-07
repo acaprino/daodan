@@ -7,6 +7,28 @@ entrypoint = "team-review.md"
 # consolidated set rather than the raw one, and exactly one phase writes the
 # report. How the workers are scheduled is the harness's business.
 
+[dispatch]
+roles = [
+  "senior-review/api-contract-auditor",
+  "senior-review/chicken-egg-detector",
+  "senior-review/cleanup-auditor",
+  "senior-review/code-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/distributed-flow-auditor",
+  "senior-review/logic-integrity-auditor",
+  "senior-review/premise-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/security-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/ui-race-auditor",
+  "repo-hygiene/workspace-auditor",
+  "testing/test-suite-auditor",
+  "abstraction-architect/abstraction-architect-agent",
+  "codebase-xray/semantic-interconnect-mapper",
+]
+isolated = true
+inline_workers = true
+
 [[phases]]
 id = "scope"
 isolation = "shared"
@@ -95,3 +117,5 @@ schemas = [
   "contracts/delivery-ledger.toml",
   "contracts/final-report.toml",
 ]
+
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

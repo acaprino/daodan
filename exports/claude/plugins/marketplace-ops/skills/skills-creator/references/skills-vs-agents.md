@@ -48,7 +48,7 @@ If none of these apply, a skill is the right choice.
 
 ### python-development (1 mega-skill -> 9 skills + 3 agents)
 - **Before:** one broad skill trying to hold TDD discipline, refactoring recipes, async patterns, and packaging at once
-- **After:** 9 focused skills (python-tdd, python-refactor-method, async-python-patterns, uv-package-manager, pydantic-v2, and others) + 3 agents (python-engineer, python-test-engineer, python-perf-optimizer)
+- **After:** Focused Python techniques (pytest-patterns, python-refactor-method, async-python-patterns, uv-package-manager, pydantic-v2) and implementation/refactor roles. Universal test work belongs to testing:test-writer; the language plugin contributes techniques instead of another test owner.
 - **Why:** recipes and conventions are skill territory, and they load only when the task matches. Work that needs tool restrictions and its own context window becomes an agent.
 
 ## Anti-patterns

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:72e1befbac914323429e56dbdf4e5d61ce025ae4aad21f816814b0c88d3db45b",
+  "coreDigest": "sha256:2005f63ada58738c66e582d8d2dec243cf453bac59b00b5e405ff49fd72ff7dd",
   "harnessStrategies": {
     "python-audit": "native-team",
     "python-refactor": "native-team",
@@ -9,5 +9,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "python-development",
-  "version": "2.0.0"
+  "version": "3.0.0"
 }

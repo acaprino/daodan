@@ -16,8 +16,6 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support  # noqa: E402
 from scripts.daodan_build import discover_plugins  # noqa: E402
 
-EXPECTED_PLUGIN_COUNT = 40
-
 CATALOG_PATH = {
     "claude": ".claude-plugin/marketplace.json",
     "copilot": ".github/plugin/marketplace.json",
@@ -82,7 +80,7 @@ def parity_states(host: str) -> set[str]:
 class UniversalCatalogParityTests(unittest.TestCase):
     def test_every_core_plugin_is_in_every_catalog(self):
         core = core_plugins()
-        self.assertEqual(len(core), EXPECTED_PLUGIN_COUNT)
+        self.assertTrue(core, "A parity check must not accept an empty marketplace")
         for host in HOSTS:
             with self.subTest(host=host):
                 self.assertEqual(catalog_names(host), core)

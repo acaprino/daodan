@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import sys
 import tempfile
@@ -35,7 +36,8 @@ from scripts.daodan.catalogs import (  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.model import ModelError, PluginSpec  # noqa: E402
 from scripts.daodan.overrides import load_overrides, validate_override  # noqa: E402
-from scripts.daodan.render import RenderError, publish_plugin, render_plugin, tree_digest  # noqa: E402
+from scripts.daodan.render import RenderError, render_plugin, replace_tree, tree_digest  # noqa: E402
+from scripts.daodan.provenance import KEYS, PROVENANCE_FILENAME  # noqa: E402
 from scripts.daodan.report import BuildReport  # noqa: E402
 from scripts.daodan.trust import scan_trust  # noqa: E402
 from scripts.daodan.validate import CAPABILITY_REGISTRY, ValidationIssue, validate_plugins  # noqa: E402
@@ -87,6 +89,7 @@ def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildRe
         return BuildReport(issues=(ValidationIssue("model-error", error.path, error.message),))
 
     issues.extend(validate_plugins(plugins, CAPABILITY_REGISTRY))
+    plugin_registry = {plugin.name: plugin for plugin in plugins}
     for scanned in ("plugins", "adapters"):
         directory = root / scanned
         if directory.is_dir():
@@ -94,9 +97,15 @@ def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildRe
 
     catalogs = {}
     version = marketplace_version(root)
-
+    prepared = []
+    retired = []
     for host in hosts:
         adapter = load_adapter(root / "adapters", host)
+        stale, ownership_issues = _retired_packages(root, adapter, set(plugin_registry))
+        retired.extend(stale)
+        issues.extend(ownership_issues)
+        if check:
+            drift.extend(stale)
         packages = {
             plugin.name: root / adapter.layout["root"] / "plugins" / plugin.name
             for plugin in plugins
@@ -124,32 +133,114 @@ def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildRe
 
             live = root / adapter.layout["root"] / "plugins" / plugin.name
             if check:
-                if _package_drifted(plugin, adapter, live, overrides, root):
+                if _package_drifted(plugin, adapter, live, overrides, root, plugin_registry):
                     drift.append(live)
-            elif not issues:
-                publish_plugin(plugin, adapter, live, overrides, root / "adapters")
-
-        catalog_path = root / adapter.layout["marketplace"]
-        rendered = _render_host_catalog(root, adapter, host, plugins, version, catalog_path)
-        if check:
-            if not catalog_path.is_file() or catalog_path.read_bytes() != rendered:
-                drift.append(catalog_path)
-        elif not issues:
-            catalog_path.parent.mkdir(parents=True, exist_ok=True)
-            catalog_path.write_bytes(rendered)
-
-        for live_file, content in _package_files(root, adapter):
-            if check:
-                if not live_file.is_file() or live_file.read_bytes() != content:
-                    drift.append(live_file)
-            elif not issues:
-                live_file.parent.mkdir(parents=True, exist_ok=True)
-                live_file.write_bytes(content)
+            else:
+                prepared.append((plugin, adapter, live, overrides))
 
     if len(catalogs) == len(HOSTS):
         assert_cross_host_identity(catalogs)
 
+    if issues:
+        return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support))
+
+    # Render every host before changing any live package or retiring any output.
+    with tempfile.TemporaryDirectory(prefix="daodan-build-") as holder:
+        staging = Path(holder)
+        staged_packages = {}
+        try:
+            for plugin, adapter, live, overrides in prepared:
+                target = staging / adapter.host / plugin.name
+                render_plugin(plugin, adapter, target, overrides, root / "adapters", plugin_registry)
+                staged_packages[(adapter.host, plugin.name)] = target
+        except RenderError as error:
+            return BuildReport(issues=(ValidationIssue("render-error", root, str(error)),),
+                               support=tuple(support))
+
+        files = []
+        for host in hosts:
+            adapter = load_adapter(root / "adapters", host)
+            packages = {plugin.name: staged_packages.get((host, plugin.name),
+                        root / adapter.layout["root"] / "plugins" / plugin.name) for plugin in plugins}
+            catalog_path = root / adapter.layout["marketplace"]
+            removed = {path.name for path in retired if path.parent == root / adapter.layout["root"] / "plugins"}
+            rendered = _render_host_catalog(root, adapter, host, plugins, version, catalog_path,
+                                            packages, removed)
+            files.append((catalog_path, rendered))
+            files.extend(_package_files(root, adapter))
+        if check:
+            for live_file, content in files:
+                if not live_file.is_file() or live_file.read_bytes() != content:
+                    drift.append(live_file)
+        else:
+            for plugin, adapter, live, _ in prepared:
+                live.parent.mkdir(parents=True, exist_ok=True)
+                sibling = Path(tempfile.mkdtemp(prefix=f".{live.name}.", suffix=".staging", dir=live.parent))
+                try:
+                    shutil.copytree(staged_packages[(adapter.host, plugin.name)], sibling, dirs_exist_ok=True)
+                    replace_tree(sibling, live)
+                finally:
+                    shutil.rmtree(sibling, ignore_errors=True)
+            for live_file, content in files:
+                live_file.parent.mkdir(parents=True, exist_ok=True)
+                live_file.write_bytes(content)
+            for obsolete in retired:
+                # Ownership and every resolved boundary were checked before rendering.
+                shutil.rmtree(obsolete)
+
     return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support))
+
+
+def _retired_packages(root, adapter, active):
+    """Recognize retired generated trees by their own validated provenance.
+
+    A directory name or an old catalog entry alone never authorizes deletion.
+    Unknown trees and links stop publication. No path outside this adapter's
+    generated plugin root can enter the retirement list.
+    """
+    root = Path(root).absolute()
+    generated = root / adapter.layout["root"] / "plugins"
+    expected = root / "exports" / adapter.host / "plugins"
+    issues = []
+    retired = []
+    if generated != expected or not generated.resolve().is_relative_to(root.resolve() / "exports"):
+        return [], [ValidationIssue("unsafe-generated-output", generated, "Generated plugin root escaped exports")]
+    for ancestor in (root / "exports", expected.parent, expected):
+        if ancestor.is_symlink() or getattr(ancestor, "is_junction", lambda: False)():
+            return [], [ValidationIssue("unsafe-generated-output", ancestor, "Generated output root is a link")]
+    if not generated.exists():
+        return [], []
+    for directory in sorted(generated.iterdir()):
+        linked = directory.is_symlink() or getattr(directory, "is_junction", lambda: False)()
+        if linked or not directory.resolve().is_relative_to(generated.resolve()):
+            issues.append(ValidationIssue("unsafe-generated-output", directory, "Generated package is a link or escaped its root"))
+            continue
+        if not directory.is_dir() or directory.name in active:
+            continue
+        provenance = directory / PROVENANCE_FILENAME
+        try:
+            if provenance.is_symlink() or getattr(provenance, "is_junction", lambda: False)():
+                raise ValueError("Linked provenance")
+            document = json.loads(provenance.read_text(encoding="utf-8"))
+            valid = (tuple(sorted(document)) == KEYS and document["host"] == adapter.host
+                     and document["plugin"] == directory.name
+                     and isinstance(document["version"], str)
+                     and isinstance(document["adapterVersion"], str)
+                     and isinstance(document["harnessStrategies"], dict)
+                     and isinstance(document["overrides"], list)
+                     and isinstance(document["coreDigest"], str)
+                     and re.fullmatch(r"sha256:[0-9a-f]{64}", document["coreDigest"]) is not None)
+            if not valid:
+                raise ValueError("Provenance does not identify this generated package")
+            if any(path.is_symlink() or getattr(path, "is_junction", lambda: False)()
+                   for path in directory.rglob("*")):
+                raise ValueError("Package contains links")
+        except (OSError, ValueError, TypeError, KeyError) as error:
+            issues.append(ValidationIssue("unsafe-generated-output", directory,
+                                          f"Cannot retire a tree without matching provenance: {error}"))
+            continue
+        retired.append(directory)
+    return retired, issues
 
 
 def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
@@ -168,7 +259,8 @@ def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
     return files
 
 
-def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Path) -> bytes:
+def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Path,
+                         packages=None, retired=frozenset()) -> bytes:
     """Serialize one host catalog, folding into a legacy one while migration runs.
 
     Until every plugin is a neutral kernel, the live Claude catalog still carries
@@ -177,13 +269,14 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
     merged into it instead and the generated catalog is written whole only once
     nothing legacy is left.
     """
-    packages = {
+    packages = packages if packages is not None else {
         plugin.name: root / adapter.layout["root"] / "plugins" / plugin.name
         for plugin in plugins
     }
     compiled = {plugin.name for plugin in plugins}
     if catalog_path.is_file():
         existing = json.loads(catalog_path.read_text(encoding="utf-8"))
+        existing["plugins"] = [entry for entry in existing.get("plugins", []) if entry["name"] not in retired]
         legacy = [
             entry for entry in existing.get("plugins", []) if entry["name"] not in compiled
         ]
@@ -193,14 +286,14 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
     return render_catalog(host, plugins, version, packages)
 
 
-def _package_drifted(plugin, adapter, live: Path, overrides, root: Path) -> bool:
+def _package_drifted(plugin, adapter, live: Path, overrides, root: Path, plugin_registry=None) -> bool:
     if not live.is_dir():
         return True
     holder = Path(tempfile.mkdtemp())
     try:
         staging = holder / live.name
         try:
-            render_plugin(plugin, adapter, staging, overrides, root / "adapters")
+            render_plugin(plugin, adapter, staging, overrides, root / "adapters", plugin_registry)
         except RenderError:
             return True
         return tree_digest(staging) != tree_digest(live)

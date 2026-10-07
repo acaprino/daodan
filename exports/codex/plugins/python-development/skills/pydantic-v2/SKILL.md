@@ -3,7 +3,7 @@ name: pydantic-v2
 description: >
   Deep reference for the data layer of a production service.
   TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+; migrating a codebase from Pydantic v1 to v2; choosing between `Annotated[Decimal, ...]` and `condecimal` for money; hitting v2 validator, serialization or performance surprises; designing FastAPI request/response schemas or error envelopes.
-  DO NOT TRIGGER WHEN: the task is Python testing (use python-tdd) or non-Python schema work (use typescript-development).
+  DO NOT TRIGGER WHEN: the task is Python testing (use pytest-patterns) or non-Python schema work (use typescript-development).
 ---
 
 # Pydantic v2
@@ -600,7 +600,7 @@ Always diff the changes manually after running `bump-pydantic`.
 ## Integration
 
 - Python architecture / API design that uses Pydantic v2 -> `python-development:python-engineer` agent
-- Testing Pydantic models -> `python-development:python-tdd` skill
+- Testing Pydantic models -> `python-development:pytest-patterns` skill
 - FastAPI project scaffolding with v2 defaults -> `python-development:python-scaffold` command (`--type fastapi`)
 - Monetary precision patterns -> `senior-review:defect-taxonomy` (CWE-681 / CWE-682)
 - TypeScript equivalent (Zod / valibot) -> `typescript-development:mastering-typescript` skill

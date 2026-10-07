@@ -20,6 +20,7 @@ Concurrency = Literal["preferred", "required", "forbidden"]
 ISOLATIONS: tuple[str, ...] = ("shared", "required")
 JOIN_POLICIES: tuple[str, ...] = ("all-delivered", "best-effort")
 CONCURRENCIES: tuple[str, ...] = ("preferred", "required", "forbidden")
+INLINE_WORKER_REFERENCE = "project-protocol/isolated-worker"
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class ContractSpec:
     outcomes: tuple[str, ...]
     artifacts: tuple[str, ...]
     schemas: tuple[Path, ...] = ()
+    shared_schemas: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -46,11 +48,21 @@ class PhaseSpec:
 
 
 @dataclass(frozen=True)
+class DispatchSpec:
+    """Workers a loaded method may dispatch, independently of phase scheduling."""
+
+    roles: tuple[str, ...] = ()
+    isolated: bool = False
+    inline_workers: bool = False
+
+
+@dataclass(frozen=True)
 class WorkflowSpec:
     name: str
     entrypoint: Path
     phases: tuple[PhaseSpec, ...]
     contract: ContractSpec
+    dispatch: DispatchSpec = DispatchSpec()
 
 
 @dataclass(frozen=True)
@@ -95,6 +107,7 @@ class PluginSpec:
     components: ComponentIndex
     workflows: tuple[WorkflowSpec, ...]
     mcp_servers: tuple[McpServerSpec, ...] = ()
+    contract_exports: tuple[Path, ...] = ()
 
 
 class ModelError(ValueError):
