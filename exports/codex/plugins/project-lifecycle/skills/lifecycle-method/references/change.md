@@ -32,6 +32,11 @@ revision-correlated remote checks, then review the full consequence set: stale
 documents/instructions, retired exports/config, tests that lost purpose and outputs
 produced during work.
 
+Review the candidate through senior-review:review-method using the code-review
+variant and this run's output root, following the verify reference. Applicable
+stack specialists join the same review selection, ledger and report; do not ask
+the user to select another review plugin.
+
 Integrate durable findings through project-knowledge and consolidate owned
 experimental outputs through the consolidate reference. Update result.json with
 delivered behavior, protection preserved, changed paths, exact checks and limits.

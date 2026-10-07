@@ -31,7 +31,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-xray:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `premise-auditor`, `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-xray:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - Workers may write only intermediate reports explicitly assigned by the coordinator.
   The final report artifact has one exclusive owner in its declaring phase.
 
@@ -58,8 +58,10 @@ Role body bindings (load the complete body only for the selected worker):
 - `data-integrity-auditor`: read `skills/senior-review-data-integrity-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `distributed-flow-auditor`: read `skills/senior-review-distributed-flow-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `logic-integrity-auditor`: read `skills/senior-review-logic-integrity-auditor/SKILL.md` inside this package and pass its complete body verbatim.
+- `platform-engineering:platform-reviewer`: read `contracts/dispatch/platform-engineering/platform-reviewer.md` inside this package and pass its complete role body verbatim.
 - `premise-auditor`: read `skills/senior-review-premise-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `project-protocol:isolated-worker`: read `contracts/dispatch/project-protocol/isolated-worker.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-performance-optimizer`: read `contracts/dispatch/react-development/react-performance-optimizer.md` inside this package and pass its complete role body verbatim.
 - `repo-hygiene:workspace-auditor`: read `contracts/dispatch/repo-hygiene/workspace-auditor.md` inside this package and pass its complete role body verbatim.
 - `resource-lifecycle-auditor`: read `skills/senior-review-resource-lifecycle-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `security-auditor`: read `skills/senior-review-security-auditor/SKILL.md` inside this package and pass its complete body verbatim.
@@ -77,6 +79,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `ui-race-auditor`: read `skills/senior-review-ui-race-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `temporal-resilience-auditor`: read `skills/senior-review-temporal-resilience-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `testing:test-suite-auditor`: read `contracts/dispatch/testing/test-suite-auditor.md` inside this package and pass its complete role body verbatim.
+- `typescript-development:type-safety-auditor`: read `contracts/dispatch/typescript-development/type-safety-auditor.md` inside this package and pass its complete role body verbatim.
 - `ui-race-auditor`: read `skills/senior-review-ui-race-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
@@ -91,7 +94,8 @@ Resolve this entry's existing target and flags through `senior-review:review-pre
 The method owns dispatch, delivery accounting, consolidation and reporting. Keep the
 seven native review contracts; operational records use `project-protocol` envelopes.
 
-This universal review includes testing, structural entropy and workspace hygiene.
-React performance, TypeScript type safety and platform integration belong to
-`/review-plus:team-review`. Include this coverage boundary in the review plan.
+The same review selects React performance, TypeScript type safety and platform
+integration when the target warrants them, alongside testing, structural entropy
+and workspace hygiene. Record selected dimensions, skip reasons and coverage gaps
+in one review plan and report.
 

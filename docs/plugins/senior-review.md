@@ -6,6 +6,30 @@ Command examples and named tools in this guide use Claude notation. For other
 hosts, use the entry points and bindings in the source-derived reference below
 and [host setup](../hosts.md).
 
+React, TypeScript and platform providers are mandatory installation dependencies.
+The relevant target signals select execution; false signals carry code-based skip
+reasons, and unavailable matched workers remain failed deliveries. Explicit team
+reviewer scope is respected. --no-context and --fast keep applicable stack
+dimensions while changing context and verification behavior. Lifecycle candidate
+reviews use this same engine. The generated dependency reference below records
+the larger installation closure, including costs inherited by consumers.
+
+Explicit team selectors include react, typescript and platform. Existing react-perf
+and ts-safety selectors remain accepted; performance selects React performance for
+a verified React target and general performance otherwise. Each request resolves
+once before dispatch and is shown in the review plan.
+
+Specialist reports keep their native labels and evidence. The same evidenced-finding
+contract adds the confidence, premise and normalized severity required by the
+review gates. Incomplete fields receive one completion request; an unresolved
+delivery stays failed and its raw findings remain visibly unverified. A priority
+label alone cannot establish confidence or measured performance impact.
+
+A candidate supplied by project-lifecycle takes precedence over Git auto-detection.
+Its scope, baseline and current snapshot include scoped untracked content. A clean
+candidate does not fall back to the previous commit; missing baseline evidence
+remains a declared comparison gap.
+
 ## Agents
 
 ### `code-auditor`
@@ -353,7 +377,7 @@ Multi-dimensional code review as a **6-phase pipeline**: independent evidence di
 
 **Always-on dimensions:** security, architecture, logic integrity (skipped under `--no-context`), codebase hygiene (`cleanup-auditor`), workspace hygiene (`repo-hygiene:workspace-auditor`: filesystem garbage, generated artifacts tracked in VCS, `.gitignore` completeness, scratch and pipeline-output directories, orphan doc-assets, git auxiliary state; disjoint from codebase hygiene by construction).
 
-**Conditional dimensions** use change signals to select UI races, distributed flows, circular dependencies, temporal resilience, data integrity, resource lifecycle and API contracts. Structural entropy dispatches `abstraction-architect:abstraction-architect-agent`; test quality dispatches `testing:test-suite-auditor`. These are declared required providers. General performance uses code-auditor; data migrations use data-integrity-auditor. Logic findings about rules absent from the interconnect map retain `[MAP-GAP]` and mapper coverage limitations. React performance, TypeScript type safety and platform integration now belong to [review-plus](review-plus.md), which supplies accounted specialist results to this same review engine. Missing required workers remain failed deliveries; generic verifier or critic tasks use an explicitly declared isolated worker, never substitute for a missing specialist.
+**Conditional dimensions** use change signals to select UI races, distributed flows, circular dependencies, temporal resilience, data integrity, resource lifecycle and API contracts. Structural entropy dispatches `abstraction-architect:abstraction-architect-agent`; test quality dispatches `testing:test-suite-auditor`. These are declared required providers. General performance uses code-auditor; data migrations use data-integrity-auditor. Logic findings about rules absent from the interconnect map retain `[MAP-GAP]` and mapper coverage limitations. React performance, TypeScript type safety and platform integration are selected from the relevant package and target signals by the same preparation method. Their canonical roles remain in [react-development](react-development.md), [typescript-development](typescript-development.md) and [platform-engineering](platform-engineering.md); one selection, delivery ledger, verification panel and report account for them alongside every other dimension. Missing required workers remain failed deliveries; generic verifier or critic tasks use an explicitly declared isolated worker, never substitute for a missing specialist.
 
 ```
 /senior-review:team-review src/auth/                                # auto-detected dimensions
@@ -368,7 +392,7 @@ Multi-dimensional code review as a **6-phase pipeline**: independent evidence di
 
 ### `/senior-review:code-review`
 
-Unified code review that auto-detects scope: uncommitted/staged changes, recent commits, PR number, or branch diff. The canonical `review-method` selects twelve review slots: always-on code audit (A), security (B), lite dead-code and VCS hygiene scoped to the diff (B2), and git history (E), plus conditional UI races (C), testing (F), API contracts (G), data migrations (H), structural entropy (J), temporal resilience (L), data integrity (M) and resource lifecycle (N). Named specialists retain their owner-qualified roles; inline history, hygiene, verification, critic and fix tasks use `project-protocol:isolated-worker`. React performance, TypeScript type safety and platform integration are the additional dimensions of [review-plus](review-plus.md).
+Unified code review that auto-detects scope: uncommitted/staged changes, recent commits, PR number, or branch diff. The canonical `review-method` selects twelve core review slots: always-on code audit (A), security (B), lite dead-code and VCS hygiene scoped to the diff (B2), and git history (E), plus conditional UI races (C), testing (F), API contracts (G), data migrations (H), structural entropy (J), temporal resilience (L), data integrity (M) and resource lifecycle (N). Named specialists retain their owner-qualified roles; inline history, hygiene, verification, critic and fix tasks use `project-protocol:isolated-worker`. The same review selects up to three additional stack dimensions: React performance, TypeScript type safety and platform integration. It uses their canonical specialist roles in the same batch and accounts for them before consolidation; the user chooses no second review bundle.
 
 Agent J is the structural-entropy review, `abstraction-architect:abstraction-architect-agent`. It runs whenever the diff adds code (at least one function, method, class, module, constant table, or block longer than roughly five lines) and is skipped only for diffs that are purely deletions, renames, formatting, or config edits. It is the one agent whose question is about the rest of the codebase: it takes the diff as an anchor and asks whether the diff adds a second place where a concept the codebase already owns now lives. It covers seven dimensions over two evidence tracks. The knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, seeded by `.abstraction-architect/concept-index.json` when one exists; without it the agent works from diff-anchored discovery and says so. The form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, and the Rule of Three applies only to missed unification. `code-auditor` keeps the single-file abstraction smells.
 
@@ -437,7 +461,7 @@ Analyze current branch changes, generate a PR description with risk assessment a
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `13.0.0`. **Source:** [plugin.toml](<../../plugins/senior-review/plugin.toml>).
+**Version:** `14.0.0`. **Source:** [plugin.toml](<../../plugins/senior-review/plugin.toml>).
 
 ### Required dependencies
 
@@ -446,9 +470,9 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 
 | Requirement | Plugins |
 |---|---|
-| Direct local | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [project-protocol](<project-protocol.md>), [repo-hygiene](<repo-hygiene.md>), [testing](<testing.md>) |
+| Direct local | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [platform-engineering](<platform-engineering.md>), [project-protocol](<project-protocol.md>), [react-development](<react-development.md>), [repo-hygiene](<repo-hygiene.md>), [testing](<testing.md>), [typescript-development](<typescript-development.md>) |
 | Direct external | None |
-| Local closure (6) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [project-protocol](<project-protocol.md>), [repo-hygiene](<repo-hygiene.md>), [senior-review](<senior-review.md>), [testing](<testing.md>) |
+| Local closure (9) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [platform-engineering](<platform-engineering.md>), [project-protocol](<project-protocol.md>), [react-development](<react-development.md>), [repo-hygiene](<repo-hygiene.md>), [senior-review](<senior-review.md>), [testing](<testing.md>), [typescript-development](<typescript-development.md>) |
 | External closure (2) | `developer-essentials@claude-code-workflows`, `mattpocock-skills@mattpocock` |
 
 External bundles are separate upstream installations, not copied local skills.
@@ -468,7 +492,7 @@ The source links carry the complete instructions and accepted arguments.
 |---|---|---|---|
 | Skill | `senior-review:defect-taxonomy` | 16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor. | [defect-taxonomy](<../../plugins/senior-review/skills/defect-taxonomy/SKILL.md>) |
 | Skill | `senior-review:review-quality-gates` | Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that). | [review-quality-gates](<../../plugins/senior-review/skills/review-quality-gates/SKILL.md>) |
-| Skill | `senior-review:review-method` | Canonical universal review engine used by code-review, team-review, pr-review and review-plus. | [review-method](<../../plugins/senior-review/skills/review-method/SKILL.md>) |
+| Skill | `senior-review:review-method` | Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists. | [review-method](<../../plugins/senior-review/skills/review-method/SKILL.md>) |
 | Skill | `senior-review:review-preparation` | Prepare the existing code, team or PR review inputs without writing another detection prompt. | [review-preparation](<../../plugins/senior-review/skills/review-preparation/SKILL.md>) |
 | Skill | `senior-review:review-consolidation` | Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. | [review-consolidation](<../../plugins/senior-review/skills/review-consolidation/SKILL.md>) |
 | Skill | `senior-review:application-cleanup-method` | Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. | [application-cleanup-method](<../../plugins/senior-review/skills/application-cleanup-method/SKILL.md>) |
@@ -503,7 +527,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 | Outcomes | `code-review-completed` |
 | Artifacts | `code-review-report` |
 | Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | `abstraction-architect/abstraction-architect-agent`, `project-protocol/isolated-worker`, `senior-review/code-auditor`, `senior-review/data-integrity-auditor`, `senior-review/premise-auditor`, `senior-review/resource-lifecycle-auditor`, `senior-review/security-auditor`, `senior-review/temporal-resilience-auditor`, `senior-review/ui-race-auditor`, `testing/test-suite-auditor` |
+| Declared workers | `abstraction-architect/abstraction-architect-agent`, `platform-engineering/platform-reviewer`, `project-protocol/isolated-worker`, `react-development/react-performance-optimizer`, `senior-review/code-auditor`, `senior-review/data-integrity-auditor`, `senior-review/premise-auditor`, `senior-review/resource-lifecycle-auditor`, `senior-review/security-auditor`, `senior-review/temporal-resilience-auditor`, `senior-review/ui-race-auditor`, `testing/test-suite-auditor`, `typescript-development/type-safety-auditor` |
 | Composed worker isolation | Required |
 | Task-specific isolated workers | Allowed through the protocol role |
 | Sidecar | [code-review.toml](<../../plugins/senior-review/workflows/code-review.toml>) |
@@ -522,7 +546,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 | Outcomes | `pr-review-completed` |
 | Artifacts | `pr-review-report` |
 | Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | `project-protocol/isolated-worker`, `senior-review/code-auditor`, `senior-review/premise-auditor`, `senior-review/security-auditor` |
+| Declared workers | `platform-engineering/platform-reviewer`, `project-protocol/isolated-worker`, `react-development/react-performance-optimizer`, `senior-review/code-auditor`, `senior-review/premise-auditor`, `senior-review/security-auditor`, `typescript-development/type-safety-auditor` |
 | Composed worker isolation | Required |
 | Task-specific isolated workers | Allowed through the protocol role |
 | Sidecar | [pr-review.toml](<../../plugins/senior-review/workflows/pr-review.toml>) |
@@ -533,7 +557,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 
 #### `senior-review:team-review`
 
-**Arguments:** <code>&lt;target&gt; [--reviewers auto&#124;security,performance,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]</code>
+**Arguments:** <code>&lt;target&gt; [--reviewers auto&#124;security,performance,react,typescript,platform,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]</code>
 
 | Contract | Value |
 |---|---|
@@ -541,7 +565,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 | Outcomes | `reviewers-use-isolated-contexts`, `every-selected-dimension-is-dispatched-exactly-once`, `every-expected-reviewer-is-delivered-or-failed`, `consolidation-runs-only-after-the-delivery-barrier`, `cross-examination-runs-in-fresh-contexts`, `every-retained-finding-carries-evidence`, `only-the-consolidator-writes-the-final-report` |
 | Artifacts | `final-report` |
 | Schemas | [contracts/review-brief.toml](<../../plugins/senior-review/contracts/review-brief.toml>), [contracts/reviewer-binding.toml](<../../plugins/senior-review/contracts/reviewer-binding.toml>), [contracts/reviewer-selection.toml](<../../plugins/senior-review/contracts/reviewer-selection.toml>), [contracts/evidenced-finding.toml](<../../plugins/senior-review/contracts/evidenced-finding.toml>), [contracts/reviewer-result.toml](<../../plugins/senior-review/contracts/reviewer-result.toml>), [contracts/delivery-ledger.toml](<../../plugins/senior-review/contracts/delivery-ledger.toml>), [contracts/final-report.toml](<../../plugins/senior-review/contracts/final-report.toml>), [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | `abstraction-architect/abstraction-architect-agent`, `codebase-xray/semantic-interconnect-mapper`, `project-protocol/isolated-worker`, `repo-hygiene/workspace-auditor`, `senior-review/api-contract-auditor`, `senior-review/chicken-egg-detector`, `senior-review/cleanup-auditor`, `senior-review/code-auditor`, `senior-review/data-integrity-auditor`, `senior-review/distributed-flow-auditor`, `senior-review/logic-integrity-auditor`, `senior-review/premise-auditor`, `senior-review/resource-lifecycle-auditor`, `senior-review/security-auditor`, `senior-review/temporal-resilience-auditor`, `senior-review/ui-race-auditor`, `testing/test-suite-auditor` |
+| Declared workers | `abstraction-architect/abstraction-architect-agent`, `codebase-xray/semantic-interconnect-mapper`, `platform-engineering/platform-reviewer`, `project-protocol/isolated-worker`, `react-development/react-performance-optimizer`, `repo-hygiene/workspace-auditor`, `senior-review/api-contract-auditor`, `senior-review/chicken-egg-detector`, `senior-review/cleanup-auditor`, `senior-review/code-auditor`, `senior-review/data-integrity-auditor`, `senior-review/distributed-flow-auditor`, `senior-review/logic-integrity-auditor`, `senior-review/premise-auditor`, `senior-review/resource-lifecycle-auditor`, `senior-review/security-auditor`, `senior-review/temporal-resilience-auditor`, `senior-review/ui-race-auditor`, `testing/test-suite-auditor`, `typescript-development/type-safety-auditor` |
 | Composed worker isolation | Required |
 | Task-specific isolated workers | Allowed through the protocol role |
 | Sidecar | [team-review.toml](<../../plugins/senior-review/workflows/team-review.toml>) |

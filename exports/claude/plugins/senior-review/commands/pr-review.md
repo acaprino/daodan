@@ -20,7 +20,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `code-auditor`, `premise-auditor`, `project-protocol:isolated-worker`, `security-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `code-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `security-auditor`, `typescript-development:type-safety-auditor`
 - Workers may write only intermediate reports explicitly assigned by the coordinator.
   The final report artifact has one exclusive owner in its declaring phase.
 
@@ -30,10 +30,13 @@ Dispatch plan:
 
 Role bindings:
 
+- `platform-engineering:platform-reviewer`: dispatch the installed `platform-engineering:platform-reviewer` agent by its qualified identity.
 - `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
+- `react-development:react-performance-optimizer`: dispatch the installed `react-development:react-performance-optimizer` agent by its qualified identity.
 - `code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
 - `premise-auditor`: dispatch the installed `senior-review:premise-auditor` agent by its qualified identity.
 - `security-auditor`: dispatch the installed `senior-review:security-auditor` agent by its qualified identity.
+- `typescript-development:type-safety-auditor`: dispatch the installed `typescript-development:type-safety-auditor` agent by its qualified identity.
 - Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph, the isolation and join policies and the record schemas are in
@@ -48,7 +51,7 @@ Resolve this entry's existing target and flags through `senior-review:review-pre
 The method owns dispatch, delivery accounting, consolidation and reporting. Keep the
 seven native review contracts; operational records use `project-protocol` envelopes.
 
-This universal review includes testing, structural entropy and workspace hygiene.
-React performance, TypeScript type safety and platform integration belong to
-`/review-plus:pr-review`. Include this coverage boundary in the review plan.
+The same PR assessment selects React performance, TypeScript type safety and
+platform integration when the target warrants them. Their findings and coverage
+gaps enter the native risk assessment and PR description through one consolidation.
 

@@ -33,7 +33,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `code-auditor`, `data-integrity-auditor`, `premise-auditor`, `project-protocol:isolated-worker`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `code-auditor`, `data-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - Workers may write only intermediate reports explicitly assigned by the coordinator.
   The final report artifact has one exclusive owner in its declaring phase.
 
@@ -44,7 +44,9 @@ Dispatch plan:
 Role bindings:
 
 - `abstraction-architect:abstraction-architect-agent`: dispatch the installed `abstraction-architect:abstraction-architect-agent` agent by its qualified identity.
+- `platform-engineering:platform-reviewer`: dispatch the installed `platform-engineering:platform-reviewer` agent by its qualified identity.
 - `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
+- `react-development:react-performance-optimizer`: dispatch the installed `react-development:react-performance-optimizer` agent by its qualified identity.
 - `code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
 - `data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
 - `premise-auditor`: dispatch the installed `senior-review:premise-auditor` agent by its qualified identity.
@@ -53,6 +55,7 @@ Role bindings:
 - `temporal-resilience-auditor`: dispatch the installed `senior-review:temporal-resilience-auditor` agent by its qualified identity.
 - `ui-race-auditor`: dispatch the installed `senior-review:ui-race-auditor` agent by its qualified identity.
 - `testing:test-suite-auditor`: dispatch the installed `testing:test-suite-auditor` agent by its qualified identity.
+- `typescript-development:type-safety-auditor`: dispatch the installed `typescript-development:type-safety-auditor` agent by its qualified identity.
 - Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and the record schemas are in `contracts/code-review.workflow.toml`.
@@ -66,7 +69,8 @@ Resolve this entry's existing target and flags through `senior-review:review-pre
 The method owns dispatch, delivery accounting, consolidation and reporting. Keep the
 seven native review contracts; operational records use `project-protocol` envelopes.
 
-This universal review includes testing, structural entropy and workspace hygiene.
-React performance, TypeScript type safety and platform integration belong to
-`/review-plus:code-review`. Include this coverage boundary in the review plan.
+The same review selects React performance, TypeScript type safety and platform
+integration when the target warrants them, alongside testing, structural entropy
+and workspace hygiene. Record selected dimensions, skip reasons and coverage gaps
+in one review plan and report.
 

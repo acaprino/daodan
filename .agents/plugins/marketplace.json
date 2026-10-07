@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "30.0.1"
+    "version": "31.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -420,6 +420,9 @@
         "repo-hygiene",
         "clean-code",
         "text-humanizer",
+        "react-development",
+        "typescript-development",
+        "platform-engineering",
         "superpowers@claude-plugins-official"
       ],
       "description": "Complete AI development lifecycle: assess coherence, repair an evidenced plan, implement changes, verify their consequences, and consolidate experiments and owned artifacts. Uses canonical specialist methods, exact run identities and honest coverage.",
@@ -434,7 +437,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     {
       "author": {
@@ -562,40 +565,16 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "senior-review",
+        "repo-hygiene",
+        "codebase-xray",
+        "abstraction-architect",
+        "testing",
+        "project-protocol",
         "react-development",
         "typescript-development",
-        "platform-engineering",
-        "repo-hygiene",
-        "codebase-xray",
-        "abstraction-architect",
-        "testing",
-        "project-protocol"
+        "platform-engineering"
       ],
-      "description": "Extended review using the canonical senior-review engine with mandatory signal-selected React performance, TypeScript type safety and platform integration specialists.",
-      "license": "MIT",
-      "name": "review-plus",
-      "skills": [
-        "./skills/code-review-workflow",
-        "./skills/extended-review-method",
-        "./skills/pr-review-workflow",
-        "./skills/team-review-workflow"
-      ],
-      "source": "./exports/codex/plugins/review-plus",
-      "version": "1.0.0"
-    },
-    {
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [
-        "repo-hygiene",
-        "codebase-xray",
-        "abstraction-architect",
-        "testing",
-        "project-protocol"
-      ],
-      "description": "Universal evidence-aware code, team and PR review; canonical preparation, consolidation and commit-only application cleanup; testing, structural entropy and workspace hygiene. Specialist React, TypeScript and platform review is owned by review-plus. Seven native review schemas preserve finding provenance and delivery accounting.",
+      "description": "Unified evidence-aware code, team and PR review with signal-selected React performance, TypeScript type safety and platform integration specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
       "license": "MIT",
       "name": "senior-review",
       "skills": [
@@ -610,7 +589,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "13.0.0"
+      "version": "14.0.0"
     },
     {
       "author": {

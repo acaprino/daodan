@@ -89,8 +89,7 @@ commands, paths, installation requirements and runtime limits on each host.
 | [project-lifecycle](docs/plugins/project-lifecycle.md) | Complete project work and coordination |
 | [project-protocol](docs/plugins/project-protocol.md) | Run identity, snapshots, state, verification and recovery |
 | [project-knowledge](docs/plugins/project-knowledge.md) | Durable instructions, guides, documentation and README |
-| [senior-review](docs/plugins/senior-review.md) | Universal correctness review and application subtraction |
-| [review-plus](docs/plugins/review-plus.md) | Extended review with React, TypeScript and platform specialists |
+| [senior-review](docs/plugins/senior-review.md) | Unified correctness review, automatic stack specialists and application subtraction |
 | [testing](docs/plugins/testing.md) | Meaningful test authoring, suite diagnosis and protection-preserving remediation |
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
 | [codebase-xray](docs/plugins/codebase-xray.md) | Static structure, behavior and interconnection evidence |

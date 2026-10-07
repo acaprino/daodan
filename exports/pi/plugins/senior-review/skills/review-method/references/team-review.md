@@ -26,6 +26,11 @@
 
 ### Reviewer prompt template (context-aware)
 
+The complete prepared selection also contains applicable stack dimensions from
+review-preparation's `references/stack-dimensions.md`. Dispatch them in this same
+phase using their canonical role definitions and the shared template below. They
+enter the same Phase 3 delivery barrier and downstream verification panel.
+
 Every reviewer receives the same structural prompt. The key addition vs the old parallel-only mode is the **context paths**.
 
 ```

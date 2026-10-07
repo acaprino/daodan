@@ -1,9 +1,0 @@
-{
-  "author": {
-    "name": "Alfio Caprino"
-  },
-  "description": "Extended review using the canonical senior-review engine with mandatory signal-selected React performance, TypeScript type safety and platform integration specialists.",
-  "license": "MIT",
-  "name": "review-plus",
-  "version": "1.0.0"
-}

@@ -15,6 +15,6 @@ Resolve this entry's existing target and flags through `senior-review:review-pre
 The method owns dispatch, delivery accounting, consolidation and reporting. Keep the
 seven native review contracts; operational records use `project-protocol` envelopes.
 
-This universal review includes testing, structural entropy and workspace hygiene.
-React performance, TypeScript type safety and platform integration belong to
-`/review-plus:pr-review`. Include this coverage boundary in the review plan.
+The same PR assessment selects React performance, TypeScript type safety and
+platform integration when the target warrants them. Their findings and coverage
+gaps enter the native risk assessment and PR description through one consolidation.

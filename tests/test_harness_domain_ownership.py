@@ -1,4 +1,5 @@
-"""Ownership contracts for the universal harness and its specialist extension."""
+"""Ownership contracts for the harness and its unified correctness review."""
+import json
 from pathlib import Path
 import tempfile
 import tomllib
@@ -6,7 +7,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXTENSION_ROLES = {"react-development/react-performance-optimizer", "typescript-development/type-safety-auditor", "platform-engineering/platform-reviewer"}
+STACK_ROLES = {"react-development/react-performance-optimizer", "typescript-development/type-safety-auditor", "platform-engineering/platform-reviewer"}
 CORE_ROLES = {
     "code-review": {f"senior-review/{name}" for name in ("code-auditor", "security-auditor", "ui-race-auditor", "temporal-resilience-auditor", "data-integrity-auditor", "resource-lifecycle-auditor", "premise-auditor")} | {"testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent"},
     "team-review": {f"senior-review/{name}" for name in ("api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor")} | {"repo-hygiene/workspace-auditor", "testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent", "codebase-xray/semantic-interconnect-mapper"},
@@ -37,36 +38,32 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
-                for plugin in ("review-plus", "senior-review"):
-                    with self.subTest(host=host, plugin=plugin):
-                        root = Path(temporary) / host / plugin
-                        render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), root,
-                                      adapters_root=ROOT / "adapters", plugin_registry=registry)
-                        extras = EXTENSION_ROLES if plugin == "review-plus" else set()
-                        for entry, core in CORE_ROLES.items():
-                            body = (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8")
-                            if plugin == "review-plus":
-                                for selection in ("react", "typescript", "platform"):
-                                    self.assertIn(f"selection:{selection}", body)
-                            for binding in core | extras:
-                                owner, role = binding.split("/")
-                                identity = role if owner == plugin else f"{owner}:{role}"
-                                self.assertIn(f"`{identity}`", body)
-                            self.assertIn("project-protocol:isolated-worker", body)
-                            self.assertIn("senior-review:review-method", body)
-                            self.assertNotIn("subagent_type", body)
-                        if host in {"codex", "pi"}:
-                            for binding in CORE_ROLES["team-review"] | extras | {"project-protocol/isolated-worker"}:
-                                owner, role = binding.split("/")
-                                if owner == plugin:
-                                    continue
-                                resource = root / "contracts/dispatch" / owner / f"{role}.md"
-                                text = resource.read_text(encoding="utf-8")
-                                self.assertIn(f"Owner: {owner}:{role}", text)
-                                self.assertIn(f"<{owner}-plugin-root>", text)
-                                for skill in registry[owner].components.skills:
-                                    self.assertIn(f"{owner}:{skill}", text)
-                                self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
+                plugin = "senior-review"
+                with self.subTest(host=host):
+                    root = Path(temporary) / host / plugin
+                    render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), root,
+                                  adapters_root=ROOT / "adapters", plugin_registry=registry)
+                    for entry, core in CORE_ROLES.items():
+                        body = (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8")
+                        for binding in core | STACK_ROLES:
+                            owner, role = binding.split("/")
+                            identity = role if owner == plugin else f"{owner}:{role}"
+                            self.assertIn(f"`{identity}`", body)
+                        self.assertIn("project-protocol:isolated-worker", body)
+                        self.assertIn("senior-review:review-method", body)
+                        self.assertNotIn("subagent_type", body)
+                    if host in {"codex", "pi"}:
+                        for binding in CORE_ROLES["team-review"] | STACK_ROLES | {"project-protocol/isolated-worker"}:
+                            owner, role = binding.split("/")
+                            if owner == plugin:
+                                continue
+                            resource = root / "contracts/dispatch" / owner / f"{role}.md"
+                            text = resource.read_text(encoding="utf-8")
+                            self.assertIn(f"Owner: {owner}:{role}", text)
+                            self.assertIn(f"<{owner}-plugin-root>", text)
+                            for skill in registry[owner].components.skills:
+                                self.assertIn(f"{owner}:{skill}", text)
+                            self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
 
     def test_lifecycle_and_guide_wrappers_bind_their_composed_methods_on_every_host(self):
         from scripts.daodan.adapter import HOSTS, load_adapter
@@ -75,7 +72,9 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
 
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
         cases = {
-            ("project-lifecycle", "change"): {"testing/test-writer", "senior-review/code-auditor", "project-knowledge/instructions-auditor"},
+            ("project-lifecycle", "change"): CORE_ROLES["code-review"] | STACK_ROLES | {"testing/test-writer", "project-knowledge/instructions-auditor"},
+            ("project-lifecycle", "repair"): CORE_ROLES["code-review"] | STACK_ROLES,
+            ("project-lifecycle", "verify"): CORE_ROLES["code-review"] | STACK_ROLES,
             ("project-lifecycle", "assess"): {"project-knowledge/documentation-engineer", "project-knowledge/guide-reviewer"},
             ("project-knowledge", "guide"): {"codebase-xray/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer")},
         }
@@ -103,33 +102,35 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                                         self.assertIn(f"{owner}:{skill}", text)
 
     def test_composed_inventory_binds_methods_without_copying_their_schedule(self):
-        for owner in ("senior-review", "review-plus"):
-            for entry, core in CORE_ROLES.items():
-                with self.subTest(owner=owner, entry=entry):
-                    sidecar = tomllib.loads((ROOT / "plugins" / owner / "workflows" / f"{entry}.toml").read_text())
-                    dispatch = sidecar["dispatch"]
-                    expected = core | EXTENSION_ROLES if owner == "review-plus" else core
-                    self.assertEqual(set(dispatch["roles"]), expected)
-                    self.assertTrue(dispatch["isolated"])
-                    self.assertIs(dispatch["inline_workers"], True)
-                    self.assertIn("project-protocol", manifest(owner)["dependencies"]["required"])
-                    if owner == "review-plus":
-                        # Composition exposes core bindings; it does not duplicate
-                        # the canonical review phase graph in the outer wrapper.
-                        self.assertEqual([p["id"] for p in sidecar["phases"]], ["prepare", "react", "typescript", "platform", "universal-review"])
+        for entry, core in CORE_ROLES.items():
+            with self.subTest(entry=entry):
+                sidecar = tomllib.loads((ROOT / "plugins/senior-review/workflows" / f"{entry}.toml").read_text())
+                dispatch = sidecar["dispatch"]
+                self.assertEqual(set(dispatch["roles"]), core | STACK_ROLES)
+                self.assertTrue(dispatch["isolated"])
+                self.assertIs(dispatch["inline_workers"], True)
+                self.assertIn("project-protocol", manifest("senior-review")["dependencies"]["required"])
+                if entry != "team-review":
+                    # Bind method workers without a duplicated outer phase graph.
+                    self.assertEqual([p["id"] for p in sidecar["phases"]], ["run"])
 
-    def test_specialist_review_is_a_separate_mandatory_closure(self):
+    def test_one_review_owner_has_mandatory_specialists_on_every_host(self):
+        from scripts.daodan.adapter import HOSTS
+
         core = manifest("senior-review")
         extras = {"react-development", "typescript-development", "platform-engineering"}
-        self.assertTrue(extras.isdisjoint(core["dependencies"]["required"]))
-        extended = manifest("review-plus")
-        self.assertTrue((extras | {"senior-review"}).issubset(extended["dependencies"]["required"]))
-        self.assertEqual(extended["components"]["roles"], [])
-        for entry in ("code-review", "team-review", "pr-review"):
-            sidecar = tomllib.loads((ROOT / "plugins/review-plus/workflows" / f"{entry}.toml").read_text())
-            roles = {p.get("role") for p in sidecar["phases"] if p.get("role")}
-            self.assertEqual(roles, {"react-development/react-performance-optimizer", "typescript-development/type-safety-auditor", "platform-engineering/platform-reviewer"})
-            self.assertTrue(all(p.get("join") == "all-delivered" for p in sidecar["phases"] if p.get("fanout_from")))
+        self.assertTrue(extras.issubset(core["dependencies"]["required"]))
+        self.assertTrue(extras.issubset(manifest("project-lifecycle")["dependencies"]["required"]))
+        self.assertFalse((ROOT / "plugins/review-plus").exists())
+        for host in HOSTS:
+            with self.subTest(host=host):
+                packages = ROOT / "exports" / host / "plugins"
+                self.assertFalse((packages / "review-plus").exists())
+                installed = json.loads((packages / "senior-review/.daodan-provenance.json").read_text())
+                self.assertEqual(installed["version"], core["version"])
+                for binding in STACK_ROLES:
+                    owner, role = binding.split("/")
+                    self.assertIn(role, manifest(owner)["components"]["roles"])
 
     def test_native_review_contracts_survive_the_envelope_migration(self):
         contracts = ROOT / "plugins/senior-review/contracts"

@@ -2,10 +2,10 @@
 name: team-review-coordinator
 description: 'Six-phase pipeline. Builds X-ray and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.'
 tools: ['agent', 'edit', 'runCommands', 'search']
-agents: ['abstraction-architect:abstraction-architect-agent', 'api-contract-auditor', 'chicken-egg-detector', 'cleanup-auditor', 'code-auditor', 'codebase-xray:semantic-interconnect-mapper', 'data-integrity-auditor', 'distributed-flow-auditor', 'logic-integrity-auditor', 'premise-auditor', 'project-protocol:isolated-worker', 'repo-hygiene:workspace-auditor', 'resource-lifecycle-auditor', 'security-auditor', 'temporal-resilience-auditor', 'testing:test-suite-auditor', 'ui-race-auditor']
+agents: ['abstraction-architect:abstraction-architect-agent', 'api-contract-auditor', 'chicken-egg-detector', 'cleanup-auditor', 'code-auditor', 'codebase-xray:semantic-interconnect-mapper', 'data-integrity-auditor', 'distributed-flow-auditor', 'logic-integrity-auditor', 'platform-engineering:platform-reviewer', 'premise-auditor', 'project-protocol:isolated-worker', 'react-development:react-performance-optimizer', 'repo-hygiene:workspace-auditor', 'resource-lifecycle-auditor', 'security-auditor', 'temporal-resilience-auditor', 'testing:test-suite-auditor', 'typescript-development:type-safety-auditor', 'ui-race-auditor']
 ---
 
-> Arguments: `<target> [--reviewers auto|security,performance,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> Arguments: `<target> [--reviewers auto|security,performance,react,typescript,platform,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
 # team-review
 
@@ -26,7 +26,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-xray:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `premise-auditor`, `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-xray:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - Workers may write only intermediate reports explicitly assigned by the coordinator.
   The final report artifact has one exclusive owner in its declaring phase.
 
@@ -53,8 +53,10 @@ Role bindings:
 - `data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
 - `distributed-flow-auditor`: dispatch the installed `senior-review:distributed-flow-auditor` agent by its qualified identity.
 - `logic-integrity-auditor`: dispatch the installed `senior-review:logic-integrity-auditor` agent by its qualified identity.
+- `platform-engineering:platform-reviewer`: dispatch the installed `platform-engineering:platform-reviewer` agent by its qualified identity.
 - `premise-auditor`: dispatch the installed `senior-review:premise-auditor` agent by its qualified identity.
 - `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
+- `react-development:react-performance-optimizer`: dispatch the installed `react-development:react-performance-optimizer` agent by its qualified identity.
 - `repo-hygiene:workspace-auditor`: dispatch the installed `repo-hygiene:workspace-auditor` agent by its qualified identity.
 - `resource-lifecycle-auditor`: dispatch the installed `senior-review:resource-lifecycle-auditor` agent by its qualified identity.
 - `security-auditor`: dispatch the installed `senior-review:security-auditor` agent by its qualified identity.
@@ -72,6 +74,7 @@ Role bindings:
 - `ui-race-auditor`: dispatch the installed `senior-review:ui-race-auditor` agent by its qualified identity.
 - `temporal-resilience-auditor`: dispatch the installed `senior-review:temporal-resilience-auditor` agent by its qualified identity.
 - `testing:test-suite-auditor`: dispatch the installed `testing:test-suite-auditor` agent by its qualified identity.
+- `typescript-development:type-safety-auditor`: dispatch the installed `typescript-development:type-safety-auditor` agent by its qualified identity.
 - `ui-race-auditor`: dispatch the installed `senior-review:ui-race-auditor` agent by its qualified identity.
 - Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
@@ -87,7 +90,8 @@ Resolve this entry's existing target and flags through `senior-review:review-pre
 The method owns dispatch, delivery accounting, consolidation and reporting. Keep the
 seven native review contracts; operational records use `project-protocol` envelopes.
 
-This universal review includes testing, structural entropy and workspace hygiene.
-React performance, TypeScript type safety and platform integration belong to
-`/review-plus:team-review`. Include this coverage boundary in the review plan.
+The same review selects React performance, TypeScript type safety and platform
+integration when the target warrants them, alongside testing, structural entropy
+and workspace hygiene. Record selected dimensions, skip reasons and coverage gaps
+in one review plan and report.
 

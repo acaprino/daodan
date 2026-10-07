@@ -9,8 +9,8 @@ inputs and composes canonical specialist methods rather than duplicating detecti
 prompts. project-protocol is the shared leaf for run records, snapshots, delivery
 accounting, candidate gates and recovery. project-knowledge owns instructions,
 guides, documentation and README. senior-review owns universal correctness and
-application subtraction; review-plus adds mandatory React, TypeScript and platform
-dispatch through the same senior methods. testing owns universal test governance;
+application subtraction, selecting React, TypeScript and platform specialists
+through the same methods and delivery ledger. testing owns universal test governance;
 Python contributes pytest-patterns, without a second test writer.
 
 Run state belongs in .daodan/runs/<id>/ with an identified project/worktree, scope,
@@ -257,10 +257,12 @@ A prose pointer is not a runtime dependency. Suggestions, routing hints and rela
 reading do not justify an installation edge. Spawning a role, loading a method or
 consuming its runtime artifact does. No hard local dependency goes unused.
 
-When installation cost is unwanted, separate the capability and its orchestration.
-review-plus is the explicit specialist consumer; senior-review retains universal
-correctness. Do not turn those specialist dependencies into optional edges or
-reintroduce them into knowledge through an unrelated pointer.
+senior-review is the single correctness-review owner. React, TypeScript and platform
+providers are mandatory; code signals select their execution within the same review.
+This deliberately increases the installation closure of senior-review and its
+consumers. Specialist standalone commands remain available for targeted work.
+Do not expose a second review bundle to turn that installation detail into a user
+decision, and do not make required specialist edges optional.
 
 | Owner | Direct required local dependencies |
 |---|---|
@@ -269,10 +271,9 @@ reintroduce them into knowledge through an unrelated pointer.
 | repo-hygiene | none |
 | abstraction-architect | codebase-xray |
 | testing | project-protocol |
-| senior-review | project-protocol, repo-hygiene, codebase-xray, abstraction-architect, testing |
-| review-plus | senior-review, react-development, typescript-development, platform-engineering |
+| senior-review | project-protocol, repo-hygiene, codebase-xray, abstraction-architect, testing, react-development, typescript-development, platform-engineering |
 | project-knowledge | project-protocol, codebase-xray, senior-review, text-humanizer |
-| project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-xray, repo-hygiene, clean-code |
+| project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-xray, repo-hygiene, clean-code, text-humanizer, react-development, typescript-development, platform-engineering |
 | clean-code | project-protocol |
 | python-development | testing, project-protocol |
 

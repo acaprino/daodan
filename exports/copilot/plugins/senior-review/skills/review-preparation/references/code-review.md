@@ -44,7 +44,18 @@ If not a PR review (Cases A, B, D, E), skip this step entirely.
 
 ## Step 1: Identify Review Target
 
-From `<arguments>`, determine what to review using this priority:
+**Caller-bound candidate takes precedence.** When the caller supplies resolved
+scope, baseline and candidate bindings, validate them through review-preparation
+and review exactly that candidate. Derive changed paths and before/after content
+from the captured baseline and candidate, including newly created untracked files;
+Git's tracked-file lists alone do not enumerate this target. If baseline content
+cannot be recovered, declare the comparison gap and do not substitute HEAD~1 or a
+branch diff. If the candidate equals the supplied baseline, report no changes in
+that scope rather than reviewing an unrelated commit. Continue Step 1b/Step 2 with
+the supplied target and its evidence, without running Cases A-E below.
+
+For standalone calls without a caller-bound candidate, determine what to review
+from `<arguments>` using this priority:
 
 **Case A -- Uncommitted/staged changes exist** (no explicit PR or branch arg):
 

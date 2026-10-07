@@ -78,7 +78,7 @@ Standalone cross-platform security, architecture, and performance review. Auto-d
 
 ---
 
-**Related:** [review-plus](review-plus.md) (signal-selected platform dimension across the three correctness-review variants) | [frontend-review](frontend-review.md) (platform checks alongside design and UX) | [tauri-development](tauri-development.md) (desktop/mobile platform)
+**Related:** [senior-review](senior-review.md) (signal-selected platform dimension across the three correctness-review variants) | [frontend-review](frontend-review.md) (platform checks alongside design and UX) | [tauri-development](tauri-development.md) (desktop/mobile platform)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference

@@ -104,6 +104,11 @@ Before starting, invoke these skills to inform the review process:
 
 Analyze changed files and codebase to determine which review dimensions are relevant. Skip if explicit `--reviewers` list was provided.
 
+Include the stack dimensions from `references/stack-dimensions.md` inside this
+skill in the same selection. That reference also defines explicit reviewer scope
+and --all behavior. Present their activation evidence or skip/gap reasons with
+the other dimensions before dispatch.
+
 ### Always-on dimensions (run for every review)
 
 | Dimension | Agent | Rationale |

@@ -170,7 +170,7 @@ class ReviewPipelinePortTests(unittest.TestCase):
             "scheduling belongs to the host harness, not to a runtime dependency",
         )
 
-    def test_universal_dimensions_stay_required_and_specialists_move_together(self):
+    def test_unified_review_keeps_all_dimension_providers_required(self):
         plugin = load_plugin(REPO_ROOT / "plugins/senior-review")
         for dimension in (
             "repo-hygiene",
@@ -178,13 +178,11 @@ class ReviewPipelinePortTests(unittest.TestCase):
             "abstraction-architect",
             "testing",
             "project-protocol",
+            "react-development",
+            "platform-engineering",
+            "typescript-development",
         ):
             self.assertIn(dimension, plugin.required_dependencies)
-        extended = load_plugin(REPO_ROOT / "plugins/review-plus")
-        for dimension in ("react-development", "platform-engineering", "typescript-development"):
-            self.assertNotIn(dimension, plugin.required_dependencies)
-            self.assertIn(dimension, extended.required_dependencies)
-        self.assertIn("senior-review", extended.required_dependencies)
 
 
 if __name__ == "__main__":

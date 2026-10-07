@@ -1,6 +1,9 @@
 ## Phase 3: Generate PR Description
 
-Using the analysis from Phase 1 and agent findings from Phase 2, generate a complete PR description.
+Using the analysis from Phase 1 and all accounted reviewer findings from Phase 2,
+including selected stack specialists, generate a complete PR description after
+the canonical evidence/provenance verification. Include selected dimensions,
+code-based skips and missing evidence so the description states its coverage.
 
 ### PR Description Template
 
@@ -48,6 +51,12 @@ Using the analysis from Phase 1 and agent findings from Phase 2, generate a comp
 | Security | [Low/Med/High] | [description] |
 
 [Include any security findings from Agent B]
+
+[Include verified stack-specialist findings and their relevant risk factors]
+
+## Review Coverage
+
+[Selected dimensions, code-based skips, failed deliveries and unavailable evidence]
 
 ## Hygiene
 

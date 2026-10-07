@@ -36,7 +36,7 @@ Use the typescript-engineer agent to [design/implement/migrate] [feature]
 
 ### `type-safety-auditor`
 
-Adversarial TypeScript type-safety reviewer. Hunts type-system erosion: any leakage, unsound casts, missing runtime validation at boundaries, assertion abuse, tsconfig strictness drift, exhaustiveness gaps, and unsound generics or type guards. Dispatched by [review-plus](review-plus.md)'s code-review, team-review and pr-review variants when the target contains TypeScript files or type contracts and the relevant package has TypeScript configuration. Review Plus declares this plugin as a mandatory provider; a nonmatching codebase signal skips the dimension, while a missing matched specialist is a delivery failure. The standalone TypeScript review and [frontend-review](frontend-review.md) also use this role.
+Adversarial TypeScript type-safety reviewer. Hunts type-system erosion: any leakage, unsound casts, missing runtime validation at boundaries, assertion abuse, tsconfig strictness drift, exhaustiveness gaps, and unsound generics or type guards. Dispatched by [senior-review](senior-review.md)'s code-review, team-review and pr-review variants when the target contains TypeScript files or type contracts and the relevant package has TypeScript configuration. Senior Review declares this plugin as a mandatory provider; a nonmatching codebase signal skips the dimension, while a missing matched specialist is a delivery failure. The standalone TypeScript review and [frontend-review](frontend-review.md) also use this role.
 
 | | |
 |---|---|
@@ -110,7 +110,7 @@ Arguments: `[src-path] [--full]`
 
 ---
 
-**Related:** [review-plus](review-plus.md) (TypeScript correctness dimension) | [senior-review](senior-review.md) (lite Knip detection and gated dead-code removal under `/senior-review:code-review --commit`) | [react-development](react-development.md) (React-specific optimization)
+**Related:** [senior-review](senior-review.md) (signal-selected TypeScript correctness, lite Knip detection and gated dead-code removal under `/senior-review:code-review --commit`) | [react-development](react-development.md) (React-specific optimization)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference

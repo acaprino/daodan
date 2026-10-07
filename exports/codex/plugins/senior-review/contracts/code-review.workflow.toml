@@ -12,6 +12,9 @@ roles = [
   "senior-review/premise-auditor",
   "testing/test-suite-auditor",
   "abstraction-architect/abstraction-architect-agent",
+  "react-development/react-performance-optimizer",
+  "typescript-development/type-safety-auditor",
+  "platform-engineering/platform-reviewer",
 ]
 isolated = true
 inline_workers = true

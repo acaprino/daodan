@@ -2294,7 +2294,10 @@
           "codebase-xray",
           "repo-hygiene",
           "clean-code",
-          "text-humanizer"
+          "text-humanizer",
+          "react-development",
+          "typescript-development",
+          "platform-engineering"
         ],
         "root": "plugins/project-lifecycle",
         "skills": [
@@ -2986,45 +2989,6 @@
           }
         ]
       },
-      "review-plus": {
-        "commands": [
-          {
-            "description": "Extended code-review through senior-reviews canonical engine with React, TypeScript and platform dimensions.",
-            "file": "commands/code-review.md",
-            "name": "review-plus:code-review"
-          },
-          {
-            "description": "Extended team-review through senior-reviews canonical engine with React, TypeScript and platform dimensions.",
-            "file": "commands/team-review.md",
-            "name": "review-plus:team-review"
-          },
-          {
-            "description": "Extended pr-review through senior-reviews canonical engine with React, TypeScript and platform dimensions.",
-            "file": "commands/pr-review.md",
-            "name": "review-plus:pr-review"
-          }
-        ],
-        "dependencies": [
-          "senior-review",
-          "react-development",
-          "typescript-development",
-          "platform-engineering",
-          "repo-hygiene",
-          "codebase-xray",
-          "abstraction-architect",
-          "testing",
-          "project-protocol"
-        ],
-        "root": "plugins/review-plus",
-        "skills": [
-          {
-            "description": "Extend universal review with mandatory signal-selected specialist roles, without copying the senior engine.",
-            "file": "skills/extended-review-method/SKILL.md",
-            "id": "review-plus:extended-review-method",
-            "name": "extended-review-method"
-          }
-        ]
-      },
       "senior-review": {
         "agents": [
           {
@@ -3609,7 +3573,10 @@
           "codebase-xray",
           "abstraction-architect",
           "testing",
-          "project-protocol"
+          "project-protocol",
+          "react-development",
+          "typescript-development",
+          "platform-engineering"
         ],
         "root": "plugins/senior-review",
         "skills": [
@@ -3626,7 +3593,7 @@
             "name": "review-quality-gates"
           },
           {
-            "description": "Canonical universal review engine used by code-review, team-review, pr-review and review-plus.",
+            "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
             "file": "skills/review-method/SKILL.md",
             "id": "senior-review:review-method",
             "name": "review-method"
@@ -4428,5 +4395,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "30.0.1"
+  "version": "31.0.0"
 }

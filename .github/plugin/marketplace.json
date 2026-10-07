@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "30.0.1"
+    "version": "31.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -474,6 +474,9 @@
         "repo-hygiene",
         "clean-code",
         "text-humanizer",
+        "react-development",
+        "typescript-development",
+        "platform-engineering",
         "superpowers@claude-plugins-official"
       ],
       "description": "Complete AI development lifecycle: assess coherence, repair an evidenced plan, implement changes, verify their consequences, and consolidate experiments and owned artifacts. Uses canonical specialist methods, exact run identities and honest coverage.",
@@ -483,7 +486,7 @@
         "./skills/lifecycle-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     {
       "agents": [
@@ -622,35 +625,6 @@
     },
     {
       "agents": [
-        "./agents/code-review-coordinator.agent.md",
-        "./agents/pr-review-coordinator.agent.md",
-        "./agents/team-review-coordinator.agent.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [
-        "senior-review",
-        "react-development",
-        "typescript-development",
-        "platform-engineering",
-        "repo-hygiene",
-        "codebase-xray",
-        "abstraction-architect",
-        "testing",
-        "project-protocol"
-      ],
-      "description": "Extended review using the canonical senior-review engine with mandatory signal-selected React performance, TypeScript type safety and platform integration specialists.",
-      "license": "MIT",
-      "name": "review-plus",
-      "skills": [
-        "./skills/extended-review-method"
-      ],
-      "source": "./exports/copilot/plugins/review-plus",
-      "version": "1.0.0"
-    },
-    {
-      "agents": [
         "./agents/api-contract-auditor.agent.md",
         "./agents/chicken-egg-detector.agent.md",
         "./agents/cleanup-auditor.agent.md",
@@ -675,9 +649,12 @@
         "codebase-xray",
         "abstraction-architect",
         "testing",
-        "project-protocol"
+        "project-protocol",
+        "react-development",
+        "typescript-development",
+        "platform-engineering"
       ],
-      "description": "Universal evidence-aware code, team and PR review; canonical preparation, consolidation and commit-only application cleanup; testing, structural entropy and workspace hygiene. Specialist React, TypeScript and platform review is owned by review-plus. Seven native review schemas preserve finding provenance and delivery accounting.",
+      "description": "Unified evidence-aware code, team and PR review with signal-selected React performance, TypeScript type safety and platform integration specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
       "license": "MIT",
       "name": "senior-review",
       "skills": [
@@ -689,7 +666,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/copilot/plugins/senior-review",
-      "version": "13.0.0"
+      "version": "14.0.0"
     },
     {
       "agents": [

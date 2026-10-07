@@ -60,3 +60,35 @@ Assertions: reuse existing implementation and test owner; independently justifie
 oracle; smallest meaningful checks; no fixed test count or full-project rescan;
 affected untouched consumers checked; result reports delivered behavior and exact
 checks, with operational state outside durable instructions.
+
+## unified-stack-review
+
+Prompt: verify a dirty React/TypeScript desktop candidate through project-lifecycle,
+then review the same target through each senior-review variant. Provide unrelated
+React dependencies at the monorepo root and a separate Python-only package. Fail
+the selected type-safety worker. Repeat team review with --no-context, --fast, an
+explicit --reviewers security list and --all.
+Also repeat with --reviewers performance,react-perf,ts-safety.
+
+Assertions: target package signals select each applicable stack dimension once;
+the caller-bound candidate outranks Git auto-detection, including untracked-only
+changes and clean snapshots that must not fall back to the previous commit;
+unrelated dependencies do not activate it on the Python target; code-based skips
+and unknown signals remain distinct; one snapshot, prepared selection, delivery
+ledger and report account for core and stack findings; a missing selected worker
+is failed coverage, never a clean result or generic fallback. Raw/fast flags do
+not remove applicable stack workers, while explicit reviewer scope is respected.
+All lifecycle candidate review bindings exist on every host.
+Legacy selectors resolve before explicit scope; repeated aliases select a single
+worker per dimension and performance uses the specialized React binding when its
+signal is verified. General performance remains available on other targets.
+No second plugin, standalone workflow, preparation or report is requested from
+the user. Report
+missing runtime evidence without claiming the compiler exercised a live host.
+
+Include a React report with native IMPORTANT priority and a platform Warning,
+then omit confidence from one delivery. Assertions: the shared brief requests all
+native review fields; original labels survive severity normalization; missing
+fields get one completion request and remain failed/unverified if unresolved;
+they cannot silently disappear below a confidence floor or bypass a mandatory
+gate. PR reviewers receive the same scope and premise instructions as code review.

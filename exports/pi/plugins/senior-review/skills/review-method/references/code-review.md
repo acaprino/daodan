@@ -45,7 +45,12 @@ Run all selected agents **in parallel** in a single response; conditional agents
 
 ### Dispatch table
 
-The full spawn prompt for every agent lives in the `senior-review:review-quality-gates` skill, file `references/code-review-agents.md` (resolve it inside that skill's installed directory). Read that file now, then spawn the selected agents in a single response using its isolated worker briefs, substituting the shared instructions above.
+The core spawn prompts live in the `senior-review:review-quality-gates` skill,
+file `references/code-review-agents.md` (resolve it inside that skill's installed
+directory). Stack bindings and inputs come from review-preparation's
+`references/stack-dimensions.md`; their prompts remain in their canonical role
+definitions. Dispatch the complete prepared selection once, using the shared
+instructions above for every reviewer.
 
 | Agent | Dimension | role | Run when |
 |-------|-----------|---------------|----------|
@@ -62,6 +67,9 @@ The full spawn prompt for every agent lives in the `senior-review:review-quality
 | M | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` | Diff touches schemas, models, ORM, raw SQL, caches, or transaction boundaries |
 | N | Resource lifecycle (ownership and release) | `senior-review:resource-lifecycle-auditor` | Diff acquires files, sockets, connections, subprocesses, listeners, locks, tasks, or timers |
 
-Testing and structural entropy are required external dimensions from `testing` and `abstraction-architect`; all other bindings are core roles or inline review lenses. Skip only on absent code signals. A failed binding is a failed delivery, never an omitted dimension.
+Add the selected stack dimensions to these core slots in the same batch. Testing,
+structural entropy and stack specialists use required external providers. Skip
+only on absent code signals or an explicit reviewer scope; declare unknown signals
+as gaps. A failed binding is a failed delivery, never an omitted dimension.
 
 ---

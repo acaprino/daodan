@@ -1,6 +1,17 @@
-## Phase 2: Risk & Architecture Assessment (2 agents in parallel)
+## Phase 2: Risk & Architecture Assessment
 
-Run both agents **in parallel** in a single response. Agent A also carries the lite codebase-hygiene pass, so the phase stays at two spawns.
+Run the two core agents below and any selected stack specialists in the same
+parallel batch. Agent A carries the lite codebase-hygiene pass. Stack bindings and
+inputs come from review-preparation's `references/stack-dimensions.md`; use their
+canonical role definitions with the prepared scope and premise-provenance rules.
+Read the Shared Instructions for All Agents section of `references/code-review.md`
+inside this skill and apply it to both core and stack workers, using this PR's
+prepared target, intent and diff. Unknown intent stays declared as unknown. Include
+the evidenced-finding requirements from review-consolidation's stack-findings
+reference, including confidence and the normalized review severity; preserve each
+specialist's native report and labels. Do not run the code-review dispatch table.
+Account for every selected delivery before producing the risk assessment or PR
+description; a missing specialist result remains a coverage gap.
 
 ### Agent A: Architecture, Risk & Hygiene Assessment
 

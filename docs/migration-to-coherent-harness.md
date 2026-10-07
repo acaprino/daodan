@@ -1,9 +1,10 @@
 # Migration to the coherent development harness
 
-Marketplace 30 reorganizes project work around five project-lifecycle entries
+Marketplace 30 reorganized project work around five project-lifecycle entries
 while preserving domain specialists. This is a breaking catalog and review-coverage
 change. Install the new owners and update prompts, saved commands and integrations.
-The first published release of this organization is 30.0.1.
+The first published release of this organization is 30.0.1. Marketplace 31 unifies
+correctness review under senior-review and retires the review-plus bundle.
 
 | Retired entry/component | Replacement |
 |---|---|
@@ -20,15 +21,29 @@ The first published release of this organization is 30.0.1.
 | project-setup:claude-md-auditor | project-knowledge:instructions-auditor, audit-only supported |
 | python-development:python-test-engineer | testing:test-writer, with Python test context |
 | python-development:python-tdd | python-development:pytest-patterns for Python techniques; upstream TDD through testing |
+| review-plus:code-review | senior-review:code-review |
+| review-plus:team-review | senior-review:team-review |
+| review-plus:pr-review | senior-review:pr-review |
+| review-plus:extended-review-method | senior-review:review-method |
 
 The codebase-mapper, project-setup and docs packages are removed. No permanent
 alias kernels preserve a second source of behavior. Historical design/research
 documents still use the original IDs when discussing past decisions.
 
-senior-review now covers universal correctness and its existing source/workspace/
-testing/abstraction dimensions. React, TypeScript and platform dispatch is owned by
-review-plus. Use review-plus:code-review, team-review or pr-review for the previous
-extended dimension coverage. Specialist roles themselves retain their original IDs.
+Marketplace 30 temporarily placed React, TypeScript and platform dispatch in
+review-plus. Marketplace 31 brings those dimensions into senior-review's existing
+preparation, selection, delivery ledger, verification panel and report. Update
+stored review-plus invocations to the same senior-review variant and uninstall the
+retired bundle; there are no compatibility aliases. Start a fresh host session to
+avoid retaining old commands or copied workflow skills. Specialist roles and
+standalone commands retain their original IDs.
+
+The three specialist providers are mandatory senior-review dependencies. A false
+target signal skips execution with a recorded code-based reason; missing matched
+workers remain failed deliveries. The larger mandatory installation closure also
+applies to project-knowledge and project-lifecycle through senior-review. Their
+source-derived references show the complete cost. Lifecycle change, repair and
+verify use the same candidate review, without another plugin choice.
 
 The lifecycle uses canonical methods instead of executing arbitrary nested
 workflows. Sidecar invoke is rejected. X-ray analysis in coordinator context is

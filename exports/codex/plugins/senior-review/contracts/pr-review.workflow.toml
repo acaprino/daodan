@@ -6,6 +6,9 @@ roles = [
   "senior-review/code-auditor",
   "senior-review/security-auditor",
   "senior-review/premise-auditor",
+  "react-development/react-performance-optimizer",
+  "typescript-development/type-safety-auditor",
+  "platform-engineering/platform-reviewer",
 ]
 isolated = true
 inline_workers = true

@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: senior-review:premise-auditor; version: 13.0.0; source-sha256: 46f712af87918fa5e7510b6f23532cbb685e11bac9924b5ab8e730fe12abcfde. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:premise-auditor; version: 14.0.0; source-sha256: 46f712af87918fa5e7510b6f23532cbb685e11bac9924b5ab8e730fe12abcfde. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`: qualify it with that owner's namespace. The owning plugin's registered skills are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

@@ -1,6 +1,6 @@
 # Claude Code Agent Teams — Best Practices Reference
 
-> Cross-cutting knowledge base for designing, reviewing, and restructuring agentic teams in Claude Code. Used to inform changes to the team pipelines in this marketplace (project-lifecycle, senior-review, review-plus, codebase-xray, project-knowledge, research) and the upstream wshobson/agents agent-teams plugin they build on, plus any agent that participates in a multi-agent pipeline.
+> Cross-cutting knowledge base for designing, reviewing, and restructuring agentic teams in Claude Code. Used to inform changes to the team pipelines in this marketplace (project-lifecycle, senior-review, codebase-xray, project-knowledge, research) and the upstream wshobson/agents agent-teams plugin they build on, plus any agent that participates in a multi-agent pipeline.
 >
 > **Snapshot date:** 2026-05-16. Re-verify when Claude Code crosses a minor version or when the agent-teams feature flag is graduated out of experimental.
 
@@ -146,8 +146,8 @@ roles. This development reference explains their purpose:
 
 ## Verification panel + completeness critic (review pipelines)
 
-Universal review (`/senior-review:team-review`, `/senior-review:code-review`) and
-the extended `review-plus` entries use the same canonical
+Unified review (`/senior-review:team-review`, `/senior-review:code-review`,
+`/senior-review:pr-review`), including applicable stack specialists, uses the canonical
 [`senior-review:review-quality-gates`](../../plugins/senior-review/skills/review-quality-gates/SKILL.md)
 through `review-consolidation`. The canonical panel and completeness critic are
 loaded methods, rather than copied detection prompts:
@@ -230,7 +230,6 @@ adapter bindings when changing:
 
 - `plugins/codebase-xray/` — partition worker and synthesizer agents that participate in `/team-analyze`.
 - `plugins/senior-review/` — every reviewer agent that participates in `/team-review` Phase 2.
-- `plugins/review-plus/`: specialist selections composed with the canonical senior review methods.
 - `plugins/project-lifecycle/` and `plugins/project-protocol/`: specialist dispatch, generic isolated tasks, delivery accounting and candidate gates.
 - `plugins/project-knowledge/`: assigned writers in the file/audience guide plan.
 - `plugins/research/` — `/research:team-research` is the lead; `deep-researcher` investigates one sub-question per parallel wave; `quick-searcher` handles single-fact lookups and verifier duty.

@@ -30,8 +30,8 @@ Start with [project-lifecycle](plugins/project-lifecycle.md):
 
 Shared records and recovery belong to [project-protocol](plugins/project-protocol.md).
 Instructions, guides and README belong to [project-knowledge](plugins/project-knowledge.md).
-[senior-review](plugins/senior-review.md) provides universal review;
-[review-plus](plugins/review-plus.md) adds React, TypeScript and platform dimensions.
+[senior-review](plugins/senior-review.md) provides one correctness review, selecting
+React, TypeScript and platform dimensions when the target warrants them.
 [testing](plugins/testing.md) owns test quality, authoring and remediation.
 Language, framework, infrastructure and product extras remain independently useful
 and are listed in the catalog.

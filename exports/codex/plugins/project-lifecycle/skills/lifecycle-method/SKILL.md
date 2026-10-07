@@ -41,7 +41,7 @@ Preview is the default for assess/repair/retention. --fix authorizes in-scope ed
 artifact deletion by itself. Existing human authorization persists in its scope.
 State missing permissions and actual design ambiguities against a concrete plan.
 
-Default depth is quick, one initial audit round, at most five selected workers
+Default assessment depth is quick, one initial audit round, at most five selected workers
 in total, including documentary workers from reused methods. Selection is a
 budgeted coverage plan; a broad focus does not bypass that cap. Declare unexamined
 dimensions and offer a larger explicitly selected depth when needed.
@@ -55,7 +55,8 @@ scope and dependencies remain valid.
 
 Load the selected skills before their operation: project-knowledge:project-knowledge,
 project-knowledge:instructions-method and project-knowledge:readme-craft for knowledge;
-senior-review:review-preparation and senior-review:review-consolidation for review;
+senior-review:review-preparation and senior-review:review-consolidation for assessment
+evidence; senior-review:review-method for candidate correctness review;
 testing:test-preparation and testing:test-remediation-method for suite operations;
 abstraction-architect:abstraction-architect for structural diagnosis;
 Load the codebase-xray:xray-method skill for static context.
@@ -66,7 +67,8 @@ by the requested scope, never a second detector prompt.
 | Need | Load or dispatch |
 |---|---|
 | Static context and exact X-ray run binding | codebase-xray:analyze, in coordinator context |
-| Universal correctness and provenance consolidation | senior-review:review-preparation and senior-review:review-consolidation |
+| Candidate correctness, including applicable stack specialists | senior-review:review-method |
+| Assessment provenance consolidation | senior-review:review-preparation and senior-review:review-consolidation |
 | Application subtraction | senior-review:application-cleanup-method |
 | Suite preparation and remediation | testing:test-preparation and testing:test-remediation-method |
 | Test authoring | testing:test-writer |

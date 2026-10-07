@@ -14,6 +14,16 @@ that gate unavailable and preserve the candidate for review.
 Use testing:test-preparation for runner/configuration and meaningful protection.
 Passing self-generated assertions alone does not establish a correct oracle.
 Review affected contracts and failure paths through senior-review:review-method.
+Pass the run's resolved scope, captured baseline and exact candidate bindings to
+senior-review:review-preparation for the code-review variant, with this run's
+output root. Include full scoped untracked-file content and any baseline evidence;
+declare unavailable comparisons. Supply that same prepared bundle to review-method
+so it cannot auto-select an unrelated Git diff or last commit, or prepare twice.
+The same preparation selects applicable React, TypeScript and platform workers;
+their required provider bindings are declared by this lifecycle entry. Present
+the complete review selection and expected cost before dispatch. The assessment's
+quick audit cap does not remove a required correctness dimension from a candidate
+gate. Reuse only snapshot-bound deliveries and report failed or unavailable ones.
 Use knowledge audit for consequences outside the diff, and abstraction audit for
 changed concept ownership. Scope these operations to risk; do not launch all
 auditors on an unrelated one-line change.

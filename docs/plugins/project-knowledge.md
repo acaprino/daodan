@@ -80,7 +80,7 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 |---|---|
 | Direct local | [codebase-xray](<codebase-xray.md>), [project-protocol](<project-protocol.md>), [senior-review](<senior-review.md>), [text-humanizer](<text-humanizer.md>) |
 | Direct external | None |
-| Local closure (8) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [project-knowledge](<project-knowledge.md>), [project-protocol](<project-protocol.md>), [repo-hygiene](<repo-hygiene.md>), [senior-review](<senior-review.md>), [testing](<testing.md>), [text-humanizer](<text-humanizer.md>) |
+| Local closure (11) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [platform-engineering](<platform-engineering.md>), [project-knowledge](<project-knowledge.md>), [project-protocol](<project-protocol.md>), [react-development](<react-development.md>), [repo-hygiene](<repo-hygiene.md>), [senior-review](<senior-review.md>), [testing](<testing.md>), [text-humanizer](<text-humanizer.md>), [typescript-development](<typescript-development.md>) |
 | External closure (2) | `developer-essentials@claude-code-workflows`, `mattpocock-skills@mattpocock` |
 
 External bundles are separate upstream installations, not copied local skills.

@@ -104,6 +104,12 @@ installation cost. Installing the core
 lifecycle is a larger choice than installing a leaf tool such as repo-hygiene or
 project-protocol.
 
+senior-review has one review engine across code, team and PR entries. Its React,
+TypeScript and platform providers are mandatory installation dependencies; target
+signals decide which workers run. The lifecycle's candidate reviews use that same
+engine and expose those provider bindings on every host. Independently callable
+specialist commands remain in their domain plugins.
+
 ## Component and entry mapping
 
 Paths below are relative to a generated `exports/<host>/plugins/<plugin>/` package,

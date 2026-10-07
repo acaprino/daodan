@@ -35,3 +35,7 @@ Finish only when required actions/gates and deliveries are accounted for. Leave
 incompatible commit-only actions, unavailable gates and unresolved design decisions
 visible. Re-check documents/instructions outside the diff affected by the repair.
 
+For repaired candidates, use senior-review:review-method's code-review variant
+with this run's exact snapshot and output root, following the verify reference.
+Include applicable stack specialists in the same review and candidate gate.
+

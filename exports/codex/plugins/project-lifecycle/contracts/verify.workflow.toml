@@ -14,7 +14,23 @@ consumes = ["artifact:work"]
 produces = ["artifact:result"]
 
 [dispatch]
-roles = ["project-knowledge/instructions-auditor","project-knowledge/documentation-engineer","project-knowledge/guide-reviewer","senior-review/code-auditor","senior-review/security-auditor","senior-review/ui-race-auditor","senior-review/temporal-resilience-auditor","senior-review/data-integrity-auditor","senior-review/resource-lifecycle-auditor","senior-review/premise-auditor","abstraction-architect/abstraction-architect-agent","testing/test-suite-auditor"]
+roles = [
+  "project-knowledge/instructions-auditor",
+  "project-knowledge/documentation-engineer",
+  "project-knowledge/guide-reviewer",
+  "senior-review/code-auditor",
+  "senior-review/security-auditor",
+  "senior-review/ui-race-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/premise-auditor",
+  "abstraction-architect/abstraction-architect-agent",
+  "testing/test-suite-auditor",
+  "react-development/react-performance-optimizer",
+  "typescript-development/type-safety-auditor",
+  "platform-engineering/platform-reviewer",
+]
 isolated = true
 inline_workers = true
 

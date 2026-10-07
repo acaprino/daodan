@@ -2,6 +2,14 @@
 
 Data: 7 ottobre 2026. Disegno di attuazione della ristrutturazione completa delegata dall'utente. La distribuzione resta pubblica, neutrale e costruita da kernel e adapter per cinque host.
 
+Questo documento registra il disegno della distribuzione 30.0.1. La distribuzione
+31.0.0 corregge la separazione fra senior-review e review-plus: senior-review
+seleziona anche gli specialisti React, TypeScript e piattaforma nello stesso motore.
+La scelta del bundle separato nelle sezioni seguenti è superata. La
+[migrazione aggiornata](../../migration-to-coherent-harness.md) e il
+[record di verifica](../reports/2026-10-07-daodan-unified-review-validation.md)
+descrivono la correzione e il costo delle dipendenze obbligatorie.
+
 ## 1. Intento e promessa del prodotto
 
 Daodan accompagna lo sviluppo di un progetto con IA e si prende carico delle conseguenze del lavoro. Ogni intervento lascia il progetto coerente, verificabile e comprensibile, in proporzione al suo impatto: comportamento, codice, test, conoscenza e artefatti devono continuare ad accordarsi.

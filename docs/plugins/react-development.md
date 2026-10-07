@@ -99,7 +99,7 @@ React performance and optimization review. Audits state management, analyzes bun
 
 ---
 
-**Related:** [review-plus](review-plus.md) (signal-selected React performance dimension in code-review, team-review and pr-review) | [frontend-review](frontend-review.md) (React performance alongside design and UX) | [typescript-development](typescript-development.md) (TypeScript architecture and implementation)
+**Related:** [senior-review](senior-review.md) (signal-selected React performance dimension in code-review, team-review and pr-review) | [frontend-review](frontend-review.md) (React performance alongside design and UX) | [typescript-development](typescript-development.md) (TypeScript architecture and implementation)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference

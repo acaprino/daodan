@@ -31,7 +31,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `code-auditor`, `premise-auditor`, `project-protocol:isolated-worker`, `security-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `code-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `security-auditor`, `typescript-development:type-safety-auditor`
 - Workers may write only intermediate reports explicitly assigned by the coordinator.
   The final report artifact has one exclusive owner in its declaring phase.
 
@@ -41,10 +41,13 @@ Dispatch plan:
 
 Role body bindings (load the complete body only for the selected worker):
 
+- `platform-engineering:platform-reviewer`: read `contracts/dispatch/platform-engineering/platform-reviewer.md` inside this package and pass its complete role body verbatim.
 - `project-protocol:isolated-worker`: read `contracts/dispatch/project-protocol/isolated-worker.md` inside this package and pass its complete role body verbatim.
+- `react-development:react-performance-optimizer`: read `contracts/dispatch/react-development/react-performance-optimizer.md` inside this package and pass its complete role body verbatim.
 - `code-auditor`: read `skills/senior-review-code-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `premise-auditor`: read `skills/senior-review-premise-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `security-auditor`: read `skills/senior-review-security-auditor/SKILL.md` inside this package and pass its complete body verbatim.
+- `typescript-development:type-safety-auditor`: read `contracts/dispatch/typescript-development/type-safety-auditor.md` inside this package and pass its complete role body verbatim.
 - Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph and record-schema references are in `contracts/pr-review.workflow.toml`.
@@ -58,7 +61,7 @@ Resolve this entry's existing target and flags through `senior-review:review-pre
 The method owns dispatch, delivery accounting, consolidation and reporting. Keep the
 seven native review contracts; operational records use `project-protocol` envelopes.
 
-This universal review includes testing, structural entropy and workspace hygiene.
-React performance, TypeScript type safety and platform integration belong to
-`/review-plus:pr-review`. Include this coverage boundary in the review plan.
+The same PR assessment selects React performance, TypeScript type safety and
+platform integration when the target warrants them. Their findings and coverage
+gaps enter the native risk assessment and PR description through one consolidation.
 
