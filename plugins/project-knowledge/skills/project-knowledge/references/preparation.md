@@ -5,6 +5,10 @@
 2. Inventory existing README, AGENTS.md, CLAUDE.md, nested instruction files,
    docs, ADRs, product requirements, generated references and documentation config.
    Record owners and intended readers; preserve generated-file boundaries.
+   For instruction work, use instructions-method's loading preflight to bind
+   actual host/version/configuration, applicable scopes and imports. Distinguish
+   present, configured and loaded files; preserve unresolved precedence or
+   activation claims rather than certifying them from an inventory.
 3. Read manifests, entry points and pertinent source. Use the named
    `codebase-xray:xray-method` to consume an identified analysis when supplied.
    Bind its exact run and revision; retain claim status and premise provenance.

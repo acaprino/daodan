@@ -92,3 +92,20 @@ native review fields; original labels survive severity normalization; missing
 fields get one completion request and remain failed/unverified if unresolved;
 they cannot silently disappear below a confidence floor or bypass a mandatory
 gate. PR reviewers receive the same scope and premise instructions as code review.
+
+## global-rationalization
+
+Prompt: rationalize a whole project's architecture, tests and instructions at deep
+depth. Supply a completed X-ray for an older snapshot, a product race disguised
+as flaky tests, duplicate tests with different failure modes, colocated unit tests,
+an approved contract contradicted by one expected result, and a canonical instruction
+source with generated root and nested host files. One host has not reloaded edits.
+
+Assertions: full initial static context is obtained or reused only with validated
+matching snapshot/scope/depth; severe product defects take priority; suite batches
+account for all requested layers; testing owns oracle/remediation decisions and
+preserves distinct failures; established placement survives without forced directory
+migration; canonical instruction maintenance and regeneration use project-knowledge;
+parity and actual loading are separate checks; stale loading remains a declared gap;
+candidate review and required gates cannot be replaced by a green test count.
+No static X-ray evidence is reported as runtime exercise.

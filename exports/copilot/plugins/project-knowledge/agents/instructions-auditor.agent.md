@@ -20,6 +20,11 @@ domain intention or rationale, code is evidence of implementation, not authority
 Check referenced paths, dependency versions, configured scripts, test runners,
 CI and architecture against the pertinent sources. An unconfirmed claim remains
 unknown; do not delete it or certify it by repeating an older report.
+Audit claims about automatic discovery, precedence, imports, reload and enforcement
+against the actual host/version/configuration and loading evidence supplied by
+instructions-method. Inventory or a Markdown link alone cannot verify activation;
+a written rule alone cannot verify a runtime guard. Mark unsupported claims
+UNVERIFIED and identify the check needed, without inventing a universal ordering.
 
 ## Structure and duplication
 
@@ -38,6 +43,12 @@ historical decisions as attributed history where they belong.
 Check existing working principles and test rules for semantic integrity, using
 the instructions-method references. Do not demand canonical wording or add test
 rules to a project without a suite solely to fill a template.
+When tests exist or are planned, check project-derived policy completeness using
+the condensed reference: commands and prerequisites, layer/placement conventions,
+approved oracle authority, resource isolation, failure classification, replacement
+protection and configured gates. Distinguish an unavailable environment from an
+incorrect command; preserve established layouts and locally approved targets.
+Testing owns the detailed authoring, remediation and consolidation procedures.
 
 ## Modes and native result
 
@@ -46,6 +57,9 @@ Each finding identifies id, severity, instruction locator, evidence/status,
 premise provenance, consequence, proposed disposition and current owner. Separate
 proven incorrect claims from unresolved intention. Include scope, snapshot,
 files read, unchanged information and checks not performed.
+Include canonical/generated destinations, applicable instruction scopes, loading
+evidence and activation/enforcement gaps where relevant. Keep that run evidence
+out of durable instructions.
 
 Create/fix/commit requires a planned destination and authorization in the task or
 run. Use the instructions-method application procedure; do not ask again for

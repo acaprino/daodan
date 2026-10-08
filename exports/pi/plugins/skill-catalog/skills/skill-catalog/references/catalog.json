@@ -624,7 +624,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -639,7 +639,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
@@ -660,7 +660,7 @@
       "topics": [
         "readme"
       ],
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.",
@@ -675,7 +675,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "description": "Canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before recording, resuming or closing a project intervention.",
@@ -1219,7 +1219,7 @@
         "testing",
         "tests"
       ],
-      "version": "3.0.1"
+      "version": "3.1.0"
     },
     {
       "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence.",
@@ -1234,7 +1234,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "3.0.1"
+      "version": "3.1.0"
     },
     {
       "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance.",
@@ -1249,7 +1249,7 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "3.0.1"
+      "version": "3.1.0"
     },
     {
       "description": "Knowledge base of the 24 catalogued patterns, with the ground rules against invented content, the register table and the language policy that govern every rewrite. TRIGGER WHEN: editing or reviewing text to remove AI traces, or when asked to humanize text.",

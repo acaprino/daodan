@@ -13,6 +13,9 @@ that gate unavailable and preserve the candidate for review.
 
 Use testing:test-preparation for runner/configuration and meaningful protection.
 Passing self-generated assertions alone does not establish a correct oracle.
+For suite changes, verify the accepted behavior inventory, independent failure modes,
+resource isolation and replacement protection through the testing methods. Record
+wrong-oracle evidence separately from product corrections and environmental failures.
 Review affected contracts and failure paths through senior-review:review-method.
 Pass the run's resolved scope, captured baseline and exact candidate bindings to
 senior-review:review-preparation for the code-review variant, with this run's
@@ -27,6 +30,13 @@ gate. Reuse only snapshot-bound deliveries and report failed or unavailable ones
 Use knowledge audit for consequences outside the diff, and abstraction audit for
 changed concept ownership. Scope these operations to risk; do not launch all
 auditors on an unrelated one-line change.
+
+When instructions or their dependencies changed, use
+project-knowledge:instructions-method to verify canonical/generated parity, applicable
+scope, actual commands and prerequisites, and project-specific test policy. Distinguish
+a file on disk from evidence that the intended host loaded it. Record required reloads,
+new-session checks and enforcement limits. A required loading probe without evidence
+stays unavailable; successful synchronization alone cannot satisfy it.
 
 Static inventory/read coverage and runtime exercised paths are separate. Source
 review cannot assert browser functionality. Missing credentials, unavailable

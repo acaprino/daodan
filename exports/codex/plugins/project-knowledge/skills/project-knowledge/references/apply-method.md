@@ -24,6 +24,10 @@ their current sources. Use documentation build/link checks only when permitted b
 the project. A command existing in a manifest is not proof it was run. Record
 external URLs and runtime examples not checked. Re-audit affected claims and
 untouched consumers made stale by the change. Commit only when authorized.
+For instruction changes, follow the instructions-method loading preflight:
+regenerate from the canonical owner, verify scoped copy parity and report required
+reload/new-session checks separately from file verification. Keep unknown host
+activation and enforcement claims open without inventing a successful probe.
 
 Record applied/retained/open findings, delivered files, source references,
 checks and gaps in the owned run. A changed input or failed required check leaves

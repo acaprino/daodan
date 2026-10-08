@@ -1,13 +1,17 @@
 # Example: Good CLAUDE.md File
 
-This is an example of a well-structured `CLAUDE.md` file following best practices.
+This is a hypothetical `CLAUDE.md` for a small task-management project. Versions,
+paths, commands, thresholds and product policies illustrate structure; none is a
+default for another project. Derive the target's facts before applying the example.
+Its filename suits the illustrated host only when discovery/configuration confirms
+it; ordinary Markdown links below do not establish automatic imports or loading.
 
 ## Key Characteristics
 
 - **Single entry point**: Structure and overview in one file, references existing docs for deep dives
 - **Evergreen structure shape**: top-level layout + repeating patterns + role per category. File-by-file annotation is used here for *specific* reasons (see note below), not as the default
-- **Grounded**: All claims verifiable in codebase
-- **Proportional**: Length scales with project complexity (this example: ~140 lines)
+- **Grounded**: A real project's claims must be verified against its sources
+- **Proportional**: Length scales with project complexity and necessary guidance
 - **Pointers not copies**: References files, doesn't duplicate code
 - **Universal applicability**: Only always-relevant guidance
 
@@ -34,7 +38,7 @@ The principle is **evergreen shape, not exhaustive enumeration**. File-by-file a
 
 ---
 
-```markdown
+````markdown
 # Project Context
 
 This is a React 18 + TypeScript web application for task management.
@@ -96,6 +100,12 @@ npm run dev
 ```
 
 **Run tests:**
+Run from the repository root after the lockfile installation with `npm ci` and
+the Node version declared by this project's toolchain file. E2E additionally needs
+the configured Playwright browsers, the test application and the disposable test
+API described in `docs/testing-guide.md`; use its fixture reset and cleanup rules.
+Do not substitute production credentials or claim a production check from a local
+test run.
 ```bash
 npm test              # Unit tests with Vitest
 npm run test:e2e      # E2E tests with Playwright
@@ -134,7 +144,15 @@ Pre-commit hooks run Biome and type checking automatically.
 
 **Unit tests:** Vitest for components and utilities
 **E2E tests:** Playwright for user flows
-**Coverage:** Target 80%+ (run `npm run coverage`)
+**Coverage:** This example assumes a locally approved 80% target configured in the
+project's coverage gate (`npm run coverage`); it is not a default for other projects
+or evidence that individual behaviors are protected.
+
+Expected results come from approved product requirements or independently checked
+contracts. A wrong expectation may be corrected with that evidence; a product
+regression retains its active failing check until the code is repaired. Unit tests
+may control IO boundaries; the E2E lane exercises its configured real test services.
+Deterministic clocks, isolated state and resource cleanup follow the testing guide.
 
 See `docs/testing-guide.md` for detailed testing patterns.
 
@@ -163,14 +181,17 @@ See `docs/deployment.md` for environment variables and configuration.
 ## Test-Suite Rules
 
 Test ownership: source at unit; behavior at integration, contract and e2e.
+Assertion protection: Preserve assertions for approved behavior; correct a wrong oracle only with independent authority and evidence, while keeping valid product protection active.
+Test retirement: Retire tests only for retired behavior or verified equivalent replacement protection in the same candidate; counts, coverage, age and refactoring alone are insufficient.
 
 1. Search before writing: find the existing owner for the intended layer and behavioral scope, and extend it. A parallel file for the same owner requires a justified scope split.
 2. Unit tests mirror source ownership (for example `src/foo/bar.py` maps to `tests/unit/foo/test_bar.py`), following this project's convention. Integration, contract and e2e tests belong to a flow, endpoint or contract and may span several source modules.
-3. Keep test layers explicit (unit, integration, e2e), each in its own directory with a runtime budget. A new test goes in the lowest layer that can express the behavior.
-4. Test behavior through public interfaces, never implementation details. A refactor that preserves behavior must not break tests.
-5. Never mark a test skipped (`.skip`, `xfail`, `@Disabled`, or equivalent) to make CI pass. Fix it, or quarantine it with a tracked reason.
-6. Never weaken an assertion to make a failing test pass. A failing assertion is a signal about the code, not an obstacle in the test.
-7. Retire tests only with retired behavior, in the same commit. Refactors, renames and migrations preserve and retarget meaningful protection.
+3. Keep layers explicit through established directories, colocated paths or runner markers. Use measured runtime budgets. Choose the lowest layer that protects the required behavior; unit coverage does not replace a distinct integration or contract check.
+4. Prefer observable contracts. Internal access, interaction/order assertions and boundary doubles require a meaningful boundary or diagnostic regression purpose; a repository-owned IO adapter may be such a boundary. A mocked adapter does not verify real persistence or wire behavior.
+5. Classify product defects, wrong oracles, environment failures and intermittence before suppressing a test. Do not skip or weaken checks to make CI pass. Legitimate platform/feature conditions and quarantine follow the project's tracked policy, with active protection and restoration obligations preserved.
+6. Derive expected results from independent approved authority. Follow Assertion protection when correcting an expectation; changing code and its oracle together cannot establish correctness.
+7. Follow Test retirement before consolidation or removal. Refactors, renames and migrations preserve and retarget meaningful outcomes and independent failure modes.
+8. Resource-dependent tests control incidental time, randomness and environment, isolate mutable filesystem/database state and release fixtures, async work and handles on every exit. The project's testing guide records permitted real services, setup and cleanup.
 
 ## Working Principles
 
@@ -220,7 +241,7 @@ Give each shared concept an explicit owner within its domain. Before adding an e
 - Component guidelines: `docs/components.md`
 - Testing guide: `docs/testing-guide.md`
 - Deployment guide: `docs/deployment.md`
-```
+````
 
 ## Why This Works
 
@@ -229,18 +250,18 @@ Give each shared concept an explicit owner within its domain. Before adding an e
 1. **Detailed Structure as Single Entry Point**
    - File-by-file mapping lets Claude navigate directly to relevant code
    - References existing docs/ for deep dives on complex topics
-   - Length (~120 lines) is proportional to project complexity, not artificially capped
+   - Length follows necessary project guidance, not an arbitrary cap or quota
 
-2. **Grounded in Reality**
+2. **Sources to Verify**
    - "React 18.2" → verifiable in package.json:12-13
    - "Vite 5.x" → verifiable in vite.config.ts
    - "Zustand" → verifiable in src/store/
-   - File paths reference actual locations
+   - Verify every illustrated path against the target's current locations
 
 3. **Progressive Disclosure**
    - "See `docs/architecture.md`" instead of embedding architecture
    - "See `docs/testing-guide.md`" instead of full testing docs
-   - References actual files: `src/hooks/useApi.ts`
+   - Use the target's actual equivalent of `src/hooks/useApi.ts`
 
 4. **Pointers Not Copies**
    - "ALWAYS follow patterns in `src/hooks/`" → points to code
@@ -273,20 +294,20 @@ Give each shared concept an explicit owner within its domain. Before adding an e
 - No outdated dependencies
 - No over-instruction
 
-### 📊 Metrics
+### Verification for a real project
 
-- **Lines:** ~140 (proportional to project complexity: no hard cap) ✅
-- **Structure detail:** Every significant file/directory mapped with purpose ✅
-- **File references:** All verified to exist ✅
-- **Commands:** All verified in package.json ✅
-- **Single entry point:** References existing docs for depth ✅
-- **Code duplication:** None ✅
+Check the target's current paths, dependencies and configured commands before
+publishing. Record permitted commands actually run and unavailable prerequisites;
+an illustrative command or a manifest entry is not execution evidence. Verify the
+selected root/nested instruction scopes and canonical-copy parity separately from
+host loading or enforcement. Keep the evidence in the owned run, with unresolved
+checks visible.
 
 ## Contrast: Bad CLAUDE.md Example
 
 Here's what NOT to do:
 
-```markdown
+````markdown
 # Bad Example (450 lines)
 
 ## Code Style
@@ -330,7 +351,7 @@ src/utils/helpers.ts contains utility functions
 
 We plan to use Jest for testing
 [PROBLEM: No approved intention is attributed, and the reader cannot distinguish planned tooling from the runner actually configured]
-```
+````
 
 **Problems:**
 - Detailed catalogs obscure the instructions and their authoritative owners
@@ -349,6 +370,9 @@ Before accepting a CLAUDE.md, verify:
 - [ ] Project structure documents the evergreen shape (top-level layout + structural patterns + role per category); file-by-file annotation only where names alone are ambiguous, where the file is a key entry point, or to disambiguate siblings: no exhaustive trees
 - [ ] All file paths exist
 - [ ] Commands match their configured sources; permitted execution and unperformed checks are distinguished
+- [ ] Test commands have actual prerequisites and isolation rules; project-approved thresholds and real versus controlled-boundary lanes are clear
+- [ ] Instruction discovery, imports, scopes, canonical-copy synchronization and activation are verified for the actual host or labelled unknown
+- [ ] Markdown guidance is distinguished from measured hook, permission, sandbox or CI enforcement
 - [ ] All dependencies are accurate
 - [ ] No code duplication
 - [ ] No style policing

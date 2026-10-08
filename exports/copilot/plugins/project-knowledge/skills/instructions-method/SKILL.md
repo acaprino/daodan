@@ -14,10 +14,15 @@ mode, existing files, evidence paths and authorizations. Reuse the caller's run.
 
 ## Destination and authority
 
+Read `references/instruction-loading.md` during preparation. Bind the actual
+host/version, configured discovery and applicable root/nested scopes; a file's
+presence does not prove it is loaded or enforceable. Record evidence and unknowns
+in the owned run rather than assuming every host reads the same files.
+
 Use explicit user destinations first, then the project's existing authoritative
 instruction file and documented synchronization rule. For a new project, use the
-active host's instruction mechanism (AGENTS.md for Codex, CLAUDE.md for Claude,
-or the host's configured rules). If the binding is unknown, present concrete
+mechanism confirmed for the active host/configuration (for example AGENTS.md for
+Codex, CLAUDE.md for Claude, or configured rules). If the binding is unknown, present concrete
 destinations before writing; do not invent a universal filename. Multiple hosts
 may use generated or thin-pointer copies only under an explicit project rule.
 Never maintain two independent contradictory instruction sets. Honor nested
@@ -30,6 +35,9 @@ checking claims. Map evergreen categories and ownership rather than every file.
 Read approved requirements/decisions separately from implementation. A supplied
 X-ray is consumed through `codebase-xray:xray-method`, bound to its exact run and
 snapshot, preserving unknown/disputed claims and inherited premise provenance.
+For test guidance, derive the policy from this project's configured commands,
+services, conventions and approved behavior. Check its completeness with
+`references/test-suite-rules.md`; do not turn a template into project authority.
 
 ## Audit and create
 
@@ -54,5 +62,10 @@ support; distinguish them from disproved claims. Resolve uncertain intent before
 changing an obligation. Extract repeated detail to existing docs with a working
 pointer when authorized; keep the primary entry point coherent. Recheck paths,
 commands, instruction scope and generated-copy parity before recording completion.
+Apply the project's synchronization rule from its canonical owner. Distinguish
+verified generated parity from instruction activation: use a supported reload or
+new session when required, or record the unperformed loading check and its effect
+on the active run. Never claim a textual obligation is mechanically enforced
+without evidence of the actual guard in the relevant environment.
 Run status, task lists, temporary paths and one-run results stay in the operational
 record, never in durable instructions.

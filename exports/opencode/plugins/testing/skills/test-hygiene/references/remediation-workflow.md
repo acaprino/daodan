@@ -45,4 +45,9 @@ Mutation testing supplies additional evidence by mutating code and recording whi
 | Rust | cargo-mutants |
 | .NET | Stryker.NET |
 
-Run it as a weekly CI job, never per-commit (CI time cost). Feed surviving mutants into the next audit's D8 dimension (never-failing tests) so pruning decisions rest on data. On a still-dirty suite, mutation results are too noisy to act on; classify existing failures and establish a comparable baseline first.
+Choose a project-approved scope and cadence from measured cost, risk and CI budget;
+fast changed-code runs can be commit gates while costly full-suite runs can be
+scheduled. The audit consumes available reports without launching a new mutation
+job. Feed valid, non-equivalent reachable survivors into investigation of missing
+behavioral protection, not automatic pruning. Classify existing failures and
+establish a comparable baseline before treating mutation results as gate evidence.

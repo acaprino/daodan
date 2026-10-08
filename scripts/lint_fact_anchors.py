@@ -56,6 +56,16 @@ from pathlib import Path
 _COUNT = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)"
 
 ANCHORS = {
+    "test-assertion-protection": (
+        "plugins/testing/skills/test-hygiene/SKILL.md",
+        r"(?m)^Assertion protection: ([^\n]+)$",
+        "Independent oracle corrections and active product protection must agree across instruction copies",
+    ),
+    "test-retirement-protection": (
+        "plugins/testing/skills/test-hygiene/SKILL.md",
+        r"(?m)^Test retirement: ([^\n]+)$",
+        "Retirement needs retired behavior or verified equivalent replacement in the same candidate",
+    ),
     "test-layer-ownership": (
         "plugins/testing/skills/test-hygiene/SKILL.md",
         r"(?m)^Test ownership: ([^\n]+)$",

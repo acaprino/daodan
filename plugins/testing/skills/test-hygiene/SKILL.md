@@ -21,12 +21,18 @@ Test ownership: source at unit; behavior at integration, contract and e2e.
 Full protocol with per-rule detail in `references/prevention-rules.md`. The condensed form:
 
 1. **Search before writing.** Locate the existing owner for the intended layer and behavioral scope, and extend it. A parallel file for the same owner requires a justified scope split.
-2. **Deterministic ownership per layer.** Unit tests: one test file per source file, mirroring the source path (`src/foo/bar.py` maps to `tests/unit/foo/test_bar.py`), following the project's established convention. Integration, contract, and e2e tests are behavior-owned: one file per behavioral scope (a flow, an endpoint, a contract), legitimately spanning several source modules. The violation at those layers is an unexplained second file for the same scope, not multi-module reach.
-3. **Explicit layers** (unit, integration, e2e), each in its own directory with a runtime budget. A new test goes in the lowest layer that can express the behavior.
-4. **Behavior, not implementation.** Test through public interfaces. A refactor that preserves behavior must not break tests.
-5. **No skip markers to get green.** Fix the test, or quarantine it with a tracked reason.
-6. **Never weaken an assertion** to make a failing test pass. A failing assertion is a signal about the code, not an obstacle in the test.
-7. **Retire tests only with retired behavior**, in the same commit. Refactors, renames and migrations preserve and retarget meaningful protection.
+2. **Deterministic ownership per layer.** Unit tests: one primary test file per source file, mirroring the source path (`src/foo/bar.py` maps to `tests/unit/foo/test_bar.py`), following the project's established convention and documenting justified scope splits. Integration, contract, and e2e tests are behavior-owned: one primary file per behavioral scope (a flow, an endpoint, a contract), legitimately spanning several source modules. The violation at those layers is an unexplained second file for the same scope, not multi-module reach.
+3. **Explicit layers** (unit, integration, contract, e2e) with runtime budgets, identified through the project's directories, colocated paths or runner markers. A new test goes in the lowest layer that can prove its contract without hiding the relevant boundary.
+4. **Behavior through justified interfaces.** Prefer observable contracts. Internal access, boundary doubles and ordering checks require a named boundary or diagnostic regression; inspect their purpose before rewriting them.
+5. **No skip markers to get green.** Classify product, oracle, environment and intermittent failures before repair or accepted temporary quarantine. A tracked reason alone does not justify losing regression protection.
+
+Assertion protection: Preserve assertions for approved behavior; correct a wrong oracle only with independent authority and evidence, while keeping valid product protection active.
+
+Test retirement: Retire tests only for retired behavior or verified equivalent replacement protection in the same candidate; counts, coverage, age and refactoring alone are insufficient.
+
+Refactors, renames and migrations preserve and retarget meaningful protection.
+Resource-dependent tests follow the isolation and reproduction checklist in
+`references/prevention-rules.md`, rule 9.
 
 ## The remediation ladder
 
@@ -45,11 +51,11 @@ Defaults; a project's own convention overrides them.
 
 | Layer | Contains | Budget (default) |
 |---|---|---|
-| `unit` | Pure logic, no I/O, no mocks of internal modules | Individual test under 100ms; whole layer under 60s |
+| `unit` | Isolated behavior, controlled doubles at justified boundaries, no real external I/O | Individual test under 100ms; whole layer under 60s |
 | `integration` | Real boundaries (DB, HTTP, filesystem) via containers or fixtures | Whole layer under 5min |
 | `e2e` | Critical user flows only | Project-defined runtime budget; justified critical flows and failure modes, no test quota |
 
-A behavior's primary proof lives at ONE layer. Cross-layer overlap is duplication only when two tests protect substantially the same failure mode through the same observable contract without adding independent risk coverage; a calculation checked at unit, its persistence at integration, and the user flow at e2e are three behaviors, not one repeated. When a unit test needs a database, it is an integration test in the wrong directory; move it instead of mocking the database.
+A behavior's primary proof lives at ONE layer. Cross-layer overlap is duplication only when two tests protect substantially the same failure mode through the same observable contract without adding independent risk coverage; a calculation checked at unit, its persistence at integration, and the user flow at e2e are three behaviors, not one repeated. A test that crosses a real database boundary belongs in integration. A controlled database-port double can isolate service behavior at unit, but cannot prove SQL, transactions or persistence; those contracts require the real boundary in an appropriate test lane.
 
 ## Related knowledge
 

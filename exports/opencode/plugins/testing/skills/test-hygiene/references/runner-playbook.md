@@ -43,9 +43,12 @@ Notes:
 
 ## Flaky detection
 
-Flakiness is proven by disagreement between identical runs, never inferred from style alone.
+Intermittence is demonstrated by disagreement under comparable recorded conditions,
+never inferred from style alone. It is an observation: a product race, environment
+failure or test isolation defect still needs classification before quarantine.
 
 1. Preferred: rerun the suite (or the suspect subset) 3-5 times and diff the outcomes. `pytest -p no:randomly --lf`, `vitest run --retry=0` repeated, `go test -count=5 ./pkg/...`, `cargo test` repeated.
-2. Where CI history is accessible (`gh run list` / `gh api`), passes and failures of the same commit across attempts are equivalent evidence and cost no local runtime.
+2. Where CI history is accessible (`gh run list` / `gh api`), compare attempts of the same candidate, command/configuration and service lane. Preserve job/attempt identities; changed environments cannot be treated as identical runs merely because the commit matches.
 3. Static signatures justify SUSPICION only (report as candidates, not findings): real timestamps or `sleep` in tests, shared mutable module state, order-dependent fixtures, unmocked network calls, port or tmpdir collisions.
 4. Randomized-order plugins (`pytest-randomly`, Jest `--randomize`) convert order-dependence into reproducible failures; note their absence in the audit when order-coupling is suspected.
+5. Apply prevention rule 9 to state/resource leads. Keep seeds, ordering, clock and service state with the attempt evidence. Record all outcomes; retries cannot hide a failing required gate. An evidenced product race keeps active regression protection.

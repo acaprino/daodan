@@ -13,5 +13,5 @@ Collect through the host shell, using the playbook's per-runner commands:
 
 1. Test file list and per-layer counts (list-tests command; no execution).
 2. Skip/disable marker counts (grep table from the skill's `prevention-rules.md` section 6).
-3. Unless `--no-run`: one timed full run (pass/fail/skip counts, total runtime, top-10 slowest), plus 2 to 4 reruns of the failing set for flaky classification, plus per-module coverage when tooling is configured.
+3. Unless `--no-run`: one timed full run (pass/fail/skip counts, total runtime, top-10 slowest), plus 2 to 4 comparable reruns of the failing set to establish intermittence, plus per-module coverage when tooling is configured. Preserve attempt conditions for causal classification through the canonical remediation method; disagreement alone does not establish a test defect.
 4. Under `--no-run`: pull the same numbers from CI (`gh run list` / `gh api`) or the newest local report artifacts (junit XML, coverage files); mark every reused number `stale` with its source and date.

@@ -18,6 +18,8 @@ workflow execution. Record that distinction in RESULTS.md.
 | protected-retention | consolidate | Summary preserves failed attempts and retained evidence before authorized disposal |
 | ownership-boundaries | repair | Oracle fixes, application subtraction and semantic refactor use their canonical owners |
 | proportional-change | change | Small authorized change reaches verified delivery without a blanket full audit or test quota |
+| unified-stack-review | verify, review | One candidate and delivery ledger include applicable stack review and failed dimensions |
+| global-rationalization | change, verify | Broad refactoring starts with current full static context and preserves suite and instruction consequences |
 
 Run host probes against actual installed packages when available. Adapter
 rendering alone cannot demonstrate an external upstream skill was available.

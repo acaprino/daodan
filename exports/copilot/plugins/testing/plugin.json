@@ -5,5 +5,5 @@
   "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
   "license": "MIT",
   "name": "testing",
-  "version": "3.0.1"
+  "version": "3.1.0"
 }

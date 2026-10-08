@@ -58,7 +58,7 @@ results can record gate outcomes without changing the gated source snapshot.
 Per-batch table (category, files, commit sha, gate result), the new suite status, and next steps:
 
 - `/testing:test-consolidate <module>` for the modules ranked worst by duplicate/implementation-coupling density in Step 3.
-- The quarantine lifecycle reminder from the skill: entries are processed when their module is next touched; entries older than 3 months become deletion candidates, dropped only through the consolidation approval gate with evidence beyond age.
+- The quarantine lifecycle reminder from the skill: entries are processed when their module is next touched; entries older than 3 months become investigation candidates. Retirement still requires accepted inventory and evidence of retired behavior or verified equivalent replacement beyond age.
 
 ## Output locations
 

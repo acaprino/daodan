@@ -48,9 +48,9 @@ Execute in order. Skip a dimension when its signal is absent and say so in the s
 
 ### D1: Inventory and layer distribution
 
-1. Detect the runner(s) per the playbook; list test files per layer directory (`unit`, `integration`, `e2e`, or project equivalents).
+1. Detect the runner(s) per the playbook; list test files per layer using the project's directories, colocated paths, runner projects or markers (`unit`, `integration`, `contract`, `e2e`, or project equivalents).
 2. Count files and cases per layer (list-tests command, no run needed).
-3. **Placement violations**: unit-layer test files that mirror no source path under the project convention; two or more test files at the SAME layer owning the same target (same source file at unit, same behavioral scope at integration/e2e), the parallel-file violation of prevention rule 1. Integration, contract, and e2e files are behavior-owned and legitimately span several source modules; multi-module reach at those layers is not a finding.
+3. **Placement violations**: unit-layer test files that mirror no source owner under the project convention; two or more test files at the SAME layer owning the same target without a justified scope split (same source file at unit, same behavioral scope at integration/e2e), the parallel-file violation of prevention rule 1. Integration, contract, and e2e files are behavior-owned and legitimately span several source modules; multi-module reach at those layers is not a finding.
 4. **Layer fitness**: inspect runtime against the project budget and actual boundary isolation. Test-count ratios alone are not findings. An I/O import alone is a lead; verify whether execution crosses a real boundary before proposing a layer change.
 
 ### D2: Orphan tests
@@ -70,7 +70,7 @@ For each test file, resolve the source module(s) it targets. Imports are authori
 ### D4: Failing and flaky (RUNS, when permitted)
 
 1. Run the suite once for the failing set.
-2. Rerun 2-4 more times (or use CI attempt history via `gh run list` when available) and diff outcomes; disagreement = flaky, with the outcomes as evidence.
+2. Rerun 2-4 more times (or use CI attempt history via `gh run list` when available) under recorded comparable conditions. Disagreement establishes intermittence; classify product races, test isolation and environment before proposing a disposition. Preserve command/configuration, seed/service state and attempt evidence.
 3. Without run permission: report CI-derived data when available, otherwise emit static flakiness CANDIDATES only (sleeps, real timestamps, shared mutable state, order-coupled fixtures, unmocked network), clearly labeled as suspicion.
 
 ### D5: Duplicate and overlapping coverage
@@ -100,7 +100,7 @@ Each is a candidate referencing prevention rule 5. Verify an observable contract
 2. Tautological assertions (`expect(true).toBe(true)`, asserting a mock returns what the mock was told to return).
 3. Everything-mocked tests where no production code executes.
 4. Assertions inside conditionals or loops that may not execute (assert inside `if`, inside an empty-iterating `for`).
-5. When a mutation-testing report exists in the repo (Stryker/mutmut/PIT/cargo-mutants output), read it and map surviving mutants to the tests that should have caught them. NEVER run mutation testing yourself; it is a weekly-job cost, not an audit cost.
+5. When a mutation-testing report exists in the repo (Stryker/mutmut/PIT/cargo-mutants output), read it. Determine validity, reachability and equivalence before mapping a survivor to missing required behavior. A survivor alone does not establish a worthless test. Consume available reports without launching a new mutation job; scope/cadence belongs to the project's measured CI budget.
 
 ### D9: Runtime and coverage distribution (RUNS, when permitted)
 
@@ -134,7 +134,7 @@ Each is a candidate referencing prevention rule 5. Verify an observable contract
 - **Location:** `file:line`
 - **Evidence:** [command output line, git log line, or the pair of asserts]
 - **Impact:** [one sentence]
-- **Cause:** [product-defect | wrong-oracle | environment | intermittent | unknown]
+- **Cause:** [product-defect | wrong-oracle | environment | test-isolation | intermittent | unknown]
 - **Fix path / owner:** [implementation owner | testing:test-writer oracle/authoring | environment/configuration owner | consolidation | eligible quarantine]
 - **Protected behavior / failure mode / bugfix provenance:** [evidence or explicitly unknown]
 

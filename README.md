@@ -52,13 +52,28 @@ The prompt names the workflow rather than a host-specific command. On Copilot,
 select the coordinator agent before pasting it. See [host setup](docs/hosts.md)
 for required worker and external-method support. One request covers the complete
 outcome; execution still proceeds through plans, edits and verification gates.
+The instruction and testing clauses follow the [source-backed research note](docs/references/project-instructions-and-test-practices.md),
+including Anthropic's prompting guidance and the detected stack's own documentation.
 
 ```text
 Use Daodan's project-lifecycle change workflow to rationalize this project,
 using its native entry on this host. Use focus all, depth deep and --fix.
 
-Read the project instructions, requirements, code, tests and guides. Map
-responsibilities, dependencies, duplicated domain rules and fragile paths.
+Read the project instructions, requirements, code, tests and guides. Identify
+the actual instruction files and scopes loaded by this harness, the authoritative
+sources and any synchronization rules. Define observable success criteria and
+record baseline checks against approved requirements.
+State material assumptions and unresolved alternatives. Choose the simplest
+design that satisfies current requirements. Keep every change traceable to this
+authorized objective; avoid speculative features and unrelated cleanup.
+
+Before proposing or applying refactors, run codebase-xray's analyze workflow at
+full depth. Reuse a completed run only after validating its current snapshot,
+scope and depth. Keep X-ray static and report inventory, files read in depth and
+runtime exercise separately. Use its evidence to map responsibilities,
+dependencies, duplicated domain rules, critical paths and fragile flows.
+Review relevant security, data-integrity, concurrency and resource-lifecycle
+risks. Prioritize evidenced severe defects before optional cleanup.
 Build an evidence-based plan and implement it incrementally:
 
 - Give each shared rule a canonical owner. Consolidate services and interfaces
@@ -75,20 +90,45 @@ Audit the entire existing test suite and rationalize it in scoped batches throug
 testing's canonical audit and consolidation methods. Inventory protected behaviors,
 distinct failure modes, expected-result sources and bugfix history. Identify proven
 duplication, contradictions, ineffective assertions, excessive implementation
-coupling and flakiness. Classify failures as product defects, wrong expectations, environment
-problems, intermittent behavior or unknown causes before deciding their treatment.
+coupling, over-mocking, uncontrolled state and flakiness. Derive expected results
+from approved requirements, explicit examples, independent calculations or
+justified invariants. Preserve relevant test layers and exercise real integrations
+when database, transaction, concurrency or external-contract semantics matter.
+Classify failures as product defects, wrong expectations, environment problems,
+intermittent behavior or unknown causes before deciding their treatment.
 Repair incorrect or brittle tests. Apply consolidation, retirement or quarantine
 only to accepted inventory entries; reuse existing scope-specific approvals and
 retain unresolved entries. Verify remaining protection on the exact candidate
 before completing each phase, including regressions from real bugs.
+Investigate state leaks, ordering, clocks, randomness and asynchronous cleanup.
+Fix root causes rather than weakening assertions, blindly refreshing snapshots,
+adding retries or suppressing failures to obtain a green suite.
 Test counts, coverage, age and refactoring alone never justify removal.
 Record which surviving tests protect each retained behavior and failure
 mode, and report the before/after suite structure and checks actually executed.
 
+Audit and maintain AGENTS.md, CLAUDE.md and all applicable nested or host-specific
+project instructions through project-knowledge's instructions method. Verify
+claims, paths, commands, ownership and architecture against their sources.
+Preserve approved intent and justified exceptions. Edit the canonical owner,
+regenerate derived copies and check parity; retain unresolved claims explicitly.
+Document verified build/test commands and prerequisites, test-layer ownership,
+fixtures and isolation, cleanup, mocking boundaries, deterministic time/randomness,
+failure diagnosis, regression protection and required verification gates.
+Adapt stack practices to installed versions using available knowledge and current
+primary sources where needed. Translate recommendations into justified local
+rules or executable checks. Keep durable instructions concise and applicable;
+link detailed procedures in existing guides or reusable skills. Keep session
+status, temporary results and open task lists in the run record. Verify which
+instruction files the current harness loads rather than assuming identical rules.
+Record any required reload or fresh-session step after changing instructions.
+
 Preserve required behavior, preexisting edits and meaningful test protection.
-Add or adapt tests for independent failure modes. Review the exact candidate,
-run the relevant checks and exercise affected product paths when the required
-environment is available. Update existing guides and durable instructions,
+Add or adapt tests for independent failure modes. Review the exact candidate
+through senior-review's canonical method with isolated reviewers and applicable
+stack specialists. Resolve evidenced correctness defects and unmet requirements.
+Run the relevant checks and exercise affected product paths when the required
+environment is available. Recheck affected guides and instruction consumers,
 then consolidate this run's conclusions and owned experimental output.
 
 Proceed autonomously within this scope until the requested outcome is complete.

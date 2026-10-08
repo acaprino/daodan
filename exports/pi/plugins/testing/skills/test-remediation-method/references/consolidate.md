@@ -8,7 +8,7 @@ Read every test in scope and produce the inventory table. Track behavior and obs
 Flag separately, each with evidence:
 
 - **Contradictory pairs**: tests asserting incompatible outcomes for the same input/state.
-- **Implementation-coupled**: internal mocks, call-echo asserts, private access.
+- **Implementation-coupling candidates**: internal mocks, call-echo asserts, private access. Confirm the actual boundary or diagnostic purpose before declaring these defects; preserve justified protection.
 - **Never-failing**: no asserts, tautologies, everything mocked.
 - **Quarantined entries** for this module, each with a keep (behavior worth preserving in the rewrite) or drop proposal. A drop proposal cites evidence beyond age: feature removed, replacement coverage, temporary origin, no bug-fix provenance.
 
@@ -24,7 +24,7 @@ Present the inventory through the host question mechanism, grouped per owner (so
 
 ## Step 5: Rewrite
 
-One file per owner at the correct layer, covering exactly the approved behaviors plus any evident gaps the user approved: one test file per source file at the mirrored path for unit tests, one file per behavioral scope for integration, contract, and e2e tests. Follow the prevention rules of the test-hygiene skill; write test content behavior-first per the `mattpocock-skills:tdd` skill (upstream mattpocock/skills, a hard dependency of this plugin; if unavailable, stop and tell the user to install it: `claude plugin marketplace add mattpocock/skills`, then `claude plugin install mattpocock-skills@mattpocock`).
+One primary file per owner at the correct layer, covering exactly the approved behaviors plus any evident gaps the user approved, with justified scope splits documented. Follow the established mirrored or colocated convention at unit; use behavioral ownership at integration, contract, and e2e. Follow the prevention rules of the test-hygiene skill; write test content behavior-first per the `mattpocock-skills:tdd` skill (upstream mattpocock/skills, a hard dependency of this plugin; if unavailable, stop and tell the user to install it: `claude plugin marketplace add mattpocock/skills`, then `claude plugin install mattpocock-skills@mattpocock`).
 
 ## Step 6: Replace originals atomically
 

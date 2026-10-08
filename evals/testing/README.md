@@ -19,3 +19,8 @@ as live agent or installed-host execution of these cases.
 | missing-runner | test-preparation / test-suite-auditor | Runner/configuration/absence is a diagnosis; static auditing still occurs |
 | remote-snapshot | test-remediation-method | Old green CI or collection cannot close a candidate gate |
 | recovery-preserves-edits | application-cleanup-method / readability-method | Failed phase recovery preserves prior successful phases and existing/foreign edits |
+| accepted-replacement | test-remediation-method / test-hygiene | Verified same-candidate replacement can retire accepted redundancy while preserving independent failure modes and bugfix provenance |
+| boundary-layer-ownership | test-writer / test-suite-auditor | Real I/O purpose governs doubles, layers and protocol checks; colocation and justified splits remain valid |
+| resource-isolation | test-writer / test-remediation-method | Restore process state, own resources and terminate async work with reproducible candidate evidence |
+| intermittent-product-race | test-remediation-method | Rerun disagreement is a symptom; a proven product race keeps active regression protection |
+| equivalent-mutant | test-suite-auditor / test-writer | Equivalent or unreachable mutation survivors do not establish worthless tests or authorize retirement |
