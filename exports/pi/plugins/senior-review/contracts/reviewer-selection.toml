@@ -1,7 +1,10 @@
 schema = "daodan/record/v1"
 name = "reviewer-selection"
-required = ["dimensions"]
+required = ["dimensions", "knowledge_selection"]
 
 [fields.dimensions]
 type = "array"
 items = "contract:reviewer-binding"
+
+[fields.knowledge_selection]
+type = "string"

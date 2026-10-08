@@ -35,3 +35,13 @@ clearly unverified section and report the format/evidence gap. Do not invent a
 numerical confidence or silently discard an important reported issue. A lifecycle
 gate cannot pass on a failed mandatory delivery. Valid findings join the same
 confidence filtering, deduplication and verification as the other dimensions.
+
+# Scoped knowledge usage
+
+The coordinator's shared brief also supplies each canonical stack worker's assigned
+knowledge_ids, exact knowledge_selection and fingerprint. Append knowledge_usage
+records to its native result envelope without replacing its raw report or format.
+The usage records identify worker/scope, selection/body/reference hashes and how
+the knowledge was applied. Request missing records once; a selected input that
+remains missing, failed or stale is failed delivery coverage and cannot satisfy a
+required candidate gate. General domain lenses use the same envelope and ledger.

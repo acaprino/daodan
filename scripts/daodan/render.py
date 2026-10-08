@@ -625,6 +625,21 @@ def render_plugin(
             else:
                 _copy(path, destination)
 
+    if plugin.name == "skill-catalog":
+        from .skill_catalog import declared_catalog
+        registry = dict(plugin_registry or {})
+        if not registry:
+            from .load import load_plugin
+            registry = {p.parent.name: load_plugin(p.parent)
+                        for p in sorted(plugin.root.parent.glob("*/plugin.toml"))}
+        reference = staging_root / "skills/skill-catalog/references"
+        _write_text(reference / "catalog.json", json.dumps(
+            declared_catalog(registry), sort_keys=True, indent=2, ensure_ascii=False) + "\n")
+        inventory = _template(adapters_root, adapter.host, "skill-inventory.md.tmpl")
+        if inventory is None:
+            raise RenderError(f"{adapter.host}: missing skill inventory binding")
+        _write_text(reference / "host-inventory.md", inventory)
+
     for role in plugin.components.roles:
         target = staging_root / render_path(adapter.layout["roles"], {**context, "role": role})
         override = replacements.get(f"role:{role}")

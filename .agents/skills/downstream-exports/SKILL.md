@@ -201,6 +201,14 @@ The user-facing installation, command mapping and environment limits live in
 [`docs/hosts.md`](../../../docs/hosts.md). It describes repository implementation; fixture probes
 recorded under `tests/host-probes/` do not prove a new lifecycle run on an installed host.
 
+
+The required skill-catalog leaf adds an explicit resolved-knowledge input seam.
+Its compiler-generated metadata index is not installation evidence. Each adapter's
+templates/skill-inventory.md.tmpl is copied into the catalog skill and explains actual
+available-skill normalization. Selected knowledge is fingerprinted and mandatory for
+its run; methods and role dispatch remain declared required provider edges. No new
+enumeration API or measured installed-host enforcement is implied by these bindings.
+
 ## Overrides are a last resort, and they expire
 
 An override replaces one rendered file for one host, and it carries the digest of the neutral source it was reviewed against. When that source moves, the override is reported `stale-override` and the build fails until a human re-reads it. An override may select a different declared mechanism; it may never add a tool, MCP server, LSP server, hook or capability the kernel did not declare (`override-capability-escalation`), and it may not quietly drop a contract the workflow declares (`override-drops-contract`).

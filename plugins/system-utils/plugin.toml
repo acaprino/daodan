@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "system-utils"
-version = "2.1.2"
+version = "2.1.3"
 description = "File organization and cleanup utilities - sort messy folders, find duplicates, and restructure directory hierarchies"
 license = "MIT"
 

@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "project-protocol"
-version = "1.0.1"
+version = "1.0.2"
 description = "Canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work."
 license = "MIT"
 

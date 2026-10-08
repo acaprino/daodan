@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: react-development:react-performance-optimizer; version: 1.11.0; source-sha256: edde5db42d633e8ba5a6e694cbd683a01a91b7bfcac6b765aa1d98f31ebf2516. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: react-development:react-performance-optimizer; version: 1.11.1; source-sha256: edde5db42d633e8ba5a6e694cbd683a01a91b7bfcac6b765aa1d98f31ebf2516. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `react-development`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<react-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `react-development`: qualify it with that owner's namespace. The owning plugin's registered skills are `react-development:react-best-practices`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:6de04219fc55c740984261e0e98a44841c2bd1b0ce061cd97ac5a4fb0841ac03",
+  "coreDigest": "sha256:416740bc40fdbe31120ce0f65e7705e8724b5eb00ee8af7a156634cdc90c4097",
   "harnessStrategies": {
     "xterm-debug": "parallel-subagents",
     "xterm-implement": "parallel-subagents"
@@ -8,5 +8,5 @@
   "host": "codex",
   "overrides": [],
   "plugin": "xterm",
-  "version": "1.2.0"
+  "version": "1.2.1"
 }

@@ -22,6 +22,17 @@ delivery. Use one input finding set and delivery ledger for all dimensions;
 preserve source role, native severity, premise and evidence provenance. Never merge
 a failed worker into a successful result. A single final writer emits the report.
 
+Load the `skill-catalog:skill-catalog` skill and run `validate-usage` against the
+prepared `knowledge_selection` and all worker `knowledge_usage` records. Verify
+every assigned scope/worker, the selection/body fingerprints and used references.
+Failed, stale or missing selected knowledge is failed delivery coverage; any required
+candidate gate stays unsatisfied. Keep unresolved inventory/classification/match
+gaps in `knowledge_coverage` and the same report's coverage section. Loaded knowledge
+does not prove that code paths ran, or establish a finding's premise. Preserve
+knowledge provenance with each finding; generic knowledge patterns still need code
+evidence and falsifiable premises. An independent derivation may use generic domain
+knowledge, never shared project conclusions or peer findings.
+
 Read `references/<variant>.md` inside this skill. Execute its consolidation, fresh
 verification lenses, completeness check and report stages. For PR review, use the
 same delivery/provenance/panel rules before producing the native PR description.

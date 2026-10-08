@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:da2e34d89ba3d60e0175593be9223c45d15a91c41caf82b64cd5137eaeb64e05",
+  "coreDigest": "sha256:77b045101167fa2c4ba3a71d94078727451d80121d8ac890c317595ee5a3a140",
   "harnessStrategies": {
     "audit-webhooks": "parallel-subagents"
   },
   "host": "pi",
   "overrides": [],
   "plugin": "stripe",
-  "version": "2.6.0"
+  "version": "2.6.1"
 }

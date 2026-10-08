@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:85901091c6dd4ef586fb013a5a5e5ea465bdaee2849c6a0d51413c98495f2b7e",
+  "coreDigest": "sha256:e0e839ce5b938a778a0fa72f7f049d665ca063eb9f683724eb6c35be73874e52",
   "harnessStrategies": {
     "deps-audit": "parallel-subagents"
   },
   "host": "pi",
   "overrides": [],
   "plugin": "dependency-audit",
-  "version": "1.1.0"
+  "version": "1.1.1"
 }

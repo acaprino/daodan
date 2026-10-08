@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.0.0; source-sha256: 815768a9cec8bff894ae45348157feda5aeabb1d247bde04c46249eb8e36673b. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.0.1; source-sha256: 815768a9cec8bff894ae45348157feda5aeabb1d247bde04c46249eb8e36673b. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`: qualify it with that owner's namespace. The owning plugin's registered skills are `abstraction-architect:abstraction-architect`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

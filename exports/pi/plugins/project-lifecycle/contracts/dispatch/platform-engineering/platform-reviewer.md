@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: platform-engineering:platform-reviewer; version: 1.3.1; source-sha256: 0ec97991271a8aac0ad739df5d4321a5201518c53eeed3923730c0fccb3fcd79. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: platform-engineering:platform-reviewer; version: 1.3.2; source-sha256: 0ec97991271a8aac0ad739df5d4321a5201518c53eeed3923730c0fccb3fcd79. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `platform-engineering`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<platform-engineering-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `platform-engineering`: qualify it with that owner's namespace. The owning plugin's registered skills are `platform-engineering:platform-engineering`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

@@ -39,3 +39,11 @@ before presenting the plan; for code and PR review it follows scope resolution.
 Preparation selects reviewers without dispatching them. Record the activation
 evidence or skip reason for each dimension, then pass the complete selection to
 review-method. A prepared bundle cannot imply that any selected reviewer ran.
+
+Load the `skill-catalog:skill-catalog` skill. Read `references/knowledge-bindings.md`
+inside this skill after resolving scope and the native reviewer selection. Prepare
+one `knowledge_selection` against the same candidate snapshot and actual available
+skill inventory. Add scope/lens assignments and content fingerprints to this brief;
+knowledge selection is open to every classified available stack, not a fixed
+language list. Return inventory/classification/match gaps and failed selected loads
+explicitly. Reuse the exact prepared record until any of its bindings changes.

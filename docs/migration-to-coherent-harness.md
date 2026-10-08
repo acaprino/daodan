@@ -73,3 +73,19 @@ Review installed-host compatibility separately from compiler/package checks.
 See the [architecture](superpowers/specs/2026-10-07-daodan-coherent-harness-design.md)
 and [validation record](superpowers/reports/2026-10-07-daodan-harness-validation.md).
 
+## Marketplace 32: scope-aware knowledge
+
+Senior-review 15 adds the required skill-catalog leaf. Update the complete required
+closure together. Existing canonical role providers remain required. Knowledge
+providers are resolved from actual host/project inventory and pinned per run instead
+of adding every available language plugin to the review installation closure.
+
+Registered knowledge skills carry SKILL.toml sidecars. External/project skills use
+the same metadata; unclassified matches remain coverage gaps. Review brief/selection,
+reviewer bindings/results and final report now carry knowledge_selection, knowledge_ids,
+knowledge_usage and knowledge_coverage. Prepared bundles from older schemas must be
+prepared again against their actual candidate, never silently accepted.
+
+Use a fresh session after updating to discard cached skill bodies. The catalog's
+generated declarations do not assert installation. Five-host rendering is verified
+by fixtures; actual installed-host execution must be checked separately.

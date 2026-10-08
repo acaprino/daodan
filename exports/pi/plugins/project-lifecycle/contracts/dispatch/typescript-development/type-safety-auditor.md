@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: typescript-development:type-safety-auditor; version: 2.3.0; source-sha256: ac903b2580afb94835993c57e71fbd67ee1fda92484b67b135c31e5d4ac5b323. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: typescript-development:type-safety-auditor; version: 2.3.1; source-sha256: ac903b2580afb94835993c57e71fbd67ee1fda92484b67b135c31e5d4ac5b323. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `typescript-development`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<typescript-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `typescript-development`: qualify it with that owner's namespace. The owning plugin's registered skills are `typescript-development:knip`, `typescript-development:mastering-typescript`, `typescript-development:type-safety-rules`, `typescript-development:typescript-write`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

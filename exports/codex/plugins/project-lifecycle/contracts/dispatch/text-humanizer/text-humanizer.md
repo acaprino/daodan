@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: text-humanizer:text-humanizer; version: 1.2.1; source-sha256: 6eec8828219b84dcc03b06b1f9731f3db0017802cb7b8bbac1b49504b652af65. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: text-humanizer:text-humanizer; version: 1.2.2; source-sha256: 6eec8828219b84dcc03b06b1f9731f3db0017802cb7b8bbac1b49504b652af65. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `text-humanizer`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<text-humanizer-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `text-humanizer`: qualify it with that owner's namespace. The owning plugin's registered skills are `text-humanizer:anti-ai-writing-patterns`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

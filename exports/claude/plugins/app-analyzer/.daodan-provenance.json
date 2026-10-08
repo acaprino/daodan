@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:45064d0b80a26da1854971f1fab1ed64e9f693d2acab3e9c654859dac9d9512e",
+  "coreDigest": "sha256:1458b48b748a5b69c85ef8941b5ef8aa10fa99cb37183e2308b40d19b725db06",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "app-analyzer",
-  "version": "1.4.2"
+  "version": "1.4.3"
 }

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:f243be82a70f6e8fb1eae127429ca83296dc51599ed800c00ec3b8592fe6ba8f",
+  "coreDigest": "sha256:0b6afc0c6d1d246dd2c92d2508e3b1eaeca14d536420048f6c57c091efa3537d",
   "harnessStrategies": {
     "code-review": "native-team",
     "pr-review": "native-team",
@@ -9,5 +9,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "senior-review",
-  "version": "14.0.0"
+  "version": "15.0.0"
 }

@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "project-knowledge"
-version = "1.0.0"
+version = "1.0.1"
 description = "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle."
 license = "MIT"
 

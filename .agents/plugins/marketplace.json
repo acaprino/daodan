@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "31.0.0"
+    "version": "32.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -30,7 +30,7 @@
         "./skills/audit-workflow"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "4.0.0"
+      "version": "4.0.1"
     },
     {
       "author": {
@@ -48,7 +48,7 @@
         "./skills/prompt-optimize-workflow"
       ],
       "source": "./exports/codex/plugins/ai-tooling",
-      "version": "5.4.2"
+      "version": "5.4.3"
     },
     {
       "author": {
@@ -64,7 +64,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/codex/plugins/app-analyzer",
-      "version": "1.4.2"
+      "version": "1.4.3"
     },
     {
       "author": {
@@ -81,7 +81,7 @@
         "./skills/firefox-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/browser-extensions",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -98,7 +98,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/codex/plugins/business",
-      "version": "1.12.0"
+      "version": "1.12.1"
     },
     {
       "author": {
@@ -115,7 +115,7 @@
         "./skills/readability-method"
       ],
       "source": "./exports/codex/plugins/clean-code",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -131,7 +131,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/codex/plugins/codebase-xray",
-      "version": "5.0.0"
+      "version": "5.0.1"
     },
     {
       "author": {
@@ -157,7 +157,7 @@
         "./skills/deps-audit-workflow"
       ],
       "source": "./exports/codex/plugins/dependency-audit",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "author": {
@@ -183,7 +183,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -197,7 +197,7 @@
         "./skills/multi-stage-dockerfile"
       ],
       "source": "./exports/codex/plugins/docker",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": {
@@ -236,7 +236,7 @@
         "./skills/instagram-grab-workflow"
       ],
       "source": "./exports/codex/plugins/grabber-development",
-      "version": "1.8.2"
+      "version": "1.8.3"
     },
     {
       "author": {
@@ -250,7 +250,7 @@
         "./skills/kotlin-specialist"
       ],
       "source": "./exports/codex/plugins/kotlin-development",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "author": {
@@ -267,7 +267,7 @@
         "./skills/markmind-exporter"
       ],
       "source": "./exports/codex/plugins/learning",
-      "version": "1.7.1"
+      "version": "1.7.2"
     },
     {
       "author": {
@@ -282,7 +282,7 @@
         "./skills/libgdx-development"
       ],
       "source": "./exports/codex/plugins/libgdx-development",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "author": {
@@ -302,7 +302,7 @@
         "./skills/skills-validate-workflow"
       ],
       "source": "./exports/codex/plugins/marketplace-ops",
-      "version": "2.4.0"
+      "version": "2.4.1"
     },
     {
       "author": {
@@ -316,7 +316,7 @@
         "./skills/rabbitmq-production"
       ],
       "source": "./exports/codex/plugins/messaging",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "author": {
@@ -332,7 +332,7 @@
         "./skills/obsidian-scaffold"
       ],
       "source": "./exports/codex/plugins/obsidian-development",
-      "version": "1.5.1"
+      "version": "1.5.2"
     },
     {
       "author": {
@@ -347,7 +347,7 @@
         "./skills/otel-audit-workflow"
       ],
       "source": "./exports/codex/plugins/opentelemetry",
-      "version": "1.4.1"
+      "version": "1.4.2"
     },
     {
       "author": {
@@ -364,7 +364,7 @@
         "./skills/review-workflow"
       ],
       "source": "./exports/codex/plugins/peer-review",
-      "version": "2.4.1"
+      "version": "2.4.2"
     },
     {
       "author": {
@@ -379,7 +379,7 @@
         "./skills/platform-review-workflow"
       ],
       "source": "./exports/codex/plugins/platform-engineering",
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "author": {
@@ -404,7 +404,7 @@
         "./skills/readme-workflow"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -437,7 +437,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "author": {
@@ -451,7 +451,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/codex/plugins/project-protocol",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "author": {
@@ -470,7 +470,7 @@
         "./skills/pwa-scaffold-workflow"
       ],
       "source": "./exports/codex/plugins/pwa-expert",
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "author": {
@@ -498,7 +498,7 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/codex/plugins/python-development",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -513,7 +513,7 @@
         "./skills/rag-development"
       ],
       "source": "./exports/codex/plugins/rag-development",
-      "version": "1.6.0"
+      "version": "1.6.1"
     },
     {
       "author": {
@@ -528,7 +528,7 @@
         "./skills/review-react-workflow"
       ],
       "source": "./exports/codex/plugins/react-development",
-      "version": "1.11.0"
+      "version": "1.11.1"
     },
     {
       "author": {
@@ -543,7 +543,7 @@
         "./skills/tidy-workflow"
       ],
       "source": "./exports/codex/plugins/repo-hygiene",
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     {
       "author": {
@@ -558,7 +558,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/codex/plugins/research",
-      "version": "6.2.3"
+      "version": "6.2.4"
     },
     {
       "author": {
@@ -572,9 +572,10 @@
         "project-protocol",
         "react-development",
         "typescript-development",
-        "platform-engineering"
+        "platform-engineering",
+        "skill-catalog"
       ],
-      "description": "Unified evidence-aware code, team and PR review with signal-selected React performance, TypeScript type safety and platform integration specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
+      "description": "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
       "license": "MIT",
       "name": "senior-review",
       "skills": [
@@ -589,7 +590,21 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "14.0.0"
+      "version": "15.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Shared metadata-only skill discovery and scope-aware knowledge selection for review, development, tests and documentation. Available host/project skills become fingerprinted per-run inputs; methods and workflows retain required providers and explicit execution.",
+      "license": "MIT",
+      "name": "skill-catalog",
+      "skills": [
+        "./skills/skill-catalog"
+      ],
+      "source": "./exports/codex/plugins/skill-catalog",
+      "version": "1.0.0"
     },
     {
       "author": {
@@ -604,7 +619,7 @@
         "./skills/stripe"
       ],
       "source": "./exports/codex/plugins/stripe",
-      "version": "2.6.0"
+      "version": "2.6.1"
     },
     {
       "author": {
@@ -619,7 +634,7 @@
         "./skills/organize-files-workflow"
       ],
       "source": "./exports/codex/plugins/system-utils",
-      "version": "2.1.2"
+      "version": "2.1.3"
     },
     {
       "author": {
@@ -633,7 +648,7 @@
         "./skills/tauri"
       ],
       "source": "./exports/codex/plugins/tauri-development",
-      "version": "2.8.0"
+      "version": "2.8.1"
     },
     {
       "author": {
@@ -655,7 +670,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/codex/plugins/testing",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -670,7 +685,7 @@
         "./skills/humanize-text-workflow"
       ],
       "source": "./exports/codex/plugins/text-humanizer",
-      "version": "1.2.1"
+      "version": "1.2.2"
     },
     {
       "author": {
@@ -689,7 +704,7 @@
         "./skills/mt5-audit-workflow"
       ],
       "source": "./exports/codex/plugins/trading-broker-integration",
-      "version": "2.1.3"
+      "version": "2.1.4"
     },
     {
       "author": {
@@ -707,7 +722,7 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/codex/plugins/typescript-development",
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "author": {
@@ -723,7 +738,7 @@
         "./skills/xtermjs-skill"
       ],
       "source": "./exports/codex/plugins/xterm",
-      "version": "1.2.0"
+      "version": "1.2.1"
     }
   ]
 }

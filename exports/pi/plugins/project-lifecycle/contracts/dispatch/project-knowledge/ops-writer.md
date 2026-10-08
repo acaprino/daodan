@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: project-knowledge:ops-writer; version: 1.0.0; source-sha256: 4ab8df5ede6cc79d1fb37c6732942f8363f5001e88762b87a96aaac840db2be8. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-knowledge:ops-writer; version: 1.0.1; source-sha256: 4ab8df5ede6cc79d1fb37c6732942f8363f5001e88762b87a96aaac840db2be8. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-knowledge`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<project-knowledge-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-knowledge`: qualify it with that owner's namespace. The owning plugin's registered skills are `project-knowledge:project-knowledge`, `project-knowledge:instructions-method`, `project-knowledge:readme-craft`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

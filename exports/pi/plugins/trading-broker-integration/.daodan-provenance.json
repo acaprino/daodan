@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:804bbab606565bb17cdbba00562f0848ee68168963bc57cea2db0177db754d00",
+  "coreDigest": "sha256:8ca1ac67e66ae05fd96d29a7e5c6f9f3a5ebf47127855fac10c9d1b3a69ac07d",
   "harnessStrategies": {
     "ibkr-audit": "parallel-subagents",
     "ibkr-verify": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "trading-broker-integration",
-  "version": "2.1.3"
+  "version": "2.1.4"
 }

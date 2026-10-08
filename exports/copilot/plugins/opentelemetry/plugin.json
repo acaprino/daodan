@@ -5,5 +5,5 @@
   "description": "OpenTelemetry Python instrumentation: distributed tracing, async context propagation, custom transport propagators, OTLP exporters, AWS ADOT/X-Ray, and production observability; includes /opentelemetry:otel-audit command",
   "license": "MIT",
   "name": "opentelemetry",
-  "version": "1.4.1"
+  "version": "1.4.2"
 }

@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:1f1f505f3f2afeac83dacf744b0a2788d7095aa60dd330fccfd14140fa6015fa",
+  "coreDigest": "sha256:b7f53fe29e3496f5333dac092d789a16e0384e070cdcde11fe6e32e89a82b57a",
   "harnessStrategies": {
     "instagram-grab": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "grabber-development",
-  "version": "1.8.2"
+  "version": "1.8.3"
 }

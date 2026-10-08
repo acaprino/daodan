@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "xterm"
-version = "1.2.0"
+version = "1.2.1"
 description = "xterm.js terminal emulator development - building, configuring, and integrating xterm.js in web and Electron apps with addon support and PTY wiring"
 license = "MIT"
 

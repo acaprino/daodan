@@ -1,3 +1,6 @@
 schema = "daodan/record/v1"
 name = "review-brief"
-required = ["target", "scope_path", "context_paths", "output_path", "constraints"]
+required = ["target", "scope_path", "context_paths", "output_path", "constraints", "knowledge_selection"]
+
+[fields.knowledge_selection]
+type = "string"

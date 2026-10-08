@@ -269,3 +269,18 @@ Compiler tests prove rendering, registration, confinement helpers and parity.
 measured; they do not establish installed-host behavior for the redesigned
 lifecycle. Consult the [validation report](superpowers/reports/2026-10-07-daodan-harness-validation.md)
 for the measured release evidence and its limits.
+
+## Available knowledge inventory
+
+Skill Catalog uses the active host's actual skill inventory and explicit resolved
+provider roots. Its generated registry lists declarations, including plugins that
+may be unselected or uninstalled. It is not availability evidence. The five adapter
+inventory instructions ship as references/host-inventory.md inside the catalog
+skill. Native/workflow/role wrappers retain their existing component boundaries.
+
+External/project skills can join the same index with their own SKILL.toml metadata.
+Unannotated relevant skills are searchable but stay classification gaps until a
+reviewed owner classification exists. No automatic install or home/cache crawl is
+performed. Selection is read-only, snapshot-bound and accounted for per worker in
+the same review ledger. Python 3.11+ is required for the stdlib helper. Compiler and
+fixture tests validate the port; they do not constitute installed-host runtime probes.

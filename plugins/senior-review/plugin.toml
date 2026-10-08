@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "senior-review"
-version = "14.0.0"
-description = "Unified evidence-aware code, team and PR review with signal-selected React performance, TypeScript type safety and platform integration specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting."
+version = "15.0.0"
+description = "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting."
 license = "MIT"
 
 [capabilities]
@@ -9,7 +9,7 @@ required = ["repository.read", "shell.execute", "repository.write", "contexts.is
 optional = ["execution.parallel"]
 
 [dependencies]
-required = ["repo-hygiene", "codebase-xray", "abstraction-architect", "testing", "project-protocol", "react-development", "typescript-development", "platform-engineering"]
+required = ["repo-hygiene", "codebase-xray", "abstraction-architect", "testing", "project-protocol", "react-development", "typescript-development", "platform-engineering", "skill-catalog"]
 
 [components]
 skills = ["defect-taxonomy", "review-quality-gates", "review-method", "review-preparation", "review-consolidation", "application-cleanup-method"]

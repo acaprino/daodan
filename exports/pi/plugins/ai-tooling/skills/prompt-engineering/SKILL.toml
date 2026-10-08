@@ -1,0 +1,7 @@
+schema = "daodan/skill-metadata/v1"
+kind = "knowledge"
+operations = ["review", "develop", "document"]
+languages = []
+frameworks = []
+topics = ["prompts", "agents", "llm"]
+dimensions = ["correctness"]

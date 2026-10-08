@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:acaea0afcd88155a291fdd05a312bda3a99d9ca3b6c4712ff165411faead5bae",
+  "coreDigest": "sha256:4dff22e6f3ec7f7f515ee146af94a607343b91aa7bffe61b1895599728c1db00",
   "harnessStrategies": {
     "otel-audit": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "opentelemetry",
-  "version": "1.4.1"
+  "version": "1.4.2"
 }

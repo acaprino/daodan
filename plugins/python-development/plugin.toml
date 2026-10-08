@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "python-development"
-version = "3.0.0"
+version = "3.0.1"
 description = "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report"
 license = "MIT"
 

@@ -62,6 +62,13 @@ Plugin manifests are authoritative. Catalogs are generated output and may be
 stale while kernels are being changed. Sidecars are parsed as TOML; their
 fanout_from selections and local schemas do not create dependency edges.
 
+Resolved knowledge is a separate typed per-run input through the required
+skill-catalog provider. Its metadata index is not installation evidence, and
+its selection/content/worker fingerprints are validated by that provider.
+Reading those bound knowledge bytes does not invoke a method or role. Literal
+skill method loads and all role/schema bindings still create static edges here;
+the catalog contract never makes required providers optional.
+
 Slash-command mentions (/plugin:command) are user-facing suggestions, not
 runtime edges, and are deliberately not extracted. TRIGGER WHEN / DO NOT
 TRIGGER WHEN lines are routing descriptions, never runtime. Tokens whose

@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: senior-review:security-auditor; version: 14.0.0; source-sha256: bc90fa45c00f8570fa83bd6550b4c32f34685fefe12e007ee8e67ac7aebb26f7. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:security-auditor; version: 15.0.0; source-sha256: 341c6f28fae81a02e99012d9b1f12ac139506cfb67e0b1843cadb71d29ea611f. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`: qualify it with that owner's namespace. The owning plugin's registered skills are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -174,3 +174,19 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 ## Output Persistence
 
 When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+
+## Assigned knowledge inputs
+
+When the prepared brief supplies knowledge_ids and knowledge_selection, load only
+the exact inputs assigned to this worker's scope/lens through the catalog binding.
+Treat the content as read-only knowledge; apply its relevant constraints to code
+evidence within this task's authority. Loading it never grants workflow execution,
+code mutation, installation or broader permissions. Read selected supplementary
+references on demand and preserve their hashes. A missing or stale input is failed
+knowledge coverage, never a substitute finding or a successful skip.
+
+Return knowledge_usage for every assigned input with worker/scope ID, selection
+fingerprint, body hash, loaded/failed status, reference hashes and application
+explanation. Include an empty array when none were assigned. Knowledge suggests
+hypotheses; each retained finding still needs code evidence and a falsifiable
+premise. Do not consume peer findings before delivering independently.

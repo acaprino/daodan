@@ -429,6 +429,8 @@ def validate_plugins(
         issues.extend(validate_paths(plugin))
         issues.extend(validate_components(plugin))
         issues.extend(validate_component_kinds(plugin))
+        from .skill_catalog import validate_skill_metadata
+        issues.extend(validate_skill_metadata(plugin))
         issues.extend(validate_dependencies(plugin, registry))
         issues.extend(validate_contract_exports(plugin, registry))
         issues.extend(validate_capabilities(plugin, capabilities))

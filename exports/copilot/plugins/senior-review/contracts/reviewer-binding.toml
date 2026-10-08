@@ -1,3 +1,7 @@
 schema = "daodan/record/v1"
 name = "reviewer-binding"
-required = ["dimension", "role", "activation_evidence"]
+required = ["dimension", "role", "activation_evidence", "knowledge_ids"]
+
+[fields.knowledge_ids]
+type = "array"
+items = "string"

@@ -30,4 +30,4 @@ outcomes = ["code-review-completed"]
 artifacts = ["code-review-report"]
 schemas = []
 
-shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]
+shared_schemas = ["skill-catalog/contracts/knowledge-selection.toml", "skill-catalog/contracts/knowledge-input.toml", "skill-catalog/contracts/knowledge-assignment.toml", "skill-catalog/contracts/knowledge-usage.toml", "project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

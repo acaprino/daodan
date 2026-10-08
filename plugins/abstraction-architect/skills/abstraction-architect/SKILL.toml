@@ -1,0 +1,7 @@
+schema = "daodan/skill-metadata/v1"
+kind = "knowledge"
+operations = ["review", "develop"]
+languages = []
+frameworks = []
+topics = ["architecture", "abstraction"]
+dimensions = ["architecture"]

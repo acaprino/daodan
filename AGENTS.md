@@ -10,7 +10,9 @@ prompts. project-protocol is the shared leaf for run records, snapshots, deliver
 accounting, candidate gates and recovery. project-knowledge owns instructions,
 guides, documentation and README. senior-review owns universal correctness and
 application subtraction, selecting React, TypeScript and platform specialists
-through the same methods and delivery ledger. testing owns universal test governance;
+through the same methods and delivery ledger. skill-catalog selects available
+knowledge for any evidenced stack, with per-run fingerprints and delivery accounting.
+testing owns universal test governance;
 Python contributes pytest-patterns, without a second test writer.
 
 Run state belongs in .daodan/runs/<id>/ with an identified project/worktree, scope,
@@ -245,9 +247,9 @@ project-knowledge. These project pipelines do not depend on agent-teams for host
 coordination. Generic team methods remain delegated upstream when a plugin actually
 uses them. The host-vocabulary linter rejects tool primitives in neutral bodies.
 
-## Dependency policy: every internal dependency is mandatory
+## Dependency policy: methods and roles are mandatory
 
-Every runtime dependency on a local plugin is declared in [dependencies].required.
+Every static runtime method/role dependency on a local plugin is declared in [dependencies].required.
 Never add a local optional dependency, a not-installed skip, or a fallback reviewer.
 A missing required component is a broken installation, reported as failure rather
 than silently reduced coverage. Cross-marketplace dependencies remain qualified
@@ -267,15 +269,29 @@ decision, and do not make required specialist edges optional.
 | Owner | Direct required local dependencies |
 |---|---|
 | project-protocol | none |
+| skill-catalog | none |
 | codebase-xray | none |
 | repo-hygiene | none |
 | abstraction-architect | codebase-xray |
 | testing | project-protocol |
-| senior-review | project-protocol, repo-hygiene, codebase-xray, abstraction-architect, testing, react-development, typescript-development, platform-engineering |
+| senior-review | project-protocol, repo-hygiene, codebase-xray, abstraction-architect, testing, react-development, typescript-development, platform-engineering, skill-catalog |
 | project-knowledge | project-protocol, codebase-xray, senior-review, text-humanizer |
 | project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-xray, repo-hygiene, clean-code, text-humanizer, react-development, typescript-development, platform-engineering |
 | clean-code | project-protocol |
 | python-development | testing, project-protocol |
+
+
+Resolved knowledge is a distinct per-run input contract. The required skill-catalog
+provider discovers actual available skills, selects knowledge metadata and pins
+provider/version, scope, assigned workers and content fingerprints before dispatch.
+Every selected knowledge input is mandatory for that run; missing, changed or
+undelivered content is failed coverage. This exception permits reading knowledge
+through the catalog binding, never invoking an undeclared method/workflow/role,
+optionalizing a required provider or substituting a generic worker for one.
+Literal method/role loads and produced runtime artifacts still require static
+dependencies. A generated metadata declaration does not prove installation.
+The dependency linter preserves those static edges; catalog contracts and helper
+tests enforce resolved knowledge identity, read confinement and delivery accounting.
 
 The manifests are the control plane; this table records the architectural boundary.
 The dependency linter fails unresolved, undeclared and unused runtime edges.

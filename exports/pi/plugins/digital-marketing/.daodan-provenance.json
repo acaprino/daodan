@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:5a744dab1ac5012e29c242890f637400c491f0b743206531cc59b2263118829d",
+  "coreDigest": "sha256:1b894890a2828a60bb08177d8406b85e4de5d5539582cfa7a1c8317db013fb08",
   "harnessStrategies": {
     "brand-naming": "parallel-subagents",
     "content-strategy": "parallel-subagents",
@@ -12,5 +12,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "digital-marketing",
-  "version": "3.0.0"
+  "version": "3.0.1"
 }

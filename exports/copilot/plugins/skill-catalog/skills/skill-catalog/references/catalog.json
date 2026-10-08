@@ -1,0 +1,1467 @@
+{
+  "entries": [
+    {
+      "description": "Knowledge base for structural entropy: the cost of change when one concept lives in many places. TRIGGER WHEN: the user asks \"should I extract this\", \"who owns this rule\", \"is this DRY enough\", \"is this the wrong abstraction\"; centralizing, inlining or removing a layer; auditing for duplicated domain knowledge, competing sources of truth, redundant models or derivable state stored anyway; loaded under /abstraction-architect:audit or the /senior-review:team-review abstraction dimension. DO NOT TRIGGER WHEN: the concern is formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead-code removal (use /senior-review:code-review --commit), security (use senior-review:security-auditor), contract drift (use senior-review:api-contract-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).",
+      "dimensions": [
+        "architecture"
+      ],
+      "file": "skills/abstraction-architect/SKILL.md",
+      "frameworks": [],
+      "id": "abstraction-architect:abstraction-architect",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "f3262c7bff856051cbab9dd30c0edc4c905afad9eb5255119c3e2e56cd575f69",
+      "name": "abstraction-architect",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "abstraction-architect",
+      "topics": [
+        "abstraction",
+        "architecture"
+      ],
+      "version": "4.0.1"
+    },
+    {
+      "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
+      "dimensions": [],
+      "file": "skills/agent-sdk-builder/SKILL.md",
+      "frameworks": [],
+      "id": "ai-tooling:agent-sdk-builder",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "agent-sdk-builder",
+      "operations": [],
+      "provider": "ai-tooling",
+      "topics": [],
+      "version": "5.4.3"
+    },
+    {
+      "description": "Knowledge base behind the prompt-engineer agent and /prompt-optimize: the source-of-truth order for model facts, the model-class gate, and six on-demand references covering reasoning patterns, output-shape enforcement, extraction prompting, judge prompts, agent and tool instructions, and dated vendor guidance. TRIGGER WHEN: designing, reviewing or optimizing a prompt, system message or agent instructions; forcing JSON or a schema out of a model, especially a small one such as Gemma; prompting for extraction (NER, relations, events, fields from documents); deciding whether a reasoning scaffold, few-shot examples or a thinking budget belongs in a prompt; writing an LLM-as-judge prompt; writing a tool description, an instruction file, a skill description or an orchestrator brief. DO NOT TRIGGER WHEN: building an agent on the Claude Agent SDK (use agent-sdk-builder), or the question is about a model's pricing or API surface with no prompt involved.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/prompt-engineering/SKILL.md",
+      "frameworks": [],
+      "id": "ai-tooling:prompt-engineering",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "6e338f92c01d8e5f0c45ef6bea56d02f919e797182c5503d90edc4b3aad798a8",
+      "name": "prompt-engineering",
+      "operations": [
+        "develop",
+        "document",
+        "review"
+      ],
+      "provider": "ai-tooling",
+      "topics": [
+        "agents",
+        "llm",
+        "prompts"
+      ],
+      "version": "5.4.3"
+    },
+    {
+      "description": "Report templates for the app-analyzer teardown: the competitive analysis, the user-flow diagrams and the visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the app itself (that is the app-analyzer agent's Phase 1), or auditing a codebase rather than a running product.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/app-analysis/SKILL.md",
+      "frameworks": [],
+      "id": "app-analyzer:app-analysis",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "d5cac4fa6ed903a3820127f1fb0af0fe1ef80abbad1c4516a9c4623a121bbc84",
+      "name": "app-analysis",
+      "operations": [
+        "document"
+      ],
+      "provider": "app-analyzer",
+      "topics": [
+        "app-analysis"
+      ],
+      "version": "1.4.3"
+    },
+    {
+      "description": "Reference knowledge base behind the firefox-extension-dev-agent agent. TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/firefox-extension-dev/SKILL.md",
+      "frameworks": [
+        "firefox",
+        "webextensions"
+      ],
+      "id": "browser-extensions:firefox-extension-dev",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "9b830e383166832d90d4d009b24e6f25c3c52f5fd05d81d237b9e0cbc983380a",
+      "name": "firefox-extension-dev",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "browser-extensions",
+      "topics": [],
+      "version": "2.0.1"
+    },
+    {
+      "description": "Knowledge base of strategy frameworks and market data, loaded by business-planner. TRIGGER WHEN: SaaS business planning or GTM strategy work, including positioning frameworks (April Dunford, Blue Ocean, Crossing the Chasm), PLG/SLG motions, and KPI benchmarks.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/saas-business-plan/SKILL.md",
+      "frameworks": [],
+      "id": "business:saas-business-plan",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "c50be547c87f7577c43638a9240aa72c48af0bb542a101310ccf60863212b97c",
+      "name": "saas-business-plan",
+      "operations": [
+        "develop",
+        "document"
+      ],
+      "provider": "business",
+      "topics": [
+        "business",
+        "saas"
+      ],
+      "version": "1.12.1"
+    },
+    {
+      "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery.",
+      "dimensions": [],
+      "file": "skills/readability-method/SKILL.md",
+      "frameworks": [],
+      "id": "clean-code:readability-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "readability-method",
+      "operations": [],
+      "provider": "clean-code",
+      "topics": [],
+      "version": "2.0.1"
+    },
+    {
+      "description": "X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: encountering an unfamiliar codebase, needing pre-review technical context, before a major refactor, or when documentation is stale or missing. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+      "dimensions": [],
+      "file": "skills/xray-method/SKILL.md",
+      "frameworks": [],
+      "id": "codebase-xray:xray-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "xray-method",
+      "operations": [],
+      "provider": "codebase-xray",
+      "topics": [],
+      "version": "5.0.1"
+    },
+    {
+      "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/dependency-audit/SKILL.md",
+      "frameworks": [],
+      "id": "dependency-audit:dependency-audit",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ce6f3d9582878ebd33f44c0a780adff340fc8c12e5d9a652afc701df089a3d29",
+      "name": "dependency-audit",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "dependency-audit",
+      "topics": [
+        "dependencies"
+      ],
+      "version": "1.1.1"
+    },
+    {
+      "description": "Ideates candidates, filters them against archetypes and phonotactic rules, then scores survivors on domain availability, market saturation, and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
+      "dimensions": [],
+      "file": "skills/brand-naming-method/SKILL.md",
+      "frameworks": [],
+      "id": "digital-marketing:brand-naming-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "brand-naming-method",
+      "operations": [],
+      "provider": "digital-marketing",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
+      "dimensions": [],
+      "file": "skills/domain-hunter/SKILL.md",
+      "frameworks": [],
+      "id": "digital-marketing:domain-hunter",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "domain-hunter",
+      "operations": [],
+      "provider": "digital-marketing",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/ga4-implementation/SKILL.md",
+      "frameworks": [
+        "ga4"
+      ],
+      "id": "digital-marketing:ga4-implementation",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "da45be2d448aafd20c2d51731b4ef7022e8978b6ebad7fb264ba93d998f56f16",
+      "name": "ga4-implementation",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "digital-marketing",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/review-reply-method/SKILL.md",
+      "frameworks": [],
+      "id": "digital-marketing:review-reply-method",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "74d30d7a0c8fcfadefc28e9fe175bbddc25dcd7fb8d434905021716be2bda1b4",
+      "name": "review-reply-method",
+      "operations": [
+        "document"
+      ],
+      "provider": "digital-marketing",
+      "topics": [
+        "customer-review"
+      ],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
+      "dimensions": [
+        "performance",
+        "security"
+      ],
+      "file": "skills/multi-stage-dockerfile/SKILL.md",
+      "frameworks": [],
+      "id": "docker:multi-stage-dockerfile",
+      "kind": "knowledge",
+      "languages": [
+        "dockerfile"
+      ],
+      "metadata_sha256": "6af4434bcb1b73fd1ea3b80b0d3fcc04891594dfd7a6fe0d19d7999ae5f3d8a3",
+      "name": "multi-stage-dockerfile",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "docker",
+      "topics": [],
+      "version": "1.4.1"
+    },
+    {
+      "description": "Knowledge base for production crawlers, from target assessment through observability. TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/grabber-development/SKILL.md",
+      "frameworks": [],
+      "id": "grabber-development:grabber-development",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "3f91bec449ab988f0700bff19479dcc3922ca0ee210543196b42acbc305e9ea0",
+      "name": "grabber-development",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "grabber-development",
+      "topics": [
+        "crawling",
+        "scraping"
+      ],
+      "version": "1.8.3"
+    },
+    {
+      "description": "Idiomatic patterns for concurrent, shared-code, and UI-layer work. TRIGGER WHEN: building, writing, or reviewing Kotlin code using coroutines / Flow / StateFlow / SharedFlow / suspend functions, Kotlin Multiplatform (KMP) and expect/actual, Compose composables / ViewModels, Ktor routing with JWT auth and Exposed, sealed-class state modeling, scope functions, or DSL builders. DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development), or Android Java without Kotlin.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/kotlin-specialist/SKILL.md",
+      "frameworks": [],
+      "id": "kotlin-development:kotlin-specialist",
+      "kind": "knowledge",
+      "languages": [
+        "kotlin"
+      ],
+      "metadata_sha256": "a5e8403eae82225263330bcba07e058d45abab2ad63ea5d6a38d29fab219ef1f",
+      "name": "kotlin-specialist",
+      "operations": [
+        "develop",
+        "document",
+        "review",
+        "test"
+      ],
+      "provider": "kotlin-development",
+      "topics": [],
+      "version": "1.1.1"
+    },
+    {
+      "description": "Render a JSON outline into a standalone browser page; needs internet for the CDN. TRIGGER WHEN: the user says 'interactive map', 'force graph', 'web mindmap', or 'HTML mindmap', or asks for a zoomable, draggable visual export. DO NOT TRIGGER WHEN: the user wants Obsidian MarkMind format (use markmind-exporter).",
+      "dimensions": [],
+      "file": "skills/forcegraph-exporter/SKILL.md",
+      "frameworks": [],
+      "id": "learning:forcegraph-exporter",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "forcegraph-exporter",
+      "operations": [],
+      "provider": "learning",
+      "topics": [],
+      "version": "1.7.2"
+    },
+    {
+      "description": "Produce a Buzan-style radiant outline as structured JSON, optimized for recall over symmetry: single keywords, emoji anchors, cross-links. TRIGGER WHEN: the user asks to create a mind map, mappa mentale, concept map, or visual summary of a topic, text, or file, typically to learn or brainstorm.",
+      "dimensions": [],
+      "file": "skills/generate-mindmap/SKILL.md",
+      "frameworks": [],
+      "id": "learning:generate-mindmap",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "generate-mindmap",
+      "operations": [],
+      "provider": "learning",
+      "topics": [],
+      "version": "1.7.2"
+    },
+    {
+      "description": "Render a JSON outline into a drop-in vault file for the Obsidian plugin. TRIGGER WHEN: the user says 'markmind' or needs MarkMind Rich output from a mindmap structure, typically one produced by generate-mindmap. DO NOT TRIGGER WHEN: the user wants an interactive HTML mindmap (use forcegraph-exporter).",
+      "dimensions": [],
+      "file": "skills/markmind-exporter/SKILL.md",
+      "frameworks": [],
+      "id": "learning:markmind-exporter",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "markmind-exporter",
+      "operations": [],
+      "provider": "learning",
+      "topics": [],
+      "version": "1.7.2"
+    },
+    {
+      "description": "Knowledge base for shipping production games from one Java or Kotlin codebase. TRIGGER WHEN: building, optimizing, debugging, or scaffolding libGDX games; migrating libGDX versions; choosing libGDX architecture patterns.",
+      "dimensions": [
+        "correctness",
+        "performance"
+      ],
+      "file": "skills/libgdx-development/SKILL.md",
+      "frameworks": [
+        "libgdx"
+      ],
+      "id": "libgdx-development:libgdx-development",
+      "kind": "knowledge",
+      "languages": [
+        "java",
+        "kotlin"
+      ],
+      "metadata_sha256": "c8239e58333821377ddc89fbd22fe5de5be187fac860964304d74493e8248d4c",
+      "name": "libgdx-development",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "libgdx-development",
+      "topics": [],
+      "version": "1.1.1"
+    },
+    {
+      "description": "Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages. TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports. DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/kernel-marketplace/SKILL.md",
+      "frameworks": [],
+      "id": "marketplace-ops:kernel-marketplace",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "22317b573cfb9a5795db8dd2bd40daefaa4c337f972b17b83aea44aa87c2c8c7",
+      "name": "kernel-marketplace",
+      "operations": [
+        "develop",
+        "document",
+        "review"
+      ],
+      "provider": "marketplace-ops",
+      "topics": [
+        "marketplace",
+        "plugins"
+      ],
+      "version": "2.4.1"
+    },
+    {
+      "description": "Validates the integrity of any Claude Code plugin marketplace. Use PROACTIVELY before any commit that modifies plugin files or marketplace.json. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan plugins/skills/agents/commands, checking dependency resolution or cycles, confirming documented plugin counts still match README and docs tables, or checking naming conventions. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding new plugins (use marketplace-scaffold-plugin / skills-creator).",
+      "dimensions": [],
+      "file": "skills/marketplace-audit/SKILL.md",
+      "frameworks": [],
+      "id": "marketplace-ops:marketplace-audit",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "marketplace-audit",
+      "operations": [],
+      "provider": "marketplace-ops",
+      "topics": [],
+      "version": "2.4.1"
+    },
+    {
+      "description": "Creates new Claude Code plugin components: skills, agents, commands, full plugins. Also decides skill vs agent architecture. TRIGGER WHEN: the user asks to create, add, scaffold or build a new skill, agent, command or plugin, or says \"new skill\", \"new agent\", \"new plugin\", \"skills-creator\", \"skills-hammer\". DO NOT TRIGGER WHEN: editing or updating an existing component, or auditing marketplace integrity (use marketplace-audit instead).",
+      "dimensions": [],
+      "file": "skills/skills-creator/SKILL.md",
+      "frameworks": [],
+      "id": "marketplace-ops:skills-creator",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "skills-creator",
+      "operations": [],
+      "provider": "marketplace-ops",
+      "topics": [],
+      "version": "2.4.1"
+    },
+    {
+      "description": "Knowledge base for running the broker under real load, split into references loaded on demand. TRIGGER WHEN: designing, operating, upgrading, monitoring, or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: the task is a quick conceptual question the rabbitmq-expert agent answers without production detail.",
+      "dimensions": [
+        "data-integrity",
+        "distributed-flow"
+      ],
+      "file": "skills/rabbitmq-production/SKILL.md",
+      "frameworks": [
+        "rabbitmq"
+      ],
+      "id": "messaging:rabbitmq-production",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "9766461a797de653021cfe7bb60c294f2bd266250da2656b1331b8e4614d1cb7",
+      "name": "rabbitmq-production",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "messaging",
+      "topics": [],
+      "version": "2.1.1"
+    },
+    {
+      "description": "Report every automated-review violation with its file location and fix. TRIGGER WHEN: preparing an Obsidian plugin for submission or before pushing code.",
+      "dimensions": [],
+      "file": "skills/obsidian-check/SKILL.md",
+      "frameworks": [],
+      "id": "obsidian-development:obsidian-check",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "obsidian-check",
+      "operations": [],
+      "provider": "obsidian-development",
+      "topics": [],
+      "version": "1.5.2"
+    },
+    {
+      "description": "Comply with the automated gate on first submission: eslint-plugin-obsidianmd rules plus the official guidelines. TRIGGER WHEN: writing, reviewing, or fixing Obsidian community plugin code.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/obsidian-plugin-development/SKILL.md",
+      "frameworks": [
+        "obsidian"
+      ],
+      "id": "obsidian-development:obsidian-plugin-development",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "57d13748d328763d95d8b179b00a9d2600fb84ffbf221fd5f64d11799423d817",
+      "name": "obsidian-plugin-development",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "obsidian-development",
+      "topics": [],
+      "version": "1.5.2"
+    },
+    {
+      "description": "Generate the layout, manifest, tsconfig, esbuild config, and a minimal class that passes automated review. TRIGGER WHEN: the user asks to start, create, bootstrap, scaffold, or initialize a new Obsidian community plugin.",
+      "dimensions": [],
+      "file": "skills/obsidian-scaffold/SKILL.md",
+      "frameworks": [],
+      "id": "obsidian-development:obsidian-scaffold",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "obsidian-scaffold",
+      "operations": [],
+      "provider": "obsidian-development",
+      "topics": [],
+      "version": "1.5.2"
+    },
+    {
+      "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
+      "dimensions": [
+        "correctness",
+        "performance"
+      ],
+      "file": "skills/opentelemetry/SKILL.md",
+      "frameworks": [
+        "opentelemetry"
+      ],
+      "id": "opentelemetry:opentelemetry",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "141f48a6a263b2fc4dfe0babf1d9eb00674a9224191270ebbf60da02f048c036",
+      "name": "opentelemetry",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "opentelemetry",
+      "topics": [],
+      "version": "1.4.2"
+    },
+    {
+      "description": "Doctrine for putting a plan, a spec, or a session's own decisions in front of a second model family: when the cost is earned, the GIVEN versus DERIVED provenance rules, when to skip it. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external challenge, or interpreting a verdict's standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review), or running same-family multi-reviewer pipelines (use senior-review:review-quality-gates).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/cross-model-peer-review/SKILL.md",
+      "frameworks": [],
+      "id": "peer-review:cross-model-peer-review",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "e47622dc278d1fb847a42ffbf3df4840ab992ed28597f971010719ae37c27f91",
+      "name": "cross-model-peer-review",
+      "operations": [
+        "review"
+      ],
+      "provider": "peer-review",
+      "topics": [
+        "peer-review"
+      ],
+      "version": "2.4.2"
+    },
+    {
+      "description": "Rulebook of MUST/DO/DON'T rules backed by real-world incident references. TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri) apps for security posture, architecture decisions, performance, or compliance with OWASP, Core Web Vitals, and OAuth 2.1.",
+      "dimensions": [
+        "architecture",
+        "security"
+      ],
+      "file": "skills/platform-engineering/SKILL.md",
+      "frameworks": [],
+      "id": "platform-engineering:platform-engineering",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "95cc8d3df5432ad2a656405cf4e450a8b12acf18bfaa879b015a50da4431221c",
+      "name": "platform-engineering",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "platform-engineering",
+      "topics": [
+        "deployment",
+        "integration",
+        "platform"
+      ],
+      "version": "1.3.2"
+    },
+    {
+      "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's established instruction file. Provides an explicit audit-only method.",
+      "dimensions": [],
+      "file": "skills/instructions-method/SKILL.md",
+      "frameworks": [],
+      "id": "project-knowledge:instructions-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "instructions-method",
+      "operations": [],
+      "provider": "project-knowledge",
+      "topics": [],
+      "version": "1.0.1"
+    },
+    {
+      "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
+      "dimensions": [],
+      "file": "skills/project-knowledge/SKILL.md",
+      "frameworks": [],
+      "id": "project-knowledge:project-knowledge",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "project-knowledge",
+      "operations": [],
+      "provider": "project-knowledge",
+      "topics": [],
+      "version": "1.0.1"
+    },
+    {
+      "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/readme-craft/SKILL.md",
+      "frameworks": [],
+      "id": "project-knowledge:readme-craft",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "bf71815bbb3caa1349214337c309b42bf475f46c6af00b061261d55b42e54d9c",
+      "name": "readme-craft",
+      "operations": [
+        "document"
+      ],
+      "provider": "project-knowledge",
+      "topics": [
+        "readme"
+      ],
+      "version": "1.0.1"
+    },
+    {
+      "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.",
+      "dimensions": [],
+      "file": "skills/lifecycle-method/SKILL.md",
+      "frameworks": [],
+      "id": "project-lifecycle:lifecycle-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "lifecycle-method",
+      "operations": [],
+      "provider": "project-lifecycle",
+      "topics": [],
+      "version": "1.1.1"
+    },
+    {
+      "description": "Canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before recording, resuming or closing a project intervention.",
+      "dimensions": [],
+      "file": "skills/project-protocol/SKILL.md",
+      "frameworks": [],
+      "id": "project-protocol:project-protocol",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "project-protocol",
+      "operations": [],
+      "provider": "project-protocol",
+      "topics": [],
+      "version": "1.0.2"
+    },
+    {
+      "description": "Knowledge base for the app layer of the web platform, and the gaps between engines. TRIGGER WHEN: building or auditing a PWA: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, @angular/pwa, @vite-pwa/nuxt, Web Push, VAPID, Declarative Push, beforeinstallprompt, Window Controls Overlay, OPFS, Background Sync, Wake Lock, Project Fugu, Bubblewrap, TWA, PWA Builder, Capacitor. DO NOT TRIGGER WHEN: React performance (use react-development:review-react), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/pwa-development/SKILL.md",
+      "frameworks": [],
+      "id": "pwa-expert:pwa-development",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "b36a8ff09edcfae1c38984a32604f383a5d64a6936fbeb7ec4cfb179420dc3d9",
+      "name": "pwa-development",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "pwa-expert",
+      "topics": [
+        "pwa",
+        "service-worker"
+      ],
+      "version": "1.3.4"
+    },
+    {
+      "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/async-python-patterns/SKILL.md",
+      "frameworks": [],
+      "id": "python-development:async-python-patterns",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "3f278119ef664e6c2915e7c1053e67dfec41be1853b8cf9615912549618c3add",
+      "name": "async-python-patterns",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "python-development",
+      "topics": [
+        "async",
+        "asyncio",
+        "concurrency"
+      ],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Deep reference for the data layer of a production service. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+; migrating a codebase from Pydantic v1 to v2; choosing between `Annotated[Decimal, ...]` and `condecimal` for money; hitting v2 validator, serialization or performance surprises; designing FastAPI request/response schemas or error envelopes. DO NOT TRIGGER WHEN: the task is Python testing (use pytest-patterns) or non-Python schema work (use typescript-development).",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/pydantic-v2/SKILL.md",
+      "frameworks": [
+        "pydantic"
+      ],
+      "id": "python-development:pydantic-v2",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "446b1e482f2083ab0999a0ba97a1710d1fbca74a58177098cfbe0210ccab666e",
+      "name": "pydantic-v2",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "python-development",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Python-specific pytest fixtures, async tests, parametrization, mocks and framework configuration. Load as technical context for testing:test-writer or Python development; universal test principles and TDD belong to testing.",
+      "dimensions": [
+        "test-quality"
+      ],
+      "file": "skills/pytest-patterns/SKILL.md",
+      "frameworks": [
+        "pytest"
+      ],
+      "id": "python-development:pytest-patterns",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "e8978ba805e1c1efa64dc035724b808816c0ef66cf705ae5cd29158d48ca161c",
+      "name": "pytest-patterns",
+      "operations": [
+        "review",
+        "test"
+      ],
+      "provider": "python-development",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Grade and rewrite code prose against antirez's 9-type taxonomy, mapped to PEP 257. TRIGGER WHEN: the user asks to improve comments, add docstrings, review comment quality, or audit documentation in a Python codebase.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/python-comments/SKILL.md",
+      "frameworks": [],
+      "id": "python-development:python-comments",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "1e4c4dd831a94948f870996840aaca42c96ffa642e51ade9fcd7b960b5608719",
+      "name": "python-comments",
+      "operations": [
+        "document",
+        "review"
+      ],
+      "provider": "python-development",
+      "topics": [
+        "comments"
+      ],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Find and remove unused variables, functions, classes and unreachable branches with vulture and ruff, filtering framework false positives (Django, FastAPI, pytest, click). TRIGGER WHEN: cleaning up Python codebases, enforcing import hygiene, or integrating dead code checks into CI.",
+      "dimensions": [],
+      "file": "skills/python-dead-code/SKILL.md",
+      "frameworks": [],
+      "id": "python-development:python-dead-code",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "python-dead-code",
+      "operations": [],
+      "provider": "python-development",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Build wheels and sdists from a pyproject.toml, then publish them. TRIGGER WHEN: packaging Python libraries, choosing a src or flat layout, setting up dynamic versioning, creating CLI entry points, or uploading to TestPyPI and PyPI.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/python-packaging/SKILL.md",
+      "frameworks": [],
+      "id": "python-development:python-packaging",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "0272183d5961f96c9031b7dd900cb2c8fd28088e88c99fde24c6c9f7ad086bad",
+      "name": "python-packaging",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "python-development",
+      "topics": [
+        "packaging"
+      ],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Measure first with cProfile, line_profiler, memory_profiler or py-spy, then fix what the numbers show. TRIGGER WHEN: debugging slow Python code, optimizing bottlenecks, cutting memory usage, or improving application performance.",
+      "dimensions": [
+        "performance"
+      ],
+      "file": "skills/python-performance-optimization/SKILL.md",
+      "frameworks": [],
+      "id": "python-development:python-performance-optimization",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "29621b25081b02a09a066e863fecf43aef74b0640b91deb99319a837e338297f",
+      "name": "python-performance-optimization",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "python-development",
+      "topics": [
+        "performance"
+      ],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for \"readable\", \"maintainable\" or \"clean\" code, a review flags comprehension issues, or the task is legacy modernization or onboarding cleanup.",
+      "dimensions": [],
+      "file": "skills/python-refactor-method/SKILL.md",
+      "frameworks": [],
+      "id": "python-development:python-refactor-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "python-refactor-method",
+      "operations": [],
+      "provider": "python-development",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Handle virtual environments, lockfiles and interpreter version pinning. TRIGGER WHEN: setting up Python projects, managing dependencies, migrating off pip/poetry, or optimizing Python development workflows with uv.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/uv-package-manager/SKILL.md",
+      "frameworks": [
+        "uv"
+      ],
+      "id": "python-development:uv-package-manager",
+      "kind": "knowledge",
+      "languages": [
+        "python"
+      ],
+      "metadata_sha256": "dbabd5ce97bf78198068bdc0e107a8bb1d4627a4faa40ce853d84764fd1e817d",
+      "name": "uv-package-manager",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "python-development",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Knowledge base for production question-answering pipelines. TRIGGER WHEN: building, optimizing, or auditing RAG systems, including Graph RAG, CRAG, Self-RAG, and Agentic RAG.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/rag-development/SKILL.md",
+      "frameworks": [],
+      "id": "rag-development:rag-development",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "48506fed42b7d757dfa8fd818676d2a0464a3de7e6aa2f67bc9b5ecf019396fa",
+      "name": "rag-development",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "rag-development",
+      "topics": [
+        "embeddings",
+        "rag",
+        "retrieval"
+      ],
+      "version": "1.6.1"
+    },
+    {
+      "description": "Vercel Engineering's 70 rules, ordered by impact across 8 categories. TRIGGER WHEN: writing, reviewing, or refactoring React or Next.js code: components, pages, data fetching, bundle size, or render performance.",
+      "dimensions": [
+        "correctness",
+        "performance"
+      ],
+      "file": "skills/react-best-practices/SKILL.md",
+      "frameworks": [
+        "react"
+      ],
+      "id": "react-development:react-best-practices",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "a6640a88369869d6de38bb87f9790117b52105b786d5ae53d9bdbe0293a1e72e",
+      "name": "react-best-practices",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "react-development",
+      "topics": [],
+      "version": "1.11.1"
+    },
+    {
+      "description": "The check catalog for workspace tidying: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch directories, orphan doc-assets, and git auxiliary state. Two profiles, full and lite, over one set of check definitions. TRIGGER WHEN: running `/repo-hygiene:tidy`, spawned as the repo-hygiene dimension of a review pipeline, or running the diff-scoped VCS check inside a code or PR review. DO NOT TRIGGER WHEN: the question needs source comprehension (dead exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review`.",
+      "dimensions": [
+        "repo-hygiene"
+      ],
+      "file": "skills/repo-hygiene/SKILL.md",
+      "frameworks": [],
+      "id": "repo-hygiene:repo-hygiene",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "778c6bb2a96e3718010e546c91209c5de32043cfbdd6b35fbe13247e18344b8c",
+      "name": "repo-hygiene",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "repo-hygiene",
+      "topics": [
+        "filesystem",
+        "git"
+      ],
+      "version": "1.3.1"
+    },
+    {
+      "description": "Knowledge base for web research: query formulation, source authority ranking, the two search backends (native WebSearch, optional serper.dev through websearch.py), reading pages with WebFetch and the webfetch.py bot-block fallback, and the anti-loop rules. Used by quick-searcher, deep-researcher and /research:team-research. TRIGGER WHEN: performing web research with WebSearch, WebFetch, or the research plugin's scripts. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/web-search-techniques/SKILL.md",
+      "frameworks": [],
+      "id": "research:web-search-techniques",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "6dee8e808a511eda7a9e273d5563e831799b3f52bc7ed683f04dc6739988310f",
+      "name": "web-search-techniques",
+      "operations": [
+        "research"
+      ],
+      "provider": "research",
+      "topics": [
+        "research",
+        "web-search"
+      ],
+      "version": "6.2.4"
+    },
+    {
+      "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates.",
+      "dimensions": [],
+      "file": "skills/application-cleanup-method/SKILL.md",
+      "frameworks": [],
+      "id": "senior-review:application-cleanup-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "application-cleanup-method",
+      "operations": [],
+      "provider": "senior-review",
+      "topics": [],
+      "version": "15.0.0"
+    },
+    {
+      "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/defect-taxonomy/SKILL.md",
+      "frameworks": [],
+      "id": "senior-review:defect-taxonomy",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "877fe2575eab9d0e4719b4a04b202575431cf8a07311132d2777104f74bc21dc",
+      "name": "defect-taxonomy",
+      "operations": [
+        "classify"
+      ],
+      "provider": "senior-review",
+      "topics": [
+        "defects"
+      ],
+      "version": "15.0.0"
+    },
+    {
+      "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
+      "dimensions": [],
+      "file": "skills/review-consolidation/SKILL.md",
+      "frameworks": [],
+      "id": "senior-review:review-consolidation",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "review-consolidation",
+      "operations": [],
+      "provider": "senior-review",
+      "topics": [],
+      "version": "15.0.0"
+    },
+    {
+      "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
+      "dimensions": [],
+      "file": "skills/review-method/SKILL.md",
+      "frameworks": [],
+      "id": "senior-review:review-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "review-method",
+      "operations": [],
+      "provider": "senior-review",
+      "topics": [],
+      "version": "15.0.0"
+    },
+    {
+      "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
+      "dimensions": [],
+      "file": "skills/review-preparation/SKILL.md",
+      "frameworks": [],
+      "id": "senior-review:review-preparation",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "review-preparation",
+      "operations": [],
+      "provider": "senior-review",
+      "topics": [],
+      "version": "15.0.0"
+    },
+    {
+      "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
+      "dimensions": [],
+      "file": "skills/review-quality-gates/SKILL.md",
+      "frameworks": [],
+      "id": "senior-review:review-quality-gates",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "review-quality-gates",
+      "operations": [],
+      "provider": "senior-review",
+      "topics": [],
+      "version": "15.0.0"
+    },
+    {
+      "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",
+      "dimensions": [],
+      "file": "skills/skill-catalog/SKILL.md",
+      "frameworks": [],
+      "id": "skill-catalog:skill-catalog",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "skill-catalog",
+      "operations": [],
+      "provider": "skill-catalog",
+      "topics": [],
+      "version": "1.0.0"
+    },
+    {
+      "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",
+      "dimensions": [
+        "data-integrity",
+        "security"
+      ],
+      "file": "skills/stripe/SKILL.md",
+      "frameworks": [
+        "stripe"
+      ],
+      "id": "stripe:stripe",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ae09633af93c51df174e3e3bd7c192bb3f17622de7ae30a7305b75df77c45009",
+      "name": "stripe",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "stripe",
+      "topics": [],
+      "version": "2.6.1"
+    },
+    {
+      "description": "Scope, plan, and execute the reorganization behind approval gates. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up old files, restructuring project directories, separating work from personal files, or automating file cleanup tasks.",
+      "dimensions": [],
+      "file": "skills/file-organizer/SKILL.md",
+      "frameworks": [],
+      "id": "system-utils:file-organizer",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "file-organizer",
+      "operations": [],
+      "provider": "system-utils",
+      "topics": [],
+      "version": "2.1.3"
+    },
+    {
+      "description": "Knowledge base indexing core, desktop, and mobile references. TRIGGER WHEN: working with Tauri 2 commands, IPC, plugins, project setup, OAuth, or CI/CD.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle",
+        "security"
+      ],
+      "file": "skills/tauri/SKILL.md",
+      "frameworks": [
+        "tauri"
+      ],
+      "id": "tauri-development:tauri",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ca8c4bc900ab203471a192e6a7fc551a97efff293999d38203e8be7c182628ea",
+      "name": "tauri",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "tauri-development",
+      "topics": [],
+      "version": "2.8.1"
+    },
+    {
+      "description": "Binding placement rules, plus the measure, quarantine, consolidate remediation ladder for degraded suites. TRIGGER WHEN: creating or placing any test file, choosing between extending an existing test and writing a new one, auditing test-suite health, quarantining failing or flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: writing the test content itself (use mattpocock-skills:tdd), browser E2E mechanics like page objects and waiting (use developer-essentials:e2e-testing-patterns).",
+      "dimensions": [
+        "test-quality"
+      ],
+      "file": "skills/test-hygiene/SKILL.md",
+      "frameworks": [],
+      "id": "testing:test-hygiene",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "366d14d1a91cb5314d1f00bdd1cf315bbd316bb8208eca35f22d51f008fc2b59",
+      "name": "test-hygiene",
+      "operations": [
+        "review",
+        "test"
+      ],
+      "provider": "testing",
+      "topics": [
+        "testing",
+        "tests"
+      ],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence.",
+      "dimensions": [],
+      "file": "skills/test-preparation/SKILL.md",
+      "frameworks": [],
+      "id": "testing:test-preparation",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "test-preparation",
+      "operations": [],
+      "provider": "testing",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance.",
+      "dimensions": [],
+      "file": "skills/test-remediation-method/SKILL.md",
+      "frameworks": [],
+      "id": "testing:test-remediation-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "test-remediation-method",
+      "operations": [],
+      "provider": "testing",
+      "topics": [],
+      "version": "3.0.1"
+    },
+    {
+      "description": "Knowledge base of the 24 catalogued patterns, with the ground rules against invented content, the register table and the language policy that govern every rewrite. TRIGGER WHEN: editing or reviewing text to remove AI traces, or when asked to humanize text.",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/anti-ai-writing-patterns/SKILL.md",
+      "frameworks": [],
+      "id": "text-humanizer:anti-ai-writing-patterns",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "e99eb3a2f44c34f9f33f013f735328403f7efbefbee733b1bd0682a4f2bebeae",
+      "name": "anti-ai-writing-patterns",
+      "operations": [
+        "document"
+      ],
+      "provider": "text-humanizer",
+      "topics": [
+        "humanize",
+        "prose"
+      ],
+      "version": "1.2.2"
+    },
+    {
+      "description": "Vendor-neutral vocabulary for programmatic broker integration: the five access archetypes, the second axis separating a single broker from a multi-broker platform, the reference order state machine, session and recovery, and the evidence ladder that decides what a claim about a venue is worth. TRIGGER WHEN: comparing brokers or integration paths, starting an integration against a broker with no dedicated skill, or naming what kind of access path a system uses. DO NOT TRIGGER WHEN: the question is about one specific broker that has its own skill (use the ibkr or mt5 skill), or about strategy, backtesting, or portfolio construction.",
+      "dimensions": [
+        "correctness",
+        "data-integrity"
+      ],
+      "file": "skills/broker-vocabulary/SKILL.md",
+      "frameworks": [],
+      "id": "trading-broker-integration:broker-vocabulary",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "70a7504993a5b1f1e11502db03b04d2eceee1c70b2598d94d1d8b85ffe9ae62b",
+      "name": "broker-vocabulary",
+      "operations": [
+        "develop",
+        "document",
+        "review"
+      ],
+      "provider": "trading-broker-integration",
+      "topics": [
+        "broker",
+        "trading"
+      ],
+      "version": "2.1.4"
+    },
+    {
+      "description": "Authoritative reference for Interactive Brokers integration in Python, across every asset class, with tooling to verify venue behaviour against a paper Gateway instead of guessing. TRIGGER WHEN: building, auditing or debugging anything that talks to TWS or IB Gateway via the TWS API and ib_async: contracts, market data, orders, brackets, error codes, reconnection, deployment, or a question about how IBKR actually behaves. DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5), or the IBKR Web API with no TWS connection.",
+      "dimensions": [
+        "correctness",
+        "data-integrity",
+        "resource-lifecycle"
+      ],
+      "file": "skills/ibkr/SKILL.md",
+      "frameworks": [
+        "ib-async",
+        "ibkr"
+      ],
+      "id": "trading-broker-integration:ibkr",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "ccb8aaccf721f6875e90f0a41757adcb2361878385bb9cdd53692030328b01f2",
+      "name": "ibkr",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "trading-broker-integration",
+      "topics": [],
+      "version": "2.1.4"
+    },
+    {
+      "description": "Knowledge base for the official API, its polling model, and Windows-side production concerns. TRIGGER WHEN: building, implementing, writing, coding, creating, optimizing, or debugging MT5 or MetaTrader 5 trading systems with Python, including the aiomql and ZeroMQ bridge alternatives. DO NOT TRIGGER WHEN: the broker is Interactive Brokers (use ibkr), or the question is about strategy design rather than the terminal and its API.",
+      "dimensions": [
+        "correctness",
+        "data-integrity"
+      ],
+      "file": "skills/mt5/SKILL.md",
+      "frameworks": [
+        "metatrader",
+        "mt5"
+      ],
+      "id": "trading-broker-integration:mt5",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "fddc9727e12304d1094e7554be71b282e90ab29619cc93efcf4b1bf3c08c870b",
+      "name": "mt5",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "trading-broker-integration",
+      "topics": [],
+      "version": "2.1.4"
+    },
+    {
+      "description": "Run Knip to find unused files, exports and types, with per-framework and per-test-runner plugins. TRIGGER WHEN: cleaning up TypeScript/JavaScript codebases, optimizing bundle size, or enforcing strict dependency hygiene in CI. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",
+      "dimensions": [],
+      "file": "skills/knip/SKILL.md",
+      "frameworks": [],
+      "id": "typescript-development:knip",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "knip",
+      "operations": [],
+      "provider": "typescript-development",
+      "topics": [],
+      "version": "2.3.1"
+    },
+    {
+      "description": "Deep reference for advanced TypeScript. TRIGGER WHEN: migrating JavaScript to TypeScript, bootstrapping a TS project (strict tsconfig, ESLint, Vite/Vitest, pnpm), writing generics, mapped or conditional types, `satisfies`, branded types, discriminated unions or template literal types, designing Zod schemas for runtime validation, building type-safe NestJS APIs, deep React and TypeScript typing, typing LangChain.js, or comparing TS with Java/Python enterprise approaches. DO NOT TRIGGER WHEN: routine TS/JS (use typescript-development:typescript-write), React performance (use react-development:review-react), or dead-code detection (use typescript-development:knip).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/mastering-typescript/SKILL.md",
+      "frameworks": [],
+      "id": "typescript-development:mastering-typescript",
+      "kind": "knowledge",
+      "languages": [
+        "typescript"
+      ],
+      "metadata_sha256": "431f10e9febc436114ee18124ae89df615e5b1c2f8907d60f3501863137b534f",
+      "name": "mastering-typescript",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "typescript-development",
+      "topics": [],
+      "version": "2.3.1"
+    },
+    {
+      "description": "20 rules across 7 categories, each with detection and fix guidance. TRIGGER WHEN: reviewing or hardening TypeScript against type-system erosion: `any` leakage, unsound casts, missing boundary validation, assertion abuse, tsconfig strictness, exhaustiveness and generics soundness. DO NOT TRIGGER WHEN: style and naming review (use typescript-write), or dead-code detection (use knip).",
+      "dimensions": [
+        "correctness",
+        "security"
+      ],
+      "file": "skills/type-safety-rules/SKILL.md",
+      "frameworks": [],
+      "id": "typescript-development:type-safety-rules",
+      "kind": "knowledge",
+      "languages": [
+        "typescript"
+      ],
+      "metadata_sha256": "0ea5ee1073b91a4409aabf4b71afc2712ebfb64a3b60eafe64ae2a57e2a1f644",
+      "name": "type-safety-rules",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "typescript-development",
+      "topics": [],
+      "version": "2.3.1"
+    },
+    {
+      "description": "Apply house coding standards to everyday application work. TRIGGER WHEN: writing or reviewing TypeScript/JavaScript code, including types, generics, async patterns, module boundaries, and style conventions. DO NOT TRIGGER WHEN: React performance (use react-development), or advanced type-system depth (use mastering-typescript).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/typescript-write/SKILL.md",
+      "frameworks": [],
+      "id": "typescript-development:typescript-write",
+      "kind": "knowledge",
+      "languages": [
+        "typescript"
+      ],
+      "metadata_sha256": "688b00b37df6f124d3ccc37a9012ff43eb365f9c8f8f2cb157f40ad26b58523b",
+      "name": "typescript-write",
+      "operations": [
+        "develop",
+        "review"
+      ],
+      "provider": "typescript-development",
+      "topics": [],
+      "version": "2.3.1"
+    },
+    {
+      "description": "Build, configure, debug, and extend in-page console UIs. TRIGGER WHEN: the user mentions xterm, xterm.js, @xterm/xterm, terminal emulator in the browser, web terminal, WebSSH, in-browser shell, addons like FitAddon, WebglAddon, SearchAddon, AttachAddon, integration with node-pty, ANSI/VT sequences, terminal theming, PTY over WebSocket, custom key handlers, parser hooks, or embedding a terminal in React/Vue/Angular/Electron apps.",
+      "dimensions": [
+        "correctness",
+        "resource-lifecycle"
+      ],
+      "file": "skills/xtermjs-skill/SKILL.md",
+      "frameworks": [
+        "xterm",
+        "xterm.js"
+      ],
+      "id": "xterm:xtermjs-skill",
+      "kind": "knowledge",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "metadata_sha256": "87a58230f2e399625dfd8f6e8b6eb71e5f3606d0803902424aaa6f35512e41bc",
+      "name": "xtermjs-skill",
+      "operations": [
+        "develop",
+        "review",
+        "test"
+      ],
+      "provider": "xterm",
+      "topics": [],
+      "version": "1.2.1"
+    }
+  ],
+  "installation_evidence": false,
+  "schema": "daodan/skill-catalog/v1"
+}

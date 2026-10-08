@@ -1,0 +1,21 @@
+schema = "daodan/v1"
+name = "skill-catalog"
+version = "1.0.0"
+description = "Shared metadata-only skill discovery and scope-aware knowledge selection for review, development, tests and documentation. Available host/project skills become fingerprinted per-run inputs; methods and workflows retain required providers and explicit execution."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "shell.execute"]
+optional = []
+
+[dependencies]
+required = []
+
+[components]
+skills = ["skill-catalog"]
+roles = []
+workflows = []
+policies = []
+
+[contracts]
+exports = ["contracts/knowledge-selection.toml", "contracts/knowledge-input.toml", "contracts/knowledge-assignment.toml", "contracts/knowledge-usage.toml"]

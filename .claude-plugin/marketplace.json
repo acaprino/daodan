@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "31.0.0"
+    "version": "32.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -35,7 +35,7 @@
         "./skills/abstraction-architect"
       ],
       "source": "./exports/claude/plugins/abstraction-architect",
-      "version": "4.0.0"
+      "version": "4.0.1"
     },
     {
       "agents": [
@@ -58,7 +58,7 @@
         "./skills/prompt-engineering"
       ],
       "source": "./exports/claude/plugins/ai-tooling",
-      "version": "5.4.2"
+      "version": "5.4.3"
     },
     {
       "agents": [
@@ -77,7 +77,7 @@
         "./skills/app-analysis"
       ],
       "source": "./exports/claude/plugins/app-analyzer",
-      "version": "1.4.2"
+      "version": "1.4.3"
     },
     {
       "agents": [
@@ -99,7 +99,7 @@
         "./skills/firefox-extension-dev"
       ],
       "source": "./exports/claude/plugins/browser-extensions",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "agents": [
@@ -121,7 +121,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/claude/plugins/business",
-      "version": "1.12.0"
+      "version": "1.12.1"
     },
     {
       "agents": [
@@ -143,7 +143,7 @@
         "./skills/readability-method"
       ],
       "source": "./exports/claude/plugins/clean-code",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "agents": [
@@ -168,7 +168,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/claude/plugins/codebase-xray",
-      "version": "5.0.0"
+      "version": "5.0.1"
     },
     {
       "agents": [
@@ -199,7 +199,7 @@
         "./skills/dependency-audit"
       ],
       "source": "./exports/claude/plugins/dependency-audit",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "agents": [
@@ -233,7 +233,7 @@
         "./skills/review-reply-method"
       ],
       "source": "./exports/claude/plugins/digital-marketing",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "author": {
@@ -247,7 +247,7 @@
         "./skills/multi-stage-dockerfile"
       ],
       "source": "./exports/claude/plugins/docker",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": {
@@ -294,7 +294,7 @@
         "./skills/grabber-development"
       ],
       "source": "./exports/claude/plugins/grabber-development",
-      "version": "1.8.2"
+      "version": "1.8.3"
     },
     {
       "author": {
@@ -308,7 +308,7 @@
         "./skills/kotlin-specialist"
       ],
       "source": "./exports/claude/plugins/kotlin-development",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "author": {
@@ -327,7 +327,7 @@
         "./skills/markmind-exporter"
       ],
       "source": "./exports/claude/plugins/learning",
-      "version": "1.7.1"
+      "version": "1.7.2"
     },
     {
       "agents": [
@@ -347,7 +347,7 @@
         "./skills/libgdx-development"
       ],
       "source": "./exports/claude/plugins/libgdx-development",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "agents": [
@@ -372,7 +372,7 @@
         "./skills/skills-creator"
       ],
       "source": "./exports/claude/plugins/marketplace-ops",
-      "version": "2.4.0"
+      "version": "2.4.1"
     },
     {
       "agents": [
@@ -389,7 +389,7 @@
         "./skills/rabbitmq-production"
       ],
       "source": "./exports/claude/plugins/messaging",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "author": {
@@ -405,7 +405,7 @@
         "./skills/obsidian-scaffold"
       ],
       "source": "./exports/claude/plugins/obsidian-development",
-      "version": "1.5.1"
+      "version": "1.5.2"
     },
     {
       "agents": [
@@ -425,7 +425,7 @@
         "./skills/opentelemetry"
       ],
       "source": "./exports/claude/plugins/opentelemetry",
-      "version": "1.4.1"
+      "version": "1.4.2"
     },
     {
       "agents": [
@@ -450,7 +450,7 @@
         "./skills/cross-model-peer-review"
       ],
       "source": "./exports/claude/plugins/peer-review",
-      "version": "2.4.1"
+      "version": "2.4.2"
     },
     {
       "agents": [
@@ -470,7 +470,7 @@
         "./skills/platform-engineering"
       ],
       "source": "./exports/claude/plugins/platform-engineering",
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "agents": [
@@ -509,7 +509,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/claude/plugins/project-knowledge",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -544,7 +544,7 @@
         "./skills/lifecycle-method"
       ],
       "source": "./exports/claude/plugins/project-lifecycle",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "agents": [
@@ -561,7 +561,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/claude/plugins/project-protocol",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "agents": [
@@ -585,7 +585,7 @@
         "./skills/pwa-development"
       ],
       "source": "./exports/claude/plugins/pwa-expert",
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "agents": [
@@ -619,7 +619,7 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/claude/plugins/python-development",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "agents": [
@@ -640,7 +640,7 @@
         "./skills/rag-development"
       ],
       "source": "./exports/claude/plugins/rag-development",
-      "version": "1.6.0"
+      "version": "1.6.1"
     },
     {
       "agents": [
@@ -660,7 +660,7 @@
         "./skills/react-best-practices"
       ],
       "source": "./exports/claude/plugins/react-development",
-      "version": "1.11.0"
+      "version": "1.11.1"
     },
     {
       "agents": [
@@ -680,7 +680,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/claude/plugins/repo-hygiene",
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     {
       "agents": [
@@ -701,7 +701,7 @@
         "./skills/web-search-techniques"
       ],
       "source": "./exports/claude/plugins/research",
-      "version": "6.2.3"
+      "version": "6.2.4"
     },
     {
       "agents": [
@@ -734,9 +734,10 @@
         "project-protocol",
         "react-development",
         "typescript-development",
-        "platform-engineering"
+        "platform-engineering",
+        "skill-catalog"
       ],
-      "description": "Unified evidence-aware code, team and PR review with signal-selected React performance, TypeScript type safety and platform integration specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
+      "description": "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting.",
       "license": "MIT",
       "name": "senior-review",
       "skills": [
@@ -748,7 +749,21 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/claude/plugins/senior-review",
-      "version": "14.0.0"
+      "version": "15.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Shared metadata-only skill discovery and scope-aware knowledge selection for review, development, tests and documentation. Available host/project skills become fingerprinted per-run inputs; methods and workflows retain required providers and explicit execution.",
+      "license": "MIT",
+      "name": "skill-catalog",
+      "skills": [
+        "./skills/skill-catalog"
+      ],
+      "source": "./exports/claude/plugins/skill-catalog",
+      "version": "1.0.0"
     },
     {
       "agents": [
@@ -770,7 +785,7 @@
         "./skills/stripe"
       ],
       "source": "./exports/claude/plugins/stripe",
-      "version": "2.6.0"
+      "version": "2.6.1"
     },
     {
       "author": {
@@ -787,7 +802,7 @@
         "./skills/file-organizer"
       ],
       "source": "./exports/claude/plugins/system-utils",
-      "version": "2.1.2"
+      "version": "2.1.3"
     },
     {
       "agents": [
@@ -806,7 +821,7 @@
         "./skills/tauri"
       ],
       "source": "./exports/claude/plugins/tauri-development",
-      "version": "2.8.0"
+      "version": "2.8.1"
     },
     {
       "agents": [
@@ -834,7 +849,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "3.0.0"
+      "version": "3.0.1"
     },
     {
       "agents": [
@@ -854,7 +869,7 @@
         "./skills/anti-ai-writing-patterns"
       ],
       "source": "./exports/claude/plugins/text-humanizer",
-      "version": "1.2.1"
+      "version": "1.2.2"
     },
     {
       "agents": [
@@ -879,7 +894,7 @@
         "./skills/mt5"
       ],
       "source": "./exports/claude/plugins/trading-broker-integration",
-      "version": "2.1.3"
+      "version": "2.1.4"
     },
     {
       "agents": [
@@ -903,7 +918,7 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/claude/plugins/typescript-development",
-      "version": "2.3.0"
+      "version": "2.3.1"
     },
     {
       "author": {
@@ -921,7 +936,7 @@
         "./skills/xtermjs-skill"
       ],
       "source": "./exports/claude/plugins/xterm",
-      "version": "1.2.0"
+      "version": "1.2.1"
     }
   ]
 }

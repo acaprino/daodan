@@ -1,0 +1,11 @@
+schema = "daodan/record/v1"
+name = "knowledge-selection"
+required = ["schema", "run_id", "project_id", "snapshot_id", "operation", "catalog_sha256", "selected", "gaps", "status", "selection_sha256"]
+
+[fields.status]
+type = "enum"
+values = ["prepared", "failed"]
+
+[fields.selected]
+type = "array"
+items = "contract:knowledge-input"

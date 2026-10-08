@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Alfio Caprino"
+  },
+  "description": "Shared metadata-only skill discovery and scope-aware knowledge selection for review, development, tests and documentation. Available host/project skills become fingerprinted per-run inputs; methods and workflows retain required providers and explicit execution.",
+  "license": "MIT",
+  "name": "skill-catalog",
+  "version": "1.0.0"
+}

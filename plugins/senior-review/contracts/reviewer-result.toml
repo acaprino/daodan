@@ -1,6 +1,6 @@
 schema = "daodan/record/v1"
 name = "reviewer-result"
-required = ["dimension", "reviewer", "status", "findings", "gaps", "output_path"]
+required = ["dimension", "reviewer", "status", "findings", "gaps", "output_path", "knowledge_usage"]
 
 [fields.status]
 type = "enum"
@@ -9,3 +9,7 @@ values = ["delivered", "failed"]
 [fields.findings]
 type = "array"
 items = "contract:evidenced-finding"
+
+[fields.knowledge_usage]
+type = "array"
+items = "contract:knowledge-usage"

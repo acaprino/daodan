@@ -3576,7 +3576,8 @@
           "project-protocol",
           "react-development",
           "typescript-development",
-          "platform-engineering"
+          "platform-engineering",
+          "skill-catalog"
         ],
         "root": "plugins/senior-review",
         "skills": [
@@ -3615,6 +3616,17 @@
             "file": "skills/application-cleanup-method/SKILL.md",
             "id": "senior-review:application-cleanup-method",
             "name": "application-cleanup-method"
+          }
+        ]
+      },
+      "skill-catalog": {
+        "root": "plugins/skill-catalog",
+        "skills": [
+          {
+            "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills workflows.",
+            "file": "skills/skill-catalog/SKILL.md",
+            "id": "skill-catalog:skill-catalog",
+            "name": "skill-catalog"
           }
         ]
       },
@@ -4395,5 +4407,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "31.0.0"
+  "version": "32.0.0"
 }

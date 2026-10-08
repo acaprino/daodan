@@ -35,6 +35,76 @@ Preview is the default for repair and retention. --fix applies authorized edits;
 separate explicit grant for concluded, owned experimental output. Quarantine moves
 preserve data and do not count as bytes deleted.
 
+## One request for an architectural refactor
+
+With `project-lifecycle` and its required dependencies installed, paste this prompt
+into your project chat. Daodan supplies the workflow; Claude Code, Codex, GitHub
+Copilot, Pi and OpenCode V2 expose it through different native entries:
+
+| Host | Change entry |
+|---|---|
+| Claude Code / OpenCode V2 | `/project-lifecycle:change` |
+| Codex | `change-workflow` skill |
+| GitHub Copilot | `change` prompt with the `change-coordinator` agent selected |
+| Pi | `/project-lifecycle-change` |
+
+The prompt names the workflow rather than a host-specific command. On Copilot,
+select the coordinator agent before pasting it. See [host setup](docs/hosts.md)
+for required worker and external-method support. One request covers the complete
+outcome; execution still proceeds through plans, edits and verification gates.
+
+```text
+Use Daodan's project-lifecycle change workflow to rationalize this project,
+using its native entry on this host. Use focus all, depth deep and --fix.
+
+Read the project instructions, requirements, code, tests and guides. Map
+responsibilities, dependencies, duplicated domain rules and fragile paths.
+Build an evidence-based plan and implement it incrementally:
+
+- Give each shared rule a canonical owner. Consolidate services and interfaces
+  only where their contracts and ownership justify sharing.
+- Choose classes where state and lifecycle justify them, and functions for
+  pure calculations and transformations. Reuse sound existing implementations.
+- Simplify proven redundant layers, aliases and wrappers through their owning
+  methods. Keep readability work separate from behavior changes.
+- Investigate relevant concurrency, cancellation, interrupted streams, stale
+  responses, transactions and UI state. Fix evidenced defects without imposing
+  a framework, database or architecture in advance.
+
+Audit the entire existing test suite and rationalize it in scoped batches through
+testing's canonical audit and consolidation methods. Inventory protected behaviors,
+distinct failure modes, expected-result sources and bugfix history. Identify proven
+duplication, contradictions, ineffective assertions, excessive implementation
+coupling and flakiness. Classify failures as product defects, wrong expectations, environment
+problems, intermittent behavior or unknown causes before deciding their treatment.
+Repair incorrect or brittle tests. Apply consolidation, retirement or quarantine
+only to accepted inventory entries; reuse existing scope-specific approvals and
+retain unresolved entries. Verify remaining protection on the exact candidate
+before completing each phase, including regressions from real bugs.
+Test counts, coverage, age and refactoring alone never justify removal.
+Record which surviving tests protect each retained behavior and failure
+mode, and report the before/after suite structure and checks actually executed.
+
+Preserve required behavior, preexisting edits and meaningful test protection.
+Add or adapt tests for independent failure modes. Review the exact candidate,
+run the relevant checks and exercise affected product paths when the required
+environment is available. Update existing guides and durable instructions,
+then consolidate this run's conclusions and owned experimental output.
+
+Proceed autonomously within this scope until the requested outcome is complete.
+Involve me only for conflicting requirements, essential product decisions,
+missing access or additional authorization. Report changes, checks actually
+executed, coverage, unresolved decisions and unavailable mandatory gates.
+Do not claim completion while a required delivery or gate is missing.
+Never report an unexecuted database, browser or production check as passed.
+```
+
+This prompt authorizes scoped edits. Replace `--fix` with `--commit` to also
+authorize local commits and commit-only application cleanup, subject
+to its exclusive-workspace and clean-tree prerequisites. Push, deployment and
+permanent artifact purge require their own explicit authorization. Preserve a
+blocked or interrupted run for resumption when a required gate is unavailable.
+
 ## Install
 
 Register the repository marketplace on the corresponding host:
@@ -164,3 +234,13 @@ and helper tests.
 
 MIT licensed. The Daodan is the symbiote that augments its host.
 
+
+## Scope-aware knowledge selection
+
+The shared [Skill Catalog](docs/plugins/skill-catalog.md) selects knowledge from
+actual available host/project skills for each evidenced task scope. Senior Review
+uses it across languages and frameworks with one preparation, delivery ledger,
+verification panel and report. Skills declare their own SKILL.toml metadata; adding
+a competence needs no new reviewer or central stack table. Selected inputs carry
+content fingerprints and per-worker delivery accounting. External unclassified
+skills and unavailable inventory remain explicit coverage gaps.
