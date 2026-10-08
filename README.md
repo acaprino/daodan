@@ -37,9 +37,9 @@ preserve data and do not count as bytes deleted.
 
 ## One request for an architectural refactor
 
-With `project-lifecycle` and its required dependencies installed, paste this prompt
-into your project chat. Daodan supplies the workflow; Claude Code, Codex, GitHub
-Copilot, Pi and OpenCode V2 expose it through different native entries:
+With `project-lifecycle` and its required dependencies installed, paste this Senior
+Maintainer prompt into your project chat. Daodan supplies the workflow; Claude Code,
+Codex, GitHub Copilot, Pi and OpenCode V2 expose it through different native entries:
 
 | Host | Change entry |
 |---|---|
@@ -56,8 +56,9 @@ The instruction and testing clauses follow the [source-backed research note](doc
 including Anthropic's prompting guidance and the detected stack's own documentation.
 
 ```text
-Use Daodan's project-lifecycle change workflow to rationalize this project,
-using its native entry on this host. Use focus all, depth deep and --fix.
+Act as this project's Senior Maintainer. Use Daodan's project-lifecycle change
+workflow to rationalize this project through its native entry on this host.
+Use focus all, depth deep and --fix.
 
 Read the project instructions, requirements, code, tests and guides. Identify
 the actual instruction files and scopes loaded by this harness, the authoritative
@@ -66,6 +67,18 @@ record baseline checks against approved requirements.
 State material assumptions and unresolved alternatives. Choose the simplest
 design that satisfies current requirements. Keep every change traceable to this
 authorized objective; avoid speculative features and unrelated cleanup.
+
+Bind the work to a project-protocol run under .daodan/runs/<id>/ with the exact
+project/worktree, authorized scope, baseline and candidate snapshots. Resume only
+an explicitly identified run after validating its scope, snapshot and authorization.
+Record plan dependencies, action owners, expected deliveries and required gates
+before execution. Resolve required local and upstream methods from the actual
+installed host environment; dependency declarations and generated packages alone
+do not prove availability. Keep an affected action open when its required method
+is unavailable; report the missing capability without substituting another prompt.
+Before each mutating phase, capture its owned pre-phase file state. If a gate fails,
+restore only that phase's owned edits, preserving preexisting changes, foreign
+files and successful prior phases. Never infer recovery from HEAD~1.
 
 Before proposing or applying refactors, run codebase-xray's analyze workflow at
 full depth. Reuse a completed run only after validating its current snapshot,
@@ -100,12 +113,20 @@ Repair incorrect or brittle tests. Apply consolidation, retirement or quarantine
 only to accepted inventory entries; reuse existing scope-specific approvals and
 retain unresolved entries. Verify remaining protection on the exact candidate
 before completing each phase, including regressions from real bugs.
+Retire a test only for retired behavior or verified equivalent replacement
+protection in that same candidate. Temporary quarantine requires an identified
+cause, evidence, owner, return condition and explicit remaining risk; product
+defects and unknown causes retain active protection.
 Investigate state leaks, ordering, clocks, randomness and asynchronous cleanup.
 Fix root causes rather than weakening assertions, blindly refreshing snapshots,
 adding retries or suppressing failures to obtain a green suite.
 Test counts, coverage, age and refactoring alone never justify removal.
 Record which surviving tests protect each retained behavior and failure
 mode, and report the before/after suite structure and checks actually executed.
+Delegate meaningful test authoring to testing's canonical test-writer with the
+approved behavior, independent oracle, existing inventory, runner and intended
+layer. Extend the existing owner for that layer and scope before adding a file;
+justify scope splits and preserve the project's established test conventions.
 
 Audit and maintain AGENTS.md, CLAUDE.md and all applicable nested or host-specific
 project instructions through project-knowledge's instructions method. Verify
@@ -124,12 +145,36 @@ instruction files the current harness loads rather than assuming identical rules
 Record any required reload or fresh-session step after changing instructions.
 
 Preserve required behavior, preexisting edits and meaningful test protection.
-Add or adapt tests for independent failure modes. Review the exact candidate
-through senior-review's canonical method with isolated reviewers and applicable
-stack specialists. Resolve evidenced correctness defects and unmet requirements.
-Run the relevant checks and exercise affected product paths when the required
-environment is available. Recheck affected guides and instruction consumers,
-then consolidate this run's conclusions and owned experimental output.
+Add or adapt tests for independent failure modes. Review the full scoped candidate,
+including uncommitted and untracked inputs, through senior-review's canonical
+method. Supply this run's scope, baseline and candidate to a shared preparation;
+applicable React, TypeScript and platform specialists join the same isolated
+review, delivery ledger, verification panel and report.
+
+During that preparation, use skill-catalog's canonical selection against the
+actual available host/project skills. Derive knowledge scopes from affected
+package and behavior boundaries, exact paths and evidence of languages,
+frameworks and domain concerns, including embedded queries where relevant.
+An unrelated repository dependency does not activate knowledge for a scope.
+Bind selected knowledge and reference fingerprints to the same run and candidate;
+assign every selected dimension to an existing review lens or a declared scoped
+isolated worker. Supply each reviewer only its assigned knowledge and independent
+inputs, without peer findings. Several skills can support one reviewer; knowledge
+selection does not authorize running their workflows or adding one reviewer per
+skill. Record and validate consumption per worker and scope. Missing or stale
+selected inputs leave required coverage unsatisfied; unavailable inventory,
+unclassified skills and unmatched scopes remain explicit coverage gaps.
+
+Resolve evidenced correctness defects and unmet requirements, then refresh the
+candidate binding and affected verification after further edits. Record each
+check's tool, environment, scope, exact snapshot/revision, result and evidence.
+CI on an earlier revision cannot verify uncommitted changes. Exercise affected
+product paths when the required environment is available; keep runtime evidence
+separate from static review and generated-package checks.
+Recheck affected guides, README and instruction consumers through project-knowledge,
+then consolidate verified conclusions, conditions and evidence before disposing
+of this run's owned experimental output. Retention or quarantine grants no
+authorization for permanent purge or arbitrary repository deletion.
 
 Proceed autonomously within this scope until the requested outcome is complete.
 Involve me only for conflicting requirements, essential product decisions,
