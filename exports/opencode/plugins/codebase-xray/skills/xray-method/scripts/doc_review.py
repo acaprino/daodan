@@ -43,6 +43,8 @@ try:
 except ImportError:
     AST_AVAILABLE = False
 
+from tree_scope import Perimeter
+
 logger = logging.getLogger(__name__)
 
 
@@ -152,6 +154,18 @@ class DocReviewer:
 
         return resolved
 
+    @staticmethod
+    def _markdown_files(scan_path: Path) -> list[Path]:
+        """
+        The Markdown a review reads: what sits inside the X-ray's perimeter.
+
+        Nothing Git ignores and nothing under a dot directory. That leaves out
+        a notes vault's own settings, a tool's run records and this script's
+        `.doc_backup/`, whose copies would otherwise be reviewed as documents.
+        """
+        perimeter = Perimeter(scan_path)
+        return [path for path in scan_path.rglob("*.md") if perimeter.covers(path)]
+
     def _create_backup(self, files_to_modify: list[Path]) -> Path:
         """
         Create backup of files before modification (C2 fix).
@@ -199,7 +213,7 @@ class DocReviewer:
 
         logger.info(f"Scanning documentation in {scan_path}...")
 
-        md_files = list(scan_path.rglob("*.md"))
+        md_files = self._markdown_files(scan_path)
 
         files_by_dir: dict[str, int] = {}
         files_with_todos: list[dict] = []
@@ -417,7 +431,7 @@ class DocReviewer:
 
         logger.info(f"Validating links in {scan_path}...")
 
-        md_files = list(scan_path.rglob("*.md"))
+        md_files = self._markdown_files(scan_path)
 
         for md_file in md_files:
             try:
@@ -529,7 +543,7 @@ class DocReviewer:
         logger.info(f"Validating verification markers in {scan_path}...")
 
         validations: list[MarkerValidation] = []
-        md_files = list(scan_path.rglob("*.md"))
+        md_files = self._markdown_files(scan_path)
 
         for md_file in md_files:
             try:

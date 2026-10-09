@@ -40,6 +40,7 @@ from comment_rewriter import (
     CommentRewriterError,
     SUPPORTED_SUFFIXES,
 )
+from tree_scope import Perimeter
 
 VERSION = "1.0.0"
 
@@ -53,8 +54,9 @@ _SKIP_DIRS = (
 
 
 def _iter_supported(dir_path: Path, recursive: bool) -> list[Path]:
-    """Walk a directory and yield supported source files."""
+    """Walk a directory and yield supported source files inside the X-ray's perimeter."""
     pattern = "**/*" if recursive else "*"
+    perimeter = Perimeter(dir_path)
     out: list[Path] = []
     for candidate in dir_path.glob(pattern):
         if not candidate.is_file():
@@ -64,6 +66,11 @@ def _iter_supported(dir_path: Path, recursive: bool) -> list[Path]:
         # Segment match, not substring: "out" must not exclude checkout.py,
         # and "build" must not exclude a rebuild/ directory.
         if any(skip in candidate.parts for skip in _SKIP_DIRS):
+            continue
+        # Nothing Git ignores and nothing under a dot directory: a comment
+        # rewritten in a file the snapshot never recorded is an edit no run
+        # can account for.
+        if not perimeter.covers(candidate):
             continue
         out.append(candidate)
     return out

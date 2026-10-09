@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.1.0"
+    "version": "32.4.0"
   },
   "name": "daodan",
   "owner": {
@@ -52,7 +52,7 @@
         "./skills/prompt-engineering"
       ],
       "source": "./exports/copilot/plugins/ai-tooling",
-      "version": "5.4.3"
+      "version": "5.5.0"
     },
     {
       "agents": [
@@ -151,7 +151,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/copilot/plugins/codebase-xray",
-      "version": "5.0.1"
+      "version": "5.1.0"
     },
     {
       "agents": [
@@ -458,6 +458,8 @@
         "./agents/assess-coordinator.agent.md",
         "./agents/change-coordinator.agent.md",
         "./agents/consolidate-coordinator.agent.md",
+        "./agents/handover-coordinator.agent.md",
+        "./agents/maintain-coordinator.agent.md",
         "./agents/repair-coordinator.agent.md",
         "./agents/verify-coordinator.agent.md"
       ],
@@ -479,14 +481,16 @@
         "platform-engineering",
         "superpowers@claude-plugins-official"
       ],
-      "description": "Complete AI development lifecycle: assess coherence, repair an evidenced plan, implement changes, verify their consequences, and consolidate experiments and owned artifacts. Uses canonical specialist methods, exact run identities and honest coverage.",
+      "description": "Complete AI development lifecycle: consultant handover, a guided Senior Maintainer campaign, coherence assessment, evidenced repair, implementation, verification and consolidation. Uses canonical specialist methods, exact run identities and honest coverage.",
       "license": "MIT",
       "name": "project-lifecycle",
       "skills": [
-        "./skills/lifecycle-method"
+        "./skills/handover-method",
+        "./skills/lifecycle-method",
+        "./skills/maintainer-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "agents": [

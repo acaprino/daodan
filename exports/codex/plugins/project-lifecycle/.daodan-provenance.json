@@ -1,15 +1,17 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:70021779153dac60c51333f4a07cdf0e01f599a682892fef599846d4b2727110",
+  "coreDigest": "sha256:d6a51e1b2fda0d52a0efc84df26ee591a4599e64afd2441790bc12db1e445fe2",
   "harnessStrategies": {
     "assess": "parallel-subagents",
     "change": "parallel-subagents",
     "consolidate": "parallel-subagents",
+    "handover": "parallel-subagents",
+    "maintain": "parallel-subagents",
     "repair": "parallel-subagents",
     "verify": "parallel-subagents"
   },
   "host": "codex",
   "overrides": [],
   "plugin": "project-lifecycle",
-  "version": "1.2.0"
+  "version": "1.3.0"
 }

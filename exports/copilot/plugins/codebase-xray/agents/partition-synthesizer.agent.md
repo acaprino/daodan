@@ -275,14 +275,14 @@ Template:
 - Run: [run-id]
 - Target: [path]
 - Partitions: [count] ([list])
-- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count)
+- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count). Outside the perimeter by rule: [N] dot directories ([names]) and [N] paths Git ignores, ignore rules [applied | unavailable], from `<run_dir>/snapshot/manifest.json -> scope`
 - Files read in depth: [count, by partition]
 - Exercised at runtime: none. Static analysis; if the user supplied runtime evidence, cite it here instead
 - Phases completed: [list]
 - Date: [timestamp]
 ```
 
-The three coverage lines are mandatory: a single file count read as coverage is how a blocking defect in an inventoried component once went unreported.
+The three coverage lines are mandatory: a single file count read as coverage is how a blocking defect in an inventoried component once went unreported. The inventory line names what the perimeter left out for the same reason.
 
 ## COMPLETION
 

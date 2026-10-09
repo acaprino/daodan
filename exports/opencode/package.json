@@ -132,7 +132,7 @@
             "name": "agent-sdk-builder"
           },
           {
-            "description": "Knowledge base behind the prompt-engineer agent and /prompt-optimize: the source-of-truth order for model facts, the model-class gate, and six on-demand references covering reasoning patterns, output-shape enforcement, extraction prompting, judge prompts, agent and tool instructions, and dated vendor guidance. TRIGGER WHEN: designing, reviewing or optimizing a prompt, system message or agent instructions; forcing JSON or a schema out of a model, especially a small one such as Gemma; prompting for extraction (NER, relations, events, fields from documents); deciding whether a reasoning scaffold, few-shot examples or a thinking budget belongs in a prompt; writing an LLM-as-judge prompt; writing a tool description, an instruction file, a skill description or an orchestrator brief. DO NOT TRIGGER WHEN: building an agent on the Claude Agent SDK (use agent-sdk-builder), or the question is about a models pricing or API surface with no prompt involved.",
+            "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
             "file": "skills/prompt-engineering/SKILL.md",
             "id": "ai-tooling:prompt-engineering",
             "name": "prompt-engineering"
@@ -2283,6 +2283,16 @@
             "description": "Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.",
             "file": "commands/consolidate.md",
             "name": "project-lifecycle:consolidate"
+          },
+          {
+            "description": "Prepare an evidence-based consultant intake dossier without changing the project. TRIGGER WHEN: the user requests lifecycle handover or needs to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: the user requests correction and rationalization (use maintain).",
+            "file": "commands/handover.md",
+            "name": "project-lifecycle:handover"
+          },
+          {
+            "description": "Lead the complete Senior Maintainer campaign through canonical owners and separate stage runs. TRIGGER WHEN: the user requests a complete guided project rationalization, or lifecycle maintain. DO NOT TRIGGER WHEN: orientation for a new consultant is sufficient (use handover), or one specialist task covers the requested outcome.",
+            "file": "commands/maintain.md",
+            "name": "project-lifecycle:maintain"
           }
         ],
         "dependencies": [
@@ -2306,6 +2316,18 @@
             "file": "skills/lifecycle-method/SKILL.md",
             "id": "project-lifecycle:lifecycle-method",
             "name": "lifecycle-method"
+          },
+          {
+            "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.",
+            "file": "skills/maintainer-method/SKILL.md",
+            "id": "project-lifecycle:maintainer-method",
+            "name": "maintainer-method"
+          },
+          {
+            "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",
+            "file": "skills/handover-method/SKILL.md",
+            "id": "project-lifecycle:handover-method",
+            "name": "handover-method"
           }
         ]
       },
@@ -4407,5 +4429,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.1.0"
+  "version": "32.4.0"
 }

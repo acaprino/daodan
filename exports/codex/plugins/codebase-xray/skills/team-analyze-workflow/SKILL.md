@@ -156,7 +156,7 @@ Register `parent_run` in the run's `runs.json` entry as well, `null` for a full 
 
 ### Project Knowledge Discovery (X-ray Phase 0)
 
-Runs once for the whole run, inline in the orchestrating context, before partition detection. This is the same Phase 0 as `/codebase-xray:analyze`, and it is global: it does not run per partition, and no partition worker owns any of its output. Read `CLAUDE.md`, `AGENTS.md`, and any equivalent project instruction file at the repository root and in the target's ancestors. Locate the canonical indexes the project actually uses, at minimum `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, `.codebase-map/INDEX.md`. For each concept, symbol and subsystem the run will cover across all partitions, search the located documents for an entry and record the concept, the document, and the anchor or heading that matched. Every row is a lead with status `documented` or `unverified`; nothing here is `verified`, because this phase reads no code.
+Runs once for the whole run, inline in the orchestrating context, before partition detection. This is the same Phase 0 as `/codebase-xray:analyze`, and it is global: it does not run per partition, and no partition worker owns any of its output. Read `CLAUDE.md`, `AGENTS.md`, and any equivalent project instruction file at the repository root and in the target's ancestors. Locate the canonical indexes the project actually uses, at minimum `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, all inside the perimeter: an index under a dot directory, or one Git ignores, is not a lead. For each concept, symbol and subsystem the run will cover across all partitions, search the located documents for an entry and record the concept, the document, and the anchor or heading that matched. Every row is a lead with status `documented` or `unverified`; nothing here is `verified`, because this phase reads no code.
 
 **Output file:** `$RUN_DIR/knowledge/navigation.md`
 **Output file:** `$RUN_DIR/knowledge/documentation-leads.md`
@@ -188,7 +188,7 @@ Otherwise, run the detection chain (first rule that matches wins):
    - Stylesheets (`css` in the classifier's counts) never form a language partition and never count toward the two languages: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side
 5. **Fallback:** single partition wrapping the entire target, name = `root`
 
-**Always excluded paths:** `node_modules/`, `dist/`, `build/`, `.next/`, `target/`, `vendor/`, `__pycache__/`, `.venv/`.
+**Always outside every partition:** whatever the perimeter leaves out (see `## Perimeter` in the `codebase-xray:xray-method` skill): what Git ignores, every directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). A partition path the user names is analyzed as given.
 
 **Partition naming rules:**
 1. From workspace path -> basename
@@ -198,7 +198,7 @@ Otherwise, run the detection chain (first rule that matches wins):
 
 Normalize names: lowercase, separators -> hyphen, strip accents, allowed chars `[a-z0-9-]`.
 
-For each partition, compute `file_count` and `loc_estimate` (use `classifier.py` + `wc -l` or `cloc` if available).
+For each partition, take `file_count` from `snapshot.py scope <partition path>`, which applies the perimeter, and compute `loc_estimate` over the same files (`wc -l` or `cloc` if available). Run `snapshot.py scope <target>` once for the whole target as well: its `scope` block supplies the `Not analyzed` line of the preview.
 
 ### Partition-level update
 
@@ -231,6 +231,8 @@ Detected partitioning strategy: <strategy name>
 Partitions (<N>):
   P1: <path>          (<language>, <file-count> files, ~<loc>k LOC)
   ...
+
+Not analyzed: <N> dot directories (<names>), <N> paths Git ignores (ignore rules: <applied | unavailable>)
 
 Mode: <full or partition-level update, depth and active flags>
 Spawn plan: <structure count> structure + <behavior count> behavior + <quality count> quality

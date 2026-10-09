@@ -40,6 +40,10 @@ NEVER read or include contents from:
 
 If encountered: note file existence only (`".env present — contains environment config"`). NEVER quote contents.
 
+## PERIMETER
+
+Inside `partition_path`, never analyze what Git ignores, any directory whose name starts with a dot, or dependency and build output. The scripts apply the rule; reading by hand follows it. A path the run's snapshot left out is not opened, globbed or cited. The canonical statement is `## Perimeter` in the `codebase-xray:xray-method` skill.
+
 ## TOOL USAGE
 
 Use the language-aware scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/` whenever the target language is supported (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS):
@@ -53,7 +57,7 @@ For unsupported languages, fall back to `Read` and `Grep` directly.
 
 ## PHASE 1: Structure Extraction
 
-Scan `partition_path` and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it; state that under `## Key Observations`, so the synthesizer can report coverage rather than a file count.
+Scan `partition_path` and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it; state that under `## Key Observations`, so the synthesizer can report coverage rather than a file count. Nothing outside the perimeter is in the inventory either.
 
 For each file in the partition, extract:
 - Module/file name and path (relative to partition root)

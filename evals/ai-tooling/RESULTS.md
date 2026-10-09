@@ -2,6 +2,33 @@
 
 One row per scored run. Newest first. A case with no row has never been run.
 
+## Run 4, 2026-10-09, ai-tooling 5.5.0 (working tree)
+
+Two new cases exercise direct skill use after the Claude Academy integration; an existing
+strong-prompt case checks that the role can leave a prompt unchanged. Each runner was
+a fresh independent Codex subagent, given only the user request and the instruction to read the
+working-tree component and relevant references. Responses were saved in isolated scratch directories
+outside the marketplace. A separate fresh scorer for each case read only its assertions and
+response; neither runner nor scorer authored the change. The precise inherited model and token
+counts were not recorded.
+
+| Date | Case | Component | MUST | Result | Scorecard |
+|---|---|---|---|---|---|
+| 2026-10-09 | academy-source-grounding | prompt-engineering | 5/5 | PASS | [scorecard](cases/academy-source-grounding/scorecard-2026-10-09.md) |
+| 2026-10-09 | academy-generalization | prompt-engineering | 6/6 | PASS | [scorecard](cases/academy-generalization/scorecard-2026-10-09.md) |
+| 2026-10-09 | already-good-prompt | prompt-engineer | 4/4 | PASS | [scorecard](cases/already-good-prompt/scorecard-2026-10-09.md) |
+
+All fifteen MUST and five SHOULD assertions passed in these body-only observations. The
+generalization response rejected a universal rule based on one word, retained the existing
+validator and one call, and removed the promoted example and its paraphrase from independent
+verification. The grounding response preserved the source boundary and placeholders, disclosed
+its added citation requirement and handled insufficient or conflicting evidence explicitly.
+The strong extraction prompt was retained byte-for-byte, with no decorative additions.
+
+No target-Claude API eval ran. These results do not measure improvement in the generated
+prompts, prove general reliability or test discovery and installed-package execution. The
+installed-package stage remains untested for these three candidate-version runs.
+
 ## Run 3, 2026-09-07, ai-tooling 5.4.0 (working tree)
 
 The five cases that had never been executed: the two added in 5.2.0, the two added in 5.3.0 and 5.4.0 by the September research integration, and `constraint-saturation` as the peer review rewrote it. The installed cache was at 5.2.0, two releases behind the working tree, so this is the **working-tree** stage of protocol step 0 and every scorecard says so. The installed-package stage is now owed for all five.

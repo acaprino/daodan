@@ -1,7 +1,7 @@
 # Scorecard: &lt;case&gt;
 
 - **Date:**
-- **Component run:** `/prompt-optimize` | `prompt-engineer` | `agent-sdk-builder`
+- **Component run:** `/prompt-optimize` | `prompt-engineer` | `prompt-engineering` | `agent-sdk-builder`
 - **Model / session:**
 - **Plugin version under test:**
 - **Run stage:** working tree (bodies, not the loader) | installed package

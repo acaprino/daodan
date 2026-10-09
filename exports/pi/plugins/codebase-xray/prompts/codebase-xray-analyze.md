@@ -43,6 +43,12 @@ NEVER read or include contents from:
 
 If encountered: note file existence only ("`.env` present - contains environment config"). NEVER quote contents.
 
+## Perimeter
+
+Below the target, the X-ray never analyzes what Git ignores, any directory whose name starts with a dot, or dependency and build output. `tree_scope.py` owns the rule and every script applies it, so reading by hand follows it too: a path the snapshot left out is not opened, globbed or cited. The target itself is analyzed as given, which is how a dot directory or an ignored one gets an X-ray of its own. The canonical statement is `## Perimeter` in the `codebase-xray:xray-method` skill.
+
+The exclusion is declared at the scope confirmation and in the final report. A run that silently skipped `.github/` would leave a reader believing the project's CI had been read.
+
 ## Pre-flight
 
 ### 1. Resolve the run
@@ -112,7 +118,15 @@ Register `parent_run` in the run's `runs.json` entry as well, `null` for a full 
 
 ### 3. Confirm scope
 
-Scan the target and present the scope. With no candidate parent from step 1b, present the classic block below. With a candidate, present the variant that matches the change set's `recommendation`.
+Count the scope mechanically, then present it:
+
+```bash
+python "<plugin-root>/skills/xray-method/scripts/snapshot.py" scope <target>
+```
+
+It prints the file count by set and by language from the same walk the manifest takes, and the `scope` block: whether Git's ignore rules were applied, the dot directories left out and how many ignored paths the walk met. Never count by hand: a hand count does not apply the perimeter, and the user would confirm one number and get another.
+
+With no candidate parent from step 1b, present the classic block below. With a candidate, present the variant that matches the change set's `recommendation`. Every variant carries the `Not analyzed` line, with the directory names in full or, when they are many, the outermost ones and a count. A user who needs one of them analyzed names it as a target.
 
 **With `recommendation: incremental`:**
 
@@ -123,6 +137,7 @@ Since parent: [N] modified, [N] added, [N] removed files; [N] symbols changed, [
 Blast radius: [N] importing files
 Affected claims: [N] ([per-phase-file breakdown])
 Files to read: [N] of [total]
+Not analyzed: [N] dot directories ([names]), [N] paths Git ignores (ignore rules: [applied | unavailable])
 
 1. Incremental update from [parent-id] (reads [N] files)
 2. Full analysis (reads [total] files)
@@ -141,6 +156,7 @@ Files to read: [N] of [total]
 X-ray target: [path]
 Run: [run-id]  (concurrent active runs: [count or "none"])
 Files to analyze: [count] ([language breakdown])
+Not analyzed: [N] dot directories ([names]), [N] paths Git ignores (ignore rules: [applied | unavailable])
 Flags: [active flags]
 
 Analysis phases:
@@ -248,7 +264,7 @@ Phases 1 through 7 keep their numbers. `--phase N` is a user-facing flag and ren
 This phase owns discovery of **how the repository documents itself**. It does not evaluate whether the documentation is accurate, which is Phase 6.
 
 1. Read `CLAUDE.md`, `AGENTS.md` and any equivalent project instruction file at the repository root and in the target's ancestors. Record any navigation instruction they give, especially a statement of the form "look here first to find where a concept lives".
-2. Locate the canonical indexes the project actually uses. Glob for, at minimum: `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, `.codebase-map/INDEX.md`. Record what exists, not what you expected to exist.
+2. Locate the canonical indexes the project actually uses. Glob for, at minimum: `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`. Record what exists, not what you expected to exist. The perimeter applies here as everywhere: an index under a dot directory, or one Git ignores, is not a lead.
 3. For each concept, symbol and subsystem in the analysis scope, search the located documents for an entry. Record the concept, the document, and the anchor or heading that matched.
 4. Write both output files. Every row is a lead with status `documented` or `unverified`. Nothing here is `verified`, because this phase reads no code.
 
@@ -294,7 +310,7 @@ The canonical copy of this section lives in `## Phase 0: Project Knowledge Disco
 
 ## Phase 1: Structure Extraction
 
-Scan the target and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage.
+Scan the target and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
 
 For each file, extract:
 - Module/file name and path
@@ -622,14 +638,14 @@ Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 ## Analysis Metadata
 - Run: [run-id]
 - Target: [path]
-- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count)
+- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count). Outside the perimeter by rule: [N] dot directories ([names]) and [N] paths Git ignores, ignore rules [applied | unavailable], from the manifest's `scope` block
 - Files read in depth: [count, and the list or the directories]
 - Exercised at runtime: none. This is static analysis; if the user supplied runtime evidence, cite it here instead
 - Phases completed: [list]
 - Date: [timestamp]
 ```
 
-The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path.
+The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path. The inventory line names what the perimeter left out for the same reason: `.github/` or a generated client is exactly what a reader assumes was read.
 
 Update `$RUN_DIR/state.json`: set `status` to `"complete"`.
 

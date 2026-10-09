@@ -14,6 +14,7 @@ need it are skipped there and the regex fallback is what CI exercises.
 """
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -32,6 +33,7 @@ from languages._treesitter import get_parser  # noqa: E402
 from usage_finder import find_all_usages  # noqa: E402
 
 HAVE_TREE_SITTER = get_parser("typescript") is not None
+HAVE_GIT = shutil.which("git") is not None
 
 TYPESCRIPT = textwrap.dedent(
     """
@@ -96,6 +98,7 @@ PYTHON = textwrap.dedent(
 
 def _write(directory: Path, name: str, content: str) -> Path:
     path = directory / name
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
     return path
 
@@ -205,6 +208,39 @@ class UsageFinderTests(unittest.TestCase):
         self.assertGreaterEqual(len(result.usages), 2)
         self.assertTrue(any("app.py" in str(u) for u in result.usages), result.usages)
 
+    def test_a_usage_under_a_dot_directory_is_not_reported(self):
+        temp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(temp, ignore_errors=True))
+        _write(temp, "core.py", "class Engine:\n    pass\n")
+        _write(temp, "app.py", "from core import Engine\n\nengine = Engine()\n")
+        _write(temp, ".daodan/runs/r1/replay.py", "from core import Engine\n\nengine = Engine()\n")
+        files = {Path(u.file_path).as_posix() for u in find_all_usages("Engine", temp / "core.py", temp).usages}
+        self.assertTrue([f for f in files if f.endswith("/app.py")], files)
+        self.assertFalse([f for f in files if "/.daodan/" in f], files)
+
+    def test_an_importer_under_a_dot_directory_is_not_reported(self):
+        temp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(temp, ignore_errors=True))
+        _write(temp, "core.py", "class Engine:\n    pass\n")
+        _write(temp, "app.py", "from core import Engine\n\nengine = Engine()\n")
+        _write(temp, ".daodan/runs/r1/replay.py", "from core import Engine\n\nengine = Engine()\n")
+        importers = find_all_usages("Engine", temp / "core.py", temp).importing_modules
+        self.assertTrue([m for m in importers if m.endswith("app.py")], importers)
+        self.assertFalse([m for m in importers if ".daodan" in m], importers)
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_a_usage_in_a_file_git_ignores_is_not_reported(self):
+        temp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(temp, ignore_errors=True))
+        subprocess.run(["git", "-C", str(temp), "init", "-q"], check=True, capture_output=True)
+        _write(temp, ".gitignore", "generated/\n")
+        _write(temp, "core.py", "class Engine:\n    pass\n")
+        _write(temp, "app.py", "from core import Engine\n\nengine = Engine()\n")
+        _write(temp, "generated/replay.py", "from core import Engine\n\nengine = Engine()\n")
+        files = {Path(u.file_path).as_posix() for u in find_all_usages("Engine", temp / "core.py", temp).usages}
+        self.assertTrue([f for f in files if f.endswith("/app.py")], files)
+        self.assertFalse([f for f in files if "/generated/" in f], files)
+
 
 class DocReviewTests(unittest.TestCase):
     def test_a_project_without_markers_is_not_shouted_at(self):
@@ -225,6 +261,28 @@ class DocReviewTests(unittest.TestCase):
         self.assertIn("not used by this project", completed.stdout)
         self.assertNotIn("Phase 8", completed.stdout + completed.stderr)
 
+    def _docs_with_a_hidden_vault(self):
+        from doc_review import DocReviewer
+
+        temp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(temp, ignore_errors=True))
+        _write(temp, "docs/guide.md", "# Guide\n\nPlain documentation.\n")
+        _write(
+            temp,
+            "docs/.obsidian/note.md",
+            "# Note\n\nSee [the plan](missing-plan.md). Checked [VERIFIED: src/gone.py::gone].\n",
+        )
+        return DocReviewer(str(temp))
+
+    def test_a_scan_does_not_count_documents_under_a_dot_directory(self):
+        self.assertEqual(self._docs_with_a_hidden_vault().scan("docs/").total_files, 1)
+
+    def test_link_validation_does_not_read_documents_under_a_dot_directory(self):
+        self.assertEqual(self._docs_with_a_hidden_vault().validate_links("docs/"), [])
+
+    def test_marker_validation_does_not_read_documents_under_a_dot_directory(self):
+        self.assertEqual(self._docs_with_a_hidden_vault().validate_markers("docs/"), [])
+
 
 class CommentAnalysisTests(unittest.TestCase):
     def test_analyze_runs_on_a_python_file(self):
@@ -238,6 +296,21 @@ class CommentAnalysisTests(unittest.TestCase):
             text=True,
         )
         self.assertIn("Comment Analysis", completed.stdout)
+
+    def test_a_recursive_scan_skips_source_under_a_dot_directory(self):
+        temp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(temp, ignore_errors=True))
+        _write(temp, "src/mod.py", '"""Module docstring."""\n\n# increment x\nx = 1\n')
+        _write(temp, ".cache/copy.py", '"""Module docstring."""\n\n# increment x\nx = 1\n')
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPTS / "rewrite_comments.py"), "scan", str(temp), "--recursive", "--json"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        scanned = [Path(entry["file"]).as_posix() for entry in json.loads(completed.stdout)["files"]]
+        self.assertEqual(len(scanned), 1, scanned)
+        self.assertTrue(scanned[0].endswith("src/mod.py"), scanned)
 
 
 if __name__ == "__main__":

@@ -37,6 +37,10 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 
 (Same list as `partition-structure-worker`: `.env`, credentials, keys, tokens. Note presence only, never quote contents.)
 
+## PERIMETER
+
+(Same rule as `partition-structure-worker`: nothing Git ignores, nothing under a dot directory, no dependency or build output. Scripts apply it; reading by hand follows it.)
+
 ## CROSS-PARTITION CITATION CONTRACT
 
 When you encounter an outgoing call/import in your partition that resolves to another partition, cite it as `<other-partition>::<symbol>` instead of `external`. Use the cross-partition imports already documented in `01-structure.md` to disambiguate.

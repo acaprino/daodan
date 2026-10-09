@@ -36,10 +36,10 @@
       "operations": [],
       "provider": "ai-tooling",
       "topics": [],
-      "version": "5.4.3"
+      "version": "5.5.0"
     },
     {
-      "description": "Knowledge base behind the prompt-engineer agent and /prompt-optimize: the source-of-truth order for model facts, the model-class gate, and six on-demand references covering reasoning patterns, output-shape enforcement, extraction prompting, judge prompts, agent and tool instructions, and dated vendor guidance. TRIGGER WHEN: designing, reviewing or optimizing a prompt, system message or agent instructions; forcing JSON or a schema out of a model, especially a small one such as Gemma; prompting for extraction (NER, relations, events, fields from documents); deciding whether a reasoning scaffold, few-shot examples or a thinking budget belongs in a prompt; writing an LLM-as-judge prompt; writing a tool description, an instruction file, a skill description or an orchestrator brief. DO NOT TRIGGER WHEN: building an agent on the Claude Agent SDK (use agent-sdk-builder), or the question is about a model's pricing or API surface with no prompt involved.",
+      "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
       "dimensions": [
         "correctness"
       ],
@@ -61,7 +61,7 @@
         "llm",
         "prompts"
       ],
-      "version": "5.4.3"
+      "version": "5.5.0"
     },
     {
       "description": "Report templates for the app-analyzer teardown: the competitive analysis, the user-flow diagrams and the visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the app itself (that is the app-analyzer agent's Phase 1), or auditing a codebase rather than a running product.",
@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-xray",
       "topics": [],
-      "version": "5.0.1"
+      "version": "5.1.0"
     },
     {
       "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
@@ -663,6 +663,21 @@
       "version": "1.1.0"
     },
     {
+      "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",
+      "dimensions": [],
+      "file": "skills/handover-method/SKILL.md",
+      "frameworks": [],
+      "id": "project-lifecycle:handover-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "handover-method",
+      "operations": [],
+      "provider": "project-lifecycle",
+      "topics": [],
+      "version": "1.3.0"
+    },
+    {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.",
       "dimensions": [],
       "file": "skills/lifecycle-method/SKILL.md",
@@ -675,7 +690,22 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.2.0"
+      "version": "1.3.0"
+    },
+    {
+      "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.",
+      "dimensions": [],
+      "file": "skills/maintainer-method/SKILL.md",
+      "frameworks": [],
+      "id": "project-lifecycle:maintainer-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "maintainer-method",
+      "operations": [],
+      "provider": "project-lifecycle",
+      "topics": [],
+      "version": "1.3.0"
     },
     {
       "description": "Canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before recording, resuming or closing a project intervention.",

@@ -1,7 +1,7 @@
 # Project instructions and test practices for architectural refactoring
 
 Research snapshot: 2026-10-08. This note explains the instruction and testing
-clauses of the [README prompt](../../README.md#one-request-for-an-architectural-refactor).
+clauses of the [README prompt](../../README.md#one-prompt-for-a-guided-project-rationalization).
 It combines vendor guidance with Daodan's existing methods. Recommendations below
 are a synthesis for architectural work, not a universal policy prescribed by any
 one vendor. Documentation and source inspection do not establish installed-host
@@ -28,9 +28,10 @@ explains how repeatable checks can become reusable procedures.
 Daodan supplies the local ownership and verification contract: [project-lifecycle](../plugins/project-lifecycle.md)
 coordinates the outcome, [project-protocol](../plugins/project-protocol.md) binds
 records and checks to snapshots, and [senior-review](../plugins/senior-review.md)
-owns correctness review. The README's initial full X-ray and severe-defect priority
-are explicit choices for this global refactoring request. They are not a claim
-that every small change must run a complete analysis.
+owns correctness review. The README's initial full-depth X-ray, new or updated from
+an earlier run when the X-ray's own change set recommends it, and its severe-defect
+priority are explicit choices for this global refactoring request. They are not a
+claim that every small change must run a complete analysis.
 
 The supplied [multica-ai instruction file](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md)
 adds four behavioral principles: expose assumptions, prefer simple solutions,
@@ -103,7 +104,8 @@ authorization before a write.
 
 Daodan's [testing method](../../plugins/testing/skills/test-remediation-method/SKILL.md)
 classifies product defects, wrong expected results, environment failures,
-intermittent behavior and unknown causes before disposition. Its
+test-isolation defects, intermittent behavior and unknown causes before
+disposition. Its
 [consolidation procedure](../../plugins/testing/skills/test-remediation-method/references/consolidate.md)
 requires acceptance of the behavior inventory before rewriting and checks the
 actual candidate before completion. These exact acceptance and quarantine rules

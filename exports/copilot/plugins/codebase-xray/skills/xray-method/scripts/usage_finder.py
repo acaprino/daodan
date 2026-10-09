@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 # separately here. Re-exported so callers that imported it from this module
 # keep working.
 from languages import SUPPORTED_EXTENSIONS as _SUPPORTED_EXTENSIONS_MAP
+from tree_scope import Perimeter
 
 SOURCE_EXTENSIONS: tuple[str, ...] = tuple(_SUPPORTED_EXTENSIONS_MAP.keys())
 
@@ -175,46 +176,60 @@ def find_usages_with_grep(
     for search_path in search_paths:
         if not search_path.exists():
             continue
-
-        # 1. ripgrep.
-        try:
-            cmd = ["rg", "-n", "--hidden", "--no-ignore-vcs"]
-            cmd.extend(_ripgrep_globs())
-            for pat in excludes:
-                cmd.extend(["--glob", f"!{pat}"])
-            cmd.extend(["-F", "-e", symbol])
-            cmd.append(str(search_path))
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=SUBPROCESS_TIMEOUT_SECONDS,
-            )
-            if result.returncode in (0, 1):  # 1 = no match, not an error
-                _absorb_grep_lines(result.stdout, usages, symbol)
-                continue
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
-
-        # 2. grep.
-        try:
-            cmd = ["grep", "-rn", "-F"] + _grep_includes() + ["-e", symbol, str(search_path)]
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=SUBPROCESS_TIMEOUT_SECONDS,
-            )
-            if result.returncode in (0, 1):
-                _absorb_grep_lines(result.stdout, usages, symbol)
-                continue
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
-
-        # 3. Pure-Python fallback.
-        usages.extend(_python_based_search(symbol, search_path, excludes))
+        # The three backends disagree on what they skip: ripgrep is told to
+        # read hidden and ignored files, grep reads everything, the fallback
+        # reads what the exclude patterns leave. The perimeter decides for all
+        # of them, so the answer does not depend on which tool is installed.
+        perimeter = Perimeter(search_path)
+        usages.extend(
+            usage for usage in _search_one_path(symbol, search_path, excludes)
+            if perimeter.covers(Path(usage.file_path))
+        )
 
     return usages
+
+
+def _search_one_path(symbol: str, search_path: Path, excludes: list[str]) -> list[UsageLocation]:
+    """One search path, through the first backend that answers."""
+    found: list[UsageLocation] = []
+
+    # 1. ripgrep.
+    try:
+        cmd = ["rg", "-n", "--hidden", "--no-ignore-vcs"]
+        cmd.extend(_ripgrep_globs())
+        for pat in excludes:
+            cmd.extend(["--glob", f"!{pat}"])
+        cmd.extend(["-F", "-e", symbol])
+        cmd.append(str(search_path))
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=SUBPROCESS_TIMEOUT_SECONDS,
+        )
+        if result.returncode in (0, 1):  # 1 = no match, not an error
+            _absorb_grep_lines(result.stdout, found, symbol)
+            return found
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+    # 2. grep.
+    try:
+        cmd = ["grep", "-rn", "-F"] + _grep_includes() + ["-e", symbol, str(search_path)]
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=SUBPROCESS_TIMEOUT_SECONDS,
+        )
+        if result.returncode in (0, 1):
+            _absorb_grep_lines(result.stdout, found, symbol)
+            return found
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+    # 3. Pure-Python fallback.
+    return _python_based_search(symbol, search_path, excludes)
 
 
 def _split_grep_line(line: str) -> tuple[str, str, str] | None:
@@ -327,11 +342,12 @@ def find_importing_modules(
     for search_path in search_paths:
         if not search_path.exists():
             continue
+        perimeter = Perimeter(search_path)
         for src in search_path.rglob("*"):
             if not src.is_file() or src.suffix not in SOURCE_EXTENSIONS:
                 continue
             path_str = str(src)
-            if is_excluded(src, DEFAULT_EXCLUDES):
+            if is_excluded(src, DEFAULT_EXCLUDES) or not perimeter.covers(src):
                 continue
             try:
                 if src.stat().st_size > MAX_FILE_SIZE_BYTES:

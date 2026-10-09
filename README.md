@@ -15,6 +15,8 @@ OpenCode V2. Useful language, framework and domain specialists remain independen
 
 | Command | Use it for | Result |
 |---|---|---|
+| /project-lifecycle:handover | Take responsibility for an unfamiliar project | A consultant dossier with verified facts, readiness, risks and open questions |
+| /project-lifecycle:maintain | Lead a complete rationalization | A staged Senior Maintainer campaign with an approved roadmap and verified outcomes |
 | /project-lifecycle:assess | Understand incoherence and accumulated debt | Evidence, coverage and an actionable plan with owners and dependencies |
 | /project-lifecycle:repair | Apply an identified plan | Scoped remedies, verified phases and visible open decisions |
 | /project-lifecycle:change | Bootstrap, feature, bugfix, refactor or migration | Working behavior and coherent code, tests and knowledge |
@@ -35,160 +37,69 @@ Preview is the default for repair and retention. --fix applies authorized edits;
 separate explicit grant for concluded, owned experimental output. Quarantine moves
 preserve data and do not count as bytes deleted.
 
-## One request for an architectural refactor
+## Take over a project, then maintain it
 
-With `project-lifecycle` and its required dependencies installed, paste this Senior
-Maintainer prompt into your project chat. Daodan supplies the workflow; Claude Code,
-Codex, GitHub Copilot, Pi and OpenCode V2 expose it through different native entries:
+Two separate entries serve an incoming consultant and the subsequent maintenance
+work. Both reuse Daodan's canonical specialists and keep their evidence in owned
+project runs.
 
-| Host | Change entry |
+| Entry | Outcome |
 |---|---|
-| Claude Code / OpenCode V2 | `/project-lifecycle:change` |
-| Codex | `change-workflow` skill |
-| GitHub Copilot | `change` prompt with the `change-coordinator` agent selected |
-| Pi | `/project-lifecycle-change` |
+| `project-lifecycle` `handover` | A consultant dossier: product purpose, modules and critical flows, setup and test procedures, constraints, evidenced risks, real open questions and a first scoped work plan |
+| `project-lifecycle` `maintain` | The Senior Maintainer campaign: baseline review and assessment, an approved roadmap, corrections, rationalization, verification and closure |
 
-The prompt names the workflow rather than a host-specific command. On Copilot,
-select the coordinator agent before pasting it. See [host setup](docs/hosts.md)
-for required worker and external-method support. One request covers the complete
-outcome; execution still proceeds through plans, edits and verification gates.
-The instruction and testing clauses follow the [source-backed research note](docs/references/project-instructions-and-test-practices.md),
-including Anthropic's prompting guidance and the detected stack's own documentation.
+Start with handover when you need to understand and take responsibility for an
+unfamiliar project. It writes run-owned reports and leaves project files alone.
+Checks default to `none`; `--checks=local` requests permitted local checks after
+reviewing their commands and environment. The dossier distinguishes procedures
+read from source from commands actually exercised. It proposes maintenance work
+and never starts it automatically.
+
+Run maintain when you want the complete rationalization. Its canonical campaign
+method owns the guidance previously pasted from this README. Each stage uses its
+owning method and separate lifecycle run; the command keeps the stage handoffs,
+authorizations and resume references together.
+
+| Host | Handover entry | Maintain entry |
+|---|---|---|
+| Claude Code / OpenCode V2 | `/project-lifecycle:handover` | `/project-lifecycle:maintain` |
+| Codex | `handover-workflow` skill | `maintain-workflow` skill |
+| GitHub Copilot | `handover` prompt with `handover-coordinator` | `maintain` prompt with `maintain-coordinator` |
+| Pi | `/project-lifecycle-handover` | `/project-lifecycle-maintain` |
+
+For example, on Claude Code or OpenCode V2:
 
 ```text
-Act as this project's Senior Maintainer. Use Daodan's project-lifecycle change
-workflow to rationalize this project through its native entry on this host.
-Use focus all, depth deep and --fix.
-
-Read the project instructions, requirements, code, tests and guides. Identify
-the actual instruction files and scopes loaded by this harness, the authoritative
-sources and any synchronization rules. Define observable success criteria and
-record baseline checks against approved requirements.
-State material assumptions and unresolved alternatives. Choose the simplest
-design that satisfies current requirements. Keep every change traceable to this
-authorized objective; avoid speculative features and unrelated cleanup.
-
-Bind the work to a project-protocol run under .daodan/runs/<id>/ with the exact
-project/worktree, authorized scope, baseline and candidate snapshots. Resume only
-an explicitly identified run after validating its scope, snapshot and authorization.
-Record plan dependencies, action owners, expected deliveries and required gates
-before execution. Resolve required local and upstream methods from the actual
-installed host environment; dependency declarations and generated packages alone
-do not prove availability. Keep an affected action open when its required method
-is unavailable; report the missing capability without substituting another prompt.
-Before each mutating phase, capture its owned pre-phase file state. If a gate fails,
-restore only that phase's owned edits, preserving preexisting changes, foreign
-files and successful prior phases. Never infer recovery from HEAD~1.
-
-Before proposing or applying refactors, run codebase-xray's analyze workflow at
-full depth. Reuse a completed run only after validating its current snapshot,
-scope and depth. Keep X-ray static and report inventory, files read in depth and
-runtime exercise separately. Use its evidence to map responsibilities,
-dependencies, duplicated domain rules, critical paths and fragile flows.
-Review relevant security, data-integrity, concurrency and resource-lifecycle
-risks. Prioritize evidenced severe defects before optional cleanup.
-Build an evidence-based plan and implement it incrementally:
-
-- Give each shared rule a canonical owner. Consolidate services and interfaces
-  only where their contracts and ownership justify sharing.
-- Choose classes where state and lifecycle justify them, and functions for
-  pure calculations and transformations. Reuse sound existing implementations.
-- Simplify proven redundant layers, aliases and wrappers through their owning
-  methods. Keep readability work separate from behavior changes.
-- Investigate relevant concurrency, cancellation, interrupted streams, stale
-  responses, transactions and UI state. Fix evidenced defects without imposing
-  a framework, database or architecture in advance.
-
-Audit the entire existing test suite and rationalize it in scoped batches through
-testing's canonical audit and consolidation methods. Inventory protected behaviors,
-distinct failure modes, expected-result sources and bugfix history. Identify proven
-duplication, contradictions, ineffective assertions, excessive implementation
-coupling, over-mocking, uncontrolled state and flakiness. Derive expected results
-from approved requirements, explicit examples, independent calculations or
-justified invariants. Preserve relevant test layers and exercise real integrations
-when database, transaction, concurrency or external-contract semantics matter.
-Classify failures as product defects, wrong expectations, environment problems,
-intermittent behavior or unknown causes before deciding their treatment.
-Repair incorrect or brittle tests. Apply consolidation, retirement or quarantine
-only to accepted inventory entries; reuse existing scope-specific approvals and
-retain unresolved entries. Verify remaining protection on the exact candidate
-before completing each phase, including regressions from real bugs.
-Retire a test only for retired behavior or verified equivalent replacement
-protection in that same candidate. Temporary quarantine requires an identified
-cause, evidence, owner, return condition and explicit remaining risk; product
-defects and unknown causes retain active protection.
-Investigate state leaks, ordering, clocks, randomness and asynchronous cleanup.
-Fix root causes rather than weakening assertions, blindly refreshing snapshots,
-adding retries or suppressing failures to obtain a green suite.
-Test counts, coverage, age and refactoring alone never justify removal.
-Record which surviving tests protect each retained behavior and failure
-mode, and report the before/after suite structure and checks actually executed.
-Delegate meaningful test authoring to testing's canonical test-writer with the
-approved behavior, independent oracle, existing inventory, runner and intended
-layer. Extend the existing owner for that layer and scope before adding a file;
-justify scope splits and preserve the project's established test conventions.
-
-Audit and maintain AGENTS.md, CLAUDE.md and all applicable nested or host-specific
-project instructions through project-knowledge's instructions method. Verify
-claims, paths, commands, ownership and architecture against their sources.
-Preserve approved intent and justified exceptions. Edit the canonical owner,
-regenerate derived copies and check parity; retain unresolved claims explicitly.
-Document verified build/test commands and prerequisites, test-layer ownership,
-fixtures and isolation, cleanup, mocking boundaries, deterministic time/randomness,
-failure diagnosis, regression protection and required verification gates.
-Adapt stack practices to installed versions using available knowledge and current
-primary sources where needed. Translate recommendations into justified local
-rules or executable checks. Keep durable instructions concise and applicable;
-link detailed procedures in existing guides or reusable skills. Keep session
-status, temporary results and open task lists in the run record. Verify which
-instruction files the current harness loads rather than assuming identical rules.
-Record any required reload or fresh-session step after changing instructions.
-
-Preserve required behavior, preexisting edits and meaningful test protection.
-Add or adapt tests for independent failure modes. Review the full scoped candidate,
-including uncommitted and untracked inputs, through senior-review's canonical
-method. Supply this run's scope, baseline and candidate to a shared preparation;
-applicable React, TypeScript and platform specialists join the same isolated
-review, delivery ledger, verification panel and report.
-
-During that preparation, use skill-catalog's canonical selection against the
-actual available host/project skills. Derive knowledge scopes from affected
-package and behavior boundaries, exact paths and evidence of languages,
-frameworks and domain concerns, including embedded queries where relevant.
-An unrelated repository dependency does not activate knowledge for a scope.
-Bind selected knowledge and reference fingerprints to the same run and candidate;
-assign every selected dimension to an existing review lens or a declared scoped
-isolated worker. Supply each reviewer only its assigned knowledge and independent
-inputs, without peer findings. Several skills can support one reviewer; knowledge
-selection does not authorize running their workflows or adding one reviewer per
-skill. Record and validate consumption per worker and scope. Missing or stale
-selected inputs leave required coverage unsatisfied; unavailable inventory,
-unclassified skills and unmatched scopes remain explicit coverage gaps.
-
-Resolve evidenced correctness defects and unmet requirements, then refresh the
-candidate binding and affected verification after further edits. Record each
-check's tool, environment, scope, exact snapshot/revision, result and evidence.
-CI on an earlier revision cannot verify uncommitted changes. Exercise affected
-product paths when the required environment is available; keep runtime evidence
-separate from static review and generated-package checks.
-Recheck affected guides, README and instruction consumers through project-knowledge,
-then consolidate verified conclusions, conditions and evidence before disposing
-of this run's owned experimental output. Retention or quarantine grants no
-authorization for permanent purge or arbitrary repository deletion.
-
-Proceed autonomously within this scope until the requested outcome is complete.
-Involve me only for conflicting requirements, essential product decisions,
-missing access or additional authorization. Report changes, checks actually
-executed, coverage, unresolved decisions and unavailable mandatory gates.
-Do not claim completion while a required delivery or gate is missing.
-Never report an unexecuted database, browser or production check as passed.
+/project-lifecycle:handover . --depth=standard --checks=none
+/project-lifecycle:maintain . --fix --pace=guided --from-handover <exact-assess-run-id>
 ```
 
-This prompt authorizes scoped edits. Replace `--fix` with `--commit` to also
-authorize local commits and commit-only application cleanup, subject
-to its exclusive-workspace and clean-tree prerequisites. Push, deployment and
-permanent artifact purge require their own explicit authorization. Preserve a
-blocked or interrupted run for resumption when a required gate is unavailable.
+Run the second entry after reading the dossier and choosing the maintenance scope.
+On the other hosts pass the same arguments through the entry listed above. See
+[host setup](docs/hosts.md) for worker and external-method support.
+
+Maintain accepts a target path or module, exclusions, focus
+`all|knowledge|structure|tests|artifacts`, depth `quick|standard|deep`, pace
+`guided|autonomous`, authorization `--dry-run|--fix|--commit`, exact resume IDs and
+an optional `--from-handover` assess run. Defaults are whole project, focus all,
+depth deep, guided pace and dry-run. Dry-run ends at the roadmap. Fix permits
+scoped edits; commit also permits local commits and commit-only application cleanup,
+subject to its own prerequisites. Push, deployment and permanent purge each need
+separate authorization.
+
+Guided pace waits at the campaign brief and at the findings/roadmap. Autonomous pace
+removes those two waits while retaining every decision and gate owned by a method.
+Second opinions such as peer-review or dependency-audit are offered when available
+and never run unasked. A handover result supplies evidence; it grants no permission
+to change the project.
+
+Every brief names the exact runs and the next entry. Resume those IDs after validating
+scope, candidate and authorization; an unrelated latest report is never a resume
+source. Completed stage results remain evidence of their recorded candidates. The
+final verification must match the current project, with missing deliveries and
+mandatory checks visible. [Lifecycle details](docs/plugins/project-lifecycle.md)
+describe both entries. Instruction and testing guidance follows the
+[source-backed research note](docs/references/project-instructions-and-test-practices.md).
 
 ## Install
 

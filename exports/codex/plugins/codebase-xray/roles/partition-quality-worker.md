@@ -39,6 +39,10 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 
 (Same list as `partition-structure-worker`.)
 
+## PERIMETER
+
+(Same rule as `partition-structure-worker`: nothing Git ignores, nothing under a dot directory, no dependency or build output. Scripts apply it; reading by hand follows it.)
+
 ## TOOL USAGE
 
 Use the scripts in `<plugin-root>/skills/xray-method/scripts/`:

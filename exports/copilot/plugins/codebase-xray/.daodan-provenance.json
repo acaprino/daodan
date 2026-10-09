@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:a381d390bebe9d20f160da4d01b15821def6c6ee30feadc4a8eb4414b95cfb46",
+  "coreDigest": "sha256:3c4345e3be0eef43d3981de50fa79c4b708c3ba158097c469f831bfeae0533ad",
   "harnessStrategies": {
     "analyze": "parallel-subagents",
     "team-analyze": "parallel-subagents"
@@ -8,5 +8,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "codebase-xray",
-  "version": "5.0.1"
+  "version": "5.1.0"
 }

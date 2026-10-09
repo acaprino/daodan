@@ -1,0 +1,73 @@
+name = "maintain"
+entrypoint = "maintain.md"
+
+[[phases]]
+id = "orientation"
+isolation = "shared"
+produces = ["artifact:campaign-request", "artifact:campaign-brief"]
+
+[[phases]]
+id = "coordinate"
+needs = ["orientation"]
+isolation = "shared"
+consumes = ["artifact:campaign-request", "artifact:campaign-brief"]
+produces = ["artifact:stage-results"]
+
+[[phases]]
+id = "report"
+needs = ["coordinate"]
+isolation = "shared"
+consumes = ["artifact:stage-results"]
+produces = ["artifact:campaign-report"]
+
+[dispatch]
+roles = [
+  "abstraction-architect/abstraction-architect-agent",
+  "clean-code/clean-code-agent",
+  "codebase-xray/semantic-interconnect-mapper",
+  "platform-engineering/platform-reviewer",
+  "project-knowledge/codebase-explorer",
+  "project-knowledge/doc-humanizer",
+  "project-knowledge/documentation-engineer",
+  "project-knowledge/flow-writer",
+  "project-knowledge/guide-reviewer",
+  "project-knowledge/instructions-auditor",
+  "project-knowledge/onboarding-writer",
+  "project-knowledge/ops-writer",
+  "project-knowledge/overview-writer",
+  "project-knowledge/tech-writer",
+  "react-development/react-performance-optimizer",
+  "repo-hygiene/workspace-auditor",
+  "senior-review/api-contract-auditor",
+  "senior-review/chicken-egg-detector",
+  "senior-review/cleanup-auditor",
+  "senior-review/code-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/distributed-flow-auditor",
+  "senior-review/logic-integrity-auditor",
+  "senior-review/premise-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/security-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/ui-race-auditor",
+  "testing/test-suite-auditor",
+  "testing/test-writer",
+  "text-humanizer/text-humanizer",
+  "typescript-development/type-safety-auditor",
+]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = ["project", "campaign-request", "scope", "authorization", "resume-identities"]
+outcomes = [
+  "guided-checkpoints-preserved",
+  "one-active-lifecycle-operation-at-a-time",
+  "canonical-methods-and-declared-workers-only",
+  "stage-results-bound-to-exact-runs-and-candidates",
+  "final-verification-matches-current-project",
+  "missing-deliveries-and-required-gates-prevent-completion",
+]
+artifacts = ["campaign-request", "campaign-brief", "stage-results", "campaign-report"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

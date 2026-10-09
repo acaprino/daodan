@@ -122,7 +122,7 @@ Rules:
 
 A second X-ray of the same target rebuilds from nothing only if nobody asked what changed. The mechanism that asks is `scripts/snapshot.py`, and every part of it runs outside the model.
 
-**The snapshot** (`snapshot/manifest.json`, written by every run) records each file with its size, mtime and content hash, and each symbol with its line span and a hash of its body, plus the git commit as metadata. A class span encloses its methods, so editing a method moves both hashes. Three sets of files enter it: source in the parsed languages, with symbols, where CSS, SCSS and LESS carry one symbol per applied rule, except a minified stylesheet (any line over 10,000 characters), which stays file-level; configuration and documentation (`.json`, `.yaml`, `.toml`, `.md` and their kin), as file-level entries with no symbols; and presentation files no adapter parses (`.html`, `.htm`, `.vue`, `.svelte`, indented `.sass`), also file-level, because markup decides whether a screen renders, scrolls and can be completed, and a run that drops it can neither cite it nor notice that it changed. Any other extension is absent from the manifest and from every count derived from it, and the final report says so. Forbidden files never enter it, not even as a hash.
+**The snapshot** (`snapshot/manifest.json`, written by every run) records each file with its size, mtime and content hash, and each symbol with its line span and a hash of its body, plus the git commit as metadata. A class span encloses its methods, so editing a method moves both hashes. Three sets of files enter it: source in the parsed languages, with symbols, where CSS, SCSS and LESS carry one symbol per applied rule, except a minified stylesheet (any line over 10,000 characters), which stays file-level; configuration and documentation (`.json`, `.yaml`, `.toml`, `.md` and their kin), as file-level entries with no symbols; and presentation files no adapter parses (`.html`, `.htm`, `.vue`, `.svelte`, indented `.sass`), also file-level, because markup decides whether a screen renders, scrolls and can be completed, and a run that drops it can neither cite it nor notice that it changed. Any other extension is absent from the manifest and from every count derived from it, and the final report says so. Forbidden files never enter it, not even as a hash. Nor does anything outside the perimeter (see `## Perimeter`): what Git ignores, and whatever sits under a directory whose name starts with a dot. The manifest's `scope` block records what that rule left out.
 
 **The change set** (`changes.json`, written by `snapshot.py diff`) compares that manifest with the current worktree. Equal size and mtime means unchanged with no read at all; anything else is hashed, because a checkout moves mtimes without changing a byte. It classifies files and symbols, resolves the one-hop blast radius from the manifest's import edges, and scans the parent's phase files for every claim citing anything it touched. It recommends `incremental`, `full` (with reasons: too much changed, no parent manifest, an incomplete parent, flags differing from the parent's) or `none`.
 
@@ -169,7 +169,7 @@ Phases 1 through 7 keep their numbers. `--phase N` is a user-facing flag and ren
 This phase owns discovery of **how the repository documents itself**. It does not evaluate whether the documentation is accurate, which is Phase 6.
 
 1. Read `CLAUDE.md`, `AGENTS.md` and any equivalent project instruction file at the repository root and in the target's ancestors. Record any navigation instruction they give, especially a statement of the form "look here first to find where a concept lives".
-2. Locate the canonical indexes the project actually uses. Glob for, at minimum: `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, `.codebase-map/INDEX.md`. Record what exists, not what you expected to exist.
+2. Locate the canonical indexes the project actually uses. Glob for, at minimum: `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`. Record what exists, not what you expected to exist. The perimeter applies here as everywhere: an index under a dot directory, or one Git ignores, is not a lead.
 3. For each concept, symbol and subsystem in the analysis scope, search the located documents for an entry. Record the concept, the document, and the anchor or heading that matched.
 4. Write both output files. Every row is a lead with status `documented` or `unverified`. Nothing here is `verified`, because this phase reads no code.
 
@@ -228,6 +228,16 @@ After analysis completes, consult the right file for your task:
 | Finding where the project documents a concept | knowledge/documentation-leads.md | knowledge/navigation.md |
 
 The two `knowledge/` files are Phase 0 output and are the only files in the set produced without reading code: every row is a lead, never a verified fact. `/senior-review:team-review` Phase 1d reads `knowledge/documentation-leads.md` from the run directory and joins it against its own independent discovery, so a run that skips Phase 0 leaves that consumer with an empty half.
+
+## Perimeter
+
+The X-ray never analyzes three things below its target: what Git ignores, any directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). `scripts/tree_scope.py` owns the rule, and every script that walks a tree applies it: the snapshot, the cascade scan, the usage search, the comment scan and the documentation review. Reading by hand follows it too. A path the snapshot left out is not opened, globbed or cited in a phase file.
+
+The target itself is analyzed as given. Naming a dot directory, or a directory Git ignores, as the target is how its content gets an X-ray of its own. A dot file beside analyzed source (`.eslintrc.json`) is not a directory and stays, subject to the forbidden list below. A file Git tracks is never ignored, whatever pattern it matches, because Git does not ignore what it tracks.
+
+The rule exists because tools write beside the code they work on: run records under `.daodan/`, a review under `.team-review/`, editor settings, caches. Counted as project files they enter every later change set, and an incremental update of an untouched project asks for a full analysis. A parent run recorded before this rule holds paths the perimeter now leaves out. Its first update reports them as removed and retires the claims that cite them: they left the inventory, whether or not they left the disk.
+
+What the rule leaves out is declared, never silent. `snapshot.py scope <target>` prints it before a run starts, and the manifest's `scope` block keeps it: `git_ignore` is `applied`, or `unavailable` when the target is in no work tree or git did not answer, in which case no ignore rule was applied; `skipped.dot_directories` names the dot directories the walk pruned; `skipped.git_ignored` counts the ignored paths it met. The scope confirmation and the final report repeat those figures. `.github/` holds a project's CI: a reader who needs it analyzed must be able to see that it was not, and can name it as a target.
 
 ## Forbidden Files
 
@@ -356,14 +366,17 @@ python "${PLUGIN_ROOT}/skills/xray-method/scripts/rewrite_comments.py" standards
 
 ## Incremental Update Commands
 
-### 14. Write a structural snapshot
+### 14. Count the scope, then write a structural snapshot
 
 ```bash
+# what a run would analyze, and what its perimeter leaves out; parses nothing
+python "${PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" scope <target>
+
 python "${PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" write <target> \
   --out <run-dir>/snapshot/manifest.json
 ```
 
-Records the tree a run analyzed. Every run writes one, which is what makes it a possible parent.
+`scope` prints the file count by set and by language, and the `scope` block the manifest will carry. `write` records the tree a run analyzed. Every run writes one, which is what makes it a possible parent.
 
 ### 15. Diff, carry and check an update
 
@@ -513,6 +526,8 @@ The team command:
   - `comment_rewriter.py` - multi-language comment analysis engine
   - `rewrite_comments.py` - comment quality CLI (scan / analyze / rewrite / report)
   - `doc_review.py` - documentation maintenance (Phase 6)
+  - `snapshot.py` - scope count, structural snapshots and incremental change sets
+  - `tree_scope.py` - the perimeter every tree-walking script applies: nothing Git ignores, no dot directory, no dependency or build output
   - `cascade_scan.py` - stylesheet rules with global reach that can break a screen, with the rules each can override in cascade order, screen-level rules first (Phase 5)
   - `languages/` - per-language adapters (Python `ast`, Java/JS/TS/Rust via tree-sitter or regex, SQL/PL-SQL regex, CSS/SCSS/LESS stdlib tokenizer)
     - `base.py` - shared dataclasses + `LanguageAdapter` Protocol

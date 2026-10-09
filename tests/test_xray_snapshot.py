@@ -98,15 +98,24 @@ JS_SOURCE = textwrap.dedent(
 ).lstrip()
 
 
-def run_script(*args, cwd=None):
+def run_script(*args, cwd=None, env=None):
     """Invoke snapshot.py as the workflows do, and return (code, stdout, stderr)."""
     proc = subprocess.run(
         [sys.executable, str(SCRIPTS / "snapshot.py"), *[str(a) for a in args]],
         capture_output=True,
         text=True,
         cwd=str(cwd) if cwd else None,
+        env=env,
     )
     return proc.returncode, proc.stdout, proc.stderr
+
+
+HAVE_GIT = shutil.which("git") is not None
+
+
+def git(repo: Path, *args: str) -> None:
+    """Run one git command in a fixture repository, failing the case if git does."""
+    subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=True)
 
 
 class ManifestTests(unittest.TestCase):
@@ -270,6 +279,112 @@ class PresentationInventoryTests(unittest.TestCase):
         path.write_text(".dark-ambient-glow { position: relative; }\n", encoding="utf-8")
         result = self.snapshot.compare_files(self.manifest, self.src)
         self.assertEqual(result["modified"], [self.key("styles/theme.css")])
+
+
+class PerimeterTests(unittest.TestCase):
+    """
+    What the X-ray never analyzes: what Git ignores, and every directory whose
+    name starts with a dot, below the target. The motivating case: a lifecycle
+    campaign wrote its run records under `.daodan/` and its review under
+    `.team-review/`, the next snapshot counted them as project files, and an
+    incremental update of an untouched project asked for a full analysis.
+
+    The rule is about directories and about what lies below the target. A dot
+    file beside analyzed source stays, and a target the user names is analyzed
+    even when it sits inside a dot directory.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="xray-perimeter-")).resolve()
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.project = self.tmp / "project"
+        write(self.project, "src/app.py", "def run():\n    return 1\n")
+        # A temp directory can sit inside somebody's work tree. The ceiling
+        # stops git looking above the fixture, so a case has a repository only
+        # when it creates one.
+        self.env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(self.tmp)}
+
+    def manifest(self, target=None):
+        out = self.tmp / "manifest.json"
+        code, _, err = run_script("write", target or self.project, "--out", out, env=self.env)
+        self.assertEqual(code, 0, err)
+        return json.loads(out.read_text(encoding="utf-8"))
+
+    def test_a_dot_directory_below_the_target_never_enters_the_manifest(self):
+        write(self.project, ".daodan/runs/r1/work.json", "{}\n")
+        write(self.project, ".team-review/00-scope.md", "# Scope\n")
+        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        write(self.project, "src/.cache/stale.py", "def stale():\n    return 0\n")
+        self.assertEqual(sorted(self.manifest()["files"]), ["src/app.py"])
+
+    def test_a_dot_file_beside_analyzed_source_is_still_recorded(self):
+        write(self.project, ".eslintrc.json", "{}\n")
+        self.assertIn(".eslintrc.json", self.manifest()["files"])
+
+    def test_a_named_target_inside_a_dot_directory_is_analyzed(self):
+        write(self.project, ".claude/skills/tool.py", "def tool():\n    return 1\n")
+        files = self.manifest(self.project / ".claude/skills")["files"]
+        self.assertEqual(sorted(files), ["tool.py"])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_what_git_ignores_never_enters_the_manifest(self):
+        git(self.project, "init", "-q")
+        write(self.project, ".gitignore", "generated/\n*.gen.py\n")
+        write(self.project, "generated/client.py", "def call():\n    return 1\n")
+        write(self.project, "src/model.gen.py", "X = 1\n")
+        self.assertEqual(sorted(self.manifest()["files"]), ["src/app.py"])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_a_tracked_file_is_never_ignored(self):
+        git(self.project, "init", "-q")
+        write(self.project, ".gitignore", "*.gen.py\n")
+        write(self.project, "src/schema.gen.py", "X = 1\n")
+        git(self.project, "add", "-f", "src/schema.gen.py")
+        self.assertIn("src/schema.gen.py", self.manifest()["files"])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_a_named_target_git_ignores_is_analyzed(self):
+        git(self.project, "init", "-q")
+        write(self.project, ".gitignore", "generated/\n")
+        write(self.project, "generated/client.py", "def call():\n    return 1\n")
+        write(self.project, "generated/models/order.py", "class Order:\n    pass\n")
+        files = self.manifest(self.project / "generated")["files"]
+        self.assertEqual(sorted(files), ["generated/client.py", "generated/models/order.py"])
+
+    def test_the_manifest_names_the_dot_directories_it_skipped(self):
+        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        write(self.project, "src/.cache/stale.py", "def stale():\n    return 0\n")
+        skipped = self.manifest()["scope"]["skipped"]
+        self.assertEqual(skipped["dot_directories"], [".github", "src/.cache"])
+
+    def test_outside_a_repository_the_manifest_says_no_ignore_rule_applied(self):
+        self.assertEqual(self.manifest()["scope"]["git_ignore"], "unavailable")
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_inside_a_repository_the_manifest_counts_what_git_ignored(self):
+        git(self.project, "init", "-q")
+        write(self.project, ".gitignore", "generated/\n*.log\n")
+        write(self.project, "generated/client.py", "def call():\n    return 1\n")
+        write(self.project, "src/debug.log", "boom\n")
+        scope = self.manifest()["scope"]
+        self.assertEqual(scope["git_ignore"], "applied")
+        self.assertEqual(scope["skipped"]["git_ignored"], 2)
+
+    def test_the_scope_command_counts_the_perimeter_without_writing_a_manifest(self):
+        write(self.project, "README.md", "# Project\n")
+        write(self.project, "web/index.html", "<div></div>\n")
+        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        code, out, err = run_script("scope", self.project, env=self.env)
+        self.assertEqual(code, 0, err)
+        report = json.loads(out)
+        self.assertEqual(report["files"], 3)
+        self.assertEqual(
+            report["sets"],
+            {"parsed_source": 1, "configuration_and_documentation": 1, "presentation": 1},
+        )
+        self.assertEqual(report["languages"], {"python": 1})
+        self.assertEqual(report["scope"]["skipped"]["dot_directories"], [".github"])
+        self.assertEqual(report["scope"], self.manifest()["scope"])
 
 
 class ComparisonTests(unittest.TestCase):
@@ -484,6 +599,13 @@ class DiffCommandTests(_DiffFixture):
         changes = self.diff()
         self.assertEqual(changes["recommendation"], "none")
         self.assertEqual(changes["claims"], [])
+
+    def test_run_records_written_after_the_parent_are_not_a_change(self):
+        write(self.src, ".daodan/runs/r1/work.json", "{}\n")
+        write(self.src, ".team-review/04-report.md", "# Report\n")
+        changes = self.diff()
+        self.assertEqual(changes["files"]["added"], [])
+        self.assertEqual(changes["recommendation"], "none")
 
     def test_a_changed_symbol_marks_only_the_claims_that_cite_it(self):
         path = self.src / "orders/service.py"

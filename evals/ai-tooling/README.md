@@ -51,6 +51,8 @@ MUST assertions are the invariant. A single MUST failure fails the case, regardl
 | `constraint-saturation` | `/prompt-optimize` | Above five simultaneously verifiable constraints the optimizer proposes a split or a verifier; in an agent rule file it exempts the guardrail rules and counts the output obligations that file carries |
 | `judge-prompt-shape` | `/prompt-optimize` | A judge prompt is decomposed per criterion, its persona and 1-10 scale are reported as defects, and agreement stays predicted until kappa is measured |
 | `prompt-language-preserved` | `/prompt-optimize` | A non-English prompt is never translated to English as an optimization, absent a measurement on the target model and task |
+| `academy-source-grounding` | `prompt-engineering` | Direct skill use preserves the brief and handles missing/conflicting source evidence without invented context, private reasoning or unsupported reliability claims |
+| `academy-generalization` | `prompt-engineering` | A targeted fix avoids universal rules and extra mechanisms; tuning examples and near-duplicates are not independent verification evidence |
 | `pinned-old-sdk` | `agent-sdk-builder` | The installed version is inspected and honored |
 | `reference-vs-installed` | `agent-sdk-builder` | When the bundled reference and the installed SDK disagree, the SDK wins |
 | `always-on-security` | `agent-sdk-builder` | An every-call rule uses a `PreToolUse` hook, never `canUseTool` alone |

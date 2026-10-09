@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.0.1; source-sha256: ea1a407c646efbf90c608d24f0ece94b84365867953b5b4b4944441abfcf5f9c. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.1.0; source-sha256: 873344dc3c20d158d3f3508f16dd59797e9286fc2f0dc5b9613b0e0c8beb6db4. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-xray`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<codebase-xray-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-xray`: qualify it with that owner's namespace. The owning plugin's registered skills are `codebase-xray:xray-method`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -47,7 +47,7 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 2. **Target files**: the explicit files/scope in the task prompt. Review uses its declared diff or file set; a knowledge guide uses the requested document/project scope, not an automatic whole-project sweep. Team X-ray uses only the cross-partition surface: symbols in `02-interfaces.md ## Cross-Partition Exports`, flows in `03-flows.md ## Cross-Partition Flows`, contracts in `04-semantics.md ## Hidden Contracts (cross-partition)`, risks in `05-risks.md ## Cross-Partition Risk Attribution` and their cited source. Partition-internal contracts are already owned by partition workers.
 
 3. **Repo context** (as needed regardless of source):
-   - Callers outside the target: Grep for target symbols across repo (2-3 hop call graph)
+   - Callers outside the target: Grep for target symbols across repo (2-3 hop call graph), never in what Git ignores or under a directory whose name starts with a dot: tool output and run records are not callers
    - Dependency manifests (`package.json`, `pyproject.toml`, etc.) to identify external contract surfaces
    - Tests related to target files: explicit assertions reveal invariants
 

@@ -43,7 +43,7 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 2. **Target files**: the explicit files/scope in the task prompt. Review uses its declared diff or file set; a knowledge guide uses the requested document/project scope, not an automatic whole-project sweep. Team X-ray uses only the cross-partition surface: symbols in `02-interfaces.md ## Cross-Partition Exports`, flows in `03-flows.md ## Cross-Partition Flows`, contracts in `04-semantics.md ## Hidden Contracts (cross-partition)`, risks in `05-risks.md ## Cross-Partition Risk Attribution` and their cited source. Partition-internal contracts are already owned by partition workers.
 
 3. **Repo context** (as needed regardless of source):
-   - Callers outside the target: Grep for target symbols across repo (2-3 hop call graph)
+   - Callers outside the target: Grep for target symbols across repo (2-3 hop call graph), never in what Git ignores or under a directory whose name starts with a dot: tool output and run records are not callers
    - Dependency manifests (`package.json`, `pyproject.toml`, etc.) to identify external contract surfaces
    - Tests related to target files: explicit assertions reveal invariants
 

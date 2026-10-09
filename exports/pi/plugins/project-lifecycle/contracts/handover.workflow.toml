@@ -1,0 +1,74 @@
+name = "handover"
+entrypoint = "handover.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:handover-request", "artifact:file-audience-plan"]
+
+[[phases]]
+id = "explore"
+needs = ["prepare"]
+role = "project-knowledge/codebase-explorer"
+isolation = "required"
+consumes = ["artifact:handover-request", "artifact:file-audience-plan"]
+produces = ["artifact:context-brief", "selection:contracts"]
+
+[[phases]]
+id = "map-contracts"
+needs = ["explore"]
+role = "codebase-xray/semantic-interconnect-mapper"
+fanout_from = "selection:contracts"
+isolation = "required"
+join = "all-delivered"
+consumes = ["artifact:context-brief"]
+produces = ["artifact:interconnect-report"]
+
+[[phases]]
+id = "local-checks"
+needs = ["explore"]
+isolation = "shared"
+consumes = ["artifact:handover-request", "artifact:context-brief"]
+produces = ["artifact:checks-report"]
+
+[[phases]]
+id = "prepare-dossier"
+needs = ["map-contracts", "local-checks"]
+isolation = "shared"
+consumes = ["artifact:context-brief", "artifact:checks-report"]
+produces = ["artifact:handover-evidence"]
+
+[[phases]]
+id = "write-dossier"
+needs = ["prepare-dossier"]
+role = "project-knowledge/onboarding-writer"
+isolation = "required"
+consumes = ["artifact:file-audience-plan", "artifact:handover-evidence"]
+produces = ["artifact:handover-dossier"]
+
+[[phases]]
+id = "review-dossier"
+needs = ["write-dossier"]
+role = "project-knowledge/guide-reviewer"
+isolation = "required"
+consumes = ["artifact:handover-dossier", "artifact:context-brief", "artifact:checks-report"]
+produces = ["artifact:guide-review"]
+
+[[phases]]
+id = "close"
+needs = ["review-dossier"]
+isolation = "shared"
+consumes = ["artifact:handover-dossier", "artifact:guide-review", "artifact:checks-report"]
+produces = ["artifact:result"]
+
+[dispatch]
+roles = ["project-knowledge/codebase-explorer", "project-knowledge/onboarding-writer", "project-knowledge/guide-reviewer", "codebase-xray/semantic-interconnect-mapper"]
+isolated = true
+inline_workers = false
+
+[contract]
+inputs = ["project", "scope", "authorizations", "audience", "depth", "checks"]
+outcomes = ["consultant-dossier-delivered", "observed-and-exercised-evidence-separated", "first-scoped-work-plan-visible", "project-unchanged", "deliveries-and-required-gates-accounted"]
+artifacts = ["handover-dossier", "result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

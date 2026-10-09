@@ -10,6 +10,8 @@ files import them, and which claims in the earlier run's phase files cite any of
 it.
 
 Subcommands:
+    scope <target>
+        Count what a run would analyze and name what its perimeter leaves out. Parses nothing.
     write <target> --out <manifest.json>
         Write a structural snapshot of a target tree.
     diff <parent_run> <target> --out <run_dir>
@@ -42,6 +44,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from ast_parser import parse_file  # noqa: E402
 from languages import SUPPORTED_EXTENSIONS  # noqa: E402
+from tree_scope import Perimeter  # noqa: E402
 
 __all__ = [
     "DOC_EXTENSIONS",
@@ -64,6 +67,7 @@ __all__ = [
     "repo_root",
     "resolve_module",
     "scan_claims",
+    "scope_record",
     "symbol_spans",
 ]
 
@@ -77,13 +81,6 @@ MAX_FILE_BYTES = 20_000_000
 # line, so each rule symbol would hash the whole file and any edit would change
 # them all. It stays a file-level entry.
 MAX_STYLESHEET_LINE = 10_000
-
-# Pruned during the walk, so a large dependency tree is never descended into.
-EXCLUDED_DIRS = frozenset({
-    ".codebase-xray", ".git", ".idea", ".mypy_cache", ".next", ".pytest_cache",
-    ".tox", ".venv", ".vscode", "__pycache__", "build", "dist", "node_modules",
-    "target", "vendor", "venv",
-})
 
 # Non-source files a phase file legitimately cites.
 DOC_EXTENSIONS = frozenset({
@@ -117,14 +114,21 @@ def is_forbidden(name: str) -> bool:
     return any(fnmatch.fnmatchcase(lowered, glob) for glob in FORBIDDEN_GLOBS)
 
 
-def iter_files(target: Path) -> Iterator[Path]:
-    """Every file in the target the snapshot records, in a stable order."""
-    for dirpath, dirnames, filenames in os.walk(target):
-        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS)
-        for name in sorted(filenames):
+def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Path]:
+    """
+    Every file in the target the snapshot records, in a stable order.
+
+    Which directories are descended into is the perimeter's rule, in
+    tree_scope.py, and not this function's: nothing Git ignores, no directory
+    whose name starts with a dot, no dependency or build output. Pass a
+    perimeter to read back afterwards what the walk left out.
+    """
+    perimeter = perimeter or Perimeter(target)
+    for directory, filenames in perimeter.walk():
+        for name in filenames:
             if is_forbidden(name):
                 continue
-            path = Path(dirpath) / name
+            path = directory / name
             suffix = path.suffix.lower()
             if (
                 suffix not in SUPPORTED_EXTENSIONS
@@ -297,12 +301,29 @@ def relative_to_root(path: Path, root: Path) -> str:
         return path.resolve().as_posix()
 
 
+def scope_record(perimeter: Perimeter, root: Path) -> dict:
+    """
+    What a perimeter left out, in the one shape the manifest and the scope
+    command share. `git_ignore` is `unavailable` when the target is in no work
+    tree or git did not answer: no ignore rule was applied then, and a reader
+    must be able to tell.
+    """
+    return {
+        "git_ignore": perimeter.git_ignore,
+        "skipped": {
+            "dot_directories": [relative_to_root(path, root) for path in perimeter.dot_directories],
+            "git_ignored": perimeter.git_ignored,
+        },
+    }
+
+
 def build_manifest(target: Path) -> dict:
     """The structural record of the tree a run analyzed."""
     target = target.resolve()
     root = repo_root(target).resolve()
     files: dict[str, dict] = {}
-    for path in iter_files(target):
+    perimeter = Perimeter(target)
+    for path in iter_files(target, perimeter):
         try:
             if path.stat().st_size > MAX_FILE_BYTES:
                 continue
@@ -316,6 +337,7 @@ def build_manifest(target: Path) -> dict:
         "root": root.as_posix(),
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "git": git_info(root),
+        "scope": scope_record(perimeter, root),
         "files": files,
     }
 
@@ -1078,6 +1100,46 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_scope(args: argparse.Namespace) -> int:
+    """
+    The figures a scope confirmation shows, from the same walk the manifest
+    takes: a count made by hand would not apply the perimeter, and the user
+    would confirm one number and get another.
+    """
+    target = Path(args.target).resolve()
+    root = repo_root(target).resolve()
+    perimeter = Perimeter(target)
+    sets = {"parsed_source": 0, "configuration_and_documentation": 0, "presentation": 0}
+    languages: dict[str, int] = {}
+    files = 0
+    for path in iter_files(target, perimeter):
+        try:
+            if path.stat().st_size > MAX_FILE_BYTES:
+                continue
+        except OSError:
+            continue
+        files += 1
+        suffix = path.suffix.lower()
+        # By extension alone: this runs before the user has confirmed anything,
+        # so it reads no file. The manifest may name a language more precisely.
+        language = SUPPORTED_EXTENSIONS.get(suffix)
+        if language:
+            sets["parsed_source"] += 1
+            languages[language] = languages.get(language, 0) + 1
+        elif suffix in DOC_EXTENSIONS:
+            sets["configuration_and_documentation"] += 1
+        else:
+            sets["presentation"] += 1
+    print(json.dumps({
+        "target": relative_to_root(target, root) or ".",
+        "files": files,
+        "sets": sets,
+        "languages": languages,
+        "scope": scope_record(perimeter, root),
+    }, indent=2, sort_keys=True))
+    return 0
+
+
 def cmd_write(args: argparse.Namespace) -> int:
     manifest = build_manifest(Path(args.target))
     out = Path(args.out)
@@ -1090,6 +1152,10 @@ def cmd_write(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="X-ray structural snapshots and change sets.")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    scope_parser = sub.add_parser("scope", help="count what a run would analyze and what its perimeter leaves out")
+    scope_parser.add_argument("target")
+    scope_parser.set_defaults(func=cmd_scope)
 
     write_parser = sub.add_parser("write", help="write a manifest for a target tree")
     write_parser.add_argument("target")

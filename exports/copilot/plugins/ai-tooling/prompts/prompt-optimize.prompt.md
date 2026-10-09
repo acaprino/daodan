@@ -75,6 +75,19 @@ not from bare word-deletion.
 If the existing prompt already scores 4+ on every dimension, do not add a pattern just
 for completeness: record the decision in the analysis instead.
 
+Foundation check: apply the working baseline in the skill. Diagnose the intended result,
+required task operations and interaction preferences separately; do not invent context or
+requirements. For an incomplete brief, mixed inputs, example failures, source-grounded answers
+or an iterative eval, consult
+`${PLUGIN_ROOT}/skills/prompt-engineering/references/prompting-foundations.md`.
+Numbered task operations are not a private reasoning scaffold. Examples address a concrete
+task, format, tone or boundary defect after the model-class gate. Examples promoted from
+development runs stay outside the held-out verification set. State the baseline, criteria and
+paired comparison that would test the change; a proposed eval is not a measured gain.
+Prefer the smallest justified change. Do not promote one unusual failure into a universal rule,
+optimize against leaked examples or add mechanisms just to satisfy the checklist. If no material
+defect or new requirement warrants a change, keep the original.
+
 Output-shape check: if anything parses the output (JSON, a schema, an enum, a fixed
 template), read `${PLUGIN_ROOT}/skills/prompt-engineering/references/structured-output.md`
 and decide the enforcement rung for this model class: format instruction only,
