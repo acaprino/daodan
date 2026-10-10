@@ -135,6 +135,40 @@ Codex keeps its `-workflow` suffix for stable installed names. Names cannot repe
 across component kinds within a kernel. The compiler does not turn generated
 dispatch resources or contract files into extra user commands.
 
+## Office entry points
+
+The [Office plugin](plugins/office.md) provides editable PowerPoint presentations
+through SlidePoise, native Excel workbooks and native Word documents. Install or
+select `office` using the host setup above. Its three workflow entries follow the
+same adapter mapping as the other plugins:
+
+| Host | PowerPoint (PPTX) | Excel (XLSX) | Word (DOCX) |
+|---|---|---|---|
+| Claude | `/office:create-presentation` | `/office:workbook` | `/office:document` |
+| Copilot | `create-presentation.prompt.md` | `workbook.prompt.md` | `document.prompt.md` |
+| Codex | `create-presentation-workflow` | `workbook-workflow` | `document-workflow` |
+| Pi | `/office-create-presentation` | `/office-workbook` | `/office-document` |
+| OpenCode V2 | `/office:create-presentation` | `/office:workbook` | `/office:document` |
+
+SlidePoise is an external runtime with its own Python and Node dependencies. Image
+generation, inspection, fonts and a compatible presentation renderer must be
+available in the active session. The packaged bridge discovers the runtime without
+relying on upstream skill registration for a particular host. See the
+[runtime reference](../plugins/office/skills/slidepoise/references/runtime.md) for
+the inspected version, prerequisites and installation procedure.
+
+Excel and Word work use an available compatible document engine. The methods
+prefer a suitable host runtime; available `openpyxl` or `python-docx` can handle
+supported files. The packaged standard-library inspectors read and compare file
+content, but do not author documents, calculate formulas, update Word fields or
+render pages. Those operations need an engine that supports the required features.
+Existing advanced features require demonstrated preservation before rewriting.
+
+Installing Office does not install these external runtimes or establish live
+Microsoft Office application control. All five hosts receive the workflow and
+skills; actual generation, editing, calculation and rendered review depend on the
+capabilities available in the active session.
+
 ## Dispatch and isolation
 
 The sidecar can describe workers in the phase graph and in `[dispatch].roles`.

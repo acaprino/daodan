@@ -10,6 +10,33 @@ and explicit workflow entries:
 | Create, inspect, analyze or edit XLSX | `office:xlsx` | `office:workbook` |
 | Create, read or edit DOCX | `office:docx` | `office:document` |
 
+## Setup and first use
+
+Install `office@daodan` on a marketplace host after registering Daodan. Pi users
+select the Office prompts and skills from the installed repository package;
+OpenCode users can select `office` through the loader's `options.plugins`. See
+[host installation and selection](../hosts.md#installation-and-selection).
+
+The table above uses kernel entry IDs. On Claude Code and OpenCode V2 they are
+slash commands; Codex exposes `create-presentation-workflow`, `workbook-workflow`
+and `document-workflow` skills, Copilot exposes prompts and Pi prefixes commands
+with `office-`. The [host entry table](../hosts.md#office-entry-points) gives the
+exact names. Requests can also name the desired file and describe the task.
+
+Before the first presentation, follow the
+[SlidePoise runtime reference](../../plugins/office/skills/slidepoise/references/runtime.md)
+and verify its runtime, image tools, fonts and preview renderer. Installing the
+Daodan plugin does not install those prerequisites. Excel and Word tasks discover
+an available workbook or document engine suited to the requested features, such
+as a supported host artifact runtime, `openpyxl` for supported workbook operations
+or `python-docx` for supported document operations. These are separate runtimes;
+the packaged inspectors only read and compare files.
+
+Supply the source files, requested changes and any template or brand assets. For
+an existing file, preserve the source and write a separate result. State whether
+the result needs recalculated formulas, refreshed fields or a rendered preview;
+the delivery review distinguishes completed checks from unavailable operations.
+
 ## Presentations
 
 SlidePoise explores visual compositions with image generation and reconstructs

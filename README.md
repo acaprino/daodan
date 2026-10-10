@@ -185,6 +185,7 @@ It does not grant arbitrary repository deletion.
 | Architecture and infrastructure | [platform-engineering](docs/plugins/platform-engineering.md), [docker](docs/plugins/docker.md), [messaging](docs/plugins/messaging.md), [opentelemetry](docs/plugins/opentelemetry.md), [dependency-audit](docs/plugins/dependency-audit.md) |
 | AI and evidence | [ai-tooling](docs/plugins/ai-tooling.md), [rag-development](docs/plugins/rag-development.md), [research](docs/plugins/research.md), [peer-review](docs/plugins/peer-review.md), [app-analyzer](docs/plugins/app-analyzer.md) |
 | Product and business | [business](docs/plugins/business.md), [digital-marketing](docs/plugins/digital-marketing.md), [stripe](docs/plugins/stripe.md) |
+| Office files | [office](docs/plugins/office.md): editable PowerPoint through SlidePoise, native Excel workbooks and Word documents |
 | Specialized development | [grabber-development](docs/plugins/grabber-development.md), [trading-broker-integration](docs/plugins/trading-broker-integration.md), [libgdx-development](docs/plugins/libgdx-development.md), [obsidian-development](docs/plugins/obsidian-development.md), [csp](docs/plugins/csp.md) |
 | Supporting tools | [marketplace-ops](docs/plugins/marketplace-ops.md), [learning](docs/plugins/learning.md), [system-utils](docs/plugins/system-utils.md) |
 
@@ -192,6 +193,29 @@ Extra outputs can be evidence for a project run. Automatic composition requires 
 consumer with an explicit hard dependency; the core does not install every domain.
 Playwright is required by the browser-facing plugins that declare it. Design
 specialists used by frontend-review remain upstream.
+
+## Presentations, spreadsheets and documents
+
+The [Office plugin](docs/plugins/office.md) creates and revises editable `.pptx`,
+works with native `.xlsx` cells, formulas, tables and charts, and reads, creates
+or edits `.docx` paragraphs, styles, tables and sections. Existing-file edits
+include preservation checks for content and features the task needs to retain.
+
+On Claude Code or OpenCode V2, use `/office:create-presentation`,
+`/office:workbook` or `/office:document`. The [host guide](docs/hosts.md#office-entry-points)
+lists the corresponding Codex skills, Copilot prompts and Pi commands. A normal
+request can describe the outcome, source files, language and template:
+
+```text
+Create an editable Italian PowerPoint from this workbook and Word report.
+Preserve the source figures, use our brand assets and include a reviewed preview.
+```
+
+SlidePoise needs its separate runtime, image-generation tools and a compatible
+presentation renderer. Excel and Word use an available engine that supports the
+requested file features. The plugin's read-only inspectors provide structure and
+preservation evidence; actual recalculation, field updates and visual page review
+need the corresponding engines. See [Office setup and examples](docs/plugins/office.md#setup-and-first-use).
 
 ## What is verified
 
