@@ -90,9 +90,10 @@ class FunctionInfo:
     visibility: Visibility | None = None
     docstring: str | None = None
     line_number: int = 0
-    # Last line of the symbol body, when the adapter knows it exactly (Python,
-    # from the stdlib AST). None everywhere else: snapshot.py infers the span
-    # from the next symbol's start line.
+    # Last line of the symbol body, when the adapter knows it exactly: Python
+    # from the stdlib AST, Java, JavaScript, TypeScript and Rust from their
+    # Tree-sitter node, stylesheets from their own parser. None from a regex
+    # parser: snapshot.py then infers the span from the next symbol's start.
     end_line: int | None = None
 
 
@@ -108,9 +109,10 @@ class ClassInfo:
     visibility: Visibility | None = None
     docstring: str | None = None
     line_number: int = 0
-    # Last line of the symbol body, when the adapter knows it exactly (Python,
-    # from the stdlib AST). None everywhere else: snapshot.py infers the span
-    # from the next symbol's start line.
+    # Last line of the symbol body, when the adapter knows it exactly: Python
+    # from the stdlib AST, Java, JavaScript, TypeScript and Rust from their
+    # Tree-sitter node, stylesheets from their own parser. None from a regex
+    # parser: snapshot.py then infers the span from the next symbol's start.
     end_line: int | None = None
 
 

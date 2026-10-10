@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ._treesitter import get_parser, node_text
+from ._treesitter import get_parser, load_failure, node_text
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -158,6 +158,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             visibility=visibility,
             docstring=None,
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_class_like(node: Any, kind: str) -> ClassInfo:
@@ -216,6 +217,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             visibility=visibility,
             docstring=None,
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     # Walk top-level only for declarations.
@@ -416,6 +418,9 @@ class _JavaAdapter:
             err = _TS_ERROR_HOLDER.pop("last", None)
             if err is not None:
                 result.notes.append(f"tree-sitter raised: {err}")
+            reason = load_failure("java")
+            if reason is not None:
+                result.notes.append(f"tree-sitter unavailable: {reason}")
         result.file_path = file_path
         return result
 

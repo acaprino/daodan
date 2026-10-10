@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ._treesitter import get_parser, node_text
+from ._treesitter import get_parser, load_failure, node_text
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -166,6 +166,7 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
             return_annotation=text(ret_ann).lstrip(":").strip() if ret_ann else None,
             is_async=is_async,
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_class(node: Any) -> ClassInfo:
@@ -214,6 +215,7 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
             class_variables=class_vars,
             kind="class",
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def walk_for_decls(node: Any, depth: int = 0, in_export: bool = False) -> None:
@@ -521,6 +523,9 @@ class _JavaScriptAdapter:
             err = _TS_ERROR_HOLDER.pop("last", None)
             if err is not None:
                 result.notes.append(f"tree-sitter raised: {err}")
+            reason = load_failure(self.language)
+            if reason is not None:
+                result.notes.append(f"tree-sitter unavailable: {reason}")
         result.file_path = file_path
         return result
 

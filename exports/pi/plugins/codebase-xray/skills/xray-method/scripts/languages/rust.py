@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ._treesitter import get_parser, node_text
+from ._treesitter import get_parser, load_failure, node_text
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -174,6 +174,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             is_async=is_async(node),
             visibility=parse_vis(node),
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_impl_name(node: Any) -> str:
@@ -199,6 +200,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             methods=methods,
             kind="impl",
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_struct_like(node: Any, kind: str) -> ClassInfo:
@@ -220,6 +222,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             kind=kind,
             visibility=parse_vis(node),
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_trait(node: Any) -> ClassInfo:
@@ -240,6 +243,7 @@ def _ts_parse(content: str) -> ParseResult | None:
                             parameters=parse_params(params_n),
                             return_annotation=text(ret_n) if ret_n else None,
                             line_number=child.start_point[0] + 1,
+                            end_line=child.end_point[0] + 1,
                         )
                     )
         return ClassInfo(
@@ -248,6 +252,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             kind="trait",
             visibility=parse_vis(node),
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_mod(node: Any) -> ClassInfo:
@@ -257,6 +262,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             kind="mod",
             visibility=parse_vis(node),
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
 
     def parse_use(node: Any) -> None:
@@ -335,6 +341,7 @@ def _ts_parse(content: str) -> ParseResult | None:
                 kind="type-alias",
                 visibility=parse_vis(child),
                 line_number=child.start_point[0] + 1,
+                end_line=child.end_point[0] + 1,
             )
             classes.append(ci)
             if ci.visibility == "public":
@@ -569,6 +576,9 @@ class _RustAdapter:
             err = _TS_ERROR_HOLDER.pop("last", None)
             if err is not None:
                 result.notes.append(f"tree-sitter raised: {err}")
+            reason = load_failure(_LANGUAGE_NAME)
+            if reason is not None:
+                result.notes.append(f"tree-sitter unavailable: {reason}")
         result.file_path = file_path
         return result
 

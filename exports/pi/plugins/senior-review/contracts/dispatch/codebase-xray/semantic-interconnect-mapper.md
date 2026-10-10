@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.1.0; source-sha256: 873344dc3c20d158d3f3508f16dd59797e9286fc2f0dc5b9613b0e0c8beb6db4. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.2.0; source-sha256: 873344dc3c20d158d3f3508f16dd59797e9286fc2f0dc5b9613b0e0c8beb6db4. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-xray`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<codebase-xray-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-xray`: qualify it with that owner's namespace. The owning plugin's registered skills are `codebase-xray:xray-method`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

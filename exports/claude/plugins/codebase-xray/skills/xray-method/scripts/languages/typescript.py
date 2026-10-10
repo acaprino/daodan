@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ._treesitter import get_parser, node_text
+from ._treesitter import get_parser, load_failure, node_text
 from .base import ClassInfo, ParseResult
 from .comments import CommentToken, extract_c_style_comments
 
@@ -132,6 +132,7 @@ def _ts_parse(content: str, is_tsx: bool) -> ParseResult | None:
             bases=bases,
             kind="interface",
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
         ts_classes.append(ci)
         if exported_flag:
@@ -143,6 +144,7 @@ def _ts_parse(content: str, is_tsx: bool) -> ParseResult | None:
             name=text(name_node) if name_node else "?",
             kind=kind,
             line_number=node.start_point[0] + 1,
+            end_line=node.end_point[0] + 1,
         )
         ts_classes.append(ci)
         if exported_flag:
@@ -189,6 +191,9 @@ class _TypeScriptAdapter:
             err = _js._TS_ERROR_HOLDER.pop("last", None)
             if err is not None:
                 result.notes.append(f"tree-sitter raised: {err}")
+            reason = load_failure("tsx" if is_tsx else _LANGUAGE_NAME)
+            if reason is not None:
+                result.notes.append(f"tree-sitter unavailable: {reason}")
         result.file_path = file_path
         return result
 

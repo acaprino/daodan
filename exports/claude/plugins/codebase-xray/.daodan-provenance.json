@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:3c4345e3be0eef43d3981de50fa79c4b708c3ba158097c469f831bfeae0533ad",
+  "coreDigest": "sha256:0b785732f677c9b012696d77a2bcfca580d07cce1991d379b73a41134809ae7f",
   "harnessStrategies": {
     "analyze": "native-team",
     "team-analyze": "native-team"
@@ -8,5 +8,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "codebase-xray",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

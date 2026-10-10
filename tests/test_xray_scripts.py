@@ -19,8 +19,10 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import types
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO_ROOT / "plugins/codebase-xray/skills/xray-method/scripts"
@@ -95,12 +97,127 @@ PYTHON = textwrap.dedent(
     """
 )
 
+# Span fixtures: every symbol body covers more than one line and starts on line
+# 1 of the file, so each expected (first, last) pair below is read off the
+# source by counting.
+JS_SPANS = textwrap.dedent(
+    """\
+    export class Store {
+      get(key) {
+        return key;
+      }
+    }
+
+    function load(path) {
+      return path;
+    }
+
+    const save = (value) => {
+      return value;
+    };
+    """
+)
+
+TS_SPANS = textwrap.dedent(
+    """\
+    export interface Repo {
+      get(id: string): string;
+    }
+    export enum Status {
+      Active = "active",
+    }
+    export type Handler = (
+      u: string,
+    ) => void;
+    export class Cache {
+      clear(): void {
+        return;
+      }
+    }
+    """
+)
+
+JAVA_SPANS = textwrap.dedent(
+    """\
+    public class Svc {
+      public int put(int x) {
+        return x;
+      }
+      interface Listener {
+        void on();
+      }
+    }
+    """
+)
+
+RUST_SPANS = textwrap.dedent(
+    """\
+    pub struct Store {
+        items: Vec<u8>,
+    }
+    impl Store {
+        pub fn len(&self) -> usize {
+            self.items.len()
+        }
+    }
+    pub trait Repo {
+        fn get(&self) -> u8;
+    }
+    pub fn load() -> u8 {
+        0
+    }
+    pub mod inner {
+        pub fn helper() {}
+    }
+    pub type Id = u64;
+    """
+)
+
 
 def _write(directory: Path, name: str, content: str) -> Path:
     path = directory / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
     return path
+
+
+def _spans(result) -> dict[tuple[str, str], tuple[int, int | None]]:
+    """(qualified name, kind) to (first line, last line) for every symbol."""
+    spans = {}
+    for cls in result.classes:
+        spans[(cls.name, cls.kind)] = (cls.line_number, cls.end_line)
+        for method in cls.methods:
+            spans[(f"{cls.name}.{method.name}", "method")] = (method.line_number, method.end_line)
+    for func in result.functions:
+        spans[(func.name, "function")] = (func.line_number, func.end_line)
+    return spans
+
+
+def _unreachable_grammar_pack():
+    """A grammar pack that is installed but cannot fetch a grammar.
+
+    It mirrors tree-sitter-language-pack 1.x: `get_parser` downloads a grammar
+    on first use and raises the pack's own `DownloadError`, a plain Exception
+    subclass, when the cache it looks in is empty and the network is not there.
+    Returns the module and the list of languages it was asked for.
+    """
+    pack = types.ModuleType("tree_sitter_language_pack")
+    calls: list[str] = []
+
+    class Error(Exception):
+        pass
+
+    class DownloadError(Error):
+        pass
+
+    def get_parser(name):
+        calls.append(name)
+        raise DownloadError(f"Failed to fetch manifest for {name}: dns error")
+
+    pack.Error = Error
+    pack.DownloadError = DownloadError
+    pack.get_parser = get_parser
+    return pack, calls
 
 
 class ClassifierTests(unittest.TestCase):
@@ -196,6 +313,124 @@ class ParserTests(unittest.TestCase):
         payload = json.loads(completed.stdout)
         external = payload["imports"]["external"]
         self.assertEqual(len(external), len(set(external)), external)
+
+
+class TreeSitterSpanTests(unittest.TestCase):
+    """Tree-sitter knows where every symbol ends, and the result must say so.
+
+    Without an end line snapshot.py spans a symbol to the line before the next
+    one, so code between two symbols counts as the first one's body and an edit
+    there re-derives claims about a symbol that did not change. Python carried
+    exact ends from the stdlib parser; every Tree-sitter adapter had the same
+    fact in each node and dropped it.
+    """
+
+    def setUp(self):
+        self.temp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.temp, ignore_errors=True)
+
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
+    def test_every_symbol_carries_its_last_line(self):
+        cases = [
+            ("svc.js", JS_SPANS, {
+                ("Store", "class"): (1, 5),
+                ("Store.get", "method"): (2, 4),
+                ("load", "function"): (7, 9),
+                ("save", "function"): (11, 13),
+            }),
+            ("svc.ts", TS_SPANS, {
+                ("Repo", "interface"): (1, 3),
+                ("Status", "enum"): (4, 6),
+                ("Handler", "type-alias"): (7, 9),
+                ("Cache", "class"): (10, 14),
+                ("Cache.clear", "method"): (11, 13),
+            }),
+            ("Svc.java", JAVA_SPANS, {
+                ("Svc", "class"): (1, 8),
+                ("Svc.put", "method"): (2, 4),
+                ("Svc.Listener", "interface"): (5, 7),
+                ("Svc.Listener.on", "method"): (6, 6),
+            }),
+            ("lib.rs", RUST_SPANS, {
+                ("Store", "struct"): (1, 3),
+                ("Store", "impl"): (4, 8),
+                ("Store.len", "method"): (5, 7),
+                ("Repo", "trait"): (9, 11),
+                ("Repo.get", "method"): (10, 10),
+                ("load", "function"): (12, 14),
+                ("inner", "mod"): (15, 17),
+                ("Id", "type-alias"): (18, 18),
+            }),
+        ]
+        for name, source, expected in cases:
+            with self.subTest(name):
+                result = parse_file(_write(self.temp, name, source))
+                self.assertTrue(result.notes[0].startswith("parser=tree-sitter"), result.notes)
+                spans = _spans(result)
+                for key, span in expected.items():
+                    self.assertEqual(spans.get(key), span, key)
+
+
+class GrammarPackFailureTests(unittest.TestCase):
+    """An installed grammar pack that fails is not a missing one.
+
+    The 2026-10-10 analysis-speed pilot ran the scripts where the pack's
+    grammar cache resolved to an empty directory. Its get_parser tried a
+    download, raised DownloadError, and the loader, which caught only import
+    and version errors, let it through: parse_file crashed, and snapshot.py
+    recorded every JavaScript file with no symbols at all.
+    """
+
+    def setUp(self):
+        self.temp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.temp, ignore_errors=True)
+        # The loader caches per process: drop the real entries now and the
+        # fake pack's entries once the real modules are back.
+        get_parser.cache_clear()
+        self.addCleanup(get_parser.cache_clear)
+
+    def _install(self, pack) -> None:
+        # None in sys.modules makes an import raise ImportError, which keeps
+        # the per-grammar strategy out of the way wherever it is installed.
+        patcher = mock.patch.dict(
+            sys.modules, {"tree_sitter_language_pack": pack, "tree_sitter": None}
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_a_pack_that_cannot_fetch_a_grammar_falls_back_and_says_why(self):
+        pack, _calls = _unreachable_grammar_pack()
+        self._install(pack)
+        cases = [
+            ("svc.js", JS_SPANS, "Store", "parser=regex-fallback"),
+            ("svc.ts", TS_SPANS, "Cache", "parser=regex-fallback (ts)"),
+            ("Svc.java", JAVA_SPANS, "Svc", "parser=regex-fallback"),
+            ("lib.rs", RUST_SPANS, "Store", "parser=regex-fallback"),
+        ]
+        for name, source, symbol, provenance in cases:
+            with self.subTest(name):
+                result = parse_file(_write(self.temp, name, source))
+                self.assertIn(provenance, result.notes)
+                self.assertIn(symbol, [c.name for c in result.classes])
+                self.assertTrue(
+                    any(n.startswith("tree-sitter unavailable: DownloadError") for n in result.notes),
+                    result.notes,
+                )
+
+    def test_a_failed_grammar_fetch_is_not_retried_for_every_file(self):
+        pack, calls = _unreachable_grammar_pack()
+        self._install(pack)
+        parse_file(_write(self.temp, "a.js", JS_SPANS))
+        parse_file(_write(self.temp, "b.js", JS_SPANS))
+        self.assertEqual(calls, ["javascript"])
+
+    def test_a_pack_that_is_not_installed_falls_back_without_a_failure_note(self):
+        self._install(None)
+        result = parse_file(_write(self.temp, "svc.js", JS_SPANS))
+        self.assertIn("parser=regex-fallback", result.notes)
+        self.assertFalse(
+            any(n.startswith("tree-sitter unavailable") for n in result.notes), result.notes
+        )
 
 
 class UsageFinderTests(unittest.TestCase):

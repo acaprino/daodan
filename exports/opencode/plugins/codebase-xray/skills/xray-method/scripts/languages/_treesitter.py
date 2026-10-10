@@ -17,6 +17,15 @@ cached** for the process lifetime. If you install tree-sitter mid-process
 (e.g. from a REPL), call `get_parser.cache_clear()` to drop the negative
 entries so the next `get_parser(language)` re-probes the install state.
 
+## Installed is not working
+
+A pack that is not installed is the ordinary case and stays silent. A pack
+that is installed and still hands back no parser is a failure, and
+`load_failure(language)` returns its reason so the adapter's fallback result
+can say why an installed parser was not used. Recent releases of the pack
+download a grammar on first use, so a cache resolved to an empty directory
+and no network raise the pack's own `DownloadError` from `get_parser`.
+
 ## Thread-safety
 
 Tree-sitter's C bindings (per all current Python wrappers) are NOT safe for
@@ -33,7 +42,7 @@ from __future__ import annotations
 import functools
 from typing import Any
 
-__all__ = ["get_parser", "node_text"]
+__all__ = ["get_parser", "load_failure", "node_text"]
 
 
 # Aliases used by tree-sitter-language-pack.
@@ -64,6 +73,14 @@ _GRAMMAR_MODULES = {
 # fallback instead of crashing the whole analysis run.
 _LOAD_ERRORS = (ImportError, AttributeError, TypeError, ValueError, LookupError)
 
+# Why an installed grammar pack handed back no parser, keyed like `get_parser`.
+_LOAD_FAILURES: dict[str, str] = {}
+
+
+def load_failure(language: str) -> str | None:
+    """The reason an installed grammar pack gave no parser for `language`, if any."""
+    return _LOAD_FAILURES.get(language)
+
 
 @functools.lru_cache(maxsize=None)
 def get_parser(language: str) -> tuple[Any, Any] | None:
@@ -77,6 +94,7 @@ def get_parser(language: str) -> tuple[Any, Any] | None:
     Result is cached. Call `get_parser.cache_clear()` after a mid-process
     install to re-probe.
     """
+    _LOAD_FAILURES.pop(language, None)
     pack_name = _LANG_PACK_ALIASES.get(language)
     if pack_name is None:
         return None
@@ -92,8 +110,13 @@ def get_parser(language: str) -> tuple[Any, Any] | None:
         from tree_sitter_language_pack import get_parser as _pack_get_parser  # type: ignore
 
         parser = _pack_get_parser(pack_name)
-    except _LOAD_ERRORS:
+    except ImportError:
         pass
+    except Exception as exc:
+        # Installed but unusable: a version mismatch, or a grammar download
+        # that failed. Every such error means the fallback, never a crash, and
+        # the reason is kept for the result's notes.
+        _LOAD_FAILURES[language] = f"{type(exc).__name__}: {exc}"
     else:
         return parser, getattr(parser, "language", None)
 
@@ -116,6 +139,7 @@ def get_parser(language: str) -> tuple[Any, Any] | None:
             lang_capsule = mod.language()
         lang_obj = Language(lang_capsule)
         parser = Parser(lang_obj)
+        _LOAD_FAILURES.pop(language, None)
         return parser, lang_obj
     except _LOAD_ERRORS:
         return None
