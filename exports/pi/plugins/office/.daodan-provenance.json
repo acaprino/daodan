@@ -1,0 +1,12 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:eeb3d11f917c560da25d4233ff8617ceae942448997cb05cf5de819765b068f4",
+  "harnessStrategies": {
+    "create-presentation": "parallel-subagents",
+    "workbook": "parallel-subagents"
+  },
+  "host": "pi",
+  "overrides": [],
+  "plugin": "office",
+  "version": "1.0.0"
+}

@@ -1,0 +1,13 @@
+name = "workbook"
+entrypoint = "workbook.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:workbook-result", "artifact:workbook-review"]
+
+[contract]
+inputs = ["workbook-task", "source-material"]
+outcomes = ["workbook-task-completed"]
+artifacts = ["workbook-result", "workbook-review"]
+schemas = []

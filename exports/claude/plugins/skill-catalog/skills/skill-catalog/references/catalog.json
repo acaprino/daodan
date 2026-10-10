@@ -542,6 +542,36 @@
       "version": "1.5.2"
     },
     {
+      "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
+      "dimensions": [],
+      "file": "skills/slidepoise/SKILL.md",
+      "frameworks": [],
+      "id": "office:slidepoise",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "slidepoise",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "1.0.0"
+    },
+    {
+      "description": "Create, edit, inspect and analyze native Excel workbooks with editable formulas, tables, charts and professional formatting. Preserve existing workbook features, verify calculated results with a compatible engine and disclose unsupported fidelity.",
+      "dimensions": [],
+      "file": "skills/xlsx/SKILL.md",
+      "frameworks": [],
+      "id": "office:xlsx",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "xlsx",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "1.0.0"
+    },
+    {
       "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
       "dimensions": [
         "correctness",

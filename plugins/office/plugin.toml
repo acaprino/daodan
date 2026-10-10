@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "office"
+version = "1.0.0"
+description = "Create professional editable PowerPoint presentations through SlidePoise and create, inspect, analyze and modify native Excel workbooks with formulas, tables and charts. Includes runtime discovery and workbook preservation evidence."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute", "network.fetch"]
+optional = []
+
+[dependencies]
+required = []
+
+[components]
+skills = ["slidepoise", "xlsx"]
+roles = []
+workflows = ["create-presentation", "workbook"]
+policies = []

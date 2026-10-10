@@ -1523,6 +1523,35 @@
           }
         ]
       },
+      "office": {
+        "commands": [
+          {
+            "description": "Create or revise a professional editable PowerPoint through SlidePoise, with source-grounded content, visual composition, native reconstruction and rendered review. TRIGGER WHEN: the user requests a PPTX, pitch deck, consulting deck or presentation from documents, research or a workbook.",
+            "file": "commands/create-presentation.md",
+            "name": "office:create-presentation"
+          },
+          {
+            "description": "Create, inspect, analyze or edit a native Excel workbook while preserving its formulas, formatting, tables, charts and other required features. TRIGGER WHEN: the user requests XLSX work, spreadsheet analysis, a model, a tracker, a dashboard or a controlled revision to an existing workbook.",
+            "file": "commands/workbook.md",
+            "name": "office:workbook"
+          }
+        ],
+        "root": "plugins/office",
+        "skills": [
+          {
+            "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
+            "file": "skills/slidepoise/SKILL.md",
+            "id": "office:slidepoise",
+            "name": "slidepoise"
+          },
+          {
+            "description": "Create, edit, inspect and analyze native Excel workbooks with editable formulas, tables, charts and professional formatting. Preserve existing workbook features, verify calculated results with a compatible engine and disclose unsupported fidelity.",
+            "file": "skills/xlsx/SKILL.md",
+            "id": "office:xlsx",
+            "name": "xlsx"
+          }
+        ]
+      },
       "opentelemetry": {
         "agents": [
           {
@@ -4429,5 +4458,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.5.0"
+  "version": "32.7.0"
 }
