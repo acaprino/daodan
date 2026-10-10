@@ -62,6 +62,17 @@ REQUIRED:
 
 ## Verification Requirements
 
+Use the current run's bound `snapshot/manifest.json` and the source-reading
+procedure in `codebase-xray:xray-method`. Structure already recorded comes from
+manifest metadata/outline; semantic verification comes from validated source
+blocks expanded to the definitions and implicit context required by the claim.
+After a verified diff, always obtain the current owned manifest with
+`snapshot.py write --reuse` before block reading, even when normalized claims
+are unchanged or only LF/CRLF bytes differ. Keep supported parent evidence and
+its lineage separate from the current source-byte identity required by the reader.
+Record actual files/ranges read. Neither outline metadata nor the presence of a
+file in the inventory establishes semantic verification or runtime coverage.
+
 | Documentation Type | Required Evidence |
 |-------------------|-------------------|
 | **Enum/State values** | Exact match with source code enum definition |

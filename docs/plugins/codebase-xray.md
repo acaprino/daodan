@@ -12,6 +12,42 @@ Every analysis is an isolated run under `.codebase-xray/runs/<run-id>/` with its
 
 Every run also records the tree it analyzed as `snapshot/manifest.json`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry is `/codebase-xray:analyze` only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. `/codebase-xray:team-analyze` updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-xray/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
 
+## Reading source from a snapshot
+
+`snapshot/manifest.json` is the single structural index for a bound run.
+`snapshot.py write <target> --out <new-manifest> --reuse <previous-manifest>`
+checks current file hashes and root/target plus helper/runtime and effective
+parser identity before reusing unchanged parsed structure. It still walks the
+perimeter and hashes the files; legacy or mismatched identity rebuilds structure.
+Keep the parent snapshot and write the current one into the owned run. Use
+`snapshot.py diff --verify` for analysis changes; its hashes normalize line
+endings. After every such diff, always write or obtain a current owned manifest
+with `snapshot.py write --reuse` before passing it to source readers, even for
+`none` or LF/CRLF-only differences. Parent analysis can remain supported while
+its recorded bytes differ from current source. Returning that analysis without
+source reading does not require a new full run.
+
+Load `codebase-xray:xray-method` for exact `source_reader.py outline` and `read`
+commands. Outline lists metadata to help choose paths and exact qualified
+symbols; it does not validate current source or establish deep reading. Read
+checks the requested file's content and parser identity, then emits selected
+definitions or line ranges with shared file/class context outside function and
+method intervals, plus start/end lines of Java/JavaScript/TypeScript/Rust
+callables to retain globals or fields sharing those boundary lines. Legacy or
+unreliable spans fall back to the whole file, including single-line, overlapping
+or class-boundary spans and long lines.
+Minified or shared-line definitions may also need whole-file fallback despite
+exact end lines, keeping class declarations and static fields on those lines.
+
+The agent chooses symbols from the question and expands to callers, callees,
+invariants, configuration and applicable CSS/markup until the evidence is
+sufficient. Context retained around a block cannot establish that omitted
+function bodies or implicit relationships are irrelevant. A changed or deleted
+source file or changed parser identity requires a current manifest. Record the
+exact run and manifest downstream, and distinguish inventoried files, source
+read in depth and runtime evidence. The feature does not establish model
+latency or installed-host loading.
+
 ## Perimeter
 
 Below its target the X-ray never analyzes what Git ignores, any directory whose name starts with a dot, or dependency and build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). The rule has one owner, `tree_scope.py`, and every script that walks a tree applies it: the snapshot, the cascade scan, the usage search, the comment scan and the documentation review. No script reads more than the snapshot records.
@@ -42,7 +78,7 @@ Context-builder that produces a structured map of a codebase's contracts, invari
 | | |
 |---|---|
 | **Model** | `inherit` |
-| **Tools** | Read, Write, Glob, Grep |
+| **Tools** | Read, Write, Glob, Grep, Bash |
 | **Use for** | Building the structured-facts artifact that downstream reviewers and writers cite instead of paraphrasing code |
 
 **Consumers:**
@@ -65,7 +101,7 @@ Input source differs per pipeline: X-ray output for `team-review`, the consolida
 
 ### `xray-method`
 
-The method itself: structure extraction fused with semantic reading, the concurrent runs model, Phase 0, and the multi-language script suite (Python stdlib-only; optional tree-sitter for Java/JS/TS/Rust fidelity; a stdlib tokenizer for CSS/SCSS/LESS; Python >= 3.10), including `cascade_scan.py`, which lists the stylesheet rules with global reach that can break a screen. Named `analyze` until plugin 3.0.0, when it shared its name with the command and the command shadowed it on any host that lists both under one identifier.
+The method itself: structure extraction fused with semantic reading, the concurrent runs model, Phase 0, and the multi-language script suite (Python stdlib-only; optional tree-sitter for Java/JS/TS/Rust fidelity; a stdlib tokenizer for CSS/SCSS/LESS; Python >= 3.10), including `source_reader.py` for validated source blocks and `cascade_scan.py`, which lists the stylesheet rules with global reach that can break a screen. Named `analyze` until plugin 3.0.0, when it shared its name with the command and the command shadowed it on any host that lists both under one identifier.
 
 | | |
 |---|---|
@@ -106,7 +142,7 @@ The method itself: structure extraction fused with semantic reading, the concurr
 
 #### Incremental updates
 
-The first X-ray of a target is always a full run, and it writes the snapshot that makes the next one cheap. Every later invocation on the same target starts by finding the last completed classic run for it and diffing that run's snapshot against the current worktree. The diff is mechanical and spends no model tokens: size and mtime decide an unchanged file without reading it, a hash settles anything that moved, and a changed symbol is found by comparing the hash of its body. The scope checkpoint then shows the result before anything is read:
+The first X-ray of a target is always a full run, and it writes the snapshot that makes the next one cheap. Every later invocation on the same target starts by finding the last completed classic run for it and diffing that run's snapshot against the current worktree. The diff is mechanical and spends no model tokens: its default content check trusts equal size and mtime, while `--verify` hashes every file and is required for evidence freshness. Parser identity changes invalidate cached structure. A changed symbol is found by comparing the hash of its definition. The scope checkpoint then shows the result before semantic reading:
 
 ```
 X-ray target: src
@@ -114,11 +150,11 @@ Run: src-20260904-101500   parent: src-20260901-101200 (d5a11cef, 3 days ago)
 Since parent: 2 modified, 1 added, 0 removed files; 3 symbols changed, 1 added, 0 removed
 Blast radius: 2 importing files
 Affected claims: 11 (03-flows: 5, 02-interfaces: 4, 05-risks: 2)
-Files to read: 5 of 41
+Files affected: 5 of 41
 Not analyzed: 1 dot directories (src/.storybook), 3 paths Git ignores (ignore rules: applied)
 
-1. Incremental update from src-20260901-101200 (reads 5 files)
-2. Full analysis (reads 41 files)
+1. Incremental update from src-20260901-101200 (5 affected files)
+2. Full analysis (41 inventoried files; source reading follows the claims)
 3. Cancel
 ```
 
@@ -172,7 +208,7 @@ Resume-safe: re-running against an in-progress run in `runs.json` re-spawns only
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `5.2.0`. **Source:** [plugin.toml](<../../plugins/codebase-xray/plugin.toml>).
+**Version:** `5.3.0`. **Source:** [plugin.toml](<../../plugins/codebase-xray/plugin.toml>).
 
 ### Required dependencies
 

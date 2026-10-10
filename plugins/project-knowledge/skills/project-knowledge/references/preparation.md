@@ -16,6 +16,19 @@
    recorded target, depth and completed state, and compare its snapshot with the
    relevant current inputs. A latest mirror is not a substitute for that binding.
    Stale or incomplete evidence cannot authorize a factual correction.
+   Follow the named owner's source-reading commands; do not resolve its helpers
+   through this plugin's package root. Use `snapshot.py diff --verify` to check
+   analysis changes with normalized line endings. After every such diff, always
+   write or obtain a current manifest in the owned run using
+   `snapshot.py write --reuse <previous-manifest>` before passing it to source
+   readers, including `none` or LF/CRLF-only differences. Supported parent claims
+   do not establish current source bytes. Preserve the parent snapshot and its
+   evidence lineage, and pass the exact current
+   `snapshot/manifest.json` to workers. Select symbols from its outline, read
+   validated blocks, and expand to callers, callees, invariants, configuration
+   and CSS/markup pertinent to each claim. An outline is discovery metadata;
+   retained file/class context is not proof that omitted bodies are irrelevant.
+   Record files/ranges actually read separately from inventory and runtime evidence.
 4. Profile the audience from supplied intent and observable project signals.
    Record inference/confidence rather than inventing rationale. Ask only for an
    unresolved choice that materially changes the deliverable and cannot be derived.

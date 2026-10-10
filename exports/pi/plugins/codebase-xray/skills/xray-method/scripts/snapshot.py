@@ -12,8 +12,8 @@ it.
 Subcommands:
     scope <target>
         Count what a run would analyze and name what its perimeter leaves out. Parses nothing.
-    write <target> --out <manifest.json>
-        Write a structural snapshot of a target tree.
+    write <target> --out <manifest.json> [--reuse <previous.json>]
+        Write a structural snapshot; reuse parses only after checking file bytes.
     diff <parent_run> <target> --out <run_dir>
         Diff a parent run's snapshot against the worktree; write changes.json/changes.md.
     carry <parent_run> <run_dir>
@@ -27,14 +27,17 @@ Standard library only. Parsing reuses the adapters in ./languages/.
 from __future__ import annotations
 
 import argparse
+import copy
 import fnmatch
 import hashlib
+from importlib import metadata
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterator
 
@@ -42,8 +45,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from ast_parser import parse_file  # noqa: E402
-from languages import SUPPORTED_EXTENSIONS  # noqa: E402
+from languages import SUPPORTED_EXTENSIONS, detect_language, get_adapter  # noqa: E402
 from tree_scope import Perimeter  # noqa: E402
 
 __all__ = [
@@ -61,6 +63,8 @@ __all__ = [
     "hash_text",
     "is_forbidden",
     "iter_files",
+    "parser_fingerprint",
+    "parser_profile",
     "read_text",
     "recommend",
     "renumber_line",
@@ -129,6 +133,8 @@ def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Pat
             if is_forbidden(name):
                 continue
             path = directory / name
+            if target.is_file() and path != target:
+                continue
             suffix = path.suffix.lower()
             if (
                 suffix not in SUPPORTED_EXTENSIONS
@@ -155,16 +161,67 @@ def repo_root(target: Path) -> Path:
     The base every manifest path is relative to: the git top level when the
     target is inside a repository, otherwise the target itself.
     """
+    base = target.parent if target.is_file() else target
     try:
         proc = subprocess.run(
-            ["git", "-C", str(target), "rev-parse", "--show-toplevel"],
+            ["git", "-C", str(base), "rev-parse", "--show-toplevel"],
             capture_output=True, text=True, timeout=10,
         )
     except (OSError, subprocess.SubprocessError):
-        return target
+        return base
     if proc.returncode != 0 or not proc.stdout.strip():
-        return target
+        return base
     return Path(proc.stdout.strip())
+
+
+def parser_fingerprint() -> str:
+    """Identity of the structural helpers and installed parser versions.
+
+    Compute once per snapshot or read batch. Start a fresh process after updating
+    helper code; this fingerprint does not reload already imported Python modules.
+    Grammar availability is checked separately by parser_profile.
+    """
+    digest = hashlib.sha256()
+    helpers = [SCRIPT_DIR / name for name in
+               ("snapshot.py", "ast_parser.py", "tree_scope.py", "source_reader.py")]
+    helpers += sorted((SCRIPT_DIR / "languages").rglob("*.py"))
+    for helper in helpers:
+        if helper.is_file():
+            digest.update(helper.relative_to(SCRIPT_DIR).as_posix().encode("utf-8") + b"\0")
+            digest.update(helper.read_bytes())
+            digest.update(b"\0")
+    packages = ("tree-sitter", "tree-sitter-language-pack", "tree-sitter-java",
+                "tree-sitter-javascript", "tree-sitter-typescript", "tree-sitter-rust")
+    versions = {}
+    for package in packages:
+        try:
+            versions[package] = metadata.version(package)
+        except metadata.PackageNotFoundError:
+            versions[package] = None
+    digest.update(json.dumps({"python": list(sys.version_info[:3]), "packages": versions},
+                             sort_keys=True).encode("utf-8"))
+    return digest.hexdigest()
+
+
+def parser_profile(path: Path, language: str | None = None) -> dict:
+    """Effective backend for this file, without reading its source bytes."""
+    language = language or SUPPORTED_EXTENSIONS.get(path.suffix.lower())
+    if language in {"java", "javascript", "typescript", "rust"}:
+        from languages._treesitter import get_parser
+        grammar = "tsx" if path.suffix.lower() == ".tsx" else language
+        loaded = get_parser(grammar)
+        profile = {"language": language, "backend": "tree-sitter" if loaded else "regex-fallback",
+                   "grammar": grammar}
+        if loaded:
+            lang = loaded[1]
+            for attribute in ("abi_version", "semantic_version"):
+                value = getattr(lang, attribute, None)
+                if value is not None:
+                    profile[attribute] = list(value) if isinstance(value, tuple) else value
+        return profile
+    return {"language": language, "backend": {
+        "python": "stdlib-ast", "css": "stylesheet", "sql": "regex", "plsql": "regex",
+    }.get(language, "file-level")}
 
 
 def git_info(root: Path) -> dict | None:
@@ -214,6 +271,7 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
     top.sort(key=lambda item: (item["start"], item["name"]))
 
     for index, item in enumerate(top):
+        item["precision"] = "exact" if item["end"] else "inferred"
         if not item["end"]:
             following = top[index + 1]["start"] - 1 if index + 1 < len(top) else total
             item["end"] = following
@@ -231,7 +289,9 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
             hashes[key] = hash_text("\n".join(lines[start - 1:end]))
         return hashes[key]
 
-    def record(name: str, kind: str, start: int, end: int) -> None:
+    def record(name: str, kind: str, start: int, end: int, precision: str) -> None:
+        if not (1 <= start <= end <= total):
+            precision = "inferred"
         start = max(1, min(start, total))
         end = max(start, min(end, total))
         # A class carrying two methods of the same name (an overload) would
@@ -245,49 +305,79 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
         if existing is not None:
             start = min(start, existing["start"])
             end = max(end, existing["end"])
+            precision = "merged"
         spans[name] = {
             "kind": kind,
             "start": start,
             "end": end,
             "hash": span_hash(start, end),
+            "span_precision": precision,
         }
 
     for item in top:
-        record(item["name"], item["kind"], item["start"], item["end"])
+        record(item["name"], item["kind"], item["start"], item["end"], item["precision"])
         methods = sorted(
             (m for m in item["methods"] if m.line_number > 0),
             key=lambda m: m.line_number,
         )
         for index, method in enumerate(methods):
             end = getattr(method, "end_line", None)
+            precision = "exact" if end else "inferred"
             if not end:
                 end = methods[index + 1].line_number - 1 if index + 1 < len(methods) else item["end"]
-            record(f"{item['name']}.{method.name}", "method", method.line_number, end)
+            record(f"{item['name']}.{method.name}", "method", method.line_number, end, precision)
     return spans
 
 
-def file_entry(path: Path) -> dict:
-    """One manifest row: identity, then structure when the file is parseable."""
+def file_entry(path: Path, data: bytes | None = None) -> dict:
+    """One manifest row, parsed from the same bytes whose identity it records."""
     stat = path.stat()
-    text = read_text(path)
+    data = path.read_bytes() if data is None else data
+    text = data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
     lines = text.split("\n")
+    language = detect_language(path, text)
+    profile = parser_profile(path, language)
     entry = {
-        "size": stat.st_size,
+        "size": len(data),
         "mtime": round(stat.st_mtime, 3),
         "hash": hash_text(text),
-        "language": None,
+        "raw_hash": hashlib.sha256(data).hexdigest(),
+        "language": language,
         "lines": len(lines),
         "symbols": {},
         "imports": [],
+        "parser_profile": profile,
+        "parser_notes": [],
+        "status": "file-level",
     }
-    if SUPPORTED_EXTENSIONS.get(path.suffix.lower()) and stat.st_size <= MAX_PARSE_BYTES:
+    if language and len(data) > MAX_PARSE_BYTES:
+        entry["status"] = "parse-skipped"
+        entry["parser_notes"] = ["source exceeds parsing size limit"]
+    elif language:
         try:
-            result = parse_file(path)
-        except Exception:  # a parser failure degrades to a file-level entry
+            data.decode("utf-8")  # Lossy decoding cannot supply precise source spans.
+            result = get_adapter(language).parse(text, str(path))
+        except Exception as exc:  # a parser failure degrades to a file-level entry
+            entry["status"] = "parse-error"
+            entry["parser_notes"] = [f"{type(exc).__name__}: {exc}"]
             return entry
         entry["language"] = result.language
+        entry["parser_notes"] = list(result.notes)
+        if any(note.startswith("syntax error:") for note in result.notes):
+            entry["status"] = "parse-error"
+            return entry
+        entry["status"] = "parsed"
+        # A loaded grammar can fail on this particular source and fall back.
+        # Retain the availability profile for freshness checks, but do not cache
+        # this result as a successful native parse. The reader returns it in full.
+        if profile["backend"] == "tree-sitter" and not any(
+            note.startswith("parser=tree-sitter") for note in result.notes
+        ):
+            entry["status"] = "parse-error"
         entry["imports"] = sorted({i.module for i in result.imports if i.is_internal and i.module})
         if result.language == "css" and max((len(text) for text in lines), default=0) > MAX_STYLESHEET_LINE:
+            entry["status"] = "file-level"
+            entry["parser_notes"].append("minified stylesheet; precise rule selection disabled")
             return entry
         entry["symbols"] = symbol_spans(result, lines)
     return entry
@@ -317,27 +407,65 @@ def scope_record(perimeter: Perimeter, root: Path) -> dict:
     }
 
 
-def build_manifest(target: Path) -> dict:
-    """The structural record of the tree a run analyzed."""
+def build_manifest(target: Path, previous: dict | None = None) -> dict:
+    """Snapshot the current perimeter; reuse structure only for verified bytes.
+
+    A reuse candidate saves parsing, not inventory traversal or hashing. Legacy
+    manifests and a different helper identity/root/target cause a fresh parse.
+    """
+    if previous is not None:
+        validate_reuse_manifest(previous)
     target = target.resolve()
+    if not (target.is_dir() or target.is_file()):
+        raise ValueError(f"snapshot target does not exist: {target}")
     root = repo_root(target).resolve()
     files: dict[str, dict] = {}
+    fingerprint = parser_fingerprint()
+    target_key = relative_to_root(target, root) or "."
+    reusable = (
+        isinstance(previous, dict) and previous.get("schema") == SCHEMA
+        and previous.get("root") == root.as_posix() and previous.get("target") == target_key
+        and previous.get("parser_fingerprint") == fingerprint
+    )
+    old_files = previous.get("files", {}) if reusable else {}
+    metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
     perimeter = Perimeter(target)
     for path in iter_files(target, perimeter):
         try:
             if path.stat().st_size > MAX_FILE_BYTES:
                 continue
-            files[relative_to_root(path, root)] = file_entry(path)
+            data = path.read_bytes()
+            metrics["files_read"] += 1
+            metrics["source_bytes_read"] += len(data)
+            if len(data) > MAX_FILE_BYTES:
+                continue
+            rel = relative_to_root(path, root)
+            old = old_files.get(rel)
+            raw_hash = hashlib.sha256(data).hexdigest()
+            if (isinstance(old, dict) and old.get("raw_hash") == raw_hash
+                    and old.get("parser_profile") == parser_profile(path, old.get("language"))
+                    and old.get("status") in {"parsed", "file-level", "parse-skipped"}):
+                entry = copy.deepcopy(old)
+                entry["size"] = len(data)
+                entry["mtime"] = round(path.stat().st_mtime, 3)
+                metrics["cache_hits"] += 1
+            else:
+                entry = file_entry(path, data)
+                if entry["status"] in {"parsed", "parse-error"}:
+                    metrics["parsed_files"] += 1
+            files[rel] = entry
         except OSError:
             continue
     from datetime import datetime, timezone
     return {
         "schema": SCHEMA,
-        "target": relative_to_root(target, root) or ".",
+        "target": target_key,
         "root": root.as_posix(),
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "git": git_info(root),
         "scope": scope_record(perimeter, root),
+        "parser_fingerprint": fingerprint,
+        "metrics": metrics,
         "files": files,
     }
 
@@ -353,6 +481,7 @@ def compare_files(manifest: dict, target: Path, verify: bool = False) -> dict:
     target = target.resolve()
     root = repo_root(target).resolve()
     old = manifest.get("files", {})
+    structural_refresh = manifest.get("parser_fingerprint") != parser_fingerprint()
     current: dict[str, Path] = {}
     for path in iter_files(target):
         try:
@@ -372,6 +501,9 @@ def compare_files(manifest: dict, target: Path, verify: bool = False) -> dict:
             stat = path.stat()
         except OSError:
             removed.append(rel)
+            continue
+        if structural_refresh or entry.get("parser_profile") != parser_profile(path, entry.get("language")):
+            modified.append(rel)
             continue
         if not verify and stat.st_size == entry.get("size") and round(stat.st_mtime, 3) == entry.get("mtime"):
             unchanged.append(rel)
@@ -883,6 +1015,12 @@ def cmd_diff(args: argparse.Namespace) -> int:
         manifest = {"files": {}, "target": None, "created_at": None}
     if parent_state.get("status") not in (None, "complete"):
         reasons.append(f"parent run status is {parent_state.get('status')}")
+    if manifest.get("parser_fingerprint") != parser_fingerprint():
+        reasons.append("parser identity changed or is missing; refresh the structural snapshot")
+    target_resolved = target.resolve()
+    root = repo_root(target_resolved).resolve()
+    if manifest.get("root") != root.as_posix() or manifest.get("target") != relative_to_root(target_resolved, root):
+        reasons.append("snapshot root or target differs from this run")
     if args.flags:
         try:
             requested = json.loads(args.flags)
@@ -1140,11 +1278,76 @@ def cmd_scope(args: argparse.Namespace) -> int:
     return 0
 
 
+def validate_reuse_manifest(manifest: object) -> None:
+    """Reject malformed stored structure before it can replace a valid output."""
+    if (not isinstance(manifest, dict) or type(manifest.get("schema")) is not int or manifest["schema"] != SCHEMA
+            or not isinstance(manifest.get("files"), dict)
+            or not isinstance(manifest.get("root"), str)
+            or not isinstance(manifest.get("target"), str)):
+        raise ValueError("expected a snapshot object with schema, root, target and files")
+    if "parser_fingerprint" in manifest and not isinstance(manifest["parser_fingerprint"], str):
+        raise ValueError("invalid cached parser fingerprint")
+    for rel, entry in manifest["files"].items():
+        if (not isinstance(rel, str) or not isinstance(entry, dict)
+                or type(entry.get("size")) is not int or entry["size"] < 0
+                or type(entry.get("mtime")) not in (int, float)
+                or not isinstance(entry.get("hash"), str)
+                or type(entry.get("lines")) is not int or entry["lines"] < 1
+                or not isinstance(entry.get("symbols"), dict)
+                or not isinstance(entry.get("imports"), list)
+                or any(not isinstance(value, str) for value in entry["imports"])
+                or entry.get("language") is not None and not isinstance(entry["language"], str)):
+            raise ValueError(f"invalid cached file metadata: {rel}")
+        for name, symbol in entry["symbols"].items():
+            if (not isinstance(name, str) or not isinstance(symbol, dict)
+                    or not isinstance(symbol.get("kind"), str)
+                    or not isinstance(symbol.get("hash"), str)
+                    or type(symbol.get("start")) is not int or type(symbol.get("end")) is not int
+                    or not 1 <= symbol["start"] <= symbol["end"] <= entry["lines"]
+                    or "span_precision" in symbol and (
+                        not isinstance(symbol["span_precision"], str)
+                        or symbol["span_precision"] not in {"exact", "inferred", "merged"})):
+                raise ValueError(f"invalid cached symbol metadata: {rel}:{name}")
+        if "raw_hash" in entry and (not isinstance(entry["raw_hash"], str)
+                                    or not re.fullmatch(r"[0-9a-f]{64}", entry["raw_hash"])):
+            raise ValueError(f"invalid cached raw hash: {rel}")
+        if "parser_profile" in entry and not isinstance(entry["parser_profile"], dict):
+            raise ValueError(f"invalid cached parser profile: {rel}")
+        if "parser_notes" in entry and (not isinstance(entry["parser_notes"], list)
+                                       or any(not isinstance(note, str) for note in entry["parser_notes"])):
+            raise ValueError(f"invalid cached parser notes: {rel}")
+        if "status" in entry and (not isinstance(entry["status"], str)
+                                 or entry["status"] not in {"parsed", "file-level", "parse-error", "parse-skipped"}):
+            raise ValueError(f"invalid cached parser status: {rel}")
+
+
 def cmd_write(args: argparse.Namespace) -> int:
-    manifest = build_manifest(Path(args.target))
+    previous = None
+    if args.reuse:
+        try:
+            previous = json.loads(Path(args.reuse).read_text(encoding="utf-8"))
+            if not isinstance(previous, dict):
+                raise ValueError("reuse manifest must be a JSON object")
+        except (OSError, ValueError) as exc:
+            print(f"snapshot: cannot reuse manifest: {exc}", file=sys.stderr)
+            return 2
+    try:
+        manifest = build_manifest(Path(args.target), previous)
+    except (OSError, ValueError) as exc:
+        print(f"snapshot: cannot build manifest: {exc}", file=sys.stderr)
+        return 2
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
+                                         dir=out.parent, prefix=f".{out.name}.", delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+        os.replace(temporary, out)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     print(f"snapshot: {len(manifest['files'])} files -> {out}")
     return 0
 
@@ -1160,6 +1363,7 @@ def main(argv: list[str] | None = None) -> int:
     write_parser = sub.add_parser("write", help="write a manifest for a target tree")
     write_parser.add_argument("target")
     write_parser.add_argument("--out", required=True)
+    write_parser.add_argument("--reuse", help="prior manifest; verify every file before reusing its parse")
     write_parser.set_defaults(func=cmd_write)
 
     diff_parser = sub.add_parser("diff", help="diff a parent run's snapshot against the worktree")

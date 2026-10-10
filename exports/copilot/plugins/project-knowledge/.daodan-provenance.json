@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:8bcf1e5335ff6ee316fc720cd913dca59924da6cc5209fdd1929c105f059a805",
+  "coreDigest": "sha256:8ff36e56ed91e9374698d325168233a7535b8b2d4c269c3de66a67bcc245ae1d",
   "harnessStrategies": {
     "guide": "parallel-subagents",
     "instructions": "parallel-subagents",
@@ -10,5 +10,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "project-knowledge",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }

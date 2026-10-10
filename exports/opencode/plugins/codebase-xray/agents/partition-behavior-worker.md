@@ -41,6 +41,7 @@ You execute Phase 3 (Flow Tracing) and Phase 4 (Semantic Understanding) of X-ray
 The spawn prompt gives you:
 - `partition_name`, `partition_path`, `active_flags` (you respect `critical`)
 - `run_dir`: the run directory for this analysis (e.g. `.codebase-xray/runs/<run-id>`)
+- `source_manifest`: derived by default as `<run_dir>/snapshot/manifest.json`, bound to the current run's root and whole target; a prompt alias, not a new state field; read-only for workers
 - Implicit: all `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` already exist (Wave 1 barrier has closed)
 
 ## OWNERSHIP CONTRACT
@@ -51,6 +52,7 @@ You write ONLY:
 
 You read freely from:
 - `partition_path` (source code in your partition)
+- Other inventoried source required to trace a boundary, invariant, configuration or effective style cascade
 - `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` (all partitions)
 
 You DO NOT touch any other file under `.codebase-xray/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
@@ -64,6 +66,18 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 (Same rule as `partition-structure-worker`: nothing Git ignores, nothing under a dot directory, no dependency or build output. Scripts apply it; reading by hand follows it.)
 
 ## CROSS-PARTITION CITATION CONTRACT
+
+Load `codebase-xray:xray-method` for the bound-snapshot source-reading procedure.
+Use `source_reader.py outline` on `source_manifest` to locate exact symbols from
+the Wave 1 leads, then `source_reader.py read` for their implementations. Expand
+to callers, callees, validators, constants, types, configuration and relevant
+CSS/markup until each flow or contract is supported. Keep `ast_parser.py` for
+extra structural details absent from the manifest or single-file diagnosis.
+Neither import neighbours nor retained file/class context define the complete
+semantic boundary. Read full files when necessary; do not read every file merely
+because it belongs to the partition. A changed/deleted source or parser mismatch
+requires the orchestrator to refresh the shared manifest. Source required outside
+its target is an explicit scope gap.
 
 When you encounter an outgoing call/import in your partition that resolves to another partition, cite it as `<other-partition>::<symbol>` instead of `external`. Use the cross-partition imports already documented in `01-structure.md` to disambiguate.
 
@@ -166,6 +180,10 @@ ADRs that depend on cross-partition behavior (e.g. "API never calls DB directly,
 ```
 
 ## COMPLETION
+
+Include `## Source reading` in each owned file: exact manifest path, files/ranges
+examined, parser/fallback diagnostics and remaining gaps. Keep inventory, deep
+source reading and runtime evidence distinct; outline metadata is not deep reading.
 
 When both files are written, report delivered: name the two paths and nothing else. If you could not write them, report failed with the reason.
 

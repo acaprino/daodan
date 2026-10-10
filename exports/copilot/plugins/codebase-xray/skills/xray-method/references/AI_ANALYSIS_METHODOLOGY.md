@@ -412,18 +412,36 @@ As analysis progresses through the codebase:
 
 The mechanical scripts support AI analysis:
 
-| Script | Provides | Claude Adds |
+| Script | Provides | Semantic Reading Adds |
 |--------|----------|-------------|
+| `snapshot.py write --reuse` | Current inventory and verified reuse of unchanged structure | Which questions require source evidence |
+| `source_reader.py outline` | Bounded symbol/path metadata from the run manifest | Autonomous selection of relevant definitions |
+| `source_reader.py read` | Validated source blocks and shared file/class context | Contracts, invariants and behavior supported by those blocks |
 | `classifier.py` | Complexity metrics | Semantic complexity assessment |
-| `ast_parser.py` | Structure extraction | Behavioral understanding |
+| `ast_parser.py` | Extra structural details absent from the manifest or single-file diagnosis | Interpretation checked against source |
 | `usage_finder.py` | Where symbols are used | Why they're used there |
 | `doc_review.py` | Documentation health | Documentation accuracy |
 
 **Workflow:**
-1. Run scripts to get structural overview
-2. Use Claude to analyze semantics
-3. Cross-reference script output with Claude insights
-4. Produce final documentation combining both
+1. Load `codebase-xray:xray-method` and bind the exact current run's
+   `snapshot/manifest.json`. After every verified diff, the coordinator always
+   writes or obtains this current owned manifest with `snapshot.py write --reuse`
+   before block reading, even for `none` or LF/CRLF-only differences. Diff's
+   normalized claims and the reader's exact source bytes have separate identity
+   requirements. Readers preserve the current manifest and parent evidence lineage.
+2. Use its inventory/import metadata and `source_reader.py outline` for structure
+   already available. Narrow truncated outlines and select exact symbols from
+   the source question; this step is metadata, not source read in depth.
+3. Use `source_reader.py read` for selected implementations, then expand to
+   callers/callees, gates, constants, types, invariants, configuration and relevant
+   CSS/markup until the claim is supported. Retained context and import neighbours
+   do not define semantic completeness. Read full files when the question needs it.
+4. Run additional single-file parsing or diagnostic scripts only for required
+   details absent from the manifest. Keep whole-scope cascade scanning for entry
+   paths; source blocks verify its candidate relationships.
+5. Produce claims with source citations and actual files/ranges examined,
+   diagnostics and gaps. Distinguish inventory, deep source reading and runtime
+   evidence. No obligation to read every file comes from the inventory.
 
 ---
 

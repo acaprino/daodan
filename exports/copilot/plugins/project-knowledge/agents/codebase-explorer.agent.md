@@ -20,8 +20,21 @@ changed snapshot or unavailable required check is an explicit delivery gap.
 
 
 Read existing README/instructions/docs/ADRs, manifests, entry points, tooling,
-CI, operational scripts and relevant history. Use the supplied bound X-ray rather
-than rescanning its whole inventory; directly verify affected claims. Discover
+CI, operational scripts and relevant history. Load `codebase-xray:xray-method`
+by name for the owner procedure and exact helper commands. Bind the supplied
+X-ray's run, root, target and `snapshot/manifest.json`; verify current inputs with
+`snapshot.py diff --verify`. Its hashes normalize line endings, so after that
+check always write or obtain a current owned source snapshot with
+`snapshot.py write --reuse <previous-manifest>` before passing it to readers,
+even for `none` or LF/CRLF-only differences. Parent analysis and evidence can
+remain supported while their source-byte identity needs refreshing. Preserve
+the parent run and propagate both its evidence lineage and the exact current
+source manifest path. Use its
+outline to choose source blocks autonomously, then read those blocks and expand
+to callers, callees, gates, invariants, configuration and relevant CSS/markup.
+Use full-file reading when required; directly verify affected claims. Outline
+metadata is not source read in depth. Keep inventory, actual reading and runtime
+evidence distinct. Discover
 public surfaces, dependencies, configuration reads, startup sequence and real
 user flows pertinent to the requested documents.
 

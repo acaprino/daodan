@@ -17,6 +17,7 @@ You execute Phase 5 (Pattern & Risk Detection) and Phase 6 (Documentation Health
 The spawn prompt gives you:
 - `partition_name`, `partition_path`, `active_flags` (you respect `comments` and `depth`)
 - `run_dir`: the run directory for this analysis (e.g. `.codebase-xray/runs/<run-id>`)
+- `source_manifest`: derived by default as `<run_dir>/snapshot/manifest.json`, bound to the current run's root and whole target; a prompt alias, not a new state field; read-only for workers
 - Implicit: all `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` already exist
 
 ## DEPTH HANDLING
@@ -29,7 +30,9 @@ You write ONLY:
 - `<run_dir>/partitions/<partition_name>/05-risks.md`
 - `<run_dir>/partitions/<partition_name>/06-documentation.md` (full depth only)
 
-You read freely from `partition_path` and `<run_dir>/partitions/*/01-structure.md` + `02-interfaces.md`.
+You read freely from `partition_path`, other inventoried source needed for a
+cross-partition risk or style cascade, and `<run_dir>/partitions/*/01-structure.md`
++ `02-interfaces.md`.
 
 You DO NOT touch any other file under `.codebase-xray/` (other runs may be in progress concurrently). You DO NOT update `<run_dir>/state.json`.
 
@@ -44,16 +47,22 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 ## TOOL USAGE
 
 Use the scripts in `${PLUGIN_ROOT}/skills/xray-method/scripts/`:
+- Load `codebase-xray:xray-method` for exact commands. Start from `source_manifest` and Wave 1 leads; use `source_reader.py outline` to choose exact definitions and `source_reader.py read` to verify risk/documentation claims. Expand to gates, callers/callees, invariants, constants, types, configuration and CSS/markup as the question requires. Keep `ast_parser.py` for extra details absent from the manifest or single-file diagnosis. Do not reparse or deeply read the entire partition for inventory alone
 - `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, for the usability-blocking check: a global rule meets its victim wherever the victim's stylesheet or markup lives. It lists every rule whose selector reaches the document root or its untargeted children and sets a layout property, with the rules and Tailwind utilities it can override, screen-level ones first. Keep the candidates and conflicts with at least one side in this partition, and record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`. Leads, never verdicts
 - `usage_finder.py` to trace symbol usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
 - `doc_review.py` for link validation and marker checks in `06-documentation.md` work
 - `rewrite_comments.py` for comment quality analysis if `active_flags.comments` is true
 
 Do NOT use raw bash to do these jobs.
+If source content or parser identity changed, report the required refresh to the
+orchestrator; workers do not rewrite the shared manifest. File/class context and
+import neighbours do not establish semantic completeness. A required source
+outside the manifest target is an explicit scope gap.
 
 ## PHASE 5: Pattern & Risk Detection
 
-Scan the partition for:
+Investigate the partition using current metadata, artifact leads, the scans
+below and verified source blocks for:
 - **Anti-patterns:** God objects, spaghetti code, shotgun surgery, feature envy
 - **Red flags:** Swallowed exceptions, hardcoded credentials (note presence only, never quote), race conditions, N+1 queries
 - **Usability-blocking:** an entry-gating path (from this partition's `03-flows.md` when it exists, otherwise identified here from its `01-structure.md` entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Start from `cascade_scan.py`: each candidate reaches the root or its untargeted children and sets a property that decides layout, and each conflict names a rule it can beat. Confirm every candidate against the component tree: does its selector match the entry screen's element, and is its scope class applied there (`usage_finder.py`). A confirmed override of a fixed or scrollable entry screen is Critical. Static evidence only; nothing here was exercised
@@ -111,6 +120,11 @@ Evaluate existing documentation in the partition against code reality:
 ```
 
 ## COMPLETION
+
+Include `## Source reading` in each owned file: exact manifest path, files/ranges
+examined, parser/fallback diagnostics and remaining gaps. Inventory and outline
+metadata do not count as deep reading. Runtime coverage remains none unless the
+user supplied evidence; inventory alone never obliges reading every file.
 
 When your owned files are written, report delivered: name their paths and nothing else. If you could not write them, report failed with the reason.
 

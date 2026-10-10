@@ -5,6 +5,7 @@ if the diff misses a changed symbol, a stale claim ships. Every case here
 pins one property that mechanical layer must have.
 """
 
+import copy
 import json
 import os
 import shutil
@@ -14,6 +15,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO_ROOT / "plugins/codebase-xray/skills/xray-method/scripts"
@@ -240,6 +242,198 @@ class ManifestTests(unittest.TestCase):
         write(self.src, rel, content)
         files = self.manifest()["files"]
         return next(v for k, v in files.items() if k.endswith(rel))
+
+
+class ParseReuseTests(unittest.TestCase):
+    """Content-checked parse reuse at the public language-adapter boundary.
+
+    Parser counts protect the purpose of reuse; file hashes and real symbol
+    output protect correctness. Neither assertion depends on elapsed time.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="xray-reuse-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.src = self.tmp / "src"
+        self.first = write(self.src, "first.py", "def first():\n    return 7\n")
+        self.second = write(self.src, "second.py", "def second():\n    return 9\n")
+        self.first.write_bytes(b"def first():\n    return 7\n")
+        self.second.write_bytes(b"def second():\n    return 9\n")
+        import snapshot
+        from languages import get_adapter
+        self.snapshot = snapshot
+        self.adapter = get_adapter("python")
+        self.previous = snapshot.build_manifest(self.src)
+        self.first_key = next(key for key in self.previous["files"] if key.endswith("first.py"))
+        self.second_key = next(key for key in self.previous["files"] if key.endswith("second.py"))
+
+    def test_unchanged_sources_reuse_real_structure_without_calling_the_parser(self):
+        before = copy.deepcopy(self.previous)
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            reused = self.snapshot.build_manifest(self.src, previous=self.previous)
+
+        self.assertEqual(parser.call_count, 0)
+        self.assertEqual(reused["files"], before["files"])
+        self.assertEqual(self.previous, before)
+        self.assertEqual(reused["metrics"]["parsed_files"], 0)
+        self.assertEqual(reused["metrics"]["cache_hits"], 2)
+        self.assertEqual(reused["metrics"]["files_read"], 2)
+        self.assertEqual(reused["metrics"]["source_bytes_read"], 53)
+        reused["files"][self.first_key]["symbols"]["first"]["start"] = 999
+        self.assertEqual(self.previous["files"][self.first_key]["symbols"]["first"]["start"], 1)
+
+    def test_touch_changes_metadata_without_reparsing_unchanged_content(self):
+        initial = self.first.stat()
+        os.utime(self.first, ns=(initial.st_atime_ns, initial.st_mtime_ns + 2_000_000_000))
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            reused = self.snapshot.build_manifest(self.src, previous=self.previous)
+
+        self.assertEqual(parser.call_count, 0)
+        self.assertNotEqual(reused["files"][self.first_key]["mtime"], self.previous["files"][self.first_key]["mtime"])
+        self.assertEqual(reused["files"][self.first_key]["symbols"], self.previous["files"][self.first_key]["symbols"])
+
+    def test_same_size_and_timestamp_edit_reparses_only_the_changed_file(self):
+        initial = self.first.stat()
+        self.first.write_text("def first():\n    return 8\n", encoding="utf-8", newline="")
+        os.utime(self.first, ns=(initial.st_atime_ns, initial.st_mtime_ns))
+        self.assertEqual(self.first.stat().st_size, initial.st_size)
+        self.assertEqual(self.first.stat().st_mtime_ns, initial.st_mtime_ns)
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+        rebuilt = self.snapshot.build_manifest(self.src)
+
+        self.assertEqual(parser.call_count, 1)
+        self.assertEqual(updated["files"], rebuilt["files"])
+        self.assertNotEqual(updated["files"][self.first_key]["symbols"]["first"]["hash"], self.previous["files"][self.first_key]["symbols"]["first"]["hash"])
+        self.assertEqual(updated["files"][self.second_key], self.previous["files"][self.second_key])
+
+    def test_deleted_file_is_removed_while_the_remaining_structure_is_reused(self):
+        self.first.unlink()
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+
+        self.assertEqual(parser.call_count, 0)
+        self.assertNotIn(self.first_key, updated["files"])
+        self.assertEqual(updated["files"][self.second_key], self.previous["files"][self.second_key])
+
+    def test_different_parser_fingerprint_reparses_all_sources(self):
+        self.previous["parser_fingerprint"] = "sha256:different-parser-code"
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+
+        self.assertEqual(parser.call_count, 2)
+        self.assertEqual(updated["files"][self.first_key]["symbols"]["first"]["start"], 1)
+        self.assertEqual(updated["metrics"]["cache_hits"], 0)
+
+    def test_changed_backend_profile_reparses_the_affected_source(self):
+        entry = self.previous["files"][self.first_key]
+        entry["parser_profile"] = {**entry["parser_profile"], "backend": "different-backend"}
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+
+        self.assertEqual(parser.call_count, 1)
+        self.assertEqual(updated["files"][self.second_key], self.previous["files"][self.second_key])
+        self.assertNotEqual(updated["files"][self.first_key]["parser_profile"], entry["parser_profile"])
+
+    def test_legacy_manifest_is_reparsed_instead_of_trusted_for_reuse(self):
+        self.previous.pop("parser_fingerprint")
+        for entry in self.previous["files"].values():
+            entry.pop("raw_hash")
+            entry.pop("parser_profile")
+
+        with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
+            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+
+        self.assertEqual(parser.call_count, 2)
+        self.assertEqual(updated["metrics"]["cache_hits"], 0)
+
+    def test_invalid_reuse_json_does_not_replace_a_valid_output(self):
+        previous = self.tmp / "previous.json"
+        output = self.tmp / "manifest.json"
+        for content in ("{not-json", "null", "[]", "true", "42"):
+            with self.subTest(content=content):
+                previous.write_text(content, encoding="utf-8")
+                output.write_bytes(b"existing snapshot bytes\n")
+
+                code, out, err = run_script("write", self.src, "--out", output, "--reuse", previous)
+
+                self.assertEqual(code, 2, err + out)
+                self.assertEqual(output.read_bytes(), b"existing snapshot bytes\n")
+
+    def test_invalid_reuse_row_does_not_replace_a_valid_output(self):
+        malformed = copy.deepcopy(self.previous)
+        malformed["files"][self.first_key]["symbols"] = []
+        previous = self.tmp / "previous.json"
+        previous.write_text(json.dumps(malformed), encoding="utf-8")
+        output = self.tmp / "manifest.json"
+        output.write_bytes(b"existing snapshot bytes\n")
+
+        code, out, err = run_script("write", self.src, "--out", output, "--reuse", previous)
+
+        self.assertEqual(code, 2, err + out)
+        self.assertEqual(output.read_bytes(), b"existing snapshot bytes\n")
+
+    def test_normalized_diff_none_requires_fresh_raw_identity_before_reading(self):
+        from source_reader import read_packet
+        before = copy.deepcopy(self.previous)
+        parent = self.tmp / "parent"
+        manifest_path = parent / "snapshot/manifest.json"
+        manifest_path.parent.mkdir(parents=True)
+        manifest_path.write_text(json.dumps(before), encoding="utf-8")
+        parent_bytes = manifest_path.read_bytes()
+        self.first.write_bytes(b"def first():\r\n    return 7\r\n")
+        child_run = self.tmp / "child"
+
+        code, out, err = run_script("diff", parent, self.src, "--out", child_run, "--verify")
+        self.assertEqual(code, 0, err + out)
+        changes = json.loads((child_run / "changes.json").read_text(encoding="utf-8"))
+        with self.assertRaisesRegex(ValueError, "source changed"):
+            read_packet(before, [{"path": self.first_key, "symbols": ["first"]}])
+        refreshed = self.snapshot.build_manifest(self.src, previous=before)
+        packet = read_packet(refreshed, [{"path": self.first_key, "symbols": ["first"]}])
+
+        self.assertEqual(changes["recommendation"], "none")
+        self.assertEqual(changes["files"]["modified"], [])
+        self.assertNotEqual(refreshed["files"][self.first_key]["raw_hash"], before["files"][self.first_key]["raw_hash"])
+        self.assertEqual(refreshed["files"][self.first_key]["symbols"], before["files"][self.first_key]["symbols"])
+        self.assertIn("2:     return 7\n", packet["files"][0]["blocks"][0]["source"])
+        self.assertEqual(self.previous, before)
+        self.assertEqual(manifest_path.read_bytes(), parent_bytes)
+
+    def test_loaded_grammar_source_failure_stays_readable_and_is_reparsed(self):
+        from languages import FunctionInfo, ParseResult, get_adapter
+        from source_reader import read_packet
+        target = self.tmp / "native"
+        write(target, "app.js", 'function selected() { return 7; }\nfunction sibling() { return "SIBLING"; }\n')
+        adapter = get_adapter("javascript")
+        available = {"language": "javascript", "backend": "tree-sitter", "grammar": "javascript"}
+        failed_native_parse = ParseResult(
+            file_path="app.js", language="javascript",
+            functions=[FunctionInfo("selected", line_number=1), FunctionInfo("sibling", line_number=2)],
+            notes=["parser=regex-fallback", "tree-sitter raised: RuntimeError: fixture source failure"],
+        )
+
+        # Availability and parser failure are controlled at their public adapter
+        # boundary; source bytes, manifest construction and reading remain real.
+        with mock.patch.object(self.snapshot, "parser_profile", return_value=available), \
+                mock.patch.object(adapter, "parse", return_value=failed_native_parse) as parser:
+            manifest = self.snapshot.build_manifest(target)
+            refreshed = self.snapshot.build_manifest(target, previous=manifest)
+            key = next(iter(manifest["files"]))
+            packet = read_packet(manifest, [{"path": key, "symbols": ["selected"]}])
+
+        self.assertEqual(parser.call_count, 2)
+        self.assertEqual(manifest["files"][key]["parser_profile"], available)
+        self.assertEqual(manifest["files"][key]["status"], "parse-error")
+        self.assertEqual(refreshed["metrics"]["cache_hits"], 0)
+        self.assertIn("SIBLING", json.dumps(packet))
+        self.assertIn("tree-sitter raised: RuntimeError: fixture source failure", packet["files"][0]["parser_notes"])
 
 
 class PresentationInventoryTests(unittest.TestCase):

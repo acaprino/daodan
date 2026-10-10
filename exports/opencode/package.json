@@ -720,6 +720,11 @@
                 "resource": "*"
               },
               {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
                 "action": "skill",
                 "effect": "allow",
                 "resource": "*"
@@ -4469,5 +4474,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.8.0"
+  "version": "32.9.0"
 }

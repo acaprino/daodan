@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-xray",
       "topics": [],
-      "version": "5.2.0"
+      "version": "5.3.0"
     },
     {
       "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
@@ -669,7 +669,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -684,7 +684,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
@@ -705,7 +705,7 @@
       "topics": [
         "readme"
       ],
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",

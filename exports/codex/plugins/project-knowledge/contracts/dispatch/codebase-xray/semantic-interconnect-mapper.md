@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.2.0; source-sha256: 873344dc3c20d158d3f3508f16dd59797e9286fc2f0dc5b9613b0e0c8beb6db4. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.3.0; source-sha256: 2c006ba6dd3f07e0f3e731615752d1dfe827e09fa5828312f47ca291c8df8103. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-xray`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<codebase-xray-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-xray`: qualify it with that owner's namespace. The owning plugin's registered skills are `codebase-xray:xray-method`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -8,7 +8,7 @@ description: >
   Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own.
   TRIGGER WHEN: spawned by /codebase-xray:team-analyze, /senior-review:team-review or /project-knowledge:guide, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries.
   DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-xray/ nor codebase-explorer's context-brief.md), or the task is a surface-level operation that does not need the map.
-tools: Read, Write, Glob, Grep
+tools: Read, Write, Glob, Grep, Bash
 model: inherit
 color: cyan
 ---
@@ -47,11 +47,46 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 2. **Target files**: the explicit files/scope in the task prompt. Review uses its declared diff or file set; a knowledge guide uses the requested document/project scope, not an automatic whole-project sweep. Team X-ray uses only the cross-partition surface: symbols in `02-interfaces.md ## Cross-Partition Exports`, flows in `03-flows.md ## Cross-Partition Flows`, contracts in `04-semantics.md ## Hidden Contracts (cross-partition)`, risks in `05-risks.md ## Cross-Partition Risk Attribution` and their cited source. Partition-internal contracts are already owned by partition workers.
 
 3. **Repo context** (as needed regardless of source):
-   - Callers outside the target: Grep for target symbols across repo (2-3 hop call graph), never in what Git ignores or under a directory whose name starts with a dot: tool output and run records are not callers
+   - Callers outside the requested file set: locate target symbols within the bound manifest scope (2-3 hop call graph), never in what Git ignores or under a directory whose name starts with a dot: tool output and run records are not callers
    - Dependency manifests (`package.json`, `pyproject.toml`, etc.) to identify external contract surfaces
    - Tests related to target files: explicit assertions reveal invariants
 
 4. **Independent claims** (optional, provided by the invoking command as a file path): a set of claims derived independently of your primary context source. When the path is provided, compare it against your own derivation. Every contradiction becomes a `disputed` row citing both sides. Do not resolve the contradiction, and do not prefer your own derivation by default.
+
+5. **Current source manifest**: derive `source_manifest` from the identified
+   X-ray run as `<run_dir>/snapshot/manifest.json`, or use the exact current path
+   supplied by the caller/context brief. It is a prompt alias, not a new state
+   field or separately persisted index. Resolve an explicitly requested latest
+   mirror to its identified run before using that run's `snapshot/manifest.json`;
+   the mirror has no snapshot of its own. Bind the manifest's exact root, target
+   and run to the requested scope. If it is missing or stale, report the input
+   gap so the caller can supply a current owned snapshot. Do not alter a parent
+   run or create an unowned index.
+   After a verified diff, the caller always writes or obtains a current source
+   manifest with `snapshot.py write --reuse` before passing it here, including
+   `none` or LF/CRLF-only differences. Diff classifies normalized content;
+   supported parent claims do not prove the byte identity the reader requires.
+   A completed parent context retains its evidence lineage, while its source
+   reader uses the caller's current owned manifest.
+
+## SOURCE READING
+
+Load `codebase-xray:xray-method` for the owner commands. Use
+`source_reader.py outline` on `source_manifest` to locate exact definitions,
+then `source_reader.py read` for the source evidence behind each contract or
+invariant. Metadata and prior claims are discovery leads. Expand validated reads
+to callers/callees, gates, constants, types, configuration, dynamic registration
+and relevant CSS/markup; import edges alone cannot select all necessary context.
+Use full-file reading when needed. Keep `ast_parser.py` for missing structural
+details or single-file parser diagnosis, rather than reparsing the mapped scope.
+Changed/deleted files or parser mismatch require a refreshed manifest from the
+caller. A required caller outside its target is a scope gap, not permission to
+read past the bound perimeter.
+
+Record actual source files/ranges and fallback/parser diagnostics in the owned
+map. Outline metadata does not count as deep reading; retained file/class text
+does not prove that omitted function bodies are irrelevant. No requirement to
+read every inventoried file follows from the inventory.
 
 ## ANALYSIS PHASES
 
@@ -59,10 +94,12 @@ Execute sequentially. Each phase feeds the next.
 
 ### Phase 1: Call Graph Expansion
 
-For each target file:
-- Identify all exported symbols (functions, classes, constants, routes, handlers, events)
-- For each exported symbol, Grep the repo for call sites **outside the target** (up to 2-3 hops)
-- For each exported symbol, Grep the target for **outgoing** calls to non-stdlib modules (DB, HTTP, queue, FS, external services)
+For each target file, use the manifest and targeted source reads to identify its
+exported symbols (functions, classes, constants, routes, handlers, events).
+Locate candidate call sites outside the requested file set within the bound
+manifest scope, using usage search or Grep (up to 2-3 hops). Verify each relevant
+caller/callee and outgoing non-stdlib boundary (DB, HTTP, queue, FS, external
+services) through source blocks before making a contract claim.
 
 Build an expanded call graph as a table.
 
@@ -185,9 +222,16 @@ Follow this exact structure with stable anchors regardless of output path:
 
 ## Target scope
 
-- Files analyzed: [count]
+- Source manifest: [exact current path, root and target]
+- Files in manifest inventory: [count within its recorded scope]
+- Files read in depth: [count and actual files/ranges; exclude outline-only metadata]
+- Runtime evidence: [none unless supplied by the user; cite any supplied evidence]
 - Top-level entry points: [list with `file:line`]
 - X-ray mode: [lite|full]
+
+## Source reading
+
+[Files/ranges examined, parser/fallback diagnostics, unresolved input/scope gaps.]
 
 ## Call Graph (expanded, 2-3 hops)
 

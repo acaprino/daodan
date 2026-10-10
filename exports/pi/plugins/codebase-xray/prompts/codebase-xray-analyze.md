@@ -20,14 +20,23 @@ argument-hint: '<target path> [--critical] [--comments] [--docs-only] [--phase N
 
 ## Tool Integration
 
-The scripts in `<plugin-root>/skills/xray-method/scripts/` are language-aware and support: **Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust, CSS (incl. SCSS and LESS)**. You MUST use them instead of manual file reading whenever the target file matches one of those languages.
+Load `codebase-xray:xray-method` for the bound-snapshot source-reading procedure.
+The scripts in `<plugin-root>/skills/xray-method/scripts/` support
+**Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust,
+CSS (incl. SCSS and LESS)**. Use the current run's manifest for recorded
+structure and `source_reader.py` for source evidence throughout Phases 1-6.
 
-- **Phase 1-2 (Structure):** Use `ast_parser.py` for class/function/import extraction and `classifier.py` for file classification. Do NOT attempt to parse AST manually or count imports with grep.
+- **Phase 1-2 (Structure):** Use manifest file/import metadata and `source_reader.py outline` for existing structure. Read selected public definitions with `source_reader.py read`. Use `ast_parser.py` only for required extra details absent from the manifest, such as signatures/export annotations, or single-file parser diagnosis; use `classifier.py` when additional triage metrics are needed. Do not reparse the target for recorded structure
 - **Phase 5 (Usability-blocking):** Run `cascade_scan.py <client root>` (add `--json` to consume it) before reading any stylesheet by hand. It lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, with the class, id and attribute rules each one can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order), screen-level rules first: a fixed or sticky position, a scroll container, a viewport height. Tailwind `@apply` utilities count as the declarations they inline, and when a stylesheet uses Tailwind, screen-level utilities in string-literal `class` and `className` attributes count as conflicts. Its output is leads, never verdicts.
 - **Phase 5 (Risks):** Use `usage_finder.py` to trace symbol usages across the codebase. Multi-language: matches Python `from/import`, Java `import`, JS/TS `import`/`require`, Rust `use`, etc.
 - **Phase 6 (Docs):** Use `doc_review.py` for link validation and marker checks, and `rewrite_comments.py` for multi-language comment quality analysis (Python `#`/docstrings, Java/JS/TS `//` / `/* */` / Javadoc / JSDoc, SQL/PL-SQL `--` / `/* */`, Rust `//` / rustdoc).
 
-For unsupported languages, use the Read tool and Grep tool directly. Tree-sitter is optional (see Prerequisites in the `codebase-xray:xray-method` skill): when `tree-sitter-language-pack` is installed, Java/JS/TS/Rust use the tree-sitter parsers for higher fidelity; otherwise a regex fallback is used. Python always uses the stdlib `ast` module. SQL/PL-SQL use a regex-based DDL extractor. CSS, SCSS and LESS use a stdlib tokenizer.
+Inventoried file-level formats, including configuration and markup, use the
+reader's whole-file fallback; extensions absent from the manifest remain absent
+from inventory coverage. Tree-sitter is optional (see Prerequisites in the
+`codebase-xray:xray-method` skill): Java/JS/TS/Rust use it when their grammar
+loads, otherwise a regex fallback. Python uses stdlib `ast`, SQL/PL-SQL a regex
+DDL extractor, and CSS/SCSS/LESS a stdlib tokenizer.
 
 Do NOT use raw bash commands (cat, grep, find) to extract structure when a dedicated script exists. The scripts use real parsers, which are faster, more accurate, and consume fewer tokens than reading files line by line.
 
@@ -73,7 +82,7 @@ Skip this step entirely if `--no-update` was passed.
 
    ```bash
    python "<plugin-root>/skills/xray-method/scripts/snapshot.py" diff \
-     .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --flags '<this run's flags as JSON>'
+     .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
    ```
 
 3. Read `$RUN_DIR/changes.json` and take `recommendation` and `totals`. They drive the checkpoint in step 3.
@@ -136,11 +145,11 @@ Run: [run-id]   parent: [parent-id] ([commit], [age])
 Since parent: [N] modified, [N] added, [N] removed files; [N] symbols changed, [N] added, [N] removed
 Blast radius: [N] importing files
 Affected claims: [N] ([per-phase-file breakdown])
-Files to read: [N] of [total]
+Files affected: [N] of [total]
 Not analyzed: [N] dot directories ([names]), [N] paths Git ignores (ignore rules: [applied | unavailable])
 
-1. Incremental update from [parent-id] (reads [N] files)
-2. Full analysis (reads [total] files)
+1. Incremental update from [parent-id] ([N] affected files)
+2. Full analysis ([total] inventoried files; source reading follows the claims)
 3. Cancel
 ```
 
@@ -148,7 +157,14 @@ Not analyzed: [N] dot directories ([names]), [N] paths Git ignores (ignore rules
 
 **With `recommendation: full`**, present the same figures with the options reversed, and print every entry of `reasons` under the figures so the user sees why (ratio over threshold, parent without a manifest, parent not complete, flags differing from the parent's). The incremental option stays selectable: the recommendation is advice, and the user decides.
 
-**With `recommendation: none`**, say that nothing in the target has changed since the parent run, name the parent's published output, and offer a full analysis or exit. Do not run an incremental update that would re-derive nothing.
+**With `recommendation: none`**, say that no analysis change was detected in the
+normalized content, name the parent's published output, and offer a full
+analysis or return that supported parent analysis. Do not run an incremental
+update that would re-derive nothing. If no phase reads source, this shortcut
+does not require a new full run. A caller wanting source blocks still obtains a
+current snapshot in its owned run with `snapshot.py write --reuse` before
+reading: verified diff normalizes LF/CRLF, while the reader checks exact bytes.
+Preserve the parent analysis and snapshot.
 
 **With no candidate parent:**
 
@@ -189,7 +205,38 @@ python "<plugin-root>/skills/xray-method/scripts/snapshot.py" write \
 
 The snapshot records the tree this run is about to read: every file with its size, mtime and content hash, every symbol with its span and a hash of its body, and the git commit as metadata. It is what makes this run a possible parent for the next one. A full run writes it too.
 
+When a same-target candidate parent exists, add
+`--reuse .codebase-xray/runs/<parent-id>/snapshot/manifest.json` to this write,
+including when full analysis was selected. Reuse checks current bytes and parser
+identity before retaining structure; it still scans and hashes the inventory.
+Preserve the parent manifest.
+For every path that reads source, perform this current write after the verified
+diff even when it reports `none` or only LF/CRLF bytes changed. That result can
+support the parent's claims without making its recorded source bytes current.
+
 Immediately after, copy the manifest's own `git` field into `$RUN_DIR/state.json`'s `git` field. This is the only new `state.json` field this step fills: `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created, in step 2, because step 1b's change set already existed by then.
+
+### Source reading in every code phase
+
+Derive `source_manifest = $RUN_DIR/snapshot/manifest.json` from the run directory;
+this is a prompt alias, not a new `state.json` field or another index. Use
+`source_reader.py outline` with bounded exact-path/pattern queries to locate
+definitions. Narrow truncated output. Use `source_reader.py read` with exact
+symbols or line ranges to examine source, expanding to callers/callees, gates,
+constants, types, invariants, configuration and applicable CSS/markup until each
+claim is supported. Keep whole-target cascade scans for entry-gating paths.
+Import neighbours and retained file/class context do not establish completeness.
+
+Changed/deleted source or parser mismatches require refreshing the current run's
+snapshot before continuing; never substitute a latest mirror or edit the parent.
+Use full-file reading where needed, rather than reading every file by default.
+Each code phase's owned report includes `## Source reading`: exact manifest,
+actual source files/ranges examined, diagnostics and gaps. Derive final deep-read
+coverage from that union, separately from inventory and user-supplied runtime
+evidence. Outline metadata does not count as deep reading.
+On an update, keep carried parent reading provenance separate from source
+actually examined in this run; copied `## Source reading` sections do not count
+as a current read. Add current re-derivation reads to the relevant phase ledger.
 
 ### Full depth (default)
 
@@ -225,7 +272,7 @@ The phases and their numbering are unchanged. What changes is that most claims a
 
 3. **Phase 0 runs in full**, exactly as in a fresh run, overwriting the carried `knowledge/`. It is the cheap discovery pass and what it finds shapes what the re-derivation looks for.
 
-4. **Phases 1 to 6, in order, only where work exists.** For each phase file: open it, and for every `xray:stale` marker re-derive that claim by reading the affected files it cites, then delete the marker. A marker whose reason is `symbol-removed` or `file-removed` means the claim is retired: delete the claim with the marker. Then write claims for the symbols listed under `## Added symbols` in `changes.md` that belong to this phase file (`01` and `02` always, `03` to `06` at full depth). **A phase file with no marker and no added symbol is not opened at all.**
+4. **Phases 1 to 6, in order, only where work exists.** For each phase file: open it, and for every `xray:stale` marker re-derive that claim through source blocks from this run's manifest, then delete the marker. A marker whose reason is `symbol-removed` or `file-removed` means the claim is retired: delete the claim with the marker. Then write claims for the symbols listed under `## Added symbols` in `changes.md` that belong to this phase file (`01` and `02` always, `03` to `06` at full depth). **A phase file with no marker and no added symbol is not opened at all.**
 
 5. **Read only the affected files.** `changes.json` lists them under `affected_files`. When re-deriving a flow or a contract genuinely requires a file outside that set, read it and log it under `## Extra reads` in `changes.md`, naming the claim that needed it. That log is the evidence a future threshold gets tuned from.
 
@@ -310,9 +357,10 @@ The canonical copy of this section lives in `## Phase 0: Project Knowledge Disco
 
 ## Phase 1: Structure Extraction
 
-Scan the target and build a structural map. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
+Build the structural map from the current manifest. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
 
-For each file, extract:
+For each inventoried file, report recorded metadata and read source only for
+additional claims required by the phase:
 - Module/file name and path
 - Language and framework
 - Imports and dependencies
@@ -359,6 +407,9 @@ Update `$RUN_DIR/state.json`: add phase 1 to `completed_phases`.
 ## Phase 2: Interface Analysis
 
 For each module, document the public interface:
+
+Locate definitions in the manifest, then verify their public contract through
+source blocks and the types, validators and configuration it depends on.
 
 - Function signatures with parameter types and return types
 - Class hierarchies and method signatures

@@ -10,7 +10,7 @@ description: >
 
 ## Overview
 
-This skill combines **mechanical structure extraction** with **Claude's semantic understanding** to produce comprehensive codebase documentation. Unlike simple AST parsing, this skill captures:
+This skill combines **mechanical structure extraction** with **semantic reading** to produce comprehensive codebase documentation. It captures:
 
 - **WHAT** the code does (structure, functions, classes)
 - **WHY** it exists (business purpose, design decisions)
@@ -48,7 +48,11 @@ What changes when tree-sitter is installed:
 - **Java**: nested classes, generic type parameters, annotations, multi-line declarations parsed correctly. Without it, the regex fallback still finds top-level classes, methods, imports, and constants.
 - **JavaScript / TypeScript**: arrow functions in object/class properties, decorators, template literals, JSX elements parsed correctly. Without it, the regex fallback handles top-level declarations, ES6 `import`/`export`, and CommonJS `require`.
 - **Rust**: lifetimes, generic bounds (`where` clauses), impl blocks with trait bounds, attribute macros parsed correctly. Without it, the regex fallback still finds top-level fns, structs/enums/traits/impls/mods, use declarations, and UPPER_CASE constants.
-- **Java / JavaScript / TypeScript / Rust**: every symbol carries its exact end line, so the snapshot spans it exactly. A regex fallback gives start lines only, and the snapshot then ends each symbol where the next one begins.
+- **Java / JavaScript / TypeScript / Rust**: every symbol carries the parser's reported end line, preserving its definition's line endpoints. A regex fallback gives start lines only, and the snapshot then ends each symbol where the next one begins.
+
+Exact end lines remain line-granular. Minified or shared-line definitions can
+require whole-file reading even with exact parser endpoints, because a line can
+also hold another definition, class declaration or static field.
 - **Python / SQL / PL-SQL / CSS**: no change. Python always uses stdlib `ast`; SQL/PL-SQL always use the regex DDL extractor; CSS, SCSS and LESS always use the stylesheet tokenizer.
 
 The active parser is reported in `ParseResult.notes` and in the CLI output: `parser=stdlib-ast`, `parser=tree-sitter`, `parser=regex-fallback`, or `parser=stylesheet`. Installed is not the same as working: when the pack is installed but hands back no parser (a grammar download that failed, a version mismatch), the regex fallback runs and the notes add `tree-sitter unavailable: <error>`.
@@ -61,7 +65,7 @@ The active parser is reported in `ParseResult.notes` and in the CLI output: `par
 - Find symbol usages across the codebase
 - Classify files by criticality
 
-**Semantic Analysis (Claude AI):**
+**Semantic Analysis:**
 - Recognize architectural and design patterns
 - Identify red flags and anti-patterns
 - Trace data and control flows
@@ -123,7 +127,22 @@ A second X-ray of the same target rebuilds from nothing only if nobody asked wha
 
 **The snapshot** (`snapshot/manifest.json`, written by every run) records each file with its size, mtime and content hash, and each symbol with its line span and a hash of its body, plus the git commit as metadata. A class span encloses its methods, so editing a method moves both hashes. Three sets of files enter it: source in the parsed languages, with symbols, where CSS, SCSS and LESS carry one symbol per applied rule, except a minified stylesheet (any line over 10,000 characters), which stays file-level; configuration and documentation (`.json`, `.yaml`, `.toml`, `.md` and their kin), as file-level entries with no symbols; and presentation files no adapter parses (`.html`, `.htm`, `.vue`, `.svelte`, indented `.sass`), also file-level, because markup decides whether a screen renders, scrolls and can be completed, and a run that drops it can neither cite it nor notice that it changed. Any other extension is absent from the manifest and from every count derived from it, and the final report says so. Forbidden files never enter it, not even as a hash. Nor does anything outside the perimeter (see `## Perimeter`): what Git ignores, and whatever sits under a directory whose name starts with a dot. The manifest's `scope` block records what that rule left out.
 
-**The change set** (`changes.json`, written by `snapshot.py diff`) compares that manifest with the current worktree. Equal size and mtime means unchanged with no read at all; anything else is hashed, because a checkout moves mtimes without changing a byte. It classifies files and symbols, resolves the one-hop blast radius from the manifest's import edges, and scans the parent's phase files for every claim citing anything it touched. It recommends `incremental`, `full` (with reasons: too much changed, no parent manifest, an incomplete parent, flags differing from the parent's) or `none`.
+The manifest is also the single source-reading index. `snapshot.py write --reuse`
+may reuse an unchanged file's parsed structure after checking its content hash,
+the recorded root/target, helper/runtime fingerprint and effective parser profile.
+It still walks the current perimeter and hashes every inventoried file. Missing
+legacy fingerprints or a changed identity force parsing again. Reuse saves
+repeated parsing; it does not establish that the model read or understood a file.
+
+**The change set** (`changes.json`, written by `snapshot.py diff`) compares that manifest with the current worktree. Its default content check trusts equal size and mtime; `--verify` hashes every file and is required when binding source evidence for reuse. A changed helper/runtime fingerprint or parser profile invalidates cached structure. It classifies files and symbols, resolves the one-hop blast radius from the manifest's import edges, and scans the parent's phase files for every claim citing anything it touched. It recommends `incremental`, `full` (with reasons: too much changed, no parent manifest, an incomplete parent, flags differing from the parent's) or `none`.
+
+Diff hashes normalize line endings to classify analysis changes, including with
+`--verify`. A result of `none` can therefore retain the parent's analysis while
+the source bytes changed from LF to CRLF. Before passing a manifest to source
+readers after a verified diff, always write or obtain a current owned snapshot
+with `snapshot.py write --reuse <previous-manifest>`. The reader checks exact
+bytes. Keep the parent evidence and its provenance; do not modify its manifest
+or infer byte freshness from unchanged normalized claims.
 
 **The carry** (`snapshot.py carry`) copies the parent's phase files, except the final report, which is never carried and is always regenerated. It renumbers every citation whose symbol survived, and marks every affected claim with `<!-- xray:stale reason=... cites=... -->`. The model then reads only the affected files and re-derives only the marked claims.
 
@@ -245,6 +264,11 @@ The analysis NEVER reads or includes contents from sensitive files: `.env`, `.en
 ## Script Commands
 
 All scripts live in `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/`.
+
+For an identified run, use its bound manifest for inventory and symbol structure
+and `source_reader.py` for source reading. The standalone commands below serve
+classification, usage search or parser diagnosis when the question needs them;
+they do not create a second authoritative index.
 
 ### 1. Analyze Single File
 
@@ -377,12 +401,25 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" write <tar
 
 `scope` prints the file count by set and by language, and the `scope` block the manifest will carry. `write` records the tree a run analyzed. Every run writes one, which is what makes it a possible parent.
 
+For a subsequent snapshot of the same target, reuse the previous manifest:
+
+```bash
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" write <target> \
+  --out <run-dir>/snapshot/manifest.json \
+  --reuse <parent-run-dir>/snapshot/manifest.json
+```
+
+Write the current manifest in the owned run; preserve the parent snapshot.
+`--reuse` verifies bytes even when size and mtime match. A fingerprint, root or
+target mismatch rebuilds structure safely; malformed reuse input fails without
+replacing the output. Bind the recorded root, target and run before reuse.
+
 ### 15. Diff, carry and check an update
 
 ```bash
 # what changed since a parent run, and which of its claims that affects
 python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" diff \
-  <parent-run-dir> <target> --out <run-dir> [--verify] [--threshold 0.4] [--flags '{"depth":"full"}']
+  <parent-run-dir> <target> --out <run-dir> --verify [--threshold 0.4] [--flags '{"depth":"full"}']
 
 # copy the parent's phase files, renumber citations, mark the stale claims
 python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" carry <parent-run-dir> <run-dir>
@@ -391,7 +428,74 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" carry <par
 python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" check <run-dir>
 ```
 
-`--verify` hashes every file instead of trusting size and mtime. `--threshold` is the affected-file ratio above which a full run is recommended instead.
+`--verify` hashes every file instead of trusting size and mtime. Use it when
+checking whether current inputs still support a bound analysis. `--threshold`
+is the affected-file ratio above which a full run is recommended instead.
+This check uses normalized line endings. Always follow it with a current
+`snapshot.py write --reuse` before source-block reading, even when the result
+is `none` or only line-ending bytes differ. Returning the supported parent
+analysis without reading source does not require a new full analysis.
+
+## Source Reading from the Bound Snapshot
+
+Load `codebase-xray:xray-method` by name to use this procedure from another
+plugin. The helper paths below belong to this skill's installed package. Use the
+identified analysis run for evidence lineage and a current owned
+`snapshot/manifest.json` for source reading; keep both exact paths downstream.
+A latest mirror does not identify its snapshot. After every verified diff,
+write or obtain the current source manifest with `snapshot.py write --reuse`
+before block reading, including a `none` result or LF/CRLF-only differences.
+Unchanged normalized claims can support parent evidence while the reader needs
+new source-byte identity. Use this one current manifest, preserving the parent.
+
+1. State the source question. Use the outline to choose exact symbol names and
+   paths from the bound manifest; paths are relative to its recorded repository
+   root. Outline output is metadata and does not validate current source bytes
+   or count as deep reading.
+2. Read the selected definitions or inclusive line ranges. The reader checks
+   current content identity and parser identity before emitting numbered source.
+   Changed or deleted files and parser mismatches require a refreshed manifest.
+3. Follow the question's callers, callees, validation gates, constants, types,
+   configuration reads and implicit references. Include applicable stylesheets
+   and markup when tracing a screen. Import neighbours alone cannot supply those
+   relationships. Expand the request or use `--full` until the claim is supported.
+4. Record the files and ranges actually examined, parser diagnostics and any
+   remaining gaps. Keep inventory, source read in depth and runtime evidence as
+   separate coverage facts. X-ray remains static.
+
+```bash
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/source_reader.py" outline \
+  <run-dir>/snapshot/manifest.json --path src/service.py --pattern 'Service|validate' --limit 40
+
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/source_reader.py" read \
+  <run-dir>/snapshot/manifest.json --path src/service.py \
+  --symbol Service.validate --symbol load_config --lines 1:20
+
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/source_reader.py" read \
+  <run-dir>/snapshot/manifest.json --path src/service.py --full
+
+python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/source_reader.py" read \
+  <run-dir>/snapshot/manifest.json --requests <run-dir>/source-requests.json
+```
+
+`--symbol` and `--lines` are repeatable. Use qualified names exactly as returned
+by the outline, including `Class.method`. A requests file is a JSON list, or an
+object with `requests`, containing `path`, `symbols`, `ranges` (`start`/`end`)
+and optional `full_file` entries.
+
+Selected definitions retain shared file/class text outside the complete
+function/method intervals, plus start/end lines of Java/JavaScript/TypeScript/Rust
+callables. Imports, types, constants, static fields and decorators outside those
+intervals stay; boundary lines also preserve globals or fields sharing a
+callable's opening or closing line. The reader falls back to a whole file for legacy or unreliable
+spans, including inferred, merged or parser-error entries, single-line,
+overlapping or class-boundary spans, and long lines,
+and reports that fallback. Minified or shared-line definitions can also force
+whole-file fallback even with exact end lines, preserving class declarations
+and static fields on those lines. This retained context does not prove that omitted
+function bodies are irrelevant or that semantic dependencies are complete.
+Block selection limits the source presented to the model; each requested file
+is still read and hash-checked in full. It is not a measured model-time guarantee.
 
 ---
 
@@ -415,10 +519,10 @@ The classifier matches patterns against raw file content (including comments and
 | Layer | What | Who Does It |
 |-------|------|-------------|
 | **1. WHAT** | Classes, functions, imports | Scripts (AST) |
-| **2. HOW** | Algorithm details, data flow | Claude's first pass |
-| **3. WHY** | Business purpose, design decisions | Claude's deep analysis |
-| **4. WHEN** | Triggers, lifecycle, concurrency | Claude's behavioral analysis |
-| **5. CONSEQUENCES** | Side effects, failure modes | Claude's systems thinking |
+| **2. HOW** | Algorithm details, data flow | Semantic source reading |
+| **3. WHY** | Business purpose, design decisions | Evidence-backed interpretation |
+| **4. WHEN** | Triggers, lifecycle, concurrency | Behavioral tracing |
+| **5. CONSEQUENCES** | Side effects, failure modes | Cross-module reasoning |
 
 ### Pattern Recognition
 
@@ -452,9 +556,9 @@ SECURITY:
 ### AI Analysis Workflow
 
 ```
-1. SCRIPTS RUN FIRST -> classifier.py, ast_parser.py, usage_finder.py
-2. CLAUDE ANALYZES -> Read source, apply semantic questions, recognize patterns, identify red flags
-3. CLAUDE DOCUMENTS -> Use template, explain WHY not just WHAT, document contracts
+1. STRUCTURE FIRST -> bound snapshot outline; classification and usages when needed
+2. ANALYZE -> Read source, apply semantic questions, recognize patterns, identify red flags
+3. DOCUMENT -> Use template, explain WHY not just WHAT, document contracts
 4. VERIFY -> Re-trace the code path end to end; accept runtime evidence only when the user supplies it
 ```
 
@@ -526,6 +630,7 @@ The team command:
   - `rewrite_comments.py` - comment quality CLI (scan / analyze / rewrite / report)
   - `doc_review.py` - documentation maintenance (Phase 6)
   - `snapshot.py` - scope count, structural snapshots and incremental change sets
+  - `source_reader.py` - snapshot outline and validated source blocks with shared context
   - `tree_scope.py` - the perimeter every tree-walking script applies: nothing Git ignores, no dot directory, no dependency or build output
   - `cascade_scan.py` - stylesheet rules with global reach that can break a screen, with the rules each can override in cascade order, screen-level rules first (Phase 5)
   - `languages/` - per-language adapters (Python `ast`, Java/JS/TS/Rust via tree-sitter or regex, SQL/PL-SQL regex, CSS/SCSS/LESS stdlib tokenizer)

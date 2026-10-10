@@ -1,4 +1,4 @@
-<!-- Generated dispatch body. Owner: project-knowledge:codebase-explorer; version: 1.1.0; source-sha256: 44cffb964a46686a0ba9452d5c5c07602bb65b88ff1ec3837996885e23fb75bd. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-knowledge:codebase-explorer; version: 1.2.0; source-sha256: 6852e3da2196e0ffe53d6c7a661c345197bf48985bffc62443871fbd3986a166. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-knowledge`. Where it names its plugin root, resolve the root from that installed plugin's named skill; it is not the coordinator's root. `<project-knowledge-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-knowledge`: qualify it with that owner's namespace. The owning plugin's registered skills are `project-knowledge:project-knowledge`, `project-knowledge:instructions-method`, `project-knowledge:readme-craft`. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -25,8 +25,21 @@ changed snapshot or unavailable required check is an explicit delivery gap.
 
 
 Read existing README/instructions/docs/ADRs, manifests, entry points, tooling,
-CI, operational scripts and relevant history. Use the supplied bound X-ray rather
-than rescanning its whole inventory; directly verify affected claims. Discover
+CI, operational scripts and relevant history. Load `codebase-xray:xray-method`
+by name for the owner procedure and exact helper commands. Bind the supplied
+X-ray's run, root, target and `snapshot/manifest.json`; verify current inputs with
+`snapshot.py diff --verify`. Its hashes normalize line endings, so after that
+check always write or obtain a current owned source snapshot with
+`snapshot.py write --reuse <previous-manifest>` before passing it to readers,
+even for `none` or LF/CRLF-only differences. Parent analysis and evidence can
+remain supported while their source-byte identity needs refreshing. Preserve
+the parent run and propagate both its evidence lineage and the exact current
+source manifest path. Use its
+outline to choose source blocks autonomously, then read those blocks and expand
+to callers, callees, gates, invariants, configuration and relevant CSS/markup.
+Use full-file reading when required; directly verify affected claims. Outline
+metadata is not source read in depth. Keep inventory, actual reading and runtime
+evidence distinct. Discover
 public surfaces, dependencies, configuration reads, startup sequence and real
 user flows pertinent to the requested documents.
 

@@ -106,7 +106,7 @@ Orchestrate a partitioned multi-agent codebase analysis plus global interconnect
 
    ```bash
    python "<plugin-root>/skills/xray-method/scripts/snapshot.py" diff \
-     .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --flags '<this run's flags as JSON>'
+     .codebase-xray/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
    ```
 
    Hold `changes.json` for the partition checkpoint. With `--update` and no candidate, stop and say which condition failed (no completed run for this target, a completed run that is not team mode, or a parent with no manifest), and that a full run is the way to create one. Never fabricate a parent. With a candidate present, `--update` requires that base but does not choose the execution mode: resolve that choice at the checkpoint using the user's request, earlier answers or `--yes`; ask only if it remains unsettled.
@@ -258,6 +258,29 @@ python "<plugin-root>/skills/xray-method/scripts/snapshot.py" write \
 
 It is global, like Phase 0: no partition owns it, and no worker writes to it. Copy the manifest's own `git` field into `$RUN_DIR/state.json`'s `git` field right after: it is the only `state.json` field this step fills, since `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created. When the accepted option is a partition-level update, apply `### Partition-level update` now, before Phase 1 begins.
 
+When a same-target candidate parent exists, add
+`--reuse .codebase-xray/runs/<parent-id>/snapshot/manifest.json` to the write,
+including when full analysis was selected. Bytes and parser identity are checked
+before retaining structure; the inventory is still scanned and hashed.
+Do not skip this current write after a verified diff because the recommendation
+is `none` or every partition's normalized claims can be copied. Diff normalizes
+line endings; a reader of current blocks needs exact byte identity even for
+LF/CRLF-only differences. Parent analysis/provenance and its manifest remain
+intact. Returning supported parent analysis without any source-reading phase
+does not oblige a new full analysis; a later block reader still obtains its own
+current snapshot before reading.
+
+Every source reader derives `source_manifest` as `$RUN_DIR/snapshot/manifest.json`.
+It is a prompt alias for this existing run artifact, not a new state field or a
+second index. Pass that exact current path to both worker waves and the mapper.
+Workers use recorded file/import metadata and `source_reader.py outline` for
+structure, then `source_reader.py read` for selected evidence. Extra parsing is
+limited to required details absent from the manifest or single-file diagnosis.
+Selection follows flows, gates, invariants, configuration and effective styles,
+including implicit and cross-partition relationships beyond import edges.
+Keep the whole-target cascade scan and mandatory entry-gating paths. A stale
+manifest is refreshed by the orchestrator before source reading continues.
+
 ## Phase 1: Partition Workers (2 waves)
 
 ### Wave 1: Structure workers (parallel)
@@ -274,6 +297,7 @@ You are partition-structure-worker on partition "<P_i.name>".
 
 Identity: P<i>.A
 Run directory: <RUN_DIR>
+Current source manifest: <RUN_DIR>/snapshot/manifest.json (read-only)
 Owned files:
   - <RUN_DIR>/partitions/<P_i.name>/01-structure.md
   - <RUN_DIR>/partitions/<P_i.name>/02-interfaces.md
@@ -286,9 +310,13 @@ Sibling partitions (for cross-partition citation lookup if needed):
   <list each P_j.name -> P_j.path>
 
 Required reads before writing:
-  - <P_i.path>: all source files within scope
+  - <RUN_DIR>/snapshot/manifest.json: inventory/import metadata for <P_i.path>
   - <plugin-root>/skills/xray-method/SKILL.md
-  - Scripts at <plugin-root>/skills/xray-method/scripts/
+Use source_reader.py outline for recorded structure and source_reader.py read
+for definitions/ranges selected from the phase's questions. Expand evidence as
+needed; do not reparse or read all source files merely for inventory. Keep
+ast_parser.py for required extra details or single-file diagnosis. Record actual
+source files/ranges in each output's ## Source reading.
 
 Completion: when both owned files are written, report delivered and name them. If you could not write them, report failed and say why.
 ```
@@ -316,6 +344,7 @@ You are partition-behavior-worker on partition "<P_i.name>".
 
 Identity: P<i>.B
 Run directory: <RUN_DIR>
+Current source manifest: <RUN_DIR>/snapshot/manifest.json (read-only)
 Owned files:
   - <RUN_DIR>/partitions/<P_i.name>/03-flows.md
   - <RUN_DIR>/partitions/<P_i.name>/04-semantics.md
@@ -327,9 +356,16 @@ Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
 Sibling partitions: <list>
 
 Required reads before writing:
-  - <P_i.path>: source files
+  - <plugin-root>/skills/xray-method/SKILL.md
+  - <RUN_DIR>/snapshot/manifest.json: current source index
   - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
   - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)
+
+Use source_reader.py outline and read for targeted evidence. Expand to callers,
+callees, gates, invariants, configuration and relevant CSS/markup rather than
+using imports as the semantic boundary. Keep whole-target cascade scanning and
+mandatory entry-gating paths. Record actual files/ranges in ## Source reading;
+inventory and outline metadata do not count as deep reading.
 
 Cross-partition citations: when you find an outgoing call/import that leaves
 your partition, cite it as <other-partition>::<symbol>.
@@ -371,6 +407,12 @@ Partitions to consolidate:
 For any partition with status=failed, add a "⚠ Missing partitions" callout in every consolidated file. The 07-final-report.md opens with a "Partial Completeness Warning" section.
 
 Read <RUN_DIR>/partitions/*/ and apply the consolidation rules in your agent definition.
+Union the workers' ## Source reading sections to report actual deep-read files
+and ranges, deduplicated by path. Keep outline/inventory metadata separate and
+carry parser/fallback diagnostics and gaps; do not re-read source for synthesis.
+Distinguish source examined in this run from reading carried with unchanged
+parent partitions. Preserve that parent provenance without counting it as a
+current source read.
 
 Completion: report delivered when every owned file is written, failed (with the reason) otherwise.
 ```
@@ -388,10 +430,13 @@ Dispatch one `semantic-interconnect-mapper`:
 Build the interconnect map for this codebase using the team X-ray consolidated output as primary context.
 
 Primary context source: `<RUN_DIR>/01-07.md` (consolidated from partition outputs by the synthesizer).
+Current source manifest: `<RUN_DIR>/snapshot/manifest.json` (read-only).
 Scope: the cross-partition surface only. Read `<RUN_DIR>/02-interfaces.md ## Cross-Partition Exports`,
 `<RUN_DIR>/03-flows.md ## Cross-Partition Flows`, `<RUN_DIR>/04-semantics.md ## Hidden Contracts (cross-partition)`
 and `<RUN_DIR>/05-risks.md ## Cross-Partition Risk Attribution` (whichever exist at this depth), then the
-source files those sections cite. Partition-internal contracts are already in the partition outputs;
+source definitions those sections cite using source_reader.py outline/read from
+that manifest. Expand evidence for relevant callers/callees, gates, invariants,
+configuration and styles beyond import edges. Partition-internal contracts are already in the partition outputs;
 do not re-derive them here.
 Output path: `<RUN_DIR>/08-interconnect-map.md`
 
