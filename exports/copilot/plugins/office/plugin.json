@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Create professional editable PowerPoint presentations through SlidePoise and create, inspect, analyze and modify native Excel workbooks with formulas, tables and charts. Includes runtime discovery and workbook preservation evidence.",
+  "description": "Create professional editable PowerPoint presentations through SlidePoise, work with native Excel formulas, tables and charts, and create, read or edit Word documents with styles, tables and sections. Includes runtime discovery and document preservation evidence.",
   "license": "MIT",
   "name": "office",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

@@ -1534,6 +1534,11 @@
             "description": "Create, inspect, analyze or edit a native Excel workbook while preserving its formulas, formatting, tables, charts and other required features. TRIGGER WHEN: the user requests XLSX work, spreadsheet analysis, a model, a tracker, a dashboard or a controlled revision to an existing workbook.",
             "file": "commands/workbook.md",
             "name": "office:workbook"
+          },
+          {
+            "description": "Create, read or edit native Word documents with professional styles, tables, headers, footers and page layouts. TRIGGER WHEN: the user requests DOCX work, a Word report, proposal, letter, template or controlled document revision.",
+            "file": "commands/document.md",
+            "name": "office:document"
           }
         ],
         "root": "plugins/office",
@@ -1549,6 +1554,12 @@
             "file": "skills/xlsx/SKILL.md",
             "id": "office:xlsx",
             "name": "xlsx"
+          },
+          {
+            "description": "Create, read and edit native Word documents with professional styles, page layouts, tables, images and editable text. Preserve existing document features, select a compatible engine for advanced content and verify saved document pages.",
+            "file": "skills/docx/SKILL.md",
+            "id": "office:docx",
+            "name": "docx"
           }
         ]
       },
@@ -4458,5 +4469,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.7.0"
+  "version": "32.8.0"
 }

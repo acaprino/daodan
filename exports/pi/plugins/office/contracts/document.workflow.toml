@@ -1,0 +1,13 @@
+name = "document"
+entrypoint = "document.md"
+
+[[phases]]
+id = "run"
+isolation = "shared"
+produces = ["artifact:document-result", "artifact:document-review"]
+
+[contract]
+inputs = ["document-task", "source-material"]
+outcomes = ["document-task-completed"]
+artifacts = ["document-result", "document-review"]
+schemas = []

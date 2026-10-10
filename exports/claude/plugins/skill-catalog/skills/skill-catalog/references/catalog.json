@@ -542,6 +542,21 @@
       "version": "1.5.2"
     },
     {
+      "description": "Create, read and edit native Word documents with professional styles, page layouts, tables, images and editable text. Preserve existing document features, select a compatible engine for advanced content and verify saved document pages.",
+      "dimensions": [],
+      "file": "skills/docx/SKILL.md",
+      "frameworks": [],
+      "id": "office:docx",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "docx",
+      "operations": [],
+      "provider": "office",
+      "topics": [],
+      "version": "1.1.0"
+    },
+    {
       "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
       "dimensions": [],
       "file": "skills/slidepoise/SKILL.md",
@@ -554,7 +569,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "description": "Create, edit, inspect and analyze native Excel workbooks with editable formulas, tables, charts and professional formatting. Preserve existing workbook features, verify calculated results with a compatible engine and disclose unsupported fidelity.",
@@ -569,7 +584,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",

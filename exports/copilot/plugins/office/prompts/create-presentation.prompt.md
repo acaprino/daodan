@@ -19,6 +19,9 @@ When the source includes an Excel workbook, load the `office:xlsx` skill to
 inspect its native data, formulas and calculation evidence before using figures
 or rebuilding editable charts.
 
+When the source includes a Word document, load the `office:docx` skill to read
+its native content, tables and annotations before developing the presentation.
+
 Deliver the `.pptx`, useful preview artifacts and a concise presentation review
 stating what was rendered and inspected, native editability and any limitation.
 An unavailable runtime or renderer must appear in the result; it cannot become a

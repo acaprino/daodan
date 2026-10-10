@@ -96,6 +96,10 @@ verify the intended figures and retain native chart data. Keep workbook formulas
 and their calculation status visible in the source evidence. Do not substitute
 screenshots for requested editable charts or tables.
 
+For Word sources, load the `office:docx` skill to inspect the actual paragraphs,
+tables, annotations and source structure before extracting the deck's argument.
+Keep unresolved revisions and source qualifications visible in the evidence.
+
 ## Deliver
 
 Deliver the editable `.pptx`, a useful preview and a concise account of material

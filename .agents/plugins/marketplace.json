@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.7.0"
+    "version": "32.8.0"
   },
   "name": "daodan",
   "owner": {
@@ -339,17 +339,19 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Create professional editable PowerPoint presentations through SlidePoise and create, inspect, analyze and modify native Excel workbooks with formulas, tables and charts. Includes runtime discovery and workbook preservation evidence.",
+      "description": "Create professional editable PowerPoint presentations through SlidePoise, work with native Excel formulas, tables and charts, and create, read or edit Word documents with styles, tables and sections. Includes runtime discovery and document preservation evidence.",
       "license": "MIT",
       "name": "office",
       "skills": [
         "./skills/create-presentation-workflow",
+        "./skills/document-workflow",
+        "./skills/docx",
         "./skills/slidepoise",
         "./skills/workbook-workflow",
         "./skills/xlsx"
       ],
       "source": "./exports/codex/plugins/office",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "author": {
