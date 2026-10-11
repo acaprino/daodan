@@ -1,5 +1,6 @@
 """CLI behaviour tests for the Daodan compiler."""
 
+import builtins
 import io
 import json
 import shutil
@@ -8,12 +9,14 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.daodan_build import build_repository, main  # noqa: E402
+from scripts.daodan.adapter import HOSTS  # noqa: E402
 
 VALID = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
@@ -31,6 +34,88 @@ class CompilerCliTests(unittest.TestCase):
         with redirect_stdout(out), redirect_stderr(out):
             code = main([*arguments, "--root", str(self.root)])
         return code, out.getvalue()
+
+    def output_bytes(self):
+        roots = ("exports", ".claude-plugin", ".github", ".agents")
+        return {
+            path.relative_to(self.root): path.read_bytes()
+            for name in roots for path in (self.root / name).rglob("*")
+            if path.is_file()
+        }
+
+    def assert_build_rejected_before_read(self, target: Path, check: bool):
+        attempted = []
+        original_builtin, original_io = builtins.open, io.open
+        resolved_target = target.resolve()
+
+        def watch(original):
+            def open_owned(file, mode="r", *args, **kwargs):
+                if not isinstance(file, int) and Path(file).resolve() == resolved_target:
+                    if "r" in mode or "+" in mode:
+                        attempted.append(Path(file))
+                        raise AssertionError("Out-of-root build input opened before rejection")
+                return original(file, mode, *args, **kwargs)
+            return open_owned
+
+        with patch("builtins.open", watch(original_builtin)), patch("io.open", watch(original_io)):
+            report = build_repository(self.root, HOSTS, check=check)
+        self.assertTrue(report.issues, "A source escape must be a structured build failure")
+        self.assertTrue(all(issue.code and issue.path and issue.message for issue in report.issues))
+        self.assertNotIn("C01-owned-benign-content", repr(report.issues))
+        self.assertEqual(attempted, [])
+
+    def test_linked_skill_input_preserves_outputs_in_build_and_check(self):
+        shutil.copytree(REPO_ROOT / "tests/fixtures/daodan/valid-mcp/plugins/example", self.root / "plugins/example", dirs_exist_ok=True)
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        target = self.root / "owned-outside.bin"
+        target.write_bytes(b"C01-owned-benign-content\x00\xff")
+        member = self.root / "plugins/example/skills/tools/asset.bin"
+        member.symlink_to(target)
+
+        for check in (False, True):
+            with self.subTest(check=check):
+                self.assert_build_rejected_before_read(target, check)
+
+                self.assertEqual(self.output_bytes(), before)
+
+    def test_linked_kernel_ancestor_is_rejected_before_loading_manifest(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        kernel = self.root / "plugins/example"
+        target_directory = self.root / "owned-kernel"
+        shutil.move(kernel, target_directory)
+        kernel.symlink_to(target_directory, target_is_directory=True)
+
+        self.assert_build_rejected_before_read(target_directory / "plugin.toml", False)
+
+        self.assertEqual(self.output_bytes(), before)
+
+    def test_linked_adapter_control_plane_is_rejected_before_loading(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        member = self.root / "adapters/claude/capabilities.toml"
+        target = self.root / "owned-capabilities.toml"
+        target.write_bytes(member.read_bytes())
+        member.unlink()
+        member.symlink_to(target)
+
+        self.assert_build_rejected_before_read(target, False)
+
+        self.assertEqual(self.output_bytes(), before)
+
+    def test_linked_package_loader_is_rejected_before_read_and_publication(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        member = self.root / "adapters/opencode/templates/index.js"
+        target = self.root / "owned-loader.js"
+        target.write_bytes(b"// C01-owned-benign-content\n")
+        member.unlink()
+        member.symlink_to(target)
+
+        self.assert_build_rejected_before_read(target, False)
+
+        self.assertEqual(self.output_bytes(), before)
 
     def test_publication_then_check_is_clean(self):
         self.assertEqual(self.run_cli()[0], 0)

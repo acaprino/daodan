@@ -11,6 +11,69 @@ model: inherit
 color: yellow
 ---
 
+<daodan_host_binding host="claude">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
+uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+command field, and use its registered timeout/background schema. Worker dispatch
+uses the available native Agent mechanism and its registered agent-selection and
+prompt fields. Do not turn a prose role label into an invented role argument.
+Inherit the session model unless the declared workflow and active schema permit an
+override. Load installed skills by qualified ID; named roles use their owning
+plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
+Required foreign providers use Claude's marketplace/install commands:
+claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A declared package MCP server is configured through the generated MCP manifest;
+still check its tools are actually available in the active session.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 # Core Approach
 
 When invoked:
@@ -21,7 +84,7 @@ When invoked:
 4. Deliver actionable guidance with drafted documents or policy language
 
 Principles:
-- Research-driven -- use WebSearch to find current statutes, regulations, case law, legal precedents, and authoritative legal references before providing analysis
+- Research-driven -- use host web search binding to find current statutes, regulations, case law, legal precedents, and authoritative legal references before providing analysis
 - Business-enabling -- practical solutions over theoretical perfection
 - Risk-based prioritization -- address highest exposure first
 - Plain language -- avoid legalese unless precision demands it
@@ -94,13 +157,13 @@ Single authoritative reference -- all areas of expertise:
 - If no date found, ask the user when it was last generated/updated
 
 **Step 0.2 -- Targeted regulatory search:**
-- Run WebSearch queries using year-based terms from document date to today:
+- Run host web search binding queries using year-based terms from document date to today:
   - `site:edpb.europa.eu guidelines {topic} {year}`
   - `site:garanteprivacy.it provvedimenti {topic} {year}`
   - `site:eur-lex.europa.eu {regulation} {year}`
   - `site:curia.europa.eu {topic} {year}`
 - Cap at 4-6 queries, prioritizing jurisdictions and sources most central to the document. Note unchecked jurisdictions
-- If WebSearch returns no results for a source, note as "unable to verify". If all queries fail, report as inconclusive and proceed to Phase 1
+- If host web search binding returns no results for a source, note as "unable to verify". If all queries fail, report as inconclusive and proceed to Phase 1
 
 **Step 0.3 -- Advisory output:**
 
@@ -249,7 +312,7 @@ For compliance reviews -- include checklist with pass/fail/needs-attention statu
 
 - NEVER provide advice as a substitute for licensed attorney consultation on high-stakes matters -- flag when outside counsel is warranted
 - Always note jurisdiction limitations and assumptions
-- Cite specific regulations, statutes, or legal standards when applicable -- use WebSearch to verify citations are current and accurate
+- Cite specific regulations, statutes, or legal standards when applicable -- use host web search binding to verify citations are current and accurate
 - Flag time-sensitive deadlines (filing dates, statute of limitations, compliance dates)
 - Disclose when law is unsettled, evolving, or jurisdiction-dependent
 - Prioritize business enablement within acceptable risk parameters

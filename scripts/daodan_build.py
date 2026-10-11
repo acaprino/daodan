@@ -26,7 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support  # noqa: E402
+from scripts.daodan.adapter import HOSTS, AdapterError, load_adapter, resolve_support  # noqa: E402
 from scripts.daodan.catalogs import (  # noqa: E402
     assert_cross_host_identity,
     catalog_document,
@@ -35,12 +35,15 @@ from scripts.daodan.catalogs import (  # noqa: E402
 )
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.model import ModelError, PluginSpec  # noqa: E402
-from scripts.daodan.overrides import load_overrides, validate_override  # noqa: E402
+from scripts.daodan.overrides import OverrideError, load_overrides, validate_override  # noqa: E402
 from scripts.daodan.render import RenderError, render_plugin, replace_tree, tree_digest  # noqa: E402
 from scripts.daodan.provenance import KEYS, PROVENANCE_FILENAME  # noqa: E402
 from scripts.daodan.report import BuildReport  # noqa: E402
 from scripts.daodan.trust import scan_trust  # noqa: E402
-from scripts.daodan.validate import CAPABILITY_REGISTRY, ValidationIssue, validate_plugins  # noqa: E402
+from scripts.daodan.validate import (  # noqa: E402
+    CAPABILITY_REGISTRY, SourcePathError, ValidationIssue, confined_source,
+    source_members, validate_plugins,
+)
 
 LEGACY_CLAUDE_CATALOG = Path(".claude-plugin/marketplace.json")
 
@@ -48,9 +51,11 @@ LEGACY_CLAUDE_CATALOG = Path(".claude-plugin/marketplace.json")
 def discover_plugins(root: Path) -> list[PluginSpec]:
     """Load every content kernel under ``plugins/``, in name order."""
     plugins_root = Path(root) / "plugins"
+    confined_source(Path(root), plugins_root, allow_missing=True)
     if not plugins_root.is_dir():
         return []
-    kernels = sorted(plugins_root.glob("*/plugin.toml"), key=lambda item: item.as_posix())
+    kernels = [path for path in source_members(plugins_root)
+               if path.name == "plugin.toml" and path.parent.parent == plugins_root]
     return [load_plugin(kernel.parent) for kernel in kernels]
 
 
@@ -61,6 +66,7 @@ def marketplace_version(root: Path) -> str:
     catalog, so the existing bump workflow keeps working through the migration.
     """
     catalog = Path(root) / LEGACY_CLAUDE_CATALOG
+    confined_source(Path(root), catalog, allow_missing=True)
     if catalog.is_file():
         document = json.loads(catalog.read_text(encoding="utf-8"))
         version = document.get("metadata", {}).get("version")
@@ -71,6 +77,7 @@ def marketplace_version(root: Path) -> str:
 
 def _overrides_for(root: Path, host: str, plugin: PluginSpec):
     directory = Path(root) / "adapters" / host / "overrides" / plugin.name
+    confined_source(Path(root) / "adapters" / host, directory, allow_missing=True)
     if not directory.is_dir():
         return ()
     return load_overrides(directory)
@@ -78,10 +85,30 @@ def _overrides_for(root: Path, host: str, plugin: PluginSpec):
 
 def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildReport:
     """Validate every kernel and render, or verify, every host package."""
+    try:
+        return _build_repository(root, hosts, check)
+    except (SourcePathError, AdapterError, OverrideError, RenderError) as error:
+        return BuildReport(issues=(ValidationIssue(
+            "unsafe-source-path" if isinstance(error, SourcePathError) else "build-input-error",
+            getattr(error, "path", Path(root)),
+            getattr(error, "message", str(error)),
+        ),))
+
+
+def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildReport:
     root = Path(root)
     issues: list[ValidationIssue] = []
     drift: list[Path] = []
     support = []
+
+    # Preflight all source trees before any parser, fingerprint or drift render.
+    for scanned in ("plugins", "adapters"):
+        directory = root / scanned
+        confined_source(root, directory, allow_missing=True)
+        if directory.is_dir():
+            issues.extend(scan_trust(directory, frozenset()))
+    if issues:
+        return BuildReport(issues=tuple(issues))
 
     try:
         plugins = discover_plugins(root)
@@ -89,11 +116,9 @@ def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildRe
         return BuildReport(issues=(ValidationIssue("model-error", error.path, error.message),))
 
     issues.extend(validate_plugins(plugins, CAPABILITY_REGISTRY))
+    if issues:
+        return BuildReport(issues=tuple(issues))
     plugin_registry = {plugin.name: plugin for plugin in plugins}
-    for scanned in ("plugins", "adapters"):
-        directory = root / scanned
-        if directory.is_dir():
-            issues.extend(scan_trust(directory, frozenset()))
 
     catalogs = {}
     version = marketplace_version(root)
@@ -118,6 +143,9 @@ def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildRe
             )
             for override in overrides:
                 issues.extend(validate_override(override, declared, repository_root=root))
+
+            if issues:
+                continue
 
             report = resolve_support(plugin, adapter)
             support.append(report)
@@ -254,6 +282,7 @@ def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
     files = []
     for name in names:
         source = root / "adapters" / adapter.host / "templates" / name
+        confined_source(root / "adapters" / adapter.host / "templates", source)
         raw = source.read_bytes().replace(b"\r\n", b"\n")
         files.append((root / adapter.layout["root"] / name, raw))
     return files
@@ -274,6 +303,7 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
         for plugin in plugins
     }
     compiled = {plugin.name for plugin in plugins}
+    confined_source(root, catalog_path, allow_missing=True)
     if catalog_path.is_file():
         existing = json.loads(catalog_path.read_text(encoding="utf-8"))
         existing["plugins"] = [entry for entry in existing.get("plugins", []) if entry["name"] not in retired]

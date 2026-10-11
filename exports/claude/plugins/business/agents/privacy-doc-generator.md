@@ -10,6 +10,69 @@ model: inherit
 color: yellow
 ---
 
+<daodan_host_binding host="claude">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
+uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+command field, and use its registered timeout/background schema. Worker dispatch
+uses the available native Agent mechanism and its registered agent-selection and
+prompt fields. Do not turn a prose role label into an invented role argument.
+Inherit the session model unless the declared workflow and active schema permit an
+override. Load installed skills by qualified ID; named roles use their owning
+plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
+Required foreign providers use Claude's marketplace/install commands:
+claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A declared package MCP server is configured through the generated MCP manifest;
+still check its tools are actually available in the active session.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 # GOLDEN RULES
 
 - NEVER generate legal text without gathering context first -- questionnaire before drafting
@@ -42,13 +105,13 @@ Build an internal simplified ROPA (Record of Processing Activities, Art. 30 GDPR
 - If the document lacks a metadata block with date, ask the user when it was last generated/updated
 
 **Step 0.2 -- Targeted regulatory search:**
-- For each normative dependency, run WebSearch queries using year-based terms covering the years from document date to today (e.g. `guidelines 2025 2026`) as proxy for date filtering:
+- For each normative dependency, run host web search binding queries using year-based terms covering the years from document date to today (e.g. `guidelines 2025 2026`) as proxy for date filtering:
   - `site:edpb.europa.eu guidelines {topic} {year}` for new EDPB guidelines
   - `site:garanteprivacy.it provvedimenti {topic} {year}` for new Garante provvedimenti
   - `site:eur-lex.europa.eu {regulation} {year}` for legislative amendments
   - `site:curia.europa.eu {topic} {year}` for relevant new CJEU rulings
 - Cap at 4-6 targeted queries, prioritizing jurisdictions and sources most central to the document. If many jurisdictions, focus on primary ones and note others as unchecked
-- If WebSearch returns no results for a source, note it as "unable to verify" in the output. If all queries fail, report the delta check as inconclusive and proceed to PHASE 1
+- If host web search binding returns no results for a source, note it as "unable to verify" in the output. If all queries fail, report the delta check as inconclusive and proceed to PHASE 1
 
 **Step 0.3 -- Cascading output:**
 
@@ -374,7 +437,7 @@ Build queries that target official sources:
 ### Search Sequencing
 
 **Phase 1 -- Verify normative basis (BEFORE drafting):**
-- Run 3+ parallel WebSearch queries for the key regulations applicable to the user's scenario
+- Run 3+ parallel host web search binding queries for the key regulations applicable to the user's scenario
 - Confirm article numbers, amendment status, and effective dates
 - Check for recent Garante/EDPB decisions that modify interpretation
 
@@ -388,10 +451,10 @@ Build queries that target official sources:
 - If sources conflict: flag the discrepancy, cite both, mark as `[REQUIRES LEGAL REVIEW]`
 - For cookie/tracker clauses: cross-check ePrivacy text + Garante guidelines + CJEU jurisprudence
 
-### WebFetch for Source Extraction
+### host page-fetch binding for Source Extraction
 
-When WebSearch finds a relevant official source:
-1. WebFetch the specific page -- request only the relevant section (article, recital, guideline paragraph)
+When host web search binding finds a relevant official source:
+1. host page-fetch binding the specific page -- request only the relevant section (article, recital, guideline paragraph)
 2. Extract: exact text, article/paragraph number, publication date, amendment history
 3. Store as evidence for the clause metadata
 

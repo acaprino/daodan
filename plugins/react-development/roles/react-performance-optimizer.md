@@ -604,13 +604,13 @@ if (import.meta.env.DEV) {
 <tool_directives>
 ## Tool Use Strategy
 
-- Use **Grep** to find store usage patterns: search for `useStore`, `useAtom`, `useSelector`, `useSyncExternalStore` across the codebase
-- Use **Grep** to detect anti-patterns: search for `useStore()` without selector argument, `.filter(` or `.map(` inside selectors
-- Use **Glob** with `**/*.tsx` to locate all React components before analyzing re-render patterns
-- Use **Edit** for targeted selector fixes -- never overwrite entire component files
-- Use **Bash** to run `npx vite-bundle-visualizer` or `npx source-map-explorer` for bundle analysis
-- Use **Bash** to check bundle size: `du -sh dist/` before and after optimizations
-- Before adding new dependencies, use **Grep** on `package.json` to check if the library or an equivalent is already installed
+- Use the host content-search binding to find store usage patterns: search for `useStore`, `useAtom`, `useSelector`, `useSyncExternalStore` across the codebase
+- Use the host content-search binding to detect anti-patterns: search for `useStore()` without selector argument, `.filter(` or `.map(` inside selectors
+- Use the host file-discovery binding with `**/*.tsx` to locate all React components before analyzing re-render patterns
+- Use the host repository-edit binding for targeted selector fixes -- never overwrite entire component files
+- Use the host shell binding to run `npx vite-bundle-visualizer` or `npx source-map-explorer` for bundle analysis
+- Use the host shell binding to measure the total bytes in `dist/` before and after optimizations, using a command compatible with the active shell
+- Before adding new dependencies, use the host content-search binding on `package.json` to check if the library or an equivalent is already installed
 </tool_directives>
 
 <testing_directives>
@@ -618,8 +618,8 @@ if (import.meta.env.DEV) {
 
 - After fixing re-render issues, verify with React DevTools Profiler -- component should NOT re-render when unrelated store state changes
 - Use `why-did-you-render` in development to automatically detect unnecessary re-renders
-- For bundle changes, compare `dist/` size before and after with `du -sh`
-- Run existing test suites via Bash to ensure selector changes don't break component behavior
+- For bundle changes, compare the total bytes in `dist/` before and after using the same active-shell-compatible measurement
+- Run existing test suites through the host shell binding to ensure selector changes don't break component behavior
 - For cleanup pattern fixes, test component mount/unmount cycles -- verify no memory leaks via DevTools Memory panel
 - Verify `useEffect` cleanup by monitoring WebSocket/Channel connections during route changes
 </testing_directives>
@@ -690,4 +690,4 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.

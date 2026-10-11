@@ -16,7 +16,7 @@ description; a missing specialist result remains a coverage gap.
 ### Agent A: Architecture, Risk & Hygiene Assessment
 
 ```
-Task:
+Isolated worker brief:
   role: "senior-review:code-auditor"
   description: "Architecture and risk assessment for PR"
   prompt: |
@@ -89,7 +89,7 @@ Task:
 ### Agent B: Security & Dependency Check
 
 ```
-Task:
+Isolated worker brief:
   role: "senior-review:security-auditor"
   description: "Security review for PR changes"
   prompt: |

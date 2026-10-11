@@ -5,6 +5,8 @@ import tempfile
 import tomllib
 import unittest
 
+from host_binding_assertions import without_host_binding
+
 
 ROOT = Path(__file__).resolve().parents[1]
 STACK_ROLES = {"react-development/react-performance-optimizer", "typescript-development/type-safety-auditor", "platform-engineering/platform-reviewer"}
@@ -44,13 +46,16 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                     render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), root,
                                   adapters_root=ROOT / "adapters", plugin_registry=registry)
                     for entry, core in CORE_ROLES.items():
-                        body = (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8")
+                        exported = (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8")
+                        body = without_host_binding(self, exported, host)
                         for binding in core | STACK_ROLES:
                             owner, role = binding.split("/")
                             identity = role if owner == plugin else f"{owner}:{role}"
                             self.assertIn(f"`{identity}`", body)
                         self.assertIn("project-protocol:isolated-worker", body)
                         self.assertIn("senior-review:review-method", body)
+                        # Rejection examples live in the separately verified
+                        # binding; the actual method and harness stay neutral.
                         self.assertNotIn("subagent_type", body)
                     if host in {"codex", "pi"}:
                         for binding in CORE_ROLES["team-review"] | STACK_ROLES | {"project-protocol/isolated-worker"}:
@@ -58,7 +63,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                             if owner == plugin:
                                 continue
                             resource = root / "contracts/dispatch" / owner / f"{role}.md"
-                            text = resource.read_text(encoding="utf-8")
+                            text = without_host_binding(self, resource.read_text(encoding="utf-8"), host)
                             self.assertIn(f"Owner: {owner}:{role}", text)
                             self.assertIn(f"<{owner}-plugin-root>", text)
                             for skill in registry[owner].components.skills:
@@ -88,14 +93,14 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         if plugin != case_plugin:
                             continue
                         with self.subTest(host=host, plugin=plugin, entry=entry):
-                            body = (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8")
+                            body = without_host_binding(self, (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8"), host)
                             for binding in roles:
                                 owner, role = binding.split("/")
                                 identity = role if owner == plugin else f"{owner}:{role}"
                                 self.assertIn(f"`{identity}`", body)
                                 if host in {"codex", "pi"} and owner != plugin:
                                     resource = root / "contracts/dispatch" / owner / f"{role}.md"
-                                    text = resource.read_text(encoding="utf-8")
+                                    text = without_host_binding(self, resource.read_text(encoding="utf-8"), host)
                                     self.assertIn(f"Owner: {owner}:{role}", text)
                                     self.assertIn(f"<{owner}-plugin-root>", text)
                                     for skill in registry[owner].components.skills:

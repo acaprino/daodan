@@ -6,145 +6,99 @@ argument-hint: '[path-or-description]'
 
 > Arguments: `[path-or-description]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# libgdx-audit
+
 <!-- Generated by the Daodan compiler for copilot. Edit the kernel, never this file. -->
 
-# libGDX Project Audit
+## Coordinator handoff
 
-Analyze an existing libGDX project and produce an actionable audit report.
+Use the registered custom-agent dispatch mechanism to invoke the installed agent
+`libgdx-development:libgdx-audit-coordinator` with the complete original user request,
+its arguments, scope, authorization and budget. Workflow arguments: <arguments>
 
-## Instructions
+This prompt is the workflow entry; the named coordinator contains its execution
+harness and method. Confirm that it is installed and can dispatch the workers in
+its declared agents allowlist. If the host cannot provide the required coordinator
+and nested worker capability, report that blocker instead of running the method
+in this prompt's context or loading the coordinator as a skill.
 
-1. **Identify libGDX components** in the codebase:
-   - Project layout (multi-module Gradle structure)
-   - libGDX version in `build.gradle` (target 1.14.0 baseline)
-   - Generator used (gdx-liftoff vs legacy gdx-setup, detect via project shape)
-   - Language (Java vs Kotlin), and HTML5 target compatibility
-   - Application root (Game vs ApplicationListener)
-   - Screen architecture
-   - Asset loading strategy (AssetManager vs direct construction)
-   - Rendering pipeline (SpriteBatch, ShapeRenderer, ModelBatch usage)
-   - Scene2D / Ashley / Box2D presence
-   - Platform launchers (lwjgl3, android, ios, html modules)
-
-2. **Audit each component** against best practices:
-
-### Project Setup
-- [ ] libGDX version is 1.14.0 or later (or pinned with documented reason for older version)
-- [ ] Build JDK is 17 or 21
-- [ ] Gradle wrapper is current (8.x or 9.x)
-- [ ] Multi-module structure: core + at least one platform module
-- [ ] Kotlin used only if no HTML5 (GWT) target, OR HTML5 uses TeaVM
-- [ ] iOS source level pinned to Java 8 if iOS module exists
-- [ ] gdx-liftoff used for project generation (or legacy project explicitly migrated)
-- [ ] Migration to libGDX 1.14.0 `PoolManager` if `Pools` API still used
-- [ ] `JsonValue#get` calls audited for case sensitivity (1.14.0 breaking change)
-
-### Application Root
-- [ ] Game class extends `Game`, not raw `ApplicationListener` (unless intentional)
-- [ ] `create()` initializes batch/AssetManager once
-- [ ] `dispose()` cleans up all root-level OpenGL resources
-- [ ] No `new MyGame()` inside `create()` (the launcher owns the Game instance)
-
-### Screen Lifecycle
-- [ ] Each major game state implemented as a separate Screen
-- [ ] `Gdx.input.setInputProcessor(...)` set in `show()`, NOT in constructor
-- [ ] `Gdx.input.setInputProcessor(null)` in `hide()` to avoid stale handlers
-- [ ] `viewport.update(width, height, true)` called in `resize()`
-- [ ] Screen instances reused or properly disposed on permanent transition
-- [ ] No constructing new Screens on every transition (avoid asset re-allocation)
-
-### Asset Management
-- [ ] AssetManager used as central loader (not `new Texture("path")` everywhere)
-- [ ] AssetManager held as instance field (NOT static)
-- [ ] `assets.update()` called every frame during loading
-- [ ] On dedicated loading screens, `update()` pumped multiple times per frame
-- [ ] All Textures, Sounds, Music loaded via AssetManager
-- [ ] Sprites packed into TextureAtlas via TexturePacker (no loose Textures)
-- [ ] Atlases are power-of-two (typically 2048x2048)
-- [ ] No `finishLoadingAsset()` in blocking mode combined with `AbsoluteFileHandleResolver`
-
-### Disposal Discipline
-- [ ] Every Texture, Sound, Music, Skin, BitmapFont, ShaderProgram, FrameBuffer, ParticleEffect, Stage, SpriteBatch has a `.dispose()` call
-- [ ] Resources loaded via AssetManager are NOT disposed directly; only via `assets.unload(...)` or `assets.dispose()`
-- [ ] No static fields holding OpenGL resources (forbidden on Android)
-- [ ] Screen.dispose() releases everything owned by the screen
-- [ ] Game.dispose() releases batch, AssetManager, top-level Skin
-
-### Rendering Pipeline
-- [ ] SpriteBatch.begin()/end() always paired
-- [ ] No ShapeRenderer use inside SpriteBatch begin/end (or vice versa)
-- [ ] `batch.setProjectionMatrix(camera.combined)` called per frame
-- [ ] Draw calls ordered by texture, not by entity
-- [ ] Viewport configured for resize handling (FitViewport / ExtendViewport typical)
-- [ ] GLProfiler used or available for performance debugging
-- [ ] No per-frame Texture/FrameBuffer/Pixmap allocation
-
-### Performance
-- [ ] No IO, network, or heavy computation on render thread
-- [ ] Worker threads use `Gdx.app.postRunnable(...)` to push back to GL thread
-- [ ] `Group.isTransform = false` set on Scene2D Groups without rotation/scale
-- [ ] `ComponentMapper.getFor(...)` cached as `private final` field (Ashley)
-- [ ] Ashley components with collections implement `Poolable` and clear in `reset()`
-- [ ] Box2D simulation uses fixed timestep (not delta-time stepping)
-- [ ] No per-frame allocation of Vector2/Color/Matrix (pool or reuse)
-
-### Scene2D Architecture
-- [ ] Stage held by Screen, disposed in Screen.dispose()
-- [ ] Skin loaded via AssetManager (not direct construction per Screen)
-- [ ] Table layouts used instead of manual positioning where possible
-- [ ] InputMultiplexer used when Stage + custom input handlers coexist
-- [ ] `stage.act(delta); stage.draw();` called each frame in proper order
-
-### Ashley ECS (if used)
-- [ ] Engine.update(delta) called once per frame
-- [ ] Systems registered with appropriate priorities
-- [ ] No component reflection in hot paths
-- [ ] Family definitions cached in System constructors
-- [ ] Entity pool used for high-churn entities (bullets, particles, enemies)
-
-### Box2D (if used)
-- [ ] Fixed timestep (typically 1/60s) with accumulator pattern
-- [ ] `world.step(...)` called with reasonable iteration counts (6 velocity, 2 position)
-- [ ] PPM conversion constant defined and used consistently
-- [ ] ContactListener does NOT modify world inside callbacks (queue changes)
-- [ ] Box2DDebugRenderer disabled in release builds
-- [ ] Bodies disposed when entities are removed
-
-### Platform-Specific
-- [ ] Android: `targetSdk` at 34+ for Play Store
-- [ ] Android: AAB build for store submission
-- [ ] Android: No static OpenGL resource references (lifecycle safety)
-- [ ] Android: Immersive mode considered for fullscreen gameplay
-- [ ] iOS: Java 8 language level enforced in core
-- [ ] iOS: Reflection-loaded classes listed in `robovm.xml` `<forceLinkClasses>`
-- [ ] HTML5/GWT: No Kotlin code in compilation path
-- [ ] HTML5: Reflection use audited; classes added to `GdxDefinition.gwt.xml`
-- [ ] Desktop: Window icon, title, FPS limit set in `Lwjgl3ApplicationConfiguration`
-- [ ] Desktop: jpackage or PackR considered for end-user distribution
-
-### Error Handling
-- [ ] FileHandle reads checked for existence before parsing
-- [ ] JSON load failures handled (corrupt save, missing file)
-- [ ] Asset load failures handled (network drop on HTML5, missing file)
-- [ ] Box2D edge cases (NaN positions) guarded
-
-### Logging and Diagnostics
-- [ ] `Gdx.app.log` / `Gdx.app.error` used (cross-platform)
-- [ ] `Gdx.app.setLogLevel(Application.LOG_DEBUG)` configurable per build
-- [ ] GLProfiler available for performance debugging
-- [ ] Frame-time logging for slow frames
-
-### Production Hardening
-- [ ] Game saves use Preferences for small data, Json for larger files
-- [ ] Save format versioned; migration path defined
-- [ ] Crash reporting integrated where appropriate (Firebase Crashlytics on Android, Sentry, etc.)
-- [ ] Analytics opt-in respected (GDPR/CCPA where applicable)
-- [ ] Settings (volume, controls, resolution) persisted via Preferences
-
-3. **Generate report** with:
-   - Current state assessment (what is implemented correctly)
-   - Risk areas (missing or misconfigured components)
-   - Priority improvements ordered by user-impact (frame rate / crashes / leaks first)
-   - Code examples for each recommendation
-   - Migration notes if pre-1.14.0
-   - Platform-specific notes for each active target
+The coordinator must preserve the phase graph, worker isolation, delivery barriers
+and exclusive final report owner in `contracts/libgdx-audit.workflow.toml`.
+Wait for its final delivery and verify required report artifacts. A stopped,
+failed or empty coordinator is not successful delivery. Forward its final result
+and blockers to the user; do not rewrite its report or create a second final owner.

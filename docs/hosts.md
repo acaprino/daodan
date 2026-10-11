@@ -26,7 +26,7 @@ copilot plugin marketplace add acaprino/daodan
 copilot plugin install project-lifecycle@daodan
 
 codex plugin marketplace add acaprino/daodan
-codex plugin install project-lifecycle@daodan
+codex plugin add project-lifecycle@daodan
 ```
 
 The generated marketplace catalogs contain required dependency declarations and
@@ -270,6 +270,40 @@ JSON validation and helper checks cannot establish the truth of reported evidenc
 or that a human actually granted a permission. Runtime authorization and semantic
 review remain separate responsibilities. X-ray remains static: inventory, depth
 of reading and runtime exercise are distinct coverage claims.
+
+## Operational compatibility review
+
+An export must carry executable instructions for its host through the entire
+entry, skill, role and bundled-reference path. Tool/frontmatter conversion,
+registration and capability support are necessary checks, but they do not adapt
+a nested dispatch example, a foreign installation command or an interactive
+terminal requirement. Review a single isolated phase as well as fan-out, and
+compare the worker's allowed tools with the actions its body requires.
+
+Review each host against its adapter and runtime evidence:
+
+| Host | Operational contracts to verify |
+|---|---|
+| Claude Code | Named-agent tool/schema, permitted workers, sidecar/body agreement, model inheritance or documented overrides, capture checkpoints and delivered artifacts |
+| Copilot | `agent` dispatch, `search`/`edit`/`runCommands`/`fetch` bindings, worker allowlists, preservation of omitted tool restrictions and native dependency recovery |
+| Codex | Inline delivery of role bodies and references, host tool/input schema, workflow skill identities, questions and required external providers |
+| Pi | Role skills and prompt identities, `pi-subagents` isolation, core tool/input schema, `pi-mcp-adapter`, questions and capture lifecycle |
+| OpenCode V2 | Registered qualified skill/agent/command IDs, native `subagent`/`shell`/`question` schemas, permission actions, registered references and dependency recovery |
+
+The [2026-10-11 compatibility audit](superpowers/reports/2026-10-11-host-export-compatibility.md)
+records concrete shared and host-specific defects in the inspected sources and
+exports. Its findings are corrective work, not a claim that regeneration or
+runtime repair has already happened. Historical successful fixture probes do
+not cover every plugin workflow.
+
+Fix shared semantics in `plugins/`, host mechanisms in `adapters/` or the
+compiler, then regenerate all hosts and test the affected contracts through their
+references. Preserve host-as-subject material and ordinary code examples rather
+than renaming tokens globally. Keep source/export parity, operational rendering
+checks and installed-host execution as separate reported results. Consumer
+bindings such as Tri-Tech Code's storage, permissions, Gateway models and routing
+also require checks in that consumer. A local registration workaround does not
+repair the shared export for other hosts.
 
 ## Export maintenance and verification
 

@@ -6,7 +6,7 @@ description: >
 ---
 
 <!-- upstream: ReScienceLab/opc-skills - skills/domain-hunter/SKILL.md -->
-<!-- Local drift: Step 3 (Find Promo Codes) uses WebSearch queries instead of upstream Python scripts -->
+<!-- Local drift: Step 3 (Find Promo Codes) uses host web search binding queries instead of upstream Python scripts -->
 
 # Domain Hunter Skill
 
@@ -61,11 +61,11 @@ open "https://www.spaceship.com/domains/?search={domain}.{tld}"
 
 ### Step 2: Compare Prices
 
-Use **WebSearch** to find current prices:
+Use **host web search binding** to find current prices:
 
 ```
-WebSearch: "cheapest .{tld} domain registrar 2026 site:tld-list.com"
-WebSearch: ".{tld} domain price comparison tldes.com"
+Search query: "cheapest .{tld} domain registrar 2026 site:tld-list.com"
+Search query: ".{tld} domain price comparison tldes.com"
 ```
 
 **Key price comparison sites:**
@@ -75,18 +75,18 @@ WebSearch: ".{tld} domain price comparison tldes.com"
 
 ### Step 3: Find Promo Codes
 
-Use **WebSearch** to search registrar social accounts and communities for promo codes:
+Use **host web search binding** to search registrar social accounts and communities for promo codes:
 
 **Twitter/X search** - search registrar accounts for recent promos:
 ```
-WebSearch: "site:x.com from:{registrar} promo code"
-WebSearch: "site:x.com {registrar} promo code coupon"
+Search query: "site:x.com from:{registrar} promo code"
+Search query: "site:x.com {registrar} promo code coupon"
 ```
 
 **Reddit search** - search domain communities for deals:
 ```
-WebSearch: "site:reddit.com r/Domains {registrar} promo code"
-WebSearch: "site:reddit.com r/Domains {registrar} coupon discount"
+Search query: "site:reddit.com r/Domains {registrar} promo code"
+Search query: "site:reddit.com r/Domains {registrar} coupon discount"
 ```
 
 **Major registrar Twitter handles:**
@@ -131,7 +131,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/domain-hunter/scripts/domain_checker.py" na
 
 The script checks availability via RDAP. No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass `--tlds` to override. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free.
 
-If the script cannot run, fall back to the RDAP curl check (Step 1, Method 1) or WebSearch queries.
+If the script cannot run, fall back to the RDAP curl check (Step 1, Method 1) or host web search binding queries.
 
 ## References
 

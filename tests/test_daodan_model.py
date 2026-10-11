@@ -1,8 +1,13 @@
 """Loader tests for the neutral Daodan plugin model."""
 
+import builtins
+import io
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -15,6 +20,53 @@ VALID = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
 
 class NeutralModelTests(unittest.TestCase):
+    def assert_model_rejected_before_read(self, target: Path, action) -> None:
+        attempted = []
+        original_builtin, original_io = builtins.open, io.open
+        resolved_target = target.resolve()
+
+        def watch(original):
+            def open_owned(file, mode="r", *args, **kwargs):
+                if not isinstance(file, int) and Path(file).resolve() == resolved_target:
+                    if "r" in mode or "+" in mode:
+                        attempted.append(Path(file))
+                        raise AssertionError("Out-of-root control plane opened before rejection")
+                return original(file, mode, *args, **kwargs)
+            return open_owned
+
+        with patch("builtins.open", watch(original_builtin)), patch("io.open", watch(original_io)):
+            with self.assertRaises(ModelError):
+                action()
+        self.assertEqual(attempted, [])
+
+    def test_linked_control_plane_files_are_rejected_before_read(self):
+        temporary = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, temporary, True)
+        for number, member in enumerate(("plugin.toml", "workflows/review.toml")):
+            with self.subTest(member=member):
+                kernel = temporary / f"kernel-{number}"
+                shutil.copytree(VALID, kernel)
+                selected = kernel / member
+                target = temporary / f"owned-target-{number}.toml"
+                target.write_bytes(selected.read_bytes())
+                selected.unlink()
+                selected.symlink_to(target)
+
+                self.assert_model_rejected_before_read(target, lambda: load_plugin(kernel))
+
+    def test_linked_workflow_ancestor_is_rejected_before_sidecar_read(self):
+        temporary = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, temporary, True)
+        kernel = temporary / "kernel"
+        shutil.copytree(VALID, kernel)
+        target_directory = temporary / "owned-workflows"
+        shutil.move(kernel / "workflows", target_directory)
+        (kernel / "workflows").symlink_to(target_directory, target_is_directory=True)
+
+        self.assert_model_rejected_before_read(
+            target_directory / "review.toml", lambda: load_plugin(kernel)
+        )
+
     def test_loads_plugin_and_workflow(self):
         plugin = load_plugin(VALID)
         self.assertEqual(plugin.name, "example")

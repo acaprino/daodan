@@ -49,6 +49,16 @@ Claude and OpenCode commands.
 - [Universal host migration](migration-from-claude-code-daodan.md): installation,
   generated catalogs and supported distribution paths.
 
+## Export compatibility evidence
+
+The [host reference](hosts.md#operational-compatibility-review) describes the
+operational review for all five adapters. The
+[2026-10-11 audit](superpowers/reports/2026-10-11-host-export-compatibility.md)
+records identified instruction, dispatch and permission defects, with source
+locations and the distinction between static checks and live execution. An audit
+finding remains corrective work until its source, rendered exports and affected
+runtime path have been verified.
+
 ## Maintaining the documentation
 
 Edit plugin explanations outside their generated reference markers. Change

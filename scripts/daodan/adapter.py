@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Literal, Mapping
 
 from .model import PluginSpec, WorkflowSpec
+from .validate import SourcePathError, confined_source
 
 HOSTS: tuple[str, ...] = ("claude", "copilot", "codex", "pi", "opencode")
 
@@ -76,14 +77,20 @@ class AdapterError(ValueError):
         super().__init__(f"{path}: {message}")
 
 
-def _read(path: Path) -> Mapping[str, object]:
+def _read(path: Path, root: Path | None = None) -> Mapping[str, object]:
+    try:
+        confined_source(root if root is not None else path.parent, path, allow_missing=True)
+    except SourcePathError as error:
+        raise AdapterError(error.path, error.message) from error
     if not path.is_file():
         raise AdapterError(path, "file does not exist")
-    with path.open("rb") as handle:
-        try:
+    try:
+        with path.open("rb") as handle:
             return tomllib.load(handle)
-        except tomllib.TOMLDecodeError as error:
-            raise AdapterError(path, f"invalid TOML: {error}") from error
+    except tomllib.TOMLDecodeError as error:
+        raise AdapterError(path, f"invalid TOML: {error}") from error
+    except OSError as error:
+        raise AdapterError(path, f"cannot read source: {error}") from error
 
 
 def load_adapter(root: Path, host: str) -> HostAdapter:
@@ -93,7 +100,7 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
     directory = Path(root) / host
 
     capabilities_path = directory / "capabilities.toml"
-    capabilities_table = _read(capabilities_path).get("capabilities", {})
+    capabilities_table = _read(capabilities_path, directory).get("capabilities", {})
     if not isinstance(capabilities_table, dict):
         raise AdapterError(capabilities_path, "[capabilities] must be a table")
     bindings: dict[str, CapabilityBinding] = {}
@@ -117,7 +124,7 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
         )
 
     coordination_path = directory / "coordination.toml"
-    rows = _read(coordination_path).get("strategies", [])
+    rows = _read(coordination_path, directory).get("strategies", [])
     if not isinstance(rows, list) or not rows:
         raise AdapterError(coordination_path, "at least one [[strategies]] entry is required")
     strategies: list[CoordinationStrategy] = []
@@ -143,7 +150,7 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
         strategies.append(strategy)
 
     layout_path = directory / "layout.toml"
-    document = _read(layout_path)
+    document = _read(layout_path, directory)
     layout = document.get("layout", {})
     if not isinstance(layout, dict) or not all(isinstance(item, str) for item in layout.values()):
         raise AdapterError(layout_path, "[layout] must be a table of strings")

@@ -109,5 +109,5 @@ When spawned by a pipeline rather than invoked directly:
   everything the filesystem and git decide. If you find yourself about to report a dead
   export or an unused dependency, that is the boundary being crossed, not a gap being
   filled. Put it under "Not mine".
-- **Output persistence.** Write the report to the supplied path with `Write`. Do not
+- **Output persistence.** Write the report to the supplied path with host repository-write binding. Do not
   return it only as message text: the orchestrator consolidates from the file.

@@ -159,7 +159,7 @@ Master constraint programmer -- modeling, solving, and deploying optimization pr
 7. **Test on small instances** to validate correctness
 8. **Optimize performance** with parallelism, hints, and symmetry breaking
 9. **Handle all solution statuses** gracefully
-10. **Dry-run validation** -- use Bash to run a quick syntax/import check on generated code before presenting
+10. **Dry-run validation** -- use the host shell binding to run a quick syntax/import check on generated code before presenting
 11. **Provide solution interpretation** and validation
 
 ## Synergies with Other Plugins

@@ -56,12 +56,12 @@ instructions above for every reviewer.
 |-------|-----------|---------------|----------|
 | A | Code audit: architecture, failure flow, patterns, scoring | `senior-review:code-auditor` | Always |
 | B | Security | `senior-review:security-auditor` | Always |
-| B2 | Dead code, unused parameters, VCS hygiene (lite, diff-scoped, rules from `repo-hygiene`) | `general-purpose` | Always |
+| B2 | Dead code, unused parameters, VCS hygiene (lite, diff-scoped, rules from `repo-hygiene`) | `project-protocol:isolated-worker` | Always |
 | C | UI race conditions | `senior-review:ui-race-auditor` | Changed files include UI/frontend code (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.component.ts`, `.qml`, or scroll/focus/layout manipulation) |
-| E | Git blame and history | `general-purpose` | Always |
+| E | Git blame and history | `project-protocol:isolated-worker` | Always |
 | F | Testing quality | `testing:test-suite-auditor` | Diff touches test files |
-| G | API contracts | `general-purpose` | Diff touches API-related files (routes, serializers, OpenAPI/GraphQL/proto specs, DTOs) |
-| H | Data migrations | `general-purpose` | Diff touches migration files |
+| G | API contracts | `project-protocol:isolated-worker` | Diff touches API-related files (routes, serializers, OpenAPI/GraphQL/proto specs, DTOs) |
+| H | Data migrations | `project-protocol:isolated-worker` | Diff touches migration files |
 | J | Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness) | `abstraction-architect:abstraction-architect-agent` | Diff adds at least one function/method/class/module/constant table or 5+ line block |
 | L | Temporal resilience (failure-over-time) | `senior-review:temporal-resilience-auditor` | Diff touches timers, schedulers, polling, retry/reconnect, cron, queue workers, daemons, updaters, watchdogs |
 | M | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` | Diff touches schemas, models, ORM, raw SQL, caches, or transaction boundaries |

@@ -36,7 +36,7 @@ Before analysis, load relevant references from the `defect-taxonomy` skill:
    - Microservices: `distributed-integration.md` + `data-design-ops.md`
 3. **When unsure:** `detection-matrix.md` for detection approach prioritization
 
-Use Read tool to load these files from `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/`.
+Use host repository-read binding to load these files from `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/`.
 
 ## ANALYSIS PHASES
 
@@ -276,7 +276,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

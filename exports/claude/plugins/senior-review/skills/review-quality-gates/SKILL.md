@@ -10,6 +10,69 @@ description: >
   or generic team coordination (the host harness covers that).
 ---
 
+<daodan_host_binding host="claude">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
+uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+command field, and use its registered timeout/background schema. Worker dispatch
+uses the available native Agent mechanism and its registered agent-selection and
+prompt fields. Do not turn a prose role label into an invented role argument.
+Inherit the session model unless the declared workflow and active schema permit an
+override. Load installed skills by qualified ID; named roles use their owning
+plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
+Required foreign providers use Claude's marketplace/install commands:
+claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A declared package MCP server is configured through the generated MCP manifest;
+still check its tools are actually available in the active session.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 # Review Quality Gates
 
 Gates and consolidation rules shared by /senior-review:team-review and /senior-review:code-review.
@@ -166,9 +229,9 @@ This section is the source of truth. `/senior-review:team-review` (Phase 4b) and
 
 ### The four lenses
 
-Spawn one `Agent` per lens per finding. Use `role: general-purpose` for lenses 1-3 and `role: senior-review:premise-auditor` for lens 0. Omit `model` for lenses 0, 1 and 2 so they inherit the session model (reasoning-heavy), `model: sonnet` for lens 3 (calibration).
+Dispatch one isolated worker per lens per finding through the consuming workflow's host harness. Lens 0 uses the declared `senior-review:premise-auditor` binding; lenses 1-3 use only the declared `project-protocol:isolated-worker` binding with the lens-specific briefs below. Every brief carries the owned scope, authorization, budget, declared inputs and expected report path. Record each delivered or failed outcome in the same delivery ledger. Independent lenses receive no peer findings before their delivery. All lenses inherit the session model by default; apply a supported model override only when explicitly requested by the user and bound by the host harness, never by choosing a host-specific alias here.
 
-**Lens 3 is gated.** Lenses 1 and 2 run first, in parallel across findings (`run_in_background: true`). Lens 3 (severity calibration) is spawned only for findings that survive them (REAL from both, or the tie that marks them `contested`). Calibrating the severity of a finding the panel is about to discard is spend for nothing; the gate cuts roughly a third of the verifier calls with no change to the survival semantics. Findings killed by lenses 1-2 never reach lens 3 and keep their original severity in the `filtered` record.
+**Lens 3 is gated.** Lenses 1 and 2 run first, independently across findings using the host harness's supported parallel or serial isolated topology. Lens 3 (severity calibration) is spawned only for findings that survive them (REAL from both, or the tie that marks them `contested`). Calibrating the severity of a finding the panel is about to discard is spend for nothing; the gate cuts roughly a third of the verifier calls with no change to the survival semantics. Findings killed by lenses 1-2 never reach lens 3 and keep their original severity in the `filtered` record.
 
 The panel has four lenses. **Lens 0 is gated on provenance and runs first**, before lenses 1 and 2, for the same reason lens 3 is gated last: a finding a veto will discard should not consume the other lenses. Lens 3 stays gated on survival.
 
@@ -176,7 +239,7 @@ Lens 0 runs for findings whose `premise_provenance` is `shared-context` or `mixe
 
 The quantifier route exists because sharing is how an over-scoped premise *spreads*, not how it is *born*. The incident this pipeline was built from was a true local observation ("no credential-bearing response path exists") generalized to all paths by a reviewer that had read only one of them. Declared honestly as `independent`, it would pass a provenance-only gate untouched. A universal claim is exactly the claim one counterexample kills, which is the thing Lens 0 is good at.
 
-**Lens 0 prompt (Premise Challenge):** spawn with `role: senior-review:premise-auditor`, mode 2, inheriting the session model.
+**Lens 0 prompt (Premise Challenge):** dispatch the declared `senior-review:premise-auditor` worker in mode 2, inheriting the session model.
 
 ```
 Mode 2: adversarial premise challenge.
@@ -334,7 +397,7 @@ In the prose/Agent substrate there is no token-budget API. The guard triggers on
 
 ## Completeness Critic
 
-After verification, one critic agent asks what the review failed to cover. It turns blind spots from passive side effects into active output and, when warranted, into one more round of work.
+After verification, one isolated `project-protocol:isolated-worker` critic uses the consuming workflow's host binding and asks what the review failed to cover. It turns blind spots from passive side effects into active output and, when warranted, into one more round of work.
 
 This section is the source of truth. `/senior-review:team-review` (Phase 4c) and `/senior-review:code-review` (Step 4c) both drive the critic from here.
 

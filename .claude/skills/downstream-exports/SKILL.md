@@ -141,6 +141,60 @@ Copilot and OpenCode are the hosts that rewrite role frontmatter. OpenCode's `ag
 
 Substitution is `string.Template` with an allowlisted context (`scripts/daodan/templates.py`). An unknown placeholder is an error, never an empty string, and a layout path that escapes its package is refused.
 
+## Operational compatibility review
+
+Review the complete installed instruction path, not just the manifest or the
+wrapper. Resolve the entry, every skill it loads, the dispatched role, its bundled
+references and any generated dispatch resource. A known source digest does not
+validate the meaning of those instructions on another host.
+
+1. Read the affected kernel bodies and workflow sidecars with the five adapters.
+   List actual tools and input fields, allowed workers, model inheritance or
+   documented overrides, questions, dependency recovery and output contracts.
+   Distinguish a skill load from role dispatch and a workflow entry on each host.
+2. Inspect all worker declarations. A single `phase.role` with required isolation
+   needs an executable host binding just as a fan-out does. Compare sidecar phases
+   with dispatch in the body; a body-only worker must not evade the registry,
+   provider checks, delivery barrier or permissions. Preserve the declared final
+   report owner and treat an empty worker response as missing delivery.
+3. Follow operational instructions into bundled references and dispatched role
+   resources. Frontmatter conversion and a correct outer harness do not translate
+   nested `Task`, `Agent`, shell calls, question APIs or foreign input fields.
+   Check that the role's actual tools permit its stated actions. An omitted
+   source restriction must not become a search-only role during rendering.
+4. Verify the terminal and browser contract: interactive stdin, background
+   execution, capture lifetime, completion signal and the declared MCP server.
+   Require a host-supported checkpoint; if stdin is unavailable, bind an explicit
+   stop signal. Check the required dependency's actual availability. A different
+   browser skill is not evidence that the declared mechanism exists.
+5. Check the active host's install/recovery instructions for required external
+   providers. Preserve mandatory dependencies, never vendor them or reduce the
+   workflow when a provider is missing. A qualified foreign-marketplace identity
+   can survive the export; a Claude-only recovery command cannot serve all hosts.
+6. Classify each occurrence before adapting it: executable host instruction,
+   domain code/example, or host-as-subject content. Fix kernel obligations,
+   adapter bindings or compiler rendering at the owning layer. Do not globally
+   rename tokens, overwrite pinned consumer bytes or hand-edit generated output.
+7. For a behavior change, add focused compiler regressions over all five hosts
+   covering the entry plus referenced operational content, actual dispatch
+   fields, permissions and unavailable-mechanism behavior. Rebuild all hosts and
+   run the existing gates. Extend host-vocabulary checks where necessary and
+   remove corrected baseline entries; never increase the baseline or equate a
+   passing structural gate with working runtime dispatch.
+8. Record exactly what was measured. Compiler rendering, installed-host fixture
+   probes and the affected live workflow are separate evidence. Name the host
+   version, installed provider closure, exercised path, artifacts and unresolved
+   limits. Documentation-only reviews require instruction parity, link and diff
+   checks; they do not require regenerating exports or claim runtime repair.
+
+External consumers can add their own permissions, routing, models and project
+storage contract. Verify those bindings in the consumer as well as the shared
+OpenCode export. A relocation of run output must update helper arguments,
+contracts and result readers together; a prose-only rename is insufficient.
+
+The [host reference](../../../docs/hosts.md#operational-compatibility-review)
+links dated audits and separates identified debt from implemented fixes.
+
 ## The two Claude placeholders a kernel may write
 
 A kernel body says `${CLAUDE_PLUGIN_ROOT}/skills/x/scripts/y.py` because the bundled-path linter requires that form: it is what survives installation on Claude. It says `$ARGUMENTS` because that is what a Claude command expands. Neither is defined on Copilot or Codex, so the renderer rewrites both per host from four layout keys, and inserts the host's explanation once, after the frontmatter, in every Markdown file that uses the reference:

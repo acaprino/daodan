@@ -13,7 +13,7 @@ You are a security auditor. Think like an attacker. Your job is to find exploita
 
 ## KNOWLEDGE BASE
 
-Before analysis, load relevant references from the `defect-taxonomy` skill using Read tool:
+Before analysis, load relevant references from the `defect-taxonomy` skill using host repository-read binding:
 
 - **Always load:** `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/security.md` -- comprehensive vulnerability patterns with CWE mappings, detection strategies, code signatures
 - **For API/distributed code:** also load `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/distributed-integration.md` -- API contract errors, protocol security, service mesh misconfig
@@ -169,7 +169,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

@@ -1,6 +1,6 @@
 # MDN WebExtensions API URL Index
 
-Quick-lookup index for official Mozilla documentation. Use these URLs with WebFetch for detailed API info.
+Quick-lookup index for official Mozilla documentation. Use these URLs with host page-fetch binding for detailed API info.
 
 ## Base URLs
 

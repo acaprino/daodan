@@ -477,9 +477,17 @@ def compare_files(manifest: dict, target: Path, verify: bool = False) -> dict:
     Fast path: equal size and mtime means unchanged, with no read at all. Any
     other case is hashed, because a checkout or a `touch` moves the mtime
     without changing a byte, and the hash is what decides.
+
+    Keep the manifest's coordinate root even when Git metadata is unavailable.
+    Rediscovering it can rename surviving files from one comparison to the next.
     """
     target = target.resolve()
-    root = repo_root(target).resolve()
+    recorded_root = manifest.get("root")
+    root = (
+        Path(recorded_root).resolve()
+        if isinstance(recorded_root, str) and recorded_root
+        else repo_root(target).resolve()
+    )
     old = manifest.get("files", {})
     structural_refresh = manifest.get("parser_fingerprint") != parser_fingerprint()
     current: dict[str, Path] = {}

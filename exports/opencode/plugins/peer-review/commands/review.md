@@ -1,11 +1,138 @@
 ---
 description: 'Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the sessions context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the sessions own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session.'
-argument-hint: '[<path-to-plan-or-spec> | <topic>] [--challenger=<profile>] [--rounds=N] [--dry-run] [--apply]'
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
 
+<daodan_host_binding host="opencode">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
+shell execution uses shell, network tools are webfetch/websearch, and clarification
+uses the registered question tool. shell takes command, optional workdir, timeout
+in milliseconds and background. It does not provide interactive stdin. Persistent
+capture uses background: true and an explicit noninteractive stop signal.
+Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
+subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
+continues that child, and background: true requests asynchronous completion.
+Use only roles allowed by the current harness and permissions. A child cannot
+dispatch nested workers when its permissions or the configured depth deny it.
+Workflow entries are /<plugin>:<workflow>, registered by the package loader.
+Inherit the session model; an override requires its authorized, actually available
+provider/model identity, not another host's short model alias.
+The loader includes required local providers and registers plugin-declared MCP
+servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
+through this host, never a Claude marketplace command. Check the active registry:
+registration metadata alone does not prove a connected server or usable tool.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# review
+
 <!-- Generated by the Daodan compiler for opencode. Edit the kernel, never this file. -->
+
+## Execution harness
+
+Selected topology: **parallel-subagents**, with role delivery by **named-agent**, and declared
+isolation **required**.
+
+Dispatch one worker per entry in the plan below with the `subagent` tool. Name the role as the
+agent, using the qualified identity in the bindings below, and give it a short `description` and the full
+task as `prompt`. Each agent runs in a fresh child session, so isolation is native here.
+For a local role the qualified form is `agent: "peer-review:<role>"`; external roles
+use their owner's prefix from the bindings, never the coordinator's prefix.
+
+Under `parallel-subagents`, dispatch every worker of one phase with `background: true`, then wait
+for every completion notice before the phase closes; do not poll. Under `serial-isolated`, dispatch
+them one at a time in the foreground.
+
+Every role below is registered as an agent by this package. A `subagent` call that answers with an
+unknown agent means the install is broken: stop and report it, never continue with a shorter
+report.
+
+Coordinator completion ownership: keep the method's owned run and delivery ledger,
+including each expected worker, attempt, report path and required check evidence.
+Validate report artifacts before recording delivered. An empty final message or
+worker stop remains missing delivery: inspect or resume when permitted, otherwise
+record failed with the uncovered scope. Follow the declared join and phase gates;
+a recorded failure is accounted for, never converted into a successful delivery.
+Continue authorized work and recovery until the requested result and its checks
+exist or a concrete blocker is recorded. Preserve the exclusive final report owner
+and the ledger schema; a tool exit or a promise cannot satisfy completion.
+
+Harness obligations, none of them optional:
+
+- Every dispatched worker runs in its own context and reads only coordinator-declared inputs.
+  Independent reviewers never read peer results before their own delivery.
+- Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
+  closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
+  `failed`. A worker reports delivered or failed in its final message; there is no shared task
+  list, so the coordinator keeps that record itself.
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `brief-builder`, `packet-builder`, `respondent`
+- Workers may write only intermediate reports explicitly assigned by the coordinator.
+  The final report artifact has one exclusive owner in its declaring phase.
+
+Dispatch plan:
+
+1. `run`: runs in the orchestrating context; produces `artifact:review-report`.
+
+Role bindings:
+
+- `brief-builder`: dispatch the installed `peer-review:brief-builder` agent by its qualified identity.
+- `packet-builder`: dispatch the installed `peer-review:packet-builder` agent by its qualified identity.
+- `respondent`: dispatch the installed `peer-review:respondent` agent by its qualified identity.
+
+The phase graph and the record schemas are in `contracts/review.workflow.toml`.
+
+## Method
 
 # Cross-Model Peer Review
 
@@ -33,7 +160,7 @@ respondent, and computes a verdict from a ledger that is never hand-edited.
    "Transport error handling" below at every call site; never treat an error payload as
    a challenger reply.
 8. **Never end a turn waiting.** Wherever the run needs the operator, it asks with
-   `AskUserQuestion`; wherever it stops for good, it says the run is over and why. A
+   the active host question mechanism; wherever it stops for good, it says the run is over and why. A
    turn that ends on a printed question is indistinguishable from a finished run, and
    an operator who reads it as finished waits for a run that is waiting for them.
    This is a dialogue between two people, not a prompt on a terminal: consent and every
@@ -82,7 +209,7 @@ If the tool returns `{"error": "<message>"}` instead of a reply (`text`, `usage`
 3. Stop issuing further `peer_ask` calls for the rest of the run.
 4. If this happened on the very first call (Phase 2, round 1), there is no ledger yet
    and nothing partial exists to protect. Report the verbatim error, then **ask with
-   `AskUserQuestion`** whether to send the same packet again or end the run. A timeout
+   the active host question mechanism** whether to send the same packet again or end the run. A timeout
    is the common case here and it is transient: the challenger is thinking and the
    socket cannot tell that apart from a dead connection. Retrying resends
    `00-packet.md` unchanged, under the consent already given at Phase 1b, so it needs
@@ -175,8 +302,8 @@ unavailable profile stops the run before an agent is spent building a brief.
 1. Spawn `peer-review:brief-builder` with the run directory and the topic hint:
 
    ```
-   Task:
-     subagent_type: "peer-review:brief-builder"
+   Worker assignment (translate through the declared host harness):
+     declared_role: "peer-review:brief-builder"
      description: "Materialize the decision brief"
      prompt: |
        Run directory: <run directory>
@@ -222,8 +349,8 @@ unavailable profile stops the run before an agent is spent building a brief.
    the mandate text:
 
    ```
-   Task:
-     subagent_type: "peer-review:packet-builder"
+   Worker assignment (translate through the declared host harness):
+     declared_role: "peer-review:packet-builder"
      description: "Build the challenge packet"
      prompt: |
        Artifact path: <artifact path>
@@ -304,7 +431,7 @@ shown because consent is given to one specific file, and the transport reports b
 the digest of what it actually sent: the two are compared in Phase 2, which is what
 makes this gate a decision about a document rather than about an intention.
 
-3. **Ask, using `AskUserQuestion`.** Do not end the turn on printed text: to the
+3. **Ask, using the active host question mechanism.** Do not end the turn on printed text: to the
    operator, output that asks for nothing is output from a run that finished. Header
    `Send packet`, question `Send this packet to <model> at <base_url>?`, two options:
 
@@ -431,8 +558,8 @@ makes this gate a decision about a document rather than about an intention.
    `03-ledger.md` not already `TRANSMISSION_ARTIFACT`) and the ledger itself:
 
    ```
-   Task:
-     subagent_type: "peer-review:respondent"
+   Worker assignment (translate through the declared host harness):
+     declared_role: "peer-review:respondent"
      description: "Answer round 1 findings"
      prompt: |
        Challenge file: <run directory>/01-challenge-r1.md
@@ -662,7 +789,7 @@ not already a ledger field. Sections, in order:
 1. **Accepted changes**, as concrete edits. One entry per `RESOLVED_ACCEPT` finding:
    the finding id, the claim in one line, and a concrete edit action against the
    artifact (what text or section changes, and how) specific enough for `--apply` to
-   execute it with the Edit tool.
+   execute it through the host repository-edit binding.
 2. **Refutations with evidence.** One entry per `RESOLVED_REFUTE` finding: the claim,
    the respondent's locator and evidence that satisfied the falsifier as stated.
 3. **Standoffs.** One entry per `STANDOFF` finding: the challenger's position, the
@@ -741,7 +868,7 @@ than silently ignoring it.
 - **Without `--apply`**: print the Accepted changes edit list from the verdict and
   stop. Nothing is modified.
 - **With `--apply`**: for each Accepted changes entry, apply the described edit to the
-  artifact with the Edit tool. After all edits, append a changelog section to the
+  artifact through the host repository-edit binding. After all edits, append a changelog section to the
   artifact:
 
   ```markdown

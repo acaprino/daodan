@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:19fc4333cc199d0c92df00040ac23cce266590fe1fd18e23cd05368ed89ae0ff",
+  "coreDigest": "sha256:f1c6a83873d1f760d118e6f647c5b9d41ac3f65b9de9f966876d5d02b940f9c6",
   "harnessStrategies": {
     "export-to-markmind": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "learning",
-  "version": "1.7.2"
+  "version": "1.7.3"
 }

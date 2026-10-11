@@ -1,0 +1,12 @@
+Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
+uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+command field, and use its registered timeout/background schema. Worker dispatch
+uses the available native Agent mechanism and its registered agent-selection and
+prompt fields. Do not turn a prose role label into an invented role argument.
+Inherit the session model unless the declared workflow and active schema permit an
+override. Load installed skills by qualified ID; named roles use their owning
+plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
+Required foreign providers use Claude's marketplace/install commands:
+claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A declared package MCP server is configured through the generated MCP manifest;
+still check its tools are actually available in the active session.

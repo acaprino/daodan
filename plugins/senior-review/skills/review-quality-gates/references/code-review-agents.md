@@ -13,7 +13,7 @@ definitions.
 Isolated worker brief:
   - description: "Code audit for senior-review command"
   - role: "senior-review:code-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Perform a comprehensive code audit of the following changes covering architecture,
     failure flow analysis, pattern consistency, and quality scoring.
@@ -70,7 +70,7 @@ Isolated worker brief:
 Isolated worker brief:
   - description: "Security review for senior-review command"
   - role: "senior-review:security-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following code changes for security vulnerabilities.
     You have both the diff AND the full file contents for context.
@@ -118,8 +118,8 @@ cannot have been caused by the diff under review.
 ```
 Isolated worker brief:
   - description: "Dead code and diff-scoped VCS hygiene detection for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Detect dead code, unused parameters, and VCS hygiene defects in the files
     changed by the diff. Use BOTH automated tools AND manual analysis.
@@ -135,7 +135,7 @@ Isolated worker brief:
 
     ## Phase 1: Automated Lint (MANDATORY)
 
-    You MUST run actual linting tools via Bash on the changed files. Do NOT
+    You MUST run actual linting tools through the host shell binding on the changed files. Do NOT
     skip this phase or substitute it with manual reading.
 
     **Auto-detect language from changed file extensions:**
@@ -285,7 +285,7 @@ Isolated worker brief:
 Isolated worker brief:
   - description: "UI race condition analysis for senior-review command"
   - role: "senior-review:ui-race-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Analyze the following UI code changes for race conditions between async rendering,
     layout, and event handlers.
@@ -340,8 +340,8 @@ Run in parallel with Agents A-D. Provides historical context that other agents l
 ```
 Isolated worker brief:
   - description: "Git blame and history analysis for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Analyze the git history and blame data for the following changed files to find
     history-based issues that pure code analysis would miss.
@@ -398,7 +398,7 @@ The `testing` plugin is a hard dependency of `senior-review`, so `testing:test-s
 Isolated worker brief:
   - description: "Testing review for senior-review command"
   - role: "testing:test-suite-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
 
@@ -428,8 +428,8 @@ Isolated worker brief:
 ```
 Isolated worker brief:
   - description: "API contract review for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the API contract changes for backwards compatibility and correctness.
 
@@ -465,8 +465,8 @@ Isolated worker brief:
 ```
 Isolated worker brief:
   - description: "Data migrations review for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the database migration changes for safety and correctness.
 
@@ -509,7 +509,7 @@ This is the only agent whose question is about the rest of the codebase rather t
 Isolated worker brief:
   - description: "Structural entropy review for senior-review command"
   - role: "abstraction-architect:abstraction-architect-agent"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
 
@@ -559,7 +559,7 @@ This dimension exists because the synchronous lenses (A through K) each see the 
 Isolated worker brief:
   - description: "Temporal resilience review for senior-review command"
   - role: "senior-review:temporal-resilience-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following changes for failure-over-time behavior.
 
@@ -602,7 +602,7 @@ This dimension is distinct from logic integrity: a domain rule violated in appli
 Isolated worker brief:
   - description: "Data integrity review for senior-review command"
   - role: "senior-review:data-integrity-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following changes for persistence-semantics defects.
 
@@ -643,7 +643,7 @@ Isolated worker brief:
 Isolated worker brief:
   - description: "Resource lifecycle review for senior-review command"
   - role: "senior-review:resource-lifecycle-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following changes for resource ownership and release defects.
 

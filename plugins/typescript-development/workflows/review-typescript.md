@@ -13,7 +13,7 @@ You are a senior TypeScript type-safety auditor. Review TypeScript code for type
 ## CRITICAL RULES
 
 1. **Type-safety-only scope.** Ignore style, naming, formatting, performance, and dead code. Focus on where the type system stops telling the truth.
-2. **Run the agent.** Fire the type-safety-auditor agent with the full context.
+2. **Run the declared reviewer.** Dispatch `typescript-development:type-safety-auditor` in its required isolated context through the host harness with the full prepared scope.
 3. **Write markdown report.** Output is `.ts-review/report.md`: an actionable checklist with scores, findings, and fix instructions.
 4. **Never enter plan mode.** Execute immediately.
 
@@ -65,43 +65,46 @@ Read a representative cross-section:
 
 ## Step 3: Run Review Agent
 
-```
-Task:
-  subagent_type: "typescript-development:type-safety-auditor"
-  description: "TypeScript type-safety audit"
-  prompt: |
-    Audit the type safety of this TypeScript codebase.
+The host harness binds the declared `typescript-development:type-safety-auditor` role. Give it the
+following task, the exact scope, relevant files, authorization and an owned
+intermediate report path `.ts-review/worker-findings.md`. The reviewer
+returns its findings and a delivered or failed outcome; it does not write
+the final report. Record that outcome before the report phase. A failed or
+missing delivery leaves the review incomplete and must be reported.
 
-    ## Scope
-    [list of key files sampled]
+````text
+Audit the type safety of this TypeScript codebase.
 
-    ## File Contents
-    [paste tsconfig.json, boundary modules, and sampled core modules]
+## Scope
+[list of key files sampled]
 
-    ## Compiler Output (if available)
-    [paste tsc --noEmit output, or "No compiler output available"]
+## File Contents
+[paste tsconfig.json, boundary modules, and sampled core modules]
 
-    ## Linter Output (if available)
-    [paste ESLint JSON report, or "No linter output available"]
+## Compiler Output (if available)
+[paste tsc --noEmit output, or "No compiler output available"]
 
-    ## Type-Safety Rules Checklist (20 rules; flag violations by id)
+## Linter Output (if available)
+[paste ESLint JSON report, or "No linter output available"]
 
-    **1. Any Erosion (CRITICAL):** any-explicit (unknown plus narrowing over any), any-implicit-boundary (type JSON.parse and response.json() immediately), any-generic-default (never <T = any>)
-    **2. Unsound Casts (CRITICAL):** cast-as-unsound (shape-changing as needs a runtime check), cast-double (as unknown as X is a bypass), cast-const-assertion (as const over widening annotations)
-    **3. Boundary Validation (CRITICAL):** boundary-http (schema-parse payloads at the edge), boundary-queue (validate messages on receipt), boundary-storage (validate and version storage reads), boundary-env (one validated config module)
-    **4. Assertion Abuse (HIGH):** assert-non-null (! needs justification or a fail-fast check), assert-ts-expect-error (@ts-expect-error with reason, never @ts-ignore)
-    **5. Compiler Configuration (HIGH):** config-strict (strict true baseline), config-unchecked-index (noUncheckedIndexedAccess), config-exact-optional (exactOptionalPropertyTypes), config-skiplibcheck (never hide first-party errors)
-    **6. Exhaustiveness (MEDIUM-HIGH):** exhaust-switch-never (never assertion in default), exhaust-satisfies-record (satisfies Record for lookup tables)
-    **7. Generics Soundness (MEDIUM):** generics-constraint (constrain public type parameters), generics-type-guards (predicates verify the whole shape)
+## Type-Safety Rules Checklist (20 rules; flag violations by id)
 
-    ## Instructions
-    Use the checklist as your primary audit framework. Cite rule ids in every finding (e.g. "Violates boundary-http"). Cross-check candidates against the compiler output: a tsc error near a grep hit raises confidence.
+**1. Any Erosion (CRITICAL):** any-explicit (unknown plus narrowing over any), any-implicit-boundary (type JSON.parse and response.json() immediately), any-generic-default (never <T = any>)
+**2. Unsound Casts (CRITICAL):** cast-as-unsound (shape-changing as needs a runtime check), cast-double (as unknown as X is a bypass), cast-const-assertion (as const over widening annotations)
+**3. Boundary Validation (CRITICAL):** boundary-http (schema-parse payloads at the edge), boundary-queue (validate messages on receipt), boundary-storage (validate and version storage reads), boundary-env (one validated config module)
+**4. Assertion Abuse (HIGH):** assert-non-null (! needs justification or a fail-fast check), assert-ts-expect-error (@ts-expect-error with reason, never @ts-ignore)
+**5. Compiler Configuration (HIGH):** config-strict (strict true baseline), config-unchecked-index (noUncheckedIndexedAccess), config-exact-optional (exactOptionalPropertyTypes), config-skiplibcheck (never hide first-party errors)
+**6. Exhaustiveness (MEDIUM-HIGH):** exhaust-switch-never (never assertion in default), exhaust-satisfies-record (satisfies Record for lookup tables)
+**7. Generics Soundness (MEDIUM):** generics-constraint (constrain public type parameters), generics-type-guards (predicates verify the whole shape)
 
-    For each finding: rule id, severity (Critical/High/Medium/Low), file + line, confidence (0-100), what breaks at runtime, concrete fix with a code example.
-    Note what is done well.
+## Instructions
+Use the checklist as your primary audit framework. Cite rule ids in every finding (e.g. "Violates boundary-http"). Cross-check candidates against the compiler output: a tsc error near a grep hit raises confidence.
 
-    Return the structured JSON block from your output format at the end.
-```
+For each finding: rule id, severity (Critical/High/Medium/Low), file + line, confidence (0-100), what breaks at runtime, concrete fix with a code example.
+Note what is done well.
+
+Return the structured JSON block from your output format at the end.
+````
 
 ## Step 4: Generate Markdown Report
 

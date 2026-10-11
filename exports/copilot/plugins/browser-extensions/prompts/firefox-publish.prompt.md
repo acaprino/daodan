@@ -6,114 +6,99 @@ argument-hint: '[path] [--channel listed|unlisted] [--version <semver>] [--dry-r
 
 > Arguments: `[path] [--channel listed|unlisted] [--version <semver>] [--dry-run]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# firefox-publish
+
 <!-- Generated by the Daodan compiler for copilot. Edit the kernel, never this file. -->
 
-# Firefox Extension Publish
+## Coordinator handoff
 
-Signed publication to AMO. Covers pre-flight validation, signing via `web-ext sign`, and post-submission follow-up.
+Use the registered custom-agent dispatch mechanism to invoke the installed agent
+`browser-extensions:firefox-publish-coordinator` with the complete original user request,
+its arguments, scope, authorization and budget. Workflow arguments: <arguments>
 
-## CRITICAL RULES
+This prompt is the workflow entry; the named coordinator contains its execution
+harness and method. Confirm that it is installed and can dispatch the workers in
+its declared agents allowlist. If the host cannot provide the required coordinator
+and nested worker capability, report that blocker instead of running the method
+in this prompt's context or loading the coordinator as a skill.
 
-1. **Run lint first**. Never submit unlinted -- Mozilla's AMO reviewers reject submissions for issues `web-ext lint` catches in 30 seconds.
-2. **Never commit API credentials**. Credentials live in env vars or a gitignored `.env`; refuse to proceed if they appear in the repo.
-3. **Choose the right channel**:
-   - `listed` -- public AMO listing, goes through Mozilla review (1-14 days, sometimes longer)
-   - `unlisted` -- self-distribution, auto-signed in seconds, not shown on AMO
-4. **Bump version before submission**. AMO rejects resubmissions with the same version string.
-5. **Confirm with the user before upload**. Signing is fast to revert; a listed review that starts is annoying to withdraw.
-
-## Procedure
-
-### 1. Pre-flight
-
-```bash
-# Check credentials
-test -n "$WEB_EXT_API_KEY" || fail "WEB_EXT_API_KEY not set"
-test -n "$WEB_EXT_API_SECRET" || fail "WEB_EXT_API_SECRET not set"
-
-# Check .env or credential files are gitignored
-git check-ignore -v .env || fail ".env is not gitignored"
-```
-
-If credentials are missing, guide the user to https://addons.mozilla.org/en-US/developers/addon/api/key/ to generate them.
-
-### 2. Run lint
-
-Invoke `/browser-extensions:firefox-lint` first. If any blockers, stop.
-
-### 3. Bump version
-
-Read current version from `manifest.json`. If `--version` is supplied, use it; otherwise ask the user for:
-- patch (`0.1.0` -> `0.1.1`) -- bug fixes
-- minor (`0.1.0` -> `0.2.0`) -- new features
-- major (`0.1.0` -> `1.0.0`) -- breaking change (first public release is traditionally `1.0.0`)
-
-Update both `manifest.json` and `package.json`. Stage these edits but DO NOT commit automatically -- the user may want to do a final review.
-
-### 4. Build
-
-```bash
-cd "$TARGET"
-npx web-ext build --overwrite-dest
-# Artifact: .web-ext-artifacts/<name>-<version>.zip
-```
-
-Verify the artifact exists and is reasonably sized (warn if > 10 MB -- large extensions get slower AMO review).
-
-### 5. Sign / upload
-
-**Listed channel (public review):**
-```bash
-npx web-ext sign \
-  --api-key="$WEB_EXT_API_KEY" \
-  --api-secret="$WEB_EXT_API_SECRET" \
-  --channel=listed
-```
-
-**Unlisted channel (self-distribution, auto-signed):**
-```bash
-npx web-ext sign \
-  --api-key="$WEB_EXT_API_KEY" \
-  --api-secret="$WEB_EXT_API_SECRET" \
-  --channel=unlisted
-```
-
-With `--dry-run`, stop before signing and print the command the user would run.
-
-### 6. Post-submission
-
-**For listed:**
-- Tell the user the submission ID
-- Link to the AMO developer dashboard: `https://addons.mozilla.org/en-US/developers/addon/<slug>/versions`
-- Review typically takes 1-14 days; expect extra time for extensions with broad host_permissions or native messaging
-- If rejected, Mozilla emails a reason; common causes: obfuscated code, remote-hosted code, unjustified permissions, missing source code submission (required for bundlers)
-
-**For unlisted:**
-- Signed XPI is written to `.web-ext-artifacts/`; user hosts it themselves
-- For auto-update, add an `updates.json` or `update_url` in `manifest.json` pointing to a signed update feed
-
-### 7. Tag release
-
-Suggest (do not auto-execute):
-```bash
-git tag v<new-version>
-git push origin v<new-version>
-```
-
-Optionally open a GitHub release with the signed XPI attached.
-
-### 8. Source code submission reminder (listed only)
-
-If the project uses a bundler (webpack, Vite, Rollup, esbuild), Mozilla requires the original source code plus build instructions to be submitted alongside the signed XPI. `web-ext sign --channel=listed` will prompt; otherwise manually attach via the AMO dashboard.
-
-Minimum source-upload contents:
-- Original source (src/, package.json, lockfile)
-- Build config (webpack.config.js, vite.config.ts, etc.)
-- README.md explaining how to reproduce the build from source
-- No node_modules/ or build artifacts
-
-## Synergies
-
-- Scaffolding a new extension -> `/browser-extensions:firefox-scaffold`
-- Pre-submission lint -> `/browser-extensions:firefox-lint`
-- API / manifest / MDN lookups -> `browser-extensions:firefox-extension-dev-agent` agent
+The coordinator must preserve the phase graph, worker isolation, delivery barriers
+and exclusive final report owner in `contracts/firefox-publish.workflow.toml`.
+Wait for its final delivery and verify required report artifacts. A stopped,
+failed or empty coordinator is not successful delivery. Forward its final result
+and blockers to the user; do not rewrite its report or create a second final owner.

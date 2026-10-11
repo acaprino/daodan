@@ -39,7 +39,7 @@ For the selected severities, spawn one or more fix subagents:
 ```
 Isolated worker brief:
   - description: "Fix [N] review findings"
-  - role: "general-purpose"
+  - role: "project-protocol:isolated-worker"
   - prompt: |
     Fix the following code review findings. For each finding, apply the
     minimal correct fix. Run tests after fixing to verify no regressions.

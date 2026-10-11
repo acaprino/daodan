@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:bdd79128f3032576dca8f72d7f56e075efab2b4f77a48ddd5119a1fa15c27c89",
+  "coreDigest": "sha256:061bb58d4539fa0ab649d626698736aca01c3f8bd886c0f50247019ece1270a8",
   "harnessStrategies": {
     "create-presentation": "parallel-subagents",
     "document": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "codex",
   "overrides": [],
   "plugin": "office",
-  "version": "1.1.0"
+  "version": "1.1.1"
 }

@@ -15,7 +15,7 @@ import re
 from pathlib import Path
 from typing import AbstractSet
 
-from .validate import ValidationIssue
+from .validate import SourcePathError, ValidationIssue, confined_source, source_members
 
 SECRET_FILENAMES: frozenset[str] = frozenset(
     {
@@ -66,9 +66,12 @@ def scan_trust(root: Path, allowlisted: AbstractSet[Path]) -> list[ValidationIss
     allowed = {Path(item) for item in allowlisted}
     issues: list[ValidationIssue] = []
 
-    for path in sorted(root.rglob("*"), key=lambda item: item.as_posix()):
-        if not path.is_file():
-            continue
+    try:
+        members = source_members(root)
+    except SourcePathError as error:
+        return [ValidationIssue("unsafe-source-path", error.path, error.message)]
+
+    for path in members:
         relative = path.relative_to(root)
         if relative in allowed:
             continue
@@ -82,7 +85,11 @@ def scan_trust(root: Path, allowlisted: AbstractSet[Path]) -> list[ValidationIss
         if path.suffix.lower() not in TEXT_SUFFIXES:
             continue
         try:
+            confined_source(root, path)
             content = path.read_text(encoding="utf-8")
+        except SourcePathError as error:
+            issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
+            continue
         except (UnicodeDecodeError, OSError):
             continue
         if PRIVATE_KEY_HEADER.search(content):

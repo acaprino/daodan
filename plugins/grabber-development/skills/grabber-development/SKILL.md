@@ -17,14 +17,14 @@ When this skill activates on a scraping task, **your next non-question tool call
 
 The one carve-out is a target listed under **Bundled Targets** below. Its Discovery Gate has already been run and its capture is recorded, so reading that reference and running its script satisfies this rule without reopening a browser. Anything not on that list gets the browser.
 
-The default path is **user-driven navigation with live capture**, not Claude-clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
+The default path is **user-driven navigation with live capture**, not automated clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
 
 1. Ask the bare minimum to start: target URL, what data is wanted, authenticated yes/no. One short batch of questions, then stop asking.
-2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, on Claude Code installed with `claude plugin install playwright@claude-plugins-official`, on other hosts by registering `npx @playwright/mcp@latest` as the MCP server `playwright`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, write an inline Patchright script via `Bash` that runs with `headless=False`, attaches every handler in the Capture Surface, and parks on `input()` waiting for the user.
-3. Tell the user verbatim: "Browser is open with full network capture (XHR + fetch + WebSocket + SSE + workers + cookies + main-frame navigations). Log in, navigate to the data, apply the filters you'd use day-to-day, then press Enter here so I can dump the capture and reason from real endpoints."
-4. While the user navigates, you watch the capture stream. When they press Enter you have: real URLs, real endpoint paths, real field names, real WebSocket frames, real auth cookies. *Now* you can scaffold.
+2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, on Claude Code installed with `claude plugin install playwright@claude-plugins-official`, on other hosts by registering `npx @playwright/mcp@latest` as the MCP server `playwright`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, run an inline Patchright script through the host shell binding with `headless=False` and every handler in the Capture Surface. Keep it alive through the host-supported background/session mechanism and a caller-controlled completion signal; do not assume interactive stdin.
+3. Tell the user verbatim: "Browser is open with full network capture (XHR + fetch + WebSocket + SSE + workers + cookies + main-frame navigations). Log in, navigate to the data, apply the filters you'd use day-to-day, then tell me when you are done so I can signal the capture process and reason from real endpoints."
+4. While the user navigates, you watch the capture stream. When they signal completion and the caller stops the capture, you have: real URLs, real endpoint paths, real field names, real WebSocket frames, real auth cookies. *Now* you can scaffold.
 
-The Claude-drives variant is fine only when there is no login, no 2FA, and no UI-knowledge gap. Same launch, same capture handlers; you call `page.goto` / `page.click` yourself instead of parking on `input()`.
+The caller-driven variant is fine only when there is no login, no 2FA, and no UI-knowledge gap. Same launch, same capture handlers; you call `page.goto` / `page.click` yourself instead of waiting for the caller-controlled completion signal.
 
 Writing project files (`pyproject.toml`, `src/<pkg>/...`, `models.py`) before the capture is in your hands is the failure mode this section exists to prevent. If you catch yourself drafting field-name `alias` tuples from "common patterns" (Italian + English, REST conventions, framework defaults), stop and launch the browser instead.
 
@@ -51,8 +51,8 @@ The full capture surface, output checklist, and anti-patterns are in the **Disco
 
 **Who clicks depends on the task. The capture is yours either way:**
 
-- **Claude clicks** when the target is reachable without the user: no login, no 2FA, you know the UI, you can guess the right filters.
-- **User clicks, you watch in-loop** when the target needs the user: login, 2FA / OTP, navigation choices only the user can make, or the user wants to drive the filters / dates / screens visited. This is the gold-standard path for authenticated SaaS portals because the user knows exactly which screens hold the target data. Launch the browser visibly, park on an `input()` checkpoint, let the user navigate while the network capture streams live, then dump the capture when they signal "done".
+- **The caller clicks** when the target is reachable without the user: no login, no 2FA, you know the UI, you can guess the right filters.
+- **User clicks, you watch in-loop** when the target needs the user: login, 2FA / OTP, navigation choices only the user can make, or the user wants to drive the filters / dates / screens visited. This is the gold-standard path for authenticated SaaS portals because the user knows exactly which screens hold the target data. Launch the browser visibly, wait on a caller-controlled completion signal supported by the active host, let the user navigate while the network capture streams live, then dump the capture when they signal "done".
 - The actual anti-pattern is writing `scripts/discover.py` and telling the user "run this and paste the output back". That breaks the loop: by the time the user runs it, you have no eyes on the session and no chance to ask "wait, click that filter again, I lost the payload".
 
 **Capture surface (attach all of these from page launch):**

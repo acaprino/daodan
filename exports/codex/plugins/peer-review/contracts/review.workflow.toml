@@ -1,6 +1,10 @@
 name = "review"
 entrypoint = "review.md"
 
+[dispatch]
+roles = ["brief-builder", "packet-builder", "respondent"]
+isolated = true
+
 [[phases]]
 id = "run"
 isolation = "shared"

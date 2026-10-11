@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AbstractSet, Iterable, Mapping
 
-from .validate import ValidationIssue
+from .validate import SourcePathError, ValidationIssue, confined_source, source_members
 
 OVERRIDE_MANIFEST = "override.toml"
 
@@ -54,15 +54,24 @@ class OverrideError(ValueError):
         super().__init__(f"{path}: {message}")
 
 
-def source_digest(paths: Iterable[Path]) -> str:
+def source_digest(paths: Iterable[Path], repository_root: Path | None = None) -> str:
     """Digest a set of neutral source files, path and content, order-independently."""
-    from .render import digest_bytes
+    from .render import RenderError, digest_bytes
 
+    ordered = sorted(paths, key=lambda item: item.as_posix())
+    for path in ordered:
+        try:
+            confined_source(repository_root if repository_root is not None else path.parent, path)
+        except SourcePathError as error:
+            raise OverrideError(error.path, error.message) from error
     digest = hashlib.sha256()
-    for path in sorted(paths, key=lambda item: item.as_posix()):
+    for path in ordered:
         digest.update(path.as_posix().encode("utf-8"))
         digest.update(b"\0")
-        digest.update(digest_bytes(path))
+        try:
+            digest.update(digest_bytes(path, repository_root))
+        except RenderError as error:
+            raise OverrideError(path, str(error)) from error
         digest.update(b"\0")
     return f"sha256:{digest.hexdigest()}"
 
@@ -75,11 +84,17 @@ def _strings(path: Path, table: Mapping[str, object], key: str) -> tuple[str, ..
 
 
 def load_override(manifest: Path) -> OverrideSpec:
-    with manifest.open("rb") as handle:
-        try:
+    try:
+        confined_source(manifest.parent, manifest)
+    except SourcePathError as error:
+        raise OverrideError(error.path, error.message) from error
+    try:
+        with manifest.open("rb") as handle:
             table = tomllib.load(handle)
-        except tomllib.TOMLDecodeError as error:
-            raise OverrideError(manifest, f"invalid TOML: {error}") from error
+    except tomllib.TOMLDecodeError as error:
+        raise OverrideError(manifest, f"invalid TOML: {error}") from error
+    except OSError as error:
+        raise OverrideError(manifest, f"cannot read source: {error}") from error
 
     for key in REQUIRED_KEYS:
         if key not in table:
@@ -108,9 +123,16 @@ def load_override(manifest: Path) -> OverrideSpec:
 def load_overrides(path: Path) -> tuple[OverrideSpec, ...]:
     """Load every override manifest at or under ``path``, in path order."""
     root = Path(path)
-    if (root / OVERRIDE_MANIFEST).is_file():
+    try:
+        confined_source(root, root, allow_missing=True)
+        if not root.exists():
+            return ()
+        members = source_members(root)
+    except SourcePathError as error:
+        raise OverrideError(error.path, error.message) from error
+    if root / OVERRIDE_MANIFEST in members:
         return (load_override(root / OVERRIDE_MANIFEST),)
-    manifests = sorted(root.rglob(OVERRIDE_MANIFEST), key=lambda item: item.as_posix())
+    manifests = [member for member in members if member.name == OVERRIDE_MANIFEST]
     return tuple(load_override(manifest) for manifest in manifests)
 
 
@@ -130,17 +152,38 @@ def validate_override(
         issues.append(
             ValidationIssue("override-escapes-directory", manifest, replacement.as_posix())
         )
-    elif not (spec.root / replacement).is_file():
-        issues.append(
-            ValidationIssue("override-missing-replacement", manifest, replacement.as_posix())
-        )
-
-    missing_sources = [path for path in spec.source_paths if not (base / path).is_file()]
-    if missing_sources:
-        for path in missing_sources:
-            issues.append(ValidationIssue("override-missing-source", manifest, path.as_posix()))
     else:
-        current = source_digest([base / path for path in spec.source_paths])
+        try:
+            confined_source(spec.root, spec.root / replacement, allow_missing=True)
+        except SourcePathError as error:
+            issues.append(ValidationIssue("override-escapes-directory", error.path, error.message))
+        else:
+            if not (spec.root / replacement).is_file():
+                issues.append(
+                    ValidationIssue("override-missing-replacement", manifest, replacement.as_posix())
+                )
+
+    sources_valid = True
+    for path in spec.source_paths:
+        if path.is_absolute() or ".." in path.parts:
+            issues.append(ValidationIssue("override-source-outside-repository", manifest, path.as_posix()))
+            sources_valid = False
+            continue
+        try:
+            confined_source(base, base / path, allow_missing=True)
+        except SourcePathError as error:
+            issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
+            sources_valid = False
+            continue
+        if not (base / path).is_file():
+            issues.append(ValidationIssue("override-missing-source", manifest, path.as_posix()))
+            sources_valid = False
+    if sources_valid:
+        try:
+            current = source_digest([base / path for path in spec.source_paths], base)
+        except OverrideError as error:
+            issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
+            current = spec.reviewed_against
         if current != spec.reviewed_against:
             issues.append(ValidationIssue("stale-override", manifest, spec.source))
 

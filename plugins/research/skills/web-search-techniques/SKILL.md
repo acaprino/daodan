@@ -44,8 +44,8 @@ Two backends produce candidate pages. Neither produces claims: only a page that 
 
 | Backend | When | How |
 |---|---|---|
-| Native `WebSearch` | Default. Always available when the tool is in the toolset | The tool call, with the operators below |
-| serper.dev (Google) | A key is available, or `--backend serper` | `python "${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" "<query>" [--vertical search|news|scholar] [--num N] [--since h|d|w|m|y] [--gl CC] [--hl LANG] [--page P] [--json]` via Bash |
+| Native host network search | Default. Always available when the tool is in the toolset | The tool call, with the operators below |
+| serper.dev (Google) | A key is available, or `--backend serper` | `python "${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" "<query>" [--vertical search|news|scholar] [--num N] [--since h|d|w|m|y] [--gl CC] [--hl LANG] [--page P] [--json]` through the host shell binding |
 
 Selection rule (the lead decides once per run and writes it into every spawn prompt): `auto` means serper when a key is available, else native. The chosen backend is stated in the plan, in each researcher report and in the final report header.
 
@@ -66,12 +66,12 @@ Cost note (checked 2026-08-23): serper.dev gives 2,500 free queries, then $1.00 
 ## Reading, Not Skimming
 
 A search result is a candidate. A claim enters a researcher's ledger only from a page that was read:
-1. `WebFetch` the page (prefer docs and primary sources; target anchors on long pages)
+1. Fetch the page through the active host network-fetch binding (prefer docs and primary sources; target anchors on long pages)
 2. On a bot-block (403, 429, challenge page) or thin content (under ~200 useful characters), `python3 "${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py" <url>`
 3. If the Playwright MCP tools of the `playwright` plugin are available and the page is a primary source the answer depends on, drive a real browser with them as the last resort (`browser_navigate`, then `browser_snapshot`); if they are not, record the URL under limitations and move on. This is a pointer, not a dependency.
 4. Record: URL, title, the date the page carries, authority rank (below), and the claims taken from it
 
-## WebFetch Guidance
+## host page-fetch binding Guidance
 
 - Prefer documentation pages and API references over blog posts
 - Evaluate fetched content: low-authority source means discard and re-search
@@ -80,7 +80,7 @@ A search result is a candidate. A claim enters a researcher's ledger only from a
 
 ## webfetch.py Fallback
 
-When WebFetch returns a bot-block (403, 429, Cloudflare challenge) or thin content (under ~200 chars of useful text), fall back to the plugin's stealth fetcher:
+When the host network-fetch tool returns a bot-block (403, 429, Cloudflare challenge) or thin content (under ~200 chars of useful text), fall back to the plugin's stealth fetcher:
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py" <url>
@@ -97,7 +97,7 @@ Invocation options:
 - `--max-chars CHARS` (truncate output)
 - `--raw` (return raw HTML instead of extracted text)
 
-Requires `Bash` tool in the agent's `tools:` frontmatter.
+Requires the active host shell capability and a worker permission that allows executing this helper. Do not copy a foreign tool name into frontmatter.
 
 ## Anti-Loop Rules
 

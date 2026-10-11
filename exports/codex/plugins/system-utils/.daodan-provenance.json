@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:84f12cc6ef6d49b1e1c5767e3365638017c4e669416742b19b8afaf5ec41449c",
+  "coreDigest": "sha256:9e9b606b083281f86c035307bd6d96f72bfd3b0221d0d170799003a7cfad9edf",
   "harnessStrategies": {
     "organize-files": "parallel-subagents"
   },
   "host": "codex",
   "overrides": [],
   "plugin": "system-utils",
-  "version": "2.1.3"
+  "version": "2.1.4"
 }

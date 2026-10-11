@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e4c8b962d09dbadbb6b38a6ddcc52e32637e52618d71887cfae3ddb0da923e60",
+  "coreDigest": "sha256:5d708cf58bb3dc237604d2dce21ac3db292f663e60e61cd21ef65cf4ec046405",
   "harnessStrategies": {},
   "host": "codex",
   "overrides": [],
   "plugin": "obsidian-development",
-  "version": "1.5.2"
+  "version": "1.5.3"
 }

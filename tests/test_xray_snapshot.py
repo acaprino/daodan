@@ -625,6 +625,47 @@ class ComparisonTests(unittest.TestCase):
         result = self.snapshot.compare_files(self.manifest, self.src)
         self.assertEqual(result["modified"], [self.key("orders/service.py")])
 
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_git_metadata_failure_preserves_changed_file_and_symbol_identity(self):
+        git(self.tmp, "init", "-q")
+        path = write(
+            self.src,
+            "styles/dup.css",
+            ".dup {\n  color: red;\n}\n.middle {\n  color: green;\n}\n.dup {\n  margin: 0;\n}\n",
+        )
+        manifest = self.snapshot.build_manifest(self.src)
+        path.write_text(path.read_text(encoding="utf-8").replace("green", "lime"), encoding="utf-8")
+        root_query = ["git", "-C", str(self.src.resolve()), "rev-parse", "--show-toplevel"]
+        real_run = subprocess.run
+
+        def unavailable_git_metadata(command, *args, **kwargs):
+            if command == root_query:
+                raise subprocess.TimeoutExpired(command, kwargs["timeout"])
+            return real_run(command, *args, **kwargs)
+
+        with mock.patch.object(subprocess, "run", side_effect=unavailable_git_metadata):
+            files = self.snapshot.compare_files(manifest, self.src)
+            symbols = self.snapshot.compare_symbols(manifest, files)
+
+        self.assertEqual(
+            {
+                "modified_files": files["modified"],
+                "added_files": files["added"],
+                "removed_files": files["removed"],
+                "changed_symbols": symbols["changed"],
+                "added_symbols": symbols["added"],
+                "removed_symbols": symbols["removed"],
+            },
+            {
+                "modified_files": ["src/styles/dup.css"],
+                "added_files": [],
+                "removed_files": [],
+                "changed_symbols": [{"file": "src/styles/dup.css", "symbol": ".middle", "kind": "rule"}],
+                "added_symbols": [],
+                "removed_symbols": [],
+            },
+        )
+
     def test_symbol_level_classification(self):
         path = self.src / "orders/service.py"
         edited = PY_SOURCE.replace(

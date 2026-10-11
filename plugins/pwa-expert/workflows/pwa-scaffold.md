@@ -14,11 +14,11 @@ Scaffold a production-ready PWA into the current project. Delegate execution to 
 1. Parse `package.json` if present.
 2. Look for `vite.config.*`, `next.config.*`, `angular.json`, `nuxt.config.*` in the project root.
 3. If `$ARGUMENTS` is provided, use it (one of: `vite`, `next`, `angular`, `nuxt`, `vanilla`).
-4. If detection is ambiguous, ask the user via `AskUserQuestion` which framework to target.
+4. If detection is ambiguous, ask the user through the active host question mechanism which framework to target.
 
 ## Inputs to collect
 
-Before generating files, use `AskUserQuestion` to gather:
+Before generating files, use the active host question mechanism to gather:
 
 1. App name (full): used for manifest `name`. Example: "Acme Productivity Suite".
 2. App name (short): used for manifest `short_name` and the iOS meta `apple-mobile-web-app-title`. Example: "Acme".
@@ -29,14 +29,14 @@ Before generating files, use `AskUserQuestion` to gather:
 
 ## Idempotency
 
-Before writing each file, check if it exists. If it does, show a diff and ask via `AskUserQuestion` whether to overwrite, merge, or skip. Never silently overwrite an existing manifest or SW.
+Before writing each file, check if it exists. If it does, show a diff and ask through the active host question mechanism whether to overwrite, merge, or skip. Never silently overwrite an existing manifest or SW.
 
 ## Generated artifacts (per framework)
 
 ### Vite (vite-plugin-pwa)
 
 - `public/manifest.webmanifest` with the full set of members per `manifest.md` (id, display_override, icons any+maskable, screenshots wide+narrow, shortcuts).
-- `vite.config.ts` (or `.js`): add the `VitePWA` plugin from `vite-plugin-pwa` with `registerType: 'prompt'`, `strategies: 'generateSW'`, manifest reference, `workbox.runtimeCaching` with the four canonical strategies (CacheFirst for hashed assets, NetworkFirst for navigation with `networkTimeoutSeconds: 3`, StaleWhileRevalidate for low-criticality data, NetworkOnly + BackgroundSyncPlugin for POST mutations). If `vite.config.*` already exists, modify it in-place via Edit. Never overwrite.
+- `vite.config.ts` (or `.js`): add the `VitePWA` plugin from `vite-plugin-pwa` with `registerType: 'prompt'`, `strategies: 'generateSW'`, manifest reference, `workbox.runtimeCaching` with the four canonical strategies (CacheFirst for hashed assets, NetworkFirst for navigation with `networkTimeoutSeconds: 3`, StaleWhileRevalidate for low-criticality data, NetworkOnly + BackgroundSyncPlugin for POST mutations). If `vite.config.*` already exists, modify it in-place through the host repository-edit binding. Never overwrite.
 - `index.html`: insert the iOS meta tag block plus `<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">` and `<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">`.
 - Registration: `vite-plugin-pwa` provides `virtual:pwa-register`. Add `import { registerSW } from 'virtual:pwa-register'` and the workbox-window banner pattern (see `service-workers.md`) in `src/main.ts(x)`.
 - `public/icons/README.md`: explain the icon requirements (192+512 PNG `any`, 192+512 PNG `maskable`, 180x180 opaque `apple-touch-icon.png`, optional SVG `any`). Include the 40 percent safe-zone rule for maskable icons.
@@ -53,7 +53,7 @@ Before writing each file, check if it exists. If it does, show a diff and ask vi
 
 ### Angular (ng add @angular/pwa)
 
-- Run `ng add @angular/pwa --project <project-name>` via Bash. This schematic creates the manifest, the SW, registration, and `ngsw-config.json`.
+- Run `ng add @angular/pwa --project <project-name>` through the host shell binding. This schematic creates the manifest, the SW, registration, and `ngsw-config.json`.
 - After the schematic completes, edit `src/manifest.webmanifest` to include the modern members (id, display_override, icons any+maskable, screenshots, shortcuts) that the schematic does not generate by default.
 - Edit `src/index.html` to add the iOS meta tag block plus `apple-touch-icon`.
 - Edit `ngsw-config.json` to add a `dataGroups` entry with strategy `freshness` for API origins.

@@ -1,6 +1,10 @@
 name = "review-react"
 entrypoint = "review-react.md"
 
+[dispatch]
+roles = ["react-development/react-performance-optimizer"]
+isolated = true
+
 [[phases]]
 id = "scope"
 isolation = "shared"
@@ -12,6 +16,13 @@ needs = ["scope"]
 role = "react-performance-optimizer"
 isolation = "required"
 consumes = ["artifact:scope"]
+produces = ["artifact:review-react-findings"]
+
+[[phases]]
+id = "report"
+needs = ["review"]
+isolation = "shared"
+consumes = ["artifact:review-react-findings"]
 produces = ["artifact:review-react-report"]
 
 [contract]

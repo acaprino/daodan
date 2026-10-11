@@ -1,3 +1,74 @@
+<daodan_host_binding host="pi">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
+execution uses bash or the registered powershell alternative. Use their actual
+command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
+pi install npm:pi-subagents. Use that extension's registered subagent schema and
+pass the full rendered role body inline. Role skills named <plugin>-<role> are
+body resources with automatic invocation disabled, not a built-in named agent.
+Workflow prompt entries use /<plugin>-<workflow>; ordinary skills use their exact
+registered names. If isolation is mandatory and unavailable, stop the phase.
+MCP requires pi-mcp-adapter: pi install npm:pi-mcp-adapter, then register the
+generated server command in its supported MCP configuration.
+Keep the selected package's full local dependency closure. Provision qualified
+foreign providers as skills/resources this runtime can load; Pi does not install
+another host's marketplace plugin from a Claude install command.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Kernel <owner>:<skill> references identify the logical provider. Ordinary Pi
+skills retain their source frontmatter name, so resolve the actual registered name
+and provider path from the active inventory; do not invent a prefixed native ID.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 # Code-review agent prompts (Agents A-N)
 
 Full spawn prompts for `/senior-review:code-review` Step 3. The command's dispatch
@@ -13,7 +84,7 @@ definitions.
 Isolated worker brief:
   - description: "Code audit for senior-review command"
   - role: "senior-review:code-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Perform a comprehensive code audit of the following changes covering architecture,
     failure flow analysis, pattern consistency, and quality scoring.
@@ -70,7 +141,7 @@ Isolated worker brief:
 Isolated worker brief:
   - description: "Security review for senior-review command"
   - role: "senior-review:security-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following code changes for security vulnerabilities.
     You have both the diff AND the full file contents for context.
@@ -118,8 +189,8 @@ cannot have been caused by the diff under review.
 ```
 Isolated worker brief:
   - description: "Dead code and diff-scoped VCS hygiene detection for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Detect dead code, unused parameters, and VCS hygiene defects in the files
     changed by the diff. Use BOTH automated tools AND manual analysis.
@@ -135,7 +206,7 @@ Isolated worker brief:
 
     ## Phase 1: Automated Lint (MANDATORY)
 
-    You MUST run actual linting tools via Bash on the changed files. Do NOT
+    You MUST run actual linting tools through the host shell binding on the changed files. Do NOT
     skip this phase or substitute it with manual reading.
 
     **Auto-detect language from changed file extensions:**
@@ -285,7 +356,7 @@ Isolated worker brief:
 Isolated worker brief:
   - description: "UI race condition analysis for senior-review command"
   - role: "senior-review:ui-race-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Analyze the following UI code changes for race conditions between async rendering,
     layout, and event handlers.
@@ -340,8 +411,8 @@ Run in parallel with Agents A-D. Provides historical context that other agents l
 ```
 Isolated worker brief:
   - description: "Git blame and history analysis for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Analyze the git history and blame data for the following changed files to find
     history-based issues that pure code analysis would miss.
@@ -398,7 +469,7 @@ The `testing` plugin is a hard dependency of `senior-review`, so `testing:test-s
 Isolated worker brief:
   - description: "Testing review for senior-review command"
   - role: "testing:test-suite-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
 
@@ -428,8 +499,8 @@ Isolated worker brief:
 ```
 Isolated worker brief:
   - description: "API contract review for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the API contract changes for backwards compatibility and correctness.
 
@@ -465,8 +536,8 @@ Isolated worker brief:
 ```
 Isolated worker brief:
   - description: "Data migrations review for senior-review command"
-  - role: "general-purpose"
-  - run_in_background: true
+  - role: "project-protocol:isolated-worker"
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the database migration changes for safety and correctness.
 
@@ -509,7 +580,7 @@ This is the only agent whose question is about the rest of the codebase rather t
 Isolated worker brief:
   - description: "Structural entropy review for senior-review command"
   - role: "abstraction-architect:abstraction-architect-agent"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     [Include shared instructions: Intent + Diff Scope]
 
@@ -559,7 +630,7 @@ This dimension exists because the synchronous lenses (A through K) each see the 
 Isolated worker brief:
   - description: "Temporal resilience review for senior-review command"
   - role: "senior-review:temporal-resilience-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following changes for failure-over-time behavior.
 
@@ -602,7 +673,7 @@ This dimension is distinct from logic integrity: a domain rule violated in appli
 Isolated worker brief:
   - description: "Data integrity review for senior-review command"
   - role: "senior-review:data-integrity-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following changes for persistence-semantics defects.
 
@@ -643,7 +714,7 @@ Isolated worker brief:
 Isolated worker brief:
   - description: "Resource lifecycle review for senior-review command"
   - role: "senior-review:resource-lifecycle-auditor"
-  - run_in_background: true
+  - scheduling: use the enclosing workflow's isolated review batch
   - prompt: |
     Review the following changes for resource ownership and release defects.
 

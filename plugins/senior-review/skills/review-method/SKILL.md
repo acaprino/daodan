@@ -13,8 +13,9 @@ workflow as an executor.
 The consuming workflow declares the named reviewer inventory in `dispatch.roles`
 and isolated inline workers in its sidecar. Any inline lens, critic, history,
 hygiene or minimal-fix brief in the references uses the canonical
-`project-protocol:isolated-worker` binding supplied by the host harness. A
-`general-purpose` label describes that inline task; it is not another agent ID.
+`project-protocol:isolated-worker` binding supplied by the host harness. Use that
+exact binding rather than a generic host role name. Keep scope, authorization,
+budget, expected report path and delivered or failed outcome for every brief.
 
 1. Load the `senior-review:review-preparation` skill, unless a same-snapshot prepared bundle
    was supplied. Validate its target, run identity and snapshot before reusing it.

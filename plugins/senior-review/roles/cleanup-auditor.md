@@ -44,7 +44,7 @@ uv run ruff check . --select F401,F811,F841 2>/dev/null || ruff check . --select
 ```
 
 **Classify each finding into:**
-- **Safe** (ruff F401 imports, F841 variables, Knip unused files with zero `Grep` references)
+- **Safe** (ruff F401 imports, F841 variables, Knip unused files with zero host content-search binding references)
 - **Requires approval** (vulture functions/classes -- high false-positive via metaprogramming, Knip unused exports that may be public API)
 - **False-positive candidate** (module augmentation files, side-effect imports like `import './polyfill'`, DI-registered classes via decorators, framework-convention files)
 
@@ -96,9 +96,9 @@ If workspace detected, treat each package as a separate audit unit.
 **Phantom dependencies (the `@radix-ui/* in react-app/ imported only by shared/` pattern):**
 For each workspace `W`:
 1. Read `W/package.json` `dependencies` + `devDependencies`.
-2. For each dep `D`, `Grep` for `from ['"]${D}` within `W/**` (excluding `node_modules/`).
+2. For each dep `D`, host content-search binding for `from ['"]${D}` within `W/**` (excluding `node_modules/`).
 3. Zero hits within `W` itself = phantom candidate.
-4. Cross-check: `Grep` for `from ['"]${D}` within sibling workspaces. If used by a sibling, flag as **phantom dep in W** (dep is declared in the wrong package).
+4. Cross-check: host content-search binding for `from ['"]${D}` within sibling workspaces. If used by a sibling, flag as **phantom dep in W** (dep is declared in the wrong package).
 5. If no workspace uses it, flag as **unused dep** regardless.
 
 **Barrel-file bloat (god modules):**
@@ -109,7 +109,7 @@ Grep -rn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
 ```
 For any file with >= 30 re-export statements:
 1. Extract each re-exported symbol name.
-2. `Grep` each symbol across the codebase (excluding the barrel itself).
+2. host content-search binding each symbol across the codebase (excluding the barrel itself).
 3. If `used_count / total_count < 0.2`, flag as **barrel-file bloat** with concrete count.
 
 **Eager bundle bloat (heavy packages at top level, not code-split):**
@@ -135,7 +135,7 @@ Always reportable, but FP-rate is high; surface as detection findings, never as 
 ```bash
 git ls-files 2>/dev/null | grep -iE '\.(bak|old|orig|swp|backup)$|(^|/)(_archive|archive|legacy|old|deprecated|_old|_legacy|backup)/'
 ```
-Untracked equivalents via `Glob`. Always flag as **requires confirmation**: `_archive/` may be deliberate cold storage that the team relies on.
+Untracked equivalents via host file-discovery binding. Always flag as **requires confirmation**: `_archive/` may be deliberate cold storage that the team relies on.
 
 **Stale doc references (post-cleanup hook):**
 - When invoked AFTER a cleanup run that removed code/deps, collect the removed-token list from prior commits.
@@ -262,7 +262,7 @@ Run `/senior-review:code-review --commit` and work these phases in order at Step
 
 - Do NOT delete or edit anything. You are a reporter.
 - Do NOT re-run Knip analysis manually line-by-line. Parse the JSON output and trust the tool.
-- Do NOT flag an asset as orphan without running the `Grep` confirmation.
+- Do NOT flag an asset as orphan without running the host content-search binding confirmation.
 - Do NOT silently bundle false-positives into the main findings list. Put them in the separate FP table.
 - Do NOT recommend removing Module augmentation files (`*.d.ts` with `declare module` blocks).
 - Do NOT flag `package-lock.json`, `bun.lockb`, `yarn.lock`, or `pnpm-lock.yaml` as cruft -- they MUST be tracked.
@@ -292,7 +292,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

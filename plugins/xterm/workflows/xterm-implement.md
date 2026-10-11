@@ -147,7 +147,7 @@ If missing, list the install command but ask before running it.
 
 ## Step 5: Implement
 
-Apply changes using the Edit tool:
+Apply changes through the host repository-edit binding:
 
 1. Add imports at the top of the file, grouped with existing xterm imports
 2. Add addon instantiation near existing addon setup

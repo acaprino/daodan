@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:62f1d512a582bbddda6bb54e826408896b2fc67dc475f5ef9d5d3fab3950c88d",
+  "coreDigest": "sha256:27b9304334bffa9cd28f32a444fe1de2a4a7591b697d4e48e1cb61829ad93df4",
   "harnessStrategies": {
     "review-typescript": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "typescript-development",
-  "version": "2.3.1"
+  "version": "2.3.2"
 }

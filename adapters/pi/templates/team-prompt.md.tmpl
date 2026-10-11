@@ -23,6 +23,16 @@ above decides what happens, and the two cases are not interchangeable:
 - **`shared`**: run the phases in order in this context, and say in the report that no worker was
   isolated.
 
+Coordinator completion ownership: keep the method's owned run and delivery ledger,
+including each expected worker, attempt, report path and required check evidence.
+Validate report artifacts before recording delivered. An empty final message or
+worker stop remains missing delivery: inspect or resume when permitted, otherwise
+record failed with the uncovered scope. Follow the declared join and phase gates;
+a recorded failure is accounted for, never converted into a successful delivery.
+Continue authorized work and recovery until the requested result and its checks
+exist or a concrete blocker is recorded. Preserve the exclusive final report owner
+and the ledger schema; a tool exit or a promise cannot satisfy completion.
+
 Harness obligations, none of them optional:
 
 - Every dispatched worker runs in its own context and reads only coordinator-declared inputs.

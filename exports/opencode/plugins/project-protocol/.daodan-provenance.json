@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:2e29c4fe0a7fcdb4ba56c3a83a348ed3112d90d344b5147336f78e63e9bc96ce",
+  "coreDigest": "sha256:f70f73bd914daec6c2cace4e5f47ff0d64ac007d28b20e34b8d2c68ab80e6b87",
   "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "project-protocol",
-  "version": "1.0.2"
+  "version": "1.0.3"
 }

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:85689737df2c975e078f6c659e6013a2d9b135abd4e0f5161f98b6052e4b0eda",
+  "coreDigest": "sha256:56f554f8c012a84f8a5019b6fd155151fac02350f51f0bb9016a1be00a06ea9b",
   "harnessStrategies": {
     "firefox-lint": "parallel-subagents",
     "firefox-publish": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "browser-extensions",
-  "version": "2.0.1"
+  "version": "2.0.2"
 }

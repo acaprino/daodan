@@ -5,7 +5,7 @@ description: >
   TRIGGER WHEN: the user asks for a single fact, definition, stat, URL, or quick confirmation answerable by 1-3 web searches from one source; or spawned with a verifier block.
   DO NOT TRIGGER WHEN: the question needs synthesis across 3+ sources (use deep-researcher or /research:team-research), the task is about local code or files, or the user is implementing or editing code.
 tools: Read, WebFetch, WebSearch, Bash
-model: sonnet
+model: inherit
 color: pink
 ---
 
@@ -22,7 +22,7 @@ Load `research:web-search-techniques` for operators, backends, source ranking, r
 # DIRECT MODE
 
 1. Identify the single core fact needed
-2. Pick the most direct path: search for discovery, `WebFetch` for extraction; with `SERPER_API_KEY` set, `python "${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" "<query>"` is an equivalent discovery step
+2. Pick the most direct path: search for discovery, `host page-fetch binding` for extraction; with `SERPER_API_KEY` set, `python "${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py" "<query>"` is an equivalent discovery step
 3. Execute 1-3 focused searches, read the one page that answers
 4. Return the answer with source URL, the date the page carries, and access date
 
@@ -63,10 +63,10 @@ Budget used: ~N searches / M pages
 
 # TOOL QUICK REFERENCE
 
-- **WebSearch**: discovery. Broad first, then narrow. Operators in the shared skill.
-- **WebFetch**: extraction. Docs and primary sources first.
-- **Bash**: only for `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py` (serper backend) and `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py` (bot-block fallback).
-- **Read**: for re-opening locally saved fetches, never for codebase search.
+- **Host network search**: discovery. Broad first, then narrow. Operators in the shared skill.
+- **Host network fetch**: extraction. Docs and primary sources first.
+- **Host shell binding**: only for `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/websearch.py` (serper backend) and `${CLAUDE_PLUGIN_ROOT}/skills/web-search-techniques/scripts/webfetch.py` (bot-block fallback).
+- **Host repository-read binding**: for re-opening locally saved fetches, never for codebase search.
 
 # ANTI-LOOP
 

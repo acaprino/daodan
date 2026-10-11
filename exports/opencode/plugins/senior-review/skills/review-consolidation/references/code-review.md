@@ -1,3 +1,74 @@
+<daodan_host_binding host="opencode">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
+shell execution uses shell, network tools are webfetch/websearch, and clarification
+uses the registered question tool. shell takes command, optional workdir, timeout
+in milliseconds and background. It does not provide interactive stdin. Persistent
+capture uses background: true and an explicit noninteractive stop signal.
+Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
+subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
+continues that child, and background: true requests asynchronous completion.
+Use only roles allowed by the current harness and permissions. A child cannot
+dispatch nested workers when its permissions or the configured depth deny it.
+Workflow entries are /<plugin>:<workflow>, registered by the package loader.
+Inherit the session model; an override requires its authorized, actually available
+provider/model identity, not another host's short model alias.
+The loader includes required local providers and registers plugin-declared MCP
+servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
+through this host, never a Claude marketplace command. Check the active registry:
+registration metadata alone does not prove a connected server or usable tool.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 ## Step 4: Consolidate Findings & Extract Score
 
 After all agents complete, run the merge pipeline:
@@ -50,9 +121,9 @@ The cost-guard threshold is a finding-count proxy (no token budget exists in thi
 
 ### Panel
 
-**Lens 0 first.** For each selected finding whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, spawn lens 0 (`role: senior-review:premise-auditor`, mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the X-ray line resolved to the `.codebase-xray/` mirror and the interconnect-map and knowledge-provenance lines omitted, since this command builds neither. A finding declaring no provenance is `shared-context` whenever `.codebase-xray/` context was injected into the agent prompts, and the report records the agent as format-non-compliant; it is `independent` only when no such context was supplied at all. Defaulting the other way would send exactly the non-compliant findings Lens 0 exists to catch straight past the veto. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
+**Lens 0 first.** For each selected finding whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, dispatch lens 0 through the declared `senior-review:premise-auditor` binding (mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the X-ray line resolved to the `.codebase-xray/` mirror and the interconnect-map and knowledge-provenance lines omitted, since this command builds neither. A finding declaring no provenance is `shared-context` whenever `.codebase-xray/` context was injected into the agent prompts, and the report records the agent as format-non-compliant; it is `independent` only when no such context was supplied at all. Defaulting the other way would send exactly the non-compliant findings Lens 0 exists to catch straight past the veto. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
 
-For each finding that reaches this step, spawn lenses 1 and 2 in parallel using the lens prompts from the skill (`general-purpose`; inherit the session model; `run_in_background: true`), substituting the finding, the diff, and the full file content. Spawn lens 3 (`model: sonnet`) only for findings that survive lenses 1-2, per the skill's gated-lens rule: calibrating a finding about to be discarded is spend for nothing.
+For each finding that reaches this step, dispatch lenses 1 and 2 independently through the declared `project-protocol:isolated-worker` binding using the skill's full lens briefs, owned scope, authorization, budget and expected report paths. Use the host harness's supported topology, inherit the session model and substitute the finding, diff and full file content. Dispatch lens 3 through that same binding only for findings that survive lenses 1-2, per the skill's gated-lens rule: calibrating a finding about to be discarded is spend for nothing.
 
 ### Survival rule
 
@@ -68,7 +139,7 @@ Medium and Low findings are no longer skipped by default: they enter the panel l
 
 Skip this step if `--fast` was passed. Otherwise run the critic defined in the `senior-review:review-quality-gates` skill, section `## Completeness Critic`.
 
-1. Spawn one `general-purpose` critic with the skill's critic prompt. Pass the verified findings, the changed-file scope, the agents that ran, and the X-ray context paths if `.codebase-xray/` exists (else "none").
+1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings, the changed-file scope, the agents that ran, and the X-ray context paths if `.codebase-xray/` exists (else "none").
 2. If the critic names a single high-risk uncovered area under `## Recommended follow-up` AND the cost guard did not fire: spawn ONE targeted reviewer (the most specialized agent for that area) scoped to the files named, then route its findings back through Step 4 (dedup) and Step 4b (panel). At most one round.
 3. Otherwise degrade to report-only.
 4. Carry the critic's `## Coverage Gaps` list into the Step 5 report.

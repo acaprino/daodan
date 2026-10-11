@@ -167,7 +167,7 @@ Each is a candidate referencing prevention rule 5. Verify an observable contract
 
 ## ANTI-PATTERNS (DO NOT DO THESE)
 
-- Do NOT edit, move, or delete anything. You are a reporter; `Write` is for your report file only.
+- Do NOT edit, move, or delete anything. You are a reporter; host repository-write binding is for your report file only.
 - Do NOT flag a parametrized or table-driven test as duplicates of itself.
 - Do NOT cluster tests by filename prefix or similarity in D5. Clustering is by imported source module; a shared prefix across files that target different modules is exactly how parallel-file duplicates stay invisible.
 - Do NOT flag intentional cross-service contract duplication without first checking for a shared spec or contract-test marker.
@@ -192,4 +192,4 @@ When invoked as part of a multi-reviewer pipeline (for example `/senior-review:t
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.

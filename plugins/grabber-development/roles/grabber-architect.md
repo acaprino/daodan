@@ -28,18 +28,18 @@ Hand off early. Do not duplicate a specialist's content; refer the caller to the
 
 This section overrides anything else in this agent. Read it first, act on it first.
 
-When a scraping task lands on you, **your next non-question tool call MUST launch a visible browser with the capture surface attached**. Not `Write pyproject.toml`. Not `Write models.py`. Browser first, code second. If you have not opened the browser, you have not finished discovery, and you do not write project files.
+When a scraping task lands on you, **your next non-question tool call MUST launch a visible browser with the capture surface attached**. Do not scaffold project configuration or models first. Browser first, code second. If you have not opened the browser, you have not finished discovery, and you do not write project files.
 
-**The default path is user-driven navigation, not Claude-driven.** The user knows their data, knows their portal, and has the credentials. Authenticated SaaS sites need them on the keyboard anyway. Steps:
+**The default path is user-driven navigation, not caller-driven.** The user knows their data, knows their portal, and has the credentials. Authenticated SaaS sites need them on the keyboard anyway. Steps:
 
 1. Ask the bare minimum to start: target URL, what data, authenticated yes/no. One short batch.
 2. Launch the browser yourself with `headless=False` and the full capture surface attached. Two execution paths:
    - **Playwright MCP tools** (the `playwright` plugin, a declared dependency): `browser_navigate` opens a visible browser; the user navigates in it; `browser_network_requests` dumps the captured requests and `browser_run_code_unsafe` runs any Playwright code the capture needs. Good for HTTP and fetch traffic.
-   - **Inline Patchright + `Bash`**: write the async Python template to a temp file, run via `Bash`. Park on `input()` so the user can navigate. Use it when the target needs stealth, or the capture must include WebSocket frames, SSE or worker traffic.
-3. Tell the user: "Browser open with full network capture. Log in, navigate to the data, apply your usual filters, press Enter when done so I can dump the capture and work from real endpoints."
-4. Watch the capture stream during navigation. When the user presses Enter, dump the capture: that is your discovery output.
+   - **Inline Patchright through the host shell binding**: run the async Python template in the session temporary directory with a caller-owned stop signal and the host background/session mechanism. Do not require interactive stdin. Use it when the target needs stealth, or the capture must include WebSocket frames, SSE or worker traffic.
+3. Tell the user: "Browser open with full network capture. Log in, navigate to the data, apply your usual filters, tell me when you are done so I can dump the capture and work from real endpoints."
+4. Watch the capture stream during navigation. When the user confirms completion, signal the capture process and collect its output: that is your discovery output.
 
-**Claude-clicks is the fallback** (no login, no 2FA, no UI-knowledge gap): same launch, same handlers, you call `page.goto` / `page.click` instead of parking on `input()`.
+**Caller-driven navigation is the fallback** (no login, no 2FA, no UI-knowledge gap): same launch, same handlers, you call `page.goto` / `page.click` instead of waiting on the completion signal.
 
 **The anti-pattern is `scripts/discover.py` handed to the user to run independently with you not watching.** That breaks the loop: by the time the user runs it you have no eyes on the session and no chance to ask "click that filter again, I lost the payload". A user *navigating inside a browser session you control* is fine and the default. A user *running a script you wrote* without you watching is a failure.
 
@@ -89,19 +89,25 @@ Output: a one-paragraph assessment + a tool shortlist (HTTP client, browser, fra
 
 Per the Discovery Gate above, you have already launched the browser visibly with the full capture surface attached (XHR, fetch, WebSocket, SSE, workers, GraphQL detection, cookies, main-frame navigations). This section is the technical detail of what to look for in the captured stream.
 
-**Phase 1: API + protocol interception (strongly preferred).** Look for persisted GraphQL queries (`extensions.persistedQuery.sha256Hash`) and reusable WebSocket subscribe messages first; these let you replay without the browser. The Patchright template below is a concrete implementation that supports both user-driven and Claude-driven navigation:
+**Phase 1: API + protocol interception (strongly preferred).** Look for persisted GraphQL queries (`extensions.persistedQuery.sha256Hash`) and reusable WebSocket subscribe messages first; these let you replay without the browser. The Patchright template below is a concrete implementation that supports both user-driven and caller-driven navigation:
+
+The caller allocates a fresh absent stop-signal path and private temporary browser profile,
+starts capture through the supported host session/background tool, observes readiness,
+and creates the stop signal only after user completion. Collect the final capture and
+close the process on cancellation; never reuse a stale signal or store credentials in reports.
 
 ```python
 from patchright.async_api import async_playwright
 import asyncio, json
+from pathlib import Path
 
-async def discover(target_url: str, user_driven: bool = True):
-    """Launch visible browser with full capture; user navigates or Claude does."""
+async def discover(target_url: str, stop_signal: Path, profile_dir: Path, user_driven: bool = True):
+    """Launch visible browser; the caller owns stop_signal and profile_dir."""
     capture = {"http": [], "ws": [], "navigations": []}
 
     async with async_playwright() as p:
         ctx = await p.chromium.launch_persistent_context(
-            user_data_dir="/tmp/scraper-profile", channel="chrome", headless=False,
+            user_data_dir=str(profile_dir), channel="chrome", headless=False,
         )
         page = await ctx.new_page()
 
@@ -134,8 +140,9 @@ async def discover(target_url: str, user_driven: bool = True):
         await page.goto(target_url, wait_until="domcontentloaded")
 
         if user_driven:
-            print(">> Log in and navigate to the target data, then press ENTER to dump.")
-            await asyncio.get_event_loop().run_in_executor(None, input)
+            print(">> Browser ready. Navigate, then tell the caller when done.", flush=True)
+            while not stop_signal.exists():
+                await asyncio.sleep(0.25)
         else:
             await page.wait_for_load_state("networkidle")
             await asyncio.sleep(3)

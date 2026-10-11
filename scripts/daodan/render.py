@@ -27,7 +27,7 @@ from .model import INLINE_WORKER_REFERENCE, PluginSpec, WorkflowSpec
 from .overrides import OverrideSpec
 from .provenance import ADAPTER_VERSION, write_provenance
 from .templates import render_path, render_template
-from .validate import MCP_CAPABILITY
+from .validate import MCP_CAPABILITY, SourcePathError, confined_source, source_members
 
 #: The strategy of a host that starts a plugin-declared MCP server from a
 #: manifest at the package root, and the strategy of a host that does not and
@@ -80,6 +80,28 @@ class RenderError(RuntimeError):
     """Raised before a generated tree becomes live."""
 
 
+def _source(path: Path, root: Path | None = None, *, allow_missing: bool = False) -> Path:
+    try:
+        return confined_source(root if root is not None else path.parent, path,
+                               allow_missing=allow_missing)
+    except SourcePathError as error:
+        raise RenderError(str(error)) from error
+
+
+def _source_members(root: Path) -> tuple[Path, ...]:
+    try:
+        return source_members(root)
+    except SourcePathError as error:
+        raise RenderError(str(error)) from error
+
+
+def _read_text(path: Path, root: Path | None = None) -> str:
+    try:
+        return _source(path, root).read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        raise RenderError(f"cannot read source text {path}: {error}") from error
+
+
 @dataclass(frozen=True)
 class RenderResult:
     plugin: str
@@ -95,12 +117,15 @@ def tree_digest(root: Path) -> str:
     """Digest a whole tree by relative path and content."""
     digest = hashlib.sha256()
     for path in sorted(
-        (item for item in Path(root).rglob("*") if item.is_file()),
+        _source_members(Path(root)),
         key=lambda item: item.relative_to(root).as_posix(),
     ):
         digest.update(path.relative_to(root).as_posix().encode("utf-8"))
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        try:
+            digest.update(_source(path, root).read_bytes())
+        except OSError as error:
+            raise RenderError(f"cannot read source {path}: {error}") from error
         digest.update(b"\0")
     return f"sha256:{digest.hexdigest()}"
 
@@ -109,14 +134,14 @@ def _kernel_files(plugin: PluginSpec) -> list[Path]:
     return sorted(
         (
             path
-            for path in plugin.root.rglob("*")
-            if path.is_file() and not _is_artifact(path.relative_to(plugin.root))
+            for path in _source_members(plugin.root)
+            if not _is_artifact(path.relative_to(plugin.root))
         ),
         key=lambda item: item.as_posix(),
     )
 
 
-def digest_bytes(path: Path) -> bytes:
+def digest_bytes(path: Path, root: Path | None = None) -> bytes:
     """Content for hashing, with text line endings normalized to LF.
 
     A digest over raw bytes is not reproducible across platforms: the same kernel
@@ -125,18 +150,21 @@ def digest_bytes(path: Path) -> bytes:
     Normalizing here makes the digest a property of the content rather than of
     the checkout.
     """
-    raw = path.read_bytes()
+    try:
+        raw = _source(path, root).read_bytes()
+    except OSError as error:
+        raise RenderError(f"cannot read source {path}: {error}") from error
     if not is_text(raw):
         return raw
     return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
-def _kernel_digest(plugin: PluginSpec) -> str:
+def _kernel_digest(plugin: PluginSpec, members: Sequence[Path] | None = None) -> str:
     digest = hashlib.sha256()
-    for path in _kernel_files(plugin):
+    for path in _kernel_files(plugin) if members is None else members:
         digest.update(path.relative_to(plugin.root).as_posix().encode("utf-8"))
         digest.update(b"\0")
-        digest.update(digest_bytes(path))
+        digest.update(digest_bytes(path, plugin.root))
         digest.update(b"\0")
     return f"sha256:{digest.hexdigest()}"
 
@@ -147,13 +175,13 @@ def _write_text(destination: Path, content: str) -> None:
     destination.write_bytes(normalized.encode("utf-8"))
 
 
-def _copy(source: Path, destination: Path) -> None:
+def _copy(source: Path, destination: Path, source_root: Path | None = None) -> None:
+    raw = digest_bytes(source, source_root)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    raw = source.read_bytes()
     if is_text(raw):
         _write_text(destination, raw.decode("utf-8"))
     else:
-        shutil.copyfile(source, destination)
+        destination.write_bytes(raw)
 
 
 #: Neutral role tools, mapped onto each host's vocabulary. The kernel never names
@@ -277,15 +305,45 @@ def _yaml_rules(rules: Sequence[Mapping[str, str]]) -> str:
     return "\n".join(lines)
 
 
-def _copilot_tools(value: str) -> str:
-    declared = [item.strip() for item in value.strip("[] ").split(",") if item.strip()]
-    mapped = []
-    for item in declared:
-        target = COPILOT_TOOLS.get(item)
-        if target and target not in mapped:
-            mapped.append(target)
-    if not mapped:
-        mapped = ["search"]
+ROLE_OPERATIONS = {
+    "Read": "read files",
+    "Glob": "discover file paths",
+    "Grep": "search file contents",
+    "Write": "create or overwrite files",
+    "Edit": "edit existing files",
+    "NotebookEdit": "edit notebooks",
+    "Bash": "execute shell commands",
+    "WebFetch": "retrieve web pages",
+    "WebSearch": "search the web",
+    "Agent": "dispatch declared workers",
+    "Task": "dispatch declared workers",
+}
+
+
+def _inline_role_scope(meta: Mapping[str, str]) -> str:
+    """Preserve an inline role's neutral allowlist without foreign frontmatter."""
+    if "tools" not in meta:
+        return "This role declares no additional tool restriction; retain the active session's permissions.\n\n"
+    declared = [item.strip().strip("\"'") for item in _declared_tools(meta["tools"])]
+    unknown = sorted(set(declared) - ROLE_OPERATIONS.keys())
+    if unknown:
+        raise RenderError(f"inline role: unbound tool(s): {', '.join(unknown)}")
+    operations = list(dict.fromkeys(ROLE_OPERATIONS[item] for item in declared))
+    scope = "; ".join(operations) if operations else "no file, shell, web or worker operations"
+    return (f"Declared role operation allowlist: {scope}. Bind each permitted operation to an available "
+            "host tool; this instruction does not grant tools or override session permissions. "
+            "Do not use operations omitted from this list.\n\n")
+
+
+def _copilot_tools(value: str | None) -> str | None:
+    """Preserve an omitted restriction; reject an explicit unbound tool."""
+    if value is None:
+        return None
+    declared = [item.strip().strip("\"'") for item in _declared_tools(value)]
+    unknown = sorted(set(declared) - COPILOT_TOOLS.keys())
+    if unknown:
+        raise RenderError(f"copilot: unbound role tool(s): {', '.join(unknown)}")
+    mapped = list(dict.fromkeys(COPILOT_TOOLS[item] for item in declared))
     return ", ".join(f"'{item}'" for item in mapped)
 
 
@@ -320,8 +378,9 @@ def _host_text(
     adapter: HostAdapter,
     hint: str | None = None,
     extra_notes: Sequence[str] = (),
+    operational_binding: str = "",
 ) -> str:
-    """Make one Markdown body speak the host's vocabulary for the two Claude placeholders.
+    """Adapt placeholders and bind execution without rewriting domain examples.
 
     `${CLAUDE_PLUGIN_ROOT}` and `$ARGUMENTS` are what a kernel writes, because
     they are what Claude expands. Neither is defined on the other hosts, so a
@@ -329,7 +388,8 @@ def _host_text(
     instruction Codex cannot follow. The adapter layout names the host's own
     reference for each, and a note explaining it is inserted once, after the
     frontmatter, in every file that uses it. Claude's layout maps each
-    placeholder onto itself and carries no note, so its packages do not change.
+    placeholder onto itself and needs no placeholder note. The execution binding
+    is independent of placeholder rewriting and is added on every host.
     """
     layout = adapter.layout
     root_reference = layout.get("plugin_root_reference", DEFAULT_PLUGIN_ROOT_REFERENCE)
@@ -350,10 +410,12 @@ def _host_text(
         prefix = f"Arguments: `{hint}`. " if hint else ""
         notes.append(prefix + arguments_note)
     notes.extend(extra_notes)
-    if not notes:
-        return rewritten
-    block = "\n".join(f"> {note}" for note in notes) + "\n\n"
-    return _insert_after_frontmatter(rewritten, block)
+    block = "\n".join(f"> {note}" for note in notes)
+    if block:
+        block += "\n\n"
+    if operational_binding:
+        block += operational_binding.rstrip() + "\n\n"
+    return _insert_after_frontmatter(rewritten, block) if block else rewritten
 
 
 def _write_markdown(
@@ -362,8 +424,20 @@ def _write_markdown(
     adapter: HostAdapter,
     hint: str | None = None,
     extra_notes: Sequence[str] = (),
+    operational_binding: str = "",
 ) -> None:
-    _write_text(destination, _host_text(text, adapter, hint, extra_notes))
+    rendered = _host_text(text, adapter, hint, extra_notes, operational_binding)
+    _write_text(destination, rendered.rstrip() + "\n")
+
+
+def _operational_binding(adapter: HostAdapter, adapters_root: Path | None) -> str:
+    """One shared execution contract and the active host's actual binding."""
+    root = Path(adapters_root) if adapters_root is not None else Path(__file__).resolve().parents[2] / "adapters"
+    common = _read_text(root / "operational-binding.md.tmpl", root)
+    specific = _template(root, adapter.host, "operational-binding.md.tmpl")
+    if specific is None:
+        raise RenderError(f"{adapter.host}: missing operational host binding")
+    return render_template(common, {"host": adapter.host, "body": specific.strip()})
 
 
 def _host_arguments(server_args: Sequence[str], adapter: HostAdapter) -> list[str]:
@@ -427,21 +501,13 @@ def _workflow_name(workflow: str, adapter: HostAdapter, context: Mapping[str, st
     return render_template(template, {**context, "workflow": workflow})
 
 
-def _flat_workflow(source: Path, name: str, adapter: HostAdapter) -> tuple[str, str | None]:
-    """Render a workflow that does not fan out: the body as it is, under host frontmatter.
-
-    Claude commands carry `description` and `argument-hint`; a Codex skill wants
-    `name` and `description`, and a Copilot prompt wants all three. The layout's
-    `workflow_frontmatter` lists what the host reads, in order. Without it the
-    kernel file is copied verbatim, which is what Claude gets. `name` is the
-    host-registered name from `_workflow_name`, not necessarily the kernel's.
-    """
-    text = source.read_text(encoding="utf-8")
-    meta, body = _frontmatter(text)
-    hint = _unquote(meta.get("argument-hint", "")).strip() or None
+def _workflow_frontmatter(
+    meta: Mapping[str, str], name: str, adapter: HostAdapter, hint: str | None
+) -> str | None:
+    """The fields this host actually reads for a workflow entry."""
     keys = adapter.layout.get("workflow_frontmatter")
     if not keys:
-        return text, hint
+        return None
     lines = ["---"]
     for key in (item.strip() for item in keys.split(",") if item.strip()):
         if key == "name":
@@ -454,9 +520,28 @@ def _flat_workflow(source: Path, name: str, adapter: HostAdapter) -> tuple[str, 
         else:
             raise RenderError(f"{adapter.host}: unknown workflow_frontmatter key {key!r}")
     lines.append("---")
+    return "\n".join(lines) + "\n\n"
+
+
+def _flat_workflow(
+    source: Path, name: str, adapter: HostAdapter, source_root: Path | None = None
+) -> tuple[str, str | None]:
+    """Render a workflow that does not fan out: the body as it is, under host frontmatter.
+
+    Claude commands carry `description` and `argument-hint`; a Codex skill wants
+    `name` and `description`, and a Copilot prompt wants all three. The layout's
+    `workflow_frontmatter` lists what the host reads, in order. Without it the
+    kernel file is copied verbatim, which is what Claude gets. `name` is the
+    host-registered name from `_workflow_name`, not necessarily the kernel's.
+    """
+    text = _read_text(source, source_root)
+    meta, body = _frontmatter(text)
+    hint = _unquote(meta.get("argument-hint", "")).strip() or None
+    frontmatter = _workflow_frontmatter(meta, name, adapter, hint)
+    if frontmatter is None:
+        return text, hint
     rendered = (
-        "\n".join(lines)
-        + "\n\n"
+        frontmatter
         + GENERATED.format(host=adapter.host)
         + "\n\n"
         + body.strip()
@@ -478,6 +563,10 @@ def _coordinator_tools(plugin: PluginSpec, adapter: HostAdapter) -> str:
         binding = adapter.bindings.get(capability)
         if binding is not None and binding.value:
             names.add(binding.value)
+    if adapter.host == "copilot":
+        # An explicit tools list also filters MCP. Keep the allowance scoped to
+        # plugin-declared servers; GitHub's agent schema accepts server/*.
+        names.update(f"{server.name}/*" for server in plugin.mcp_servers)
     return ", ".join(f"'{item}'" for item in sorted(names))
 
 
@@ -548,14 +637,16 @@ def _template(adapters_root: Path | None, host: str, name: str | None) -> str | 
     if adapters_root is None or not name:
         return None
     candidate = Path(adapters_root) / host / "templates" / name
-    return candidate.read_text(encoding="utf-8") if candidate.is_file() else None
+    _source(candidate, Path(adapters_root) / host / "templates", allow_missing=True)
+    return _read_text(candidate, Path(adapters_root) / host / "templates") if candidate.is_file() else None
 
 
 def _manifest_template(adapter: HostAdapter, adapters_root: Path | None) -> str:
     if adapters_root is not None:
         candidate = Path(adapters_root) / adapter.host / "templates" / "plugin.json.tmpl"
+        _source(candidate, Path(adapters_root) / adapter.host / "templates", allow_missing=True)
         if candidate.is_file():
-            return candidate.read_text(encoding="utf-8")
+            return _read_text(candidate, Path(adapters_root) / adapter.host / "templates")
     return DEFAULT_MANIFEST_TEMPLATE
 
 
@@ -577,6 +668,8 @@ def render_plugin(
             f"{adapter.host}: {plugin.name} is unsupported "
             f"(missing: {', '.join(support.missing_capabilities) or 'no viable coordination strategy'})"
         )
+
+    kernel_files = _kernel_files(plugin)
 
     staging_root = Path(destination)
     staging_root.mkdir(parents=True, exist_ok=True)
@@ -606,24 +699,33 @@ def render_plugin(
     # starts it, and a note on every workflow of the plugin on a host that
     # needs the user to register it.
     mcp_notes = _mcp_rendering(plugin, adapter, staging_root)
+    operational_binding = _operational_binding(adapter, adapters_root)
+
+    def markdown(destination: Path, text: str, hint: str | None = None,
+                 notes: Sequence[str] = ()) -> None:
+        _write_markdown(destination, text, adapter, hint, notes, operational_binding)
+
+    def resource(source: Path, destination: Path, source_root: Path) -> None:
+        if source.suffix.lower() == ".md":
+            markdown(destination, _read_text(source, source_root))
+        else:
+            _copy(source, destination, source_root)
 
     for exported in plugin.contract_exports:
-        _copy(plugin.root / exported, staging_root / exported)
+        resource(plugin.root / exported, staging_root / exported, plugin.root)
 
     for skill in plugin.components.skills:
         source_directory = plugin.root / "skills" / skill
         target = staging_root / render_path(adapter.layout["skills"], {**context, "skill": skill})
-        for path in sorted(source_directory.rglob("*"), key=lambda item: item.as_posix()):
-            if not path.is_file():
-                continue
+        for path in _source_members(source_directory):
             relative = path.relative_to(source_directory)
             if _is_artifact(relative):
                 continue
             destination = target if relative.as_posix() == "SKILL.md" else target.parent / relative
             if path.suffix == ".md":
-                _write_markdown(destination, path.read_text(encoding="utf-8"), adapter)
+                markdown(destination, _read_text(path, source_directory))
             else:
-                _copy(path, destination)
+                _copy(path, destination, source_directory)
 
     if plugin.name == "skill-catalog":
         from .skill_catalog import declared_catalog
@@ -638,13 +740,13 @@ def render_plugin(
         inventory = _template(adapters_root, adapter.host, "skill-inventory.md.tmpl")
         if inventory is None:
             raise RenderError(f"{adapter.host}: missing skill inventory binding")
-        _write_text(reference / "host-inventory.md", inventory)
+        markdown(reference / "host-inventory.md", inventory)
 
     for role in plugin.components.roles:
         target = staging_root / render_path(adapter.layout["roles"], {**context, "role": role})
         override = replacements.get(f"role:{role}")
         if override is not None:
-            _copy(override.root / override.replacement, target)
+            markdown(target, _read_text(override.root / override.replacement, override.root))
             applied.append(override.source)
         else:
             source = plugin.root / "roles" / f"{role}.md"
@@ -652,10 +754,11 @@ def render_plugin(
                 adapters_root, adapter.host, adapter.layout.get("role_template")
             )
             if role_template is None:
-                _write_markdown(target, source.read_text(encoding="utf-8"), adapter)
+                markdown(target, _read_text(source, plugin.root))
             else:
-                meta, body = _frontmatter(source.read_text(encoding="utf-8"))
-                _write_markdown(
+                meta, body = _frontmatter(_read_text(source, plugin.root))
+                copilot_tools = _copilot_tools(meta.get("tools")) if adapter.host == "copilot" else None
+                markdown(
                     target,
                     render_template(
                         role_template,
@@ -663,20 +766,21 @@ def render_plugin(
                             **context,
                             "name": meta.get("name", role),
                             "description": _one_line(meta.get("description", "")),
-                            "tools": _copilot_tools(meta.get("tools", "")),
+                            "tools": "" if copilot_tools is None else f"tools: [{copilot_tools}]",
                             "permissions": _yaml_rules(
                                 opencode_permissions(meta.get("tools", ""))
                             ),
-                            "body": body.strip() + "\n",
+                            "body": (_inline_role_scope(meta) if adapter.host in {"codex", "pi"} else "")
+                                    + body.strip() + "\n",
                         },
                     ),
-                    adapter,
                 )
 
     for policy in plugin.components.policies:
         _copy(
             plugin.root / "policies" / f"{policy}.toml",
             staging_root / "policies" / f"{policy}.toml",
+            plugin.root,
         )
         # A policy is declared neutrally and enforced per host. Where this host
         # ships an implementation of it, that implementation travels with the
@@ -685,11 +789,12 @@ def render_plugin(
         if adapters_root is not None:
             implementation = _policy_implementation(adapters_root, adapter.host, policy)
             if implementation is not None:
-                for item in sorted(implementation.rglob("*"), key=lambda x: x.as_posix()):
-                    if item.is_file() and not _is_artifact(item.relative_to(implementation)):
-                        _copy(
+                for item in _source_members(implementation):
+                    if not _is_artifact(item.relative_to(implementation)):
+                        resource(
                             item,
                             staging_root / "policies" / policy / item.relative_to(implementation),
+                            implementation,
                         )
 
     strategies: list[tuple[str, str]] = []
@@ -702,15 +807,15 @@ def render_plugin(
             adapter.layout["workflows"], {**context, "workflow": workflow.name}
         )
         override = replacements.get(f"workflow:{workflow.name}")
-        fans_out = (bool(workflow.dispatch.roles) or workflow.dispatch.inline_workers
-                    or any(phase.fanout or phase.fanout_from for phase in workflow.phases))
+        dispatches = (bool(workflow.dispatch.roles) or workflow.dispatch.inline_workers
+                      or any(phase.role or phase.fanout or phase.fanout_from for phase in workflow.phases))
         source = plugin.root / workflow.entrypoint
         if override is not None:
-            _copy(override.root / override.replacement, target)
+            markdown(target, _read_text(override.root / override.replacement, override.root), notes=mcp_notes)
             applied.append(override.source)
-        elif fans_out:
+        elif dispatches:
             role_ids, body_bindings = _dispatch_bindings(
-                plugin, workflow, strategy, adapter, staging_root, plugin_registry
+                plugin, workflow, strategy, adapter, staging_root, plugin_registry, operational_binding
             )
             harness = _harness_context(
                 plugin, workflow, strategy, adapter, source, context, role_ids, body_bindings
@@ -720,12 +825,17 @@ def render_plugin(
                 adapters_root, adapter.host, adapter.layout.get("team_workflow_template")
             )
             if team_template is not None:
-                _write_markdown(
-                    target, render_template(team_template, harness), adapter, hint, mcp_notes
-                )
+                rendered = render_template(team_template, harness)
+                if not rendered.startswith("---\n"):
+                    meta, _ = _frontmatter(_read_text(source, plugin.root))
+                    frontmatter = _workflow_frontmatter(meta, harness["workflow_name"], adapter, hint)
+                    if frontmatter is None:
+                        raise RenderError(f"{adapter.host}: workflow handoff has no host frontmatter")
+                    rendered = frontmatter + rendered
+                markdown(target, rendered, hint, mcp_notes)
             else:
-                rendered, hint = _flat_workflow(source, harness["workflow_name"], adapter)
-                _write_markdown(target, rendered, adapter, hint, mcp_notes)
+                rendered, hint = _flat_workflow(source, harness["workflow_name"], adapter, plugin.root)
+                markdown(target, rendered, hint, mcp_notes)
             coordinator_template = _template(
                 adapters_root, adapter.host, adapter.layout.get("coordinator_template")
             )
@@ -733,25 +843,20 @@ def render_plugin(
                 coordinator = staging_root / render_path(
                     adapter.layout["coordinators"], {**context, "workflow": workflow.name}
                 )
-                _write_markdown(
-                    coordinator,
-                    render_template(coordinator_template, harness),
-                    adapter,
-                    hint,
-                    mcp_notes,
-                )
+                markdown(coordinator, render_template(coordinator_template, harness), hint, mcp_notes)
         else:
             name = _workflow_name(workflow.name, adapter, context)
-            rendered, hint = _flat_workflow(source, name, adapter)
-            _write_markdown(target, rendered, adapter, hint, mcp_notes)
+            rendered, hint = _flat_workflow(source, name, adapter, plugin.root)
+            markdown(target, rendered, hint, mcp_notes)
         for schema in workflow.contract.schemas:
-            _copy(plugin.root / schema, staging_root / schema)
+            resource(plugin.root / schema, staging_root / schema, plugin.root)
         # The sidecar travels with the package: a harness needs the declared
         # isolation, join and phase order at runtime, and a reader needs to be
         # able to check the contract without the kernel in hand.
         _copy(
             plugin.root / "workflows" / f"{workflow.name}.toml",
             staging_root / "contracts" / f"{workflow.name}.workflow.toml",
+            plugin.root,
         )
 
     files = tuple(
@@ -766,7 +871,7 @@ def render_plugin(
         host=adapter.host,
         staging_root=staging_root,
         files=files,
-        core_digest=_kernel_digest(plugin),
+        core_digest=_kernel_digest(plugin, kernel_files),
         harness_strategies=tuple(strategies),
         overrides=tuple(sorted(set(applied))),
     )
@@ -781,14 +886,19 @@ def _policy_implementation(adapters_root: Path, host: str, policy: str) -> Path 
     that the kernel never has to name a host mechanism to get one.
     """
     root = Path(adapters_root) / host / "policies"
+    _source(root, Path(adapters_root) / host, allow_missing=True)
     if not root.is_dir():
         return None
+    _source_members(root)
     for candidate in sorted(root.iterdir(), key=lambda item: item.name):
         manifest = candidate / "policy.toml"
+        _source(manifest, root, allow_missing=True)
         if not manifest.is_file():
             continue
-        with manifest.open("rb") as handle:
-            declared = tomllib.load(handle)
+        try:
+            declared = tomllib.loads(_read_text(manifest, root))
+        except tomllib.TOMLDecodeError as error:
+            raise RenderError(f"invalid adapter policy TOML {manifest}: {error}") from error
         if declared.get("implements") == policy:
             return candidate
     return None
@@ -835,11 +945,11 @@ def _harness_context(
         roles = list(plugin.components.roles)
     role_ids = role_ids or {}
     ordered = sorted({role_ids.get(role, role) for role in roles})
-    fanout_phase = next(
-        (phase for phase in workflow.phases if phase.fanout or phase.fanout_from),
-        workflow.phases[0],
-    )
-    meta, body = _frontmatter(source.read_text(encoding="utf-8"))
+    worker_phases = [phase for phase in workflow.phases if phase.role or phase.fanout or phase.fanout_from]
+    isolated = (workflow.dispatch.isolated or workflow.dispatch.inline_workers
+                or any(phase.isolation == "required" for phase in worker_phases))
+    first_worker = worker_phases[0] if worker_phases else workflow.phases[0]
+    meta, body = _frontmatter(_read_text(source, plugin.root))
     return {
         **context,
         "workflow": workflow.name,
@@ -847,8 +957,8 @@ def _harness_context(
         "description": _one_line(meta.get("description", plugin.description)),
         "strategy": strategy.name,
         "role_delivery": strategy.role_delivery,
-        "isolation": "required" if workflow.dispatch.isolated or workflow.dispatch.inline_workers else fanout_phase.isolation,
-        "join": fanout_phase.join or "all-delivered",
+        "isolation": "required" if isolated else "shared",
+        "join": first_worker.join or "all-delivered",
         "roles": ", ".join(f"`{item}`" for item in ordered),
         "agents": ", ".join(f"'{item}'" for item in ordered),
         "tools": _coordinator_tools(plugin, adapter),
@@ -863,6 +973,7 @@ def _harness_context(
 def _dispatch_bindings(
     plugin: PluginSpec, workflow: WorkflowSpec, strategy, adapter: HostAdapter,
     staging: Path, registry: Mapping[str, PluginSpec] | None,
+    operational_binding: str = "",
 ) -> tuple[dict[str, str], str]:
     """Bind declared external roles; inline bodies are generated resources, not components.
 
@@ -896,6 +1007,7 @@ def _dispatch_bindings(
             # production build supplies the complete registry explicitly.
             from .load import load_plugin
             source_root = plugin.root.parent / owner
+            _source(source_root, plugin.root.parent)
             if not (source_root / "plugin.toml").is_file():
                 raise RenderError(f"{plugin.name}: unknown role provider {owner}")
             provider = load_plugin(source_root)
@@ -913,21 +1025,34 @@ def _dispatch_bindings(
             continue
         relative = Path("contracts/dispatch") / owner / f"{role}.md"
         source = provider.root / "roles" / f"{role}.md"
-        text = source.read_text(encoding="utf-8").replace("\r\n", "\n")
+        text = _read_text(source, provider.root).replace("\r\n", "\n")
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
         owned_skills = ", ".join(f"`{owner}:{skill}`" for skill in provider.components.skills) or "none declared"
+        skill_names = []
+        if adapter.host == "pi":
+            for skill in provider.components.skills:
+                header, _ = _frontmatter(_read_text(provider.root / "skills" / skill / "SKILL.md", provider.root))
+                registered = _unquote(header.get("name", skill))
+                skill_names.append(f"`{owner}:{skill}` -> compiled registry name `{registered}` "
+                                   f"at `skills/{skill}/SKILL.md` inside the owner's package")
+        native_skills = ("Pi skill name bindings: " + "; ".join(skill_names) + ". Confirm those names and "
+                         "provider paths in the active inventory before loading. " if skill_names else "")
+        meta, body = _frontmatter(text)
         resource = (
             f"<!-- Generated dispatch body. Owner: {owner}:{role}; version: {provider.version}; "
             f"source-sha256: {digest}. Edit the owner's kernel, never this resource. -->\n\n"
             f"This body belongs to `{owner}`. Where it names its plugin root, resolve the root from "
-            f"that installed plugin's named skill; it is not the coordinator's root. "
+            f"that installed plugin's available skill and verified provider path; it is not the coordinator's root. "
             f"`<{owner}-plugin-root>` names that owner root. Any unqualified skill load "
-            f"in the body belongs to `{owner}`: qualify it with that owner's namespace. "
-            f"The owning plugin's registered skills are {owned_skills}. Resolve an owner's "
-            f"helper from the skill's installed location, never from this generated resource's parent.\n\n"
-            + text.replace("${CLAUDE_PLUGIN_ROOT}", f"<{owner}-plugin-root>")
+            f"in the body belongs to `{owner}`. The owning plugin's declared logical skill identities "
+            f"are {owned_skills}; these are not invented native registry strings. Resolve each to the "
+            f"exact installed identity advertised by this host and verify its provider before loading. "
+            + native_skills
+            + f"Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.\n\n"
+            + _inline_role_scope(meta)
+            + body.replace("${CLAUDE_PLUGIN_ROOT}", f"<{owner}-plugin-root>")
         )
-        _write_markdown(staging / relative, resource, adapter)
+        _write_markdown(staging / relative, resource, adapter, operational_binding=operational_binding)
         bindings.append(f"- `{identity}`: read `{relative.as_posix()}` inside this package and pass its complete role body verbatim.")
     if workflow.dispatch.inline_workers:
         bindings.append("- Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, "
@@ -1023,4 +1148,4 @@ def publish_plugin(
 
 
 def read_provenance(root: Path) -> dict[str, object]:
-    return json.loads((Path(root) / ".daodan-provenance.json").read_text(encoding="utf-8"))
+    return json.loads(_read_text(Path(root) / ".daodan-provenance.json", Path(root)))

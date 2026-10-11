@@ -5,6 +5,81 @@ description: >
   TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.
 ---
 
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 # Python Web Scraping
 
 Knowledge base for building production-grade Python web scraping systems. Covers the full stack from target assessment through production observability.
@@ -17,14 +92,14 @@ When this skill activates on a scraping task, **your next non-question tool call
 
 The one carve-out is a target listed under **Bundled Targets** below. Its Discovery Gate has already been run and its capture is recorded, so reading that reference and running its script satisfies this rule without reopening a browser. Anything not on that list gets the browser.
 
-The default path is **user-driven navigation with live capture**, not Claude-clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
+The default path is **user-driven navigation with live capture**, not automated clicks. The user knows their data and their portal better than you do, and authenticated SaaS sites need them anyway. Steps:
 
 1. Ask the bare minimum to start: target URL, what data is wanted, authenticated yes/no. One short batch of questions, then stop asking.
-2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, on Claude Code installed with `claude plugin install playwright@claude-plugins-official`, on other hosts by registering `npx @playwright/mcp@latest` as the MCP server `playwright`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, write an inline Patchright script via `Bash` that runs with `headless=False`, attaches every handler in the Capture Surface, and parks on `input()` waiting for the user.
-3. Tell the user verbatim: "Browser is open with full network capture (XHR + fetch + WebSocket + SSE + workers + cookies + main-frame navigations). Log in, navigate to the data, apply the filters you'd use day-to-day, then press Enter here so I can dump the capture and reason from real endpoints."
-4. While the user navigates, you watch the capture stream. When they press Enter you have: real URLs, real endpoint paths, real field names, real WebSocket frames, real auth cookies. *Now* you can scaffold.
+2. Immediately open the browser: with the Playwright MCP tools of the `playwright` plugin (a declared dependency of this plugin, on Claude Code installed with `claude plugin install playwright@claude-plugins-official`, on other hosts by registering `npx @playwright/mcp@latest` as the MCP server `playwright`), `browser_navigate` to the target, which opens a visible browser, then dump with `browser_network_requests` once the user is done; or, when the target needs stealth or the Capture Surface below needs WebSocket, SSE or worker traffic, run an inline Patchright script through the host shell binding with `headless=False` and every handler in the Capture Surface. Keep it alive through the host-supported background/session mechanism and a caller-controlled completion signal; do not assume interactive stdin.
+3. Tell the user verbatim: "Browser is open with full network capture (XHR + fetch + WebSocket + SSE + workers + cookies + main-frame navigations). Log in, navigate to the data, apply the filters you'd use day-to-day, then tell me when you are done so I can signal the capture process and reason from real endpoints."
+4. While the user navigates, you watch the capture stream. When they signal completion and the caller stops the capture, you have: real URLs, real endpoint paths, real field names, real WebSocket frames, real auth cookies. *Now* you can scaffold.
 
-The Claude-drives variant is fine only when there is no login, no 2FA, and no UI-knowledge gap. Same launch, same capture handlers; you call `page.goto` / `page.click` yourself instead of parking on `input()`.
+The caller-driven variant is fine only when there is no login, no 2FA, and no UI-knowledge gap. Same launch, same capture handlers; you call `page.goto` / `page.click` yourself instead of waiting for the caller-controlled completion signal.
 
 Writing project files (`pyproject.toml`, `src/<pkg>/...`, `models.py`) before the capture is in your hands is the failure mode this section exists to prevent. If you catch yourself drafting field-name `alias` tuples from "common patterns" (Italian + English, REST conventions, framework defaults), stop and launch the browser instead.
 
@@ -51,8 +126,8 @@ The full capture surface, output checklist, and anti-patterns are in the **Disco
 
 **Who clicks depends on the task. The capture is yours either way:**
 
-- **Claude clicks** when the target is reachable without the user: no login, no 2FA, you know the UI, you can guess the right filters.
-- **User clicks, you watch in-loop** when the target needs the user: login, 2FA / OTP, navigation choices only the user can make, or the user wants to drive the filters / dates / screens visited. This is the gold-standard path for authenticated SaaS portals because the user knows exactly which screens hold the target data. Launch the browser visibly, park on an `input()` checkpoint, let the user navigate while the network capture streams live, then dump the capture when they signal "done".
+- **The caller clicks** when the target is reachable without the user: no login, no 2FA, you know the UI, you can guess the right filters.
+- **User clicks, you watch in-loop** when the target needs the user: login, 2FA / OTP, navigation choices only the user can make, or the user wants to drive the filters / dates / screens visited. This is the gold-standard path for authenticated SaaS portals because the user knows exactly which screens hold the target data. Launch the browser visibly, wait on a caller-controlled completion signal supported by the active host, let the user navigate while the network capture streams live, then dump the capture when they signal "done".
 - The actual anti-pattern is writing `scripts/discover.py` and telling the user "run this and paste the output back". That breaks the loop: by the time the user runs it, you have no eyes on the session and no chance to ask "wait, click that filter again, I lost the payload".
 
 **Capture surface (attach all of these from page launch):**

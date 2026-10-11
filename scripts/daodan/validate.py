@@ -13,6 +13,7 @@ Passes run in a fixed order so diagnostics are deterministic.
 from __future__ import annotations
 
 import re
+import stat
 from dataclasses import dataclass
 from pathlib import Path
 from typing import AbstractSet, Mapping, Sequence
@@ -61,6 +62,76 @@ class ValidationIssue:
     message: str
 
 
+class SourcePathError(ValueError):
+    """A source cannot be consumed inside its declared filesystem boundary."""
+
+    def __init__(self, path: Path, message: str) -> None:
+        self.path = path
+        self.message = message
+        super().__init__(f"{path}: {message}")
+
+
+def confined_source(root: Path, path: Path, *, allow_missing: bool = False) -> Path:
+    """Validate metadata before reading a source, preserving its original spelling.
+
+    Reject internal links too, consistently with the catalog's source binding.
+    Reparse attributes cover Windows junctions without requiring is_junction.
+    This check does not protect against hostile concurrent filesystem mutation.
+    """
+    root, path = Path(root), Path(path)
+    boundary, candidate = root.absolute(), path.absolute()
+    if ".." in candidate.parts or not candidate.is_relative_to(boundary):
+        raise SourcePathError(path, "source path escapes its declared root")
+    attributes = None
+    for ancestor in (candidate, *candidate.parents):
+        try:
+            current = ancestor.lstat()
+        except FileNotFoundError:
+            if ancestor == candidate and not allow_missing:
+                raise SourcePathError(path, "source does not exist") from None
+            continue
+        except OSError as error:
+            raise SourcePathError(path, f"cannot inspect source metadata: {error}") from error
+        if (stat.S_ISLNK(current.st_mode) or
+                getattr(current, "st_file_attributes", 0)
+                & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)):
+            raise SourcePathError(ancestor, "linked source or ancestor is forbidden")
+        if ancestor == candidate:
+            attributes = current
+    if attributes is not None and not (
+        stat.S_ISREG(attributes.st_mode) or stat.S_ISDIR(attributes.st_mode)
+    ):
+        raise SourcePathError(path, "source is not a regular file or directory")
+    try:
+        if not candidate.resolve().is_relative_to(boundary.resolve()):
+            raise SourcePathError(path, "resolved source escapes its declared root")
+    except (OSError, RuntimeError) as error:
+        raise SourcePathError(path, f"cannot resolve source metadata: {error}") from error
+    return path
+
+
+def source_members(root: Path) -> tuple[Path, ...]:
+    """Validate a deterministic member set before any caller consumes its bytes."""
+    root = confined_source(root, root)
+    if not root.is_dir():
+        raise SourcePathError(root, "source root is not a directory")
+    files: list[Path] = []
+    pending = [root]
+    while pending:
+        directory = confined_source(root, pending.pop())
+        try:
+            children = sorted(directory.iterdir(), key=lambda item: item.as_posix())
+        except OSError as error:
+            raise SourcePathError(directory, f"cannot enumerate source metadata: {error}") from error
+        for path in children:
+            confined_source(root, path)
+            if path.is_dir():
+                pending.append(path)
+            else:
+                files.append(path)
+    return tuple(sorted(files, key=lambda item: item.as_posix()))
+
+
 def _is_escaping(reference: str) -> bool:
     candidate = Path(reference.replace("\\", "/"))
     return candidate.is_absolute() or ".." in candidate.parts
@@ -96,6 +167,10 @@ def validate_identity(plugin: PluginSpec) -> list[ValidationIssue]:
 def validate_paths(plugin: PluginSpec) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     manifest = plugin.root / "plugin.toml"
+    try:
+        source_members(plugin.root)
+    except SourcePathError as error:
+        issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
     for group, names in (
         ("skills", plugin.components.skills),
         ("roles", plugin.components.roles),
@@ -126,6 +201,23 @@ def validate_paths(plugin: PluginSpec) -> list[ValidationIssue]:
 def validate_components(plugin: PluginSpec) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     manifest = plugin.root / "plugin.toml"
+    resources = [
+        *(plugin.root / "roles" / f"{name}.md" for name in plugin.components.roles
+          if not _is_escaping(name)),
+        *(plugin.root / "policies" / f"{name}.toml" for name in plugin.components.policies
+          if not _is_escaping(name)),
+        *(plugin.root / "skills" / name / "SKILL.md" for name in plugin.components.skills
+          if not _is_escaping(name)),
+        *(plugin.root / resource for workflow in plugin.workflows
+          for resource in (workflow.entrypoint, *workflow.contract.schemas)),
+    ]
+    for resource in resources:
+        try:
+            confined_source(plugin.root, resource, allow_missing=True)
+        except SourcePathError as error:
+            issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
+    if issues:
+        return issues
     # Duplicates within one kind. Across kinds, see validate_component_kinds.
     for names in (
         plugin.components.skills,
@@ -241,6 +333,11 @@ def validate_contract_exports(
             issues.append(ValidationIssue("invalid-contract-export", manifest, exported.as_posix()))
             continue
         resource = plugin.root / exported
+        try:
+            confined_source(plugin.root, resource, allow_missing=True)
+        except SourcePathError as error:
+            issues.append(ValidationIssue("invalid-contract-export", error.path, error.message))
+            continue
         if not resource.is_file():
             issues.append(ValidationIssue("missing-contract-export", manifest, exported.as_posix()))
         elif not resource.resolve().is_relative_to(plugin.root.resolve()):
@@ -381,9 +478,13 @@ def validate_mcp_servers(plugin: PluginSpec) -> list[ValidationIssue]:
             relative = argument[len("${CLAUDE_PLUGIN_ROOT}/") :]
             if _is_escaping(relative):
                 issues.append(ValidationIssue("path-outside-plugin", manifest, argument))
-            elif not argument.startswith(MCP_SHIPPED_PREFIX) or not (
-                plugin.root / relative
-            ).is_file():
+                continue
+            try:
+                confined_source(plugin.root, plugin.root / relative, allow_missing=True)
+            except SourcePathError as error:
+                issues.append(ValidationIssue("unsafe-source-path", error.path, error.message))
+                continue
+            if not argument.startswith(MCP_SHIPPED_PREFIX) or not (plugin.root / relative).is_file():
                 issues.append(
                     ValidationIssue("mcp-server-file-not-shipped", manifest, argument)
                 )
@@ -426,7 +527,11 @@ def validate_plugins(
     registry = {plugin.name: plugin for plugin in plugins}
     for plugin in plugins:
         issues.extend(validate_identity(plugin))
-        issues.extend(validate_paths(plugin))
+        path_issues = validate_paths(plugin)
+        issues.extend(path_issues)
+        if path_issues:
+            # Metadata parsers must not run over an unbound source tree.
+            continue
         issues.extend(validate_components(plugin))
         issues.extend(validate_component_kinds(plugin))
         from .skill_catalog import validate_skill_metadata

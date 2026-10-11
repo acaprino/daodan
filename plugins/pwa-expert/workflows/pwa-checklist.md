@@ -22,7 +22,7 @@ Delegate to `pwa-architect`. The agent reads `production-checklist.md` upfront (
 For every item in every category of `production-checklist.md`:
 
 1. State the item verbatim.
-2. Verify it. Use `Read`, `Grep`, `Glob`, `Bash`, or the Playwright MCP tools as appropriate.
+2. Verify it. Use the active host repository-read, search, file-discovery and shell bindings, or registered Playwright MCP tools as appropriate.
 3. Record the result as one of: **PASS**, **FAIL**, **N/A** (with a reason for N/A).
 
 ## Output format

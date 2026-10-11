@@ -107,7 +107,7 @@ Fetched data from https://tld-list.com/tld/io showing current .io domain prices:
 **Step 2: Twitter/X Search for Promo Codes**
 
 ```
-WebSearch: "site:x.com from:spaceship promo code"
+Search query: "site:x.com from:spaceship promo code"
 ```
 
 **Results from @spaceship:**
@@ -115,7 +115,7 @@ WebSearch: "site:x.com from:spaceship promo code"
 - @spaceship: "Yes, you are right. You can use this promo c"
 
 ```
-WebSearch: "site:x.com from:Dynadot promo code"
+Search query: "site:x.com from:Dynadot promo code"
 ```
 
 **Results from @Dynadot:**
@@ -123,7 +123,7 @@ WebSearch: "site:x.com from:Dynadot promo code"
 - @Dynadot: "We did have a .com promo code in April a..."
 
 ```
-WebSearch: "site:x.com from:Namecheap promo code"
+Search query: "site:x.com from:Namecheap promo code"
 ```
 
 **Results from @Namecheap:**
@@ -133,7 +133,7 @@ WebSearch: "site:x.com from:Namecheap promo code"
 **Step 3: Reddit Search for Promo Codes**
 
 ```
-WebSearch: "site:reddit.com r/Domains spaceship domain promo code"
+Search query: "site:reddit.com r/Domains spaceship domain promo code"
 ```
 
 **Results from r/Domains:**
@@ -182,6 +182,6 @@ WebSearch: "site:reddit.com r/Domains spaceship domain promo code"
 
 1. **RDAP checks** are used to verify domain availability before presenting options (404 available, 200 taken, anything else unknown)
 2. **Price comparison** from tld-list.com provides up-to-date registrar pricing
-3. **WebSearch with site:x.com** searches registrar accounts for promo codes
-4. **WebSearch with site:reddit.com** searches r/Domains community for user-shared deals
+3. **host web search binding with site:x.com** searches registrar accounts for promo codes
+4. **host web search binding with site:reddit.com** searches r/Domains community for user-shared deals
 5. **Final recommendation** includes best price, promo code, and purchase link

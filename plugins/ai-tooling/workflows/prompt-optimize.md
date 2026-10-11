@@ -17,7 +17,7 @@ argument-hint: "<prompt text or file path> [--model claude|gpt|gemini|<open-weig
 
 ## Step 1: Analysis and variant frontier (single agent pass)
 
-Spawn the `prompt-engineer` agent via the `Agent` tool, description "Analyze the prompt and generate the variant frontier", with the brief below as its prompt. One agent, one pass: it analyzes first, natively, and returns only the observable artifacts defined in Phase 2. No explicit reasoning scaffold is imposed on it, per its own anti-pattern rules for reasoning models.
+Spawn the `prompt-engineer` agent through the declared host harness, description "Analyze the prompt and generate the variant frontier", with the brief below as its prompt. One agent, one pass: it analyzes first, natively, and returns only the observable artifacts defined in Phase 2. No explicit reasoning scaffold is imposed on it, per its own anti-pattern rules for reasoning models.
 
 ```
 You are evaluating and optimizing a prompt.
@@ -207,7 +207,7 @@ Close with these caveats, adapted to the case:
 
 ## Step 2: The user picks the pole
 
-After the agent returns, present its output and ask the user which variant to adopt, via AskUserQuestion: one option per variant, each label naming the pole and each description carrying the token estimate and the main trade-off; put your recommended variant first with "(Recommended)". Skip the question and deliver the matching pole directly when:
+After the agent returns, present its output and ask the user which variant to adopt, through the active host question mechanism: one option per variant, each label naming the pole and each description carrying the token estimate and the main trade-off; put your recommended variant first with "(Recommended)". Skip the question and deliver the matching pole directly when:
 
 - `--optimize-for` was passed (clarity -> A, reliability -> A with constraints and examples emphasized, tokens -> C), or
 - the user already stated their target in the request.

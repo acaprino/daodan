@@ -4,7 +4,80 @@ description: 'Always-on hygiene dimension of /senior-review:team-review. TRIGGER
 disable-model-invocation: true
 ---
 
+<daodan_host_binding host="pi">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
+execution uses bash or the registered powershell alternative. Use their actual
+command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
+pi install npm:pi-subagents. Use that extension's registered subagent schema and
+pass the full rendered role body inline. Role skills named <plugin>-<role> are
+body resources with automatic invocation disabled, not a built-in named agent.
+Workflow prompt entries use /<plugin>-<workflow>; ordinary skills use their exact
+registered names. If isolation is mandatory and unavailable, stop the phase.
+MCP requires pi-mcp-adapter: pi install npm:pi-mcp-adapter, then register the
+generated server command in its supported MCP configuration.
+Keep the selected package's full local dependency closure. Provision qualified
+foreign providers as skills/resources this runtime can load; Pi does not install
+another host's marketplace plugin from a Claude install command.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Kernel <owner>:<skill> references identify the logical provider. Ordinary Pi
+skills retain their source frontmatter name, so resolve the actual registered name
+and provider path from the active inventory; do not invent a prefixed native ID.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
 <!-- Generated by the Daodan compiler for pi. Edit the kernel, never this file. -->
+
+Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
 # Cleanup Auditor
 
@@ -41,7 +114,7 @@ uv run ruff check . --select F401,F811,F841 2>/dev/null || ruff check . --select
 ```
 
 **Classify each finding into:**
-- **Safe** (ruff F401 imports, F841 variables, Knip unused files with zero `Grep` references)
+- **Safe** (ruff F401 imports, F841 variables, Knip unused files with zero host content-search binding references)
 - **Requires approval** (vulture functions/classes -- high false-positive via metaprogramming, Knip unused exports that may be public API)
 - **False-positive candidate** (module augmentation files, side-effect imports like `import './polyfill'`, DI-registered classes via decorators, framework-convention files)
 
@@ -93,9 +166,9 @@ If workspace detected, treat each package as a separate audit unit.
 **Phantom dependencies (the `@radix-ui/* in react-app/ imported only by shared/` pattern):**
 For each workspace `W`:
 1. Read `W/package.json` `dependencies` + `devDependencies`.
-2. For each dep `D`, `Grep` for `from ['"]${D}` within `W/**` (excluding `node_modules/`).
+2. For each dep `D`, host content-search binding for `from ['"]${D}` within `W/**` (excluding `node_modules/`).
 3. Zero hits within `W` itself = phantom candidate.
-4. Cross-check: `Grep` for `from ['"]${D}` within sibling workspaces. If used by a sibling, flag as **phantom dep in W** (dep is declared in the wrong package).
+4. Cross-check: host content-search binding for `from ['"]${D}` within sibling workspaces. If used by a sibling, flag as **phantom dep in W** (dep is declared in the wrong package).
 5. If no workspace uses it, flag as **unused dep** regardless.
 
 **Barrel-file bloat (god modules):**
@@ -106,7 +179,7 @@ Grep -rn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
 ```
 For any file with >= 30 re-export statements:
 1. Extract each re-exported symbol name.
-2. `Grep` each symbol across the codebase (excluding the barrel itself).
+2. host content-search binding each symbol across the codebase (excluding the barrel itself).
 3. If `used_count / total_count < 0.2`, flag as **barrel-file bloat** with concrete count.
 
 **Eager bundle bloat (heavy packages at top level, not code-split):**
@@ -132,7 +205,7 @@ Always reportable, but FP-rate is high; surface as detection findings, never as 
 ```bash
 git ls-files 2>/dev/null | grep -iE '\.(bak|old|orig|swp|backup)$|(^|/)(_archive|archive|legacy|old|deprecated|_old|_legacy|backup)/'
 ```
-Untracked equivalents via `Glob`. Always flag as **requires confirmation**: `_archive/` may be deliberate cold storage that the team relies on.
+Untracked equivalents via host file-discovery binding. Always flag as **requires confirmation**: `_archive/` may be deliberate cold storage that the team relies on.
 
 **Stale doc references (post-cleanup hook):**
 - When invoked AFTER a cleanup run that removed code/deps, collect the removed-token list from prior commits.
@@ -259,7 +332,7 @@ Run `/senior-review:code-review --commit` and work these phases in order at Step
 
 - Do NOT delete or edit anything. You are a reporter.
 - Do NOT re-run Knip analysis manually line-by-line. Parse the JSON output and trust the tool.
-- Do NOT flag an asset as orphan without running the `Grep` confirmation.
+- Do NOT flag an asset as orphan without running the host content-search binding confirmation.
 - Do NOT silently bundle false-positives into the main findings list. Put them in the separate FP table.
 - Do NOT recommend removing Module augmentation files (`*.d.ts` with `declare module` blocks).
 - Do NOT flag `package-lock.json`, `bun.lockb`, `yarn.lock`, or `pnpm-lock.yaml` as cruft -- they MUST be tracked.
@@ -289,7 +362,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 
@@ -306,4 +379,3 @@ fingerprint, body hash, loaded/failed status, reference hashes and application
 explanation. Include an empty array when none were assigned. Knowledge suggests
 hypotheses; each retained finding still needs code evidence and a falsifiable
 premise. Do not consume peer findings before delivering independently.
-

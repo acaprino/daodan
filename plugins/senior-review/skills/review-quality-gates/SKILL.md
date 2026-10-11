@@ -166,9 +166,9 @@ This section is the source of truth. `/senior-review:team-review` (Phase 4b) and
 
 ### The four lenses
 
-Spawn one `Agent` per lens per finding. Use `role: general-purpose` for lenses 1-3 and `role: senior-review:premise-auditor` for lens 0. Omit `model` for lenses 0, 1 and 2 so they inherit the session model (reasoning-heavy), `model: sonnet` for lens 3 (calibration).
+Dispatch one isolated worker per lens per finding through the consuming workflow's host harness. Lens 0 uses the declared `senior-review:premise-auditor` binding; lenses 1-3 use only the declared `project-protocol:isolated-worker` binding with the lens-specific briefs below. Every brief carries the owned scope, authorization, budget, declared inputs and expected report path. Record each delivered or failed outcome in the same delivery ledger. Independent lenses receive no peer findings before their delivery. All lenses inherit the session model by default; apply a supported model override only when explicitly requested by the user and bound by the host harness, never by choosing a host-specific alias here.
 
-**Lens 3 is gated.** Lenses 1 and 2 run first, in parallel across findings (`run_in_background: true`). Lens 3 (severity calibration) is spawned only for findings that survive them (REAL from both, or the tie that marks them `contested`). Calibrating the severity of a finding the panel is about to discard is spend for nothing; the gate cuts roughly a third of the verifier calls with no change to the survival semantics. Findings killed by lenses 1-2 never reach lens 3 and keep their original severity in the `filtered` record.
+**Lens 3 is gated.** Lenses 1 and 2 run first, independently across findings using the host harness's supported parallel or serial isolated topology. Lens 3 (severity calibration) is spawned only for findings that survive them (REAL from both, or the tie that marks them `contested`). Calibrating the severity of a finding the panel is about to discard is spend for nothing; the gate cuts roughly a third of the verifier calls with no change to the survival semantics. Findings killed by lenses 1-2 never reach lens 3 and keep their original severity in the `filtered` record.
 
 The panel has four lenses. **Lens 0 is gated on provenance and runs first**, before lenses 1 and 2, for the same reason lens 3 is gated last: a finding a veto will discard should not consume the other lenses. Lens 3 stays gated on survival.
 
@@ -176,7 +176,7 @@ Lens 0 runs for findings whose `premise_provenance` is `shared-context` or `mixe
 
 The quantifier route exists because sharing is how an over-scoped premise *spreads*, not how it is *born*. The incident this pipeline was built from was a true local observation ("no credential-bearing response path exists") generalized to all paths by a reviewer that had read only one of them. Declared honestly as `independent`, it would pass a provenance-only gate untouched. A universal claim is exactly the claim one counterexample kills, which is the thing Lens 0 is good at.
 
-**Lens 0 prompt (Premise Challenge):** spawn with `role: senior-review:premise-auditor`, mode 2, inheriting the session model.
+**Lens 0 prompt (Premise Challenge):** dispatch the declared `senior-review:premise-auditor` worker in mode 2, inheriting the session model.
 
 ```
 Mode 2: adversarial premise challenge.
@@ -334,7 +334,7 @@ In the prose/Agent substrate there is no token-budget API. The guard triggers on
 
 ## Completeness Critic
 
-After verification, one critic agent asks what the review failed to cover. It turns blind spots from passive side effects into active output and, when warranted, into one more round of work.
+After verification, one isolated `project-protocol:isolated-worker` critic uses the consuming workflow's host binding and asks what the review failed to cover. It turns blind spots from passive side effects into active output and, when warranted, into one more round of work.
 
 This section is the source of truth. `/senior-review:team-review` (Phase 4c) and `/senior-review:code-review` (Step 4c) both drive the critic from here.
 

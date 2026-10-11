@@ -18,6 +18,8 @@ REPLACEMENTS = (
     (".claude/skills/", ".agents/skills/"),
     ("~/.claude/plugins/cache", "~/.codex/plugins/cache"),
     ("CLAUDE.md", "AGENTS.md"),
+    ("claude plugin install", "codex plugin add"),
+    ("claude plugin marketplace update", "codex plugin marketplace upgrade"),
     ("claude plugin", "codex plugin"),
     ("hosts that are not Claude Code", "hosts that are not Codex"),
 )

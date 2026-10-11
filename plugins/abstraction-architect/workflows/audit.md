@@ -40,7 +40,7 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 3. **Auto-launches X-ray if needed.** If `.codebase-xray/` is missing or incomplete, prints *"No X-ray output found at `.codebase-xray/`. Launching `/codebase-xray:analyze` first. This may take several minutes on a large codebase."* then invokes it without a confirmation prompt. Aborts with the log path if the X-ray fails.
 
-   Under `--diff` this step is skipped. Diff mode consumes only `01-structure.md` and `02-interfaces.md`, uses whatever is on disk, and runs on the concept index plus `Glob` and `Grep` when nothing is.
+   Under `--diff` this step is skipped. Diff mode consumes only `01-structure.md` and `02-interfaces.md`, uses whatever is on disk, and runs on the concept index plus host file-discovery binding and host content-search binding when nothing is.
 
 4. **Resolves the concept index.** Unless `--no-index`, checks `<path>/.abstraction-architect/concept-index.json` and runs the freshness script. Reports the state to the user before spawning, so a `delta-stale` index is visible rather than silent:
 
@@ -52,7 +52,7 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 5. **Resolves the diff (`--diff` only).** Runs `git diff --name-only <base-ref>...HEAD` plus `git diff --name-only` for uncommitted work, and passes the union as `changed_files`. Aborts with a clear message when the path is not a git repository.
 
-6. **Spawns the `abstraction-architect-agent` agent** via the `Agent` tool with `codebase_path`, `mode`, `xray_path`, `concept_index_path`, `changed_files` under `--diff`, and the parsed scope, severity-floor and focus flags.
+6. **Spawns the `abstraction-architect-agent` agent** through its declared host harness, placing in the worker prompt `codebase_path`, `mode`, `xray_path`, `concept_index_path`, `changed_files` under `--diff`, and the parsed scope, severity-floor and focus flags.
 
 7. **The agent writes the report** to `<path>/.abstraction-architect/findings.md`, or `findings-diff.md` under `--diff`. In global mode it also rewrites `concept-index.json`. **Diff mode never writes the index.**
 

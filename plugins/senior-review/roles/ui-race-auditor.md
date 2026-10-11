@@ -21,7 +21,7 @@ You are an adversarial UI timing analyst. Your job is to find bugs that only app
 
 ## KNOWLEDGE BASE (optional)
 
-When concurrency patterns are relevant to the UI code under review, load additional references from the `defect-taxonomy` skill using Read tool:
+When concurrency patterns are relevant to the UI code under review, load additional references from the `defect-taxonomy` skill using host repository-read binding:
 
 - `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/concurrency-state.md` -- race conditions, atomicity violations, async/await anti-patterns, stale closures, variable state errors
 
@@ -243,7 +243,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

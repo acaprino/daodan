@@ -24,7 +24,7 @@ Present the inventory through the host question mechanism, grouped per owner (so
 
 ## Step 5: Rewrite
 
-One primary file per owner at the correct layer, covering exactly the approved behaviors plus any evident gaps the user approved, with justified scope splits documented. Follow the established mirrored or colocated convention at unit; use behavioral ownership at integration, contract, and e2e. Follow the prevention rules of the test-hygiene skill; write test content behavior-first per the `mattpocock-skills:tdd` skill (upstream mattpocock/skills, a hard dependency of this plugin; if unavailable, stop and tell the user to install it: `claude plugin marketplace add mattpocock/skills`, then `claude plugin install mattpocock-skills@mattpocock`).
+One primary file per owner at the correct layer, covering exactly the approved behaviors plus any evident gaps the user approved, with justified scope splits documented. Follow the established mirrored or colocated convention at unit; use behavioral ownership at integration, contract, and e2e. Follow the prevention rules of the test-hygiene skill; write test content behavior-first per the `mattpocock-skills:tdd` skill (upstream mattpocock/skills, a hard dependency of this plugin; if unavailable, stop and recover mattpocock-skills@mattpocock through the active host as specified by test-hygiene; verify the actual skill is loadable before continuing).
 
 ## Step 6: Replace originals atomically
 

@@ -5,6 +5,7 @@ plugin_manifest = ".codex-plugin/plugin.json"
 plugin_root = "plugins/${plugin}"
 skills = "skills/${skill}/SKILL.md"
 roles = "roles/${role}.md"
+role_template = "role.md.tmpl"
 workflows = "skills/${workflow}-workflow/SKILL.md"
 # Codex resolves a skill by the `name` in its frontmatter, so the name has to
 # carry the same suffix as the directory: a plugin with a skill and a workflow

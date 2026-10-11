@@ -1,9 +1,52 @@
 name = "content-strategy"
 entrypoint = "content-strategy.md"
 
+[dispatch]
+roles = ["digital-marketing/content-marketer"]
+isolated = true
+
 [[phases]]
-id = "run"
+id = "scope"
 isolation = "shared"
+produces = ["artifact:content-strategy-context", "selection:audits"]
+
+[[phases]]
+id = "audit"
+needs = ["scope"]
+role = "content-marketer"
+fanout_from = "selection:audits"
+isolation = "required"
+join = "all-delivered"
+concurrency = "preferred"
+consumes = ["artifact:content-strategy-context"]
+produces = ["artifact:content-strategy-findings"]
+
+[[phases]]
+id = "synthesis"
+needs = ["audit"]
+isolation = "shared"
+consumes = ["artifact:content-strategy-findings"]
+produces = ["artifact:content-strategy-plan"]
+
+[[phases]]
+id = "approval"
+needs = ["synthesis"]
+isolation = "shared"
+consumes = ["artifact:content-strategy-plan"]
+produces = ["artifact:content-strategy-approval"]
+
+[[phases]]
+id = "apply"
+needs = ["approval"]
+isolation = "shared"
+consumes = ["artifact:content-strategy-approval"]
+produces = ["artifact:content-strategy-changes"]
+
+[[phases]]
+id = "report"
+needs = ["apply"]
+isolation = "shared"
+consumes = ["artifact:content-strategy-context", "artifact:content-strategy-findings", "artifact:content-strategy-plan", "artifact:content-strategy-changes"]
 produces = ["artifact:content-strategy-report"]
 
 [contract]

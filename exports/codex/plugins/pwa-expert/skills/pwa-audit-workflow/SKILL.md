@@ -5,7 +5,122 @@ description: 'Checks manifest, install criteria, offline behavior, security head
 
 > Arguments: `[path | URL]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
 
+<daodan_host_binding host="codex">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Codex binding: the adapter binds repository read to read_file, writes to
+apply_patch and shell execution to shell; use the equivalent registered tools of
+the active Codex runtime and their actual fields. In particular, a shell example's
+command, timeout and background fields are not automatically another runtime's
+cmd, yield_time_ms or session controls.
+Start the runtime's available isolated subagent mechanism with the complete
+rendered role body in its task prompt. Role Markdown and generated dispatch bodies
+are resources, not registered skills or a native role/subagent_type parameter.
+Use only declared role bindings and report an unavailable isolation mechanism.
+Load installed skills by their advertised exact IDs; workflow skills carry the
+<workflow>-workflow suffix. Named-agent examples do not override inline delivery.
+Required foreign providers use Codex's marketplace/install commands:
+codex plugin marketplace add <source>, then codex plugin add <provider>@<marketplace>.
+Register plugin-declared MCP servers through the active host's MCP configuration
+using the generated server command. Do not assume registration makes every tool
+available to a restricted worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# pwa-audit
+
 <!-- Generated by the Daodan compiler for codex. Edit the kernel, never this file. -->
+
+## Execution harness
+
+Selected topology: **parallel-subagents**, with role delivery by **inline-prompt**. Start one isolated
+runtime subagent per dispatched worker. When role delivery is `inline-prompt`, paste that role's
+Markdown body into the dispatch prompt verbatim: the worker must receive the whole role, not a
+summary of it.
+Declared worker isolation: **required**.
+
+Coordinator completion ownership: keep the method's owned run and delivery ledger,
+including each expected worker, attempt, report path and required check evidence.
+Validate report artifacts before recording delivered. An empty final message or
+worker stop remains missing delivery: inspect or resume when permitted, otherwise
+record failed with the uncovered scope. Follow the declared join and phase gates;
+a recorded failure is accounted for, never converted into a successful delivery.
+Continue authorized work and recovery until the requested result and its checks
+exist or a concrete blocker is recorded. Preserve the exclusive final report owner
+and the ledger schema; a tool exit or a promise cannot satisfy completion.
+
+Harness obligations, none of them optional:
+
+- Every dispatched worker runs in its own subagent context and reads only coordinator-declared inputs.
+  Independent reviewers never read peer results before their own delivery.
+- Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
+  closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
+  `failed`. A worker reports delivered or failed in its final message; there is no shared task
+  list, so the coordinator keeps that record itself.
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `pwa-architect`
+- Workers may write only intermediate reports explicitly assigned by the coordinator.
+  The final report artifact has one exclusive owner in its declaring phase.
+
+Dispatch plan:
+
+1. `scope`: runs in the orchestrating context; produces `artifact:scope`.
+2. `review`: one `pwa-architect` in an isolated context; needs `scope`; consumes `artifact:scope`; produces `artifact:pwa-audit-report`.
+
+Role body bindings (load the complete body only for the selected worker):
+
+- `pwa-architect`: read `roles/pwa-architect.md` inside this package and pass its complete body verbatim.
+
+The phase graph and record-schema references ship under `contracts/pwa-audit.workflow.toml`.
+
+## Method
 
 # /pwa-expert:pwa-audit
 
@@ -44,19 +159,19 @@ If `<arguments>` is a URL, use the Playwright MCP tools of the `playwright` plug
 
 If the Playwright MCP tools are unavailable, stop and tell the user to install Microsoft's Playwright MCP server for the host: on Claude Code `claude plugin install playwright@claude-plugins-official`; on Codex, VS Code, Copilot CLI, Pi or OpenCode, register `npx @playwright/mcp@latest` as the MCP server `playwright` (the exact command for each host is in the Browser automation section of the Daodan README). It is a declared dependency; a live audit without a browser is not run. Mode B (a local codebase) needs no browser.
 
-Live-mode auth note: if the target URL is behind authentication, ask the user via `AskUserQuestion` whether to run the audit against a public route only, or whether the user can provide login steps. Never attempt to bypass auth.
+Live-mode auth note: if the target URL is behind authentication, ask the user through the active host question mechanism whether to run the audit against a public route only, or whether the user can provide login steps. Never attempt to bypass auth.
 
 ## Mode B: Local code
 
 If `<arguments>` is a path or omitted, search the codebase:
 
-1. Find the manifest: `Glob` for `manifest.webmanifest`, `manifest.json`, `app/manifest.ts` (Next.js 14+), `src/manifest.ts`. Parse and verify against `production-checklist.md` §1.
-2. Find the SW source: `Glob` for `sw.js`, `sw.ts`, `service-worker.js`, `service-worker.ts`, `app/sw.ts` (Serwist), `ngsw-config.json` (Angular). Read and audit caching strategies, `skipWaiting` / `clients.claim` use, cleanup in `activate`, offline fallback.
-3. Find the SW registration: `Grep` for `serviceWorker.register`, `workbox-window`, `Workbox(`, `Serwist(`, or Next.js implicit registration via `@serwist/next`.
-4. Find iOS meta tags: `Grep` for `apple-mobile-web-app-capable`. Confirm the full block from `manifest.md` §"iOS meta tag block".
+1. Find the manifest: host file-discovery binding for `manifest.webmanifest`, `manifest.json`, `app/manifest.ts` (Next.js 14+), `src/manifest.ts`. Parse and verify against `production-checklist.md` §1.
+2. Find the SW source: host file-discovery binding for `sw.js`, `sw.ts`, `service-worker.js`, `service-worker.ts`, `app/sw.ts` (Serwist), `ngsw-config.json` (Angular). Read and audit caching strategies, `skipWaiting` / `clients.claim` use, cleanup in `activate`, offline fallback.
+3. Find the SW registration: host content-search binding for `serviceWorker.register`, `workbox-window`, `Workbox(`, `Serwist(`, or Next.js implicit registration via `@serwist/next`.
+4. Find iOS meta tags: host content-search binding for `apple-mobile-web-app-capable`. Confirm the full block from `manifest.md` §"iOS meta tag block".
 5. Find security headers: read `next.config.*` (Next.js headers function), `vite.config.*` plus any `server` plugin, `nginx.conf` / `.htaccess` if present, `firebase.json` `hosting.headers`, `vercel.json` `headers`. Check HSTS, CSP, COOP, COEP, Permissions-Policy.
-6. Find Web Push: `Grep` for `pushManager.subscribe`, `setVapidDetails`, `web-push`. If found, audit the subscription flow and server-side delivery against `push-notifications.md`.
-7. Find storage usage: `Grep` for `localStorage.`, `IDBDatabase`, `openDB(`, `navigator.storage`. Flag anti-patterns from `storage-persistence.md` (for example, `localStorage` used for large data).
+6. Find Web Push: host content-search binding for `pushManager.subscribe`, `setVapidDetails`, `web-push`. If found, audit the subscription flow and server-side delivery against `push-notifications.md`.
+7. Find storage usage: host content-search binding for `localStorage.`, `IDBDatabase`, `openDB(`, `navigator.storage`. Flag anti-patterns from `storage-persistence.md` (for example, `localStorage` used for large data).
 8. Detect framework via `package.json` and configs. Apply framework-specific checks from `frameworks-tooling.md` (Vite vite-plugin-pwa config, Serwist app/sw.ts, Angular ngsw-config.json structure).
 
 If the codebase contains a build artifact directory (`dist/`, `.next/`, `build/`), do not audit the generated SW from there. Always work from source. Generated SW files are derivative and may be stale relative to config.

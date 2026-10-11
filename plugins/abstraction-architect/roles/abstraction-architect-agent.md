@@ -49,7 +49,7 @@ Read from `xray_path`. Missing files reduce confidence; they do not abort the au
 - `04-semantics.md` — responsibilities and intent. The strongest seed for behavioural concepts.
 - `08-interconnect-map.md` (optional) — cross-partition contracts. Enables the bounded-context check that gate K6 requires.
 
-Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no X-ray output at all, `diff` runs on the concept index plus `Glob` and `Grep`, at reduced confidence, and says so in Gaps.
+Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no X-ray output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
 
 # PROCESS (mode = global)
 

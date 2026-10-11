@@ -20,7 +20,7 @@ Load `research:web-search-techniques` first: backends, operators, authority rank
 Two ways in:
 
 - **Spawned by the lead**: the prompt carries a spawn block (`Role`, `Objective`, `Boundaries`, `Source families`, `Domain hint`, `Backend`, `Budget`, `Return format`). Follow it literally.
-- **Direct invocation**: no spawn block. Treat the user's question as the objective, no boundaries, backend `auto` (serper if `SERPER_API_KEY` is set, else `WebSearch`), budget `15 searches / 12 pages / 4 rounds`, and return the same report format.
+- **Direct invocation**: no spawn block. Treat the user's question as the objective, no boundaries, backend `auto` (serper if `SERPER_API_KEY` is set, else `host web search binding`), budget `15 searches / 12 pages / 4 rounds`, and return the same report format.
 
 Budget is a planning-time cap: plan queries before launching them; do not count runtime calls one by one.
 
@@ -34,7 +34,7 @@ Budget is a planning-time cap: plan queries before launching them; do not count 
 
 ## 2. Read
 
-- Read the pages that matter, per the skill's reading rules (`WebFetch`, then `webfetch.py` on a block, browser only when the `playwright` plugin's MCP tools are available and the page is load-bearing)
+- Read the pages that matter, per the skill's reading rules (`host page-fetch binding`, then `webfetch.py` on a block, browser only when the `playwright` plugin's MCP tools are available and the page is load-bearing)
 - A page enters the ledger only after it is read. A snippet is a pointer, never a claim
 - On entry record: URL, title, the date the page carries, authority rank 1-5, and each claim taken, as one sentence with numbers carrying date and unit
 
@@ -126,4 +126,4 @@ No apology, no partial prose: the lead needs the structured signal to re-spawn o
 - Never the same query twice, in either backend
 - 2 empty attempts on a thread, then pivot or drop
 - Never fetch the same URL twice
-- When `websearch.py` exits non-zero, do not retry it; continue with `WebSearch` if the backend was `auto`, stop with `error` if it was forced `serper`
+- When `websearch.py` exits non-zero, do not retry it; continue with `host web search binding` if the backend was `auto`, stop with `error` if it was forced `serper`

@@ -58,12 +58,59 @@ The X-ray is static analysis and stays so: runtime evidence counts only when the
 
 Marketplace 32.2.0 gave the X-ray a perimeter, by decision of 2026-10-08: below its target it never analyzes what Git ignores or any directory whose name starts with a dot, on top of the dependency and build directories it already skipped. `tree_scope.py` owns the rule and every script that walks a tree applies it (`snapshot.py`, `cascade_scan.py`, `usage_finder.py`, `rewrite_comments.py`, `doc_review.py`), so no script reads more than the snapshot records. The motivating case: a lifecycle campaign's own records under `.daodan/` and `.team-review/` entered the next snapshot as project files, and an incremental update of an untouched project asked for a full analysis. Two properties keep the rule from becoming the stylesheet blind spot again. The target is analyzed as given, so naming `.github/` is how a project's CI gets an X-ray. And the exclusion is declared: `snapshot.py scope` prints it for the scope confirmation, the manifest's `scope` block keeps it, and the final report's inventory line repeats it. Do not narrow the rule to a list of known tool directories on a later pass: a list is what lets the next tool's output in.
 
+## Operational compatibility of host exports
+
+Host compatibility covers every instruction a worker consumes: entry bodies,
+role bodies, skills, bundled references and generated dispatch resources.
+Registration, matching digests, valid frontmatter and a supported capability row
+prove their own structural contracts; they do not prove that the body can call
+the host's tools or complete its workflow.
+
+- Keep behavior in the neutral kernel and executable host mechanisms in adapters
+  and the compiler. Fix the source and regenerate all five hosts. Never repair
+  generated exports by hand or rely on a consumer-only workaround as the upstream fix.
+- Review operational tool names, case, input fields, permissions, dispatch,
+  model selection, user questions and dependency recovery on each host. A role
+  with no source tool restriction must not silently become a read-only worker.
+  Default models inherit; documented overrides need a binding to an available
+  host model, rather than a foreign model alias copied into the body.
+- Distinguish skills, roles and workflows using each host's registered identity.
+  Loading a role as a skill is not dispatch. Inline-role adapters need the actual
+  role body and its provider references, not an invented named-agent call.
+- Inspect every phase and method-owned worker, including a single `phase.role`
+  without fan-out. The rendered mechanism must preserve isolation, permitted
+  workers, declared inputs, delivery accounting and the report owner. A wrapper
+  cannot neutralize conflicting dispatch instructions nested in a skill.
+- Verify terminal stdin, background execution, completion signals and browser/MCP
+  availability before requiring an interactive checkpoint. When stdin is absent,
+  bind a supported stop signal that preserves live capture. Do not substitute an
+  unrelated browser skill or invent a tool because a required dependency is missing.
+- Preserve required-provider failures and give recovery instructions for the
+  active host. External marketplace names are dependency identities, not evidence
+  that another host can execute the Claude installation command.
+- Scope adaptation to executable host instructions. Keep code examples, shell
+  language labels and host-as-subject material intact. Do not use global token
+  replacement to translate dispatch schemas or rewrite domain code.
+- Add regressions for the affected operational contracts on all five rendered
+  hosts, including referenced content and negative capability cases. Retained
+  host-vocabulary baseline entries are debt, not compatibility evidence; never
+  enlarge them to make a fix pass. Keep compiler checks and installed-host probes
+  separate in verification reports, recording host version and exercised path.
+  An empty worker response or a completed turn alone is not a delivered result.
+
+Tri-Tech Code consumes the OpenCode export. Its app-specific permissions, Gateway
+catalog, project paths and routing belong to its permanent integration; shared
+host translation defects belong upstream. A project-output relocation must bind
+helpers, contracts and result readers together, not change a path in prose alone.
+See [host maintenance](docs/hosts.md#operational-compatibility-review) and the
+repository `downstream-exports` workflow for the review procedure.
+
 ## Conventions
 
 - Agent names: kebab-case matching the filename (e.g. `quick-searcher.md`)
 - No name is shared across component kinds inside a plugin. `validate_component_kinds` fails the build when a skill, role or workflow repeats a name: OpenCode lists skills and agents in one `@` menu, and a name meaning two things in one plugin is ambiguous to every body that cites it. A role beside a same-topic skill takes `-agent` (`abstraction-architect-agent`), a skill beside a same-topic workflow takes `-method` (`brand-naming-method`, after `codebase-xray`'s `xray-method`). Marketplace 29.0.0 renamed the five components that broke this rule.
 - Plugin names: kebab-case directory names
-- Default model: `inherit` (agents follow the session model instead of pinning one); exceptions noted per-agent (e.g. `quick-searcher` uses `sonnet`)
+- Default model: `inherit` (agents follow the session model instead of pinning one). A user-requested override must resolve to a model available on the active host.
 - Agent `color` must be one of: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`
 - Agent body style: terse keyword lists, imperative tone, structured with markdown headers; simple agents ~50-200 lines, complex agents up to ~700 lines
 - Long `description` frontmatter values use the YAML multiline `>` form
@@ -111,7 +158,7 @@ The build is `python scripts/daodan_build.py`. It loads every kernel, validates 
 6. `python scripts/daodan_build.py --check --support` — the drift gate. Every committed package and catalog must reproduce byte-for-byte from the kernels and adapters in the same commit.
 7. `python adapters/copilot/policies/xray-guard/test_xray_guard.py` — the Copilot write-confinement policy implementation, 36 cases.
 8. `python scripts/check_version_bumps.py <base-rev> [<head-rev>]` — over the pushed or PR range, a change under `plugins/<name>/` or under `adapters/<host>/overrides/<name>/` must come with a bump of that plugin's version and of `metadata.version`. Generated packages under `exports/` never count: they are compiler output, and a rebuild is not a plugin change.
-9. `python scripts/lint_host_vocabulary.py` rejects host-specific team primitives in neutral behavior. Kernels state delivery/ownership/barrier obligations and adapter wrappers supply their mechanisms. Neutralize a file and remove its grandfathered count, never increase one. Marketplace operations and SDK knowledge retain host vocabulary when tooling is their subject; instruction examples belong to the knowledge owner's skill.
+9. `python scripts/lint_host_vocabulary.py` rejects host-specific team primitives in neutral behavior. Kernels state delivery/ownership/barrier obligations and adapter wrappers supply their mechanisms. The baseline is empty. Operational tool names and dispatch fields in nested references are checked alongside team primitives; neutral frontmatter and host-as-subject examples are preserved. Never add a baseline to make a check pass. Marketplace operations and SDK knowledge retain host vocabulary when tooling is their subject; instruction examples belong to the knowledge owner's skill.
 
 When a change legitimately trips a linter, fix the declaration or the reference, not the linter; heuristic misreads go in its `ALLOWLIST` with a reason.
 
@@ -186,7 +233,7 @@ Many vendor documentation sites (IBKR's `interactivebrokers.com/docs/` among the
 The escalation path, in order:
 
 1. `WebFetch`. If it returns 403 or empty content, do not retry it and do not conclude anything from the failure.
-2. **Drive a real browser with the Playwright MCP tools** of the `playwright` plugin (`playwright@claude-plugins-official`, Microsoft's Playwright MCP server, a hard dependency of `app-analyzer`, `digital-marketing`, `grabber-development` and `pwa-expert`; install with `codex plugin install playwright@claude-plugins-official`). `browser_navigate` opens a visible browser, which also passes bot detection that headless does not; `browser_snapshot` reads the page and `browser_run_code_unsafe` runs any Playwright extraction code.
+2. **Drive a real browser with the Playwright MCP tools** of the `playwright` plugin (`playwright@claude-plugins-official`, Microsoft's Playwright MCP server, a hard dependency of `app-analyzer`, `digital-marketing`, `grabber-development` and `pwa-expert`; install with `codex plugin add playwright@claude-plugins-official`). `browser_navigate` opens a visible browser, which also passes bot detection that headless does not; `browser_snapshot` reads the page and `browser_run_code_unsafe` runs any Playwright extraction code.
 3. Check whether the site publishes an **LLM-friendly index**. IBKR's docs expose `/llms.txt` at the root and serve clean Markdown for any page by appending `.md` to its URL, which is faster and cleaner than scraping rendered HTML. Look for that before writing extraction logic.
 
 This is how the five "unverifiable" IBKR facts in the 2026-08-09 `ibkr-trading` refresh were actually resolved, one of which (a plugin claim that error code 10167 exists) turned out to be false rather than merely unconfirmed.
@@ -239,7 +286,7 @@ Standing policy since 2026-08-04: this repository no longer maintains vendored c
 | Browser E2E patterns (`testing` skill `e2e-testing-patterns`) | `wshobson/agents` | marketplace 18.0.0 |
 | Cleanup command trio (`codebase-cleanup` plugin: 3 commands) | `wshobson/agents` | marketplace 19.0.0 |
 
-As of marketplace 8.2.0, superpowers is a declared hard dependency of `ai-tooling` (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`; cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2). Any place that points at the superpowers planning skills says so unconditionally: load the skills, and if they are unavailable stop and tell the user to install superpowers (`codex plugin install superpowers@claude-plugins-official`). This supersedes the earlier rule that kept superpowers references conditional; do not reintroduce conditional phrasing.
+As of marketplace 8.2.0, superpowers is a declared hard dependency of `ai-tooling` (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`; cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2). Any place that points at the superpowers planning skills says so unconditionally: load the skills, and if they are unavailable stop the dependent phase and recover superpowers through the active host provisioning mechanism; the Claude command `codex plugin add superpowers@claude-plugins-official` applies only on Claude Code. This supersedes the earlier rule that kept superpowers references conditional; do not reintroduce conditional phrasing.
 
 The scoped exception that used to sit here is closed. From 2026-07-30 until the universal cutover, `exports/vscode/` vendored 14 superpowers skills and the 6 agents that served them, because there was no Copilot install path for superpowers and the extension shipped them or nothing did. The extension is gone, so the copy is gone with it, and the delegation is now unconditional again on every host: `ai-tooling` hard-depends on `superpowers@claude-plugins-official`, and nothing anywhere may re-import those skills. Superpowers publishes its own marketplace (`obra/superpowers-marketplace`), which is the install path to point users at.
 

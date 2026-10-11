@@ -12,7 +12,7 @@ argument-hint: "<url or local path> [--focus <comma-separated areas>] [--social]
 
 1. **Execute phases in order.** Scope → Parallel Audit → Synthesis → Approval → Apply → Report.
 2. **Write output files.** Each phase writes to `.content-strategy/` for persistence.
-3. **Run audit agents in parallel.** Phase 2 fires multiple agents simultaneously.
+3. **Isolate every selected audit.** Phase 2 prefers parallel delivery through the host harness; a serial isolated topology preserves the same area selection and delivery barrier.
 4. **Stop at checkpoint.** Get user approval before applying any changes.
 5. **Use Playwright for live sites.** Browser tools for DOM, screenshots, responsive testing.
 6. **Never enter plan mode.** Execute immediately.
@@ -40,7 +40,7 @@ run this again:
   OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
-Do not fall back to a WebFetch-only analysis. Local files need no browser.
+Do not fall back to a host page-fetch binding-only analysis. Local files need no browser.
 
 ### Initialize
 
@@ -86,90 +86,78 @@ Present scope summary and confirm focus areas.
 
 ## Phase 2: Parallel Audit (3 agents)
 
-Run all three audit agents **in parallel** in a single response.
+Build `selection:audits` from the requested areas: one item for each nonempty A, B or C ownership group below, each bound to `digital-marketing:content-marketer`. Use the host harness to dispatch one isolated reviewer per selected item with the shared context, only its owned areas, authorization and an intermediate report path `.content-strategy/audits/<A|B|C>.md`. Prefer parallel delivery when supported. Record every selected reviewer as delivered or failed before synthesis; missing output is a failed delivery, never a clean area. Workers cannot read peer findings or write the final report.
 
 Area ownership, used to resolve `--focus`: Agent A owns `ux`, `cta`, `social-proof`, `pricing`, `forms`, `navigation`. Agent B owns `copy`, `seo-copy`, `microcopy`, `product-descriptions`. Agent C owns `social`, `images`, `video`. Skip any agent whose areas were all excluded, and tell the agents that do run to report only on the requested areas.
 
 ### Agent A: UX & Conversion Analysis
 
-```
-Task:
-  subagent_type: "content-marketer"
-  description: "UX and conversion optimization audit"
-  prompt: |
-    Audit the UX patterns and conversion elements of this website/page.
+```text
+Audit the UX patterns and conversion elements of this website/page.
 
-    [Shared context block from Phase 1, verbatim]
+[Shared context block from Phase 1, verbatim]
 
-    ## Instructions
-    Evaluate:
-    1. **Page Layout**: Visual hierarchy, above-the-fold content, whitespace, content flow
-    2. **CTAs**: Presence, clarity, contrast, placement, urgency, primary/secondary hierarchy
-    3. **Social Proof**: Testimonials, reviews, trust badges, client logos, case studies, numbers
-    4. **Pricing**: Clarity, comparison table, anchoring, free trial CTA, FAQ, guarantee
-    5. **Forms**: Field count, labels, error handling, progress indicators, mobile-friendly
-    6. **Navigation**: Hierarchy, breadcrumbs, search, mobile menu, sticky header, footer
+## Instructions
+Evaluate:
+1. **Page Layout**: Visual hierarchy, above-the-fold content, whitespace, content flow
+2. **CTAs**: Presence, clarity, contrast, placement, urgency, primary/secondary hierarchy
+3. **Social Proof**: Testimonials, reviews, trust badges, client logos, case studies, numbers
+4. **Pricing**: Clarity, comparison table, anchoring, free trial CTA, FAQ, guarantee
+5. **Forms**: Field count, labels, error handling, progress indicators, mobile-friendly
+6. **Navigation**: Hierarchy, breadcrumbs, search, mobile menu, sticky header, footer
 
-    For each finding: severity (Critical/Important/Nice-to-have), element, issue, specific fix.
-    Note what's working well.
+For each finding: severity (Critical/Important/Nice-to-have), element, issue, specific fix.
+Note what's working well.
 
-    Return structured findings.
+Return structured findings.
 ```
 
 ### Agent B: Content & Copy Analysis
 
-```
-Task:
-  subagent_type: "content-marketer"
-  description: "Content and copy quality audit"
-  prompt: |
-    Audit the written content and copy of this website/page.
+```text
+Audit the written content and copy of this website/page.
 
-    [Shared context block from Phase 1, verbatim]
+[Shared context block from Phase 1, verbatim]
 
-    ## Instructions
-    Evaluate:
-    1. **Headlines**: Clarity (5-second test), benefit-driven, keyword presence, emotional triggers
-    2. **Body Copy**: Scannable, benefit-focused, objection handling, specificity, reading level
-    3. **Tone & Voice**: Consistency, audience-appropriate, brand alignment, authenticity
-    4. **SEO Copy**: Keyword density, internal links, meta descriptions, featured snippet targeting
-    5. **Microcopy**: Button labels, form hints, error messages, empty states, confirmations
-    6. **Product Descriptions**: Feature→benefit framing, specifications, comparisons, use cases
+## Instructions
+Evaluate:
+1. **Headlines**: Clarity (5-second test), benefit-driven, keyword presence, emotional triggers
+2. **Body Copy**: Scannable, benefit-focused, objection handling, specificity, reading level
+3. **Tone & Voice**: Consistency, audience-appropriate, brand alignment, authenticity
+4. **SEO Copy**: Keyword density, internal links, meta descriptions, featured snippet targeting
+5. **Microcopy**: Button labels, form hints, error messages, empty states, confirmations
+6. **Product Descriptions**: Feature→benefit framing, specifications, comparisons, use cases
 
-    For each finding: severity, location, issue, specific rewrite suggestion.
-    Note what's working well.
+For each finding: severity, location, issue, specific rewrite suggestion.
+Note what's working well.
 
-    Return structured findings.
+Return structured findings.
 ```
 
 ### Agent C: Social Media & Visual Audit
 
-```
-Task:
-  subagent_type: "content-marketer"
-  description: "Social media and visual media audit"
-  prompt: |
-    Audit the social media presence and visual assets of this website/page.
+```text
+Audit the social media presence and visual assets of this website/page.
 
-    [Shared context block from Phase 1, verbatim]
+[Shared context block from Phase 1, verbatim]
 
-    ## Instructions
-    Evaluate:
-    1. **OG/Twitter Tags**: Presence, quality, share preview appearance
-    2. **Social Profiles**: Linked from site, consistent branding, active presence
-    3. **Share Buttons**: Placement, platform selection, mobile-friendly
-    4. **Images**: Quality, relevance, consistency, alt text, performance
-    5. **Product Gallery**: Count, angles, zoom, lifestyle shots, consistency
-    6. **Video**: Hero video, demos, testimonials, thumbnails, loading behavior
-    7. **Icons & Illustrations**: Consistent style, meaningful, accessible
+## Instructions
+Evaluate:
+1. **OG/Twitter Tags**: Presence, quality, share preview appearance
+2. **Social Profiles**: Linked from site, consistent branding, active presence
+3. **Share Buttons**: Placement, platform selection, mobile-friendly
+4. **Images**: Quality, relevance, consistency, alt text, performance
+5. **Product Gallery**: Count, angles, zoom, lifestyle shots, consistency
+6. **Video**: Hero video, demos, testimonials, thumbnails, loading behavior
+7. **Icons & Illustrations**: Consistent style, meaningful, accessible
 
-    For each finding: severity, element, issue, specific fix.
-    Note what's working well.
+For each finding: severity, element, issue, specific fix.
+Note what's working well.
 
-    Return structured findings.
+Return structured findings.
 ```
 
-Consolidate all agent findings into **`.content-strategy/02-audit.md`**:
+The coordinator alone consolidates all delivered audit findings into **`.content-strategy/02-audit.md`**. Preserve failed delivery records and mark excluded areas `not audited`; do not declare the audit complete when a selected reviewer has not delivered. Synthesis owns this intermediate artifact, while the report phase alone owns `05-report.md`:
 
 ```markdown
 # Phase 2: Content Strategy Audit
@@ -239,7 +227,7 @@ Please review:
 4. Report only -- skip implementation, generate final report
 ```
 
-Do NOT proceed until the user approves. You MUST stop generating text completely at this point -- do NOT simulate the user's response or continue autonomously. Wait for explicit user input before starting Phase 4.
+Record `artifact:content-strategy-approval` with the user's actual choice and authorized scope. Do not simulate the answer or begin unapproved changes. Use the host's question mechanism and wait for explicit user input. If the user chooses report only, Phase 4 records that choice and zero applied changes in `04-changes.md`, then proceeds to the final report without mutation.
 
 ---
 
@@ -303,7 +291,8 @@ Read all `.content-strategy/*.md` files and generate consolidated report.
 - Review frequency
 
 ## Audit Metadata
-- Agents used: 3 (UX, Content, Social)
+- Audits selected: [actual A/B/C groups and their owned areas]
+- Deliveries: [delivered/failed per selected audit; excluded areas are not audited]
 - Total findings: [count]
 - Fixes applied: [count]
 ```

@@ -12,6 +12,8 @@ import tomllib
 from pathlib import Path
 from typing import Any, Mapping
 
+from .validate import SourcePathError, confined_source
+
 from .model import (
     CONCURRENCIES,
     ISOLATIONS,
@@ -72,14 +74,20 @@ CONTRACT_KEYS = frozenset({"inputs", "outcomes", "artifacts", "schemas", "shared
 CONTRACT_EXPORT_KEYS = frozenset({"exports"})
 
 
-def _read(path: Path) -> Mapping[str, Any]:
+def _read(path: Path, root: Path | None = None) -> Mapping[str, Any]:
+    try:
+        confined_source(root if root is not None else path.parent, path, allow_missing=True)
+    except SourcePathError as error:
+        raise ModelError(error.path, error.message) from error
     if not path.is_file():
         raise ModelError(path, "file does not exist")
-    with path.open("rb") as handle:
-        try:
+    try:
+        with path.open("rb") as handle:
             return tomllib.load(handle)
-        except tomllib.TOMLDecodeError as error:
-            raise ModelError(path, f"invalid TOML: {error}") from error
+    except tomllib.TOMLDecodeError as error:
+        raise ModelError(path, f"invalid TOML: {error}") from error
+    except OSError as error:
+        raise ModelError(path, f"cannot read source: {error}") from error
 
 
 def _reject_unknown(
@@ -163,8 +171,10 @@ def load_phase(path: Path, table: Mapping[str, Any]) -> PhaseSpec:
     )
 
 
-def load_workflow(path: Path, workflow_directory: Path) -> WorkflowSpec:
-    table = _read(path)
+def load_workflow(
+    path: Path, workflow_directory: Path, source_root: Path | None = None
+) -> WorkflowSpec:
+    table = _read(path, source_root)
     _reject_unknown(path, table, WORKFLOW_KEYS, "workflow")
     for key in ("name", "entrypoint"):
         if key not in table:
@@ -227,7 +237,7 @@ def load_plugin(path: Path) -> PluginSpec:
     """Load one plugin content kernel from its directory."""
     root = Path(path)
     manifest = root / "plugin.toml"
-    table = _read(manifest)
+    table = _read(manifest, root)
     _reject_unknown(manifest, table, PLUGIN_KEYS, "plugin")
 
     for key in PLUGIN_REQUIRED_KEYS:
@@ -261,8 +271,13 @@ def load_plugin(path: Path) -> PluginSpec:
         policies=_strings(manifest, components_table, "policies", "components"),
     )
 
+    # Workflow sidecars are read eagerly; other component names stay with
+    # semantic validation because the loader does not consume their bodies.
+    for name in components.workflows:
+        _relative(manifest, name, "component name")
+
     workflows = tuple(
-        load_workflow(root / "workflows" / f"{name}.toml", Path("workflows"))
+        load_workflow(root / "workflows" / f"{name}.toml", Path("workflows"), root)
         for name in components.workflows
     )
 

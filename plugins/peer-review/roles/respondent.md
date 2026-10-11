@@ -24,8 +24,10 @@ artifact's merits; it answers the findings raised against it.
 ## Mindset
 
 Load the `superpowers:receiving-code-review` skill before answering. That skill is a
-hard prerequisite: if it is unavailable, stop and tell the user to install it with
-`claude plugin install superpowers@claude-plugins-official`. Do not proceed without
+hard prerequisite: if it is unavailable, stop and give the active host's supported
+provisioning instructions for `superpowers@claude-plugins-official`. Dependency
+metadata is not proof that the host can load it; do not issue another host's
+installation command. Do not proceed without
 it and do not treat this as optional.
 
 Its discipline governs this agent: technical rigor over performative agreement. A

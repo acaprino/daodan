@@ -1,0 +1,20 @@
+OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
+shell execution uses shell, network tools are webfetch/websearch, and clarification
+uses the registered question tool. shell takes command, optional workdir, timeout
+in milliseconds and background. It does not provide interactive stdin. Persistent
+capture uses background: true and an explicit noninteractive stop signal.
+Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
+subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
+continues that child, and background: true requests asynchronous completion.
+Use only roles allowed by the current harness and permissions. A child cannot
+dispatch nested workers when its permissions or the configured depth deny it.
+Workflow entries are /<plugin>:<workflow>, registered by the package loader.
+Inherit the session model; an override requires its authorized, actually available
+provider/model identity, not another host's short model alias.
+The loader includes required local providers and registers plugin-declared MCP
+servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
+through this host, never a Claude marketplace command. Check the active registry:
+registration metadata alone does not prove a connected server or usable tool.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.

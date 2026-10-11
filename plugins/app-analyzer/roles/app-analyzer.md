@@ -114,7 +114,7 @@ Systematic BFS exploration producing a structured sitemap.
 # A) Screenshot
 adb exec-out screencap -p > .app-analyzer/screenshots/screen_NNN_{name}.png
 
-# B) Analyze screenshot visually (Read tool)
+# B) Analyze screenshot visually (host repository-read binding)
 
 # C) UI dump for coordinates
 adb shell uiautomator dump /sdcard/ui.xml

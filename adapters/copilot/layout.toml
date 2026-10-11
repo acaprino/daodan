@@ -7,6 +7,7 @@ skills = "skills/${skill}/SKILL.md"
 roles = "agents/${role}.agent.md"
 workflows = "prompts/${workflow}.prompt.md"
 coordinator_template = "coordinator.agent.md.tmpl"
+team_workflow_template = "coordinator.prompt.md.tmpl"
 role_template = "worker.agent.md.tmpl"
 coordinators = "agents/${workflow}-coordinator.agent.md"
 

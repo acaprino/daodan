@@ -131,7 +131,7 @@ your time.
 
 Useful flags: `--rounds=N` (`2` or `3`, default `3`; a value below `2` is rejected, a
 run with findings can never terminate after round one). `--apply` (after the verdict
-is computed, apply its accepted changes to the artifact with the Edit tool and append
+is computed, apply its accepted changes to the artifact through the host repository-edit binding and append
 a changelog section). `--challenger` may be omitted once `profiles.json` names a
 `default`.
 

@@ -23,6 +23,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.render import opencode_permissions, render_plugin  # noqa: E402
+from host_binding_assertions import canonical_markdown, without_host_binding
 
 ADAPTERS = REPO_ROOT / "adapters"
 XRAY = REPO_ROOT / "plugins/codebase-xray"
@@ -160,10 +161,11 @@ class HostRenderingTests(unittest.TestCase):
 
     # -- workflow frontmatter and arguments --------------------------------
 
-    def test_claude_flat_workflow_is_the_kernel_verbatim(self):
+    def test_claude_flat_workflow_preserves_kernel_under_execution_binding(self):
         rendered = _read(self.package("claude", "codebase-xray") / "commands/analyze.md")
         kernel = _read(XRAY / "workflows/analyze.md").replace("\r\n", "\n")
-        self.assertEqual(rendered, kernel)
+        body = without_host_binding(self, rendered, "claude")
+        self.assertEqual(body, canonical_markdown(kernel))
 
     def test_codex_flat_workflow_has_skill_frontmatter(self):
         text = _read(self.package("codex", "codebase-xray") / "skills/analyze-workflow/SKILL.md")

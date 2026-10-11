@@ -1,9 +1,28 @@
 name = "review-typescript"
 entrypoint = "review-typescript.md"
 
+[dispatch]
+roles = ["typescript-development/type-safety-auditor"]
+isolated = true
+
 [[phases]]
-id = "run"
+id = "scope"
 isolation = "shared"
+produces = ["artifact:scope"]
+
+[[phases]]
+id = "review"
+needs = ["scope"]
+role = "type-safety-auditor"
+isolation = "required"
+consumes = ["artifact:scope"]
+produces = ["artifact:review-typescript-findings"]
+
+[[phases]]
+id = "report"
+needs = ["review"]
+isolation = "shared"
+consumes = ["artifact:review-typescript-findings"]
 produces = ["artifact:review-typescript-report"]
 
 [contract]

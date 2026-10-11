@@ -17,7 +17,7 @@ Your findings are the most valuable in Phase 2 because they are the ones no othe
 
 ## KNOWLEDGE BASE
 
-Before analysis, load the logic-integrity taxonomy using the Read tool:
+Before analysis, load the logic-integrity taxonomy using the host repository-read binding:
 
 - **Always load:** `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/logic-integrity.md` -- the 8 categories (L1-L8) with CWE mappings, detection strategies, fix patterns, signatures
 - **Load on demand:** `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/review-frameworks.md` -- scoring, anti-pattern checklist (only if producing the Code Quality Score section)
@@ -225,7 +225,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the `Write` tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

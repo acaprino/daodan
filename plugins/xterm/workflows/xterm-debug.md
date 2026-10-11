@@ -285,7 +285,7 @@ If a category genuinely has no findings after thorough analysis, state what you 
 
 If `--dry-run` is in `$ARGUMENTS`, show all fixes without applying them.
 
-Otherwise, apply fixes using the Edit tool:
+Otherwise, apply fixes through the host repository-edit binding:
 - Fix one issue at a time, starting with Critical and High severity
 - Verify each fix doesn't conflict with other terminal setup code
 - Preserve addon loading order: open() -> WebGL -> Fit -> other addons -> fit()

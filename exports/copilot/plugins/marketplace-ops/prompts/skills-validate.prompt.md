@@ -6,151 +6,99 @@ argument-hint: '[plugin-name] [--all] [--skip-ai]'
 
 > Arguments: `[plugin-name] [--all] [--skip-ai]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# skills-validate
+
 <!-- Generated by the Daodan compiler for copilot. Edit the kernel, never this file. -->
 
-## Source profile preflight
+## Coordinator handoff
 
-Load marketplace-ops:kernel-marketplace before this procedure. Detect the target's
-source model from its manifests and instructions. For daodan/v1 neutral kernels,
-follow that skill's operation-specific procedure and finish there. Generated
-exports and catalog entries are inspected as output, never authored as source.
-The procedure below applies only to a legacy Claude marketplace with hand-authored
-agents/ and commands/. It must not be applied to a neutral kernel checkout.
+Use the registered custom-agent dispatch mechanism to invoke the installed agent
+`marketplace-ops:skills-validate-coordinator` with the complete original user request,
+its arguments, scope, authorization and budget. Workflow arguments: <arguments>
 
+This prompt is the workflow entry; the named coordinator contains its execution
+harness and method. Confirm that it is installed and can dispatch the workers in
+its declared agents allowlist. If the host cannot provide the required coordinator
+and nested worker capability, report that blocker instead of running the method
+in this prompt's context or loading the coordinator as a skill.
 
-
-# Skills Validation
-
-Deterministic activation-quality checks plus AI-powered body review for all skills and agents.
-
-## What this validates
-
-### Deterministic checks (script)
-
-1. **Directive voice** -- description uses ALWAYS invoke, MUST use, TRIGGER WHEN, or use PROACTIVELY
-2. **TRIGGER WHEN clause** -- explicit activation boundary present
-3. **DO NOT TRIGGER WHEN clause** -- when present, must name the sibling to route to; absence is fine when no confusable sibling exists
-4. **Negative constraint** -- "Do not X directly" prevents Claude from bypassing (skills only)
-5. **Passive pattern detection** -- flags "Helps with", "Can be used for", "Use when" and similar low-activation wording
-6. **Description length** -- hard limit 1024 chars, recommended under 300
-7. **Token budget** -- total description chars across all components vs 15,000 char budget
-8. **SKILL.md body size** -- warn over 300 lines, flag over 500 lines, suggest references/ split
-9. **Agent body size** -- flag over 800 lines
-10. **Em dash detection** -- flags the em dash character anywhere
-11. **Token estimate** -- SKILL.md body chars/4, target under 5,000 tokens
-12. **Example tags** -- detects `<example>` tags, recommends 3-5
-13. **context: fork** -- reports if skill uses isolated subagent context
-14. **disable-model-invocation** -- reports if auto-triggering is disabled
-15. **allowed-tools in agents** -- flags agents with unrestricted tool access
-16. **!command preprocessor** -- detects shell command injection in skill body
-
-### AI review dimensions (Step 5)
-
-- **Structure** -- section organization, logical flow, no wall-of-text
-- **Clarity** -- actionable instructions, no vague directives, teaches only what Claude lacks
-- **Redundancy** -- no repetition, no filler, every sentence adds unique value
-- **Progressive disclosure** -- large content split into references/ appropriately
-- **Tool restrictions** -- agents have appropriate tools for their role
-- **Isolation needs** -- destructive skills should use context: fork
-
-## Procedure
-
-### Step 1: Run the validation script
-
-```bash
-# Validate all plugins
-python plugins/marketplace-ops/skills/skills-creator/scripts/validate_skills.py --all
-
-# Validate a specific plugin
-python plugins/marketplace-ops/skills/skills-creator/scripts/validate_skills.py <plugin-name>
-```
-
-### Step 2: Review the report
-
-The script outputs:
-- Token budget usage (current chars / 15,000 budget)
-- Estimated total body tokens across all skills
-- Per-component issues grouped by plugin
-- Activation score summary table (1-5 per component)
-- Components scoring below 3/5 flagged for attention
-
-### Step 3: Fix low-scoring descriptions
-
-For each component scoring below 3/5, rewrite the description following the high-activation template:
-
-```yaml
-description: >
-  "<Domain summary>" argument-hint: "<usage hint>".
-  TRIGGER WHEN: <specific triggers>.
-  DO NOT TRIGGER WHEN: <exclusions>.
-```
-
-### Step 4: Re-validate deterministic checks
-
-Run the script again to confirm all scores improved.
-
-### Step 5: AI body quality review
-
-Skip this step if the user passed `--skip-ai`.
-
-Read the SKILL.md body and agent body of each component that scored below 4/5 OR was flagged for token/line/body issues. For each, evaluate these dimensions:
-
-#### 5A. Structure (score 1-5)
-
-- **5/5**: Clear headers (## Purpose, ## Procedure, ## Constraints, ## Output), logical flow
-- **3/5**: Some structure but sections bleed into each other or headers are vague
-- **1/5**: Wall-of-text, no headers, instructions mixed with examples
-
-#### 5B. Clarity (score 1-5)
-
-- **5/5**: Every instruction is specific, imperative, teaches only what Claude doesn't already know
-- **3/5**: Mostly clear but has vague directives ("handle appropriately", "use best judgment")
-- **1/5**: Instructions repeat common knowledge, contradict each other, or are ambiguous
-
-#### 5C. Redundancy (score 1-5)
-
-- **5/5**: Every sentence adds unique value, no repetition
-- **3/5**: Some duplication between description and body, or preambles before actionable content
-- **1/5**: Same instruction stated multiple ways, "You are an expert in..." throat-clearing, verbose filler
-
-#### 5D. Progressive disclosure (score 1-5)
-
-- Skip if body <150 lines
-- **5/5**: Body under 300 lines OR large body with well-used references/ directory
-- **3/5**: Body >300 lines with references/ but wrong content split
-- **1/5**: Body >300 lines with no references/ directory
-
-#### 5E. Tool restrictions (score 1-5, agents only)
-
-- **5/5**: Tools list matches agent's actual needs precisely
-- **3/5**: Slightly over-permissive but not dangerous
-- **1/5**: All tools allowed when agent only needs Read/Grep, or missing tools it clearly needs
-
-#### 5F. Isolation needs (score 1-5)
-
-- **5/5**: Pure knowledge/conventions skill (no isolation needed) OR destructive skill with context: fork
-- **3/5**: Runs shell commands but low risk
-- **1/5**: Performs destructive operations, generates huge output, or calls external APIs without context: fork
-
-#### Output format
-
-For each reviewed component:
-
-```
-### <plugin>/<component> -- Body Quality
-
-| Dimension   | Score | Issue |
-|-------------|-------|-------|
-| Structure   | X/5   | ...   |
-| Clarity     | X/5   | ...   |
-| Redundancy  | X/5   | ...   |
-| Disclosure  | X/5   | ...   |
-| Tool restr. | X/5   | ...   |
-| Isolation   | X/5   | ...   |
-
-**Top fix:** <single most impactful improvement>
-```
-
-### Step 6: Final re-validate
-
-Run the script one more time to confirm all deterministic fixes landed cleanly.
+The coordinator must preserve the phase graph, worker isolation, delivery barriers
+and exclusive final report owner in `contracts/skills-validate.workflow.toml`.
+Wait for its final delivery and verify required report artifacts. A stopped,
+failed or empty coordinator is not successful delivery. Forward its final result
+and blockers to the user; do not rewrite its report or create a second final owner.

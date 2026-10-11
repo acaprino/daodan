@@ -31,7 +31,7 @@ respondent, and computes a verdict from a ledger that is never hand-edited.
    "Transport error handling" below at every call site; never treat an error payload as
    a challenger reply.
 8. **Never end a turn waiting.** Wherever the run needs the operator, it asks with
-   `AskUserQuestion`; wherever it stops for good, it says the run is over and why. A
+   the active host question mechanism; wherever it stops for good, it says the run is over and why. A
    turn that ends on a printed question is indistinguishable from a finished run, and
    an operator who reads it as finished waits for a run that is waiting for them.
    This is a dialogue between two people, not a prompt on a terminal: consent and every
@@ -80,7 +80,7 @@ If the tool returns `{"error": "<message>"}` instead of a reply (`text`, `usage`
 3. Stop issuing further `peer_ask` calls for the rest of the run.
 4. If this happened on the very first call (Phase 2, round 1), there is no ledger yet
    and nothing partial exists to protect. Report the verbatim error, then **ask with
-   `AskUserQuestion`** whether to send the same packet again or end the run. A timeout
+   the active host question mechanism** whether to send the same packet again or end the run. A timeout
    is the common case here and it is transient: the challenger is thinking and the
    socket cannot tell that apart from a dead connection. Retrying resends
    `00-packet.md` unchanged, under the consent already given at Phase 1b, so it needs
@@ -173,8 +173,8 @@ unavailable profile stops the run before an agent is spent building a brief.
 1. Spawn `peer-review:brief-builder` with the run directory and the topic hint:
 
    ```
-   Task:
-     subagent_type: "peer-review:brief-builder"
+   Worker assignment (translate through the declared host harness):
+     declared_role: "peer-review:brief-builder"
      description: "Materialize the decision brief"
      prompt: |
        Run directory: <run directory>
@@ -220,8 +220,8 @@ unavailable profile stops the run before an agent is spent building a brief.
    the mandate text:
 
    ```
-   Task:
-     subagent_type: "peer-review:packet-builder"
+   Worker assignment (translate through the declared host harness):
+     declared_role: "peer-review:packet-builder"
      description: "Build the challenge packet"
      prompt: |
        Artifact path: <artifact path>
@@ -302,7 +302,7 @@ shown because consent is given to one specific file, and the transport reports b
 the digest of what it actually sent: the two are compared in Phase 2, which is what
 makes this gate a decision about a document rather than about an intention.
 
-3. **Ask, using `AskUserQuestion`.** Do not end the turn on printed text: to the
+3. **Ask, using the active host question mechanism.** Do not end the turn on printed text: to the
    operator, output that asks for nothing is output from a run that finished. Header
    `Send packet`, question `Send this packet to <model> at <base_url>?`, two options:
 
@@ -429,8 +429,8 @@ makes this gate a decision about a document rather than about an intention.
    `03-ledger.md` not already `TRANSMISSION_ARTIFACT`) and the ledger itself:
 
    ```
-   Task:
-     subagent_type: "peer-review:respondent"
+   Worker assignment (translate through the declared host harness):
+     declared_role: "peer-review:respondent"
      description: "Answer round 1 findings"
      prompt: |
        Challenge file: <run directory>/01-challenge-r1.md
@@ -660,7 +660,7 @@ not already a ledger field. Sections, in order:
 1. **Accepted changes**, as concrete edits. One entry per `RESOLVED_ACCEPT` finding:
    the finding id, the claim in one line, and a concrete edit action against the
    artifact (what text or section changes, and how) specific enough for `--apply` to
-   execute it with the Edit tool.
+   execute it through the host repository-edit binding.
 2. **Refutations with evidence.** One entry per `RESOLVED_REFUTE` finding: the claim,
    the respondent's locator and evidence that satisfied the falsifier as stated.
 3. **Standoffs.** One entry per `STANDOFF` finding: the challenger's position, the
@@ -739,7 +739,7 @@ than silently ignoring it.
 - **Without `--apply`**: print the Accepted changes edit list from the verdict and
   stop. Nothing is modified.
 - **With `--apply`**: for each Accepted changes entry, apply the described edit to the
-  artifact with the Edit tool. After all edits, append a changelog section to the
+  artifact through the host repository-edit binding. After all edits, append a changelog section to the
   artifact:
 
   ```markdown

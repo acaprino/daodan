@@ -4,7 +4,7 @@ Stdlib only, no dependencies, runs from the repository root:
 
     python scripts/lint_host_vocabulary.py
 
-Every kernel under plugins/ is compiled into three host packages, and the
+Every kernel under plugins/ is compiled into five host packages, and the
 compiler copies role and workflow bodies as they are. The moment a body names
 one host's team API or dispatch primitive, that host's vocabulary has become
 every host's contract: a worker on Codex told to "call TaskUpdate" has no such
@@ -41,7 +41,7 @@ PLUGINS = Path("plugins")
 #: which is exactly why it leaks.
 TOKENS = re.compile(
     r"\b(TaskUpdate|TaskList|TaskCreate|TaskGet|TeamCreate|TeamDelete|SendMessage"
-    r"|shutdown_request|subagent_type|teammates?)\b"
+    r"|shutdown_request|subagent_type|run_in_background|AskUserQuestion|teammates?)\b"
 )
 
 # Bodies whose subject matter is the host tooling itself.
@@ -52,12 +52,7 @@ SUBJECT_MATTER = (
 
 # File -> occurrence count when the linter landed. Fix a file, delete its entry.
 # Never raise a count to make a build pass.
-GRANDFATHERED: dict[str, int] = {
-    "plugins/digital-marketing/workflows/content-strategy.md": 3,
-    "plugins/peer-review/workflows/review.md": 3,
-    "plugins/react-development/workflows/review-react.md": 1,
-    "plugins/typescript-development/workflows/review-typescript.md": 1,
-}
+GRANDFATHERED: dict[str, int] = {}
 
 
 def body_files():
@@ -71,9 +66,27 @@ def body_files():
 def scan():
     """Yield (path, line_no, token, line) per hit."""
     for path in body_files():
-        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            for match in TOKENS.finditer(line):
-                yield path, line_no, match.group(1), line.strip()
+        yield from scan_text(path, path.read_text(encoding="utf-8"))
+
+
+def scan_text(path, text):
+    """Inspect operational bodies, preserving neutral frontmatter and code subjects."""
+    lines = text.splitlines()
+    start = 0
+    if lines and lines[0] == "---":
+        try:
+            start = lines.index("---", 1) + 1
+        except ValueError:
+            pass
+    operational = re.compile(
+        r"\b(via Bash|through Bash|Bash tool|Agent tool|Task tool|Read tool|Write tool|Edit tool|Glob tool|Grep tool|WebSearch|WebFetch)\b"
+        r"|`(Bash|Agent|AskUserQuestion|Read|Write|Edit|Glob|Grep)`"
+    )
+    for line_no, line in enumerate(lines[start:], start + 1):
+        for match in TOKENS.finditer(line):
+            yield path, line_no, match.group(1), line.strip()
+        for match in operational.finditer(line):
+            yield path, line_no, match.group(0), line.strip()
 
 
 def check(hits):

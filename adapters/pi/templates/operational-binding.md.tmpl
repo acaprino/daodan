@@ -1,0 +1,20 @@
+Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
+execution uses bash or the registered powershell alternative. Use their actual
+command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
+pi install npm:pi-subagents. Use that extension's registered subagent schema and
+pass the full rendered role body inline. Role skills named <plugin>-<role> are
+body resources with automatic invocation disabled, not a built-in named agent.
+Workflow prompt entries use /<plugin>-<workflow>; ordinary skills use their exact
+registered names. If isolation is mandatory and unavailable, stop the phase.
+MCP requires pi-mcp-adapter: pi install npm:pi-mcp-adapter, then register the
+generated server command in its supported MCP configuration.
+Keep the selected package's full local dependency closure. Provision qualified
+foreign providers as skills/resources this runtime can load; Pi does not install
+another host's marketplace plugin from a Claude install command.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Kernel <owner>:<skill> references identify the logical provider. Ordinary Pi
+skills retain their source frontmatter name, so resolve the actual registered name
+and provider path from the active inventory; do not invent a prefixed native ID.

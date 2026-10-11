@@ -6,140 +6,99 @@ argument-hint: '<plugin-name> [--with-agent] [--with-skill] [--with-command] [--
 
 > Arguments: `<plugin-name> [--with-agent] [--with-skill] [--with-command] [--category <cat>] [--author <name>]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
+<daodan_host_binding host="copilot">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# marketplace-scaffold-plugin
+
 <!-- Generated by the Daodan compiler for copilot. Edit the kernel, never this file. -->
 
-## Source profile preflight
+## Coordinator handoff
 
-Load marketplace-ops:kernel-marketplace before this procedure. Detect the target's
-source model from its manifests and instructions. For daodan/v1 neutral kernels,
-follow that skill's operation-specific procedure and finish there. Generated
-exports and catalog entries are inspected as output, never authored as source.
-The procedure below applies only to a legacy Claude marketplace with hand-authored
-agents/ and commands/. It must not be applied to a neutral kernel checkout.
+Use the registered custom-agent dispatch mechanism to invoke the installed agent
+`marketplace-ops:marketplace-scaffold-plugin-coordinator` with the complete original user request,
+its arguments, scope, authorization and budget. Workflow arguments: <arguments>
 
+This prompt is the workflow entry; the named coordinator contains its execution
+harness and method. Confirm that it is installed and can dispatch the workers in
+its declared agents allowlist. If the host cannot provide the required coordinator
+and nested worker capability, report that blocker instead of running the method
+in this prompt's context or loading the coordinator as a skill.
 
-
-# Scaffold New Plugin
-
-Create a new plugin following the standard Claude Code plugin conventions (works against any marketplace with a `.claude-plugin/marketplace.json` registry).
-
-## Procedure
-
-### 1. Parse arguments
-
-- `plugin-name`: required, kebab-case
-- `--with-agent`: create an agent `.md` starter
-- `--with-skill`: create a skill directory with `SKILL.md` starter
-- `--with-command`: create a command `.md` starter
-- `--category`: plugin category; if omitted, read existing `marketplace.json` to list current categories and ask the user to pick or propose a new one
-- `--author`: plugin author; if omitted, read the first plugin's author from `marketplace.json` and use it (or ask the user if the marketplace is empty)
-- If no `--with-*` flags are provided, ask the user what components they want
-
-### 2. Create directory structure
-
-```
-plugins/<plugin-name>/
-  agents/          (if --with-agent)
-  skills/          (if --with-skill)
-  commands/        (if --with-command)
-```
-
-Do NOT create empty subdirectories.
-
-### 3. Create starter files
-
-Starters are minimal and use real content. They show the required frontmatter shape and leave clearly labelled `{{PLACEHOLDER}}` fields for the user to fill. They are NOT registered until the user confirms the content.
-
-**Agent starter** (`agents/<plugin-name>.md`):
-```markdown
----
-name: <plugin-name>
-description: >
-  {{ONE_SENTENCE_ROLE}}
-  TRIGGER WHEN: {{concrete triggers, comma-separated}}
-  DO NOT TRIGGER WHEN: {{sibling-conflict exclusions}}
-model: inherit
-color: {{red | blue | green | yellow | purple | orange | pink | cyan}}
----
-
-# ROLE
-{{Agent purpose in 1-3 sentences}}
-
-# CAPABILITIES
-{{Bulleted list of what this agent does}}
-
-# CONVENTIONS
-{{Any non-obvious conventions the agent must follow}}
-
-# OUTPUT FORMAT
-{{How findings/results should be structured}}
-```
-
-**Skill starter** (`skills/<skill-name>/SKILL.md`):
-```markdown
----
-name: <skill-name>
-description: >
-  {{ONE_SENTENCE_ROLE}}
-  TRIGGER WHEN: {{concrete triggers}}
-  DO NOT TRIGGER WHEN: {{sibling-conflict exclusions}}
----
-
-# {{Skill Title}}
-
-{{Skill instructions -- teach what Claude does not already know}}
-```
-
-**Command starter** (`commands/<command-name>.md`):
-```markdown
----
-description: >
-  {{ONE_SENTENCE_ROLE}}
-  TRIGGER WHEN: {{concrete triggers}}
-  DO NOT TRIGGER WHEN: {{sibling-conflict exclusions}}
-argument-hint: "{{expected arguments}}"
----
-
-# {{Command Title}}
-
-{{Command procedure}}
-```
-
-### 4. Register in marketplace.json
-
-Add entry to `plugins[]` array:
-```json
-{
-  "name": "<plugin-name>",
-  "source": "./plugins/<plugin-name>",
-  "description": "{{one-sentence description}}",
-  "version": "1.0.0",
-  "author": { "name": "<author-from-step-1>" },
-  "license": "{{license from existing plugins, often MIT}}",
-  "keywords": ["<plugin-name>"],
-  "category": "<category-from-step-1>",
-  "strict": false,
-  "agents": [],
-  "skills": [],
-  "commands": []
-}
-```
-
-Populate `agents` / `skills` / `commands` arrays with the relative paths of files just created. Omit empty arrays.
-
-### 5. Bump metadata.version
-
-Increment the marketplace `metadata.version` (typically minor for a new plugin).
-
-### 6. Report
-
-Show:
-- Created files with paths
-- Updated marketplace.json entry
-- Next actions: fill placeholders in the starter files, add real keywords, then run `/marketplace-ops:marketplace-health` to validate
-
-## Notes
-
-- Marketplace-agnostic: respects whatever author, license, and category conventions already exist in the target marketplace.
-- Never hardcodes an author -- reads from existing plugins or asks the user.
-- Never hardcodes a license -- reads from existing plugins or asks.
+The coordinator must preserve the phase graph, worker isolation, delivery barriers
+and exclusive final report owner in `contracts/marketplace-scaffold-plugin.workflow.toml`.
+Wait for its final delivery and verify required report artifacts. A stopped,
+failed or empty coordinator is not successful delivery. Forward its final result
+and blockers to the user; do not rewrite its report or create a second final owner.
