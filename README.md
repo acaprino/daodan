@@ -234,6 +234,16 @@ application. The marketplace stays public and neutral.
 
 ## Contributing
 
+> [!WARNING]
+> **Never repair generated exports by hand or equate registration with execution.**
+> Correct kernels, adapters or compiler source, then review all five hosts through
+> nested references and worker resources. Agents/coordinators execute and verify;
+> harnesses own supported continuation and state; skills supply methods. A turn
+> end or empty child is not task success. Real tools, identities, isolation,
+> permissions, dependencies, capture controls and output contracts require the
+> [operational checks](docs/hosts.md#operational-compatibility-review), separately
+> from manifest parity and live workflow evidence.
+
 Edit kernels under plugins/ and host mechanisms under adapters/. All exports and
 root catalogs are generated. Runtime resources belong under skills/. The toolchain
 is stdlib Python; OpenCode's fixed loader uses Node's standard library.

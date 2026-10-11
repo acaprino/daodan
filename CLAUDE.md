@@ -60,6 +60,24 @@ Marketplace 32.2.0 gave the X-ray a perimeter, by decision of 2026-10-08: below 
 
 ## Operational compatibility of host exports
 
+> [!WARNING]
+> **Host exports are an execution contract, not proof of execution.** Fix shared
+> behavior in `plugins/` and host mechanisms in `adapters/` or the compiler; never
+> repair generated `exports/` or marketplace manifests by hand. Check all five
+> hosts through entries, agent bodies, skills, nested references and dispatch
+> resources, not just hashes, registration or frontmatter. Bind real tool names
+> and input schemas, component kinds and IDs, isolation even for one required
+> worker, inherited or available requested models, permissions and required
+> providers on the active host. Verify browser capture, background lifetime,
+> stdin and an explicit stop signal; bind output paths to helper arguments,
+> contracts and result readers together.
+> Agents execute and verify work; coordinators collect deliveries and own the
+> final report. Harnesses own supported dispatch, continuation and state; skills
+> supply methods and knowledge, not an executor or a persistence mechanism.
+> A stopped turn, idle event or empty child response is not a delivered result.
+> Keep registration, compiler/adaptation tests, installed-host probes and live
+> workflow evidence separate; do not claim enforcement that has not been proved.
+
 Host compatibility covers every instruction a worker consumes: entry bodies,
 role bodies, skills, bundled references and generated dispatch resources.
 Registration, matching digests, valid frontmatter and a supported capability row
@@ -88,6 +106,17 @@ the host's tools or complete its workflow.
 - Preserve required-provider failures and give recovery instructions for the
   active host. External marketplace names are dependency identities, not evidence
   that another host can execute the Claude installation command.
+- Keep execution responsibility in agent bodies and coordinator harnesses. While
+  the requested result remains reachable within existing authorization, continue
+  the work and recovery. Diagnose tool errors, correct the cause, retry and verify
+  the outcome; do not retry blindly or close with only a promise. Stop only for a
+  documented blocker, a missing required capability, an essential human decision
+  or the caller's stop, reporting obtained results and the concrete next requirement.
+  The coordinator verifies expected artifacts and coverage, then inspects or
+  resumes missing/partial deliveries or records failure. The harness preserves
+  the owned delivery ledger and completion gates; a worker stop cannot mark the
+  task successful. These are agent obligations unless a measured runtime gate
+  demonstrates mechanical enforcement, not a claim of a universal scheduler.
 - Scope adaptation to executable host instructions. Keep code examples, shell
   language labels and host-as-subject material intact. Do not use global token
   replacement to translate dispatch schemas or rewrite domain code.

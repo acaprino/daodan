@@ -12,6 +12,19 @@ Start with the [plugin and dependency catalog](catalog.md) and
 Required providers are part of each plugin's installation, including providers
 used by composed methods. Domain specialists can also be used independently.
 
+> [!WARNING]
+> **Installed components and rendered packages do not establish a completed task.**
+> Shared fixes belong in kernels, adapters or compiler source, followed by all five
+> exports and their nested instruction paths; generated files are never a repair
+> surface. Verify real tools and input fields, component kinds/IDs, single-worker
+> isolation, models, permissions, required providers for the active host, browser
+> stdin/stop/background control, and helper/contract/result-reader output binding.
+> Agents perform and verify the task; the coordinator owns deliveries and the
+> final report. The harness owns supported continuation and state; loading a skill
+> supplies a method, not an executor. A finished turn, idle host or empty worker
+> response cannot establish success. Keep structural registration, adaptation
+> tests, installed-host fixtures and the affected live workflow as separate evidence.
+
 ## Installation and selection
 
 The three marketplace hosts register the repository root and install a selected
@@ -174,7 +187,8 @@ capabilities available in the active session.
 The sidecar can describe workers in the phase graph and in `[dispatch].roles`.
 The latter covers workers selected by a loaded canonical method, without invented
 scheduling phases. Harness rendering activates for declared dispatch workers,
-`inline_workers`, or phase fan-out. Coordination selection also respects
+`inline_workers`, a single phase role, or phase fan-out. Coordination selection
+also respects
 `[dispatch].isolated` and required phase isolation. A shared coordinator phase does
 not authorize a required worker to run in the coordinator's context.
 
@@ -197,8 +211,14 @@ method-owned task with explicit scope, permission, budget and report path. It do
 not grant access to every role in the registry.
 
 The coordinator records every dispatched worker as delivered or failed before
-closing its phase. Missing results remain visible. Independent reviewers do not
-read peer results before their own delivery. Workers get assigned intermediate
+closing its phase. It continues authorized reachable work, diagnoses and
+corrects tool failures before a verified retry, and inspects or resumes a missing
+worker delivery before reporting a documented failure. Missing results remain
+visible and the owned delivery ledger is preserved. A real blocker, missing
+required capability, essential human decision or caller stop is reported with
+obtained results and the concrete next requirement. This obligation does not
+claim a cross-host autonomous scheduler or a measured mechanical gate.
+Independent reviewers do not read peer results before their own delivery. Workers get assigned intermediate
 report paths; the final report has one exclusive owner in its declaring phase.
 
 Parallelism can vary according to the contract. Pi stops an isolation-required
@@ -291,10 +311,11 @@ Review each host against its adapter and runtime evidence:
 | OpenCode V2 | Registered qualified skill/agent/command IDs, native `subagent`/`shell`/`question` schemas, permission actions, registered references and dependency recovery |
 
 The [2026-10-11 compatibility audit](superpowers/reports/2026-10-11-host-export-compatibility.md)
-records concrete shared and host-specific defects in the inspected sources and
-exports. Its findings are corrective work, not a claim that regeneration or
-runtime repair has already happened. Historical successful fixture probes do
-not cover every plugin workflow.
+records the pre-fix shared and host-specific defects and separately describes
+the 32.10.0 source/rendering corrections and their compiler checks. Those checks
+do not establish live runtime repair on every host. Historical successful fixture
+probes do not cover every plugin workflow. Required isolation and capability
+failures remain blockers; a shorter same-context workflow is not a valid substitute.
 
 Fix shared semantics in `plugins/`, host mechanisms in `adapters/` or the
 compiler, then regenerate all hosts and test the affected contracts through their

@@ -15,6 +15,21 @@ description: >
 
 # Downstream exports
 
+> [!WARNING]
+> **This skill is a maintenance method, not the workflow executor.** Apply shared
+> fixes to kernels, adapters or compiler source and regenerate all five hosts;
+> never patch generated exports. Review the entire loaded instruction closure,
+> including nested references, role resources and a single isolated worker.
+> Verify actual tool/input schemas, skill/agent/workflow identities, model and
+> permission bindings, active-host dependencies, browser stop/stdin behavior,
+> and output helper/contract/result-reader agreement. Agents and coordinators
+> execute and verify; the harness owns its supported continuation and state.
+> Turn end alone does not prove delivery; an empty child requires inspection
+> or recovery before the expected delivery can be accepted.
+> Report registration, rendering/adaptation tests, installed-host probes and live
+> workflow results separately. A digest or a green manifest check cannot replace
+> the affected operational checks.
+
 The mirror image of the `external-repo-intake` skill. That skill covers content flowing *in* from other repos; this one covers our content flowing *out* to the other hosts.
 
 **Nothing under `exports/` is edited by hand, ever.** Every file there is compiler output from `plugins/` plus `adapters/`, and `python scripts/daodan_build.py --check` fails the build the moment a committed package stops reproducing from its source. If an export looks wrong, the bug is in the kernel, the adapter, or the compiler. Fixing the export directly produces a change that the next build silently deletes.
@@ -101,7 +116,8 @@ Since marketplace 29.0.0 a name may not repeat across kinds at all: `validate_co
 ## Harness rendering
 
 A workflow receives a harness when its sidecar declares `[dispatch].roles`, permits
-`[dispatch].inline_workers`, or has a phase with `fanout` or `fanout_from`. A composed method
+`[dispatch].inline_workers`, or has a phase with a single `role`, `fanout` or
+`fanout_from`. A composed method
 therefore receives its worker bindings even when the scheduling graph has no fan-out. The host
 template wraps the neutral body with isolated worker contexts, the delivery barrier, the
 single-writer rule for the final report, and a **dispatch plan**. The templates are
@@ -156,7 +172,13 @@ validate the meaning of those instructions on another host.
    needs an executable host binding just as a fan-out does. Compare sidecar phases
    with dispatch in the body; a body-only worker must not evade the registry,
    provider checks, delivery barrier or permissions. Preserve the declared final
-   report owner and treat an empty worker response as missing delivery.
+   report owner and treat an empty worker response as missing delivery. The
+   agent/coordinator must continue authorized reachable work, diagnose and correct
+   tool failures before a verified retry, and inspect or resume missing deliveries
+   instead of closing with a promise. Preserve the owned delivery ledger and
+   mandatory completion gates. A genuine blocker, missing required capability,
+   essential human decision or caller stop is reported with delivered artifacts
+   and the concrete next requirement; blind retry loops are not recovery.
 3. Follow operational instructions into bundled references and dispatched role
    resources. Frontmatter conversion and a correct outer harness do not translate
    nested `Task`, `Agent`, shell calls, question APIs or foreign input fields.
@@ -210,9 +232,11 @@ Pi and OpenCode are the hosts besides Claude whose arguments placeholder maps on
 
 Claude's keys map each placeholder onto itself and carry no note, so its packages are unchanged by this pass. Only the `${CLAUDE_PLUGIN_ROOT}` form is rewritten; a bare `$CLAUDE_PLUGIN_ROOT` would pass through and fail `tests/test_daodan_host_rendering.py`.
 
-A workflow without declared dispatch workers or phase fan-out is rendered under host frontmatter
-from the `workflow_frontmatter` layout key: Claude has none and gets the kernel file verbatim;
-Codex gets `name` and `description` with the argument hint moved into the body as an `Arguments:`
+A workflow without declared dispatch workers, a single phase role or phase fan-out is rendered under host frontmatter
+from the `workflow_frontmatter` layout key: Claude preserves the kernel frontmatter and
+neutral body before the final Markdown pass adds the shared operational binding.
+That binding also covers workflows without dispatch. Codex gets `name` and
+`description` with the argument hint moved into the body as an `Arguments:`
 line; Copilot gets `name`, `description` and `argument-hint`. For a dispatched Copilot workflow,
 the prompt remains the entry point and the compiler also registers its `*-coordinator` agent.
 

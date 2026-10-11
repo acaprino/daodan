@@ -245,3 +245,38 @@ and drift check follow below.
 ### Final local validation
 
 The stable candidate passed `python -B -m unittest discover -s tests`: 690 tests run, 689 passed, one Windows-only environment skip, zero failures or errors (334.736 seconds). The skipped POSIX executable-state test remains required on Linux CI. The final five-host compiler check with support reporting passed with no generated drift; all 210 plugin/host combinations are native or adapted. These are content and compiler checks, not evidence that every browser or model workflow was executed live.
+
+## Documentation follow-up: mandatory export warnings
+
+> [!WARNING]
+> **Registration and compiler success are bounded evidence, not a live delivery.**
+> Review all five hosts through entries, role bodies, skills, nested references
+> and dispatch resources. Correct shared source and regenerate; never patch an
+> export or hide a missing capability behind a same-context fallback. An agent
+> stop, idle event or empty child cannot close the expected delivery contract.
+
+The follow-up makes these durable rules visible in canonical `CLAUDE.md`, the
+`downstream-exports` maintenance method, their synchronized Codex counterparts,
+the main README and the documentation entry/host reference. It explicitly assigns
+execution and verification to agents/coordinators and supported continuation,
+state and delivery gates to the harness. Skills remain methods and knowledge,
+without scheduling or mechanical persistence claims.
+
+The checks cover actual tool names/input fields, component kinds and registry IDs,
+required isolation even for a single worker, model inheritance or available
+requested overrides, permissions, providers for the active host, browser
+background lifetime/stdin/stop control, and output relocation across helper
+arguments, contracts and result readers. Reachable authorized work continues;
+tool failures require diagnosis and a corrected verified retry. A genuine blocker,
+missing required capability, essential human decision or caller stop is reported
+with obtained results and the concrete next requirement. A coordinator inspects or
+resumes missing deliveries or reports failure, preserving the owned delivery ledger.
+
+This is documentation-only follow-up to published marketplace `32.10.0`, commit
+`d8a7694f3ece4ea0b56f4a2a294a8a4b6325ec56`. It changes no plugin source, adapter,
+compiler, export, version, released tag or consumer pin. Checks for this follow-up
+are the documentation diff, local link targets and canonical/generated instruction
+parity. No application suite, package rebuild or live-host workflow was run for it;
+the earlier release verification remains separately recorded above. Live behavior
+and mechanical enforcement require their own named host/version and exercised-path
+evidence.

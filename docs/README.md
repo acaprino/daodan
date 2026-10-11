@@ -4,6 +4,16 @@ Daodan coordinates development with AI across project intent, code, tests,
 durable knowledge and experimental artifacts. One source is compiled for Claude
 Code, GitHub Copilot, Codex, Pi and OpenCode V2.
 
+> [!WARNING]
+> **Export parity is not runtime success.** Shared behavior must be corrected in
+> kernels, adapters or compiler source, never generated exports. Review all five
+> hosts and the complete nested instruction path, with real tools, identities,
+> isolation, permissions, dependencies, capture controls and output contracts.
+> Agents/coordinators execute; harnesses own supported continuation and state;
+> skills describe methods. Turn end and an empty worker are not a delivery.
+> Keep registration, adaptation tests and live workflow evidence separate. Follow
+> the [mandatory operational review](hosts.md#operational-compatibility-review).
+
 ## Find a tool
 
 The [complete plugin catalog](catalog.md) lists every plugin, registered skill,
@@ -55,9 +65,9 @@ The [host reference](hosts.md#operational-compatibility-review) describes the
 operational review for all five adapters. The
 [2026-10-11 audit](superpowers/reports/2026-10-11-host-export-compatibility.md)
 records identified instruction, dispatch and permission defects, with source
-locations and the distinction between static checks and live execution. An audit
-finding remains corrective work until its source, rendered exports and affected
-runtime path have been verified.
+locations, the 32.10.0 source/rendering corrections, and the distinction between
+static checks and live execution. Source and compiler verification do not close
+an unmeasured affected runtime path; report that limit explicitly.
 
 ## Maintaining the documentation
 
