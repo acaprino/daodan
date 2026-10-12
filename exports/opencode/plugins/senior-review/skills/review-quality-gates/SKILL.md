@@ -208,7 +208,7 @@ Every reviewer agent that runs as part of `/team-review` Phase 2 carries a `## P
 - **Scope budget**: each reviewer stops after ~15 file reads without a finding and returns a "scope-off-topic" report. The orchestrator should plan targets at a granularity that respects this budget.
 - **No-findings protocol**: reviewers may legitimately return "examined X, Y, Z: no issues" instead of inventing findings. Treat such reports as valid Phase 3 input, not failure.
 - **Cross-Reviewer Notes**: reviewers append observations that belong to other dimensions in a `## Cross-Reviewer Notes` section. Phase 3 consolidation must scan for this section and route the observations to the appropriate reviewer (or surface them in the consolidated report under the recipient dimension).
-- **Interconnect anchor citation**: reviewers cite map anchors when applicable. This is the same signal the map utilization rate measures: an operational number, not a quality signal. See `### Metrics` for the quality signals that actually matter.
+- **Interconnect anchor citation**: reviewers cite map anchors when applicable. Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal. See `### Metrics` for the quality signals that actually matter.
 
 Background: the rationale for these conventions lives in `docs/references/agent-teams-best-practices.md` § Pipeline Conventions in the development repository. That file is not shipped with the installed plugin and is never needed at runtime: the four rules above are the complete, self-contained contract.
 

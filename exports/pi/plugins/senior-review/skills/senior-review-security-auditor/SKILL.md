@@ -237,7 +237,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 **Cross-reviewer notes.** If during analysis you spot an issue clearly belonging to another reviewer's dimension, list it in a `## Cross-Reviewer Notes` section at the end of your output with `file:line` and a one-line description. Phase 3 consolidation routes these to the appropriate reviewer.
 
-**Interconnect anchor citation.** When a finding maps to a contract, invariant, or assumption documented in `.team-review/02-interconnect.md`, cite the map anchor (e.g., "Map anchor: ## Contracts -> Order-fulfillment idempotency"). Findings that cite map anchors are tracked as a quality metric.
+**Interconnect anchor citation.** When a finding maps to a contract, invariant, or assumption documented in `.team-review/02-interconnect.md`, cite the map anchor (e.g., "Map anchor: ## Contracts -> Order-fulfillment idempotency"). Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal.
 
 ## Output Persistence
 

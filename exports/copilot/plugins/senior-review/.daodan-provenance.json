@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:40c89efb47216c80fff9420522437046895cf1d982f2a6e3535e42a2b7278d05",
+  "coreDigest": "sha256:1758655da5664ee35c89d783db948a578e63a5befcfd9820d433f6a26b97e65a",
   "harnessStrategies": {
     "code-review": "parallel-subagents",
     "pr-review": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "senior-review",
-  "version": "15.0.2"
+  "version": "15.0.3"
 }

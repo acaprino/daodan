@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: react-development:react-performance-optimizer; version: 1.11.3; source-sha256: 29241dcc48fc9060586d0e6a0159a9eee2805e9bd05451ca46a6b0caaf222df8. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: react-development:react-performance-optimizer; version: 1.11.4; source-sha256: c7f81c112ecfeda9f1cce8df45239ae61b2d87205c5570044d5d5126fefaa771. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `react-development`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<react-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `react-development`. The owning plugin's declared logical skill identities are `react-development:react-best-practices`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -752,7 +752,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 **Cross-reviewer notes.** If during analysis you spot an issue clearly belonging to another reviewer's dimension, list it in a `## Cross-Reviewer Notes` section at the end of your output with `file:line` and a one-line description. Phase 3 consolidation routes these to the appropriate reviewer.
 
-**Interconnect anchor citation.** When a finding maps to a contract, invariant, or assumption documented in `.team-review/02-interconnect.md`, cite the map anchor (e.g., "Map anchor: ## Contracts -> Order-fulfillment idempotency"). Findings that cite map anchors are tracked as a quality metric.
+**Interconnect anchor citation.** When a finding maps to a contract, invariant, or assumption documented in `.team-review/02-interconnect.md`, cite the map anchor (e.g., "Map anchor: ## Contracts -> Order-fulfillment idempotency"). Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal.
 
 ## Output Persistence
 

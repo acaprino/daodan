@@ -654,7 +654,7 @@
         "integration",
         "platform"
       ],
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's established instruction file. Provides an explicit audit-only method.",
@@ -1050,7 +1050,7 @@
       ],
       "provider": "react-development",
       "topics": [],
-      "version": "1.11.3"
+      "version": "1.11.4"
     },
     {
       "description": "The check catalog for workspace tidying: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch directories, orphan doc-assets, and git auxiliary state. Two profiles, full and lite, over one set of check definitions. TRIGGER WHEN: running `/repo-hygiene:tidy`, spawned as the repo-hygiene dimension of a review pipeline, or running the diff-scoped VCS check inside a code or PR review. DO NOT TRIGGER WHEN: the question needs source comprehension (dead exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review`.",
@@ -1110,7 +1110,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.2"
+      "version": "15.0.3"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -1132,7 +1132,7 @@
       "topics": [
         "defects"
       ],
-      "version": "15.0.2"
+      "version": "15.0.3"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
@@ -1147,7 +1147,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.2"
+      "version": "15.0.3"
     },
     {
       "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
@@ -1162,7 +1162,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.2"
+      "version": "15.0.3"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
@@ -1177,7 +1177,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.2"
+      "version": "15.0.3"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
@@ -1192,7 +1192,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.2"
+      "version": "15.0.3"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",
@@ -1207,7 +1207,7 @@
       "operations": [],
       "provider": "skill-catalog",
       "topics": [],
-      "version": "1.0.2"
+      "version": "1.0.3"
     },
     {
       "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",

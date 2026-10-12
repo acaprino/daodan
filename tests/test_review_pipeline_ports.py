@@ -184,6 +184,25 @@ class ReviewPipelinePortTests(unittest.TestCase):
         ):
             self.assertIn(dimension, plugin.required_dependencies)
 
+    def test_every_reviewer_states_the_anchor_metric_as_the_method_does(self):
+        # Each reviewer carries its own copy of the pipeline conventions on purpose, so a
+        # correction has to reach every copy. The method calls anchor citations an
+        # operational measure; twelve roles kept calling them a quality metric.
+        canonical = ("Findings that cite map anchors feed the map utilization rate, "
+                     "an operational measure of map consumption, not a quality signal.")
+        method = (REPO_ROOT / "plugins/senior-review/skills/review-quality-gates/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn(canonical, " ".join(method.split()))
+        carriers = []
+        for role in sorted((REPO_ROOT / "plugins").glob("*/roles/*.md")):
+            text = " ".join(role.read_text(encoding="utf-8").split())
+            label = f"{role.parent.parent.name}/{role.stem}"
+            with self.subTest(role=label):
+                self.assertNotIn("quality metric", text)
+                if "Findings that cite map anchors" in text:
+                    self.assertIn(canonical, text)
+                    carriers.append(label)
+        self.assertGreaterEqual(len(carriers), 12, carriers)
+
 
 if __name__ == "__main__":
     unittest.main()

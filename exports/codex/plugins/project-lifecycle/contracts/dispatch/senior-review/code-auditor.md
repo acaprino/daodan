@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:code-auditor; version: 15.0.2; source-sha256: 8a5833accf63567ac3099a08fa875c24cb232cf0fca3c6b4a391301cbda051ff. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:code-auditor; version: 15.0.3; source-sha256: fc3ee31524fe95bde04b94a17e181c8682e379b84c222a377e48b07905d124bf. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -338,7 +338,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 **Cross-reviewer notes.** If during analysis you spot an issue clearly belonging to another reviewer's dimension, list it in a `## Cross-Reviewer Notes` section at the end of your output with `file:line` and a one-line description. Phase 3 consolidation routes these to the appropriate reviewer.
 
-**Interconnect anchor citation.** When a finding maps to a contract, invariant, or assumption documented in `.team-review/02-interconnect.md`, cite the map anchor (e.g., "Map anchor: ## Contracts -> Order-fulfillment idempotency"). Findings that cite map anchors are tracked as a quality metric.
+**Interconnect anchor citation.** When a finding maps to a contract, invariant, or assumption documented in `.team-review/02-interconnect.md`, cite the map anchor (e.g., "Map anchor: ## Contracts -> Order-fulfillment idempotency"). Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal.
 
 ## Output Persistence
 
