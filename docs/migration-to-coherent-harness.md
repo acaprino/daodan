@@ -52,8 +52,9 @@ host's mechanism; inline body resources are generated from the canonical owner.
 The sidecar's dispatch table declares every role a loaded method can select,
 independently of phase scheduling. Providers are required dependencies. Generic
 isolated tasks use project-protocol:isolated-worker when inline_workers is declared;
-the coordinator assigns their inputs, scope and intermediate report paths. Final
-report ownership stays with its declaring phase.
+the coordinator assigns their inputs, scope and intermediate report paths, plus the
+files a task authorized to edit may change. Final report ownership stays with its
+declaring phase.
 
 Records live in .daodan/runs/<id>/ with a .daodan-root sentinel. Resume the exact run,
 not the latest report. Alternative run roots must remain dedicated directories

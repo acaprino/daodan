@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e0c420df4b35c76e31531a89c69d7bf86950da6495e5e9eaacd684adf6c2c33c",
+  "coreDigest": "sha256:ff9eb5a10fff92b7b91beb62b4abf0694848e5e6c8ba180f8eda3e4eda472df0",
   "harnessStrategies": {
     "audit-webhooks": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "stripe",
-  "version": "2.6.2"
+  "version": "2.6.3"
 }

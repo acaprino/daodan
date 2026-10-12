@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: react-development:react-performance-optimizer; version: 1.11.2; source-sha256: 29241dcc48fc9060586d0e6a0159a9eee2805e9bd05451ca46a6b0caaf222df8. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: react-development:react-performance-optimizer; version: 1.11.3; source-sha256: 29241dcc48fc9060586d0e6a0159a9eee2805e9bd05451ca46a6b0caaf222df8. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `react-development`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<react-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `react-development`. The owning plugin's declared logical skill identities are `react-development:react-best-practices`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `react-development:react-best-practices` -> compiled registry name `react-best-practices` at `skills/react-best-practices/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

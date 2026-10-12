@@ -106,6 +106,48 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                                     for skill in registry[owner].components.skills:
                                         self.assertIn(f"{owner}:{skill}", text)
 
+    def test_wrappers_keep_the_writes_a_worker_is_assigned_on_every_host(self):
+        """A wrapper must not forbid the edits a mutating worker was authorized to make.
+
+        project-lifecycle dispatches testing:test-writer and the inline isolated-worker,
+        both of which write files. The wrappers used to allow workers only intermediate
+        reports, which contradicted those roles on all five hosts.
+        """
+        from scripts.daodan.adapter import HOSTS, load_adapter
+        from scripts.daodan.load import load_plugin
+        from scripts.daodan.render import render_plugin
+
+        def flat(text):
+            return " ".join(text.split())
+
+        rule = ("A worker writes only what the coordinator assigned to it: its intermediate report and, "
+                "when its task authorizes edits, its assigned files. "
+                "It never reverts preexisting or foreign changes.")
+        owner = "The final report artifact has one exclusive owner in its declaring phase."
+        templates = {
+            "claude": "team-workflow.md.tmpl",
+            "codex": "subagent-workflow.SKILL.md.tmpl",
+            "copilot": "coordinator.agent.md.tmpl",
+            "pi": "team-prompt.md.tmpl",
+            "opencode": "team-command.md.tmpl",
+        }
+        self.assertEqual(set(templates), set(HOSTS))
+        registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
+        with tempfile.TemporaryDirectory() as temporary:
+            for host in HOSTS:
+                template = flat((ROOT / "adapters" / host / "templates" / templates[host]).read_text(encoding="utf-8"))
+                root = Path(temporary) / host / "project-lifecycle"
+                render_plugin(registry["project-lifecycle"], load_adapter(ROOT / "adapters", host), root,
+                              adapters_root=ROOT / "adapters", plugin_registry=registry)
+                rendered = {entry: flat(without_host_binding(
+                    self, (root / wrapper_path(host, "project-lifecycle", entry)).read_text(encoding="utf-8"), host))
+                    for entry in ("change", "repair")}
+                for name, text in {"template": template, **rendered}.items():
+                    with self.subTest(host=host, wrapper=name):
+                        self.assertNotIn("may write only intermediate reports", text)
+                        self.assertIn(rule, text)
+                        self.assertIn(owner, text)
+
     def test_composed_inventory_binds_methods_without_copying_their_schedule(self):
         for entry, core in CORE_ROLES.items():
             with self.subTest(entry=entry):

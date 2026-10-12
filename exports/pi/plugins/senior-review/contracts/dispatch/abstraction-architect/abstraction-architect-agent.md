@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.0.2; source-sha256: 8cb1312a3ad3b05aef0bd43665f7c994e4b8922623a6be76e35eb9abfa143a91. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.0.3; source-sha256: 8cb1312a3ad3b05aef0bd43665f7c994e4b8922623a6be76e35eb9abfa143a91. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`. The owning plugin's declared logical skill identities are `abstraction-architect:abstraction-architect`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `abstraction-architect:abstraction-architect` -> compiled registry name `abstraction-architect` at `skills/abstraction-architect/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

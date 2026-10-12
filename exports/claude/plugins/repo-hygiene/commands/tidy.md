@@ -94,7 +94,8 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
 - Dispatch only roles from this set, as the phase graph or loaded method requires: `workspace-auditor`
-- Workers may write only intermediate reports explicitly assigned by the coordinator.
+- A worker writes only what the coordinator assigned to it: its intermediate report and, when its
+  task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
 
 Dispatch plan:

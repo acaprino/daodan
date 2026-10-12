@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ffd30725c737b905ee385ffae6f69be6b1fc7a2bb5e32dd994e7b0849c0722f5",
+  "coreDigest": "sha256:24d73c12a40af12f08696e1b6dda2efd5a27309e7f85ef90d662c1a82fee7c08",
   "harnessStrategies": {
     "otel-audit": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "opentelemetry",
-  "version": "1.4.3"
+  "version": "1.4.4"
 }

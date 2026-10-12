@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "senior-review"
-version = "15.0.1"
+version = "15.0.2"
 description = "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting."
 license = "MIT"
 

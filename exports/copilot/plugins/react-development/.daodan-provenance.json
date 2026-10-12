@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:d20b5466b428cc4f15e45a2770e0514446ad5095b5004142ca9eed0d26a459af",
+  "coreDigest": "sha256:2d249ddea607ac26f796dfad98ec022514affd1387fc4f77546f3c30b18379cf",
   "harnessStrategies": {
     "review-react": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "react-development",
-  "version": "1.11.2"
+  "version": "1.11.3"
 }

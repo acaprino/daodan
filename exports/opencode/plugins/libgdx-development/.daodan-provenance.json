@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:733c1b7ba579999c14cc59a08a595ceb82593f50fed92593945484e81a8825cf",
+  "coreDigest": "sha256:737ba9afeebc5042465a53eab805adf9bc5a02634adad0fbab33a4af570df4fd",
   "harnessStrategies": {
     "libgdx-audit": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "libgdx-development",
-  "version": "1.1.2"
+  "version": "1.1.3"
 }

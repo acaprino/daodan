@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:c78270d61d661848a74e25b8e39c1e8cf1cf12aa5b81a1bf6409e1daf2fc796d",
+  "coreDigest": "sha256:192a93957ad352b39e7fabaa863e8e2f58b106b22aa390a920b61483f21e0bff",
   "harnessStrategies": {
     "brand-naming": "parallel-subagents",
     "content-strategy": "parallel-subagents",
@@ -12,5 +12,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "digital-marketing",
-  "version": "3.0.2"
+  "version": "3.0.3"
 }

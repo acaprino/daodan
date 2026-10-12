@@ -143,8 +143,9 @@ coordinator or the generated resource's directory. Edit the owner's canonical ro
 
 The wrapper requires each worker's recorded `delivered` or `failed` outcome before a phase can
 close. Independent reviewers receive coordinator-declared inputs and cannot read peer results
-before their own delivery. Intermediate report paths are assigned explicitly; the final report
-has one exclusive owner in its declaring phase.
+before their own delivery. Intermediate report paths, and the files of a worker whose task
+authorizes edits, are assigned explicitly; a worker writes nothing else and never reverts
+preexisting or foreign changes. The final report has one exclusive owner in its declaring phase.
 
 The Pi template is the one that branches, and the branch is a contract rather than a courtesy. Its `subagent` tool is not part of Pi's core, so the template states what to do when none is available and makes the answer depend on the isolation the workflow declared: `required` stops and asks for `pi install npm:pi-subagents`, `shared` may run the phases in one context and say so. Running a review pipeline serially in one context is the loss of isolation rather than a lesser form of it, so collapsing those two branches would produce a report claiming a contract it did not meet.
 
