@@ -125,8 +125,8 @@ Dispatch plan:
 2. `structure`: one `partition-structure-worker` per item of `selection:partitions`, each in its own isolated context, in parallel where the host allows; barrier `all-delivered`; needs `partition-selection`; produces `artifact:partition-structure`.
 3. `behavior`: one `partition-behavior-worker` per item of `selection:partitions`, each in its own isolated context, in parallel where the host allows; barrier `all-delivered`; needs `structure`; consumes `artifact:partition-structure`; produces `artifact:partition-behavior`.
 4. `quality`: one `partition-quality-worker` per item of `selection:partitions`, each in its own isolated context, in parallel where the host allows; barrier `all-delivered`; needs `structure`; consumes `artifact:partition-structure`; produces `artifact:partition-quality`.
-5. `interconnect`: one `semantic-interconnect-mapper` in an isolated context; needs `behavior`; consumes `artifact:partition-behavior`; produces `artifact:interconnect-map`.
-6. `synthesis`: one `partition-synthesizer` in an isolated context; needs `behavior`, `quality`, `interconnect`; consumes `artifact:partition-structure`, `artifact:partition-behavior`, `artifact:partition-quality`, `artifact:interconnect-map`; produces `artifact:xray-report`.
+5. `synthesis`: one `partition-synthesizer` in an isolated context; needs `behavior`, `quality`; consumes `artifact:partition-structure`, `artifact:partition-behavior`, `artifact:partition-quality`; produces `artifact:xray-report`.
+6. `interconnect`: one `semantic-interconnect-mapper` in an isolated context; needs `synthesis`; consumes `artifact:xray-report`; produces `artifact:interconnect-map`.
 
 Role body bindings (load the complete body only for the selected worker):
 

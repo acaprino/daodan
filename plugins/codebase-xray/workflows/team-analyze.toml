@@ -39,25 +39,24 @@ consumes = ["artifact:partition-structure"]
 produces = ["artifact:partition-quality"]
 
 [[phases]]
-id = "interconnect"
-needs = ["behavior"]
-role = "semantic-interconnect-mapper"
-isolation = "required"
-consumes = ["artifact:partition-behavior"]
-produces = ["artifact:interconnect-map"]
-
-[[phases]]
 id = "synthesis"
-needs = ["behavior", "quality", "interconnect"]
+needs = ["behavior", "quality"]
 role = "partition-synthesizer"
 isolation = "required"
 consumes = [
   "artifact:partition-structure",
   "artifact:partition-behavior",
   "artifact:partition-quality",
-  "artifact:interconnect-map",
 ]
 produces = ["artifact:xray-report"]
+
+[[phases]]
+id = "interconnect"
+needs = ["synthesis"]
+role = "semantic-interconnect-mapper"
+isolation = "required"
+consumes = ["artifact:xray-report"]
+produces = ["artifact:interconnect-map"]
 
 [contract]
 inputs = ["repository"]

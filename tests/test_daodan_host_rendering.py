@@ -96,22 +96,32 @@ class HostRenderingTests(unittest.TestCase):
                 self.assertNotIn("once each: `partition-behavior-worker`", text)
 
     def test_dispatch_plan_keeps_phase_order_and_barriers(self):
-        text = self.harness("codex", "codebase-xray", "team-analyze")
-        plan = text[text.index("Dispatch plan") : text.index("## Method")]
-        order = [
-            match.group(1)
-            for match in re.finditer(r"^\d+\. `([a-z-]+)`:", plan, flags=re.MULTILINE)
-        ]
-        self.assertEqual(
-            order,
-            ["partition-selection", "structure", "behavior", "quality", "interconnect", "synthesis"],
-        )
-        self.assertIn("`structure`: one `partition-structure-worker`", plan)
-        self.assertIn("needs `structure`", plan)
-        self.assertIn("barrier `all-delivered`", plan)
-        self.assertIn("`synthesis`: one `partition-synthesizer`", plan)
-        self.assertIn("needs `behavior`, `quality`, `interconnect`", plan)
-        self.assertIn("`partition-selection`: runs in the orchestrating context", plan)
+        # The synthesizer consolidates 01..07 and leaves 08 to the mapper, which reads
+        # that consolidated output: synthesis must close before interconnect starts.
+        for host in HOSTS:
+            with self.subTest(host=host):
+                text = self.harness(host, "codebase-xray", "team-analyze")
+                plan = text[text.index("Dispatch plan") : text.index("## Method")]
+                order = [
+                    match.group(1)
+                    for match in re.finditer(r"^\d+\. `([a-z-]+)`:", plan, flags=re.MULTILINE)
+                ]
+                self.assertEqual(
+                    order,
+                    ["partition-selection", "structure", "behavior", "quality", "synthesis", "interconnect"],
+                )
+                lines = {name: next(line for line in plan.splitlines() if line.split(". ", 1)[-1].startswith(f"`{name}`:"))
+                         for name in order}
+                self.assertIn("`structure`: one `partition-structure-worker`", plan)
+                self.assertIn("needs `structure`", plan)
+                self.assertIn("barrier `all-delivered`", plan)
+                self.assertIn("`synthesis`: one `partition-synthesizer`", lines["synthesis"])
+                self.assertIn("needs `behavior`, `quality`;", lines["synthesis"])
+                self.assertNotIn("interconnect", lines["synthesis"])
+                self.assertIn("`interconnect`: one `semantic-interconnect-mapper`", lines["interconnect"])
+                self.assertIn("needs `synthesis`", lines["interconnect"])
+                self.assertIn("consumes `artifact:xray-report`", lines["interconnect"])
+                self.assertIn("`partition-selection`: runs in the orchestrating context", plan)
 
     def test_static_fanout_still_dispatches_once_each(self):
         text = self.harness("claude", "senior-review", "team-review")
