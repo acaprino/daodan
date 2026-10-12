@@ -178,13 +178,16 @@ If `--dry-run`, stop after the preview.
 
 ## Step 4: Apply Changes
 
-Dispatch the `clean-code-agent` agent in its own isolated context, with the file list and the approved changes from the preview. The agent has its own safety rules and transformation guidelines: do not repeat them here. Its brief:
+Dispatch one `clean-code-agent` in its own isolated context with a prepared brief. The agent executes that task: it does not reload this method, repeat Steps 1 to 3, dispatch further workers or commit. Its safety rules and transformation guidelines live in the role: do not repeat them here. Its brief:
 
 ```
 Improve the readability of this code. Zero behavior changes.
 
-Files: [list of files]
-Approved changes: [from preview, if applicable]
+Owned files: [list of files]
+Approved changes: [from the preview]
+Baseline: [tools detected in Step 2, their commands and results]
+Authorization: [--force when given; the caller commits, the worker never does]
+Report path: [assigned report path]
 ```
 
 ## Step 5: Validate & Report

@@ -69,19 +69,26 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: clean-code:clean-code-agent; version: 2.0.3; source-sha256: 02c753c397001a6638b5ace1ebfdf2ed1f5b7096c635f7cea880f407b48ede3b. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: clean-code:clean-code-agent; version: 2.0.4; source-sha256: 77542bc4598272a74980f400a7cf9248c986c31f1fcde84a42244bf8aeb270aa. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `clean-code`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<clean-code-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `clean-code`. The owning plugin's declared logical skill identities are `clean-code:readability-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `clean-code:readability-method` -> compiled registry name `readability-method` at `skills/readability-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
-Declared role operation allowlist: read files; edit existing files; create or overwrite files; discover file paths; search file contents; execute shell commands; dispatch declared workers. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
+Declared role operation allowlist: read files; edit existing files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
 
-## Common operational method
+## Prepared task
 
-Load the `clean-code:readability-method` skill and `project-protocol:project-protocol`.
-When the caller already supplies its prepared scope, baseline and accepted preview,
-reuse them rather than re-running approval or preparation. Preserve the exact
-pre-edit snapshot before mutation and bind required checks to the candidate.
+This role executes the task that `clean-code:readability-method` prepares in its Step 4.
+It never loads that method, repeats its preparation or approval, or dispatches another worker.
+
+The brief supplies the owned files, the approved changes, the baseline validation commands
+and their results, any `--force` authorization and the report path. Load
+`project-protocol:project-protocol` to capture the owned files' exact pre-edit contents,
+including preexisting edits, before the first edit, and to restore them on failure.
+
+If the brief lacks the owned files, the approved changes or the baseline, make no edit.
+Report the missing inputs and that the caller must prepare them through
+`clean-code:readability-method`, which the `/clean-code:clean-code` entry runs.
 
 
 # Clean Code Agent
@@ -104,7 +111,7 @@ These rules override everything else. Violating them causes regressions.
 
 - **Extract functions**: this changes scoping, closure behavior, `this` binding, and error stack traces. It is the #1 source of regressions.
 - **Over-simplify**: removing an abstraction that provides separation of concerns, aids testing, or enables extension is worse than leaving it. Do not create overly clever solutions. Do not combine too many concerns into a single function.
-- **Rename public exports**: exports, public methods, class names, or anything imported by other files. Warn the user first.
+- **Rename public exports**: exports, public methods, class names, or anything imported by other files. Flag it in the report instead.
 - **Change data structures or APIs**
 - **Add type annotations** to code you didn't otherwise change
 
@@ -122,42 +129,18 @@ Before touching any file:
 4. The domain drives all naming: variables, functions, classes
 5. Identify the test framework and how to run tests
 
-## Phase 2: Discover files
+## Phase 2: Confirm the owned files
 
-```
-Glob **/*.{py,js,ts,tsx,jsx,java,kt,go,rs,rb,c,cpp,h,hpp,cs,php,swift,sh,sql}
-```
+Work only on the files the brief assigns. Never edit `node_modules/`, `.git/`,
+`__pycache__/`, `venv/`, `.venv/`, `dist/`, `build/`, `.next/`, `target/`, `vendor/`,
+`*.min.*`, `*.bundle.*`, `*.lock`, `package-lock.json`, `yarn.lock` or generated files,
+even when assigned; list them in the report instead.
 
-Always ignore: `node_modules/`, `.git/`, `__pycache__/`, `venv/`, `.venv/`,
-`dist/`, `build/`, `.next/`, `target/`, `vendor/`, `*.min.*`, `*.bundle.*`,
-`*.lock`, `package-lock.json`, `yarn.lock`, generated files.
+## Phase 3: Stay inside the approval
 
-If the user specified a path, work only on that.
-
-## Phase 3: Plan
-
-Show the user:
-
-```
-Project: [name]
-Files: [N]
-Domain: [detected domain]
-Test command: [detected or "none found"]
-
-Files to process:
-  1. src/utils.py: generic naming, over-commented, deeply nested
-  2. src/auth.ts: vague variable names, redundant wrapper
-  ...
-
-Changes will include:
-  - Renaming local variables and parameters
-  - Improving/removing comments
-  - Simplifying structure (flatten nesting, consolidate logic)
-
-Proceed?
-```
-
-**Reuse the caller's accepted preview and scope. Ask only when a proposed change exceeds that authorization.**
+Apply only the approved changes. A change the preview did not cover, or one that exceeds its
+authorization, goes into the report as a suggestion. Never ask the user to proceed and never
+apply it: approval belongs to the method that prepared the brief.
 
 ## Phase 4: Transform
 
@@ -216,13 +199,13 @@ Grep the OLD name of every renamed symbol in `.json`, `.yaml`, `.yml`, `.toml`, 
 
 ### 5e. Hard gate
 
-If no tests AND no type checker are available, do NOT proceed unless the user passes `--force`. Tell the user: "No tests or type checker found. Use `--force` to proceed, or set up validation first."
+If the brief records neither tests nor a type checker and carries no `--force` authorization, make no edit and report the missing gate. The method enforces this gate before dispatch; the worker never overrides it.
 
 ## Phase 6: Deliver
 
-Return the owned file list, candidate snapshot and gate evidence to the caller.
-Commit only under explicit authorization after the candidate gate passes; stage
-only owned files. Recovery of a published change requires an authorized revert.
+Return the owned file list, the candidate snapshot, the validation evidence and any
+restoration in the report at the assigned path. Never commit: the caller commits after
+its own candidate gate, only under its authorization.
 
 ## Phase 7: Report
 
@@ -245,13 +228,7 @@ Report suggestions as **recommendations**, not as changes made.
 
 ## Related tools: when to use what
 
-- **clean-code-agent** (this agent): Multi-language readability pass. Renames variables, improves comments, simplifies structure. Use for: "make this readable", "clean up naming", "simplify this code".
+- **clean-code-agent** (this agent): the worker behind `/clean-code:clean-code`. Multi-language readability pass: renames variables, improves comments, simplifies structure.
 - **text-humanizer** (text-humanizer plugin): Prose/text AI trace removal. Use for: "make this text sound human".
 
 Architectural changes return to the caller's development plan.
-
-## Parallelism
-
-For projects with >10 files, dispatch isolated workers for disjoint owned file sets, using the host coordination mechanism.
-Each sub-task receives: file content + domain + these rules.
-Each worker validates its candidate and delivers evidence; the caller controls commits.

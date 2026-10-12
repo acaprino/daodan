@@ -77,8 +77,8 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
 
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
         cases = {
-            ("project-lifecycle", "change"): CORE_ROLES["code-review"] | STACK_ROLES | {"testing/test-writer", "project-knowledge/instructions-auditor"},
-            ("project-lifecycle", "repair"): CORE_ROLES["code-review"] | STACK_ROLES,
+            ("project-lifecycle", "change"): CORE_ROLES["code-review"] | STACK_ROLES | {"testing/test-writer", "project-knowledge/instructions-auditor", "clean-code/clean-code-agent"},
+            ("project-lifecycle", "repair"): CORE_ROLES["code-review"] | STACK_ROLES | {"clean-code/clean-code-agent"},
             ("project-lifecycle", "verify"): CORE_ROLES["code-review"] | STACK_ROLES,
             ("project-lifecycle", "assess"): {"project-knowledge/documentation-engineer", "project-knowledge/guide-reviewer"},
             ("project-knowledge", "guide"): {"codebase-xray/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer")},
@@ -147,6 +147,52 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         self.assertNotIn("may write only intermediate reports", text)
                         self.assertIn(rule, text)
                         self.assertIn(owner, text)
+
+    def test_clean_code_worker_executes_its_prepared_task_without_redispatch(self):
+        """The readability worker must not restart the method that delegated it.
+
+        readability-method dispatches clean-code-agent; the role used to load that
+        same method, dispatch nested workers, ask the user to proceed and commit.
+        """
+        from scripts.daodan.adapter import HOSTS, load_adapter
+        from scripts.daodan.load import load_plugin
+        from scripts.daodan.render import render_plugin
+
+        kernel = ROOT / "plugins/clean-code"
+        role = (kernel / "roles/clean-code-agent.md").read_text(encoding="utf-8")
+        frontmatter, _, body = role.partition("\n---\n")
+        tools = next(line for line in frontmatter.splitlines() if line.startswith("tools:"))
+        for nested in ("Task", "Agent"):
+            self.assertNotIn(nested, tools)
+        for restart in ("Load the `clean-code:readability-method`", "## Parallelism", "Proceed?"):
+            self.assertNotIn(restart, body)
+        self.assertIn("Never commit", body)
+        method = (kernel / "skills/readability-method/SKILL.md").read_text(encoding="utf-8")
+        step = method[method.index("## Step 4"):method.index("## Step 5")]
+        self.assertIn("does not reload this method", step)
+        for field in ("Owned files:", "Approved changes:", "Baseline:", "Authorization:", "Report path:"):
+            self.assertIn(field, step)
+
+        rendered_role = {
+            "claude": "agents/clean-code-agent.md",
+            "codex": "roles/clean-code-agent.md",
+            "copilot": "agents/clean-code-agent.agent.md",
+            "pi": "skills/clean-code-clean-code-agent/SKILL.md",
+            "opencode": "agents/clean-code-agent.md",
+        }
+        self.assertEqual(set(rendered_role), set(HOSTS))
+        with tempfile.TemporaryDirectory() as temporary:
+            for host in HOSTS:
+                with self.subTest(host=host):
+                    root = Path(temporary) / host
+                    render_plugin(load_plugin(kernel), load_adapter(ROOT / "adapters", host), root,
+                                  adapters_root=ROOT / "adapters")
+                    text = (root / rendered_role[host]).read_text(encoding="utf-8")
+                    self.assertNotIn("Load the `clean-code:readability-method`", text)
+                    if host == "copilot":
+                        self.assertNotIn("'agent'", text.split("\n---\n", 1)[0])
+                    if host == "opencode":
+                        self.assertNotIn('action: "subagent"', text.split("\n---\n", 1)[0])
 
     def test_composed_inventory_binds_methods_without_copying_their_schedule(self):
         for entry, core in CORE_ROLES.items():

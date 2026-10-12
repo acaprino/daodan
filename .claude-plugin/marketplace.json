@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.10.1"
+    "version": "32.10.2"
   },
   "name": "daodan",
   "owner": {
@@ -143,7 +143,7 @@
         "./skills/readability-method"
       ],
       "source": "./exports/claude/plugins/clean-code",
-      "version": "2.0.3"
+      "version": "2.0.4"
     },
     {
       "agents": [
@@ -569,7 +569,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/claude/plugins/project-lifecycle",
-      "version": "1.3.2"
+      "version": "1.3.3"
     },
     {
       "agents": [

@@ -432,7 +432,7 @@
       "clean-code": {
         "agents": [
           {
-            "description": "Readability-only rewrite of existing source, behavior unchanged. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, reduce complexity, or make code more maintainable. DO NOT TRIGGER WHEN: the target is prose or text (use text-humanizer).",
+            "description": "Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /clean-code:clean-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /clean-code:clean-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).",
             "file": "agents/clean-code-agent.md",
             "id": "clean-code:clean-code-agent",
             "permissions": [
@@ -463,11 +463,6 @@
               },
               {
                 "action": "shell",
-                "effect": "allow",
-                "resource": "*"
-              },
-              {
-                "action": "subagent",
                 "effect": "allow",
                 "resource": "*"
               },
@@ -4474,5 +4469,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.10.1"
+  "version": "32.10.2"
 }

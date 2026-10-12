@@ -37,6 +37,7 @@ roles = [
   "abstraction-architect/abstraction-architect-agent",
   "testing/test-writer",
   "testing/test-suite-auditor",
+  "clean-code/clean-code-agent",
   "repo-hygiene/workspace-auditor",
   "senior-review/cleanup-auditor",
   "react-development/react-performance-optimizer",
