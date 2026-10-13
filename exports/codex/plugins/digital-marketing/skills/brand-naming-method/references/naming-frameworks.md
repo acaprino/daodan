@@ -255,10 +255,12 @@ Fuse morphemes from different languages where both parts carry relevant meaning.
 
 ## Trademark Resources
 
+- **UIBM banca dati** (Italy, Ufficio Italiano Brevetti e Marchi): https://www.uibm.gov.it/bancadati/Advanced_search/type_url?type=tm&cl=1 (Italian national trade marks only; the page title starts with "DGPI-UIBM"; if it does not load, open uibm.gov.it and follow its trademark database link). Procedure exercised in a headless browser: press "Seleziona criteri", choose "Denominazione/Descrizione" so the name field appears, type the exact name, press Enter and wait several seconds. A table with the columns Numero domanda, Data deposito, Stato lavorazione, Denominazione/titolo, Descrizione and Immagine marchio is an answer with matches. The message "Attenzione! La ricerca impostata non ha prodotto alcun risultato o i risultati non sono pubblicabili" is the zero-results answer. The "Classe" criterion narrows by Nice class; leave it unset so a similar mark in another class is still seen.
+- **Other countries**: the national office's own trademark database, found from the office's official site. Never use a URL that was not read from that site.
 - **EUIPO TMview**: https://www.tmdn.org/tmview/ (aggregates EU and national registers; its web application firewall can refuse an automated browser with a "Problem detected" page, which is NOT SCREENED, never "no matches")
 - **EUIPO eSearch plus**: https://euipo.europa.eu/eSearch/ (EU trade marks and designs only, no national registers; the fallback when TMview does not answer)
 - **USPTO Trademark Search**: https://tmsearch.uspto.gov/ (replaced TESS, retired 2023-11-30; old TESS links redirect here)
 - **WIPO Global Brand Database**: https://branddb.wipo.int/
 - **Nice Classification**: 45 classes of goods/services for trademark registration
 
-All three registers are JavaScript applications. A search engine does not index their records, so they are queried in a browser, never through a web search for the name.
+A search engine does not index the records of these registers, so they are queried in a browser, never through a web search for the name.
