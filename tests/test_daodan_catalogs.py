@@ -18,6 +18,7 @@ from scripts.daodan.catalogs import (  # noqa: E402
     CatalogError,
     assert_cross_host_identity,
     catalog_document,
+    merge_into_legacy,
     render_catalog,
 )
 from scripts.daodan.load import load_plugin  # noqa: E402
@@ -34,6 +35,44 @@ def build_fixture_catalogs():
 
 
 class CatalogTests(unittest.TestCase):
+    def test_legacy_merge_replaces_compiled_entries_and_preserves_foreign_entries(self):
+        """O01 migration keeps unrelated legacy registrations byte-equivalent."""
+        base = load_plugin(VALID)
+        newcomer = replace(base, name="newcomer", version="2.0.0")
+        foreign = {"name": "foreign", "version": "7.0.0",
+                   "source": {"source": "github", "repo": "someone/foreign"},
+                   "agents": ["./old/worker.md"], "custom": {"keep": True}}
+        existing = {"name": "legacy", "metadata": {"version": "9.0.0"},
+                    "plugins": [foreign, {"name": "example", "version": "0.0.1",
+                                          "source": "./old/example",
+                                          "agents": ["./old/agent.md"],
+                                          "skills": ["./old/skill"],
+                                          "commands": ["./old/command.md"],
+                                          "mcpServers": "./old/.mcp.json"}]}
+        before = json.dumps(existing, sort_keys=True)
+        with tempfile.TemporaryDirectory(prefix="daodan-legacy-catalog-") as holder:
+            packages = {name: Path(holder) / name for name in ("example", "newcomer")}
+            for package in packages.values():
+                (package / "skills/tools").mkdir(parents=True)
+                (package / "skills/tools/SKILL.md").write_text("fixture", encoding="utf-8")
+
+            for host in ("claude", "copilot", "codex"):
+                with self.subTest(host=host):
+                    merged = merge_into_legacy(existing, [base, newcomer], host, packages)
+
+                    self.assertEqual(merged["metadata"], {"version": "9.0.0"})
+                    self.assertEqual(merged["plugins"][0], foreign)
+                    self.assertEqual([item["name"] for item in merged["plugins"]],
+                                     ["foreign", "example", "newcomer"])
+                    for entry, version in zip(merged["plugins"][1:], ("1.2.3", "2.0.0")):
+                        self.assertEqual(entry["version"], version)
+                        self.assertEqual(entry["source"],
+                                         f"./exports/{host}/plugins/{entry['name']}")
+                        self.assertEqual(entry["skills"], ["./skills/tools"])
+                        for stale in ("agents", "commands", "mcpServers"):
+                            self.assertNotIn(stale, entry)
+                    self.assertEqual(json.dumps(existing, sort_keys=True), before)
+
     def test_catalogs_share_identity_names_and_versions(self):
         catalogs = build_fixture_catalogs()
         self.assertEqual({catalog["name"] for catalog in catalogs.values()}, {"daodan"})

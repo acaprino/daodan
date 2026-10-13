@@ -77,8 +77,14 @@ Compiled binding and static checks do not prove an installed host executed a run
 # Unified review method
 
 Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle.
-Output: native report and the project-result envelope. Do not call a second
-workflow as an executor.
+Output: native report and the project-result envelope. Do not delegate execution
+to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
+the coordinator directly executes the canonical `codebase-xray:analyze` entry
+and its `codebase-xray:xray-method` phase-by-phase in the same context. This is
+explicit execution of the canonical instructions, not a declarative `invoke`
+executor or automatic skill loading. Loading the skill alone executes no phase.
+Keep one review preparation and final report owner; required workers still run
+in isolated contexts through the declared host bindings.
 
 The consuming workflow declares the named reviewer inventory in `dispatch.roles`
 and isolated inline workers in its sidecar. Any inline lens, critic, history,

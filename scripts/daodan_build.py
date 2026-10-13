@@ -84,6 +84,30 @@ def _overrides_for(root: Path, host: str, plugin: PluginSpec):
     return load_overrides(directory)
 
 
+def _override_outcomes(
+    plugin: PluginSpec, source: str, registry: dict[str, PluginSpec]
+) -> frozenset[str] | None:
+    """Bind preservation claims to the workflows affected by a registered target."""
+    kind, separator, name = source.partition(":")
+    if separator and kind == "workflow":
+        for workflow in plugin.workflows:
+            if workflow.name == name:
+                return frozenset(workflow.contract.outcomes)
+    elif separator and kind == "role" and name in plugin.components.roles:
+        target = f"{plugin.name}/{name}"
+        outcomes = set()
+        for consumer in registry.values():
+            for workflow in consumer.workflows:
+                workers = {
+                    reference if "/" in reference else f"{consumer.name}/{reference}"
+                    for reference in workflow.worker_references(consumer.components.roles)
+                }
+                if target in workers:
+                    outcomes.update(workflow.contract.outcomes)
+        return frozenset(outcomes)
+    return None
+
+
 def build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildReport:
     """Validate every kernel and render, or verify, every host package."""
     try:
@@ -143,7 +167,15 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
                 plugin.capabilities.optional
             )
             for override in overrides:
-                issues.extend(validate_override(override, declared, repository_root=root))
+                outcomes = _override_outcomes(plugin, override.source, plugin_registry)
+                if outcomes is None:
+                    issues.append(ValidationIssue(
+                        "override-unknown-source", override.root / "override.toml", override.source
+                    ))
+                    continue
+                issues.extend(validate_override(
+                    override, declared, declared_contracts=outcomes, repository_root=root
+                ))
 
             if issues:
                 continue

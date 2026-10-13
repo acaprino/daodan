@@ -24,9 +24,14 @@ is a declared comparison gap, not permission to invent a before-state; preserve
 the actual candidate and leave any gate needing that comparison unavailable.
 
 Read `references/<variant>.md` inside this skill and execute its preparation stages
-once. Existing reviewer inputs remain unchanged. For team review, X-ray analyze is
-executed in the coordinator context as documented in Phase 1a, not spawned as a role;
-resolve the exact run in runs.json and never substitute a mirror for a missing run.
+once. Existing reviewer inputs remain unchanged. For team review Phase 1a, the
+coordinator directly executes the canonical `codebase-xray:analyze` entry and
+`codebase-xray:xray-method` phase-by-phase in this same context. Loading either
+body alone executes nothing; no declarative `invoke` executor or nested lifecycle
+scheduler is introduced. Analyze is not spawned as a role, and its preparation
+step does not create another review preparation or final report owner. Required
+workers retain isolated contexts. Resolve the exact run in runs.json and never
+substitute a mirror for a missing run.
 
 Native report locations in the reference are relative to the explicit review
 output root. When lifecycle supplies a run root, put scratch/context there instead

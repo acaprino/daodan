@@ -18,6 +18,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan_build import build_repository, main  # noqa: E402
 from scripts.daodan.adapter import HOSTS  # noqa: E402
+from scripts.daodan.overrides import source_digest  # noqa: E402
 
 VALID = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
@@ -123,6 +124,87 @@ class CompilerCliTests(unittest.TestCase):
     def test_publication_then_check_is_clean(self):
         self.assertEqual(self.run_cli()[0], 0)
         self.assertEqual(self.run_cli("--check")[0], 0)
+
+    def test_override_outcomes_and_registered_sources_gate_publication(self):
+        """O03 real builds bind workflow and role claims before changing outputs."""
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        directory = self.root / "adapters/copilot/overrides/example/review"
+        shutil.copytree(REPO_ROOT / "tests/fixtures/daodan/overrides/copilot/example/review",
+                        directory)
+        source = self.root / "plugins/example/workflows/review.md"
+        manifest = directory / "override.toml"
+        original = manifest.read_text(encoding="utf-8")
+        original = re.sub(r'(?m)^source_paths = .*$',
+                          'source_paths = ["plugins/example/workflows/review.md"]', original)
+        original = re.sub(r'(?m)^reviewed_against = .*$',
+                          f'reviewed_against = "{source_digest([source], self.root)}"', original)
+        cases = (
+            ("workflow:review", [], "override-drops-contract", "reviewers-use-isolated-contexts"),
+            ("role:inspector", [], "override-drops-contract", "reviewers-use-isolated-contexts"),
+            ("workflow:missing", ["reviewers-use-isolated-contexts"], "override-unknown-source", "workflow:missing"),
+            ("skill:tools", [], "override-unknown-source", "skill:tools"),
+        )
+        for source_name, outcomes, code, detail in cases:
+            content = re.sub(r'(?m)^source = .*$', f'source = "{source_name}"', original)
+            content = re.sub(r'(?m)^contracts_preserved = .*$',
+                             "contracts_preserved = " + json.dumps(outcomes), content)
+            manifest.write_text(content, encoding="utf-8")
+            for check in (False, True):
+                with self.subTest(source=source_name, check=check):
+                    report = build_repository(self.root, HOSTS, check=check)
+
+                    self.assertTrue(report.has_failures)
+                    diagnoses = [issue for issue in report.issues if issue.code == code]
+                    self.assertTrue(diagnoses, report.issues)
+                    self.assertTrue(any(detail in issue.message for issue in diagnoses))
+                    self.assertEqual(self.output_bytes(), before)
+
+        manifest.write_text(original, encoding="utf-8")
+        code, output = self.run_cli()
+        self.assertEqual(code, 0, output)
+        self.assertEqual(self.run_cli("--check")[0], 0)
+
+    def test_role_override_preserves_outcomes_of_cross_plugin_consumers(self):
+        """O03 a provider role carries contracts from every consuming workflow."""
+        consumer = self.root / "plugins/consumer"
+        shutil.copytree(VALID, consumer)
+        plugin_manifest = consumer / "plugin.toml"
+        content = plugin_manifest.read_text(encoding="utf-8")
+        plugin_manifest.write_text(content.replace('name = "example"', 'name = "consumer"')
+                                  .replace('required = []', 'required = ["example"]'), encoding="utf-8")
+        workflow = consumer / "workflows/review.toml"
+        content = workflow.read_text(encoding="utf-8")
+        workflow.write_text(content.replace('"role:inspector"', '"role:example/inspector"')
+                            .replace('"reviewers-use-isolated-contexts"', '"consumer-report-delivered"'),
+                            encoding="utf-8")
+        directory = self.root / "adapters/copilot/overrides/example/review"
+        shutil.copytree(REPO_ROOT / "tests/fixtures/daodan/overrides/copilot/example/review",
+                        directory)
+        source = self.root / "plugins/example/roles/inspector.md"
+        manifest = directory / "override.toml"
+        content = manifest.read_text(encoding="utf-8").replace('source = "workflow:review"',
+                                                             'source = "role:inspector"')
+        content = re.sub(r'(?m)^source_paths = .*$',
+                         'source_paths = ["plugins/example/roles/inspector.md"]', content)
+        content = re.sub(r'(?m)^reviewed_against = .*$',
+                         f'reviewed_against = "{source_digest([source], self.root)}"', content)
+        manifest.write_text(content, encoding="utf-8")
+
+        rejected = build_repository(self.root, ("copilot",), check=True)
+
+        self.assertEqual([(issue.code, issue.message) for issue in rejected.issues],
+                         [("override-drops-contract", "consumer-report-delivered")])
+        self.assertFalse((self.root / "exports").exists())
+        manifest.write_text(content.replace('contracts_preserved = ["reviewers-use-isolated-contexts"]',
+                                           'contracts_preserved = ["reviewers-use-isolated-contexts", '
+                                           '"consumer-report-delivered"]'), encoding="utf-8")
+
+        accepted = build_repository(self.root, ("copilot",), check=True)
+
+        self.assertEqual(accepted.issues, ())
+        self.assertTrue(accepted.drift, "Fresh fixture has no published packages")
+        self.assertFalse((self.root / "exports").exists())
 
     def test_check_reports_drift_after_a_kernel_edit(self):
         self.assertEqual(self.run_cli()[0], 0)

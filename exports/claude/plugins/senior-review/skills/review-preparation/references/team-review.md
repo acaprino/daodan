@@ -309,9 +309,9 @@ Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `ph
 
 ### Phase 1a: X-Ray Analysis
 
-> **`codebase-xray:analyze` is a workflow of the `codebase-xray` plugin, not an agent.** Nothing dispatches it as a worker: it runs in this context, the way a user would invoke it, with its arguments. The host lists it under the `codebase-xray` plugin as `analyze` (a host that renders workflows as skills suffixes it `-workflow`). The `codebase-xray:xray-method` skill is the method that workflow applies; loading the method alone runs no phase and creates no run directory. The distinction matters because the rest of this command (Phase 1b, Phase 2) dispatches many `plugin:name` workers and the same shape names workflows and skills; treat Phase 1a as running a workflow, full stop.
+> **`codebase-xray:analyze` is the canonical workflow entry of `codebase-xray`, not an agent or executor.** The host lists it as `analyze` (hosts that render workflows as skills suffix it `-workflow`). The review coordinator reads that entry and its `codebase-xray:xray-method`, then directly executes their canonical phases in order in this same context with the resolved arguments. Loading either body alone runs no phase and creates no run directory. This direct composition introduces no declarative `invoke` executor, nested lifecycle scheduler or automatic skill loading. Review preparation runs once and consolidation retains sole final review report ownership. Phase 1c, Phase 1b and all selected reviewers still require their declared isolated worker contexts.
 
-1. Run the `codebase-xray:analyze` workflow against the target, in this context:
+1. Directly execute the `codebase-xray:analyze` entry and its canonical method phase-by-phase against the target, in this coordinator context. Preserve their scope checkpoints, run binding, output and completion gates:
    - Default mode: `--depth=lite` (structure + interfaces + risks only)
    - If `--deep` flag: full analysis
    - Target scope: the files from Phase 0

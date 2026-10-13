@@ -26,7 +26,7 @@ Nothing listed under "Deliberately not vendored" in `CLAUDE.md` belongs in the t
 
 When the user asks for "upstream updates" (or similar), this is the default workflow. Do not blindly overwrite local files - most syncs need targeted merging because local has legitimate customizations.
 
-1. **Check all synced plugins in parallel**. For each file in the sync table below, diff the upstream against the local version. Spawn Explore agents when there are many files to parallelize the diffing. Focus the reports on: which files differ, what changed, and whether the drift is intentional or worth pulling.
+1. **Check all copied-source sync targets in parallel**. For each copied-source file in the sync table below, diff the upstream against the local version. Exclude inspiration-only provenance rows from vendored pull, merge and sync operations; their original local plugins remain eligible for `custom-plugin-refresh`. Spawn Explore agents when there are many files to parallelize the diffing. Focus the reports on: which files differ, what changed, and whether the drift is intentional or worth pulling.
 
 2. **Classify each file** before touching it:
    - **Clear win** - new upstream file missing locally, or a bug/fact fix with no local conflict. Pull directly.
@@ -55,6 +55,8 @@ When the user asks for "upstream updates" (or similar), this is the default work
 8. **Verify and commit** - run `python scripts/daodan_build.py --check`, `python scripts/sync_plugin_docs.py --check` and the required repository gates before publication, check named consumers and bundled paths, then inspect `git status` / `git diff --stat`. If repository workflow skills changed, regenerate their native Codex adaptations with `python scripts/sync_codex_instructions.py` and check parity with `--check`. Commit kernels, regenerated exports/catalogs, documentation references and instruction copies together with a descriptive message like "Sync upstream updates for X and Y (vN.N.N)". Push to master under the task's publication authorization.
 
 
+The two `codebase-xray` rows are inspiration-only provenance, not copied-source sync targets. Keep their source attribution and adoption history here, but exclude them from vendored pull, merge and sync. Their presence does not exclude the original local `codebase-xray` plugin from `custom-plugin-refresh`. Existing copied-source rows remain tracked; this inventory does not authorize new vendoring.
+
 | Plugin | Upstream source | Files to sync |
 |--------|----------------|---------------|
 | `codebase-xray` (inspiration) | `gsd-build/get-shit-done` - `agents/gsd-codebase-mapper.md` | `plugins/codebase-xray/workflows/analyze.md` (patterns adopted, not direct copy) |
@@ -68,7 +70,7 @@ When the user asks for "upstream updates" (or similar), this is the default work
 
 ## How to sync a plugin
 
-The sync table above gives the upstream repo and the local target files. Single-file pattern:
+For copied-source rows only, the sync table above gives the upstream repo and local target files. Inspiration-only rows retain provenance and are not fetched or merged by this procedure. Single-file pattern:
 
 ```bash
 gh api "repos/<owner>/<repo>/contents/<upstream-path>" --jq '.content' | base64 -d
@@ -91,6 +93,10 @@ publication steps above.
 
 - **`domain-hunter`**: upstream Step 3 uses dedicated Twitter/Reddit Python scripts. Replace with `WebSearch` queries targeting `site:x.com` / `site:reddit.com`.
 
+## Historical notes for the retired superpowers port
+
+The following record describes the former `obra/superpowers` VS Code port. Its references to `this port`, retired files, `sp-*` agents and VS Code mechanisms describe decisions made during that pass, not active instructions. Preserve the dated history and attribution; do not reimport the port, recreate its files or reconstruct its extension apparatus.
+
 **Sync notes from the 6.2.0 to 6.3.0 pass (2026-08-20)**, all applied with `git merge-file` against the pinned base rather than by overwriting:
 
 - The two `references/*-tools.md` changes are out of scope as always, and so is the upstream Hermes line in `using-superpowers/SKILL.md`: this port replaces the whole "Platform Adaptation" section with "How skills work here", so there is no list to add a harness to.
@@ -99,4 +105,7 @@ publication steps above.
 - The upstream "Waiting on dispatched subagents" paragraph in `subagent-driven-development/SKILL.md` assumes detached children and a wait interface. VS Code's `#agent/runSubagent` returns only when the subagent finishes, so it was replaced with a paragraph stating that and keeping the useful half (do local work between dispatches).
 - The new "You Do Not Dispatch Subagents" section in the four `*-prompt.md` templates maps onto the `sp-*` agents, which all ship `agents: []`. The section was added in a shortened form that names the empty allowlist as the mechanical reason, rather than mirroring upstream's prose about a risk this platform already forecloses.
 - Two graphviz conflicts in `subagent-driven-development/SKILL.md` resolved in favor of upstream's node renames (`Ask human partner which governs` becomes `Rule on the conflict, ledger the ruling`) while keeping this port's fix-round wording, which says a fresh implementer is dispatched every round because VS Code cannot resume a returned subagent.
+
+## Current Kotlin sync note
+
 - **`Jeffallan/claude-skills` (kotlin)**: strip extra upstream frontmatter fields (`license`, `metadata.author`, `version`, `domain`, `triggers`, `role`, `scope`, `output-format`, `related-skills`). Drop the trailing `[Documentation](https://jeffallan.github.io/...)` link. Preserve single-connector em-dashes (`X — Y`) inside code comments; they are not bracketed asides.

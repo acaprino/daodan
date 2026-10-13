@@ -154,13 +154,45 @@ class OverrideTests(unittest.TestCase):
         spec = self.load_fixture_override(
             reviewed_against=source_digest([SOURCE]),
             capabilities_affected=("repository.read",),
+            contracts_preserved=("reviewers-use-isolated-contexts", "unknown-outcome"),
         )
         issues = validate_override(
             spec,
             declared_capabilities=frozenset({"repository.read"}),
-            declared_contracts=frozenset({"some-other-outcome"}),
+            declared_contracts=frozenset({"reviewers-use-isolated-contexts"}),
         )
+        self.assertEqual([issue.code for issue in issues], ["override-unknown-contract"])
+        self.assertIn("unknown-outcome", issues[0].message)
+
+    def test_override_must_claim_every_declared_outcome(self):
+        """O03 a matching fingerprint cannot authorize an omitted contract."""
+        spec = self.load_fixture_override(
+            reviewed_against=source_digest([SOURCE]),
+            capabilities_affected=("repository.read",),
+            contracts_preserved=(),
+        )
+
+        issues = validate_override(
+            spec, declared_capabilities=frozenset({"repository.read"}),
+            declared_contracts=frozenset({"reviewers-use-isolated-contexts"}),
+        )
+
         self.assertEqual([issue.code for issue in issues], ["override-drops-contract"])
+        self.assertIn("reviewers-use-isolated-contexts", issues[0].message)
+
+    def test_complete_declared_outcome_claim_passes(self):
+        spec = self.load_fixture_override(
+            reviewed_against=source_digest([SOURCE]),
+            capabilities_affected=("repository.read",),
+            contracts_preserved=("reviewers-use-isolated-contexts", "report-delivered"),
+        )
+
+        issues = validate_override(
+            spec, declared_capabilities=frozenset({"repository.read"}),
+            declared_contracts=frozenset({"reviewers-use-isolated-contexts", "report-delivered"}),
+        )
+
+        self.assertEqual(issues, [])
 
     def test_source_digest_is_order_independent_and_content_sensitive(self):
         other = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example/roles/inspector.md"

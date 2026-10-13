@@ -196,8 +196,10 @@ def validate_override(
         issues.append(ValidationIssue("override-capability-escalation", manifest, capability))
 
     if declared_contracts is not None:
-        for contract in spec.contracts_preserved:
-            if contract not in declared_contracts:
-                issues.append(ValidationIssue("override-drops-contract", manifest, contract))
+        preserved = frozenset(spec.contracts_preserved)
+        for contract in sorted(declared_contracts - preserved):
+            issues.append(ValidationIssue("override-drops-contract", manifest, contract))
+        for contract in sorted(preserved - declared_contracts):
+            issues.append(ValidationIssue("override-unknown-contract", manifest, contract))
 
     return issues

@@ -6,16 +6,16 @@ description: >
   re-research and surgical-edit update protocol, the refresh commit tag, and triage for
   picking what to refresh next.
   TRIGGER WHEN: the user asks to refresh, re-research, or fact-check a plugin that is not in
-  the sync table of the `upstream-sync` skill; asks which plugins are stale or overdue; or
+  the copied-source sync targets of the `upstream-sync` skill; asks which plugins are stale or overdue; or
   asks about version drift in plugin knowledge bases.
-  DO NOT TRIGGER WHEN: the plugin IS upstream-synced (use `upstream-sync`), the task is a
+  DO NOT TRIGGER WHEN: the plugin has copied-source sync targets (use `upstream-sync` for those targets), the task is a
   first-time vendor of external content (use `external-repo-intake`), or the task is
   mirroring our content outward (use `downstream-exports`).
 ---
 
 # Custom plugin maintenance
 
-A "custom plugin" is any plugin NOT listed in the sync table of the `upstream-sync` skill. Its content is hand-authored or research-grounded and has no upstream source to re-pull. If a plugin is not in that sync table, it falls under this skill.
+A "custom plugin" has hand-authored or research-grounded content without a copied upstream source to re-pull. Copied-source targets in the `upstream-sync` table use that skill for upstream comparison. Inspiration-only rows retain provenance without excluding the original local plugin from this refresh method: both `codebase-xray` rows are inspiration-only, so refresh its local content here. Preserve existing copied-source tracking and history; neither route authorizes new vendoring.
 
 Custom plugins decay differently than vendored ones. There is no upstream commit to diff against. Versions, framework recommendations, breaking-change notes, and "current as of 2026" claims become stale silently. The maintenance protocol below is the antidote.
 

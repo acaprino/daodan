@@ -239,8 +239,13 @@ There is no second hand-authored operational schema under each consumer skill.
 
 The coordinator loads canonical specialist methods and prepares their inputs.
 The compiler supplies worker bindings; it is not a general workflow executor.
-Nonempty `invoke` is rejected. The existing same-context X-ray method step does
-not create a general mechanism for one workflow to execute another.
+Nonempty `invoke` is rejected. In senior-review team-review Phase 1a, the review
+coordinator reads the canonical `codebase-xray:analyze` entry and its
+`codebase-xray:xray-method`, then directly executes their phases in order in the
+same context. Loading those bodies alone runs nothing. This direct composition
+introduces no declarative executor or nested lifecycle scheduler. Review
+preparation runs once, consolidation owns the final review report, and required
+workers retain their declared isolated contexts and delivery gates.
 
 ## MCP and helper runtimes
 

@@ -305,7 +305,7 @@ For each candidate:
 
 ### Step 7: Scoring and Ranking
 
-Score the top 5 names on a 0-100 scale using these weighted criteria:
+Score the 5 names that survived Step 6 from 1 to 5 on each criterion, using these weights:
 
 | Criterion | Weight | Description |
 |-----------|--------|-------------|
@@ -316,24 +316,28 @@ Score the top 5 names on a 0-100 scale using these weighted criteria:
 | Relevance | 10% | Connection to brand values/product |
 | SEO Potential | 10% | Online visibility, keyword alignment |
 | Domain Availability | 10% | .com or strong alternative TLD available |
-| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score) |
+| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score). A NOT SCREENED name scores 3 and the cell reads "3 (not screened)", so the total is visibly provisional |
 | Emotional Impact | 5% | Evocative power, storytelling potential |
 | Cultural Adaptability | 5% | Works across target languages and cultures |
 
-Formula: `Final Score = SUM(criterion_score * weight)`
+Scale, whole numbers: 5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying. Every score cites the evidence behind it (a test result, a search finding, a register answer). A criterion with no evidence behind it scores 3 and is marked "unverified", never guessed high.
 
-Present as a detailed scoring table with per-criterion breakdown.
+Formula: `Overall = SUM(criterion_score * weight)`, which lands between 1.0 and 5.0; round to one decimal. Rank by Overall and break ties on Distinctiveness, then Market Saturation.
 
-### Step 8: Final Presentation
+### Step 8: Evaluation Report
 
-Deliver the top 3 names with:
-1. **Scoring table** with all criteria and final weighted score
-2. **Name story** - etymology, meaning, why it works for this brand
-3. **Market saturation report** - existing apps, websites, businesses with same/similar name and risk level
-4. **Domain status** - best available domain option
-5. **Trademark risk** - summary of screening results
-6. **Visual suggestion** - how the name could look as a wordmark (font style, case)
-7. **Tagline idea** - a complementary tagline for each name
+Read `references/report-template.md` and fill it in. The template is the report: keep its sections, their order and its table shapes, and replace every placeholder. Do not add sections, change the headings or improvise another layout, so every run produces the same document.
+
+The template carries, in order:
+1. **Summary**: the recommended name, why it ranks first, and a ranked table of the 5 scored names.
+2. **Scorecard**: the criteria as rows with their weights, the 5 names as columns, the Overall score last.
+3. **Top 3 names**: for each, a description (etymology, meaning, why it fits), every criterion's score with a one-sentence motivation that cites its evidence, availability, trademark rating, market, wordmark, tagline and the main risk.
+4. **Runners-up**: ranks 4 and 5 with their weakest criterion and every criterion's score, each with a one-sentence motivation citing its evidence.
+5. **Names removed**: every name dropped in Steps 1b to 6 with the step and the reason, so the user can overrule a drop.
+6. **Before you commit**: one checkbox per open check, such as an unscreened register or an unverified TLD.
+7. **Evidence**: which registers answered and which did not, with the page's own words for a register that did not.
+
+Every score on all ten criteria for all five ranked names has a motivation citing its evidence, and every unverified or not-screened value is marked as such. Write the report in the language of the brief.
 
 ## Reference Framework
 

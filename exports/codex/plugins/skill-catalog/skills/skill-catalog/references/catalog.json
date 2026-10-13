@@ -201,7 +201,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.0.3"
+      "version": "3.0.5"
     },
     {
       "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
@@ -216,7 +216,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.0.3"
+      "version": "3.0.5"
     },
     {
       "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
@@ -238,7 +238,7 @@
       ],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.0.3"
+      "version": "3.0.5"
     },
     {
       "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
@@ -259,7 +259,7 @@
       "topics": [
         "customer-review"
       ],
-      "version": "3.0.3"
+      "version": "3.0.5"
     },
     {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
@@ -1110,7 +1110,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.3"
+      "version": "15.0.4"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -1132,7 +1132,7 @@
       "topics": [
         "defects"
       ],
-      "version": "15.0.3"
+      "version": "15.0.4"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
@@ -1147,7 +1147,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.3"
+      "version": "15.0.4"
     },
     {
       "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
@@ -1162,7 +1162,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.3"
+      "version": "15.0.4"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
@@ -1177,7 +1177,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.3"
+      "version": "15.0.4"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
@@ -1192,7 +1192,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.3"
+      "version": "15.0.4"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",

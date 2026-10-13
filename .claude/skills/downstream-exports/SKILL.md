@@ -292,6 +292,8 @@ enumeration API or measured installed-host enforcement is implied by these bindi
 
 An override replaces one rendered file for one host, and it carries the digest of the neutral source it was reviewed against. When that source moves, the override is reported `stale-override` and the build fails until a human re-reads it. An override may select a different declared mechanism; it may never add a tool, MCP server, LSP server, hook or capability the kernel did not declare (`override-capability-escalation`), and it may not quietly drop a contract the workflow declares (`override-drops-contract`).
 
+The compiler binds `contracts_preserved` to outcome names from the registered target workflow. A role target inherits the outcomes of its consuming workflows, including consumers in other plugins; an unknown target fails with `override-unknown-source`. Every required outcome must be named, and invented outcome names fail with `override-unknown-contract`. This validates the completeness of the preservation declaration, not the replacement's behavior. Inputs, artifacts and schema obligations remain binding through their canonical declarations and independent behavioral verification.
+
 Generic templates express the shipped host differences. Reach for an override only after
 establishing that a *behavioural contract* cannot be rendered generically. A different topology
 is not a reason; a different meaning is.
