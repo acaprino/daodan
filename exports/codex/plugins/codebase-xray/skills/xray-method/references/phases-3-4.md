@@ -126,6 +126,9 @@ Diagram guidelines:
 - Reference source files as comments: `%% src/auth/login.py::handle_request`
 - Mark error/failure paths with dotted lines: `-->|error|`
 - Keep each diagram under 30 nodes - split large processes into sub-diagrams
+
+## Source reading
+[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
 ```
 
 ---
@@ -174,6 +177,9 @@ WHY alternatives were rejected.
 - Error handling: [pattern]
 - Logging: [pattern]
 - Configuration: [pattern]
+
+## Source reading
+[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
 ```
 
 ## AI-Powered Semantic Analysis
@@ -197,3 +203,64 @@ WHY alternatives were rejected.
 | **Resilience** | Circuit Breaker, Retry, Bulkhead, Timeout | Thresholds, fallbacks |
 | **Data** | DTO, Value Object, Aggregate | Invariants, relationships |
 | **Concurrency** | Producer-Consumer, Worker Pool | Thread safety, backpressure |
+
+### AI Analysis Workflow
+
+```
+1. STRUCTURE FIRST -> bound snapshot outline; classification and usages when needed
+2. ANALYZE -> Read source, apply semantic questions, recognize patterns, identify red flags
+3. DOCUMENT -> Use template, explain WHY not just WHAT, document contracts
+4. VERIFY -> Re-trace the code path end to end; accept runtime evidence only when the user supplies it
+```
+
+## Analysis Loop Workflow
+
+```
+1. CLASSIFY -> LOC, dependencies, critical patterns, assign classification
+2. READ & MAP -> AST structure, classes, functions, constants, state mutations
+3. DEPENDENCY CHECK -> Internal imports, external imports, external calls
+4. CONTEXT ANALYSIS -> Symbol usages, importing modules, message flows
+5. CODE-PATH VERIFICATION (Critical/High-Complexity) -> Trace every call path the claim depends on; runtime logs or traces count only when the user supplies them, and are never invented
+6. DOCUMENTATION -> Write the phase output file into the active run directory
+```
+
+## The Semantic Analysis Mandate
+
+```
+Scripts extract STRUCTURE:  "class Foo with method bar()"
+Claude extracts MEANING:    "Foo implements Repository pattern for
+                             caching user sessions with TTL expiration"
+
+NEVER stop at structure. ALWAYS pursue understanding.
+```
+
+## Team mode
+
+### Team extensions
+
+| Heading | File | Mode | Writer | After | Aggregation |
+|---|---|---|---|---|---|
+| Cross-Partition Flows | 03-flows.md | consolidated | partition-synthesizer | Critical Paths | Merge (from <other>) / (to <other>) traces; deduplicate end-to-end flows, anchored at the earliest step. |
+| Cross-Partition ADR | 04-semantics.md | consolidated | partition-synthesizer | Architecture Decision Records | Promote multi-partition ADRs to global rules, citing original locations. |
+| Hidden Contracts (cross-partition) | 04-semantics.md | consolidated | partition-synthesizer | Hidden Contracts | Collect <this> ↔ <other> contracts in the canonical cross-partition registry. |
+
+### Partition worker
+
+For entry-gating paths, scan the whole run target, never the partition alone, and cite matching stylesheet rules wherever they live. Mark flows (from <other>) / (to <other>) and fence cross-partition diagrams with subgraphs. Include a cross-partition ADR only when this partition is one of its actors.
+Annotate each cross-partition Hidden Contracts entry as `<this-partition> ↔ <other-partition>`.
+
+### Consolidation
+
+| File | Common heading | Rule |
+|---|---|---|
+| 03-flows.md | Critical Paths | Concatenate partition critical paths and cross-partition annotations. |
+| 03-flows.md | Data Flow | Concatenate; add a nested summary of messages, shared tables and inter-partition HTTP calls. |
+| 03-flows.md | Error Handling Paths | Concatenate and highlight cross-partition propagation. |
+| 03-flows.md | Side Effects | Concatenate; separate cross-partition effects in a nested subsection. |
+| 03-flows.md | Process Diagrams | Concatenate; add subgraph fences to cross-partition end-to-end diagrams. |
+| 04-semantics.md | Module Purposes | Concatenate partition purposes. |
+| 04-semantics.md | Design Decisions | Concatenate decisions. |
+| 04-semantics.md | Architecture Decision Records | Concatenate partition ADRs. |
+| 04-semantics.md | Embedded Assumptions | Concatenate; separate cross-partition assumptions in a nested subsection. |
+| 04-semantics.md | Hidden Contracts | Retain partition-local contracts and mark shared ones <this> ↔ <other>. |
+| 04-semantics.md | Conventions to Follow | Concatenate; expose incompatible conventions. |

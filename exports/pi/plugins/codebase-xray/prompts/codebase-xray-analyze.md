@@ -91,13 +91,23 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Method
 
-Load `codebase-xray:xray-method`. Its router names every unit; this workflow reads each one when its work starts:
+## Method loads
 
-- Tools, forbidden files, source reading and file classification: `<plugin-root>/skills/xray-method/references/evidence.md`, read before Phase 0.
-- Perimeter, concurrent runs and the classic or team choice: `<plugin-root>/skills/xray-method/references/run.md`, read before pre-flight.
-- Snapshot commands: `<plugin-root>/skills/xray-method/references/snapshot.md`. Incremental updates: `<plugin-root>/skills/xray-method/references/update.md`.
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
 
-Below the target the X-ray never analyzes what Git ignores, any directory whose name starts with a dot, or dependency and build output; `run.md` states the rule, and the scope confirmation and the final report declare what it left out.
+| Resource | Sections | When |
+|---|---|---|
+| `<plugin-root>/skills/xray-method/SKILL.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
+| `<plugin-root>/skills/xray-method/references/run.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/snapshot.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/update.md` | all | update |
+| `<plugin-root>/skills/xray-method/references/phase-0.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/phases-1-2.md` | before: Team mode | always |
+| `<plugin-root>/skills/xray-method/references/phases-3-4.md` | before: Team mode | always |
+| `<plugin-root>/skills/xray-method/references/phases-5-6.md` | before: Team mode | always |
+| `<plugin-root>/skills/xray-method/references/phase-7.md` | before: Team mode | always |
+
 
 ## Pre-flight
 
@@ -235,7 +245,7 @@ Analysis phases:
 
 ## Execution Order
 
-After scope confirmation, every phase runs inline in this context, in order. Nothing is dispatched. The target a classic run is for (one package, under about 200 files, one language) fits one context, and one context that reads the code once costs less than three workers that each read it again. A target larger than that belongs to `/codebase-xray:team-analyze`, which partitions it and runs the same phases per partition in isolated workers; the scope confirmation above is where to say so and stop.
+After scope confirmation, execute phases inline in order. Classic scope is one package, under about 200 files, one language. For a larger target, recommend `/codebase-xray:team-analyze` at scope confirmation and stop.
 
 **Every run writes a snapshot**, right after scope confirmation and before Phase 0, as `<plugin-root>/skills/xray-method/references/snapshot.md` says, including its `--reuse` and `state.json` steps.
 
@@ -267,20 +277,6 @@ Follow `<plugin-root>/skills/xray-method/references/update.md`: carry the parent
 ### Overrides
 
 If `--phase N` or `--docs-only` flags are set, run only the requested phase(s), after Phase 0.
-
----
-
-## Phases
-
-Each phase is one unit. Read it when the phase starts, run it, write its file, then move on:
-
-| Phase | Unit |
-|---|---|
-| 0, Project Knowledge Discovery | `<plugin-root>/skills/xray-method/references/phase-0.md` |
-| 1, Structure Extraction, and 2, Interface Analysis | `<plugin-root>/skills/xray-method/references/phases-1-2.md` |
-| 3, Flow Tracing, and 4, Semantic Understanding | `<plugin-root>/skills/xray-method/references/phases-3-4.md` |
-| 5, Pattern & Risk Detection, and 6, Documentation Health | `<plugin-root>/skills/xray-method/references/phases-5-6.md` |
-| 7, Final Report | `<plugin-root>/skills/xray-method/references/phase-7.md` |
 
 ---
 

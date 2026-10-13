@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.4.0; source-sha256: 709f6b5b1158a97426d70ab023dadaa40d9e33d99d34d8a3d35e95bc9740ab2b. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.5.0; source-sha256: 6d70c751d7522c6241cd0cce283348520609e7e2c7cf2127b1896bae1e99c55f. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-xray`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-xray-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-xray`. The owning plugin's declared logical skill identities are `codebase-xray:xray-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -131,9 +131,20 @@ Before starting, locate and read these inputs. The invoking command specifies wh
    A completed parent context retains its evidence lineage, while its source
    reader uses the caller's current owned manifest.
 
+## Method loads
+
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
+
+| Resource | Sections | When |
+|---|---|---|
+| `<codebase-xray-plugin-root>/skills/xray-method/SKILL.md` | all | always |
+| `<codebase-xray-plugin-root>/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
+| `<codebase-xray-plugin-root>/skills/xray-method/references/snapshot.md` | before: Prerequisites | always |
+| `<codebase-xray-plugin-root>/skills/xray-method/references/reading.md` | all | always |
+
 ## SOURCE READING
 
-Load `codebase-xray:xray-method` and read its `references/snapshot.md`, `references/reading.md` and `references/evidence.md` for the owner commands. Use
+Use the owner commands and source-reading sections declared in Method loads. Use
 `source_reader.py outline` on `source_manifest` to locate exact definitions,
 then `source_reader.py read` for the source evidence behind each contract or
 invariant. Metadata and prior claims are discovery leads. Expand validated reads

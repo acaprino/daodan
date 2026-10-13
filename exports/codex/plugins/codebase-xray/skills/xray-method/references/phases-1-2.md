@@ -74,6 +74,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Build the structural map from the current manifest. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
 
+A minified stylesheet has any line over 10,000 characters. Configuration/documentation entries have no symbols; presentation formats include HTML, HTM, Vue, Svelte and indented Sass. Forbidden files never enter the manifest, even as hashes.
+
 For each inventoried file, report recorded metadata and read source only for
 additional claims required by the phase:
 - Module/file name and path
@@ -113,9 +115,12 @@ additional claims required by the phase:
 - Files: [pattern]
 - Functions: [pattern]
 - Classes: [pattern]
+
+## Source reading
+[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
 ```
 
-Update `$RUN_DIR/state.json`: add phase 1 to `completed_phases`.
+Classic owner: add phase 1 to `$RUN_DIR/state.json -> completed_phases`.
 
 ---
 
@@ -152,4 +157,38 @@ source blocks and the types, validators and configuration it depends on.
 2. Follow interface pattern from `[example file]`
 3. Register in `[registration point]`
 4. Add tests at `[test path]`
+
+## Source reading
+[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
 ```
+
+## Team mode
+
+### Team extensions
+
+| Heading | File | Mode | Writer | After | Aggregation |
+|---|---|---|---|---|---|
+| Cross-Partition Outgoing References | 01-structure.md | partition | partition-structure-worker | Dependency Graph | List sibling imports as <other-partition>::<symbol>; distinguish internal, cross-partition and external imports. |
+| Cross-Partition Inbound References | 02-interfaces.md | partition | partition-structure-worker | External Dependencies | Find consumers in available sibling 01 files; otherwise state pending reconciliation. |
+| Partition Map | 01-structure.md | consolidated | partition-synthesizer | first | One row per partition: name, path, language, file count, done or failed. |
+| Cross-Partition Reference Summary | 01-structure.md | consolidated | partition-synthesizer | Entry Points | From partition, to partition, symbol, caller file and direction. |
+| Cross-Partition Exports | 02-interfaces.md | consolidated | partition-synthesizer | Public APIs | Reconcile outgoing references against sibling exporters; list exporter, symbol and consumer partitions. |
+
+### Partition worker
+
+Partition imports distinguish internal, cross-partition and external references. Follow the extensions assigned to partition-structure-worker; keep reconciliation pending when sibling outputs are not available.
+
+### Consolidation
+
+| File | Common heading | Rule |
+|---|---|---|
+| 01-structure.md | File Inventory | Concatenate inventories, prefix rows with partition, sort by partition and file. |
+| 01-structure.md | Dependency Graph | flowchart LR; one subgraph per partition; outgoing cross-edges carry (cross:<from>-><to>). |
+| 01-structure.md | Entry Points | Union entries, prefix each with partition. |
+| 01-structure.md | Key Observations | Aggregate partition observations and inventory exclusions. |
+| 01-structure.md | Where to Add New Code | Concatenate guidance; add cross-partition concerns as a nested subsection. |
+| 01-structure.md | Naming Conventions | Concatenate conventions; identify cross-partition style conflicts. |
+| 02-interfaces.md | Public APIs | Concatenate under ### Partition: <name>. |
+| 02-interfaces.md | Contracts | Concatenate partition contracts. |
+| 02-interfaces.md | External Dependencies | Deduplicate packages; expose version divergences. |
+| 02-interfaces.md | How to Add a New Module | Concatenate partition guidance. |

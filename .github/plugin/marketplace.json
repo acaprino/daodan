@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.12.0"
+    "version": "32.13.0"
   },
   "name": "daodan",
   "owner": {
@@ -157,7 +157,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/copilot/plugins/codebase-xray",
-      "version": "5.4.0"
+      "version": "5.5.0"
     },
     {
       "agents": [
@@ -721,7 +721,7 @@
         "./skills/skill-catalog"
       ],
       "source": "./exports/copilot/plugins/skill-catalog",
-      "version": "1.0.4"
+      "version": "1.0.5"
     },
     {
       "agents": [

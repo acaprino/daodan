@@ -75,7 +75,12 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # AI-Powered Code Analysis Methodology
 
-> This document defines how Claude should semantically analyze source code beyond mechanical AST extraction.
+## Method loads
+
+| Resource | Sections | When |
+|---|---|---|
+| `SKILL.md` | all | always |
+| `references/reading.md` | all | always |
 
 ---
 
@@ -498,7 +503,7 @@ The mechanical scripts support AI analysis:
 | `doc_review.py` | Documentation health | Documentation accuracy |
 
 **Workflow:**
-1. Load `codebase-xray:xray-method`, read its `references/reading.md`, and bind the exact current run's
+1. Follow Method loads and bind the exact current run's
    `snapshot/manifest.json`. After every verified diff, the coordinator always
    writes or obtains this current owned manifest with `snapshot.py write --reuse`
    before block reading, even for `none` or LF/CRLF-only differences. Diff's
@@ -519,5 +524,3 @@ The mechanical scripts support AI analysis:
    evidence. No obligation to read every file comes from the inventory.
 
 ---
-
-*This methodology transforms code analysis from mechanical extraction to genuine understanding.*

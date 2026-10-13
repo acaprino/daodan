@@ -161,6 +161,18 @@ workflow claims to produce.
 
 Orchestrate a partitioned multi-agent codebase analysis plus global interconnect map.
 
+
+## Method loads
+
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
+
+| Resource | Sections | When |
+|---|---|---|
+| `<plugin-root>/skills/xray-method/SKILL.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/run.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/snapshot.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/phase-0.md` | all | always |
+
 ## CRITICAL RULES
 
 1. **Execute phases in order.** No skipping unless `--skip-synthesis` or `--skip-interconnect` is set.
@@ -402,17 +414,7 @@ Sibling partitions (for cross-partition citation lookup if needed):
 
 Required reads before writing:
   - <RUN_DIR>/snapshot/manifest.json: inventory/import metadata for <P_i.path>
-  - <plugin-root>/skills/xray-method/SKILL.md, then every unit its load map names:
-    <plugin-root>/skills/xray-method/references/run.md
-    <plugin-root>/skills/xray-method/references/snapshot.md
-    <plugin-root>/skills/xray-method/references/update.md
-    <plugin-root>/skills/xray-method/references/evidence.md
-    <plugin-root>/skills/xray-method/references/reading.md
-    <plugin-root>/skills/xray-method/references/phase-0.md
-    <plugin-root>/skills/xray-method/references/phases-1-2.md
-    <plugin-root>/skills/xray-method/references/phases-3-4.md
-    <plugin-root>/skills/xray-method/references/phases-5-6.md
-    <plugin-root>/skills/xray-method/references/phase-7.md
+  - Follow the assigned role's Method loads; never load every method unit.
 Use source_reader.py outline for recorded structure and source_reader.py read
 for definitions/ranges selected from the phase's questions. Expand evidence as
 needed; do not reparse or read all source files merely for inventory. Keep
@@ -457,17 +459,7 @@ Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
 Sibling partitions: <list>
 
 Required reads before writing:
-  - <plugin-root>/skills/xray-method/SKILL.md, then every unit its load map names:
-    <plugin-root>/skills/xray-method/references/run.md
-    <plugin-root>/skills/xray-method/references/snapshot.md
-    <plugin-root>/skills/xray-method/references/update.md
-    <plugin-root>/skills/xray-method/references/evidence.md
-    <plugin-root>/skills/xray-method/references/reading.md
-    <plugin-root>/skills/xray-method/references/phase-0.md
-    <plugin-root>/skills/xray-method/references/phases-1-2.md
-    <plugin-root>/skills/xray-method/references/phases-3-4.md
-    <plugin-root>/skills/xray-method/references/phases-5-6.md
-    <plugin-root>/skills/xray-method/references/phase-7.md
+  - Follow the assigned role's Method loads; never load every method unit.
   - <RUN_DIR>/snapshot/manifest.json: current source index
   - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
   - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)

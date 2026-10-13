@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ffc95b5f09529d976f606d56e6e3a0f64243fadd9266f949fed2f94b2bb5771a",
+  "coreDigest": "sha256:5940ffcd2cbe6447da3c286f3eaab4a33f328f378da492e88d1a4cab06957e0f",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "skill-catalog",
-  "version": "1.0.4"
+  "version": "1.0.5"
 }

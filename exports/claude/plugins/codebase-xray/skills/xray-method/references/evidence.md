@@ -77,7 +77,7 @@ Every file this skill produces is a set of claims about the code, each anchored 
 6. **ALWAYS** verify state machines, enums, constants against actual definitions
 7. **TREAT** all pre-existing docs as unverified claims requiring validation
 8. **MARK** every claim with the status the interconnect mapper uses: `verified` (enforced in code, cite where), `documented` (a document declares it, cite where), `unverified` (relied on, nothing enforces or documents it), `disputed` (two derivations disagree, cite both). `[UNVERIFIED - REQUIRES CODE CHECK]` stays the inline form for prose
-9. **USE** qualified symbol names, never line numbers, in the verification markers of maintained documentation (`[VERIFIED: file.py::Class.method]`, see `references/analysis-templates.md`). Those markers persist across edits, where a phase file is regenerated every run
+9. **USE** qualified symbol names, never line numbers, in the verification markers of maintained documentation (`[VERIFIED: file.py::Class.method]`, see Maintained documentation below). Those markers persist across edits, where a phase file is regenerated every run
 
 ### Documents play two roles, and only one of them is constrained above
 
@@ -86,8 +86,6 @@ As **evidence**, a document is an unverified claim requiring validation. Rules 2
 As a **discovery lead**, a document is a first-class input that must be collected early. A project's own index telling you that a concept named X exists and lives in module Y is not a claim about behaviour; it is a pointer telling you where to look and what to look for. Refusing to read it does not make the analysis more rigorous, it makes it blind to intent and to code paths the structure alone does not reveal.
 
 Phase 0 collects leads. Phase 6 audits documents as evidence. Never let the second role suppress the first.
-
-See `references/analysis-templates.md` for the full verification trust model, temporal purity principle, and documentation status markers.
 
 ## Forbidden Files
 
@@ -100,58 +98,6 @@ NEVER read or include contents from:
 - Any file that appears to contain API keys, passwords, or tokens
 
 If encountered: note file existence only ("`.env` present - contains environment config"). NEVER quote contents.
-
-## Prerequisites
-
-The scripts require Python >= 3.10 and work **out of the box** with just the stdlib. Tree-sitter is optional and improves accuracy for Java / JavaScript / TypeScript / Rust:
-
-```bash
-# Optional: install for higher-fidelity parsing
-pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/requirements.txt"
-# or
-uv pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/requirements.txt"
-```
-
-What changes when tree-sitter is installed:
-
-- **Java**: nested classes, generic type parameters, annotations, multi-line declarations parsed correctly. Without it, the regex fallback still finds top-level classes, methods, imports, and constants.
-- **JavaScript / TypeScript**: arrow functions in object/class properties, decorators, template literals, JSX elements parsed correctly. Without it, the regex fallback handles top-level declarations, ES6 `import`/`export`, and CommonJS `require`.
-- **Rust**: lifetimes, generic bounds (`where` clauses), impl blocks with trait bounds, attribute macros parsed correctly. Without it, the regex fallback still finds top-level fns, structs/enums/traits/impls/mods, use declarations, and UPPER_CASE constants.
-- **Java / JavaScript / TypeScript / Rust**: every symbol carries the parser's reported end line, preserving its definition's line endpoints. A regex fallback gives start lines only, and the snapshot then ends each symbol where the next one begins.
-
-Exact end lines remain line-granular. Minified or shared-line definitions can
-require whole-file reading even with exact parser endpoints, because a line can
-also hold another definition, class declaration or static field.
-- **Python / SQL / PL-SQL / CSS**: no change. Python always uses stdlib `ast`; SQL/PL-SQL always use the regex DDL extractor; CSS, SCSS and LESS always use the stylesheet tokenizer.
-
-The active parser is reported in `ParseResult.notes` and in the CLI output: `parser=stdlib-ast`, `parser=tree-sitter`, `parser=regex-fallback`, or `parser=stylesheet`. Installed is not the same as working: when the pack is installed but hands back no parser (a grammar download that failed, a version mismatch), the regex fallback runs and the notes add `tree-sitter unavailable: <error>`.
-
-### Capabilities
-
-**Mechanical Analysis (Scripts):**
-- Extract code structure (classes, functions, imports)
-- Map dependencies (internal/external)
-- Find symbol usages across the codebase
-- Classify files by criticality
-
-**Semantic Analysis:**
-- Recognize architectural and design patterns
-- Identify red flags and anti-patterns
-- Trace data and control flows
-- Document contracts and invariants
-- Assess quality and maintainability
-
-**Documentation Diagnosis:**
-- Inspect documentation drift and broken links (Phase 6)
-- Report stale indexes and references
-- Analyze comment quality and propose changes; analysis does not apply them
-
-**Use this skill when:**
-- Analyzing a codebase you're unfamiliar with
-- Generating documentation that explains WHY, not just WHAT
-- Identifying architectural patterns and anti-patterns
-- Building technical ground truth before a code review
-- Onboarding to a new project
 
 ## Script Commands
 
@@ -222,7 +168,7 @@ structure and `source_reader.py` for source evidence throughout Phases 1-6.
 
 Inventoried file-level formats, including configuration and markup, use the
 reader's whole-file fallback; extensions absent from the manifest remain absent
-from inventory coverage. Tree-sitter is optional (see Prerequisites above): Java/JS/TS/Rust use it when their grammar
+from inventory coverage. Tree-sitter is optional (see Prerequisites in `references/snapshot.md`): Java/JS/TS/Rust use it when their grammar
 loads, otherwise a regex fallback. Python uses stdlib `ast`, SQL/PL-SQL a regex
 DDL extractor, and CSS/SCSS/LESS a stdlib tokenizer.
 
@@ -322,29 +268,109 @@ as a current read. Add current re-derivation reads to the relevant phase ledger.
 
 The classifier matches patterns against raw file content (including comments and string literals), so treat its verdict as a triage signal to be confirmed by reading the file, not as ground truth.
 
-### AI Analysis Workflow
-
-```
-1. STRUCTURE FIRST -> bound snapshot outline; classification and usages when needed
-2. ANALYZE -> Read source, apply semantic questions, recognize patterns, identify red flags
-3. DOCUMENT -> Use template, explain WHY not just WHAT, document contracts
-4. VERIFY -> Re-trace the code path end to end; accept runtime evidence only when the user supplies it
-```
-
-## Analysis Loop Workflow
-
-```
-1. CLASSIFY -> LOC, dependencies, critical patterns, assign classification
-2. READ & MAP -> AST structure, classes, functions, constants, state mutations
-3. DEPENDENCY CHECK -> Internal imports, external imports, external calls
-4. CONTEXT ANALYSIS -> Symbol usages, importing modules, message flows
-5. CODE-PATH VERIFICATION (Critical/High-Complexity) -> Trace every call path the claim depends on; runtime logs or traces count only when the user supplies them, and are never invented
-6. DOCUMENTATION -> Write the phase output file into the active run directory
-```
-
 ## Best Practices
 
 ### Source Code Analysis (Phases 1-5)
 1. Start with Phase 1 - foundation modules inform everything else
 2. Never skip code-path verification for critical/high-complexity files. This is static analysis: runtime evidence is welcome when supplied, never required, never fabricated
 3. Keep all writes inside the active run directory until the publish step
+
+## Maintained documentation
+
+Read this section when verifying maintained documentation, not for phase-file claims.
+
+## Verification Trust Model
+
+```
+Layer 1: TOOL-VALIDATED
+  - Automated checks: file exists, AST symbol exists, signature matches
+  - Marker: [VALIDATED: file.py::ClassName.method_name @ 2025-12-20]
+
+Layer 2: HUMAN-VERIFIED
+  - Manual review: semantic correctness, behavior match
+  - Marker: [VERIFIED: file.py::ClassName.method_name by @reviewer @ 2025-12-20]
+
+Layer 3: RUNTIME-CONFIRMED (only when the user supplies logs or traces)
+  - Log/trace evidence of actual behavior, handed over by the user
+  - Marker: [CONFIRMED: trace_id=abc123 @ 2025-12-20]
+
+Tool validation catches STRUCTURAL issues (file moved, symbol renamed, signature changed).
+Human verification ensures SEMANTIC correctness (code does what doc says).
+Runtime confirmation proves BEHAVIORAL truth (system actually works this way).
+
+Layers 1 and 2 are required for critical documentation. Layer 3 is added when runtime
+evidence exists: the analysis is static, it cannot produce a trace, and a trace_id it
+did not receive is a fabrication.
+
+NOTE: Markers use qualified symbol names (Module::Class.method, file::function)
+instead of line numbers. Line numbers shift on any edit; symbol names are stable
+and survive refactoring as long as the symbol itself is not renamed.
+```
+
+## The Iron Law of Documentation
+
+```
+DOCUMENTATION = f(SOURCE_CODE) + VERIFICATION
+
+If NOT verified_against_code(statement) -> statement is FALSE
+If NOT exists_in_codebase(reference)    -> reference is FABRICATED
+If NOT traceable_to_source(claim)       -> claim is SPECULATION
+```
+
+## The Temporal Purity Principle
+
+```
+Documentation = PRESENT_TENSE(current_implementation)
+
+FORBIDDEN:
+- "was/were/previously/formerly/used to"
+- "deprecated since version X" -> just REMOVE it
+- "changed from X to Y" -> only describe Y
+- "in the old system..." -> irrelevant, delete
+- inline changelogs -> use CHANGELOG.md or git
+
+REQUIRED:
+- Present tense: "The system uses..." not "The system used..."
+- Current state only: Document what IS, not what WAS
+- Git for archaeology: History lives in version control, not docs
+```
+
+**The Rule:**
+> When you find documentation containing historical language, **DELETE IT**.
+> Git blame exists for archaeology. Documentation exists for the present.
+
+## Verification Requirements
+
+Use the current run's bound `snapshot/manifest.json` and the source-reading
+procedure in the Source Reading from the Bound Snapshot section above. Structure already recorded comes from
+manifest metadata/outline; semantic verification comes from validated source
+blocks expanded to the definitions and implicit context required by the claim.
+After a verified diff, always obtain the current owned manifest with
+`snapshot.py write --reuse` before block reading, even when normalized claims
+are unchanged or only LF/CRLF bytes differ. Keep supported parent evidence and
+its lineage separate from the current source-byte identity required by the reader.
+Record actual files/ranges read. Neither outline metadata nor the presence of a
+file in the inventory establishes semantic verification or runtime coverage.
+
+| Documentation Type | Required Evidence |
+|-------------------|-------------------|
+| **Enum/State values** | Exact match with source code enum definition |
+| **Function behavior** | Code path tracing, actual implementation reading |
+| **Constants/Timeouts** | Variable definition in source with file:line |
+| **Message formats** | Message class definition, field validation |
+| **Architecture claims** | Import graph analysis, actual class relationships |
+| **Flow diagrams** | Verified against runtime logs OR code path analysis |
+
+## Documentation Verification Status
+
+Every section of documentation MUST have one of these status markers:
+
+- `[VERIFIED: file.py::ClassName.method_name]` - Confirmed against source code symbol
+- `[VERIFIED: trace_id=xyz]` - Confirmed against runtime logs the user supplied
+- `[UNVERIFIED]` - Requires verification before trusting
+- `[DEPRECATED]` - Code has changed, documentation outdated
+
+Symbol reference format: `file.py::symbol` for top-level, `file.py::Class.method` for members. A stylesheet symbol is the rule's flattened selector, `modal.css::.modal` or `modal.css::@media (max-width: 600px) { .modal }`, and a marker for one takes no `@ date` suffix, because the `@` of an at-rule would be read as one.
+Never use line numbers in markers -- they break on any file edit.
+
+**UNVERIFIED documentation is UNTRUSTED documentation.**

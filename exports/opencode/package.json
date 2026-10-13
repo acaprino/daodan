@@ -643,7 +643,7 @@
             ]
           },
           {
-            "description": "Consolidates per-partition X-ray outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, byte-compatible with a classic single-agent run. TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-xray:analyze writes its phase files directly.",
+            "description": "Consolidates per-partition X-ray outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-xray:analyze writes its phase files directly.",
             "file": "agents/partition-synthesizer.md",
             "id": "codebase-xray:partition-synthesizer",
             "permissions": [
@@ -4469,5 +4469,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.12.0"
+  "version": "32.13.0"
 }

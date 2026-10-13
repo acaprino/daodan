@@ -65,9 +65,20 @@ Before starting, locate and read these inputs. The invoking command specifies wh
    A completed parent context retains its evidence lineage, while its source
    reader uses the caller's current owned manifest.
 
+## Method loads
+
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
+
+| Resource | Sections | When |
+|---|---|---|
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/snapshot.md` | before: Prerequisites | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/reading.md` | all | always |
+
 ## SOURCE READING
 
-Load `codebase-xray:xray-method` and read its `references/snapshot.md`, `references/reading.md` and `references/evidence.md` for the owner commands. Use
+Use the owner commands and source-reading sections declared in Method loads. Use
 `source_reader.py outline` on `source_manifest` to locate exact definitions,
 then `source_reader.py read` for the source evidence behind each contract or
 invariant. Metadata and prior claims are discovery leads. Expand validated reads

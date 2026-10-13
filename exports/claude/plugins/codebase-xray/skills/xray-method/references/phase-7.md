@@ -136,6 +136,7 @@ Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 | Finding doc vs code discrepancies | 06-documentation | 03-flows, 05-risks |
 
 ## Analysis Metadata
+- Mode: classic
 - Run: [run-id]
 - Target: [path]
 - Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count). Outside the perimeter by rule: [N] dot directories ([names]) and [N] paths Git ignores, ignore rules [applied | unavailable], from the manifest's `scope` block
@@ -145,6 +146,38 @@ Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 - Date: [timestamp]
 ```
 
-The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path. The inventory line names what the perimeter left out for the same reason: `.github/` or a generated client is exactly what a reader assumes was read.
+The three coverage lines are mandatory, including in the condensed lite report.
 
-Update `$RUN_DIR/state.json`: set `status` to `"complete"`.
+Classic owner: update `$RUN_DIR/state.json`, setting `status` to `"complete"`.
+
+## Team mode
+
+### Team extensions
+
+| Heading | File | Mode | Writer | After | Aggregation |
+|---|---|---|---|---|---|
+| Partial Completeness Warning | 07-final-report.md | consolidated | partition-synthesizer | first | Only for failed partitions; name them and the incomplete sections. |
+| Partition Map | 07-final-report.md | consolidated | partition-synthesizer | Project at a Glance | Repeat the 01 Partition Map. |
+| Cross-Partition Topology | 07-final-report.md | consolidated | partition-synthesizer | Project at a Glance | Repeat the 01 Dependency Graph. |
+| Per-Partition Health Scorecard | 07-final-report.md | consolidated | partition-synthesizer | Design Insights | One row per partition: anti-pattern/red-flag C/H/M/L, doc gaps, debt and health. |
+
+### Partition worker
+
+The report is written by the synthesizer, not partition workers.
+
+### Consolidation
+
+| File | Common heading | Rule |
+|---|---|---|
+| 07-final-report.md | Executive Summary | Derive overall health from consolidated risk and documentation files. |
+| 07-final-report.md | Project at a Glance | Aggregate semantics, or structure observations when semantics is absent. |
+| 07-final-report.md | Architecture Overview | Synthesize 01 and 02. |
+| 07-final-report.md | Technology Decisions | Aggregate partition technology choices. |
+| 07-final-report.md | Critical Paths | Use Cross-Partition Flows when present; otherwise partition critical paths. |
+| 07-final-report.md | Key Process Diagrams | Prioritize cross-partition end-to-end diagrams. |
+| 07-final-report.md | Design Insights | Use Cross-Partition ADR when present. |
+| 07-final-report.md | Risk Assessment | Keep the severity matrix and add a Cross-Partition Risk Attribution row. |
+| 07-final-report.md | Documentation vs Reality | Aggregate mismatches. |
+| 07-final-report.md | Top Priority Actions | Critical/high findings with cross-partition impact and citations. |
+| 07-final-report.md | Quick Reference: Which File to Consult | Add the team-only cross-partition design-decisions row: 04 Cross-Partition ADR and 01; also 02 Cross-Partition Exports. Code review also checks 08. |
+| 07-final-report.md | Analysis Metadata | Mode: team; include partition count/list; coverage comes from the consolidated reading ledger, not new source reads. |

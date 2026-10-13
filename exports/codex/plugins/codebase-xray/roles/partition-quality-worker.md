@@ -134,71 +134,24 @@ orchestrator; workers do not rewrite the shared manifest. File/class context and
 import neighbours do not establish semantic completeness. A required source
 outside the manifest target is an explicit scope gap.
 
-## PHASE 5: Pattern & Risk Detection
+## Method loads
 
-Investigate the partition using current metadata, artifact leads, the scans
-below and verified source blocks for:
-- **Anti-patterns:** God objects, spaghetti code, shotgun surgery, feature envy
-- **Red flags:** Swallowed exceptions, hardcoded credentials (note presence only, never quote), race conditions, N+1 queries
-- **Usability-blocking:** an entry-gating path (from this partition's `03-flows.md` when it exists, otherwise identified here from its `01-structure.md` entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Start from `cascade_scan.py`: each candidate reaches the root or its untargeted children and sets a property that decides layout, and each conflict names a rule it can beat. Confirm every candidate against the component tree: does its selector match the entry screen's element, and is its scope class applied there (`usage_finder.py`). A confirmed override of a fixed or scrollable entry screen is Critical. Static evidence only; nothing here was exercised
-- **Technical debt:** TODO/FIXME comments, deprecated APIs, outdated patterns
-- **Failure modes:** What breaks under load, edge cases, missing error handling
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
 
-**Output file:** `<run_dir>/partitions/<partition_name>/05-risks.md`
+| Resource | Sections | When |
+|---|---|---|
+| `<plugin-root>/skills/xray-method/SKILL.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
+| `<plugin-root>/skills/xray-method/references/phases-5-6.md` | before: Team mode; section: Partition worker; section: Team extensions | always |
+| `<plugin-root>/skills/xray-method/references/evidence.md` | from: Maintained documentation | documentation |
 
-```markdown
-# Partition: <partition_name> — Pattern & Risk Detection
+## PHASE EXECUTION
 
-## Anti-Patterns Found
-[Organized by severity (Critical / High / Medium / Low). Each row: pattern, file:line, brief evidence, severity rationale.]
-
-## Red Flags
-[Security, reliability, performance, and usability-blocking risks. Same row schema; a usability-blocking row names the entry-gating path it blocks and the rule that blocks it.]
-
-## Technical Debt Inventory
-[TODO/FIXME items, deprecated usage, modernization opportunities. Each row cites file:line.]
-
-## Failure Mode Analysis
-[What could break and under what conditions. Pair each failure mode with the trigger and the user-visible impact.]
-
-## Cross-Partition Risk Attribution
-[Risks that depend on or impact other partitions (e.g. "this partition swallows errors that originate in <other-partition>"). Use `<other-partition>::<symbol>` notation.]
-```
-
-## PHASE 6: Documentation Health
-
-Skip entirely if `active_flags.depth == "lite"` (see DEPTH HANDLING).
-
-Evaluate existing documentation in the partition against code reality:
-- **Accuracy:** Do docs match the actual code?
-- **Completeness:** What's documented vs what should be?
-- **Freshness:** When were docs last updated vs code?
-- **Broken links:** References to files/functions that don't exist
-- **Comment quality:** If `active_flags.comments` is true, run `rewrite_comments.py` and include its findings
-
-**Output file:** `<run_dir>/partitions/<partition_name>/06-documentation.md`
-
-```markdown
-# Partition: <partition_name> — Documentation Health
-
-## Documentation vs Code Accuracy
-[Mismatches between docs and reality. Each row: doc location, code location, discrepancy description.]
-
-## Coverage Gaps
-[Undocumented public APIs, missing architecture docs. Tie each gap to a public symbol from `02-interfaces.md`.]
-
-## Broken References
-[Dead links, non-existent file paths in docs.]
-
-## Comment Quality [if active_flags.comments]
-[Comment audit results from `rewrite_comments.py` with improvement suggestions. Skip section entirely if flag is false.]
-```
+Apply the shared phase procedures and skeletons to this partition. Bind phase output paths to `<run_dir>/partitions/<partition_name>`; keep `source_manifest` bound to the whole run. State updates in the units belong to the classic owner, never to a worker.
+Use the Team mode rules for partition scope and declared extensions. Skip Phase 6 at lite depth.
 
 ## COMPLETION
 
-Include `## Source reading` in each owned file: exact manifest path, files/ranges
-examined, parser/fallback diagnostics and remaining gaps. Inventory and outline
-metadata do not count as deep reading. Runtime coverage remains none unless the
-user supplied evidence; inventory alone never obliges reading every file.
+Use the canonical Source reading section from evidence.md in each owned file.
 
 When your owned files are written, report delivered: name their paths and nothing else. If you could not write them, report failed with the reason.

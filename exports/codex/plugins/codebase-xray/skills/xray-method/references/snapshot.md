@@ -140,3 +140,55 @@ This check uses normalized line endings. Always follow it with a current
 `snapshot.py write --reuse` before source-block reading, even when the result
 is `none` or only line-ending bytes differ. Returning the supported parent
 analysis without reading source does not require a new full analysis.
+
+## Prerequisites
+
+The scripts require Python >= 3.10 and work **out of the box** with just the stdlib. Tree-sitter is optional and improves accuracy for Java / JavaScript / TypeScript / Rust:
+
+```bash
+# Optional: install for higher-fidelity parsing
+pip install -r "<plugin-root>/skills/xray-method/scripts/requirements.txt"
+# or
+uv pip install -r "<plugin-root>/skills/xray-method/scripts/requirements.txt"
+```
+
+What changes when tree-sitter is installed:
+
+- **Java**: nested classes, generic type parameters, annotations, multi-line declarations parsed correctly. Without it, the regex fallback still finds top-level classes, methods, imports, and constants.
+- **JavaScript / TypeScript**: arrow functions in object/class properties, decorators, template literals, JSX elements parsed correctly. Without it, the regex fallback handles top-level declarations, ES6 `import`/`export`, and CommonJS `require`.
+- **Rust**: lifetimes, generic bounds (`where` clauses), impl blocks with trait bounds, attribute macros parsed correctly. Without it, the regex fallback still finds top-level fns, structs/enums/traits/impls/mods, use declarations, and UPPER_CASE constants.
+- **Java / JavaScript / TypeScript / Rust**: every symbol carries the parser's reported end line, preserving its definition's line endpoints. A regex fallback gives start lines only, and the snapshot then ends each symbol where the next one begins.
+
+Exact end lines remain line-granular. Minified or shared-line definitions can
+require whole-file reading even with exact parser endpoints, because a line can
+also hold another definition, class declaration or static field.
+- **Python / SQL / PL-SQL / CSS**: no change. Python always uses stdlib `ast`; SQL/PL-SQL always use the regex DDL extractor; CSS, SCSS and LESS always use the stylesheet tokenizer.
+
+The active parser is reported in `ParseResult.notes` and in the CLI output: `parser=stdlib-ast`, `parser=tree-sitter`, `parser=regex-fallback`, or `parser=stylesheet`. Installed is not the same as working: when the pack is installed but hands back no parser (a grammar download that failed, a version mismatch), the regex fallback runs and the notes add `tree-sitter unavailable: <error>`.
+
+### Capabilities
+
+**Mechanical Analysis (Scripts):**
+- Extract code structure (classes, functions, imports)
+- Map dependencies (internal/external)
+- Find symbol usages across the codebase
+- Classify files by criticality
+
+**Semantic Analysis:**
+- Recognize architectural and design patterns
+- Identify red flags and anti-patterns
+- Trace data and control flows
+- Document contracts and invariants
+- Assess quality and maintainability
+
+**Documentation Diagnosis:**
+- Inspect documentation drift and broken links (Phase 6)
+- Report stale indexes and references
+- Analyze comment quality and propose changes; analysis does not apply them
+
+**Use this skill when:**
+- Analyzing a codebase you're unfamiliar with
+- Generating documentation that explains WHY, not just WHAT
+- Identifying architectural patterns and anti-patterns
+- Building technical ground truth before a code review
+- Onboarding to a new project

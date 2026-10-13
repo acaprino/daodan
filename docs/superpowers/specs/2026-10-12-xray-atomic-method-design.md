@@ -159,6 +159,7 @@ an inherited or skipped one is never "incomplete".
 | `--docs-only` | `knowledge/`, `06` | none | `01` to `05`, `07` | no |
 | `--phase N`, N from 1 to 6 | `knowledge/`, the phase N file | none | every other phase | no |
 | `--resume-from [N]` | the run's own produced artifacts from N on | the run's artifacts before N, confirmed by the gate | as the run's mode | as the run's mode |
+| `--stop-after N`, N from 1 to 6 | as the run's mode, up to phase N | as the run's mode, up to phase N | as the run's mode; the artifacts after N are not yet produced, never skipped | no; `--resume-from` completes the run |
 | `--comments` | adds `comment_health.md` and the recorded proposals to phase 6 | none | none | as the mode |
 
 **`--phase N` runs one phase, by decision of the user.** It derives what it needs
@@ -172,13 +173,23 @@ according to the run's own mode; without N it starts from the first missing
 produced artifact the gate reports. Resuming never changes the run's mode or
 flags; a different mode is a new run.
 
+**`--stop-after N` ends a run after phase N,** for a consumer that reads only the
+first phases. The run is partial and never publishes. The gate reports the
+artifacts after N as not yet produced, the stopped run's expected state rather
+than a delivery gap, and `--resume-from` without N continues at the first of them
+until a complete run publishes. The stop bounds one invocation and is not a flag
+of the mode, so a resume keeps the mode and drops the stop. With an update it
+re-derives only up to N, and the later files keep their stale markers until the
+run is resumed. It is refused with `--phase N` and `--docs-only`, which already
+run a single phase.
+
 **Only a complete run of a publishing mode publishes, and it replaces the whole
-mirror.** `--phase N` and `--docs-only` runs are partial: their results stay in
-their run directory, bound by run id. Publishing removes from the mirror every
-phase file the run did not produce before copying its own. Today the mirror only
-overwrites what the new run has, so a lite run leaves an older run's `03`, `04` and
-`06` beside its own files, and a classic run leaves an older team run's
-`08-interconnect-map.md`: one mirror describing two analyses under one
+mirror.** `--phase N`, `--docs-only` and `--stop-after N` runs are partial: their
+results stay in their run directory, bound by run id. Publishing removes from the
+mirror every phase file the run did not produce before copying its own. Today the
+mirror only overwrites what the new run has, so a lite run leaves an older run's
+`03`, `04` and `06` beside its own files, and a classic run leaves an older team
+run's `08-interconnect-map.md`: one mirror describing two analyses under one
 `state.json`.
 
 The table lives in code, not in prompts. `snapshot.py check`, already the
@@ -220,10 +231,18 @@ rebuilt and every gate runs on an LF extraction.
    shared `preflight`, a required-isolation `analysis` phase with the analyst, a
    shared `publish`; `snapshot.py check` covers every mode with produced,
    inherited and skipped artifacts; `--phase N` takes its new meaning, `--phase 7`
-   is refused and `--resume-from [N]` is added; partial runs stop publishing and
-   publishing replaces the whole mirror; the "before applying changes" clause goes. senior-review `team-review`, the project-lifecycle
+   is refused, and `--resume-from [N]` and `--stop-after N` are added; partial runs
+   stop publishing and publishing replaces the whole mirror; the "before applying
+   changes" clause goes. senior-review `team-review`, the project-lifecycle
    workflows that run the X-ray and abstraction-architect `audit` declare
-   `codebase-xray/xray-analyst`.
+   `codebase-xray/xray-analyst`. `audit` reads the newest run holding `01` to `04`,
+   never the mirror, and checks it against the worktree with `snapshot.py diff`: a
+   current run is read as is, a stale one is brought current by an update stopped
+   after phase 4, and a missing one is produced with `--stop-after 4`, because the
+   audit reads only `01` to `04` and the optional `08`. Under `--diff` it still
+   never launches an X-ray, so senior-review's abstraction dimension pays for none,
+   but it reports in its Gaps every file outside the diff that changed since the
+   run's snapshot, instead of reading a stale map as current.
 5. **Tighten each unit.** One commit per unit: drop restatements and extra
    examples, move rationale beyond one line into `docs/plugins/codebase-xray.md`,
    keep every rule and invariant. Each commit lowers that unit's budget.
@@ -246,11 +265,14 @@ rebuilt and every gate runs on an LF extraction.
   missing produced artifact, `--resume-from N` keeping confirmed earlier
   artifacts, an inherited artifact accepted with provenance and rejected without,
   `--phase N` and `--docs-only` runs never publishable, `--phase 7` refused, each
-  mode's skipped artifacts never reported missing, and a publication that removes
-  a stale mirror file (an older team run's `08` after a classic run).
+  mode's skipped artifacts never reported missing, a `--stop-after N` run whose
+  later artifacts are reported not yet produced and which never publishes until
+  `--resume-from` completes it, and a publication that removes a stale mirror
+  file (an older team run's `08` after a classic run).
 - **Composition** (4): every workflow whose body or loaded method runs
   `codebase-xray:analyze` in its own context declares the analyst and requires
-  `codebase-xray`.
+  `codebase-xray`. abstraction-architect `audit` reads a run, never the mirror,
+  launches the X-ray only with `--stop-after 4`, and never under `--diff`.
 - **Host rendering** (4): the analyst dispatched with required isolation on all
   five hosts, confirmations kept in the entry. Structural evidence only.
 
@@ -276,8 +298,9 @@ loadable name; the scripts, their command lines and their location.
 ## Blast radius
 
 `plugins/codebase-xray/`; the sidecars of senior-review `team-review`, the affected
-project-lifecycle workflows and abstraction-architect `audit`; new and adjusted
-tests; the hand-written part of `docs/plugins/codebase-xray.md`; the regenerated
+project-lifecycle workflows and abstraction-architect `audit`; the `audit` body
+and its role, which read a run instead of the mirror; new and adjusted tests; the
+hand-written part of `docs/plugins/codebase-xray.md`; the regenerated
 packages of all five hosts. The latest-state consumers of the mirror
 (`senior-review:code-review`, `project-knowledge:guide`, `project-knowledge:instructions`)
 see the publication rules of step 4: no partial run in the mirror and no file left
@@ -300,6 +323,13 @@ files, headings and coverage figures, reported apart from the compiler evidence.
   and replace today's contradictory reading of `--phase N`.
 - `--docs-only` is a partial run and never publishes, like `--phase N`.
 - `--phase 7` is refused; an update or `--resume-from 7` regenerates a report.
+- `--stop-after N` lets a consumer that reads only the first phases stop paying
+  for the rest, and `--resume-from` completes the same run. On the `humanize`
+  baseline (classic, codebase-xray 5.3.4, 19.3 minutes, 7.09 USD) the work after
+  `04` took 28% of the wall time and 37% of the context re-read, measured on the
+  run's stream. abstraction-architect `audit`, which reads only `01` to `04` and
+  the optional `08`, is its first consumer, and it stops reading a stale map as
+  current. Its `--diff` mode never launched an X-ray and still does not.
 - Publishing replaces the whole mirror, so it always describes exactly one run.
   A lite run no longer leaves an older run's `03`, `04` and `06` in place; a
   latest-state consumer that read those stale files finds them absent instead.

@@ -73,7 +73,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Overview
 
-This skill combines **mechanical structure extraction** with **semantic reading** to produce comprehensive codebase documentation. It captures:
+The analysis establishes:
 
 - **WHAT** the code does (structure, functions, classes)
 - **WHY** it exists (business purpose, design decisions)
@@ -97,44 +97,48 @@ This skill combines **mechanical structure extraction** with **semantic reading*
 
 ## How This Skill Is Invoked
 
-This skill is the method; the commands apply it. `/codebase-xray:analyze` runs every phase inline in one context, and `/codebase-xray:team-analyze` partitions the target and dispatches the phases per partition to isolated workers, which read this skill directly. Both manage their state automatically under `.codebase-xray/` using the concurrent runs model in `references/run.md`.
+`/codebase-xray:analyze` runs phases inline; `/codebase-xray:team-analyze` dispatches isolated partition workers that read this method. Both own `.codebase-xray/` run state (`references/run.md`).
 
-The skill's own name is `codebase-xray:xray-method`. `codebase-xray:analyze` names the command, and only the command: the two used to share a name, and on a host that lists both under one identifier the command shadowed the skill.
-
-This file is a router. The method lives in the units below, each loaded when its work starts, never all at once by default.
+The method is `codebase-xray:xray-method`; `codebase-xray:analyze` names only its workflow.
 
 ## Load map
 
 | Unit | Holds | Loaded by |
 |---|---|---|
 | `references/run.md` | concurrent runs model, perimeter, classic or team | whoever owns the run |
-| `references/snapshot.md` | snapshot write, scope count, diff, carry and check commands | whoever owns the run's snapshot |
+| `references/snapshot.md` | snapshot write, scope count, diff, carry, check commands and owner prerequisites | whoever owns the run's snapshot |
 | `references/update.md` | incremental updates and the incremental depth procedure | a run accepted as an update |
-| `references/evidence.md` | evidence-anchored output, forbidden files, prerequisites, script commands, source reading, file classification | every phase worker and every consumer that reads source |
+| `references/evidence.md` | evidence-anchored output, forbidden files, script commands, source reading, file classification; maintained-document verification is separate | every phase worker and every consumer that reads source |
 | `references/reading.md` | how to read a finished analysis | every consumer of a bound analysis |
 | `references/phase-0.md` | Phase 0, project knowledge discovery | the run owner, before Phase 1 |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
-| `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics | phase 3 and 4 workers |
+| `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |
 | `references/phases-5-6.md` | Phase 5 patterns and risks, Phase 6 documentation health | phase 5 and 6 workers |
 | `references/phase-7.md` | Phase 7 final report | the run owner |
 
 ## Consumer map
 
 - Forbidden files: `references/evidence.md`.
-- Consuming a bound analysis: `references/reading.md`, plus `references/evidence.md` to read source from its snapshot.
+- Consuming a bound analysis: `references/reading.md`, plus `references/evidence.md` before Maintained documentation for source. For durable-document verification, read its Maintained documentation section. Snapshot verification/refresh uses `references/snapshot.md` before Prerequisites.
 - Running an analysis: the `codebase-xray:analyze` workflow, never this skill alone. Loading the method runs no phase and creates no run directory.
+
+## Team bindings
+
+Apply the common skeleton to the owned output directory. Partition files state their partition below the title; common headings never gain scope qualifiers. Classic state updates do not apply to workers or the synthesizer.
 
 ## References
 
-- `references/analysis-templates.md` - Verification trust model, temporal purity principle, documentation status markers, comment classification, maintenance workflows
-- `templates/semantic_analysis.md` - AI-powered per-file analysis template
-- `templates/analysis_report.md` - Module-level report template
+The phase units own the canonical skeletons.
 
-Read on demand, never by default:
+## Method loads
 
-- `references/AI_ANALYSIS_METHODOLOGY.md` - Complete analysis methodology
-- `references/SEMANTIC_PATTERNS.md` - Pattern recognition guide
-- `references/ANTIREZ_COMMENTING_STANDARDS.md` - Comment taxonomy
+Optional additions to the entry's core reads. Enable each only when its guidance is needed: methodology for deeper analysis, patterns for recognition, comments for taxonomy. Follow declared nested reads; count their union with core reads.
+
+| Resource | Sections | When |
+|---|---|---|
+| `references/AI_ANALYSIS_METHODOLOGY.md` | all | methodology |
+| `references/SEMANTIC_PATTERNS.md` | all | patterns |
+| `references/ANTIREZ_COMMENTING_STANDARDS.md` | all | comments |
 
 ## Resources
 

@@ -122,101 +122,20 @@ When you encounter an outgoing call/import in your partition that resolves to an
 
 When tracing a flow that originates outside your partition and terminates inside, annotate the source segment with `(from <other-partition>)` so the synthesizer can deduplicate.
 
-## PHASE 3: Flow Tracing
+## Method loads
 
-Trace critical execution paths through the partition:
-- Request lifecycle (entry -> processing -> response)
-- Data transformation pipeline (input -> validation -> processing -> output)
-- Error propagation paths
-- State mutation flows
-- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths, not a `critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach. Run `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, and cite, on the path, every rule it lists whose selector can match that screen, wherever that rule lives.
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
 
-If `active_flags.critical` is `true`, prioritize:
-- Authentication / authorization flows
-- Payment / transaction flows
-- Data persistence flows
+| Resource | Sections | When |
+|---|---|---|
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/SKILL.md` | all | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-3-4.md` | before: Team mode; section: Partition worker | always |
 
-**Output file:** `<run_dir>/partitions/<partition_name>/03-flows.md`
+## PHASE EXECUTION
 
-```markdown
-# Partition: <partition_name> — Flow Tracing
-
-## Critical Paths
-[Step-by-step flow descriptions with file:line references. Entry-gating paths first, each ending at the control the user must reach, with the stylesheet rules that govern that screen cited alongside the component. Mark cross-partition steps with `(from <other-partition>)` or `(to <other-partition>)`.]
-
-## Data Flow
-[How data transforms through the partition. Use cross-partition arrows where applicable.]
-
-## Error Handling Paths
-[Where errors originate and propagate. Note when errors cross partition boundaries.]
-
-## Side Effects
-[Functions with side effects and their blast radius. Mark cross-partition side effects explicitly.]
-
-## Process Diagrams
-
-For each significant process within or touching this partition, generate a Mermaid flowchart. Categorize each diagram as Technical / Functional / End-to-End.
-
-### Technical Processes
-[Mermaid flowcharts -- max 5 most critical.]
-
-### Functional Processes
-[Mermaid flowcharts -- max 5.]
-
-### End-to-End Processes
-[Mermaid flowcharts -- max 5. End-to-end flows that span multiple partitions are valuable here; annotate partition boundaries with subgraph fences.]
-
-Diagram guidelines:
-- Use `flowchart TD` for linear processes, `flowchart LR` for pipelines
-- Include decision nodes (`{condition}`) for branching
-- Label edges with conditions, data passed, or HTTP methods
-- Reference source as comments: `%% src/auth/login.py::handle_request`
-- Mark error/failure paths with dotted lines: `-->|error|`
-- Keep each diagram under 30 nodes
-- For cross-partition flows, use Mermaid `subgraph <partition>` to fence partitions visually
-```
-
-## PHASE 4: Semantic Understanding
-
-Document the WHY behind the code:
-- Business purpose of each module in the partition
-- Design decisions and trade-offs (inferred from code patterns)
-- Historical context (from git blame and commit messages within the partition)
-- Assumptions embedded in the code
-- Implicit contracts not documented anywhere
-- Architecture Decision Records (ADRs) — document rejected alternatives and WHY
-
-**Output file:** `<run_dir>/partitions/<partition_name>/04-semantics.md`
-
-```markdown
-# Partition: <partition_name> — Semantic Understanding
-
-## Module Purposes
-[WHY each module in this partition exists.]
-
-## Design Decisions
-[Inferred decisions and their trade-offs, scoped to this partition.]
-
-## Architecture Decision Records
-[Each ADR:]
-- **Decision:** [What was chosen]
-- **Context:** [What problem it solves]
-- **Alternatives rejected:** [What was NOT chosen and WHY]
-- **Consequences:** [Trade-offs accepted]
-
-ADRs that depend on cross-partition behavior (e.g. "API never calls DB directly, talks to worker via queue") belong here ONLY if the partition is one of the actors. The synthesizer will lift them to a global section.
-
-## Embedded Assumptions
-[Assumptions the code makes that aren't documented. Mark cross-partition assumptions explicitly.]
-
-## Hidden Contracts
-[Implicit agreements between modules. Mark cross-partition contracts as `<this-partition> ↔ <other-partition>`.]
-
-## Conventions Observed
-- Error handling: <pattern>
-- Logging: <pattern>
-- Configuration: <pattern>
-```
+Apply the shared phase procedures and skeletons to this partition. Bind phase output paths to `<run_dir>/partitions/<partition_name>`; keep `source_manifest` bound to the whole run. State updates in the units belong to the classic owner, never to a worker.
+Use the Team mode rules for partition scope and declared extensions.
 
 ## COMPLETION
 

@@ -3,6 +3,8 @@ name: partition-structure-worker
 description: 'Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-xray:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-xray:analyze extracts structure inline without an agent.'
 ---
 
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -136,82 +138,21 @@ Inventoried file-level formats use the reader's whole-file fallback. A changed
 source/parser identity is a delivery gap for the orchestrator to refresh; never
 rewrite the shared manifest. Metadata alone does not count as deep source reading.
 
-## PHASE 1: Structure Extraction
+## Method loads
 
-Build the structural map from the current manifest entries under `partition_path`. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it; state that under `## Key Observations`, so the synthesizer can report coverage rather than a file count. Nothing outside the perimeter is in the inventory either.
+Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
 
-For each inventoried file in the partition, report metadata already available
-and read source only for additional claims required by these phases:
-- Module/file name and path (relative to partition root)
-- Language and framework
-- Imports and dependencies (mark imports as `internal` if they resolve within the partition, `cross-partition` if they reference a sibling partition, `external` otherwise)
-- Exported symbols (functions, classes, constants)
-- File size and complexity indicators (line count, function count)
+| Resource | Sections | When |
+|---|---|---|
+| `<plugin-root>/skills/xray-method/SKILL.md` | all | always |
+| `<plugin-root>/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
+| `<plugin-root>/skills/xray-method/references/phases-1-2.md` | before: Team mode; section: Partition worker; section: Team extensions | always |
+| `<plugin-root>/skills/xray-method/references/run.md` | section: Perimeter | always |
 
-**Output file:** `<run_dir>/partitions/<partition_name>/01-structure.md`
+## PHASE EXECUTION
 
-```markdown
-# Partition: <partition_name> — Structure Extraction
-
-## File Inventory
-| File | Language | Lines | Functions | Classes | Imports (internal / cross / external) |
-|------|----------|-------|-----------|---------|---------------------------------------|
-| ... | ... | ... | ... | ... | ... |
-
-## Dependency Graph
-[Mermaid diagram of within-partition module dependencies.]
-
-## Cross-Partition Outgoing References
-[List of symbols/modules imported from OTHER partitions, format: `<other-partition>::<symbol>`. Use the partition list provided in the spawn prompt to disambiguate.]
-
-## Entry Points (within this partition)
-[Main files, API routes, CLI handlers, public API surface.]
-
-## Key Observations
-[Notable structural patterns or concerns scoped to this partition.]
-
-## Where to Add New Code
-- New feature module: `<path within partition>`
-- New API endpoint: `<path within partition>`
-- New utility: `<path within partition>`
-- New tests: `<path within partition>`
-
-## Naming Conventions Observed
-- Files: <pattern>
-- Functions: <pattern>
-- Classes: <pattern>
-```
-
-## PHASE 2: Interface Analysis
-
-For each module in the partition, document the public interface.
-Use the manifest to locate public definitions, then read their source and the
-types/validation/configuration that determine the interface. Do not infer a
-complete public contract from symbol names or import edges alone.
-
-**Output file:** `<run_dir>/partitions/<partition_name>/02-interfaces.md`
-
-```markdown
-# Partition: <partition_name> — Interface Analysis
-
-## Public APIs
-[Organized by module. For each: signature, parameter types, return type.]
-
-## Contracts
-[Interface definitions, type shapes, schemas exported by this partition.]
-
-## External Dependencies
-[Third-party libraries used and how. Distinct from cross-partition refs.]
-
-## Cross-Partition Inbound References
-[Symbols exported by this partition that other partitions import. Populate via Grep across `<run_dir>/partitions/*/01-structure.md` if those files exist when you run; otherwise leave the section with "Pending cross-partition reconciliation in synthesis."]
-
-## How to Add a New Module
-1. Create file at `<path within partition>`
-2. Follow interface pattern from `<example file>`
-3. Register in `<registration point>`
-4. Add tests at `<test path>`
-```
+Apply the shared phase procedures and skeletons to this partition. Bind phase output paths to `<run_dir>/partitions/<partition_name>`; keep `source_manifest` bound to the whole run. State updates in the units belong to the classic owner, never to a worker.
+Use the Team mode rules for partition scope and declared extensions.
 
 ## COMPLETION
 

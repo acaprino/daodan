@@ -30,6 +30,9 @@ Scan for anti-patterns, red flags, and technical debt:
 
 ## Failure Mode Analysis
 [What could break and under what conditions]
+
+## Source reading
+[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
 ```
 
 ---
@@ -49,6 +52,8 @@ If `--comments` flag is set, also analyze comment quality:
 - Score comment usefulness
 - Suggest rewrites following antirez standards
 
+Write Comment Quality only when `--comments` is active.
+
 **Output file:** `$RUN_DIR/06-documentation.md`
 
 ```markdown
@@ -63,8 +68,11 @@ If `--comments` flag is set, also analyze comment quality:
 ## Broken References
 [Dead links, non-existent file paths in docs]
 
-## Comment Quality [if --comments]
+## Comment Quality
 [Comment audit with improvement suggestions]
+
+## Source reading
+[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
 ```
 
 ### Red Flags to Identify
@@ -157,3 +165,57 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/rewrite_comments.py" st
 2. Fix links before content - broken links indicate structural issues
 3. Verify against code before updating documentation
 4. Update indexes last to reflect final state
+
+## Comment Type Classification
+
+| Type | Category | Description | Action |
+|------|----------|-------------|--------|
+| **function** | GOOD | API docs at function/class top | Keep/Enhance |
+| **design** | GOOD | File-level algorithm explanations | Keep |
+| **why** | GOOD | Explains reasoning behind code | Keep |
+| **teacher** | GOOD | Educates about domain concepts | Keep |
+| **checklist** | GOOD | Reminds of coordinated changes | Keep |
+| **guide** | GOOD | Section dividers, structure | Keep sparingly |
+| **trivial** | BAD | Restates what code says | Delete |
+| **debt** | BAD | TODO/FIXME without plan | Rewrite/Resolve |
+| **backup** | BAD | Commented-out code | Delete |
+
+## Comment quality analysis
+
+1. Scan and analyze comment issues; write a report inside the run.
+2. Verify the finding in source, distinguish useful context from repetition.
+3. Propose a change with the affected path and reason. Do not apply it in X-ray.
+4. A separate authorized readability/development task performs and verifies edits.
+
+## Documentation diagnosis
+
+1. Scan health and validate links without fix flags.
+2. Compare claims with current source and the declared requirement.
+3. Report obsolete candidates, broken links and stale navigation with evidence.
+4. Write results inside the run. Knowledge maintenance owns application and review.
+
+## Team mode
+
+### Team extensions
+
+| Heading | File | Mode | Writer | After | Aggregation |
+|---|---|---|---|---|---|
+| Cross-Partition Risk Attribution | 05-risks.md | partition | partition-quality-worker | Failure Mode Analysis | Attribute risks with a side in this partition; use <other-partition>::<symbol>. |
+| Cross-Partition Risk Attribution | 05-risks.md | consolidated | partition-synthesizer | Failure Mode Analysis | Collect attributed partition risks and deduplicate. |
+
+### Partition worker
+
+Attribute every cross-partition risk with a side in this partition. Phase 6 and Comment Quality remain conditional on depth and comments; neither authorizes applying changes.
+
+### Consolidation
+
+| File | Common heading | Rule |
+|---|---|---|
+| 05-risks.md | Anti-Patterns Found | Concatenate and sort globally by severity; rows cite partition, pattern, file:line and rationale. |
+| 05-risks.md | Red Flags | Apply the same global severity ordering. |
+| 05-risks.md | Technical Debt Inventory | Group by partition; debt is partition-local. |
+| 05-risks.md | Failure Mode Analysis | Concatenate triggers and user-visible impacts. |
+| 06-documentation.md | Documentation vs Code Accuracy | Concatenate partition discrepancies. |
+| 06-documentation.md | Coverage Gaps | Public API gaps first, citing cross-partition exports; internal gaps follow. |
+| 06-documentation.md | Broken References | Concatenate partition references. |
+| 06-documentation.md | Comment Quality | Concatenate only with the comments flag; otherwise omit. |
