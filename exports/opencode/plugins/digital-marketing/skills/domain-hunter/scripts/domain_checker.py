@@ -8,9 +8,9 @@ Usage:
     python domain_checker.py name1 name2 --workers 12
 
 Queries each TLD's own RDAP registry server, found through the IANA bootstrap
-file (data.iana.org/rdap/dns.json). No API key, no third-party packages. A name
-that already contains a dot is checked as a full domain and the --tlds list is
-not applied to it.
+file (data.iana.org/rdap/dns.json). No API key; RDAP and WHOIS use the standard
+library. A name that already contains a dot is checked as a full domain and the
+--tlds list is not applied to it.
 
 Why not the rdap.org redirector: it rate-limits hard (a 429 with a 4 second
 Retry-After after a handful of requests), so more workers made a run slower, and
@@ -29,19 +29,26 @@ Status mapping:
     HTTP 404 from the registry -> AVAILABLE (registry holds no record)
     HTTP 200 -> TAKEN
     anything else (timeout, 429 after retries, network failure) -> UNKNOWN
-    TLD absent from the bootstrap (no RDAP service) -> UNKNOWN, with the
-        reason printed beside it
+    TLD absent from the bootstrap (no RDAP service) -> the registry's own whois
+        (port 43) when WHOIS_TLDS knows it, then the headless registrar page
+        when whois is unavailable or unreadable; provenance is printed beside
+        the answer, and an unresolved lookup stays UNKNOWN
 
-A TLD with no RDAP service (.io, .co, .it among them) cannot be read from a
-registry, so those domains are read from Gandi's search page with Patchright in
-headless mode: one throwaway browser, no visible window, no profile of the
-user's own. The page is trusted only when its verdict names the exact domain
-asked about, because for a TLD Gandi does not sell it silently searches a
-different name (example.gov becomes examplegov.com) and reports THAT as
-available. Without Patchright, or when the page does not load (Gandi sits
-behind a bot check at times), the domain stays UNKNOWN with the reason shown.
-Install: pip install patchright && patchright install chromium. --no-registrar
-skips the browser step.
+The whois fallback exists because .it, .eu and .io publish no RDAP. Each reply
+is read by a pattern checked against a taken and a free name, and a reply that
+matches neither is UNKNOWN. A TLD with no entry in WHOIS_TLDS (.co has no
+reachable whois host) proceeds directly to the registrar step.
+
+For a TLD absent from the bootstrap, when whois gives no answer, the domain is
+read from Gandi's search page with optional Patchright in headless mode: one
+throwaway browser, no visible window, no profile of the user's own. The page
+is trusted only when its verdict names the exact domain asked about, because
+for a TLD Gandi does not sell it silently searches a different name
+(example.gov becomes examplegov.com) and reports THAT as available. Without
+Patchright, or when the page does not load (Gandi sits behind a bot check at
+times), the domain stays UNKNOWN with the reason shown. Install: pip install
+patchright && patchright install chromium. --no-registrar skips only the browser
+step; registry WHOIS still runs.
 
 UNKNOWN never means available. Confirm anything surprising at a registrar
 before buying.
@@ -52,6 +59,7 @@ import concurrent.futures
 import http.client
 import json
 import re
+import socket
 import sys
 import threading
 import time
@@ -77,6 +85,16 @@ REGISTRAR_TIMEOUT_MS = 20000
 REGISTRAR_ATTEMPTS = 2
 PATCHRIGHT_HINT = "pip install patchright && patchright install chromium"
 VERDICT_WAIT = "() => /This domain is (not )?available/i.test(document.body.innerText)"
+WHOIS_PORT = 43
+WHOIS_SPACING = 1.0
+
+# tld -> (whois host, pattern of a free name, pattern of a registered name).
+# Checked 2026-10-13 against a registered name (google) and a random free one.
+WHOIS_TLDS = {
+    "it": ("whois.nic.it", r"^Status:\s+AVAILABLE", r"^Domain:\s"),
+    "eu": ("whois.eu", r"^Status:\s+AVAILABLE", r"^Domain:\s"),
+    "io": ("whois.nic.io", r"^Domain not found", r"^Domain Name:\s"),
+}
 
 
 def parse_tlds(raw: str) -> list:
@@ -170,6 +188,11 @@ class HostGate:
         if start > now:
             time.sleep(start - now)
 
+    def set_spacing(self, spacing: float):
+        """Fix a minimum gap between requests, for hosts that publish no RDAP."""
+        with self._lock:
+            self._spacing = max(self._spacing, spacing)
+
     def throttled(self, delay: float):
         """Record that the host refused: slow all workers, push the next slot."""
         with self._lock:
@@ -217,13 +240,57 @@ def query(url: str, gate: HostGate) -> str:
     return "UNKNOWN"
 
 
+def classify_whois(text: str, free: str, taken: str) -> str:
+    """AVAILABLE, TAKEN or UNKNOWN for one whois reply. The free pattern wins
+    because a free .eu name still echoes a Domain: line."""
+    if re.search(free, text, re.MULTILINE | re.IGNORECASE):
+        return "AVAILABLE"
+    if re.search(taken, text, re.MULTILINE | re.IGNORECASE):
+        return "TAKEN"
+    return "UNKNOWN"
+
+
+def query_whois(domain: str, entry: tuple, gate: HostGate) -> str:
+    """Ask a registry whois server on port 43; UNKNOWN when it cannot be read."""
+    host, free, taken = entry
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            with gate.slots:
+                gate.pace()
+                with socket.create_connection((host, WHOIS_PORT), timeout=TIMEOUT) as sock:
+                    sock.sendall((domain + "\r\n").encode("ascii"))
+                    chunks = []
+                    while True:
+                        data = sock.recv(4096)
+                        if not data:
+                            break
+                        chunks.append(data)
+            status = classify_whois(b"".join(chunks).decode("utf-8", "replace"), free, taken)
+            if status != "UNKNOWN":
+                return status
+        except (OSError, UnicodeError):
+            pass
+        if attempt + 1 < MAX_ATTEMPTS:
+            gate.throttled(BACKOFF * 2 ** attempt)
+    return "UNKNOWN"
+
+
 def check_domain(domain: str, servers, gates: HostGates):
     """Return (status, note) for one fully qualified domain."""
+    tld = domain.rsplit(".", 1)[-1]
     if servers is None:
         return "UNKNOWN", "IANA RDAP bootstrap unreachable"
     url = rdap_url(domain, servers)
     if url is None:
-        return "UNKNOWN", NO_RDAP + domain.rsplit(".", 1)[-1]
+        entry = WHOIS_TLDS.get(tld)
+        if entry is None:
+            return "UNKNOWN", NO_RDAP + tld
+        gate = gates.get("whois://" + entry[0])
+        gate.set_spacing(WHOIS_SPACING)
+        status = query_whois(domain, entry, gate)
+        if status == "UNKNOWN":
+            return status, NO_RDAP + tld + "; " + entry[0] + " lookup failed"
+        return status, "via " + entry[0]
     return query(url, gates.get(url)), ""
 
 
@@ -359,7 +426,7 @@ def main():
     parser.add_argument(
         "--no-registrar",
         action="store_true",
-        help="skip the headless registrar step; TLDs with no RDAP stay UNKNOWN",
+        help="skip the headless registrar step; RDAP and registry WHOIS still run",
     )
     args = parser.parse_args()
 
@@ -379,12 +446,13 @@ def main():
         for domain, status, note in check_all(domains, args.workers, servers):
             if note.startswith(NO_RDAP):
                 if registrar:
+                    registry_note = note
                     status, note = registrar.check(domain)
+                    if status == "UNKNOWN":
+                        note = registry_note + "; " + note
                 if status == "UNKNOWN":
                     tld = "." + domain.rsplit(".", 1)[-1]
                     unserved.add(tld)
-                    if not note.startswith(NO_RDAP):
-                        note = NO_RDAP + tld[1:] + "; " + note
             counts[status] += 1
             print("{}  {}{}".format(domain, status, "  ({})".format(note) if note else ""),
                   flush=True)

@@ -105,15 +105,56 @@ class RegistryResolutionTests(unittest.TestCase):
     def test_no_rdap_tld_is_unknown_and_never_queried(self):
         # Regression: rdap.org answers 404 for a TLD with no RDAP service, which
         # read as AVAILABLE for registered domains like google.io.
-        with mock.patch.object(dc, "query", side_effect=AssertionError("queried")):
-            status, note = dc.check_domain("google.io", SERVERS, dc.HostGates(2))
+        # .co has no RDAP and no reachable whois host, so it must stay UNKNOWN.
+        with mock.patch.object(dc, "query", side_effect=AssertionError("queried")), \
+                mock.patch.object(dc, "query_whois", side_effect=AssertionError("whois")):
+            status, note = dc.check_domain("google.co", SERVERS, dc.HostGates(2))
         self.assertEqual(status, "UNKNOWN")
-        self.assertIn("no RDAP service for .io", note)
+        self.assertIn("no RDAP service for .co", note)
+
+    def test_no_rdap_tld_with_a_registry_whois_is_read_there(self):
+        for domain, host in (("acme.it", "whois.nic.it"), ("acme.eu", "whois.eu"),
+                             ("acme.io", "whois.nic.io")):
+            with mock.patch.object(dc, "query", side_effect=AssertionError("queried")), \
+                    mock.patch.object(dc, "query_whois", return_value="TAKEN") as who:
+                status, note = dc.check_domain(domain, SERVERS, dc.HostGates(2))
+            self.assertEqual((status, note), ("TAKEN", "via " + host))
+            self.assertEqual(who.call_args[0][1][0], host)
 
     def test_unreachable_bootstrap_is_unknown_not_available(self):
         status, note = dc.check_domain("acme.com", None, dc.HostGates(2))
         self.assertEqual(status, "UNKNOWN")
         self.assertIn("bootstrap unreachable", note)
+
+
+class WhoisTests(unittest.TestCase):
+    """Replies copied from the registries on 2026-10-13."""
+
+    def classify(self, tld, text):
+        _, free, taken = dc.WHOIS_TLDS[tld]
+        return dc.classify_whois(text, free, taken)
+
+    def test_it_free_and_taken(self):
+        self.assertEqual(self.classify("it", "Domain:             x.it\nStatus:             AVAILABLE\n"), "AVAILABLE")
+        self.assertEqual(self.classify("it", "*****\n\nDomain:             google.it\nStatus:             ok\n"), "TAKEN")
+
+    def test_eu_free_wins_over_the_echoed_domain_line(self):
+        self.assertEqual(self.classify("eu", "Domain: x.eu\nScript: LATIN\nStatus: AVAILABLE\n"), "AVAILABLE")
+        self.assertEqual(self.classify("eu", "Domain: google.eu\nScript: LATIN\nRegistrant:\n NOT DISCLOSED!\n"), "TAKEN")
+
+    def test_io_free_and_taken(self):
+        self.assertEqual(self.classify("io", "Domain not found.\n>>> Last update"), "AVAILABLE")
+        self.assertEqual(self.classify("io", "Domain Name: google.io\nRegistry Domain ID: REDACTED\n"), "TAKEN")
+
+    def test_unreadable_reply_is_unknown_never_available(self):
+        self.assertEqual(self.classify("it", "% rate limit exceeded\n"), "UNKNOWN")
+        self.assertEqual(self.classify("io", ""), "UNKNOWN")
+
+    def test_network_failure_is_unknown(self):
+        gate = dc.HostGate(1)
+        with mock.patch("socket.create_connection", side_effect=OSError("down")), \
+                mock.patch.object(dc.time, "sleep"):
+            self.assertEqual(dc.query_whois("acme.it", dc.WHOIS_TLDS["it"], gate), "UNKNOWN")
 
 
 class BootstrapTests(unittest.TestCase):
@@ -238,21 +279,21 @@ class CliTests(unittest.TestCase):
         return code, out.getvalue()
 
     def test_all_unknown_exits_2_and_names_the_tlds_without_rdap(self):
-        code, out = self.run_cli(["acme", "--tlds", ".io,.co", "--no-registrar"], {})
+        code, out = self.run_cli(["acme", "--tlds", ".xx,.co", "--no-registrar"], {})
         self.assertEqual(code, 2)
-        self.assertIn("acme.io  UNKNOWN  (no RDAP service for .io)", out)
-        self.assertIn("No RDAP service for .co, .io", out)
+        self.assertIn("acme.xx  UNKNOWN  (no RDAP service for .xx)", out)
+        self.assertIn("No RDAP service for .co, .xx", out)
 
     def test_mixed_run_exits_0_and_reports_each_status(self):
         outcomes = [FakeResponse(200), http_error(404)]
         with mock.patch("urllib.request.urlopen", scripted(*outcomes)):
             code, out = self.run_cli(
-                ["acme", "--tlds", ".com,.app,.io", "--workers", "1", "--no-registrar"], SERVERS
+                ["acme", "--tlds", ".com,.app,.co", "--workers", "1", "--no-registrar"], SERVERS
             )
         self.assertEqual(code, 0)
         self.assertIn("acme.com  TAKEN", out)
         self.assertIn("acme.app  AVAILABLE", out)
-        self.assertIn("acme.io  UNKNOWN", out)
+        self.assertIn("acme.co  UNKNOWN", out)
         self.assertIn("3 checked: 1 available, 1 taken, 1 unknown", out)
 
     def test_workers_out_of_range_is_a_usage_error(self):
@@ -429,25 +470,25 @@ class RegistrarCliTests(unittest.TestCase):
         return code, out, made
 
     def test_no_rdap_domains_take_the_registrar_verdict_in_request_order(self):
-        answers = {"acme.io": ("AVAILABLE", dc.REGISTRAR_NAME)}
+        answers = {"acme.co": ("AVAILABLE", dc.REGISTRAR_NAME)}
         with mock.patch("urllib.request.urlopen", scripted(FakeResponse(200))):
             code, out, made = self.run_with_registrar(
-                ["acme", "--tlds", ".com,.io", "--workers", "1"], SERVERS, answers
+                ["acme", "--tlds", ".com,.co", "--workers", "1"], SERVERS, answers
             )
         self.assertEqual(code, 0)
         lines = out.splitlines()
         self.assertEqual(lines[0], "acme.com  TAKEN")
-        self.assertEqual(lines[1], "acme.io  AVAILABLE  (" + dc.REGISTRAR_NAME + ")")
+        self.assertEqual(lines[1], "acme.co  AVAILABLE  (" + dc.REGISTRAR_NAME + ")")
         self.assertIn("2 checked: 1 available, 1 taken, 0 unknown", out)
         self.assertNotIn("No RDAP service", out)
         self.assertTrue(made[0].closed)
 
     def test_registrar_unknown_keeps_the_no_rdap_reason_and_exits_2(self):
-        answers = {"acme.io": ("UNKNOWN", "patchright not installed (pip install patchright)")}
-        code, out, made = self.run_with_registrar(["acme", "--tlds", ".io"], {}, answers)
+        answers = {"acme.co": ("UNKNOWN", "patchright not installed (pip install patchright)")}
+        code, out, made = self.run_with_registrar(["acme", "--tlds", ".co"], {}, answers)
         self.assertEqual(code, 2)
-        self.assertIn("acme.io  UNKNOWN  (no RDAP service for .io; patchright not installed", out)
-        self.assertIn("No RDAP service for .io and no registrar answer", out)
+        self.assertIn("acme.co  UNKNOWN  (no RDAP service for .co; patchright not installed", out)
+        self.assertIn("No RDAP service for .co and no registrar answer", out)
         self.assertTrue(made[0].closed)
 
     def test_registry_covered_run_never_starts_a_browser(self):
@@ -459,9 +500,41 @@ class RegistrarCliTests(unittest.TestCase):
 
     def test_no_registrar_flag_never_builds_one(self):
         with mock.patch.object(dc, "RegistrarBrowser", side_effect=AssertionError("built")):
-            code, out = self.run_cli(["acme", "--tlds", ".io", "--no-registrar"], {})
+            code, out = self.run_cli(["acme", "--tlds", ".co", "--no-registrar"], {})
         self.assertEqual(code, 2)
-        self.assertIn("acme.io  UNKNOWN  (no RDAP service for .io)", out)
+        self.assertIn("acme.co  UNKNOWN  (no RDAP service for .co)", out)
+
+    def test_unreadable_whois_uses_registrar_for_the_same_domain(self):
+        answers = {"acme.io": ("AVAILABLE", dc.REGISTRAR_NAME)}
+        with mock.patch.object(dc, "query_whois", return_value="UNKNOWN"):
+            code, out, made = self.run_with_registrar(["acme", "--tlds", ".io"], {}, answers)
+        self.assertEqual(code, 0)
+        self.assertIn("acme.io  AVAILABLE  (" + dc.REGISTRAR_NAME + ")", out)
+        self.assertTrue(made[0].closed)
+
+    def test_known_whois_answer_does_not_start_a_browser(self):
+        for status in ("AVAILABLE", "TAKEN"):
+            with self.subTest(status=status), \
+                    mock.patch.object(dc, "query_whois", return_value=status), \
+                    mock.patch.object(dc.RegistrarBrowser, "_start", side_effect=AssertionError("started")):
+                code, out = self.run_cli(["acme", "--tlds", ".it"], {})
+            self.assertEqual(code, 0)
+            self.assertIn("acme.it  " + status + "  (via whois.nic.it)", out)
+
+    def test_no_registrar_flag_preserves_the_registry_whois_lookup(self):
+        with mock.patch.object(dc, "query_whois", return_value="TAKEN"), \
+                mock.patch.object(dc, "RegistrarBrowser", side_effect=AssertionError("built")):
+            code, out = self.run_cli(["acme", "--tlds", ".io", "--no-registrar"], {})
+        self.assertEqual(code, 0)
+        self.assertIn("acme.io  TAKEN  (via whois.nic.io)", out)
+
+    def test_unreadable_whois_and_registrar_preserve_both_failure_reasons(self):
+        answers = {"acme.io": ("UNKNOWN", "patchright not installed")}
+        with mock.patch.object(dc, "query_whois", return_value="UNKNOWN"):
+            code, out, made = self.run_with_registrar(["acme", "--tlds", ".io"], {}, answers)
+        self.assertEqual(code, 2)
+        self.assertIn("no RDAP service for .io; whois.nic.io lookup failed; patchright not installed", out)
+        self.assertTrue(made[0].closed)
 
 
 if __name__ == "__main__":

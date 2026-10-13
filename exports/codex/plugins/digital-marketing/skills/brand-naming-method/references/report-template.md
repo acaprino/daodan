@@ -72,6 +72,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Fill this template for the final report of Step 8. Keep every heading, the section order and the table shapes. Replace each `{placeholder}`. Leave no field blank: write `unverified` when nothing supports a value and `not screened` when a register did not answer. Write the report in the language of the brief. Add no sections and no decoration, and keep prose to the sentence counts the placeholders give.
 
+If the user asks for an HTML report, render this same template as a responsive page: the same headings, section order and table shapes, readable on a phone (tables may stack their cells) and in a light or dark theme. Interaction is allowed only where it works on the template's own content: editable weights that recompute the Overall row, collapsible name blocks, a filter on the Names removed table and tickable checkboxes in Before you commit. It adds no section, no chart and no text the Markdown version would not carry.
+
 Trademark risk is a class from A (lowest risk) to D (highest) for three territories: the reference country, Europe and the world. NS means not screened and is never shown as A.
 
 Scores are whole numbers from 1 to 5 (5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying). Overall is the weighted average from Step 7, one decimal, between 1.0 and 5.0.
@@ -116,7 +118,7 @@ Class key: **A** no identical or similar mark found. **B** similar marks only in
 | Cultural Adaptability | 5% | {n} | {n} | {n} | {n} | {n} |
 | **Overall** | 100% | **{x.x}** | **{x.x}** | **{x.x}** | **{x.x}** | **{x.x}** |
 
-A cell that rests on no evidence reads `3 (unverified)`. A trademark cell whose reference country is NS reads `3 (not screened)`.
+A cell that rests on thin evidence reads `3 (unverified)`. A criterion whose check could not run at all reads `not scored` in every column and in its "Why it scores this way" row, and the Overall is divided by the weights of the scored criteria only. A trademark cell whose reference country is NS reads `3 (not screened)`.
 
 ## 3. Top 3 names
 
@@ -145,16 +147,18 @@ Repeat this block once per name, in rank order.
 
 | Check | Result |
 |---|---|
-| {.tld} | {AVAILABLE, TAKEN, either read from a registrar page when the TLD has no RDAP, or unverified (no RDAP service, no registrar answer)} |
-| {Social handles} | {Platform: free or taken, one entry per platform checked} |
+| Domain {.tld} | {free, taken (active or parked), or not checked} |
+| Online presence | {in use, free or not checked, one entry per kind checked: company or site, app, social account} |
 
 **Trademark** (Nice classes {list})
 
-| Territory | Class | Registers | Finding |
+| Territory | Class | Checked | Finding |
 |---|---|---|---|
-| Reference country ({country}) | {A, B, C, D or NS} | {Registers that answered} | {Closest marks found with their classes, or the page's own words if not screened} |
-| Europe | {A, B, C, D or NS} | {TMview, or eSearch plus (EU trade marks only)} | {Closest marks found with their classes, or the page's own words if not screened} |
-| World | {A, B, C, D or NS} | {WIPO Global Brand Database, USPTO} | {Closest marks found with their classes, or the page's own words if not screened} |
+| Reference country ({country}) | {A, B, C, D or NS} | {national register: answered or not screened} | {Closest marks found, each as registered, pending or similar with its classes, or "none"; the page's own words if not screened} |
+| Europe | {A, B, C, D or NS} | {EU register: answered or not screened (EU trade marks only)} | {Closest marks found, each as registered, pending or similar with its classes, or "none"; the page's own words if not screened} |
+| World | {A, B, C, D or NS} | {international and US registers: answered or not screened} | {Closest marks found, each as registered, pending or similar with its classes, or "none"; the page's own words if not screened} |
+
+The register names belong in section 7 (Evidence) only.
 
 {One sentence: what to run before committing.}
 
@@ -171,7 +175,7 @@ Repeat this block once per name, in rank order.
 | 4 | {Name} | {x.x} | {One sentence} | {Criterion: reason} |
 | 5 | {Name} | {x.x} | {One sentence} | {Criterion: reason} |
 
-Repeat the following score-motivation block once for rank 4 and once for rank 5, in rank order. Every criterion needs its own evidence-backed motivation, with `unverified` or `not screened` retained wherever applicable.
+Repeat the following score-motivation block once for rank 4 and once for rank 5, in rank order. Every criterion needs its own evidence-backed motivation, with `unverified`, `not screened` or `not scored` retained wherever applicable.
 
 ### {Rank}. {Name} (Overall {x.x} / 5)
 
@@ -192,6 +196,8 @@ Repeat the following score-motivation block once for rank 4 and once for rank 5,
 
 ## 5. Names removed
 
+Every name that does not reach the Scorecard is listed here, including names the user supplied that were dropped at a ranking step. A silent drop is an error.
+
 | Name | Removed at | Reason |
 |---|---|---|
 | {Name} | {Step 1b, 3, 3b, 5 or 6} | {One-line reason} |
@@ -204,7 +210,7 @@ Repeat the following score-motivation block once for rank 4 and once for rank 5,
 
 | Source | Status |
 |---|---|
-| Domain registries (RDAP) | {TLDs read from the registry, TLDs read from a registrar page in headless Patchright because they publish no RDAP, and TLDs not read at all} |
+| Domain registration (RDAP, registry whois, registrar page) | {TLDs read from the registry via RDAP or whois, TLDs read from a registrar page in headless Patchright because no registry answer was readable, and TLDs not read at all with their failure or skipped-check reasons} |
 | National register of the reference country ({register name}) | {answered, or NOT SCREENED with the page's own words} |
 | EUIPO TMview | {answered, or NOT SCREENED with the page's own words} |
 | EUIPO eSearch plus | {answered (EU trade marks only), or not used} |
