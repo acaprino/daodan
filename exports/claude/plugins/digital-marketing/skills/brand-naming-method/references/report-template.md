@@ -65,6 +65,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Fill this template for the final report of Step 8. Keep every heading, the section order and the table shapes. Replace each `{placeholder}`. Leave no field blank: write `unverified` when nothing supports a value and `not screened` when a register did not answer. Write the report in the language of the brief. Add no sections and no decoration, and keep prose to the sentence counts the placeholders give.
 
+If the user asks for an HTML report, render this same template as a responsive page: the same headings, section order and table shapes, readable on a phone (tables may stack their cells) and in a light or dark theme. Interaction is allowed only where it works on the template's own content: editable weights that recompute the Overall row, collapsible name blocks, a filter on the Names removed table and tickable checkboxes in Before you commit. It adds no section, no chart and no text the Markdown version would not carry.
+
 Trademark risk is a class from A (lowest risk) to D (highest) for three territories: the reference country, Europe and the world. NS means not screened and is never shown as A.
 
 Scores are whole numbers from 1 to 5 (5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying). Overall is the weighted average from Step 7, one decimal, between 1.0 and 5.0.
@@ -165,6 +167,8 @@ Repeat this block once per name, in rank order.
 | 5 | {Name} | {x.x} | {One sentence} | {Criterion: reason} |
 
 ## 5. Names removed
+
+Every name that does not reach the Scorecard is listed here, including names the user supplied that were dropped at a ranking step. A silent drop is an error.
 
 | Name | Removed at | Reason |
 |---|---|---|

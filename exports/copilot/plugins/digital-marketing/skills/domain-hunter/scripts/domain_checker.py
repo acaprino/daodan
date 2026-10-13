@@ -29,8 +29,14 @@ Status mapping:
     HTTP 404 from the registry -> AVAILABLE (registry holds no record)
     HTTP 200 -> TAKEN
     anything else (timeout, 429 after retries, network failure) -> UNKNOWN
-    TLD absent from the bootstrap (no RDAP service) -> UNKNOWN, with the
-        reason printed beside it
+    TLD absent from the bootstrap (no RDAP service) -> the registry's own whois
+        (port 43) when WHOIS_TLDS knows it, with "via whois.<host>" printed
+        beside the answer; otherwise UNKNOWN, with the reason printed beside it
+
+The whois fallback exists because .it, .eu and .io publish no RDAP. Each reply
+is read by a pattern checked against a taken and a free name, and a reply that
+matches neither is UNKNOWN. A TLD with no entry in WHOIS_TLDS (.co has no
+reachable whois host) stays UNKNOWN.
 
 UNKNOWN never means available. Confirm anything surprising at a registrar
 before buying.
@@ -40,6 +46,8 @@ import argparse
 import concurrent.futures
 import http.client
 import json
+import re
+import socket
 import sys
 import threading
 import time
@@ -58,6 +66,16 @@ MAX_ATTEMPTS = 4
 BACKOFF = 1.0
 MAX_RETRY_AFTER = 10.0
 THROTTLED_SPACING = 0.5
+WHOIS_PORT = 43
+WHOIS_SPACING = 1.0
+
+# tld -> (whois host, pattern of a free name, pattern of a registered name).
+# Checked 2026-10-13 against a registered name (google) and a random free one.
+WHOIS_TLDS = {
+    "it": ("whois.nic.it", r"^Status:\s+AVAILABLE", r"^Domain:\s"),
+    "eu": ("whois.eu", r"^Status:\s+AVAILABLE", r"^Domain:\s"),
+    "io": ("whois.nic.io", r"^Domain not found", r"^Domain Name:\s"),
+}
 
 
 def parse_tlds(raw: str) -> list:
@@ -151,6 +169,11 @@ class HostGate:
         if start > now:
             time.sleep(start - now)
 
+    def set_spacing(self, spacing: float):
+        """Fix a minimum gap between requests, for hosts that publish no RDAP."""
+        with self._lock:
+            self._spacing = max(self._spacing, spacing)
+
     def throttled(self, delay: float):
         """Record that the host refused: slow all workers, push the next slot."""
         with self._lock:
@@ -198,13 +221,54 @@ def query(url: str, gate: HostGate) -> str:
     return "UNKNOWN"
 
 
+def classify_whois(text: str, free: str, taken: str) -> str:
+    """AVAILABLE, TAKEN or UNKNOWN for one whois reply. The free pattern wins
+    because a free .eu name still echoes a Domain: line."""
+    if re.search(free, text, re.MULTILINE | re.IGNORECASE):
+        return "AVAILABLE"
+    if re.search(taken, text, re.MULTILINE | re.IGNORECASE):
+        return "TAKEN"
+    return "UNKNOWN"
+
+
+def query_whois(domain: str, entry: tuple, gate: HostGate) -> str:
+    """Ask a registry whois server on port 43; UNKNOWN when it cannot be read."""
+    host, free, taken = entry
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            with gate.slots:
+                gate.pace()
+                with socket.create_connection((host, WHOIS_PORT), timeout=TIMEOUT) as sock:
+                    sock.sendall((domain + "\r\n").encode("ascii"))
+                    chunks = []
+                    while True:
+                        data = sock.recv(4096)
+                        if not data:
+                            break
+                        chunks.append(data)
+            status = classify_whois(b"".join(chunks).decode("utf-8", "replace"), free, taken)
+            if status != "UNKNOWN":
+                return status
+        except (OSError, UnicodeError):
+            pass
+        if attempt + 1 < MAX_ATTEMPTS:
+            gate.throttled(BACKOFF * 2 ** attempt)
+    return "UNKNOWN"
+
+
 def check_domain(domain: str, servers, gates: HostGates):
     """Return (status, note) for one fully qualified domain."""
+    tld = domain.rsplit(".", 1)[-1]
     if servers is None:
         return "UNKNOWN", "IANA RDAP bootstrap unreachable"
     url = rdap_url(domain, servers)
     if url is None:
-        return "UNKNOWN", "no RDAP service for ." + domain.rsplit(".", 1)[-1]
+        entry = WHOIS_TLDS.get(tld)
+        if entry is None:
+            return "UNKNOWN", "no RDAP service for ." + tld
+        gate = gates.get("whois://" + entry[0])
+        gate.set_spacing(WHOIS_SPACING)
+        return query_whois(domain, entry, gate), "via " + entry[0]
     return query(url, gates.get(url)), ""
 
 
