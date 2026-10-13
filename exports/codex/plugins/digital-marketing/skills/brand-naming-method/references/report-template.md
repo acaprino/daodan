@@ -140,7 +140,7 @@ Repeat this block once per name, in rank order.
 
 | Check | Result |
 |---|---|
-| {.tld} | {AVAILABLE, TAKEN, or unverified (no RDAP service)} |
+| {.tld} | {AVAILABLE, TAKEN, either read from a registrar page when the TLD has no RDAP, or unverified (no RDAP service, no registrar answer)} |
 | {Social handles} | {Platform: free or taken, one entry per platform checked} |
 
 **Trademark.** {Rating LOW, MEDIUM, HIGH or NOT SCREENED.} {Registers that answered, registers that did not and why, and what to run before committing.}
@@ -191,7 +191,7 @@ Repeat the following score-motivation block once for rank 4 and once for rank 5,
 
 | Source | Status |
 |---|---|
-| Domain registries (RDAP) | {TLDs read, and TLDs not read because they publish no RDAP} |
+| Domain registries (RDAP) | {TLDs read from the registry, TLDs read from a registrar page in headless Patchright because they publish no RDAP, and TLDs not read at all} |
 | EUIPO TMview | {answered, or NOT SCREENED with the page's own words} |
 | EUIPO eSearch plus | {answered (EU trade marks only), or not used} |
 | USPTO Trademark Search | {answered, or NOT SCREENED with the page's own words} |

@@ -200,7 +200,8 @@ From the 12-15 candidates, filter down to the best 8-10 by checking:
 Before full analysis, run one registration check on all 8-10 filtered candidates at once. This is the only place `.com` registration is established; Steps 4 and 6a reuse the result rather than checking again.
 
 - Run the domain checker script (see Domain Checker Script below) with every candidate in one invocation, over the target TLD set: `.com`, `.app`, `.io`, `.co` by default, or exactly the user's `--tlds` list when they passed one. Keep the output; it is the registration table Steps 4 and 6a read from.
-- A name is **blocked** when every requested TLD is `TAKEN`. A name whose requested TLDs are all `UNKNOWN` is not blocked: retry it once, and if it is still unknown carry it forward flagged for registrar verification.
+- A name is **blocked** when every requested TLD the script could read is `TAKEN`. A TLD whose registry publishes no RDAP (`.io`, `.co`, `.it`) is read by the script from a registrar page in headless Patchright and printed with `(Gandi page, headless Patchright)`; that counts as read, with the registry itself not consulted. One printed as `UNKNOWN  (no RDAP service for .io; ...)` was not read at all, so it neither blocks a name nor counts as free: say in the drop reason that those TLDs were not checked.
+- A name whose requested TLDs are all `UNKNOWN` is not blocked. Retry it once only when the note is not "no RDAP service"; that note is final and a retry changes nothing, and so is the missing-Patchright reason, which is an install to report. If it is still unknown, carry the name forward flagged for registrar verification, with the registrar link given to the user to click, never opened by you.
 - For a blocked name, one web search for `"name" app` or `"name" company` settles whether the holder is an established business. If it is, drop the name; if the domains are parked or dormant, carry the name forward with a note, because Step 6a decides what a taken-but-inactive domain costs.
 - **Never discard silently.** List every dropped name with the one-line reason (which TLDs were taken and by whom), so the user can overrule a drop.
 - Generate a replacement for each dropped name using the 4 Strategic Directions and re-filter it, then run the script on the replacements
@@ -226,7 +227,7 @@ This is where the morphological toolkit (see Refinement Toolkit below) is genuin
 > **Tip:** For deep registrar price comparison, promo code hunting, and purchase guidance on your final picks, use the `digital-marketing:domain-hunter` skill.
 
 For the top 8-10 names that passed the Quick Domain Gate:
-- Take domain availability per TLD from the Step 3b registration table. Do not run the script again; re-run it only for a replacement name generated after the gate, or for a TLD still `UNKNOWN` after the retry.
+- Take domain availability per TLD from the Step 3b registration table. Do not run the script again; re-run it only for a replacement name generated after the gate, or for a TLD still `UNKNOWN` after the retry (never for a "no RDAP service" TLD). Show an unread TLD in the table as `unverified`, never as free.
 - Check social media handle availability on major platforms with a web search per name.
 
 Report findings in a table with one column per checked TLD, in the order they were requested:
@@ -238,7 +239,11 @@ Report findings in a table with one column per checked TLD, in the order they we
 
 The three registers to query are EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs are in `references/naming-frameworks.md`. All three are JavaScript applications whose records a web search engine does not index, so **a web search for the name never queries a register**, and a LOW rating built on one is unearned.
 
-Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the search page, enter the exact name, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in.
+Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the register's home page, type the exact name in its search box, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in. Never compose a results URL yourself (a `#/tmview/results?criteria=...` deep link, for example): those are undocumented, change without notice, and are what bot protection flags first.
+
+**Confirm the register answered.** A register that blocks the browser serves a page that is not a result list, and reading it as "no matches" is the error that makes a LOW rating unearned. After each search, the page must show the register's own result list or its explicit zero-results message. Anything else means the register was not queried: a page titled "Problem detected" or "Access denied", a CAPTCHA or consent wall, a redirect to `tmdn.org/error/revise.html`, an empty shell. Record `NOT SCREENED: <register>` with the page's own words (its title and any Reference Number) and go on to the next register. Do not retry URL variations, a second browser engine or any other workaround for the block.
+
+**EU fallback.** When TMview did not answer, search the same name in EUIPO eSearch plus (`https://euipo.europa.eu/eSearch/`): type it in the home page search box and read the Trade marks and Designs counts. It covers EU trade marks only, not the national registers TMview aggregates, so report it as "EU trade marks only, national registers not screened".
 
 If the browser tools are unavailable, stop and tell the user:
 
@@ -261,7 +266,9 @@ run this again:
 
 Do not rate trademark risk without the registers: a LOW rating built on anything else is unearned.
 
-Rate risk when the registers were queried: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
+Rate risk from what the registers returned: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
+- A conflict found on any register stands, whatever the other registers did.
+- LOW needs an answer from an EU register (TMview, or eSearch plus with its limit stated), from USPTO and from WIPO. With any of those missing and no conflict found, the rating is **NOT SCREENED**, listing the registers that did not answer. It is never LOW.
 
 ### Step 6: Market Saturation Analysis (Fail-Fast)
 
@@ -394,9 +401,11 @@ Use the domain checker script (located in domain-hunter) for the Step 3b registr
 python "${PLUGIN_ROOT}/skills/domain-hunter/scripts/domain_checker.py" name1 name2 --tlds .com,.io
 ```
 
-The script checks availability via RDAP. No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass the user's `--tlds` list through when they supplied one. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free, so retry those or verify them at a registrar.
+The script checks availability via RDAP, sending each lookup to the registry that runs the TLD, several at a time (`--workers`, default 8). No API key is needed, and RDAP uses the standard library only. It defaults to `.com`, `.app`, `.io`, `.co`; pass the user's `--tlds` list through when they supplied one. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free, so retry those or verify them at a registrar.
 
-If the script cannot run, fall back to web searches or check registrar sites manually, and say in the report that registration was inferred rather than read from the registry.
+A TLD with no RDAP service (`.io`, `.co`, `.it`) is read from Gandi's search page with Patchright in headless mode (a throwaway browser, no window, no user profile), and its line ends `(Gandi page, headless Patchright)`. That step needs `pip install patchright && patchright install chromium`. Without it the line prints `UNKNOWN  (no RDAP service for .io; patchright not installed ...)`: retrying cannot help, so report the missing install and say the registry was not read. Never run `open` or `start` on a registrar URL, and never use a visible browser for the domain check, since either one opens the user's own browser. `--no-registrar` skips the step.
+
+If the script cannot run, fall back to web searches and give the user registrar links to check by hand, and say in the report that registration was inferred rather than read from the registry.
 
 ## Related Skills
 

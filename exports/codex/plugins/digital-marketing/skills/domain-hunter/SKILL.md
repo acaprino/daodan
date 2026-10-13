@@ -108,19 +108,19 @@ curl -s -o /dev/null -w "%{http_code}" "https://rdap.org/domain/{domain}.{tld}"
 
 A failed command (no network, timeout, rate limit, empty output, any other status) means **UNKNOWN**. Never read a failure as TAKEN and never read it as AVAILABLE. Report UNKNOWN domains as unverified and retry them.
 
+A `404` is only evidence of availability for a TLD that has an RDAP service. `.io`, `.co` and `.it` have none in the IANA bootstrap, and `rdap.org` answers `404` for them too, so `google.io` reads as AVAILABLE. For those TLDs the curl check proves nothing: use the Domain Checker Script (Method 2) or confirm with Method 1b. `rdap.org` also answers `429` after a short burst, so do not loop it over many names; the Domain Checker Script below talks to each registry directly.
+
 **Method 1b: whois confirmation (only where the binary exists)**
 ```bash
 whois {domain}.{tld}
 ```
 Use this to confirm an RDAP result, not to replace it. A registration record means TAKEN. "No match" or "not found" in a successful response means AVAILABLE. A missing binary, a non-zero exit, or empty output means UNKNOWN, not TAKEN. Parked-domain banners can contain the word "available", so read the record itself rather than grepping for substrings.
 
-**Method 2: Registrar search page**
-Open the registrar's domain search in browser to verify:
-```bash
-open "https://www.spaceship.com/domains/?search={domain}.{tld}"
-```
+**Method 2: Registrar search page, read headless by the script**
+A TLD with no RDAP service is verified on a registrar's search page, and the Domain Checker Script below does that itself with Patchright in headless mode (Gandi's page, a throwaway browser, no window). Run the script; do not run `open`, `start` or `xdg-open` on a registrar URL and do not drive a visible browser for a domain check, because each of those opens the user's own browser. Spaceship and Porkbun cannot be read headless (a Cloudflare bot check and an anti-bot wall), so do not build a check on them.
 
-**Method 3: Bulk check via Namecheap/Dynadot**
+**Method 3: Registrar links for the user**
+When the script left a domain UNKNOWN, give the user these as links to click in the report, never open them yourself:
 - https://www.namecheap.com/domains/registration/results/?domain={domain}
 - https://www.dynadot.com/domain/search?domain={domain}
 
@@ -201,9 +201,15 @@ For bulk availability checks, use the domain checker script:
 python "<plugin-root>/skills/domain-hunter/scripts/domain_checker.py" name1 name2 --tlds .com,.io
 ```
 
-The script checks availability via RDAP. No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass `--tlds` to override. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free.
+The script checks availability via RDAP. No API key is needed, and RDAP uses the standard library only. It defaults to `.com`, `.app`, `.io`, `.co`; pass `--tlds` to override. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free.
 
-If the script cannot run, fall back to the RDAP curl check (Step 1, Method 1) or host web search binding queries.
+- **Registry direct.** It reads the IANA RDAP bootstrap once and sends each lookup to the registry that runs the TLD (Verisign for `.com`, Google for `.app`), not through `rdap.org`.
+- **Parallel.** Lookups run in a thread pool: `--workers N`, default 8, at most 16. At most four are in flight per registry host, and a `429` or `5xx` from a host slows every worker aimed at it. Results print in request order.
+- **No RDAP service, read headless.** A TLD absent from the bootstrap (`.io`, `.co`, `.it`) cannot be read from a registry, so the script reads Gandi's search page with Patchright in headless mode: one throwaway browser started on the first such domain, a temporary profile, no visible window, closed at the end. The line says `(Gandi page, headless Patchright)`; the registry itself was not read, so say that in the report. The verdict is accepted only when the page names the exact domain asked about: for a TLD Gandi does not sell it searches another name (`example.gov` becomes `examplegov.com`) and reports that one as available, which the script prints as UNKNOWN. `--no-registrar` skips this step.
+- **Patchright is needed for that step.** Install with `pip install patchright && patchright install chromium`. Without it, or when the page does not load (Gandi sits behind a bot check at times), those domains print `UNKNOWN` with the reason and the run continues. That is a missing dependency to report, not a pass: never read it as available, and never fall back to opening the user's own browser.
+- **Exit status.** `2` when every result is UNKNOWN, `0` otherwise.
+
+If the script cannot run at all, fall back to the RDAP curl check (Step 1, Method 1) with its TLD caveat, or host web search binding queries.
 
 ## References
 

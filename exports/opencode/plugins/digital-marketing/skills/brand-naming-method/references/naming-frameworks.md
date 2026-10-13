@@ -256,7 +256,8 @@ Fuse morphemes from different languages where both parts carry relevant meaning.
 
 ## Trademark Resources
 
-- **EUIPO TMview**: https://www.tmdn.org/tmview/
+- **EUIPO TMview**: https://www.tmdn.org/tmview/ (aggregates EU and national registers; its web application firewall can refuse an automated browser with a "Problem detected" page, which is NOT SCREENED, never "no matches")
+- **EUIPO eSearch plus**: https://euipo.europa.eu/eSearch/ (EU trade marks and designs only, no national registers; the fallback when TMview does not answer)
 - **USPTO Trademark Search**: https://tmsearch.uspto.gov/ (replaced TESS, retired 2023-11-30; old TESS links redirect here)
 - **WIPO Global Brand Database**: https://branddb.wipo.int/
 - **Nice Classification**: 45 classes of goods/services for trademark registration
