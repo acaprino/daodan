@@ -185,7 +185,7 @@ Orchestrate a partitioned multi-agent codebase analysis plus global interconnect
    - `--update`: require an update base; error out if no usable parent team run exists (execution mode is still resolved at the checkpoint)
    - `--no-update`: skip parent detection and run every partition fresh
    - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `/codebase-xray:analyze`)
-3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-xray:xray-method` skill):
+3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-xray:xray-method` skill's `references/run.md`):
    - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
    - Set `RUN_DIR = .codebase-xray/runs/<run-id>`
    - Read `.codebase-xray/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-xray/runs/legacy-<date>/` first
@@ -249,7 +249,7 @@ Runs once for the whole run, inline in the orchestrating context, before partiti
 **Output file:** `$RUN_DIR/knowledge/navigation.md`
 **Output file:** `$RUN_DIR/knowledge/documentation-leads.md`
 
-See `## Phase 0: Project Knowledge Discovery` in `/codebase-xray:analyze` for the full output templates.
+See the `codebase-xray:xray-method` skill's `references/phase-0.md` for the full output templates.
 
 ### Run partition detection algorithm
 
@@ -276,7 +276,7 @@ Otherwise, run the detection chain (first rule that matches wins):
    - Stylesheets (`css` in the classifier's counts) never form a language partition and never count toward the two languages: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side
 5. **Fallback:** single partition wrapping the entire target, name = `root`
 
-**Always outside every partition:** whatever the perimeter leaves out (see `## Perimeter` in the `codebase-xray:xray-method` skill): what Git ignores, every directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). A partition path the user names is analyzed as given.
+**Always outside every partition:** whatever the perimeter leaves out (see `## Perimeter` in the `codebase-xray:xray-method` skill's `references/run.md`): what Git ignores, every directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). A partition path the user names is analyzed as given.
 
 **Partition naming rules:**
 1. From workspace path -> basename
@@ -399,7 +399,17 @@ Sibling partitions (for cross-partition citation lookup if needed):
 
 Required reads before writing:
   - <RUN_DIR>/snapshot/manifest.json: inventory/import metadata for <P_i.path>
-  - ${PLUGIN_ROOT}/skills/xray-method/SKILL.md
+  - ${PLUGIN_ROOT}/skills/xray-method/SKILL.md, then every unit its load map names:
+    ${PLUGIN_ROOT}/skills/xray-method/references/run.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/snapshot.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/update.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/evidence.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/reading.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phase-0.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phases-1-2.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phases-3-4.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phase-7.md
 Use source_reader.py outline for recorded structure and source_reader.py read
 for definitions/ranges selected from the phase's questions. Expand evidence as
 needed; do not reparse or read all source files merely for inventory. Keep
@@ -444,7 +454,17 @@ Active flags: --critical=<bool> --comments=<bool> --depth=<lite|full>
 Sibling partitions: <list>
 
 Required reads before writing:
-  - ${PLUGIN_ROOT}/skills/xray-method/SKILL.md
+  - ${PLUGIN_ROOT}/skills/xray-method/SKILL.md, then every unit its load map names:
+    ${PLUGIN_ROOT}/skills/xray-method/references/run.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/snapshot.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/update.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/evidence.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/reading.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phase-0.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phases-1-2.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phases-3-4.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md
+    ${PLUGIN_ROOT}/skills/xray-method/references/phase-7.md
   - <RUN_DIR>/snapshot/manifest.json: current source index
   - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
   - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)

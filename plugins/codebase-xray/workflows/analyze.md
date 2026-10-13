@@ -17,51 +17,21 @@ argument-hint: "<target path> [--critical] [--comments] [--docs-only] [--phase N
 5. **Never enter plan mode.** Execute immediately.
 6. **Code is ground truth.** Document what the code actually does, not what you think it should do.
 
-## Tool Integration
+## Method
 
-Load `codebase-xray:xray-method` for the bound-snapshot source-reading procedure.
-The scripts in `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/` support
-**Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust,
-CSS (incl. SCSS and LESS)**. Use the current run's manifest for recorded
-structure and `source_reader.py` for source evidence throughout Phases 1-6.
+Load `codebase-xray:xray-method`. Its router names every unit; this workflow reads each one when its work starts:
 
-- **Phase 1-2 (Structure):** Use manifest file/import metadata and `source_reader.py outline` for existing structure. Read selected public definitions with `source_reader.py read`. Use `ast_parser.py` only for required extra details absent from the manifest, such as signatures/export annotations, or single-file parser diagnosis; use `classifier.py` when additional triage metrics are needed. Do not reparse the target for recorded structure
-- **Phase 5 (Usability-blocking):** Run `cascade_scan.py <client root>` (add `--json` to consume it) before reading any stylesheet by hand. It lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, with the class, id and attribute rules each one can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order), screen-level rules first: a fixed or sticky position, a scroll container, a viewport height. Tailwind `@apply` utilities count as the declarations they inline, and when a stylesheet uses Tailwind, screen-level utilities in string-literal `class` and `className` attributes count as conflicts. Its output is leads, never verdicts.
-- **Phase 5 (Risks):** Use `usage_finder.py` to trace symbol usages across the codebase. Multi-language: matches Python `from/import`, Java `import`, JS/TS `import`/`require`, Rust `use`, etc.
-- **Phase 6 (Docs):** Use `doc_review.py` for link validation and marker checks, and `rewrite_comments.py` for multi-language comment quality analysis (Python `#`/docstrings, Java/JS/TS `//` / `/* */` / Javadoc / JSDoc, SQL/PL-SQL `--` / `/* */`, Rust `//` / rustdoc).
+- Tools, forbidden files, source reading and file classification: `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md`, read before Phase 0.
+- Perimeter, concurrent runs and the classic or team choice: `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/run.md`, read before pre-flight.
+- Snapshot commands: `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/snapshot.md`. Incremental updates: `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/update.md`.
 
-Inventoried file-level formats, including configuration and markup, use the
-reader's whole-file fallback; extensions absent from the manifest remain absent
-from inventory coverage. Tree-sitter is optional (see Prerequisites in the
-`codebase-xray:xray-method` skill): Java/JS/TS/Rust use it when their grammar
-loads, otherwise a regex fallback. Python uses stdlib `ast`, SQL/PL-SQL a regex
-DDL extractor, and CSS/SCSS/LESS a stdlib tokenizer.
-
-Do NOT use raw bash commands (cat, grep, find) to extract structure when a dedicated script exists. The scripts use real parsers, which are faster, more accurate, and consume fewer tokens than reading files line by line.
-
-## Forbidden Files
-
-NEVER read or include contents from:
-- `.env`, `.env.*` - environment variables with secrets
-- `credentials.*`, `secrets.*`, `*secret*`, `*credential*`
-- `*.pem`, `*.key`, `*.p12`, `*.pfx` - certificates and private keys
-- `id_rsa*`, `id_ed25519*` - SSH keys
-- `.npmrc`, `.pypirc`, `.netrc` - auth tokens
-- Any file that appears to contain API keys, passwords, or tokens
-
-If encountered: note file existence only ("`.env` present - contains environment config"). NEVER quote contents.
-
-## Perimeter
-
-Below the target, the X-ray never analyzes what Git ignores, any directory whose name starts with a dot, or dependency and build output. `tree_scope.py` owns the rule and every script applies it, so reading by hand follows it too: a path the snapshot left out is not opened, globbed or cited. The target itself is analyzed as given, which is how a dot directory or an ignored one gets an X-ray of its own. The canonical statement is `## Perimeter` in the `codebase-xray:xray-method` skill.
-
-The exclusion is declared at the scope confirmation and in the final report. A run that silently skipped `.github/` would leave a reader believing the project's CI had been read.
+Below the target the X-ray never analyzes what Git ignores, any directory whose name starts with a dot, or dependency and build output; `run.md` states the rule, and the scope confirmation and the final report declare what it left out.
 
 ## Pre-flight
 
 ### 1. Resolve the run
 
-Analyses are concurrent-safe: each invocation is an isolated **run** under `.codebase-xray/runs/<run-id>/` (see `## Concurrent Runs Model` in the `codebase-xray:xray-method` skill).
+Analyses are concurrent-safe: each invocation is an isolated **run** under `.codebase-xray/runs/<run-id>/` (see `## Concurrent Runs Model` in the method's `references/run.md`).
 
 1. Compute `run-id`: value of `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`. On collision with an existing run directory, append `-2`, `-3`, ...
 2. Set `RUN_DIR = .codebase-xray/runs/<run-id>`.
@@ -120,7 +90,7 @@ Create `$RUN_DIR/` and `$RUN_DIR/state.json`:
 
 Parse flags: `--critical` (prioritize high-risk code), `--comments` (comment quality mode), `--docs-only` (documentation health only, skip to Phase 6), `--phase N` (start at phase N), `--depth=lite` (lightweight analysis: skip flow tracing diagrams, state machine diagrams, and detailed dependency analysis for non-critical files, producing only structure + interfaces + risks + final summary), `--run-name <name>` (explicit run identity for concurrent or repeated analyses).
 
-On an incremental run, step 1b's change set already exists by the time this file is written, so `parent_run` (the parent's run-id), `base_snapshot_created_at` (the parent manifest's `created_at`) and `incremental`'s `affected_files`, `files_in_snapshot` and `claims_affected` (from the change set's `totals`) are written here with their real values, not left for later. `extra_reads` has no source in the change set: it counts reads outside the affected-files budget, which cannot happen before any phase has run, so it starts at `0` here and is updated once the `## Extra reads` log is written, at step 9 of `### Incremental depth` below. `git` cannot follow the at-creation rule either: the snapshot that supplies it is not written until `## Execution Order`, so it starts `null` here and is copied in right after that step. A full run leaves `parent_run` and `incremental` as `null` and still records `git` and the snapshot: every run is a possible parent.
+On an incremental run, step 1b's change set already exists by the time this file is written, so `parent_run` (the parent's run-id), `base_snapshot_created_at` (the parent manifest's `created_at`) and `incremental`'s `affected_files`, `files_in_snapshot` and `claims_affected` (from the change set's `totals`) are written here with their real values, not left for later. `extra_reads` has no source in the change set: it counts reads outside the affected-files budget, which cannot happen before any phase has run, so it starts at `0` here and is updated once the `## Extra reads` log is written, at step 9 of the incremental depth procedure in `references/update.md`. `git` cannot follow the at-creation rule either: the snapshot that supplies it is not written until `## Execution Order`, so it starts `null` here and is copied in right after that step. A full run leaves `parent_run` and `incremental` as `null` and still records `git` and the snapshot: every run is a possible parent.
 
 Register `parent_run` in the run's `runs.json` entry as well, `null` for a full run. The chain of `parent_run` values is the analysis history; nothing else is added to hold it.
 
@@ -195,47 +165,11 @@ Analysis phases:
 
 After scope confirmation, every phase runs inline in this context, in order. Nothing is dispatched. The target a classic run is for (one package, under about 200 files, one language) fits one context, and one context that reads the code once costs less than three workers that each read it again. A target larger than that belongs to `/codebase-xray:team-analyze`, which partitions it and runs the same phases per partition in isolated workers; the scope confirmation above is where to say so and stop.
 
-**Every run writes a snapshot.** Right after scope confirmation, before Phase 0:
-
-```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" write \
-  <target> --out $RUN_DIR/snapshot/manifest.json
-```
-
-The snapshot records the tree this run is about to read: every file with its size, mtime and content hash, every symbol with its span and a hash of its body, and the git commit as metadata. It is what makes this run a possible parent for the next one. A full run writes it too.
-
-When a same-target candidate parent exists, add
-`--reuse .codebase-xray/runs/<parent-id>/snapshot/manifest.json` to this write,
-including when full analysis was selected. Reuse checks current bytes and parser
-identity before retaining structure; it still scans and hashes the inventory.
-Preserve the parent manifest.
-For every path that reads source, perform this current write after the verified
-diff even when it reports `none` or only LF/CRLF bytes changed. That result can
-support the parent's claims without making its recorded source bytes current.
-
-Immediately after, copy the manifest's own `git` field into `$RUN_DIR/state.json`'s `git` field. This is the only new `state.json` field this step fills: `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created, in step 2, because step 1b's change set already existed by then.
+**Every run writes a snapshot**, right after scope confirmation and before Phase 0, as `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/snapshot.md` says, including its `--reuse` and `state.json` steps.
 
 ### Source reading in every code phase
 
-Derive `source_manifest = $RUN_DIR/snapshot/manifest.json` from the run directory;
-this is a prompt alias, not a new `state.json` field or another index. Use
-`source_reader.py outline` with bounded exact-path/pattern queries to locate
-definitions. Narrow truncated output. Use `source_reader.py read` with exact
-symbols or line ranges to examine source, expanding to callers/callees, gates,
-constants, types, invariants, configuration and applicable CSS/markup until each
-claim is supported. Keep whole-target cascade scans for entry-gating paths.
-Import neighbours and retained file/class context do not establish completeness.
-
-Changed/deleted source or parser mismatches require refreshing the current run's
-snapshot before continuing; never substitute a latest mirror or edit the parent.
-Use full-file reading where needed, rather than reading every file by default.
-Each code phase's owned report includes `## Source reading`: exact manifest,
-actual source files/ranges examined, diagnostics and gaps. Derive final deep-read
-coverage from that union, separately from inventory and user-supplied runtime
-evidence. Outline metadata does not count as deep reading.
-On an update, keep carried parent reading provenance separate from source
-actually examined in this run; copied `## Source reading` sections do not count
-as a current read. Add current re-derivation reads to the relevant phase ledger.
+Every code phase reads source from this run's snapshot as `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md` says, and its report carries the `## Source reading` section that unit defines.
 
 ### Full depth (default)
 
@@ -256,42 +190,7 @@ The condensed `$RUN_DIR/07-final-report.md` covers structure, interfaces, and ri
 
 ### Incremental depth (an update accepted at the checkpoint)
 
-The phases and their numbering are unchanged. What changes is that most claims are already on disk and only the affected ones are re-derived.
-
-1. **Write the snapshot** for this run, as above.
-
-2. **Carry the parent forward**, mechanically:
-
-   ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" carry \
-     .codebase-xray/runs/<parent-id> $RUN_DIR
-   ```
-
-   This copies the parent's `01` to `06` and `knowledge/` into the run, renumbers every carried `file:line` citation whose symbol survived the edit, and inserts an `<!-- xray:stale reason=... cites=... -->` marker above every claim the change set affects. Phase 7 is never carried: it is regenerated.
-
-3. **Phase 0 runs in full**, exactly as in a fresh run, overwriting the carried `knowledge/`. It is the cheap discovery pass and what it finds shapes what the re-derivation looks for.
-
-4. **Phases 1 to 6, in order, only where work exists.** For each phase file: open it, and for every `xray:stale` marker re-derive that claim through source blocks from this run's manifest, then delete the marker. A marker whose reason is `symbol-removed` or `file-removed` means the claim is retired: delete the claim with the marker. Then write claims for the symbols listed under `## Added symbols` in `changes.md` that belong to this phase file (`01` and `02` always, `03` to `06` at full depth). **A phase file with no marker and no added symbol is not opened at all.**
-
-5. **Read only the affected files.** `changes.json` lists them under `affected_files`. When re-deriving a flow or a contract genuinely requires a file outside that set, read it and log it under `## Extra reads` in `changes.md`, naming the claim that needed it. That log is the evidence a future threshold gets tuned from.
-
-6. **A flow that cites even one affected symbol is re-derived whole.** Flows cite every step, and a step that changed can change the steps after it.
-
-7. **Phase 7 is regenerated** from the phase files, as in a full run.
-
-8. **Gate publication:**
-
-   ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/snapshot.py" check $RUN_DIR
-   ```
-
-   Exit `0` means clean: proceed to publish. Exit `1` means a claim is still marked stale or an added symbol was never documented: do not publish, report what the check named, and finish the work. Exit `2` means `changes.json` is missing, which should not happen this late in an incremental run: do not publish, and treat it as a bug in the run rather than in the code under analysis. This gate is what makes an incremental run worth trusting.
-
-9. **Write the completion sections of `changes.md`**: `## Claims confirmed`, `## Claims revised` (old and new text, one row each), `## Claims retired`, `## Claims added`, `## Extra reads`.
-
-10. **Publish** exactly as a full run does.
-
-`--phase N` and `--docs-only` are full-run flags. They change this run's flags, so the change set already recommends a full run.
+Follow `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/update.md`: carry the parent, re-derive only what changed, gate with `snapshot.py check`, then publish as a full run.
 
 ### Overrides
 
@@ -299,405 +198,17 @@ If `--phase N` or `--docs-only` flags are set, run only the requested phase(s), 
 
 ---
 
-## Phase 0: Project Knowledge Discovery
-
-Runs in **every depth, including `--depth=lite`**, and runs first, in the orchestrating context: reading project instructions and globbing for index files is cheap, and what it finds shapes what every later phase looks for.
-
-Phases 1 through 7 keep their numbers. `--phase N` is a user-facing flag and renumbering would break every invocation that names a phase.
-
-**Phase 0 is a preamble, not a selectable analysis phase.** It runs before every invocation, `--phase 5` and `--docs-only` included, and it does not change the numbering semantics of phases 1 to 7. `--phase 5` still means "run phase 5 and nothing else from the analysis set", with the preamble in front of it. `--phase 0` runs the preamble alone, which is a legitimate way to ask only "how does this repository document itself".
-
-This phase owns discovery of **how the repository documents itself**. It does not evaluate whether the documentation is accurate, which is Phase 6.
-
-1. Read `CLAUDE.md`, `AGENTS.md` and any equivalent project instruction file at the repository root and in the target's ancestors. Record any navigation instruction they give, especially a statement of the form "look here first to find where a concept lives".
-2. Locate the canonical indexes the project actually uses. Glob for, at minimum: `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`. Record what exists, not what you expected to exist. The perimeter applies here as everywhere: an index under a dot directory, or one Git ignores, is not a lead.
-3. For each concept, symbol and subsystem in the analysis scope, search the located documents for an entry. Record the concept, the document, and the anchor or heading that matched.
-4. Write both output files. Every row is a lead with status `documented` or `unverified`. Nothing here is `verified`, because this phase reads no code.
-
-**Output file:** `$RUN_DIR/knowledge/navigation.md`
-
-```markdown
-# Project Knowledge Navigation
-
-## Project instructions read
-| File | Navigation rule it states |
-|------|---------------------------|
-
-## Canonical indexes found
-| Index | Path | What it indexes |
-|-------|------|-----------------|
-
-## Conventions observed
-[How this repository organizes its knowledge, in prose. Name the file the project treats as its semantic index, if it has one.]
-
-## Not found
-[Index kinds searched for and absent. An absent index is a fact worth recording.]
-```
-
-**Output file:** `$RUN_DIR/knowledge/documentation-leads.md`
-
-```markdown
-# Documentation Leads
-
-> Leads, not truth. Every row is a pointer to where the project claims a concept lives.
-> Status is `documented` or `unverified`. No row here is `verified`: this phase reads no code.
-
-| Concept / symbol | Document | Anchor | Status |
-|------------------|----------|--------|--------|
-
-## Concepts in scope with no lead
-[Concepts the scope touches for which no document was found. This list is what a
-downstream consumer must discover independently.]
-```
-
-The canonical copy of this section lives in `## Phase 0: Project Knowledge Discovery` of the `codebase-xray:xray-method` skill, which the `team-analyze` workers read directly. The copy here keeps the command path self-contained, and it is the copy `/senior-review:team-review` reaches when it invokes this command. Edit both together.
-
----
-
-## Phase 1: Structure Extraction
-
-Build the structural map from the current manifest. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
-
-For each inventoried file, report recorded metadata and read source only for
-additional claims required by the phase:
-- Module/file name and path
-- Language and framework
-- Imports and dependencies
-- Exported symbols (functions, classes, constants)
-- File size and complexity indicators (line count, function count)
-
-**Output file:** `$RUN_DIR/01-structure.md`
-
-```markdown
-# Phase 1: Structure Extraction
-
-## File Inventory
-| File | Language | Lines | Functions | Classes | Imports |
-|------|----------|-------|-----------|---------|---------|
-| ... | ... | ... | ... | ... | ... |
-
-## Dependency Graph
-[Mermaid diagram of module dependencies]
-
-## Entry Points
-[Main files, API routes, CLI handlers]
-
-## Key Observations
-[Notable structural patterns or concerns]
-
-## Where to Add New Code
-[For each major directory, describe what belongs there]
-- New feature module: `[path]`
-- New API endpoint: `[path]`
-- New utility: `[path]`
-- New tests: `[path]`
-
-## Naming Conventions
-[Prescriptive: "Use X" not "X is used"]
-- Files: [pattern]
-- Functions: [pattern]
-- Classes: [pattern]
-```
-
-Update `$RUN_DIR/state.json`: add phase 1 to `completed_phases`.
-
----
-
-## Phase 2: Interface Analysis
-
-For each module, document the public interface:
-
-Locate definitions in the manifest, then verify their public contract through
-source blocks and the types, validators and configuration it depends on.
-
-- Function signatures with parameter types and return types
-- Class hierarchies and method signatures
-- API endpoints with request/response shapes
-- Configuration interfaces
-- Event/signal contracts
-
-**Output file:** `$RUN_DIR/02-interfaces.md`
-
-```markdown
-# Phase 2: Interface Analysis
-
-## Public APIs
-[Organized by module]
-
-## Contracts
-[Interface definitions, type shapes, schemas]
-
-## External Dependencies
-[Third-party libraries and how they're used]
-
-## How to Add a New Module
-[Step-by-step guide based on existing patterns]
-1. Create file at `[path]`
-2. Follow interface pattern from `[example file]`
-3. Register in `[registration point]`
-4. Add tests at `[test path]`
-```
-
----
-
-## Phase 3: Flow Tracing
-
-Trace critical execution paths through the codebase:
-
-- Request lifecycle (entry → processing → response)
-- Data transformation pipeline (input → validation → processing → output)
-- Error propagation paths (where errors originate, how they're handled)
-- State mutation flows (what changes state, side effects)
-- Paths that gate entry into the product: authentication, onboarding, consent or policy acceptance, first-run setup. These are mandatory critical paths whenever this phase runs, not a `--critical` extra, because a user who cannot complete one reaches nothing else. For client code the trace covers what the screen actually renders, which means the effective style cascade over it (global selectors that reach the root or its first children, `position`, `overflow`, flex sizing, scroll locking) and not only the component logic. A global rule that overrides a screen's positioning is a defect on that path, and the trace ends at the control the user must reach. Run `cascade_scan.py` over the client root, never over a stylesheet directory alone, and cite, on the path, every rule it lists whose selector can match that screen.
-
-If `--critical` flag is set, prioritize:
-- Authentication/authorization flows
-- Payment/transaction flows
-- Data persistence flows
-
-**Output file:** `$RUN_DIR/03-flows.md`
-
-```markdown
-# Phase 3: Flow Tracing
-
-## Critical Paths
-[Step-by-step flow descriptions with file:line references. Entry-gating paths first, each ending at the control the user must reach, with the stylesheet rules that govern that screen cited alongside the component]
-
-## Data Flow
-[How data transforms through the system]
-
-## Error Handling Paths
-[Where errors originate and how they propagate]
-
-## Side Effects
-[Functions with side effects and their blast radius]
-
-## Process Diagrams
-
-For each significant process discovered, generate a Mermaid flowchart diagram. Categorize each diagram as Technical, Functional, or End-to-End.
-
-### Technical Processes
-[Internal system mechanics - how components interact at code level]
-[One Mermaid flowchart per process, e.g. request handling pipeline, database transaction flow, cache invalidation]
-
-### Functional Processes
-[Business logic flows - what the system does from a domain perspective]
-[One Mermaid flowchart per process, e.g. user registration, order processing, notification dispatch]
-
-### End-to-End Processes
-[Full user journeys spanning multiple components and services]
-[One Mermaid flowchart per process, e.g. complete purchase flow from cart to confirmation, onboarding flow from signup to first action]
-
-Diagram guidelines:
-- Limit to the 5 most critical/complex paths per category to avoid noise. Reference additional flows in prose.
-- Use `flowchart TD` (top-down) for linear processes, `flowchart LR` (left-right) for pipelines
-- Include decision nodes (`{condition}`) for branching logic
-- Label edges with conditions, data passed, or HTTP methods
-- Reference source files as comments: `%% src/auth/login.py::handle_request`
-- Mark error/failure paths with dotted lines: `-->|error|`
-- Keep each diagram under 30 nodes - split large processes into sub-diagrams
-```
-
----
-
-## Phase 4: Semantic Understanding
-
-This is the AI-powered phase -- understand the **WHY** behind the code:
-
-- Business purpose of each module
-- Design decisions and trade-offs (inferred from code patterns)
-- Historical context (from git blame and commit messages)
-- Assumptions embedded in the code
-- Implicit contracts not documented anywhere
-- Architecture Decision Records (ADRs) -- document rejected alternatives and WHY they were rejected, so future developers don't reintroduce failed approaches
-
-**Output file:** `$RUN_DIR/04-semantics.md`
-
-```markdown
-# Phase 4: Semantic Understanding
-
-## Module Purposes
-[WHY each module exists, not just WHAT it does]
-
-## Design Decisions
-[Inferred decisions and their trade-offs]
-
-## Architecture Decision Records
-[For each significant design choice discovered, document as an ADR:]
-- **Decision:** [What was chosen]
-- **Context:** [What problem it solves]
-- **Alternatives rejected:** [What was NOT chosen and WHY]
-- **Consequences:** [Trade-offs accepted]
-
-ADRs bridge the gap between temporal purity (document only the present) and historical
-knowledge (don't repeat past mistakes). The code shows WHAT was chosen; ADRs preserve
-WHY alternatives were rejected.
-
-## Embedded Assumptions
-[Assumptions the code makes that aren't documented]
-
-## Hidden Contracts
-[Implicit agreements between modules]
-
-## Conventions to Follow
-[Prescriptive rules derived from observed patterns]
-- Error handling: [pattern]
-- Logging: [pattern]
-- Configuration: [pattern]
-```
-
----
-
-## Phase 5: Pattern & Risk Detection
-
-Scan for anti-patterns, red flags, and technical debt:
-
-- **Anti-patterns**: God objects, spaghetti code, shotgun surgery, feature envy
-- **Red flags**: Swallowed exceptions, hardcoded credentials, race conditions, N+1 queries
-- **Usability-blocking**: an entry-gating path (from Phase 3 when it ran, otherwise identified here from the Phase 1 entry points) that cannot be completed under a reachable configuration: theme, viewport, font scale, locale. Start from `cascade_scan.py`: each candidate it lists reaches the root or its untargeted children and sets a property that decides layout, and each conflict names a rule the candidate can beat. Confirm every candidate against the component tree: does its selector match the entry screen's element, and is its scope class applied there (`usage_finder.py`). A confirmed override of a fixed or scrollable entry screen is Critical. This is static evidence, ranked by what the cascade proves; nothing here was exercised, and the report says so unless the user supplied runtime evidence
-- **Technical debt**: TODO/FIXME comments, deprecated APIs, outdated patterns
-- **Failure modes**: What breaks under load, edge cases, missing error handling
-
-**Output file:** `$RUN_DIR/05-risks.md`
-
-```markdown
-# Phase 5: Pattern & Risk Detection
-
-## Anti-Patterns Found
-[Organized by severity]
-
-## Red Flags
-[Security, reliability, performance, and usability-blocking risks. A usability-blocking row names the entry-gating path it blocks and the rule that blocks it]
-
-## Technical Debt Inventory
-[TODO/FIXME items, deprecated usage, modernization opportunities]
-
-## Failure Mode Analysis
-[What could break and under what conditions]
-```
-
----
-
-## Phase 6: Documentation Health
-
-Evaluate existing documentation against the code reality:
-
-- **Accuracy**: Do docs match the actual code?
-- **Completeness**: What's documented vs what should be?
-- **Freshness**: When were docs last updated vs code?
-- **Broken links**: References to files/functions that don't exist
-- **Comment quality**: Using antirez standards (if `--comments` flag)
-
-If `--comments` flag is set, also analyze comment quality:
-- Identify trivial/debt/backup comments
-- Score comment usefulness
-- Suggest rewrites following antirez standards
-
-**Output file:** `$RUN_DIR/06-documentation.md`
-
-```markdown
-# Phase 6: Documentation Health
-
-## Documentation vs Code Accuracy
-[Mismatches between docs and reality]
-
-## Coverage Gaps
-[Undocumented public APIs, missing architecture docs]
-
-## Broken References
-[Dead links, non-existent file paths in docs]
-
-## Comment Quality [if --comments]
-[Comment audit with improvement suggestions]
-```
-
----
-
-## Phase 7: Final Report
-
-Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
-
-**Context management strategy** (to avoid "lost in the middle" on large codebases):
-1. Read each phase file one at a time
-2. After reading each file, extract the key findings into a running summary (max 5 bullet points per phase)
-3. After processing all 6 files, write the final report from the extracted summaries
-4. For detailed sections, cross-reference the original phase files rather than duplicating content
-
-**Output file:** `$RUN_DIR/07-final-report.md`
-
-```markdown
-# Codebase X-Ray Analysis Report
-
-## Target
-[From scope]
-
-## Executive Summary
-[2-3 sentences on overall codebase health]
-
-## Project at a Glance
-[2-3 paragraph narrative explaining what this project does, who it's for, and how it works - written for someone who has never seen the codebase]
-
-## Architecture Overview
-[Mermaid diagram + narrative from Phases 1-2]
-
-## Technology Decisions
-[Key tech choices and why they were made - useful for presentations and onboarding]
-
-## Critical Paths
-[Key findings from Phase 3]
-
-## Key Process Diagrams
-[Include the most important Mermaid flowcharts from 03-flows.md - select 3-5 diagrams that best represent the system's core processes. Prioritize E2E and Functional diagrams over Technical ones. Reference 03-flows.md for the complete set.]
-
-## Design Insights
-[Key findings from Phase 4]
-
-## Risk Assessment
-| Category | Critical | High | Medium | Low |
-|----------|----------|------|--------|-----|
-| Anti-patterns | X | X | X | X |
-| Security risks | X | X | X | X |
-| Usability-blocking | X | X | X | X |
-| Technical debt | X | X | X | X |
-| Doc gaps | X | X | X | X |
-
-## Documentation vs Reality
-[Discrepancies found between existing docs and actual code behavior - useful for doc maintenance]
-
-## Top Priority Actions
-1. [Most important fix/improvement]
-2. [Second priority]
-3. [Third priority]
-
-## Detailed Findings
-[Cross-references to phase files for full details]
-
-## Quick Reference: Which File to Consult
-
-| Your Task | Start With | Also Check |
-|-----------|-----------|------------|
-| Onboarding / understanding the project | 07-final-report, 01-structure | 04-semantics |
-| Writing new feature | 01-structure (Where to Add), 02-interfaces | 04-semantics |
-| Fixing a bug | 03-flows, 05-risks | 01-structure |
-| Refactoring | 01-structure, 04-semantics, 05-risks | 03-flows |
-| Code review | 02-interfaces, 05-risks | 06-documentation |
-| Updating documentation | 06-documentation, 04-semantics | 02-interfaces |
-| Creating report/presentation | 07-final-report, 01-structure | 04-semantics |
-| Finding doc vs code discrepancies | 06-documentation | 03-flows, 05-risks |
-
-## Analysis Metadata
-- Run: [run-id]
-- Target: [path]
-- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count). Outside the perimeter by rule: [N] dot directories ([names]) and [N] paths Git ignores, ignore rules [applied | unavailable], from the manifest's `scope` block
-- Files read in depth: [count, and the list or the directories]
-- Exercised at runtime: none. This is static analysis; if the user supplied runtime evidence, cite it here instead
-- Phases completed: [list]
-- Date: [timestamp]
-```
-
-The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path. The inventory line names what the perimeter left out for the same reason: `.github/` or a generated client is exactly what a reader assumes was read.
-
-Update `$RUN_DIR/state.json`: set `status` to `"complete"`.
+## Phases
+
+Each phase is one unit. Read it when the phase starts, run it, write its file, then move on:
+
+| Phase | Unit |
+|---|---|
+| 0, Project Knowledge Discovery | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phase-0.md` |
+| 1, Structure Extraction, and 2, Interface Analysis | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-1-2.md` |
+| 3, Flow Tracing, and 4, Semantic Understanding | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-3-4.md` |
+| 5, Pattern & Risk Detection, and 6, Documentation Health | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md` |
+| 7, Final Report | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phase-7.md` |
 
 ---
 
