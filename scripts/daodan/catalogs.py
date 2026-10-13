@@ -105,11 +105,7 @@ def catalog_document(
         # that was just rendered, never from a hand-maintained list.
         if packages is not None and plugin.name in packages:
             entry.update(package_components(packages[plugin.name]))
-        source = _source(host, plugin.name)
-        if isinstance(source, dict):
-            entry.update(source)
-        else:
-            entry["source"] = source
+        entry["source"] = _source(host, plugin.name)
         entries.append(entry)
 
     document: dict[str, object] = {
@@ -337,11 +333,7 @@ def merge_into_legacy(
             entry["version"] = plugin.version
             entry["description"] = plugin.description
             entry["license"] = plugin.license
-            source = _source(host, plugin.name)
-            if isinstance(source, dict):
-                entry.update(source)
-            else:
-                entry["source"] = source
+            entry["source"] = _source(host, plugin.name)
             for kind in ("agents", "skills", "commands", "mcpServers"):
                 entry.pop(kind, None)
             entry.update(package_components(packages[plugin.name]))
@@ -355,11 +347,7 @@ def merge_into_legacy(
             "license": plugin.license,
             "dependencies": list(plugin.required_dependencies),
         }
-        source = _source(host, plugin.name)
-        if isinstance(source, dict):
-            entry.update(source)
-        else:
-            entry["source"] = source
+        entry["source"] = _source(host, plugin.name)
         entry.update(package_components(packages[plugin.name]))
         entries.append(entry)
     merged["plugins"] = entries
