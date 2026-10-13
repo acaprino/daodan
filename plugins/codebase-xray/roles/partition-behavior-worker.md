@@ -43,7 +43,7 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 
 ## CROSS-PARTITION CITATION CONTRACT
 
-Load `codebase-xray:xray-method` for the bound-snapshot source-reading procedure.
+Load `codebase-xray:xray-method` and read its `references/evidence.md` for the bound-snapshot source-reading procedure.
 Use `source_reader.py outline` on `source_manifest` to locate exact symbols from
 the Wave 1 leads, then `source_reader.py read` for their implementations. Expand
 to callers, callees, validators, constants, types, configuration and relevant

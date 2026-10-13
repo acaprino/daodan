@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.3.4; source-sha256: 2c006ba6dd3f07e0f3e731615752d1dfe827e09fa5828312f47ca291c8df8103. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.4.0; source-sha256: 709f6b5b1158a97426d70ab023dadaa40d9e33d99d34d8a3d35e95bc9740ab2b. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-xray`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-xray-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-xray`. The owning plugin's declared logical skill identities are `codebase-xray:xray-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `codebase-xray:xray-method` -> compiled registry name `xray-method` at `skills/xray-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -134,7 +134,7 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 
 ## SOURCE READING
 
-Load `codebase-xray:xray-method` for the owner commands. Use
+Load `codebase-xray:xray-method` and read its `references/snapshot.md`, `references/reading.md` and `references/evidence.md` for the owner commands. Use
 `source_reader.py outline` on `source_manifest` to locate exact definitions,
 then `source_reader.py read` for the source evidence behind each contract or
 invariant. Metadata and prior claims are discovery leads. Expand validated reads

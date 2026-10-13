@@ -91,6 +91,8 @@ The brief has six fields (listed in Step 1). Where they come from depends on wha
 
 **Branch B: the brief is thin or the user names a project.** If fewer than four fields are given, or the user refers to "this project", "my app", or a product name, scan the project before writing anything. Read files first, then present what you found.
 
+**Reference country (both branches).** Trademark risk is graded per territory in Step 5, and the territory that matters most is the country the brand launches in, so the run needs that country before Step 1. Take it from `--country`, from the brief, or from the project (company address, currency, locale, the language of the README or landing copy). If none of those names one, ask this single question and wait: "Which country is the reference market for the trademark check?" It is asked in Branch A too, because it is not one of the six brief fields. A brief that spans several countries still gets one reference country, the one where the brand will be registered first.
+
 **WRONG (never do this in either branch):**
 > Welcome to Brand Naming! I need a brief to get started. What are you naming?
 > Please share: - What it is ... - Industry/category ... - Target audience ...
@@ -114,6 +116,7 @@ The brief has six fields (listed in Step 1). Where they come from depends on wha
    > - Core values/tone: [inferred]
    > - Languages: [inferred or default: en, it, es, fr, de, pt. If the user passed `--languages`, use exactly that list instead]
    > - Constraints: [inferred or none detected]
+   > - Reference country: [inferred from the project, or ask]
 
 4. Only ask follow-up questions for fields you genuinely could not infer from any source. If you found enough context to fill 4+ fields, proceed with confirmation -- do NOT show a generic questionnaire.
 
@@ -132,6 +135,7 @@ Using the brief you extracted or scanned above, extract or confirm these **brief
 - Tone (playful, serious, premium, techy, natural, etc.)
 - Languages/markets the name must work in
 - Any constraints (length, letter preferences, sounds to avoid)
+- Reference country (see above) and the Nice classes the product falls in; state the classes you assume (for example 9 and 42 for software) so the user can correct them
 
 **Sector Ban List** - After extracting the brief, identify the 5-10 most overused prefixes, suffixes, and roots in the target sector. Create a BAN LIST that all generated names must avoid. Examples:
 - Fitness sector: ban `Fit`, `Nutri`, `Cal`, `Diet`, `Food`, `Meal`, `Gym`, `Health`, `Body`, `Lean`
@@ -232,11 +236,19 @@ Report findings in a table with one column per checked TLD, in the order they we
 
 ### Step 5: Trademark Pre-screening
 
-The three registers to query are EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs are in `references/naming-frameworks.md`. All three are JavaScript applications whose records a web search engine does not index, so **a web search for the name never queries a register**, and a LOW rating built on one is unearned.
+Trademark risk is graded for three territories: the reference country (Step 1), Europe and the world. The registers are the national register of the reference country, EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs and the UIBM procedure are in `references/naming-frameworks.md`. A web search engine does not index their records, so **a web search for the name never queries a register**, and a class A built on one is unearned.
 
-Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the register's home page, type the exact name in its search box, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in. Never compose a results URL yourself (a `#/tmview/results?criteria=...` deep link, for example): those are undocumented, change without notice, and are what bot protection flags first.
+| Territory | Registers that must answer |
+|---|---|
+| Reference country | Italy: UIBM banca dati. United States: USPTO. Any other country: that national office's own trademark database, found from the office's official site and never from a guessed URL; if none can be reached the territory is NS |
+| Europe | EUIPO TMview, or EUIPO eSearch plus when TMview did not answer (EU trade marks only) |
+| World | WIPO Global Brand Database and USPTO |
 
-**Confirm the register answered.** A register that blocks the browser serves a page that is not a result list, and reading it as "no matches" is the error that makes a LOW rating unearned. After each search, the page must show the register's own result list or its explicit zero-results message. Anything else means the register was not queried: a page titled "Problem detected" or "Access denied", a CAPTCHA or consent wall, a redirect to `tmdn.org/error/revise.html`, an empty shell. Record `NOT SCREENED: <register>` with the page's own words (its title and any Reference Number) and go on to the next register. Do not retry URL variations, a second browser engine or any other workaround for the block.
+A register serves every territory it is listed under, so one USPTO search covers both the United States as reference country and the world.
+
+Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the register's home page, type the exact name in its search box, and read the result list for exact matches and confusingly similar marks, noting the Nice class of each (the classes assumed in Step 1). Never compose a results URL yourself (a `#/tmview/results?criteria=...` deep link, for example): those are undocumented, change without notice, and are what bot protection flags first.
+
+**Confirm the register answered.** A register that blocks the browser serves a page that is not a result list, and reading it as "no matches" is the error that makes a class A unearned. After each search, the page must show the register's own result list or its explicit zero-results message. Anything else means the register was not queried: a page titled "Problem detected" or "Access denied", a CAPTCHA or consent wall, a redirect to `tmdn.org/error/revise.html`, an empty shell. Record `NOT SCREENED: <register>` with the page's own words (its title and any Reference Number) and go on to the next register. Do not retry URL variations, a second browser engine or any other workaround for the block.
 
 **EU fallback.** When TMview did not answer, search the same name in EUIPO eSearch plus (`https://euipo.europa.eu/eSearch/`): type it in the home page search box and read the Trade marks and Designs counts. It covers EU trade marks only, not the national registers TMview aggregates, so report it as "EU trade marks only, national registers not screened".
 
@@ -245,8 +257,9 @@ If the browser tools are unavailable, stop and tell the user:
 ```
 Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
 
-Trademark pre-screening queries EUIPO TMview, USPTO Trademark Search and the
-WIPO Global Brand Database, which cannot be searched from a search engine.
+Trademark pre-screening queries the national register of the reference country,
+EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database, which
+cannot be searched from a search engine.
 
 Install Microsoft's Playwright MCP server for the host you run in, then
 run this again:
@@ -259,11 +272,18 @@ run this again:
   OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
 ```
 
-Do not rate trademark risk without the registers: a LOW rating built on anything else is unearned.
+Do not grade trademark risk without the registers: a class A built on anything else is unearned.
 
-Rate risk from what the registers returned: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
-- A conflict found on any register stands, whatever the other registers did.
-- LOW needs an answer from an EU register (TMview, or eSearch plus with its limit stated), from USPTO and from WIPO. With any of those missing and no conflict found, the rating is **NOT SCREENED**, listing the registers that did not answer. It is never LOW.
+**Risk classes.** Grade each territory from what its registers returned, A being the lowest risk and D the highest:
+- **A**: no identical or similar mark found
+- **B**: similar marks only in Nice classes unrelated to the product
+- **C**: a similar mark in the product's class, or an identical mark in a related class
+- **D**: an identical or near-identical mark, registered or pending, in the product's class
+- **NS** (not screened): a register the territory needs did not answer. NS is never A and never hides a conflict.
+
+A conflict found on any register stands, whatever the other registers did, so a territory's class is the worst class any of its registers returned. Class A needs every register of the territory to have answered. Europe answered by eSearch plus alone is graded with the note "EU trade marks only, national registers not screened".
+
+A D in the reference country removes the name here and goes in the removed-names list as step 5, because the brand could not be registered where it launches. A D in Europe or the world does not remove the name: it lowers the Trademark Risk score (Step 7) and goes in the report's "Before you commit" list.
 
 ### Step 6: Market Saturation Analysis (Fail-Fast)
 
@@ -322,9 +342,11 @@ Score the 5 names that survived Step 6 from 1 to 5 on each criterion, using thes
 | Relevance | 10% | Connection to brand values/product |
 | SEO Potential | 10% | Online visibility, keyword alignment |
 | Domain Availability | 10% | .com or strong alternative TLD available |
-| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score). A NOT SCREENED name scores 3 and the cell reads "3 (not screened)", so the total is visibly provisional |
+| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score), from the Step 5 risk classes weighted to the reference country; the rule is under this table |
 | Emotional Impact | 5% | Evocative power, storytelling potential |
 | Cultural Adaptability | 5% | Works across target languages and cultures |
+
+**Trademark Risk score.** Start from the reference country's class: A 5, B 4, C 2, D 1. Take off 1 (never below 1) when Europe or the world has a worse class than the reference country. When the reference country is NS, the score is 3 or what the worst class that did answer would score, whichever is lower, and the cell reads "3 (not screened)", so the total is visibly provisional.
 
 Scale, whole numbers: 5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying. Every score cites the evidence behind it (a test result, a search finding, a register answer). A criterion with no evidence behind it scores 3 and is marked "unverified", never guessed high.
 
@@ -335,9 +357,9 @@ Formula: `Overall = SUM(criterion_score * weight)`, which lands between 1.0 and 
 Read `references/report-template.md` and fill it in. The template is the report: keep its sections, their order and its table shapes, and replace every placeholder. Do not add sections, change the headings or improvise another layout, so every run produces the same document.
 
 The template carries, in order:
-1. **Summary**: the recommended name, why it ranks first, and a ranked table of the 5 scored names.
+1. **Summary**: the recommended name, why it ranks first, and a ranked table of the 5 scored names with their trademark class for the reference country, Europe and the world.
 2. **Scorecard**: the criteria as rows with their weights, the 5 names as columns, the Overall score last.
-3. **Top 3 names**: for each, a description (etymology, meaning, why it fits), every criterion's score with a one-sentence motivation that cites its evidence, availability, trademark rating, market, wordmark, tagline and the main risk.
+3. **Top 3 names**: for each, a description (etymology, meaning, why it fits), every criterion's score with a one-sentence motivation that cites its evidence, availability, a trademark table with the class A to D for the reference country, Europe and the world, market, wordmark, tagline and the main risk.
 4. **Runners-up**: ranks 4 and 5 with their weakest criterion and every criterion's score, each with a one-sentence motivation citing its evidence.
 5. **Names removed**: every name dropped in Steps 1b to 6 with the step and the reason, so the user can overrule a drop.
 6. **Before you commit**: one checkbox per open check, such as an unscreened register or an unverified TLD.

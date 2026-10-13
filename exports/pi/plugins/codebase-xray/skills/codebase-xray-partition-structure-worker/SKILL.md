@@ -114,12 +114,12 @@ If encountered: note file existence only (`".env present — contains environmen
 
 ## PERIMETER
 
-Inside `partition_path`, never analyze what Git ignores, any directory whose name starts with a dot, or dependency and build output. The scripts apply the rule; reading by hand follows it. A path the run's snapshot left out is not opened, globbed or cited. The canonical statement is `## Perimeter` in the `codebase-xray:xray-method` skill.
+Inside `partition_path`, never analyze what Git ignores, any directory whose name starts with a dot, or dependency and build output. The scripts apply the rule; reading by hand follows it. A path the run's snapshot left out is not opened, globbed or cited. The canonical statement is `## Perimeter` in the `codebase-xray:xray-method` skill's `references/run.md`.
 
 ## TOOL USAGE
 
-Load `codebase-xray:xray-method` and follow its bound-snapshot source-reading
-procedure. Start with `source_manifest` file/import metadata and
+Load `codebase-xray:xray-method` and follow the bound-snapshot source-reading
+procedure in its `references/evidence.md`. Start with `source_manifest` file/import metadata and
 `source_reader.py outline`, filtered to repository-relative paths below
 `partition_path`. Use an anchored path pattern for a partition, or `--path` for
 one exact file. Narrow a truncated outline before choosing symbols.

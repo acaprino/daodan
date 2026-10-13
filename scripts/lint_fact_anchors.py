@@ -181,7 +181,7 @@ ANCHORS = {
         "share of the incident tree's applied rules written with Tailwind @apply, which justifies the expansion in the stylesheet adapter; corrected once from a figure that measured something else",
     ),
     "xray-snapshot-path": (
-        "plugins/codebase-xray/skills/xray-method/SKILL.md",
+        "plugins/codebase-xray/skills/xray-method/references/snapshot.md",
         r"snapshot/([\w.-]+\.json)",
         "X-ray snapshot manifest path, stated in the skill and the plugin doc",
     ),

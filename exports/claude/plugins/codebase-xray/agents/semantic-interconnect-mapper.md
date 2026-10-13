@@ -130,7 +130,7 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 
 ## SOURCE READING
 
-Load `codebase-xray:xray-method` for the owner commands. Use
+Load `codebase-xray:xray-method` and read its `references/snapshot.md`, `references/reading.md` and `references/evidence.md` for the owner commands. Use
 `source_reader.py outline` on `source_manifest` to locate exact definitions,
 then `source_reader.py read` for the source evidence behind each contract or
 invariant. Metadata and prior claims are discovery leads. Expand validated reads

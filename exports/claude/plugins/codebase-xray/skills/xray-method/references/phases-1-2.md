@@ -1,0 +1,148 @@
+<daodan_host_binding host="claude">
+This binding governs execution of this package and its loaded references. It takes
+precedence over executable examples written for another host. Use only registered
+tools and their actual input schema; an example never creates a tool, argument,
+permission, model alias or nested worker capability. Preserve the generated worker
+allowlist, dependency closure, scope and delivery contracts.
+
+Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
+uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
+command field, and use its registered timeout/background schema. Worker dispatch
+uses the available native Agent mechanism and its registered agent-selection and
+prompt fields. Do not turn a prose role label into an invented role argument.
+Inherit the session model unless the declared workflow and active schema permit an
+override. Load installed skills by qualified ID; named roles use their owning
+plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
+Required foreign providers use Claude's marketplace/install commands:
+claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A declared package MCP server is configured through the generated MCP manifest;
+still check its tools are actually available in the active session.
+
+The executing agent and its coordinator own continuation, recovery, verification
+and delivery. Skills supply knowledge and method instructions; they are not
+executors or a runtime persistence mechanism.
+
+Resolve each component by kind and exact installed identity. A role is dispatched
+as a worker, a skill loads instructions, and a workflow starts its declared method.
+Kernel owner-qualified skill references are logical provider identities: resolve
+them to the actual host registry name and verified installed provider path. Do not
+invent a registry string by adding an owner's prefix when the host does not use it.
+Do not load an agent identity as a skill or execute a workflow name as a shell
+command. Named foreign providers remain mandatory. If an installed provider, MCP
+server or required isolation mechanism is unavailable, stop its dependent phase
+and report the missing capability. Do not install a different host's plugin or
+substitute unrelated skills to claim coverage.
+
+Shell execution alone does not establish interactive stdin. Before a capture or
+checkpoint, use an available session-control mechanism. When stdin is unavailable,
+keep user-driven capture in a supported background process with bounded output and
+an explicit stop signal controlled by the coordinator after the user's completion
+message. Close owned browser/process resources on completion or cancellation.
+
+Continue working within the current authorization while the requested result is
+achievable. After a tool error, inspect its cause, correct the relevant input or
+implementation, retry when justified and verify the outcome; never repeat a
+failing action blindly. Do not close the turn with a promise or a partial result
+when an authorized next step can still produce or verify the requested result.
+Stop only for a documented real impediment, a missing required capability, an
+unresolved human decision or the caller's stop request. At that boundary, report
+completed results, remaining work and the concrete prerequisite for continuation;
+continue any independent work that the blocker does not prevent.
+
+A tool's successful exit, a worker stop or an idle session is not the deliverable.
+Return final text naming observed findings, artifact paths, executed checks and
+blockers. An empty worker result is missing delivery: inspect or resume that worker
+when permitted, or record failure. Verify required artifacts and candidate gates
+before marking the requested outcome complete.
+
+This is an execution binding, not a rewrite of source examples. Preserve programming
+language fences, domain code and host APIs that are the subject of marketplace-ops
+or agent-sdk-builder. A host-as-subject API is not a tool provided to this session.
+Compiled binding and static checks do not prove an installed host executed a run.
+</daodan_host_binding>
+
+# Phases 1 and 2
+
+## Phase 1: Structure Extraction
+
+Build the structural map from the current manifest. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
+
+For each inventoried file, report recorded metadata and read source only for
+additional claims required by the phase:
+- Module/file name and path
+- Language and framework
+- Imports and dependencies
+- Exported symbols (functions, classes, constants)
+- File size and complexity indicators (line count, function count)
+
+**Output file:** `$RUN_DIR/01-structure.md`
+
+```markdown
+# Phase 1: Structure Extraction
+
+## File Inventory
+| File | Language | Lines | Functions | Classes | Imports |
+|------|----------|-------|-----------|---------|---------|
+| ... | ... | ... | ... | ... | ... |
+
+## Dependency Graph
+[Mermaid diagram of module dependencies]
+
+## Entry Points
+[Main files, API routes, CLI handlers]
+
+## Key Observations
+[Notable structural patterns or concerns]
+
+## Where to Add New Code
+[For each major directory, describe what belongs there]
+- New feature module: `[path]`
+- New API endpoint: `[path]`
+- New utility: `[path]`
+- New tests: `[path]`
+
+## Naming Conventions
+[Prescriptive: "Use X" not "X is used"]
+- Files: [pattern]
+- Functions: [pattern]
+- Classes: [pattern]
+```
+
+Update `$RUN_DIR/state.json`: add phase 1 to `completed_phases`.
+
+---
+
+## Phase 2: Interface Analysis
+
+For each module, document the public interface:
+
+Locate definitions in the manifest, then verify their public contract through
+source blocks and the types, validators and configuration it depends on.
+
+- Function signatures with parameter types and return types
+- Class hierarchies and method signatures
+- API endpoints with request/response shapes
+- Configuration interfaces
+- Event/signal contracts
+
+**Output file:** `$RUN_DIR/02-interfaces.md`
+
+```markdown
+# Phase 2: Interface Analysis
+
+## Public APIs
+[Organized by module]
+
+## Contracts
+[Interface definitions, type shapes, schemas]
+
+## External Dependencies
+[Third-party libraries and how they're used]
+
+## How to Add a New Module
+[Step-by-step guide based on existing patterns]
+1. Create file at `[path]`
+2. Follow interface pattern from `[example file]`
+3. Register in `[registration point]`
+4. Add tests at `[test path]`
+```

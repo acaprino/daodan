@@ -116,7 +116,7 @@ Brand naming strategist. Generates, filters, scores, and validates brand names t
 | **Invoke** | Skill reference or `/digital-marketing:brand-naming` |
 | **Trigger** | "brand name", "naming", "name my app", "name my product", "startup name" |
 
-**Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the RDAP domain checker, runs market saturation analysis, pre-screens trademarks in EUIPO TMview (falling back to EUIPO eSearch plus for EU trade marks when TMview refuses the browser), USPTO Trademark Search and the WIPO Global Brand Database through a browser (the `playwright` plugin's MCP tools), reports any register that did not answer as not screened instead of rating the name LOW, rates SEO potential, scores the top 5 from 1 to 5 on weighted criteria, and delivers a fixed-template evaluation report: summary, scorecard, the top 3 with a description and a motivation for every score, the runners-up, the removed names, the checks still open and the evidence. Coined words, letter-mashing and cheap suffixes are banned at generation.
+**Workflow:** Generates 12-15 curated candidates across 4 Strategic Directions (etymological hijacking, scientific decontextualization, metaphorical shift, phonetic real-word), then filters with 7 naming archetypes and linguistic/phonotactic rules, checks domain registration once over the requested TLDs with the domain checker (RDAP, and a headless Patchright registrar page for TLDs with no RDAP), runs market saturation analysis, asks for a reference country when none is given, pre-screens trademarks through a browser (the `playwright` plugin's MCP tools) in that country's national register (UIBM for Italy), EUIPO TMview (falling back to EUIPO eSearch plus for EU trade marks when TMview refuses the browser), USPTO Trademark Search and the WIPO Global Brand Database, grades the reference country, Europe and the world from class A (lowest risk) to D (highest), reports a territory whose register did not answer as not screened instead of grading it A, rates SEO potential, scores the top 5 from 1 to 5 on weighted criteria, and delivers a fixed-template evaluation report: summary, scorecard, the top 3 with a description, a motivation for every score and a trademark class for each territory, the runners-up, the removed names, the checks still open and the evidence. Coined words, letter-mashing and cheap suffixes are banned at generation.
 
 ---
 
@@ -341,7 +341,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 
 #### `digital-marketing:brand-naming`
 
-**Arguments:** <code>&lt;brief description or industry&gt; [--languages &lt;lang1,lang2&gt;] [--tlds &lt;.com,.app,.io&gt;]</code>
+**Arguments:** <code>&lt;brief description or industry&gt; [--country &lt;country&gt;] [--languages &lt;lang1,lang2&gt;] [--tlds &lt;.com,.app,.io&gt;]</code>
 
 | Contract | Value |
 |---|---|
