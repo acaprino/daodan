@@ -99,6 +99,8 @@ curl -s -o /dev/null -w "%{http_code}" "https://rdap.org/domain/{domain}.{tld}"
 
 A failed command (no network, timeout, rate limit, empty output, any other status) means **UNKNOWN**. Never read a failure as TAKEN and never read it as AVAILABLE. Report UNKNOWN domains as unverified and retry them.
 
+A `404` is only evidence of availability for a TLD that has an RDAP service. `.io`, `.co` and `.it` have none in the IANA bootstrap, and `rdap.org` answers `404` for them too, so `google.io` reads as AVAILABLE. For those TLDs the curl check proves nothing: confirm with Method 1b or Method 2. `rdap.org` also answers `429` after a short burst, so do not loop it over many names; the Domain Checker Script below talks to each registry directly.
+
 **Method 1b: whois confirmation (only where the binary exists)**
 ```bash
 whois {domain}.{tld}
@@ -194,7 +196,12 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/domain-hunter/scripts/domain_checker.py" na
 
 The script checks availability via RDAP. No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass `--tlds` to override. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free.
 
-If the script cannot run, fall back to the RDAP curl check (Step 1, Method 1) or host web search binding queries.
+- **Registry direct.** It reads the IANA RDAP bootstrap once and sends each lookup to the registry that runs the TLD (Verisign for `.com`, Google for `.app`), not through `rdap.org`.
+- **Parallel.** Lookups run in a thread pool: `--workers N`, default 8, at most 16. At most four are in flight per registry host, and a `429` or `5xx` from a host slows every worker aimed at it. Results print in request order.
+- **No RDAP service.** A TLD absent from the bootstrap (`.io`, `.co`, `.it`) prints `UNKNOWN  (no RDAP service for .io)` and is never queried. That UNKNOWN is final, so retrying it changes nothing: confirm with Method 1b (whois) or Method 2 (registrar page), and say in the report that the registry was not read.
+- **Exit status.** `2` when every result is UNKNOWN, `0` otherwise.
+
+If the script cannot run, fall back to the RDAP curl check (Step 1, Method 1) with its TLD caveat, or host web search binding queries.
 
 ## References
 

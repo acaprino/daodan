@@ -196,7 +196,8 @@ From the 12-15 candidates, filter down to the best 8-10 by checking:
 Before full analysis, run one registration check on all 8-10 filtered candidates at once. This is the only place `.com` registration is established; Steps 4 and 6a reuse the result rather than checking again.
 
 - Run the domain checker script (see Domain Checker Script below) with every candidate in one invocation, over the target TLD set: `.com`, `.app`, `.io`, `.co` by default, or exactly the user's `--tlds` list when they passed one. Keep the output; it is the registration table Steps 4 and 6a read from.
-- A name is **blocked** when every requested TLD is `TAKEN`. A name whose requested TLDs are all `UNKNOWN` is not blocked: retry it once, and if it is still unknown carry it forward flagged for registrar verification.
+- A name is **blocked** when every requested TLD the script could read is `TAKEN`. A TLD printed as `UNKNOWN  (no RDAP service for .io)` was not read at all (the registry publishes no RDAP, as for `.io`, `.co` and `.it`), so it neither blocks a name nor counts as free: say in the drop reason that those TLDs were not checked.
+- A name whose requested TLDs are all `UNKNOWN` is not blocked. Retry it once only when the note is not "no RDAP service"; that note is final and a retry changes nothing. If it is still unknown, carry the name forward flagged for registrar verification.
 - For a blocked name, one web search for `"name" app` or `"name" company` settles whether the holder is an established business. If it is, drop the name; if the domains are parked or dormant, carry the name forward with a note, because Step 6a decides what a taken-but-inactive domain costs.
 - **Never discard silently.** List every dropped name with the one-line reason (which TLDs were taken and by whom), so the user can overrule a drop.
 - Generate a replacement for each dropped name using the 4 Strategic Directions and re-filter it, then run the script on the replacements
@@ -222,7 +223,7 @@ This is where the morphological toolkit (see Refinement Toolkit below) is genuin
 > **Tip:** For deep registrar price comparison, promo code hunting, and purchase guidance on your final picks, use the `digital-marketing:domain-hunter` skill.
 
 For the top 8-10 names that passed the Quick Domain Gate:
-- Take domain availability per TLD from the Step 3b registration table. Do not run the script again; re-run it only for a replacement name generated after the gate, or for a TLD still `UNKNOWN` after the retry.
+- Take domain availability per TLD from the Step 3b registration table. Do not run the script again; re-run it only for a replacement name generated after the gate, or for a TLD still `UNKNOWN` after the retry (never for a "no RDAP service" TLD). Show an unread TLD in the table as `unverified`, never as free.
 - Check social media handle availability on major platforms with a web search per name.
 
 Report findings in a table with one column per checked TLD, in the order they were requested:
@@ -234,7 +235,11 @@ Report findings in a table with one column per checked TLD, in the order they we
 
 The three registers to query are EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs are in `references/naming-frameworks.md`. All three are JavaScript applications whose records a web search engine does not index, so **a web search for the name never queries a register**, and a LOW rating built on one is unearned.
 
-Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the search page, enter the exact name, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in.
+Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. For each remaining candidate, on each register: open the register's home page, type the exact name in its search box, and read the result list for exact matches and confusingly similar marks in the Nice classes the brief's product falls in. Never compose a results URL yourself (a `#/tmview/results?criteria=...` deep link, for example): those are undocumented, change without notice, and are what bot protection flags first.
+
+**Confirm the register answered.** A register that blocks the browser serves a page that is not a result list, and reading it as "no matches" is the error that makes a LOW rating unearned. After each search, the page must show the register's own result list or its explicit zero-results message. Anything else means the register was not queried: a page titled "Problem detected" or "Access denied", a CAPTCHA or consent wall, a redirect to `tmdn.org/error/revise.html`, an empty shell. Record `NOT SCREENED: <register>` with the page's own words (its title and any Reference Number) and go on to the next register. Do not retry URL variations, a second browser engine or any other workaround for the block.
+
+**EU fallback.** When TMview did not answer, search the same name in EUIPO eSearch plus (`https://euipo.europa.eu/eSearch/`): type it in the home page search box and read the Trade marks and Designs counts. It covers EU trade marks only, not the national registers TMview aggregates, so report it as "EU trade marks only, national registers not screened".
 
 If the browser tools are unavailable, stop and tell the user:
 
@@ -257,7 +262,9 @@ run this again:
 
 Do not rate trademark risk without the registers: a LOW rating built on anything else is unearned.
 
-Rate risk when the registers were queried: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
+Rate risk from what the registers returned: LOW (no matches) / MEDIUM (similar mark in a different class) / HIGH (conflict in the same class).
+- A conflict found on any register stands, whatever the other registers did.
+- LOW needs an answer from an EU register (TMview, or eSearch plus with its limit stated), from USPTO and from WIPO. With any of those missing and no conflict found, the rating is **NOT SCREENED**, listing the registers that did not answer. It is never LOW.
 
 ### Step 6: Market Saturation Analysis (Fail-Fast)
 
@@ -305,7 +312,7 @@ For each candidate:
 
 ### Step 7: Scoring and Ranking
 
-Score the top 5 names on a 0-100 scale using these weighted criteria:
+Score the 5 names that survived Step 6 from 1 to 5 on each criterion, using these weights:
 
 | Criterion | Weight | Description |
 |-----------|--------|-------------|
@@ -316,24 +323,28 @@ Score the top 5 names on a 0-100 scale using these weighted criteria:
 | Relevance | 10% | Connection to brand values/product |
 | SEO Potential | 10% | Online visibility, keyword alignment |
 | Domain Availability | 10% | .com or strong alternative TLD available |
-| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score) |
+| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score). A NOT SCREENED name scores 3 and the cell reads "3 (not screened)", so the total is visibly provisional |
 | Emotional Impact | 5% | Evocative power, storytelling potential |
 | Cultural Adaptability | 5% | Works across target languages and cultures |
 
-Formula: `Final Score = SUM(criterion_score * weight)`
+Scale, whole numbers: 5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying. Every score cites the evidence behind it (a test result, a search finding, a register answer). A criterion with no evidence behind it scores 3 and is marked "unverified", never guessed high.
 
-Present as a detailed scoring table with per-criterion breakdown.
+Formula: `Overall = SUM(criterion_score * weight)`, which lands between 1.0 and 5.0; round to one decimal. Rank by Overall and break ties on Distinctiveness, then Market Saturation.
 
-### Step 8: Final Presentation
+### Step 8: Evaluation Report
 
-Deliver the top 3 names with:
-1. **Scoring table** with all criteria and final weighted score
-2. **Name story** - etymology, meaning, why it works for this brand
-3. **Market saturation report** - existing apps, websites, businesses with same/similar name and risk level
-4. **Domain status** - best available domain option
-5. **Trademark risk** - summary of screening results
-6. **Visual suggestion** - how the name could look as a wordmark (font style, case)
-7. **Tagline idea** - a complementary tagline for each name
+Read `references/report-template.md` and fill it in. The template is the report: keep its sections, their order and its table shapes, and replace every placeholder. Do not add sections, change the headings or improvise another layout, so every run produces the same document.
+
+The template carries, in order:
+1. **Summary**: the recommended name, why it ranks first, and a ranked table of the 5 scored names.
+2. **Scorecard**: the criteria as rows with their weights, the 5 names as columns, the Overall score last.
+3. **Top 3 names**: for each, a description (etymology, meaning, why it fits), every criterion's score with a one-sentence motivation that cites its evidence, availability, trademark rating, market, wordmark, tagline and the main risk.
+4. **Runners-up**: ranks 4 and 5 with their weakest criterion.
+5. **Names removed**: every name dropped in Steps 1b to 6 with the step and the reason, so the user can overrule a drop.
+6. **Before you commit**: one checkbox per open check, such as an unscreened register or an unverified TLD.
+7. **Evidence**: which registers answered and which did not, with the page's own words for a register that did not.
+
+Every score has a motivation and every unverified or not-screened value is marked as such. Write the report in the language of the brief.
 
 ## Reference Framework
 
@@ -386,7 +397,7 @@ Use the domain checker script (located in domain-hunter) for the Step 3b registr
 python "<plugin-root>/skills/domain-hunter/scripts/domain_checker.py" name1 name2 --tlds .com,.io
 ```
 
-The script checks availability via RDAP. No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass the user's `--tlds` list through when they supplied one. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free, so retry those or verify them at a registrar.
+The script checks availability via RDAP, sending each lookup to the registry that runs the TLD, several at a time (`--workers`, default 8). No API key and no third-party packages are needed. It defaults to `.com`, `.app`, `.io`, `.co`; pass the user's `--tlds` list through when they supplied one. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free, so retry those or verify them at a registrar. A TLD with no RDAP service (`.io`, `.co`, `.it`) prints `UNKNOWN  (no RDAP service for .io)`: retrying cannot help, so verify it at a registrar and say the registry was not read.
 
 If the script cannot run, fall back to web searches or check registrar sites manually, and say in the report that registration was inferred rather than read from the registry.
 

@@ -201,7 +201,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.0.3"
+      "version": "3.0.4"
     },
     {
       "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
@@ -216,7 +216,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.0.3"
+      "version": "3.0.4"
     },
     {
       "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
@@ -238,7 +238,7 @@
       ],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.0.3"
+      "version": "3.0.4"
     },
     {
       "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
@@ -259,7 +259,7 @@
       "topics": [
         "customer-review"
       ],
-      "version": "3.0.3"
+      "version": "3.0.4"
     },
     {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",

@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.11.0"
+    "version": "32.11.1"
   },
   "name": "daodan",
   "owner": {
@@ -183,7 +183,7 @@
         "./skills/seo-audit-workflow"
       ],
       "source": "./exports/codex/plugins/digital-marketing",
-      "version": "3.0.3"
+      "version": "3.0.4"
     },
     {
       "author": {
