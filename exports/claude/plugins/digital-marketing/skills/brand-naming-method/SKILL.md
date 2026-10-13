@@ -288,7 +288,7 @@ A D in the reference country removes the name here and goes in the removed-names
 
 ### Step 6: Market Saturation Analysis (Fail-Fast)
 
-The SERP, social-handle and Google Play checks need a web search or a logged-in browser. When the host offers no web search, or the search engine answers with an anti-bot challenge, do not solve the challenge or switch engines to get past it: mark the SERP, social-handle and Google Play checks `not screened`, keep the App Store lookup (the iTunes Search API, `https://itunes.apple.com/search?term=<name>&country=<cc>&entity=software`), and list each skipped check in "Before you commit".
+The online-presence checks (who already uses the name in search results, in app listings and as a social account) need a web search or a logged-in browser. When the host offers no web search, or the search engine answers with an anti-bot challenge, do not solve the challenge or switch engines to get past it: report each of those checks as `not checked` (the status words are `in use`, `free` and `not checked`, never a platform's name), keep the app lookup (the iTunes Search API, `https://itunes.apple.com/search?term=<name>&country=<cc>&entity=software`), and list each skipped check in "Before you commit".
 
 For each candidate, perform a fail-fast market saturation check with web searches. Run checks in order - if a name fails an early gate, skip remaining checks and discard, listing the name and the reason:
 
@@ -351,9 +351,9 @@ Score the 5 names that survived Step 6 from 1 to 5 on each criterion, using thes
 
 **Trademark Risk score.** Start from the reference country's class: A 5, B 4, C 2, D 1. Take off 1 (never below 1) when Europe or the world has a worse class than the reference country. When the reference country is NS, the score is 3 or what the worst class that did answer would score, whichever is lower, and the cell reads "3 (not screened)", so the total is visibly provisional.
 
-Scale, whole numbers: 5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying. Every score cites the evidence behind it (a test result, a search finding, a register answer). A criterion with no evidence behind it scores 3 and is marked "unverified", never guessed high.
+Scale, whole numbers: 5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying. Every score cites the evidence behind it (a test result, a search finding, a register answer). A criterion with thin evidence scores 3 and is marked "unverified", never guessed high. A criterion whose check could not run at all in this session (SEO Potential when no SERP lookup was possible, see Step 6) is **not scored**: entering 3 would add the same constant to every name and tell the user nothing. Its cell reads `not scored`, its weight is left out, and it is listed in "Before you commit" with the check that would score it.
 
-Formula: `Overall = SUM(criterion_score * weight)`, which lands between 1.0 and 5.0; round to one decimal. Rank by Overall and break ties on Distinctiveness, then Market Saturation.
+Formula: `Overall = SUM(criterion_score * weight) / SUM(weight of the scored criteria)`, which is the plain weighted sum when every criterion is scored and always lands between 1.0 and 5.0; round to one decimal. Rank by Overall and break ties on Distinctiveness, then Market Saturation.
 
 ### Step 8: Evaluation Report
 

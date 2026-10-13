@@ -111,7 +111,7 @@ Class key: **A** no identical or similar mark found. **B** similar marks only in
 | Cultural Adaptability | 5% | {n} | {n} | {n} | {n} | {n} |
 | **Overall** | 100% | **{x.x}** | **{x.x}** | **{x.x}** | **{x.x}** | **{x.x}** |
 
-A cell that rests on no evidence reads `3 (unverified)`. A trademark cell whose reference country is NS reads `3 (not screened)`.
+A cell that rests on thin evidence reads `3 (unverified)`. A criterion whose check could not run at all reads `not scored` in every column and in its "Why it scores this way" row, and the Overall is divided by the weights of the scored criteria only. A trademark cell whose reference country is NS reads `3 (not screened)`.
 
 ## 3. Top 3 names
 
@@ -140,16 +140,18 @@ Repeat this block once per name, in rank order.
 
 | Check | Result |
 |---|---|
-| {.tld} | {AVAILABLE, TAKEN, or unverified (no RDAP service)} |
-| {Social handles} | {Platform: free or taken, one entry per platform checked} |
+| Domain {.tld} | {free, taken (active or parked), or not checked} |
+| Online presence | {in use, free or not checked, one entry per kind checked: company or site, app, social account} |
 
 **Trademark** (Nice classes {list})
 
-| Territory | Class | Registers | Finding |
+| Territory | Class | Checked | Finding |
 |---|---|---|---|
-| Reference country ({country}) | {A, B, C, D or NS} | {Registers that answered} | {Closest marks found with their classes, or the page's own words if not screened} |
-| Europe | {A, B, C, D or NS} | {TMview, or eSearch plus (EU trade marks only)} | {Closest marks found with their classes, or the page's own words if not screened} |
-| World | {A, B, C, D or NS} | {WIPO Global Brand Database, USPTO} | {Closest marks found with their classes, or the page's own words if not screened} |
+| Reference country ({country}) | {A, B, C, D or NS} | {national register: answered or not screened} | {Closest marks found, each as registered, pending or similar with its classes, or "none"; the page's own words if not screened} |
+| Europe | {A, B, C, D or NS} | {EU register: answered or not screened (EU trade marks only)} | {Closest marks found, each as registered, pending or similar with its classes, or "none"; the page's own words if not screened} |
+| World | {A, B, C, D or NS} | {international and US registers: answered or not screened} | {Closest marks found, each as registered, pending or similar with its classes, or "none"; the page's own words if not screened} |
+
+The register names belong in section 7 (Evidence) only.
 
 {One sentence: what to run before committing.}
 
