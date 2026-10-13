@@ -132,13 +132,17 @@ def load_adapter(root: Path, host: str) -> HostAdapter:
         if not isinstance(row, dict):
             raise AdapterError(coordination_path, "each strategy must be a table")
         try:
+            for flag in ("isolated", "parallel", "shared_tasks", "peer_messaging"):
+                if not isinstance(row[flag], bool):
+                    raise AdapterError(coordination_path,
+                                       f"strategy {row.get('name')!r}.{flag} must be a boolean")
             strategy = CoordinationStrategy(
                 name=row["name"],
                 availability=row["availability"],
-                isolated=bool(row["isolated"]),
-                parallel=bool(row["parallel"]),
-                shared_tasks=bool(row["shared_tasks"]),
-                peer_messaging=bool(row["peer_messaging"]),
+                isolated=row["isolated"],
+                parallel=row["parallel"],
+                shared_tasks=row["shared_tasks"],
+                peer_messaging=row["peer_messaging"],
                 role_delivery=row["role_delivery"],
             )
         except KeyError as error:

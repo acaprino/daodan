@@ -4,7 +4,7 @@
 Run it after any change to the guard, to the forbidden-files list, or to the
 `--confine` values in the agent frontmatter:
 
-    python .github/skills/codebase-xray/hooks/test_xray_guard.py
+    python adapters/copilot/policies/xray-guard/test_xray_guard.py
 
 Exits 0 when every case passes, 1 otherwise. Stdlib only, no test runner.
 
@@ -22,7 +22,8 @@ import sys
 import tempfile
 
 GUARD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "xray_guard.py")
-WORKSPACE = tempfile.mkdtemp(prefix="xray-guard-test-")
+WORKSPACE_OWNER = tempfile.TemporaryDirectory(prefix="xray-guard-test-")
+WORKSPACE = WORKSPACE_OWNER.name
 
 
 def run(payload, confine=None):
@@ -168,4 +169,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    finally:
+        WORKSPACE_OWNER.cleanup()

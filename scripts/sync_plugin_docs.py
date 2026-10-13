@@ -18,7 +18,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support
 from scripts.daodan.load import load_plugin
-from scripts.daodan.model import INLINE_WORKER_REFERENCE
 from scripts.daodan.render import _frontmatter, _unquote
 
 START = "<!-- daodan:reference:start -->"
@@ -115,15 +114,7 @@ def reference(plugin, plugins, adapters, destination: Path, root: Path) -> str:
             for shared in workflow.contract.shared_schemas:
                 owner, relative = shared.split("/", 1)
                 schemas.append(link(plugins[owner].root / relative, destination, shared))
-            workers = set(workflow.dispatch.roles)
-            for phase in workflow.phases:
-                workers.update(phase.fanout)
-                if phase.role:
-                    workers.add(phase.role)
-                if phase.fanout_from and not phase.role:
-                    workers.update(plugin.components.roles)
-            if workflow.dispatch.inline_workers:
-                workers.add(INLINE_WORKER_REFERENCE)
+            workers = workflow.worker_references(plugin.components.roles)
             normalized_workers = set()
             for worker in workers:
                 reference = worker.partition(":")[2] or worker

@@ -1,10 +1,9 @@
 ---
 name: external-repo-intake
 description: >
-  Workflow for the FIRST vendoring of content from an external GitHub repository into this
-  marketplace: classification, the four decision dimensions, the license compliance gate,
-  fetch and inspect, convention adaptation, wiring the content into roles and workflows,
-  tracking, and the commit shape.
+  Evaluate a new external capability through declared delegation or original local
+  inspiration: owner selection, licensing, availability, host compatibility,
+  local wiring, provenance and authorized delivery.
   TRIGGER WHEN: the user asks to "import", "pull", "vendor", "cherry-pick", or "borrow from"
   an external GitHub repository that is not already registered in the sync table of the
   `upstream-sync` skill.
@@ -20,42 +19,43 @@ When the user asks to "import", "pull", "vendor", "cherry-pick", or "borrow from
 
 ## 1. Classify the operation
 
-The intake mode is **vendoring**: a one-shot or tracked copy of upstream content
-into a neutral kernel, with attribution preserved and content adapted to our
-conventions. It creates no fork or submodule. Runtime dependencies remain explicit
-`plugin.toml` declarations: a runtime reference to another local plugin requires
-that plugin in `[dependencies].required`; local optional dependencies and generic
-fallbacks for missing required plugins are forbidden.
+Standing policy since 2026-08-04 forbids new vendored copies. An instruction to
+import or borrow content does not waive that policy. Resolve the requested
+capability through one of these modes before writing:
 
-Local source lives under `plugins/<name>/`: `plugin.toml`, `roles/`, `workflows/`
-with TOML sidecars, `skills/`, `contracts/` and `policies/`. Host bindings live in
-`adapters/`. Native package copies under `exports/` and root catalogs are generated.
-
-| Sub-mode | When to pick | Example |
+| Mode | Use | Ownership |
 |---|---|---|
-| **Full vendoring** | Upstream is a complete drop-in (a single SKILL.md, a small set of references) and there is no local equivalent | `kotlin-development` |
-| **Cherry-pick vendoring** | Upstream has many files but only a subset adds value, or the upstream commands collide with our existing namespace | `wshobson/agents` (3 codebase-cleanup commands imported, 2 agents skipped for overlap; the vendor was later retired in marketplace 19.0.0) |
-| **Hybrid merge** | Upstream covers ground that overlaps with a local file; append upstream content as a delimited section instead of creating a duplicate | `wshobson/agents` e2e-testing-patterns `references/details.md` kept inline in the local SKILL.md sections (the vendor was later delegated upstream in marketplace 18.0.0) |
-| **Inspiration only** | We adopt patterns or workflow ideas but write our own content from scratch; no upstream text copied | `codebase-xray` from `gsd-build/get-shit-done` |
+| **Delegation** | An external owner already supplies the capability | Declare its required dependency and load its canonical method; verify availability, the input/output contract and execution on the active host |
+| **Original local inspiration** | A distinct local method is justified by workflow ideas | Write original content without copying upstream text; attribute the ideas and explain the local responsibility |
 
-Combinations are normal (the `wshobson/agents` intake used cherry-pick plus hybrid merge plus new files across codebase-cleanup and e2e-testing-patterns; its multi-agent generic core, the reverse-engineering vendor, and the e2e-testing-patterns vendor were all later delegated back upstream, and the codebase-cleanup vendor was retired outright in marketplace 19.0.0).
+Runtime references to local plugins require `[dependencies].required`; local
+optional dependencies and generic fallbacks for required providers are forbidden.
+An unavailable provider needs an explicit recovery path for the active host.
+Local source lives under `plugins/<name>/`; host mechanisms live in `adapters/`.
+Native packages under `exports/` and root catalogs remain generated.
 
-## 2. Decide the four dimensions
+Historical intake modes are retained as provenance, not options for new work:
+`kotlin-development` used full vendoring; `wshobson/agents` used cherry-picking,
+hybrid sections and new files. Its generic multi-agent core, reverse-engineering
+vendor and e2e-testing-patterns were later delegated upstream; the latter changed
+in marketplace 18.0.0, and codebase-cleanup was retired in 19.0.0.
+`codebase-xray` adopted ideas from `gsd-build/get-shit-done` with original content.
+Preserve existing licenses, attribution, sync records and retirement history.
 
-Before writing any file, resolve each dimension from the task's authorization and
-existing decisions. Ask through the host's question mechanism only when a material
-choice remains unresolved; do not request the same approval again for a new owner.
+## 2. Resolve the four dimensions
 
-| Dimension | Question | Common answers |
-|---|---|---|
-| **Selection** | Full repo or cherry-pick? | Cherry-pick if upstream is large, has collisions, or carries unused infrastructure |
-| **Merge** | Standalone new files or merged into existing local files? | Merge when overlap exists; standalone for orphan topics |
-| **Sync strategy** | One-shot snapshot or ongoing sync? | Snapshot when upstream changes slowly or churn is unwanted; ongoing sync when upstream is actively maintained and aligned with our direction |
-| **Tracking** | Register in the upstream-synced table or leave untracked? | Register only if "ongoing sync" was chosen; snapshots can still be registered for re-import convenience |
+Use the task's existing authorization; ask only for a material unresolved choice.
+
+| Dimension | Decision |
+|---|---|
+| **Capability** | Which requirement is missing, and which canonical owner supplies it? |
+| **Integration** | Delegation or distinct original local inspiration? Avoid competing owners. |
+| **Availability** | Required provider identity, active-host installation/recovery and executable method contract |
+| **Provenance** | Preserve attribution and licensing; record the ideas adopted without starting a new vendor or sync row |
 
 ## 3. License compliance gate
 
-Block before fetching:
+Before retaining any upstream text or code, inspect its license. Delegation copies no upstream content; original inspiration must remain original. License permission never waives the no-new-vendor policy. For existing derived material, retain these protections:
 
 1. Read the upstream `LICENSE` file. The four expected outcomes:
    - **MIT / BSD / ISC / Apache-2.0**: proceed; preserve attribution header in every derived file.
@@ -74,50 +74,46 @@ Block before fetching:
 
 ## 4. Fetch and inspect (read-only)
 
-Use `gh api repos/<owner>/<repo>/contents/<path>` with `--jq '.content' | base64 -d`. Save everything to `.upstream-scratch/<repo>/` (excluded from commits). Read every fetched file before writing local files. Count and assess size before proposing the merge plan.
+Inspect the canonical owner and its public license through supported read-only tools. Keep any authorized research output in an owned run. Read the selected method and its contract before wiring it; measure the relevant overlap and explain why delegation or original inspiration serves the request. Inspection grants no permission to copy upstream content.
 
 ## 5. Adapt to local conventions
 
-Before saving any derived file, scan for and rewrite:
+For original local content and dependency wiring, apply these conventions while preserving existing attribution:
 
 - **Dash-aside construct** ("X — Y — Z" / "X -- Y -- Z" / "X - Y - Z" bracketing a clause): replace with sentences, parentheses, or colons. Never substitute one dash form for another.
 - **Emoji**: remove if the destination plugin's existing files have none.
-- **Upstream-specific cross-references**: rewrite `[reference/foo.md](foo.md)` style links to point at the local destination path (or remove if the target was not imported). Rewrite `{{template_vars}}` and references to upstream-only commands.
-- **Namespace prefixes**: rewrite upstream `<their-plugin>:X` skill references to the local `<our-plugin>:X` equivalent, or drop them when we vendor no equivalent.
+- **References**: bind local references to shipped paths. Delegate by the owner's registered component identity and method contract, without rewriting or copying its body.
+- **Namespace prefixes**: retain the external provider's actual registered identity. Declare its required dependency rather than inventing a local equivalent.
 - **Host tool primitives** in team-related imports: express isolated dispatch, file ownership, delivery status, barriers and report ownership in neutral Markdown and workflow sidecars. The host adapter supplies its native mechanism. Do not replace an upstream Claude tool name with another native tool name in a kernel; run the host-vocabulary linter.
 
 ## 6. Wire the new content into existing roles and workflows
 
-Importing content that no agent reads is wasted work. After saving derived files:
+Give original local content and delegated methods an evidenced consumer:
 
 1. Keep runtime references and helpers under `skills/<skill>/` and index them in that skill's `SKILL.md` with a one-line topic description. Kernel-root references, scripts and MCP directories are not shipped.
 2. Update roles or workflows that consult the material. Own-plugin paths use `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/...` or skill-relative `references/...`. Cross-plugin consumers load the owner's named skill, with its required dependency declared; they never reach into another plugin's files by path. Declare role bindings in the workflow's phases or dispatch table when a loaded method needs them.
 3. Avoid preloading discipline: the consumers must read references on-demand, not all upfront. State this in the wiring text.
 
-## 7. Decide on tracking and re-sync
+## 7. Preserve provenance and existing tracking
 
-If the sub-mode is "ongoing sync" (or "snapshot but worth tracking for re-import"), append a row to the sync table in `.agents/skills/upstream-sync/SKILL.md`, with:
-- Plugin (and sub-skill, if applicable) plus license tag for non-MIT sources
-- Upstream repo plus the specific subpath
-- Full list of derived local files and any merged sections
+Do not add a sync-table row or a fetch loop for delegation or original inspiration.
+Record the canonical provider and the ideas adopted. Existing tracked copies,
+licenses, merged sections and retirement records remain intact until a separately
+authorized disposition. Areas under "Deliberately not vendored" in `AGENTS.md`
+remain delegated to their upstream owners.
 
-Then append the matching `gh api` fetch loop to that skill's "How to sync a plugin" code block. Do this even for snapshots; it makes a future re-import a one-command operation rather than archaeology.
+## 8. Version and authorized delivery
 
-If the sub-mode is "inspiration only", do NOT add a sync-table row. Add an inline note in the affected file describing what was adopted from where, but no sync entry.
-
-Never add a sync-table row for anything listed under "Deliberately not vendored" in `AGENTS.md`. Those areas were handed back to their upstreams on purpose.
-
-## 8. Version bump and commit
-
-- Bump `version` in every changed kernel's `plugins/<name>/plugin.toml`.
-- Bump `metadata.version` in `.claude-plugin/marketplace.json` (minor bump for first-time intake of a new upstream; patch bump for follow-up reworks of an existing intake). Catalog entries remain generated.
-- Rebuild every host with `python scripts/daodan_build.py` and regenerate the component/dependency reference with `python scripts/sync_plugin_docs.py` when a kernel changes. Regenerate repository workflow skills' native Codex adaptations with `python scripts/sync_codex_instructions.py` when their canonical copies changed.
-- Single commit with imported kernel files, local edits, SKILL.md wiring, the sync-table update, version bumps and all regenerated exports/catalogs, documentation references and instruction copies together.
-- Commit message: `Cherry-pick / Vendor / Import <subject> from <owner>/<repo> (v<new>)` with a short description block listing new files, merged sections, license, and attribution date.
+- Bump each changed kernel's `plugin.toml` version and the marketplace metadata version.
+- Rebuild all hosts and regenerate plugin documentation when kernels change.
+  Regenerate native Codex instruction copies when their Claude-side sources change.
+- Preserve research evidence and attribution alongside the accepted changes.
+- Commit or push only when the current task explicitly authorizes it. If authorized,
+  deliver the source, required version bumps and generated outputs together.
 
 ## 9. Verification before push
 
-- `grep` derived files for any leftover upstream-only references, stale tool names, or dash-aside constructs.
+- Inspect original local content and wiring for unresolved references, stale tool names and dash-aside constructs.
 - Before publication, run `python scripts/daodan_build.py --check`, `python scripts/sync_plugin_docs.py --check`, `python scripts/sync_codex_instructions.py --check` and the repository's required dependency, bundled-path, registration, fact-anchor, host-vocabulary and test gates.
 - `git status` shows nothing in `.upstream-scratch/` staged.
 - `git diff --stat` to sanity-check scope.

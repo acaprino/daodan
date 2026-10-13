@@ -17,13 +17,14 @@ import shutil
 import time
 import tomllib
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Sequence
 
 from .adapter import HostAdapter, resolve_support, select_coordination
 from .catalogs import OWNER
-from .model import INLINE_WORKER_REFERENCE, PluginSpec, WorkflowSpec
+from .model import PluginSpec, WorkflowSpec
 from .overrides import OverrideSpec
 from .provenance import ADAPTER_VERSION, write_provenance
 from .templates import render_path, render_template
@@ -650,6 +651,19 @@ def _manifest_template(adapter: HostAdapter, adapters_root: Path | None) -> str:
     return DEFAULT_MANIFEST_TEMPLATE
 
 
+def _package_context(plugin: PluginSpec, host: str) -> dict[str, str]:
+    """One substitution context for rendered paths and their registrations."""
+    return {
+        "plugin": plugin.name,
+        "version": plugin.version,
+        "description": plugin.description,
+        "license": plugin.license,
+        "host": host,
+        "adapter_version": ADAPTER_VERSION,
+        "author": OWNER["name"],
+    }
+
+
 def render_plugin(
     plugin: PluginSpec,
     adapter: HostAdapter,
@@ -674,15 +688,7 @@ def render_plugin(
     staging_root = Path(destination)
     staging_root.mkdir(parents=True, exist_ok=True)
 
-    context = {
-        "plugin": plugin.name,
-        "version": plugin.version,
-        "description": plugin.description,
-        "license": plugin.license,
-        "host": adapter.host,
-        "adapter_version": ADAPTER_VERSION,
-        "author": OWNER["name"],
-    }
+    context = _package_context(plugin, adapter.host)
 
     replacements = {spec.source: spec for spec in overrides}
     applied: list[str] = []
@@ -929,20 +935,7 @@ def _harness_context(
     The hint is not a template key: the caller pops it and hands it to the
     host-text pass, which explains the arguments placeholder once per file.
     """
-    roles = list(workflow.dispatch.roles)
-    if workflow.dispatch.inline_workers:
-        roles.append(INLINE_WORKER_REFERENCE)
-    for phase in workflow.phases:
-        for reference in phase.fanout:
-            roles.append(reference.partition(":")[2] or reference)
-        if phase.role:
-            roles.append(phase.role)
-    if any(phase.fanout_from and not phase.role for phase in workflow.phases):
-        # Dynamic selection: which roles run is decided at runtime, so the
-        # harness must be allowed to reach every role this plugin declares.
-        roles.extend(plugin.components.roles)
-    if not roles:
-        roles = list(plugin.components.roles)
+    roles = workflow.worker_references(plugin.components.roles) or plugin.components.roles
     role_ids = role_ids or {}
     ordered = sorted({role_ids.get(role, role) for role in roles})
     worker_phases = [phase for phase in workflow.phases if phase.role or phase.fanout or phase.fanout_from]
@@ -982,15 +975,7 @@ def _dispatch_bindings(
     roles under contracts/dispatch. Those files carry owner and source digest
     and never register as skills or agents. Named-agent adapters copy no body.
     """
-    references: set[str] = set(workflow.dispatch.roles)
-    if workflow.dispatch.inline_workers:
-        references.add(INLINE_WORKER_REFERENCE)
-    for phase in workflow.phases:
-        references.update(reference.partition(":")[2] or reference for reference in phase.fanout)
-        if phase.role:
-            references.add(phase.role)
-        if phase.fanout_from and not phase.role:
-            references.update(plugin.components.roles)
+    references = workflow.worker_references(plugin.components.roles)
     providers = dict(registry or {})
     providers[plugin.name] = plugin
     ids: dict[str, str] = {}
@@ -1020,7 +1005,7 @@ def _dispatch_bindings(
             bindings.append(f"- `{identity}`: dispatch the installed `{owner}:{role}` agent by its qualified identity.")
             continue
         if owner == plugin.name:
-            relative = render_path(adapter.layout["roles"], {"plugin": owner, "role": role})
+            relative = render_path(adapter.layout["roles"], {**_package_context(provider, adapter.host), "role": role})
             bindings.append(f"- `{identity}`: read `{relative.as_posix()}` inside this package and pass its complete body verbatim.")
             continue
         relative = Path("contracts/dispatch") / owner / f"{role}.md"
@@ -1078,12 +1063,39 @@ def _rename_with_retry(source: Path, destination: Path, attempts: int = 10) -> N
             time.sleep(0.1 * (attempt + 1))
 
 
-def replace_tree(staging: Path, live: Path) -> None:
-    """Swap a fully validated staging tree into place, or leave the live tree alone.
+@contextmanager
+def _publication_lock(lock: Path):
+    """Hold OS ownership until close; process death releases it automatically.
 
-    A sibling lock keeps two builders from swapping the same output, and a
-    ``.previous`` backup is what makes the swap recoverable: the live tree is
-    never edited file-by-file.
+    The sibling file stays in place so every contender locks the same inode.
+    Its presence alone says nothing about whether a publisher is active.
+    """
+    handle = os.open(lock, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        try:
+            if os.name == "nt":
+                import msvcrt
+
+                if os.fstat(handle).st_size == 0:
+                    os.write(handle, b"\0")
+                os.lseek(handle, 0, os.SEEK_SET)
+                msvcrt.locking(handle, msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as error:
+            raise RenderError(f"another build holds {lock}: {error}") from error
+        yield
+    finally:
+        os.close(handle)
+
+
+def replace_tree(staging: Path, live: Path) -> None:
+    """Swap a validated staging tree and restore live after a failed rename.
+
+    OS ownership excludes concurrent publishers for this output. Keep the
+    previous tree until the staging rename succeeds, including cancellation.
     """
     staging = Path(staging)
     live = Path(live)
@@ -1094,28 +1106,25 @@ def replace_tree(staging: Path, live: Path) -> None:
     lock = live.parent / f".{live.name}.lock"
     previous = live.parent / f".{live.name}.previous"
 
-    try:
-        handle = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-    except FileExistsError as error:
-        raise RenderError(f"another build holds {lock}") from error
-    os.close(handle)
-
-    try:
+    with _publication_lock(lock):
         if previous.exists():
-            shutil.rmtree(previous)
-        had_live = live.exists()
-        if had_live:
-            _rename_with_retry(live, previous)
-        try:
-            _rename_with_retry(staging, live)
-        except OSError as error:
-            if had_live:
+            if not live.exists():
                 _rename_with_retry(previous, live)
-            raise RenderError(f"could not publish {live}: {error}") from error
+            else:
+                shutil.rmtree(previous)
+        had_live = live.exists()
+        try:
+            if had_live:
+                _rename_with_retry(live, previous)
+            _rename_with_retry(staging, live)
+        except BaseException as error:
+            if had_live and previous.exists() and not live.exists():
+                _rename_with_retry(previous, live)
+            if isinstance(error, OSError):
+                raise RenderError(f"could not publish {live}: {error}") from error
+            raise
         if had_live:
             shutil.rmtree(previous, ignore_errors=True)
-    finally:
-        lock.unlink(missing_ok=True)
 
 
 def publish_plugin(

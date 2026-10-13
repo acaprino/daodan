@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.10.4"
+    "version": "32.10.6"
   },
   "name": "daodan",
   "owner": {
@@ -471,7 +471,7 @@
         "./skills/cross-model-peer-review"
       ],
       "source": "./exports/claude/plugins/peer-review",
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "agents": [

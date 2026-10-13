@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -210,13 +211,28 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
                 finally:
                     shutil.rmtree(sibling, ignore_errors=True)
             for live_file, content in files:
-                live_file.parent.mkdir(parents=True, exist_ok=True)
-                live_file.write_bytes(content)
+                _publish_file(live_file, content)
             for obsolete in retired:
                 # Ownership and every resolved boundary were checked before rendering.
                 shutil.rmtree(obsolete)
 
     return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support))
+
+
+def _publish_file(destination: Path, content: bytes) -> None:
+    """Publish one complete file with an owned temporary sibling."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    handle, name = tempfile.mkstemp(prefix=f".{destination.name}.", suffix=".tmp",
+                                    dir=destination.parent)
+    temporary = Path(name)
+    os.close(handle)
+    try:
+        temporary.write_bytes(content)
+        os.replace(temporary, destination)
+    except OSError as error:
+        raise RenderError(f"could not publish {destination}: {error}") from error
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _retired_packages(root, adapter, active):
@@ -313,7 +329,7 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
         if legacy:
             document = merge_into_legacy(existing, plugins, host, packages)
             return (json.dumps(document, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-    return render_catalog(host, plugins, version, packages)
+    return render_catalog(host, plugins, version, packages, layout=adapter.layout)
 
 
 def _package_drifted(plugin, adapter, live: Path, overrides, root: Path, plugin_registry=None) -> bool:

@@ -267,7 +267,7 @@ The escalation path, in order:
 
 This is how the five "unverifiable" IBKR facts in the 2026-08-09 `ibkr-trading` refresh were actually resolved, one of which (a plugin claim that error code 10167 exists) turned out to be false rather than merely unconfirmed.
 
-On this machine there is also a standing local install: IB Gateway/TWS under `D:\Software\Jts` (ibgateway build directory `1045`) and IBC 3.23.0 under `D:\Software\IBC`. That is the production deployment's install: its `config.ini` and settings are live configuration, so the `ibkr` skill's verification work may reuse those *binaries* but must never launch or edit that configuration. Its `ibkr_gateway.py` provisions its own disposable paper install under `%LOCALAPPDATA%\ibkr-verify` instead, which is the preferred route for probes.
+Production installations and their configuration are protected. Verification may reuse binaries only with an independently owned disposable configuration; it must never launch or edit production configuration. Record machine paths, installed builds and the permitted probe environment in the owning run.
 
 ## The characteristic defect here is cross-file contradiction
 
@@ -283,7 +283,7 @@ Four maintenance workflows live in `.claude/skills/` so they load only when the 
 
 | Skill | Load it when |
 |---|---|
-| `external-repo-intake` | Importing, vendoring, or cherry-picking from an external GitHub repo for the FIRST time. Covers classification, the license gate, convention adaptation, and the commit shape. |
+| `external-repo-intake` | Evaluating a new external capability through declared delegation or original local inspiration. Covers canonical ownership, licensing, active-host availability, wiring and authorized delivery. |
 | `upstream-sync` | Re-syncing a plugin already ported from an upstream repo, or answering "which plugins are upstream-synced". Holds the sync table, the merge strategy, and the per-plugin sync notes. |
 | `custom-plugin-refresh` | Refreshing a hand-authored plugin that has no upstream. Holds the freshness risk classes, cadences, and the re-research protocol. |
 | `downstream-exports` | Changing how a host package is shaped: an adapter layout, a harness template, a capability binding, a policy implementation, or a semantic override. Holds what each host expects, what the compiler generates for it, and the content that deliberately keeps host-as-subject vocabulary. Nothing under `exports/` is ever edited by hand. |
@@ -300,7 +300,7 @@ A two-level conformance contract (`base` and `verified`, each with its own decla
 
 Ten areas were removed and delegated to their upstreams because maintaining the local copy cost more than it returned (most were vendored copies handed back; `git-worktrees` was locally authored content retired in favor of equivalent upstream coverage; `prompt-improver` was a local JS re-port handed back to its upstream in 17.0.0; `codebase-cleanup` was retired outright because its verified content defects made delegation undesirable). Do NOT re-import or re-create them, and do not add rows for them to the sync table in the `upstream-sync` skill on a future "upstream updates" pass. The delegation table below records their owners and retirement history.
 
-Standing policy since 2026-08-04: this repository no longer maintains vendored copies of external repositories. New capability never gets vendored in; it gets delegated with a declared dependency. The remaining sync-table rows in the `upstream-sync` skill are scheduled for a dedicated de-vendoring pass (delegate, adopt as local, or delete, decided per plugin) that will also retire that skill.
+Standing policy since 2026-08-04: this repository no longer maintains vendored copies of external repositories. New capability never gets vendored in; it gets delegated with a declared dependency.
 
 | Area | Upstream | Removed in |
 |---|---|---|

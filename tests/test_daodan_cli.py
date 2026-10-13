@@ -3,6 +3,7 @@
 import builtins
 import io
 import json
+import re
 import shutil
 import sys
 import tempfile
@@ -37,11 +38,13 @@ class CompilerCliTests(unittest.TestCase):
 
     def output_bytes(self):
         roots = ("exports", ".claude-plugin", ".github", ".agents")
-        return {
+        outputs = {
             path.relative_to(self.root): path.read_bytes()
             for name in roots for path in (self.root / name).rglob("*")
             if path.is_file()
         }
+        outputs[Path("package.json")] = (self.root / "package.json").read_bytes()
+        return outputs
 
     def assert_build_rejected_before_read(self, target: Path, check: bool):
         attempted = []
@@ -156,6 +159,29 @@ class CompilerCliTests(unittest.TestCase):
         self.assertIn("unknown-capability", output)
         self.assertFalse((self.root / "exports").exists())
 
+    def test_duplicate_identity_preserves_outputs_in_repeated_build_and_check(self):
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        roots = [self.root / "plugins/example", self.root / "plugins/example-copy"]
+        shutil.copytree(VALID, roots[1])
+
+        for check in (False, True):
+            with self.subTest(check=check):
+                diagnoses = []
+                for _ in range(2):
+                    report = build_repository(self.root, HOSTS, check=check)
+                    diagnosis = io.StringIO()
+                    report.write(diagnosis)
+                    diagnoses.append(diagnosis.getvalue())
+
+                    self.assertTrue(report.has_failures)
+                    self.assertTrue(any("duplicate" in issue.code.lower() for issue in report.issues))
+                    self.assertIn("example", diagnoses[-1])
+                    for root in roots:
+                        self.assertIn(str(root), diagnoses[-1])
+                    self.assertEqual(self.output_bytes(), before)
+                self.assertEqual(diagnoses[0], diagnoses[1])
+
     def test_all_three_hosts_are_published_together(self):
         self.assertEqual(self.run_cli()[0], 0)
         for host in ("claude", "copilot", "codex"):
@@ -246,6 +272,176 @@ class CompilerCliTests(unittest.TestCase):
         before = {path.relative_to(target): path.read_bytes() for path in target.rglob("*") if path.is_file()}
         self.assertEqual(self.run_cli()[0], 1)
         self.assertEqual({path.relative_to(target): path.read_bytes() for path in target.rglob("*") if path.is_file()}, before)
+
+    def test_build_reports_failed_publication_and_restores_the_affected_package(self):
+        """C05 diagnostic control protects the actual builder error path."""
+        self.assertEqual(self.run_cli()[0], 0)
+        live = self.root / "exports/claude/plugins/example"
+        before = {path.relative_to(live): path.read_bytes()
+                  for path in live.rglob("*") if path.is_file()}
+        original_rename = Path.rename
+        attempted = []
+
+        def fail_replacement(path, destination):
+            if Path(destination) == live and path.name.endswith(".staging"):
+                attempted.append(path)
+                raise OSError("owned publication failure")
+            return original_rename(path, destination)
+
+        with patch.object(Path, "rename", fail_replacement), patch("scripts.daodan.render.time.sleep"):
+            report = build_repository(self.root, HOSTS, check=False)
+
+        self.assertTrue(attempted, "Fault must follow live-to-previous rename")
+        self.assertTrue(report.has_failures)
+        diagnostic = io.StringIO()
+        report.write(diagnostic)
+        self.assertIn("owned publication failure", diagnostic.getvalue())
+        self.assertIn(str(live), diagnostic.getvalue())
+        self.assertEqual(
+            {path.relative_to(live): path.read_bytes()
+             for path in live.rglob("*") if path.is_file()}, before)
+        self.assertEqual(self.run_cli()[0], 0)
+        self.assertEqual(self.run_cli("--check")[0], 0)
+
+    def _assert_individual_catalog_write_preserves_old_bytes(self, fault_type):
+        """C06 observes complete bytes through real build and file-write boundary."""
+        self.assertEqual(self.run_cli()[0], 0)
+        destinations = (
+            ".claude-plugin/marketplace.json",
+            ".github/plugin/marketplace.json",
+            ".agents/plugins/marketplace.json",
+            "package.json",
+            "exports/opencode/package.json",
+        )
+        original_builtin, original_io = builtins.open, io.open
+        for relative in destinations:
+            target = self.root / relative
+            before = target.read_bytes()
+            injected = []
+            signal = fault_type("owned catalog write failure")
+
+            class InterruptedWriter:
+                def __init__(writer, handle, path):
+                    writer.handle, writer.path = handle, path
+
+                def __getattr__(writer, name):
+                    return getattr(writer.handle, name)
+
+                def __enter__(writer):
+                    writer.handle.__enter__()
+                    return writer
+
+                def __exit__(writer, *arguments):
+                    return writer.handle.__exit__(*arguments)
+
+                def write(writer, data):
+                    raw = data.encode("utf-8") if isinstance(data, str) else bytes(data)
+                    if not injected and raw.startswith(b"{") and len(raw) > 50:
+                        writer.handle.write(data[:17])
+                        writer.handle.flush()
+                        injected.append(str(writer.path))
+                        raise signal
+                    return writer.handle.write(data)
+
+            def watch(original):
+                def open_owned(file, mode="r", *arguments, **keywords):
+                    handle = original(file, mode, *arguments, **keywords)
+                    if not isinstance(file, int) and any(flag in mode for flag in ("w", "a", "+")):
+                        path = Path(file).absolute()
+                        if path.parent == target.parent:
+                            return InterruptedWriter(handle, path)
+                    return handle
+                return open_owned
+
+            try:
+                with patch("builtins.open", watch(original_builtin)), patch("io.open", watch(original_io)):
+                    try:
+                        build_repository(self.root, HOSTS, check=False)
+                    except (OSError, KeyboardInterrupt, SystemExit):
+                        pass
+
+                with self.subTest(catalog=relative, fault=fault_type.__name__, contract="complete old bytes"):
+                    self.assertEqual(len(injected), 1, "Catalog fault boundary was not reached")
+                    self.assertEqual(target.read_bytes(), before)
+                    json.loads(target.read_bytes())
+
+                with self.subTest(catalog=relative, fault=fault_type.__name__, contract="later real build"):
+                    code, output = self.run_cli()
+                    self.assertEqual(code, 0, output)
+                    self.assertEqual(self.run_cli("--check")[0], 0)
+            finally:
+                # Restore only this owned fixture so every red host case can execute.
+                target.write_bytes(before)
+
+    def test_interrupted_catalog_writes_preserve_complete_old_bytes_on_every_host(self):
+        self._assert_individual_catalog_write_preserves_old_bytes(KeyboardInterrupt)
+
+    def test_failed_catalog_writes_preserve_complete_old_bytes_on_every_host(self):
+        self._assert_individual_catalog_write_preserves_old_bytes(OSError)
+
+
+
+    def test_nonboolean_coordination_reports_structured_failure_before_publication(self):
+        """C09 build and check preserve all five catalogs and existing packages."""
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        coordination = self.root / "adapters/codex/coordination.toml"
+        original = coordination.read_text(encoding="utf-8")
+        flags = {"isolated": "true", "parallel": "true",
+                 "shared_tasks": "false", "peer_messaging": "false"}
+        for flag, old_value in flags.items():
+            for invalid in ('"false"', "0"):
+                coordination.write_text(original.replace(
+                    f"{flag} = {old_value}", f"{flag} = {invalid}", 1),
+                    encoding="utf-8")
+                for check in (False, True):
+                    with self.subTest(flag=flag, value=invalid, check=check):
+                        try:
+                            report = build_repository(self.root, HOSTS, check=check)
+                        finally:
+                            self.assertEqual(self.output_bytes(), before)
+
+                        self.assertTrue(report.has_failures)
+                        diagnoses = [issue for issue in report.issues
+                                     if issue.path == coordination]
+                        self.assertTrue(diagnoses, "Diagnostic must name the offending TOML")
+                        self.assertTrue(all(issue.code and issue.message for issue in diagnoses))
+                        self.assertTrue(any(flag in issue.message and
+                                            "boolean" in issue.message.lower()
+                                            for issue in diagnoses))
+        coordination.write_text(original, encoding="utf-8")
+        self.assertEqual(self.run_cli("--check")[0], 0)
+
+    def test_scalar_phase_elements_report_structured_failure_before_publication(self):
+        """C10 cannot leak TypeError or publish from malformed phase metadata."""
+        self.assertEqual(self.run_cli()[0], 0)
+        before = self.output_bytes()
+        sidecar = self.root / "plugins/example/workflows/review.toml"
+        original = sidecar.read_text(encoding="utf-8")
+        contract = original[original.index("[contract]"):]
+        for invalid in ('"inspect"', "17", "true"):
+            for index in (0, 1):
+                leading = '{ id = "inspect" }, ' if index else ""
+                sidecar.write_text('name = "review"\nentrypoint = "review.md"\n'
+                                   f"phases = [{leading}{invalid}]\n\n" + contract,
+                                   encoding="utf-8")
+                for check in (False, True):
+                    with self.subTest(value=invalid, index=index, check=check):
+                        try:
+                            report = build_repository(self.root, HOSTS, check=check)
+                        finally:
+                            self.assertEqual(self.output_bytes(), before)
+
+                        self.assertTrue(report.has_failures)
+                        diagnoses = [issue for issue in report.issues if issue.path == sidecar]
+                        self.assertTrue(diagnoses, "Diagnostic must name the offending sidecar")
+                        self.assertTrue(all(issue.code and issue.message for issue in diagnoses))
+                        self.assertTrue(any("phase" in issue.message.lower()
+                                            for issue in diagnoses))
+                        self.assertTrue(any(re.search(rf"\b{index}\b", issue.message)
+                                            for issue in diagnoses))
+        sidecar.write_text(original, encoding="utf-8")
+        self.assertEqual(self.run_cli("--check")[0], 0)
 
 
 if __name__ == "__main__":

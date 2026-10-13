@@ -1,7 +1,7 @@
 """Native catalog rendering, one catalog per host.
 
 Every host names the same plugins at the same versions. That identity is the
-whole point of a universal marketplace, so a version mismatch is rejected before
+whole point of a universal marketplace, so a duplicate name is rejected before
 serialization rather than shipped and noticed later. The shape may differ: three
 hosts take a plugin listing, and Pi takes a package manifest that globs the
 rendered tree, because Pi installs a package and has no marketplace to list into.
@@ -13,8 +13,10 @@ import json
 from pathlib import Path
 from typing import Mapping, Sequence
 
-from .adapter import HOSTS
+from .adapter import HOSTS, load_adapter
 from .model import PluginSpec
+from .templates import render_path
+from .validate import _duplicate_plugin_issues
 
 CATALOG_NAME = "daodan"
 
@@ -84,14 +86,10 @@ def catalog_document(
     if host not in HOSTS:
         raise CatalogError(f"unknown host {host!r}")
 
+    duplicate_issues = _duplicate_plugin_issues(plugins)
+    if duplicate_issues:
+        raise CatalogError("\n".join(issue.message for issue in duplicate_issues))
     ordered = sorted(plugins, key=lambda plugin: plugin.name)
-    seen: dict[str, str] = {}
-    for plugin in ordered:
-        if plugin.name in seen and seen[plugin.name] != plugin.version:
-            raise CatalogError(
-                f"{plugin.name}: version mismatch {seen[plugin.name]} against {plugin.version}"
-            )
-        seen[plugin.name] = plugin.version
 
     entries = []
     for plugin in ordered:
@@ -171,7 +169,9 @@ OPENCODE_PACKAGE = "daodan"
 OPENCODE_MANIFEST_SCHEMA = 1
 
 
-def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, object]:
+def _opencode_entry(
+    plugin: PluginSpec, package: Path | None, layout: Mapping[str, str]
+) -> dict[str, object]:
     """What the OpenCode loader needs to register one plugin.
 
     Names and descriptions are read from the rendered package rather than from
@@ -180,7 +180,7 @@ def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, objec
     carries them as YAML the loader would otherwise have to parse.
     """
     # Imported here: render imports this module for OWNER.
-    from .render import PLUGIN_ROOT_PLACEHOLDER, _frontmatter, _one_line, opencode_permissions
+    from .render import PLUGIN_ROOT_PLACEHOLDER, _frontmatter, _one_line, _package_context, opencode_permissions
 
     entry: dict[str, object] = {"root": f"plugins/{plugin.name}"}
     dependencies = [item for item in plugin.required_dependencies if "@" not in item]
@@ -196,9 +196,10 @@ def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, objec
         meta, _ = _frontmatter((package / relative).read_text(encoding="utf-8"))
         return {key: _one_line(value.strip("'\"")) for key, value in meta.items()}
 
+    context = _package_context(plugin, "opencode")
     skills = []
     for skill in plugin.components.skills:
-        relative = f"skills/{skill}/SKILL.md"
+        relative = render_path(layout["skills"], {**context, "skill": skill}).as_posix()
         meta = described(relative)
         skills.append(
             {
@@ -210,7 +211,7 @@ def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, objec
         )
     agents = []
     for role in plugin.components.roles:
-        relative = f"agents/{role}.md"
+        relative = render_path(layout["roles"], {**context, "role": role}).as_posix()
         kernel, _ = _frontmatter((plugin.root / "roles" / f"{role}.md").read_text(encoding="utf-8"))
         agents.append(
             {
@@ -222,7 +223,7 @@ def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, objec
         )
     commands = []
     for workflow in plugin.components.workflows:
-        relative = f"commands/{workflow}.md"
+        relative = render_path(layout["workflows"], {**context, "workflow": workflow}).as_posix()
         commands.append(
             {
                 "name": f"{plugin.name}:{workflow}",
@@ -246,7 +247,9 @@ def _opencode_entry(plugin: PluginSpec, package: Path | None) -> dict[str, objec
     return entry
 
 
-def _opencode_manifest(document, plugins: Sequence[PluginSpec], packages) -> bytes:
+def _opencode_manifest(
+    document, plugins: Sequence[PluginSpec], packages, layout: Mapping[str, str] | None
+) -> bytes:
     """OpenCode's catalog, which is the plugin package's own npm manifest.
 
     OpenCode V2 has no marketplace: a package arrives as a plugin whose default
@@ -255,6 +258,8 @@ def _opencode_manifest(document, plugins: Sequence[PluginSpec], packages) -> byt
     of it is generated code. `private` states that publication is by git tag,
     installed through npm's `::path:` selector.
     """
+    if layout is None:
+        layout = load_adapter(Path(__file__).resolve().parents[2] / "adapters", "opencode").layout
     ordered = sorted(plugins, key=lambda plugin: plugin.name)
     manifest = {
         "name": OPENCODE_PACKAGE,
@@ -269,7 +274,7 @@ def _opencode_manifest(document, plugins: Sequence[PluginSpec], packages) -> byt
             "schema": OPENCODE_MANIFEST_SCHEMA,
             "plugins": {
                 plugin.name: _opencode_entry(
-                    plugin, (packages or {}).get(plugin.name)
+                    plugin, (packages or {}).get(plugin.name), layout
                 )
                 for plugin in ordered
             },
@@ -283,6 +288,8 @@ def render_catalog(
     plugins: Sequence[PluginSpec],
     version: str,
     packages: Mapping[str, Path] | None = None,
+    *,
+    layout: Mapping[str, str] | None = None,
 ) -> bytes:
     """Serialize one host catalog deterministically.
 
@@ -293,7 +300,7 @@ def render_catalog(
     if host == "pi":
         return _pi_manifest(document)
     if host == "opencode":
-        return _opencode_manifest(document, plugins, packages)
+        return _opencode_manifest(document, plugins, packages, layout)
     return (json.dumps(document, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 

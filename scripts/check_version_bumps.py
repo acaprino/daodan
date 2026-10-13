@@ -8,14 +8,14 @@ head-rev defaults to HEAD. Enforces steps 1 and 2 of the marketplace update
 workflow in CLAUDE.md: when a commit range touches files under
 plugins/<name>/, or to an adapter override that affects it under
 adapters/<host>/overrides/<name>/, that plugin's version in
-.claude-plugin/marketplace.json must change across the range, and so must
+.claude-plugin/marketplace.json must strictly increase across the range, and so must
 metadata.version. Generated packages under exports/<host>/plugins/<name>/ do
 not count: they are compiler output. Exits non-zero on
 violations.
 
 Cases handled per changed plugin directory:
 
-  - registered at both ends      version must differ between base and head
+  - registered at both ends      version must strictly increase between base and head
   - registered only at head      new plugin, ok
   - unregistered at head, dir    error: plugin files exist but the plugin is
     still present                not in marketplace.json
@@ -27,9 +27,11 @@ skips gracefully when the base commit is unknown (branch creation, force
 push with pruned history).
 """
 import json
+import re
 import subprocess
 import sys
 from collections import defaultdict
+from decimal import Decimal
 
 MANIFEST = ".claude-plugin/marketplace.json"
 
@@ -102,6 +104,16 @@ def plugin_name_of(path):
     return None
 
 
+def _version_increased(before, after):
+    """Compare the supported numeric triplets without widening their grammar."""
+    if any(not isinstance(value, str) or re.fullmatch(r"\d+\.\d+\.\d+", value) is None
+           for value in (before, after)):
+        return False
+    # Decimal construction is exact and avoids a limit on integer-string digits.
+    return tuple(Decimal(part) for part in after.split(".")) > tuple(
+        Decimal(part) for part in before.split("."))
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__.strip().splitlines()[2].strip())
@@ -133,10 +145,10 @@ def main():
     for name in sorted(plugins_touched):
         n_files = len(plugins_touched[name])
         if name in head_versions:
-            if name in base_versions and base_versions[name] == head_versions[name]:
+            if name in base_versions and not _version_increased(base_versions[name], head_versions[name]):
                 problems.append(
-                    f"plugins/{name}: {n_files} file(s) changed but version stayed "
-                    f"at {head_versions[name]}; bump it in {MANIFEST}")
+                    f"plugins/{name}: {n_files} file(s) changed but version must strictly increase "
+                    f"from {base_versions[name]!r} to {head_versions[name]!r}; use numeric triplets in {MANIFEST}")
         elif dir_exists_at(head, name, head_manifest):
             problems.append(
                 f"plugins/{name}: {n_files} file(s) changed but the plugin is not "
@@ -145,9 +157,9 @@ def main():
 
     base_meta = manifest_at(base).get("metadata", {}).get("version")
     head_meta = head_manifest.get("metadata", {}).get("version")
-    if base_meta == head_meta:
+    if not _version_increased(base_meta, head_meta):
         problems.append(
-            f"metadata.version stayed at {head_meta} despite plugin changes "
+            f"metadata.version must strictly increase from {base_meta!r} to {head_meta!r} despite plugin changes "
             f"({', '.join(sorted(plugins_touched))}); bump it in {MANIFEST}")
 
     if problems:

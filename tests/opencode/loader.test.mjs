@@ -177,8 +177,9 @@ test("a selection of nothing but typos still loads everything", async () => {
   assert.ok(log.some((line) => line.includes("senior-reveiw")), log.join("\n"));
 });
 
-test("a malformed manifest registers nothing and setup resolves", async () => {
+test("a malformed manifest registers nothing and setup resolves", async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   fs.writeFileSync(path.join(directory, "package.json"), JSON.stringify({ name: "daodan" }));
   const context = fakeContext();
   const log = await run(context, directory);
@@ -186,8 +187,9 @@ test("a malformed manifest registers nothing and setup resolves", async () => {
   assert.ok(log.some((line) => line.includes("[daodan]")), log.join("\n"));
 });
 
-test("a missing manifest registers nothing and setup resolves", async () => {
+test("a missing manifest registers nothing and setup resolves", async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const context = fakeContext();
   await run(context, directory);
   assert.equal(context.calls.transforms, 0);
@@ -252,8 +254,9 @@ test("a restricted role denies what it did not declare", async () => {
   assert.equal(evaluate(rules, "external_directory", "/etc/passwd"), "deny");
 });
 
-test("an unrestricted role keeps V2's defaults and reaches its package", async () => {
+test("an unrestricted role keeps V2's defaults and reaches its package", async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   fs.cpSync(FIXTURE, directory, { recursive: true });
   const manifestPath = path.join(directory, "package.json");
   const document = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
@@ -300,8 +303,9 @@ test("command execute prompts with the expanded body", async () => {
   assert.equal(sent.text, `Run x y in ${ROOT}/plugins/a.`);
 });
 
-test("a command reads its template at invocation time", async () => {
+test("a command reads its template at invocation time", async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daodan-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   fs.cpSync(FIXTURE, directory, { recursive: true });
   const context = fakeContext();
   await run(context, directory);

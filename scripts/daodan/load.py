@@ -184,6 +184,9 @@ def load_workflow(
     phases = table.get("phases", [])
     if not isinstance(phases, list) or not phases:
         raise ModelError(path, "workflow requires at least one [[phases]] entry")
+    for index, phase in enumerate(phases):
+        if not isinstance(phase, dict):
+            raise ModelError(path, f"phase at index {index} must be a table")
 
     entrypoint = workflow_directory / _relative(
         path, _string(path, table, "entrypoint", "workflow"), "entrypoint"

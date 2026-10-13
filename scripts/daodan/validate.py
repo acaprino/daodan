@@ -380,7 +380,17 @@ def validate_capabilities(
 def validate_workflow_graph(plugin: PluginSpec) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     for workflow in plugin.workflows:
+        phase_ids: set[str] = set()
+        for phase in workflow.phases:
+            if phase.id in phase_ids:
+                issues.append(ValidationIssue(
+                    "duplicate-phase-id", workflow.entrypoint, phase.id
+                ))
+            phase_ids.add(phase.id)
+        if len(phase_ids) != len(workflow.phases):
+            continue
         phases = {phase.id: phase for phase in workflow.phases}
+        positions = {phase.id: index for index, phase in enumerate(workflow.phases)}
         colors = {phase_id: "white" for phase_id in phases}
 
         def visit(phase_id: str) -> None:
@@ -396,6 +406,12 @@ def validate_workflow_graph(plugin: PluginSpec) -> list[ValidationIssue]:
                         ValidationIssue("unknown-phase", workflow.entrypoint, dependency)
                     )
                 else:
+                    if positions[dependency] >= positions[phase_id]:
+                        issues.append(ValidationIssue(
+                            "non-prior-phase-dependency", workflow.entrypoint,
+                            f"{phase_id}: prerequisite {dependency!r} "
+                            "must be declared earlier",
+                        ))
                     visit(dependency)
             colors[phase_id] = "black"
 
@@ -408,6 +424,7 @@ def validate_execution_contracts(plugin: PluginSpec) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     for workflow in plugin.workflows:
         produced = {item for phase in workflow.phases for item in phase.produces}
+        available: set[str] = set()
         independent = INDEPENDENT_REVIEW_OUTCOME in workflow.contract.outcomes
         for phase in workflow.phases:
             if phase.invoke is not None:
@@ -423,6 +440,12 @@ def validate_execution_contracts(plugin: PluginSpec) -> list[ValidationIssue]:
                         "unknown-fanout-selection", workflow.entrypoint, phase.fanout_from
                     )
                 )
+            elif phase.fanout_from and phase.fanout_from not in available:
+                issues.append(ValidationIssue(
+                    "unavailable-fanout-selection", workflow.entrypoint,
+                    f"{phase.id}: {phase.fanout_from} "
+                    "must be produced by an earlier phase",
+                ))
             if independent and has_fanout and phase.isolation != "required":
                 issues.append(
                     ValidationIssue(
@@ -434,6 +457,12 @@ def validate_execution_contracts(plugin: PluginSpec) -> list[ValidationIssue]:
                     issues.append(
                         ValidationIssue("unproduced-artifact", workflow.entrypoint, item)
                     )
+                elif item not in available:
+                    issues.append(ValidationIssue(
+                        "unavailable-artifact", workflow.entrypoint,
+                        f"{phase.id}: {item} must be produced by an earlier phase",
+                    ))
+            available.update(phase.produces)
         for artifact in workflow.contract.artifacts:
             if f"artifact:{artifact}" not in produced:
                 issues.append(
@@ -519,11 +548,30 @@ def validate_component_kinds(plugin: PluginSpec) -> list[ValidationIssue]:
     ]
 
 
+def _duplicate_plugin_issues(plugins: Sequence[PluginSpec]) -> list[ValidationIssue]:
+    """Reject ambiguous names before a registry can discard a physical kernel."""
+    roots_by_name: dict[str, list[Path]] = {}
+    for plugin in plugins:
+        roots_by_name.setdefault(plugin.name, []).append(plugin.root)
+    issues: list[ValidationIssue] = []
+    for name, roots in sorted(roots_by_name.items()):
+        if len(roots) < 2:
+            continue
+        ordered = sorted(roots, key=lambda root: root.as_posix())
+        issues.append(ValidationIssue(
+            "duplicate-plugin-name", ordered[0] / "plugin.toml",
+            f"Duplicate plugin name {name!r}: {', '.join(str(root) for root in ordered)}",
+        ))
+    return issues
+
+
 def validate_plugins(
     plugins: Sequence[PluginSpec], capabilities: AbstractSet[str]
 ) -> list[ValidationIssue]:
     """Run every pass over every plugin, in a fixed order."""
-    issues: list[ValidationIssue] = []
+    issues = _duplicate_plugin_issues(plugins)
+    if issues:
+        return issues
     registry = {plugin.name: plugin for plugin in plugins}
     for plugin in plugins:
         issues.extend(validate_identity(plugin))

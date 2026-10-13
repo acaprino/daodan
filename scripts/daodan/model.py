@@ -64,6 +64,19 @@ class WorkflowSpec:
     contract: ContractSpec
     dispatch: DispatchSpec = DispatchSpec()
 
+    def worker_references(self, local_roles: tuple[str, ...] = ()) -> tuple[str, ...]:
+        """Derive the neutral worker union without assigning host identities."""
+        references = set(self.dispatch.roles)
+        if self.dispatch.inline_workers:
+            references.add(INLINE_WORKER_REFERENCE)
+        for phase in self.phases:
+            references.update(reference.partition(":")[2] or reference for reference in phase.fanout)
+            if phase.role:
+                references.add(phase.role)
+            if phase.fanout_from and not phase.role:
+                references.update(local_roles)
+        return tuple(sorted(references))
+
 
 @dataclass(frozen=True)
 class CapabilityRequirements:

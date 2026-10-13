@@ -2,17 +2,26 @@
 
 import json
 import re
+import shutil
 import sys
+import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.daodan.adapter import HOSTS  # noqa: E402
-from scripts.daodan.catalogs import CatalogError, assert_cross_host_identity, render_catalog  # noqa: E402
+from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
+from scripts.daodan.catalogs import (  # noqa: E402
+    CatalogError,
+    assert_cross_host_identity,
+    catalog_document,
+    render_catalog,
+)
 from scripts.daodan.load import load_plugin  # noqa: E402
+from scripts.daodan.render import render_plugin  # noqa: E402
 
 VALID = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
@@ -82,10 +91,81 @@ class CatalogTests(unittest.TestCase):
             render_catalog("claude", plugins, "1.0.0"),
         )
 
+    def test_each_catalog_entry_rejects_identical_version_duplicate_identity(self):
+        with tempfile.TemporaryDirectory(prefix="daodan-duplicate-catalog-") as holder:
+            roots = [Path(holder) / origin / "example" for origin in ("first", "second")]
+            for root in roots:
+                shutil.copytree(VALID, root)
+            plugins = [load_plugin(root) for root in roots]
+
+            for host in HOSTS:
+                for entrypoint in (catalog_document, render_catalog):
+                    with self.subTest(host=host, entrypoint=entrypoint.__name__):
+                        diagnoses = []
+                        for _ in range(2):
+                            with self.assertRaises(CatalogError) as caught:
+                                entrypoint(host, plugins, "1.0.0")
+                            diagnoses.append(str(caught.exception))
+
+                        self.assertEqual(diagnoses[0], diagnoses[1])
+                        self.assertIn("duplicate", diagnoses[0].lower())
+                        self.assertIn("example", diagnoses[0])
+                        for root in roots:
+                            self.assertIn(str(root), diagnoses[0])
+
     def test_entries_are_sorted_by_plugin_name(self):
-        catalog = build_fixture_catalogs()["claude"]
-        names = [entry["name"] for entry in catalog["plugins"]]
-        self.assertEqual(names, sorted(names))
+        base = load_plugin(VALID)
+        plugins = [replace(base, name="zeta", version="3.0.0"),
+                   replace(base, name="mu", version="2.0.0"),
+                   replace(base, name="alpha", version="1.0.0")]
+        # These three literal names establish alpha < mu < zeta independently.
+        expected_names = ["alpha", "mu", "zeta"]
+        expected_versions = {"alpha": "1.0.0", "mu": "2.0.0", "zeta": "3.0.0"}
+
+        for host in HOSTS:
+            with self.subTest(host=host):
+                neutral = catalog_document(host, plugins, "4.0.0")
+                rendered = json.loads(render_catalog(host, plugins, "4.0.0"))
+
+                self.assertEqual([entry["name"] for entry in neutral["plugins"]], expected_names)
+                self.assertEqual({entry["name"]: entry["version"]
+                                  for entry in neutral["plugins"]}, expected_versions)
+                if host in ("claude", "codex", "copilot"):
+                    self.assertEqual([entry["name"] for entry in rendered["plugins"]], expected_names)
+                elif host == "opencode":
+                    self.assertEqual(list(rendered["daodan"]["plugins"]), expected_names)
+                else:
+                    self.assertEqual(rendered["name"], "daodan")
+                    self.assertEqual(rendered["version"], "4.0.0")
+
+
+    def test_opencode_catalog_uses_the_rendered_custom_component_layout(self):
+        plugin = load_plugin(REPO_ROOT / "tests/fixtures/daodan/valid-mcp/plugins/example")
+        original = load_adapter(REPO_ROOT / "adapters", "opencode")
+        adapter = replace(original, layout={**original.layout,
+                          "skills": "${host}/${version}/knowledge/${skill}/SKILL.md",
+                          "roles": "${host}/${license}/workers/${role}.md",
+                          "workflows": "${host}/${version}/entries/${workflow}.md"})
+        with tempfile.TemporaryDirectory(prefix="daodan-opencode-layout-") as holder:
+            package = Path(holder) / "example"
+            render_plugin(plugin, adapter, package, adapters_root=REPO_ROOT / "adapters")
+            self.assertTrue((package / "opencode/1.2.3/knowledge/tools/SKILL.md").is_file())
+            self.assertTrue((package / "opencode/MIT/workers/inspector.md").is_file())
+            self.assertTrue((package / "opencode/1.2.3/entries/review.md").is_file())
+
+            catalog = json.loads(render_catalog("opencode", [plugin], "1.0.0",
+                                               {"example": package}, layout=adapter.layout))
+            entry = catalog["daodan"]["plugins"]["example"]
+
+            self.assertEqual([item["file"] for item in entry["skills"]], ["opencode/1.2.3/knowledge/tools/SKILL.md"])
+            self.assertEqual([item["file"] for item in entry["agents"]], ["opencode/MIT/workers/inspector.md"])
+            self.assertEqual([item["file"] for item in entry["commands"]], ["opencode/1.2.3/entries/review.md"])
+            self.assertEqual(entry["agents"][0]["id"], "example:inspector")
+            self.assertEqual(entry["skills"][0]["id"], "example:tools")
+            self.assertEqual(entry["commands"][0]["name"], "example:review")
+            for kind in ("skills", "agents", "commands"):
+                for item in entry[kind]:
+                    self.assertTrue((package / item["file"]).is_file(), item["file"])
 
     def test_identity_check_rejects_a_divergent_host(self):
         catalogs = build_fixture_catalogs()

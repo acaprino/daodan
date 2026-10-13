@@ -44,6 +44,121 @@ class CrossPluginContractsTests(unittest.TestCase):
         )
         self.assertEqual(self.codes(), set())
 
+    def test_rejects_consumption_before_an_artifact_is_available(self):
+        workflow = self.consumer.workflows[0]
+        prepare, inspect = workflow.phases
+        cases = {
+            "later-phase": (
+                dataclasses.replace(prepare, consumes=("artifact:result",)),
+                inspect,
+            ),
+            "same-phase": (
+                prepare,
+                dataclasses.replace(inspect, consumes=("artifact:result",)),
+            ),
+        }
+        for producer_position, phases in cases.items():
+            with self.subTest(producer_position=producer_position):
+                consumer = dataclasses.replace(
+                    self.consumer,
+                    workflows=(dataclasses.replace(workflow, phases=phases),),
+                )
+
+                issues = validate_plugins(
+                    [self.provider, consumer], CAPABILITY_REGISTRY
+                )
+
+                self.assertTrue(issues, "Consumed artifacts need a prior producer")
+                diagnosis = "\n".join(issue.message for issue in issues)
+                self.assertIn("artifact:result", diagnosis)
+
+    def test_rejects_fanout_before_its_selection_is_available(self):
+        workflow = self.consumer.workflows[0]
+        prepare, inspect = workflow.phases
+        cases = {
+            "later-phase": (
+                dataclasses.replace(inspect, needs=()), prepare,
+            ),
+            "same-phase": (
+                dataclasses.replace(prepare, produces=()),
+                dataclasses.replace(
+                    inspect, produces=("artifact:result", "selection:inspectors")
+                ),
+            ),
+        }
+        for producer_position, phases in cases.items():
+            with self.subTest(producer_position=producer_position):
+                consumer = dataclasses.replace(
+                    self.consumer,
+                    workflows=(dataclasses.replace(workflow, phases=phases),),
+                )
+
+                issues = validate_plugins(
+                    [self.provider, consumer], CAPABILITY_REGISTRY
+                )
+
+                self.assertTrue(issues, "Fanout selections need a prior producer")
+                diagnosis = "\n".join(issue.message for issue in issues)
+                self.assertIn("selection:inspectors", diagnosis)
+
+    def test_prior_prerequisite_and_producer_keep_declaration_order(self):
+        workflow = self.consumer.workflows[0]
+        prepare, inspect = workflow.phases
+        inspect = dataclasses.replace(
+            inspect, consumes=("selection:inspectors",)
+        )
+        consumer = dataclasses.replace(
+            self.consumer,
+            workflows=(dataclasses.replace(workflow, phases=(prepare, inspect)),),
+        )
+        registry = {**self.registry, "consumer": consumer}
+
+        issues = validate_plugins([self.provider, consumer], CAPABILITY_REGISTRY)
+
+        self.assertEqual(issues, [])
+        for host in HOSTS:
+            with self.subTest(host=host):
+                target = self.temp / "ordered" / host
+                render_plugin(
+                    consumer, load_adapter(ADAPTERS, host), target,
+                    adapters_root=ADAPTERS, plugin_registry=registry,
+                )
+                text = "\n".join(
+                    path.read_text(encoding="utf-8")
+                    for path in target.rglob("*.md")
+                )
+                self.assertLess(
+                    text.index("1. `prepare`:"), text.index("2. `inspect`:")
+                )
+                self.assertIn("needs `prepare`", text)
+                self.assertIn("consumes `selection:inspectors`", text)
+
+    def test_missing_producers_keep_their_existing_diagnoses(self):
+        workflow = self.consumer.workflows[0]
+        prepare, inspect = workflow.phases
+        cases = (
+            (
+                dataclasses.replace(inspect, consumes=("artifact:missing",)),
+                "unproduced-artifact",
+            ),
+            (
+                dataclasses.replace(inspect, fanout_from="selection:missing"),
+                "unknown-fanout-selection",
+            ),
+        )
+        for phase, expected in cases:
+            with self.subTest(diagnosis=expected):
+                consumer = dataclasses.replace(
+                    self.consumer,
+                    workflows=(dataclasses.replace(
+                        workflow, phases=(prepare, phase)
+                    ),),
+                )
+
+                codes = self.codes(consumer)
+
+                self.assertIn(expected, codes)
+
     def test_external_role_must_exist_in_declared_provider(self):
         workflow = self.consumer.workflows[0]
         phase = dataclasses.replace(workflow.phases[1], role="provider/missing")

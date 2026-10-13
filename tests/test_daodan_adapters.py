@@ -1,6 +1,8 @@
 """Capability-parity tests for the three peer harnesses."""
 
 import sys
+import shutil
+import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -11,6 +13,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.adapter import (  # noqa: E402
     HOSTS,
+    AdapterError,
     CoordinationStrategy,
     load_adapter,
     resolve_support,
@@ -105,6 +108,55 @@ class AdapterParityTests(unittest.TestCase):
             with self.subTest(host=host):
                 adapter = load_adapter(ADAPTERS, host)
                 self.assertTrue(all(strategy.isolated for strategy in adapter.strategies))
+
+
+    def test_coordination_flags_reject_nonboolean_toml_values(self):
+        """C09 requires typed capabilities rather than truthiness."""
+        temporary = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, temporary, True)
+        adapters = temporary / "adapters"
+        shutil.copytree(ADAPTERS / "codex", adapters / "codex")
+        coordination = adapters / "codex/coordination.toml"
+        original = coordination.read_text(encoding="utf-8")
+        flags = {"isolated": "true", "parallel": "true",
+                 "shared_tasks": "false", "peer_messaging": "false"}
+        invalid_values = ('"false"', '"true"', '""', "0", "1", "0.5",
+                          "[]", "[false]", "{ enabled = false }", "2026-10-12")
+        for flag, old_value in flags.items():
+            for invalid in invalid_values:
+                with self.subTest(flag=flag, value=invalid):
+                    coordination.write_text(original.replace(
+                        f"{flag} = {old_value}", f"{flag} = {invalid}", 1),
+                        encoding="utf-8")
+
+                    with self.assertRaises(AdapterError) as caught:
+                        load_adapter(adapters, "codex")
+
+                    self.assertEqual(caught.exception.path, coordination)
+                    self.assertIn(flag, caught.exception.message)
+                    self.assertIn("boolean", caught.exception.message.lower())
+
+    def test_coordination_flags_preserve_genuine_true_and_false(self):
+        temporary = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, temporary, True)
+        adapters = temporary / "adapters"
+        shutil.copytree(ADAPTERS / "codex", adapters / "codex")
+        coordination = adapters / "codex/coordination.toml"
+        original = coordination.read_text(encoding="utf-8")
+        flags = {"isolated": "true", "parallel": "true",
+                 "shared_tasks": "false", "peer_messaging": "false"}
+        for flag, old_value in flags.items():
+            for literal, expected in (("true", True), ("false", False)):
+                with self.subTest(flag=flag, value=literal):
+                    coordination.write_text(original.replace(
+                        f"{flag} = {old_value}", f"{flag} = {literal}", 1),
+                        encoding="utf-8")
+
+                    adapter = load_adapter(adapters, "codex")
+
+                    self.assertIs(getattr(adapter.strategies[0], flag), expected)
+                    self.assertEqual(tuple(row.name for row in adapter.strategies),
+                                     ("parallel-subagents", "serial-isolated"))
 
 
 if __name__ == "__main__":

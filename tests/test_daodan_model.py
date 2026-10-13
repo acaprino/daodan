@@ -127,5 +127,52 @@ class NeutralModelTests(unittest.TestCase):
         return destination
 
 
+    def test_scalar_phase_elements_raise_model_error_with_path_and_index(self):
+        """C10 rejects each malformed element before interpreting its fields."""
+        temporary = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, temporary, True)
+        kernel = temporary / "example"
+        shutil.copytree(VALID, kernel)
+        sidecar = kernel / "workflows/review.toml"
+        original = sidecar.read_text(encoding="utf-8")
+        contract = original[original.index("[contract]"):]
+        invalid_values = ('"inspect"', "17", "0.5", "true", "2026-10-12")
+        for invalid in invalid_values:
+            for index in (0, 1):
+                with self.subTest(value=invalid, index=index):
+                    leading = '{ id = "inspect" }, ' if index else ""
+                    sidecar.write_text('name = "review"\nentrypoint = "review.md"\n'
+                                       f"phases = [{leading}{invalid}]\n\n" + contract,
+                                       encoding="utf-8")
+
+                    with self.assertRaises(ModelError) as caught:
+                        load_plugin(kernel)
+
+                    self.assertEqual(caught.exception.path, sidecar)
+                    self.assertIn("phase", caught.exception.message.lower())
+                    self.assertRegex(caught.exception.message, rf"\b{index}\b")
+
+    def test_inline_phase_tables_remain_valid(self):
+        temporary = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, temporary, True)
+        kernel = temporary / "example"
+        shutil.copytree(VALID, kernel)
+        sidecar = kernel / "workflows/review.toml"
+        original = sidecar.read_text(encoding="utf-8")
+        contract = original[original.index("[contract]"):]
+        sidecar.write_text('name = "review"\nentrypoint = "review.md"\n'
+                           'phases = [{ id = "inspect", isolation = "required", '
+                           'join = "all-delivered", fanout = ["role:inspector"], '
+                           'produces = ["artifact:report"] }]\n\n' + contract,
+                           encoding="utf-8")
+
+        plugin = load_plugin(kernel)
+
+        self.assertEqual(tuple(phase.id for phase in plugin.workflows[0].phases),
+                         ("inspect",))
+        self.assertEqual(plugin.workflows[0].phases[0].fanout, ("role:inspector",))
+        self.assertEqual(plugin.workflows[0].phases[0].isolation, "required")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,7 @@
 # Project instructions and test practices for architectural refactoring
 
 Research snapshot: 2026-10-08. This note explains the instruction and testing
-clauses of the [README prompt](../../README.md#one-prompt-for-a-guided-project-rationalization).
+clauses of the [README maintainer entry](../../README.md#take-over-a-project-then-maintain-it).
 It combines vendor guidance with Daodan's existing methods. Recommendations below
 are a synthesis for architectural work, not a universal policy prescribed by any
 one vendor. Documentation and source inspection do not establish installed-host
@@ -28,7 +28,7 @@ explains how repeatable checks can become reusable procedures.
 Daodan supplies the local ownership and verification contract: [project-lifecycle](../plugins/project-lifecycle.md)
 coordinates the outcome, [project-protocol](../plugins/project-protocol.md) binds
 records and checks to snapshots, and [senior-review](../plugins/senior-review.md)
-owns correctness review. The README's initial full-depth X-ray, new or updated from
+owns correctness review. The canonical [maintainer method](../../plugins/project-lifecycle/skills/maintainer-method/SKILL.md) owns the campaign stages. Its initial full-depth X-ray, new or updated from
 an earlier run when the X-ray's own change set recommends it, and its severe-defect
 priority are explicit choices for this global refactoring request. They are not a
 claim that every small change must run a complete analysis.

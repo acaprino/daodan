@@ -629,7 +629,7 @@
       "topics": [
         "peer-review"
       ],
-      "version": "2.4.4"
+      "version": "2.4.5"
     },
     {
       "description": "Rulebook of MUST/DO/DON'T rules backed by real-world incident references. TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri) apps for security posture, architecture decisions, performance, or compliance with OWASP, Core Web Vitals, and OAuth 2.1.",

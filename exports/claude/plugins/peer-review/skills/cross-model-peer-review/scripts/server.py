@@ -17,6 +17,7 @@ import json
 import os
 import re
 import subprocess
+import stat
 import time
 import urllib.error
 import urllib.request
@@ -266,15 +267,27 @@ def _load_payload(content_path: str) -> tuple[dict | None, str | None]:
     can be aimed at is the set the protocol writes.
     """
     try:
-        path = Path(content_path).expanduser().resolve()
-    except (OSError, RuntimeError) as error:
+        cwd = Path.cwd().resolve(strict=True)
+        root = cwd / ".peer-review"
+        path = Path(content_path).expanduser()
+        if not path.is_absolute():
+            path = cwd / path
+        if ".." in path.parts or root not in path.parents:
+            return None, f"content_path must be inside {root}; got {path}"
+        current = cwd
+        for component in path.relative_to(cwd).parts:
+            current = current / component
+            metadata = current.lstat()
+            if (stat.S_ISLNK(metadata.st_mode)
+                    or getattr(metadata, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+                    or (stat.S_ISREG(metadata.st_mode) and metadata.st_nlink > 1)):
+                return None, f"content_path has a linked component: {current}"
+        root = root.resolve(strict=True)
+        path = path.resolve(strict=True)
+        if root.parent != cwd or root not in path.parents or cwd not in path.parents:
+            return None, f"content_path must stay inside {cwd / '.peer-review'}; got {path}"
+    except (OSError, RuntimeError, ValueError) as error:
         return None, f"cannot resolve content_path: {error}"
-    root = (Path.cwd() / ".peer-review").resolve()
-    if root not in path.parents:
-        return None, (
-            f"content_path must be inside {root}; got {path}. The transport sends what "
-            f"it reads, so it reads only run directories"
-        )
     if not path.is_file():
         return None, f"content_path is not a readable file: {path}"
     try:

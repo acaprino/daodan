@@ -231,10 +231,58 @@ class RenderTests(unittest.TestCase):
         self.assertEqual((live / "sentinel").read_text(encoding="utf-8"), "old")
 
     def test_nothing_is_written_outside_the_destination(self):
-        live = self.temp / "live"
-        self.compile_fixture("claude")
-        publish_plugin(load_plugin(VALID), load_adapter(ADAPTERS, "claude"), live)
-        self.assertFalse((self.temp / ".previous").exists())
+        old = {Path("sentinel.bin"): b"old published bytes\x00\xff",
+               Path("nested/old.txt"): b"old nested publication\n"}
+        foreign = {Path("foreign.bin"): b"foreign sibling\x00\xfe",
+                   Path("foreign-dir/keep.txt"): b"foreign nested sibling\n"}
+        for outcome in ("success", "validation-error", "publication-error"):
+            with self.subTest(outcome=outcome):
+                parent = self.temp / outcome
+                live = parent / "live"
+                (live / "nested").mkdir(parents=True)
+                (parent / "foreign-dir").mkdir()
+                for path, content in old.items():
+                    (live / path).write_bytes(content)
+                for path, content in foreign.items():
+                    (parent / path).write_bytes(content)
+                before = {path.name for path in parent.iterdir()}
+                observed_backup = []
+                original_rename = Path.rename
+
+                def fail_publication(path, destination):
+                    if path.name.endswith(".staging") and Path(destination) == live:
+                        previous = parent / ".live.previous"
+                        observed_backup.append({item.relative_to(previous): item.read_bytes()
+                                                for item in previous.rglob("*") if item.is_file()})
+                        raise OSError("owned publication failure")
+                    return original_rename(path, destination)
+
+                if outcome == "validation-error":
+                    with self.assertRaises(RenderError):
+                        self.compile_invalid_fixture(live)
+                elif outcome == "publication-error":
+                    with patch.object(Path, "rename", fail_publication), \
+                            patch("scripts.daodan.render.time.sleep"):
+                        with self.assertRaises(RenderError):
+                            publish_plugin(load_plugin(VALID), load_adapter(ADAPTERS, "claude"), live)
+                else:
+                    publish_plugin(load_plugin(VALID), load_adapter(ADAPTERS, "claude"), live)
+
+                # The stable OS-lock sibling is intentional; staging/backup are temporary.
+                expected_names = before if outcome == "validation-error" else before | {".live.lock"}
+                self.assertEqual({path.name for path in parent.iterdir()}, expected_names)
+                self.assertEqual({path: (parent / path).read_bytes() for path in foreign}, foreign)
+                if outcome == "success":
+                    self.assertTrue((live / "agents/inspector.md").is_file())
+                    self.assertTrue((live / ".claude-plugin/plugin.json").is_file())
+                    self.assertFalse((live / "sentinel.bin").exists())
+                else:
+                    self.assertEqual({item.relative_to(live): item.read_bytes()
+                                      for item in live.rglob("*") if item.is_file()}, old)
+                if outcome == "publication-error":
+                    self.assertTrue(observed_backup, "The backup branch was not exercised")
+                    self.assertTrue(all(snapshot == old for snapshot in observed_backup))
+
 
     def test_provenance_has_exactly_the_declared_keys(self):
         live = self.compile_fixture("claude")
@@ -306,6 +354,317 @@ class RenderTests(unittest.TestCase):
         with self.assertRaises(RenderError):
             replace_tree(staging, live)
         self.assertEqual((live / "sentinel").read_text(encoding="utf-8"), "old")
+
+
+    def test_cancellation_immediately_after_first_live_move_restores_the_publication(self):
+        """Interrupt after the real first rename returns, before the next source line."""
+        live, staging = self.temp / "first-move-live", self.temp / "first-move-staging"
+        previous = self.temp / ".first-move-live.previous"
+        old = {Path("sentinel.bin"): b"old exact bytes\x00\xff\r\n",
+               Path("nested/old.txt"): b"old nested publication\n"}
+        new = {Path("replacement.bin"): b"complete new publication\x00\xfe"}
+        (live / "nested").mkdir(parents=True)
+        staging.mkdir()
+        for path, content in old.items():
+            (live / path).write_bytes(content)
+        for path, content in new.items():
+            (staging / path).write_bytes(content)
+        cancellation = KeyboardInterrupt("owned interruption immediately after first move")
+        observed = []
+        original_trace = sys.gettrace()
+
+        def interrupt_after_real_move(frame, event, argument):
+            if event == "line" and frame.f_code is replace_tree.__code__ and \
+                    previous.is_dir() and not live.exists() and not observed:
+                observed.append({item.relative_to(previous): item.read_bytes()
+                                 for item in previous.rglob("*") if item.is_file()})
+                sys.settrace(None)
+                raise cancellation
+            return interrupt_after_real_move
+
+        try:
+            sys.settrace(interrupt_after_real_move)
+            with self.assertRaises(KeyboardInterrupt) as caught:
+                replace_tree(staging, live)
+        finally:
+            sys.settrace(original_trace)
+
+        self.assertIs(caught.exception, cancellation)
+        self.assertEqual(observed, [old], "The real first move must have completed")
+        self.assertTrue(live.is_dir(), "Cancellation left the published path absent")
+        self.assertEqual({item.relative_to(live): item.read_bytes()
+                          for item in live.rglob("*") if item.is_file()}, old)
+        self.assertEqual({item.relative_to(staging): item.read_bytes()
+                          for item in staging.rglob("*") if item.is_file()}, new)
+        self.assertFalse(previous.exists())
+
+        replace_tree(staging, live)
+
+        self.assertEqual({item.relative_to(live): item.read_bytes()
+                          for item in live.rglob("*") if item.is_file()}, new)
+
+    def test_error_before_first_live_move_keeps_live_and_staging_complete(self):
+        live, staging = self.temp / "before-move-live", self.temp / "before-move-staging"
+        previous = self.temp / ".before-move-live.previous"
+        live.mkdir()
+        staging.mkdir()
+        (live / "old.bin").write_bytes(b"complete old bytes\x00\xff")
+        (staging / "new.bin").write_bytes(b"complete new bytes\x00\xfe")
+        error = OSError("owned first move failure")
+        original_rename = Path.rename
+
+        def reject_first_move(path, destination):
+            if path == live and Path(destination) == previous:
+                raise error
+            return original_rename(path, destination)
+
+        with patch.object(Path, "rename", reject_first_move), \
+                patch("scripts.daodan.render.time.sleep"):
+            with self.assertRaises(RenderError) as caught:
+                replace_tree(staging, live)
+
+        self.assertIs(caught.exception.__cause__, error)
+        self.assertEqual((live / "old.bin").read_bytes(), b"complete old bytes\x00\xff")
+        self.assertEqual((staging / "new.bin").read_bytes(), b"complete new bytes\x00\xfe")
+        self.assertFalse(previous.exists())
+
+        replace_tree(staging, live)
+
+        self.assertEqual((live / "new.bin").read_bytes(), b"complete new bytes\x00\xfe")
+
+    def test_cancellation_after_live_move_restores_bytes_and_preserves_signal(self):
+        """C05 observes old bytes after mutation and the original cancellation."""
+        class OwnedCancellation(BaseException):
+            pass
+
+        for number, signal in enumerate((KeyboardInterrupt("cancel"), SystemExit(23),
+                                         OwnedCancellation("cancel"))):
+            with self.subTest(signal=type(signal).__name__):
+                live = self.temp / f"cancel-live-{number}"
+                staging = self.temp / f"cancel-staging-{number}"
+                live.mkdir()
+                (live / "nested").mkdir()
+                old = {Path("sentinel"): b"old bytes\x00\xff",
+                       Path("nested/guide.txt"): b"old nested bytes\n"}
+                for path, content in old.items():
+                    (live / path).write_bytes(content)
+                staging.mkdir()
+                (staging / "sentinel").write_bytes(b"new publication")
+                original_rename = Path.rename
+                observations = []
+
+                def cancel_at_publish(path, destination):
+                    if path == staging and Path(destination) == live:
+                        previous = live.parent / f".{live.name}.previous"
+                        observations.append({
+                            item.relative_to(previous): item.read_bytes()
+                            for item in previous.rglob("*") if item.is_file()
+                        })
+                        raise signal
+                    return original_rename(path, destination)
+
+                with patch.object(Path, "rename", cancel_at_publish):
+                    with self.assertRaises(type(signal)) as caught:
+                        replace_tree(staging, live)
+
+                self.assertIs(caught.exception, signal)
+                self.assertEqual(observations, [old])
+                self.assertTrue(live.is_dir(), "Cancellation left the live path absent")
+                self.assertEqual(
+                    {item.relative_to(live): item.read_bytes()
+                     for item in live.rglob("*") if item.is_file()}, old)
+                replace_tree(staging, live)
+                self.assertEqual((live / "sentinel").read_bytes(), b"new publication")
+
+    def _assert_process_owner_releases_publication(self, end_owner):
+        """C07 pauses a real owned publisher at the filesystem rename boundary."""
+        import time
+
+        live = self.temp / "process-live"
+        staging = self.temp / "owner-staging"
+        competing = self.temp / "competing-staging"
+        live.mkdir()
+        (live / "sentinel").write_bytes(b"previous publication")
+        for path in (staging, competing):
+            path.mkdir()
+            (path / "sentinel").write_bytes(b"next publication")
+        ready, stop = self.temp / "ready", self.temp / "stop"
+        child_code = r"""
+import sys
+import time
+from pathlib import Path
+from unittest.mock import patch
+sys.path.insert(0, sys.argv[1])
+from scripts.daodan.render import replace_tree
+live, staging, ready, stop = map(Path, sys.argv[2:])
+original_rename = Path.rename
+def pause_owned_rename(path, destination):
+    if path == live:
+        ready.write_text("ownership acquired", encoding="utf-8")
+        deadline = time.monotonic() + 10
+        while not stop.exists():
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Owned child stop deadline expired")
+            time.sleep(0.01)
+        raise KeyboardInterrupt("owned cancellation")
+    return original_rename(path, destination)
+try:
+    with patch.object(Path, "rename", pause_owned_rename):
+        replace_tree(staging, live)
+except KeyboardInterrupt:
+    print("owned cancellation propagated", flush=True)
+"""
+        child = subprocess.Popen(
+            [sys.executable, "-B", "-c", child_code, str(REPO_ROOT), str(live),
+             str(staging), str(ready), str(stop)],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+        try:
+            deadline = time.monotonic() + 5
+            while not ready.exists() and child.poll() is None and time.monotonic() < deadline:
+                time.sleep(0.01)
+            self.assertTrue(ready.exists(), "Child did not reach publication boundary")
+            self.assertIsNone(child.poll())
+
+            with self.assertRaises(RenderError):
+                replace_tree(competing, live)
+
+            self.assertEqual((live / "sentinel").read_bytes(), b"previous publication")
+            self.assertEqual((competing / "sentinel").read_bytes(), b"next publication")
+            if end_owner == "cancel":
+                stop.write_text("cancel", encoding="utf-8")
+            else:
+                child.kill()
+            stdout, stderr = child.communicate(timeout=3)
+            if end_owner == "cancel":
+                self.assertEqual(child.returncode, 0, stderr)
+                self.assertIn("owned cancellation propagated", stdout)
+            else:
+                self.assertNotEqual(child.returncode, 0)
+            self.assertEqual((live / "sentinel").read_bytes(), b"previous publication")
+
+            replace_tree(competing, live)
+
+            self.assertEqual((live / "sentinel").read_bytes(), b"next publication")
+        finally:
+            if child.poll() is None:
+                child.kill()
+            child.communicate(timeout=3)
+
+    def test_normal_child_cancellation_releases_publication_ownership(self):
+        self._assert_process_owner_releases_publication("cancel")
+
+    def test_child_death_releases_publication_ownership_for_a_later_publish(self):
+        self._assert_process_owner_releases_publication("death")
+
+
+    def test_child_death_after_live_move_preserves_old_bytes_across_failed_recovery(self):
+        """A later failed publication must keep the last complete tree recoverable."""
+        import time
+
+        live = self.temp / "recovery-live"
+        owner_staging = self.temp / "interrupted-staging"
+        next_staging = self.temp / "recovery-staging"
+        previous = self.temp / ".recovery-live.previous"
+        old = {Path("sentinel.bin"): b"complete old publication\x00\xff\r\n",
+               Path("nested/guide.txt"): b"complete old nested bytes\n"}
+        live.mkdir()
+        (live / "nested").mkdir()
+        for path, content in old.items():
+            (live / path).write_bytes(content)
+        for staging in (owner_staging, next_staging):
+            staging.mkdir()
+            (staging / "sentinel.bin").write_bytes(b"complete replacement\x00\xfe")
+        ready, stop = self.temp / "recovery-ready", self.temp / "recovery-stop"
+        child_code = r"""
+import sys
+import time
+from pathlib import Path
+from unittest.mock import patch
+sys.path.insert(0, sys.argv[1])
+from scripts.daodan.render import replace_tree
+live, staging, ready, stop = map(Path, sys.argv[2:])
+original_rename = Path.rename
+def pause_after_live_move(path, destination):
+    if path == staging and Path(destination) == live:
+        ready.write_text("live moved; replacement not published", encoding="utf-8")
+        deadline = time.monotonic() + 20
+        while not stop.exists():
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Owned recovery child stop deadline expired")
+            time.sleep(0.01)
+        raise KeyboardInterrupt("owned recovery cancellation")
+    return original_rename(path, destination)
+try:
+    with patch.object(Path, "rename", pause_after_live_move):
+        replace_tree(staging, live)
+except KeyboardInterrupt:
+    pass
+"""
+        child = subprocess.Popen(
+            [sys.executable, "-B", "-c", child_code, str(REPO_ROOT), str(live),
+             str(owner_staging), str(ready), str(stop)],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+        try:
+            deadline = time.monotonic() + 10
+            while not ready.exists() and child.poll() is None and time.monotonic() < deadline:
+                time.sleep(0.01)
+            self.assertTrue(ready.exists(), "Child did not reach the post-move boundary")
+            self.assertIsNone(child.poll())
+            self.assertFalse(live.exists(), "Child must actually have moved the live tree")
+            self.assertEqual(
+                {item.relative_to(previous): item.read_bytes()
+                 for item in previous.rglob("*") if item.is_file()}, old)
+
+            child.kill()
+            _, stderr = child.communicate(timeout=3)
+            self.assertNotEqual(child.returncode, 0, stderr)
+            original_rename = Path.rename
+            old_retained_at_failure = []
+
+            def fail_next_publication(path, destination):
+                if path == next_staging and Path(destination) == live:
+                    snapshots = [
+                        {item.relative_to(root): item.read_bytes()
+                         for item in root.rglob("*") if item.is_file()}
+                        for root in (live, previous) if root.is_dir()
+                    ]
+                    old_retained_at_failure.append(old in snapshots)
+                    raise OSError("owned recovery replacement failure")
+                return original_rename(path, destination)
+
+            with patch.object(Path, "rename", fail_next_publication), \
+                    patch("scripts.daodan.render.time.sleep"):
+                with self.assertRaises(RenderError):
+                    replace_tree(next_staging, live)
+            recoverable_after_failure = [
+                {item.relative_to(root): item.read_bytes()
+                 for item in root.rglob("*") if item.is_file()}
+                for root in (live, previous) if root.is_dir()
+            ]
+            replace_tree(next_staging, live)
+
+            self.assertTrue(old_retained_at_failure, "The recovery fault was not exercised")
+            self.assertTrue(
+                all(old_retained_at_failure),
+                "Recovery discarded complete old bytes before replacement succeeded",
+            )
+            self.assertIn(old, recoverable_after_failure,
+                          "Failed recovery lost the last complete publication")
+            self.assertEqual(
+                {item.relative_to(live): item.read_bytes()
+                 for item in live.rglob("*") if item.is_file()},
+                {Path("sentinel.bin"): b"complete replacement\x00\xfe"},
+            )
+        finally:
+            if child.poll() is None:
+                stop.write_text("cancel", encoding="utf-8")
+                try:
+                    child.communicate(timeout=3)
+                except subprocess.TimeoutExpired:
+                    child.kill()
+            child.communicate(timeout=3)
 
     @unittest.skipUnless(os.name == "nt", "Windows ACL regression")
     def test_published_tree_inherits_the_store_acl(self):

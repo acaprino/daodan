@@ -136,12 +136,13 @@ from before the universal migration, they will never be rebuilt, and nothing che
 
 ## Rollback
 
-Roll back with a Git revert and a **new** patch marketplace version. Published versions are never
+With explicit publication authorization, roll back with a Git revert and a **new, increasing** patch marketplace version. If the revert changes a kernel or its host override, also give each affected plugin a new version greater than its latest published version. Published versions are never
 reused: a consumer that already installed `26.0.0` must be able to tell a rollback from the original
 by its version alone.
 
 ```bash
 git revert <cutover-sha>
+# bump each affected plugins/<name>/plugin.toml above its latest published version
 # bump metadata.version in .claude-plugin/marketplace.json to the next patch
 python scripts/daodan_build.py
 python scripts/daodan_build.py --check

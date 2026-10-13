@@ -91,11 +91,11 @@ Steps to refresh a custom plugin. Same protocol regardless of risk class; only t
 
 4. **Bump versions**. Bump `version` in each changed kernel's `plugin.toml`: patch for fact updates (`1.2.3 -> 1.2.4`), minor if a new section, file, or reference was added (`1.2.3 -> 1.3.0`). Bump `metadata.version` in `.claude-plugin/marketplace.json` too (patch is fine unless the marketplace shape itself changed). This metadata field is the compiler's version input; the catalog entries remain generated. Rebuild every host with `python scripts/daodan_build.py` and regenerate the component/dependency reference with `python scripts/sync_plugin_docs.py` when a kernel changes. Before publication, run `python scripts/daodan_build.py --check`, `python scripts/sync_plugin_docs.py --check` and the required repository gates.
 
-5. **Commit the evidence, not only the conclusion.** A refresh commits three files under `docs/superpowers/specs/`, beside its design record and named for the same date: the research prompt as it was run, the researcher's report verbatim, and a per-source verification file saying which sources were checked against their primary pages, which were corrected, and which were not verified at all. Each carries the sha256 of its body.
+5. **Retain the evidence, not only the conclusion.** A refresh retains three files under `docs/superpowers/specs/`, beside its design record and named for the same date: the research prompt as it was run, the researcher's report verbatim, and a per-source verification file saying which sources were checked against their primary pages, which were corrected, and which were not verified at all. Each carries the sha256 of its body.
 
    This is a retention rule, not a courtesy, and it exists because a refresh's design record cannot carry it. A record states in one line that the sources were verified; only a per-source file can tell a later maintainer that five of them were not, and that one of those five still carries a claim in a shipped body. Without it, the next reader has to trust an aggregate or repeat the source review. The research run's own output directory does not count: `.peer-review/` and the scratchpad are both outside git, so a fresh clone has neither. A source that failed verification is marked `*(verify)*` where it is cited, and the verification file is where a reader learns that the mark is not decoration.
 
-6. **Commit with a refresh tag**. Format:
+6. **Commit only with current task authorization**, using a refresh tag. Format:
    ```
    Refresh <plugin-name> for <framework> v<new-version> (v<plugin-version>)
    ```
@@ -116,6 +116,11 @@ git log --since="6 months ago" --name-only --pretty=format: -- plugins/ \
 
 Refresh the "Very fast" and "Fast" classes first if any are on the work queue; defer "Moderate" and "Slow" classes unless something specific prompted the review.
 
-## When to upgrade a custom plugin to upstream-synced
+## When an external owner overlaps with a custom plugin
 
-If during a refresh you discover that someone else's open-source repo now publishes content that overlaps significantly with one of our custom plugins, evaluate vendoring it instead of maintaining from scratch. Follow the `external-repo-intake` skill, then add the plugin's row to the sync table in the `upstream-sync` skill.
+Evaluate declared delegation or original local inspiration through
+`external-repo-intake`. Standing policy forbids new vendored copies: do not add a
+sync-table row or copy upstream text during refresh. Check the provider's actual
+availability, canonical contract and execution on the active host. Preserve
+existing licenses, attribution, tracked rows and retirement history; changing
+their disposition requires a separate scoped authorization.

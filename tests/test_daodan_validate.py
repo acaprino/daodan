@@ -1,7 +1,9 @@
 """Validation tests for the neutral Daodan control plane."""
 
 import dataclasses
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -38,10 +40,78 @@ class ValidationTests(unittest.TestCase):
         plugin = load_plugin(VALID)
         self.assertEqual(validate_plugins([plugin], CAPABILITY_REGISTRY), [])
 
+    def test_identical_version_duplicate_identity_names_both_roots(self):
+        with tempfile.TemporaryDirectory(prefix="daodan-duplicate-identity-") as holder:
+            roots = [Path(holder) / origin / "example" for origin in ("first", "second")]
+            for root in roots:
+                shutil.copytree(VALID, root)
+            plugins = [load_plugin(root) for root in roots]
+
+            first = validate_plugins(plugins, CAPABILITY_REGISTRY)
+            repeated = validate_plugins(plugins, CAPABILITY_REGISTRY)
+
+            self.assertEqual(first, repeated)
+            duplicates = [issue for issue in first if "duplicate" in issue.code.lower()]
+            self.assertTrue(duplicates, "Identical versions do not make a plugin name unique")
+            diagnosis = "\n".join(f"{issue.path}: {issue.message}" for issue in duplicates)
+            self.assertIn("example", diagnosis)
+            for root in roots:
+                self.assertIn(str(root), diagnosis)
+
     def test_rejects_cycle_and_path_escape(self):
         issues = validate_fixture("cyclic-workflow") + validate_fixture("path-escape")
         self.assertIn("workflow-cycle", {issue.code for issue in issues})
         self.assertIn("path-outside-plugin", {issue.code for issue in issues})
+
+    def test_rejects_duplicate_phase_ids_including_an_overwritten_cycle(self):
+        plugin = load_plugin(VALID)
+        workflow = plugin.workflows[0]
+        original = workflow.phases[0]
+        cyclic = dataclasses.replace(original, needs=("inspect",))
+        for first in (original, cyclic):
+            with self.subTest(overwritten_cycle=bool(first.needs)):
+                changed = dataclasses.replace(
+                    workflow, phases=(first, original)
+                )
+                candidate = dataclasses.replace(plugin, workflows=(changed,))
+
+                issues = validate_plugins([candidate], CAPABILITY_REGISTRY)
+
+                duplicates = [
+                    issue for issue in issues
+                    if "duplicate" in issue.code.lower()
+                ]
+                self.assertTrue(duplicates, "Phase IDs must identify one phase")
+                self.assertIn("inspect", duplicates[0].message)
+                self.assertEqual(duplicates[0].path, workflow.entrypoint)
+
+    def test_rejects_a_prerequisite_declared_after_its_dependent(self):
+        plugin = load_plugin(VALID)
+        workflow = plugin.workflows[0]
+        inspect = workflow.phases[0]
+        dependent = dataclasses.replace(
+            inspect, id="prepare", needs=("inspect",), produces=()
+        )
+        changed = dataclasses.replace(workflow, phases=(dependent, inspect))
+        candidate = dataclasses.replace(plugin, workflows=(changed,))
+
+        issues = validate_plugins([candidate], CAPABILITY_REGISTRY)
+
+        self.assertTrue(issues, "Declared order cannot run a future prerequisite")
+        diagnosis = "\n".join(issue.message for issue in issues)
+        self.assertIn("prepare", diagnosis)
+        self.assertIn("inspect", diagnosis)
+
+    def test_missing_prerequisite_keeps_its_unknown_phase_diagnosis(self):
+        plugin = load_plugin(VALID)
+        workflow = plugin.workflows[0]
+        inspect = dataclasses.replace(workflow.phases[0], needs=("missing",))
+        changed = dataclasses.replace(workflow, phases=(inspect,))
+        candidate = dataclasses.replace(plugin, workflows=(changed,))
+
+        issues = validate_plugins([candidate], CAPABILITY_REGISTRY)
+
+        self.assertIn("unknown-phase", {issue.code for issue in issues})
 
     def test_rejects_incomplete_independent_fanout_contract(self):
         issues = validate_fixture("fanout-without-join") + validate_fixture(
