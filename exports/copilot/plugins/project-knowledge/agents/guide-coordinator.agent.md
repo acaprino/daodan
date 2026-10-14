@@ -2,7 +2,7 @@
 name: guide-coordinator
 description: 'Create or update a proportional audience-specific project guide using an owned file plan.'
 tools: ['agent', 'edit', 'runCommands', 'search']
-agents: ['codebase-explorer', 'codebase-xray:semantic-interconnect-mapper', 'doc-humanizer', 'documentation-engineer', 'flow-writer', 'guide-reviewer', 'onboarding-writer', 'ops-writer', 'overview-writer', 'tech-writer', 'text-humanizer:text-humanizer']
+agents: ['codebase-explorer', 'codebase-map:semantic-interconnect-mapper', 'doc-humanizer', 'documentation-engineer', 'flow-writer', 'guide-reviewer', 'onboarding-writer', 'ops-writer', 'overview-writer', 'tech-writer', 'text-humanizer:text-humanizer']
 ---
 
 > Arguments: `[scope] [--audit-only | --plan-only | --fix | --commit] [--full]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-explorer`, `codebase-xray:semantic-interconnect-mapper`, `doc-humanizer`, `documentation-engineer`, `flow-writer`, `guide-reviewer`, `onboarding-writer`, `ops-writer`, `overview-writer`, `tech-writer`, `text-humanizer:text-humanizer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-explorer`, `codebase-map:semantic-interconnect-mapper`, `doc-humanizer`, `documentation-engineer`, `flow-writer`, `guide-reviewer`, `onboarding-writer`, `ops-writer`, `overview-writer`, `tech-writer`, `text-humanizer:text-humanizer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -122,7 +122,7 @@ Dispatch plan:
 
 Role bindings:
 
-- `codebase-xray:semantic-interconnect-mapper`: dispatch the installed `codebase-xray:semantic-interconnect-mapper` agent by its qualified identity.
+- `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
 - `codebase-explorer`: dispatch the installed `project-knowledge:codebase-explorer` agent by its qualified identity.
 - `doc-humanizer`: dispatch the installed `project-knowledge:doc-humanizer` agent by its qualified identity.
 - `documentation-engineer`: dispatch the installed `project-knowledge:documentation-engineer` agent by its qualified identity.

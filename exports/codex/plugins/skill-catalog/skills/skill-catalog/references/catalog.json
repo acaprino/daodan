@@ -21,7 +21,7 @@
         "abstraction",
         "architecture"
       ],
-      "version": "4.0.3"
+      "version": "4.0.4"
     },
     {
       "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
@@ -151,7 +151,22 @@
       "version": "2.0.4"
     },
     {
-      "description": "X-ray method: mechanical structure extraction fused with semantic reading into a ground-truth account of WHAT, WHY, HOW and CONSEQUENCES. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: encountering an unfamiliar codebase, needing pre-review technical context, before a major refactor, or when documentation is stale or missing. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+      "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+      "dimensions": [],
+      "file": "skills/map-method/SKILL.md",
+      "frameworks": [],
+      "id": "codebase-map:map-method",
+      "kind": "method",
+      "languages": [],
+      "metadata_sha256": "bc808b4e8aa0f615c82181ee210901469331cd702141e480d5d0655cfa6fe0eb",
+      "name": "map-method",
+      "operations": [],
+      "provider": "codebase-map",
+      "topics": [],
+      "version": "6.0.0"
+    },
+    {
+      "description": "Compatibility skill for the former Codebase X-ray name. Loads the canonical Codebase Map method while preserving the caller's scope and execution context.",
       "dimensions": [],
       "file": "skills/xray-method/SKILL.md",
       "frameworks": [],
@@ -163,7 +178,7 @@
       "operations": [],
       "provider": "codebase-xray",
       "topics": [],
-      "version": "5.6.1"
+      "version": "6.0.0"
     },
     {
       "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
@@ -669,7 +684,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -684,7 +699,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
@@ -705,7 +720,7 @@
       "topics": [
         "readme"
       ],
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",
@@ -720,7 +735,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.",
@@ -735,7 +750,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.",
@@ -750,7 +765,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before briefing workers, recording, resuming or closing a project intervention.",
@@ -1073,7 +1088,7 @@
         "filesystem",
         "git"
       ],
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: the task needs only a short answer, a production website, or a diagram renderer.",
@@ -1088,7 +1103,7 @@
       "operations": [],
       "provider": "report-rendering",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "description": "Knowledge base for web research: query formulation, source authority ranking, the two search backends (native WebSearch, optional serper.dev through websearch.py), reading pages with WebFetch and the webfetch.py bot-block fallback, and the anti-loop rules. Used by quick-searcher, deep-researcher and /research:team-research. TRIGGER WHEN: performing web research with WebSearch, WebFetch, or the research plugin's scripts. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
@@ -1125,7 +1140,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -1147,7 +1162,7 @@
       "topics": [
         "defects"
       ],
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
@@ -1162,7 +1177,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
@@ -1177,7 +1192,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
@@ -1192,7 +1207,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
@@ -1207,7 +1222,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",
@@ -1222,7 +1237,7 @@
       "operations": [],
       "provider": "skill-catalog",
       "topics": [],
-      "version": "1.0.6"
+      "version": "1.0.7"
     },
     {
       "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",

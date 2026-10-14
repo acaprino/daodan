@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: project-knowledge:codebase-explorer; version: 1.3.1; source-sha256: 6852e3da2196e0ffe53d6c7a661c345197bf48985bffc62443871fbd3986a166. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-knowledge:codebase-explorer; version: 1.3.2; source-sha256: 2ed5dece928b0294ea6134b1d520bff5b8b5058c11bbe6fc7bc4c70645007712. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-knowledge`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<project-knowledge-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-knowledge`. The owning plugin's declared logical skill identities are `project-knowledge:project-knowledge`, `project-knowledge:instructions-method`, `project-knowledge:readme-craft`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -89,9 +89,9 @@ changed snapshot or unavailable required check is an explicit delivery gap.
 
 
 Read existing README/instructions/docs/ADRs, manifests, entry points, tooling,
-CI, operational scripts and relevant history. Load `codebase-xray:xray-method`
+CI, operational scripts and relevant history. Load `codebase-map:map-method`
 by name for the owner procedure and exact helper commands. Bind the supplied
-X-ray's run, root, target and `snapshot/manifest.json`; verify current inputs with
+Codebase Map's run, root, target and `snapshot/manifest.json`; verify current inputs with
 `snapshot.py diff --verify`. Its hashes normalize line endings, so after that
 check always write or obtain a current owned source snapshot with
 `snapshot.py write --reuse <previous-manifest>` before passing it to readers,

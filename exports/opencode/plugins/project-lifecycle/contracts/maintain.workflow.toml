@@ -24,7 +24,7 @@ produces = ["artifact:campaign-report"]
 roles = [
   "abstraction-architect/abstraction-architect-agent",
   "clean-code/clean-code-agent",
-  "codebase-xray/semantic-interconnect-mapper",
+  "codebase-map/semantic-interconnect-mapper",
   "platform-engineering/platform-reviewer",
   "project-knowledge/codebase-explorer",
   "project-knowledge/doc-humanizer",

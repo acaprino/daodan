@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "report-rendering"
-version = "1.0.0"
+version = "1.0.1"
 description = "Render authoritative Markdown reports as local interactive HTML views with reusable presentation assets"
 license = "MIT"
 

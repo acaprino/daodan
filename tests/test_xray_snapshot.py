@@ -1,4 +1,4 @@
-"""Snapshot, diff, carry and check for incremental X-ray runs.
+"""Snapshot, diff, carry and check for incremental Codebase Map runs.
 
 An incremental run is only as trustworthy as the mechanical layer under it:
 if the diff misses a changed symbol, a stale claim ships. Every case here
@@ -18,7 +18,7 @@ from pathlib import Path
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO_ROOT / "plugins/codebase-xray/skills/xray-method/scripts"
+SCRIPTS = REPO_ROOT / "plugins/codebase-map/skills/map-method/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
@@ -477,7 +477,7 @@ class PresentationInventoryTests(unittest.TestCase):
 
 class PerimeterTests(unittest.TestCase):
     """
-    What the X-ray never analyzes: what Git ignores, and every directory whose
+    What the Codebase Map never analyzes: what Git ignores, and every directory whose
     name starts with a dot, below the target. The motivating case: a lifecycle
     campaign wrote its run records under `.daodan/` and its review under
     `.team-review/`, the next snapshot counted them as project files, and an
@@ -797,7 +797,7 @@ class _DiffFixture(unittest.TestCase):
         write(self.src, "reports/weekly.py", "def summarize():\n    return 2\n")
         write(self.src, "util/text.py", "def normalize(s):\n    return s.strip()\n")
         write(self.src, "util/dates.py", "def today():\n    return None\n")
-        self.parent = self.tmp / ".codebase-xray/runs/src-20260901-101200"
+        self.parent = self.tmp / ".codebase-map/runs/src-20260901-101200"
         self.parent.mkdir(parents=True)
         (self.parent / "state.json").write_text(json.dumps(PARENT_STATE), encoding="utf-8")
         import snapshot
@@ -819,7 +819,7 @@ class _DiffFixture(unittest.TestCase):
             "- The retry budget is set in `src/orders/service.py::retry_policy`.\n"
             "- The HTTP entry point is `src/api/routes.py::handler`.\n",
         )
-        self.run_dir = self.tmp / ".codebase-xray/runs/src-20260903-101500"
+        self.run_dir = self.tmp / ".codebase-map/runs/src-20260903-101500"
 
     def diff(self, *extra):
         code, out, err = run_script(
@@ -940,7 +940,7 @@ class DiffCommandTests(_DiffFixture):
         write(
             self.parent,
             "07-final-report.md",
-            "# Codebase X-Ray Analysis Report\n"
+            "# Codebase Map Analysis Report\n"
             "\n"
             "## Top Priority Actions\n"
             "\n"

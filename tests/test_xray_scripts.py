@@ -1,6 +1,6 @@
-"""The codebase-xray script suite, exercised on small sources.
+"""The codebase-map script suite, exercised on small sources.
 
-These scripts are what the X-ray method tells every phase to run instead of
+These scripts are what the Codebase Map method tells every phase to run instead of
 reading files by hand, and until this file they had no test at all. Each case
 here pins a behaviour the first review found wrong or unverified: the
 classifier calling every file with an author line security-critical, the
@@ -25,7 +25,7 @@ from pathlib import Path
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO_ROOT / "plugins/codebase-xray/skills/xray-method/scripts"
+SCRIPTS = REPO_ROOT / "plugins/codebase-map/skills/map-method/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 

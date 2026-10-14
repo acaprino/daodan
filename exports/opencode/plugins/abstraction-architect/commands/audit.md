@@ -1,5 +1,5 @@
 ---
-description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-xray:analyze when .codebase-xray/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
+description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-map:analyze when .codebase-map/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
 ---
 
 <daodan_host_binding host="opencode">
@@ -132,6 +132,14 @@ The phase graph and the record schemas are in `contracts/audit.workflow.toml`.
 
 ## Method
 
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # /abstraction-architect:audit
 
 Audit a codebase for structural entropy: duplicated domain knowledge, competing sources of truth, redundant representations, duplicated or derivable state, missed unification, prior art that already exists, and abstractions that are fighting their callers. Report-only.
@@ -153,7 +161,7 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 - `[path]` (optional) — codebase root. Default: current working directory.
 - `--diff [<base-ref>]` (optional) — run diff-anchored instead of a whole-codebase audit. Asks the same seven questions as "introduced or aggravated by this change". Base ref defaults to the merge base with the default branch, falling back to `HEAD` for uncommitted work.
-- `--scope <subpath>` (optional) — limit findings to a subtree. The X-ray still runs on the full codebase.
+- `--scope <subpath>` (optional) — limit findings to a subtree. The Codebase Map still runs on the full codebase.
 - `--severity-floor low|medium|high` (optional) — default `medium`.
 - `--focus all|knowledge|form|D1..D7` (optional) — default `all`. `knowledge` is D1 to D4, `form` is D5 to D7, or name a single dimension.
 - `--no-index` (optional) — do not read or write `concept-index.json`. Use when auditing a directory that is not a git repository, or to measure what the audit finds without a seed.
@@ -163,9 +171,9 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 1. **Resolves the target path.** Defaults to the current working directory.
 
-2. **Checks for `.codebase-xray/`.** Looks for `01-structure.md`, `02-interfaces.md`, `03-flows.md`, `04-semantics.md`. The optional `08-interconnect-map.md` enables the bounded-context check; without it, knowledge-track findings carry `Bounded-context exception: unverified`.
+2. **Checks for `.codebase-map/`.** Looks for `01-structure.md`, `02-interfaces.md`, `03-flows.md`, `04-semantics.md`. The optional `08-interconnect-map.md` enables the bounded-context check; without it, knowledge-track findings carry `Bounded-context exception: unverified`.
 
-3. **Auto-launches X-ray if needed.** If `.codebase-xray/` is missing or incomplete, prints *"No X-ray output found at `.codebase-xray/`. Launching `/codebase-xray:analyze` first. This may take several minutes on a large codebase."* then invokes it without a confirmation prompt. Aborts with the log path if the X-ray fails.
+3. **Auto-launches Codebase Map if needed.** If `.codebase-map/` is missing or incomplete, prints *"No Codebase Map output found at `.codebase-map/`. Launching `/codebase-map:analyze` first. This may take several minutes on a large codebase."* then invokes it without a confirmation prompt. Aborts with the log path if the Codebase Map fails.
 
    Under `--diff` this step is skipped. Diff mode consumes only `01-structure.md` and `02-interfaces.md`, uses whatever is on disk, and runs on the concept index plus host file-discovery binding and host content-search binding when nothing is.
 
@@ -195,14 +203,14 @@ The directory is created automatically if missing. Re-running the command overwr
 
 ## Prerequisites
 
-- The `codebase-xray` plugin must be installed (a hard dependency declared in this plugin's `plugin.toml`). `--diff` degrades gracefully without X-ray output and reports the reduced confidence in its Gaps section.
+- The `codebase-map` plugin must be installed (a hard dependency declared in this plugin's `plugin.toml`). `--diff` degrades gracefully without Codebase Map output and reports the reduced confidence in its Gaps section.
 - `--diff` requires the target path to be a git repository.
-- For monorepos large enough to benefit from partitioned analysis, run `/codebase-xray:team-analyze` first to produce `08-interconnect-map.md`; the auditor will then include bounded-context fusion findings.
+- For monorepos large enough to benefit from partitioned analysis, run `/codebase-map:team-analyze` first to produce `08-interconnect-map.md`; the auditor will then include bounded-context fusion findings.
 
 ## Related commands
 
-- `/codebase-xray:analyze` — produces the `.codebase-xray/` input this command consumes. Auto-launched by this command when missing.
-- `/codebase-xray:team-analyze` — partitioned X-ray for monorepos; adds `08-interconnect-map.md` to the output.
+- `/codebase-map:analyze` — produces the `.codebase-map/` input this command consumes. Auto-launched by this command when missing.
+- `/codebase-map:team-analyze` — partitioned Codebase Map for monorepos; adds `08-interconnect-map.md` to the output.
 - `/senior-review:code-review` and `/senior-review:team-review` — both run this agent in diff mode as their abstraction dimension, so a review already answers the "was this already available?" question for the changed code. Use `--diff` here when you want that check on its own, without the rest of the review.
 - `/clean-code:clean-code` — style and readability cleanup. Different concern.
 

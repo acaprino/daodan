@@ -81,8 +81,8 @@ the owned run. Pass the scoped source/intent evidence and planned readers rather
 than requiring a whole-project rescan. Verify that delivery before giving its
 context_path to writers or the semantic mapper.
 
-Load `codebase-xray:xray-method` for a bound analysis. Dispatch its
-`codebase-xray:semantic-interconnect-mapper` when contracts, invariants and domain
+Load `codebase-map:map-method` for a bound analysis. Dispatch its
+`codebase-map:semantic-interconnect-mapper` when contracts, invariants and domain
 rules are needed, with the scoped context and an owned report destination. Each
 row retains its evidence status. Failure is a failed delivery; do not silently
 proceed as if that dimension were covered.

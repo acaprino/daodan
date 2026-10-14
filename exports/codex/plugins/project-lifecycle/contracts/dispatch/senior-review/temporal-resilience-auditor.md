@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:temporal-resilience-auditor; version: 15.1.0; source-sha256: 46ed61da5ad6337fbc34845cf800285765a09f98e3d2be0c9922f22477cf9ef7. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:temporal-resilience-auditor; version: 15.1.1; source-sha256: 6a2a918e135f5a28ba06cedc9ad92bfc0c76d685f940f2ffc7c2dbfcaabf8c4d. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -196,7 +196,7 @@ When a `derived` estimate is cheap to check (a rate, a loop count), prefer measu
 **[HIGH-001] [Title]**
 - **Mechanism:** [which timer/loop/retry]
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Failure chain:** trigger -> [swallowed/retried/stuck] -> steady state after 24h
 - **Evidence:** `file:line` (failure path), `file:line` (missing recovery/escalation)
 - **Quantified damage:** [N/day, MB/day, $/month] (`measured`: method / `derived`: from code)

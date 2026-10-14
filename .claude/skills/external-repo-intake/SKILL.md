@@ -39,7 +39,7 @@ Historical intake modes are retained as provenance, not options for new work:
 hybrid sections and new files. Its generic multi-agent core, reverse-engineering
 vendor and e2e-testing-patterns were later delegated upstream; the latter changed
 in marketplace 18.0.0, and codebase-cleanup was retired in 19.0.0.
-`codebase-xray` adopted ideas from `gsd-build/get-shit-done` with original content.
+`codebase-map` adopted ideas from `gsd-build/get-shit-done` with original content.
 Preserve existing licenses, attribution, sync records and retirement history.
 
 ## 2. Resolve the four dimensions

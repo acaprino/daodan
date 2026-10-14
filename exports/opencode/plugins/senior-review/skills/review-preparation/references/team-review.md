@@ -69,6 +69,16 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 ## Execution requirements
 
 This workflow fans out over the dimensions its detection step selects. Dispatch, scheduling and result
@@ -88,8 +98,8 @@ shared a context is not the artifact this workflow claims to produce.
 
 Orchestrate a multi-dimensional code review as a **6-phase pipeline**:
 
-0. **Phase 0 -- Scope and Discovery**: resolve the target (0), detect which dimensions the change warrants (0b), and discover independently what evidence this review needs (0c), reading no X-ray output at all.
-1. **Phase 1 -- Context Building**: X-ray analysis (1a) runs in parallel with a blind second derivation of the same premises (1c); the two are joined into `01-knowledge-provenance.md` (1d); an interconnect map is built last (1b), covering contracts, invariants, assumptions, domain rules and integration hot-spots. Output goes to `.team-review/`.
+0. **Phase 0 -- Scope and Discovery**: resolve the target (0), detect which dimensions the change warrants (0b), and discover independently what evidence this review needs (0c), reading no Codebase Map output at all.
+1. **Phase 1 -- Context Building**: Codebase Map analysis (1a) runs in parallel with a blind second derivation of the same premises (1c); the two are joined into `01-knowledge-provenance.md` (1d); an interconnect map is built last (1b), covering contracts, invariants, assumptions, domain rules and integration hot-spots. Output goes to `.team-review/`.
 2. **Phase 2 -- Adversarial Review (parallel)**: specialized reviewers read the context files and hunt for violations within their dimension. Every finding declares the load-bearing premise it stands on and where that premise came from. Each reviewer writes structured findings to `.team-review/findings-<dim>.md`.
 3. **Phase 3 -- Monitor and Collect**: every spawned reviewer delivers findings or an explicit no-findings report before consolidation starts.
 4. **Phase 4 (Consolidation)**: findings are deduplicated and organized by severity, with agreement weighted by premise provenance; then the verification panel runs (4b, Lens 0's premise veto first) and the completeness critic asks what the review missed (4c).
@@ -113,7 +123,7 @@ Before starting, invoke these skills to inform the review process:
    - `--reviewers`: comma-separated dimensions OR `auto` (default: `auto`)
    - `--base-branch`: base branch for diff comparison (default: `main`)
    - `--all`: force all dimensions regardless of auto-detection
-   - `--deep`: run Phase 1a `codebase-xray` in full mode (default: `--depth=lite`)
+   - `--deep`: run Phase 1a `codebase-map` in full mode (default: `--depth=lite`)
    - `--no-context`: skip Phase 0c and Phase 1 entirely and run reviewers with raw code only (raw mode; `logic-integrity-auditor` and `premise-auditor` are also skipped)
    - `--fast`: skip the verification + completeness-critic gate entirely (Phase 4b and 4c)
    - `--rigorous`: verify every finding above the confidence floor, ignoring the cost-guard cap
@@ -255,9 +265,9 @@ Context detection complete:
 
 Pipeline plan:
   Phase 0c: review evidence discovery (inline)
-  Phase 1a: codebase-xray (--depth=lite)   |  Phase 1c: premise-auditor (parallel, blind)
+  Phase 1a: codebase-map (--depth=lite)   |  Phase 1c: premise-auditor (parallel, blind)
   Phase 1d: knowledge reconciliation (inline)
-  Phase 1b: codebase-xray:semantic-interconnect-mapper
+  Phase 1b: codebase-map:semantic-interconnect-mapper
   Phase 2:  {N} reviewers in parallel
   Phase 3:  monitor and collect (delivery barrier)
   Phase 4:  consolidation, verification (4b), completeness critic (4c)
@@ -272,16 +282,16 @@ Mark `phase_0b_detection` complete in `state.json`.
 
 Runs inline in the orchestrating context, on every invocation **except** raw mode (`--no-context`). That flag means "give me the raw mode", and a normally-on phase does not override it: `01a-review-knowledge-leads.md` distributed to N reviewers is itself shared context, so keeping this phase alive under the flag would make findings legitimately `shared-context`, let Lens 0 fire, and stop the mode reproducing the pre-pipeline behaviour it exists to provide.
 
-This phase owns discovery of **what evidence is relevant to this review**. X-ray owns discovery of how the repository documents itself. The two are different jobs and the division is deliberate.
+This phase owns discovery of **what evidence is relevant to this review**. Codebase Map owns discovery of how the repository documents itself. The two are different jobs and the division is deliberate.
 
-**This phase MUST NOT read `.codebase-xray/` in any form**, including the mirror and the output of previous runs. A previous X-ray run is still an X-ray derivation, and admitting one would contaminate the single artifact that has to be demonstrably independent of X-ray. X-ray's leads enter at the Phase 1d join and nowhere earlier.
+**This phase MUST NOT read `.codebase-map/` in any form**, including the mirror and the output of previous runs. A previous Codebase Map run is still a Codebase Map derivation, and admitting one would contaminate the single artifact that has to be demonstrably independent of Codebase Map. Codebase Map's leads enter at the Phase 1d join and nowhere earlier.
 
-1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior X-ray run.
+1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior Codebase Map run.
 2. Extract the concepts, domains and symbols the diff touches. Names of changed functions, classes, modules and config keys are the starting set; add the domain nouns that appear in the diff's own strings and comments.
 3. For each concept, search the project's indexes and documentation for a relevant entry, and search the tests for behaviour that encodes it.
 4. Write `.team-review/01a-review-knowledge-leads.md`.
 
-**This file is immutable once written.** No later phase appends to it. X-ray's own leads are joined into a separate derived artifact in Phase 1d, precisely so that the snapshot Phase 1c consumes cannot change underneath it.
+**This file is immutable once written.** No later phase appends to it. Codebase Map's own leads are joined into a separate derived artifact in Phase 1d, precisely so that the snapshot Phase 1c consumes cannot change underneath it.
 
 **Output:** `.team-review/01a-review-knowledge-leads.md`
 
@@ -289,7 +299,7 @@ This phase owns discovery of **what evidence is relevant to this review**. X-ray
 # Review Knowledge Leads
 
 > Leads, not truth. Immutable once written.
-> Discovered by senior-review independently of any X-ray output.
+> Discovered by senior-review independently of any Codebase Map output.
 
 ## Navigation rules followed
 | Source | Rule |
@@ -315,23 +325,23 @@ The sub-phases below are listed in **execution order**, not in label order: 1a a
 
 Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `phase_1c_premise_audit`, `phase_1d_reconciliation`, `phase_1b_interconnect`, and `phase_0c_evidence_discovery` as `skipped` in `state.json`. Jump to Phase 2 with raw target files only.
 
-### Phase 1a: X-Ray Analysis
+### Phase 1a: Codebase Map Analysis
 
-> **`codebase-xray:analyze` is the canonical workflow entry of `codebase-xray`, not an agent or executor.** The host lists it as `analyze` (hosts that render workflows as skills suffix it `-workflow`). The review coordinator reads that entry and its `codebase-xray:xray-method`, then directly executes their canonical phases in order in this same context with the resolved arguments. Loading either body alone runs no phase and creates no run directory. This direct composition introduces no declarative `invoke` executor, nested lifecycle scheduler or automatic skill loading. Review preparation runs once and consolidation retains sole final review report ownership. Phase 1c, Phase 1b and all selected reviewers still require their declared isolated worker contexts.
+> **`codebase-map:analyze` is the canonical workflow entry of `codebase-map`, not an agent or executor.** The host lists it as `analyze` (hosts that render workflows as skills suffix it `-workflow`). The review coordinator reads that entry and its `codebase-map:map-method`, then directly executes their canonical phases in order in this same context with the resolved arguments. Loading either body alone runs no phase and creates no run directory. This direct composition introduces no declarative `invoke` executor, nested lifecycle scheduler or automatic skill loading. Review preparation runs once and consolidation retains sole final review report ownership. Phase 1c, Phase 1b and all selected reviewers still require their declared isolated worker contexts.
 
-1. Directly execute the `codebase-xray:analyze` entry and its canonical method phase-by-phase against the target, in this coordinator context. Preserve their scope checkpoints, run binding, output and completion gates:
+1. Directly execute the `codebase-map:analyze` entry and its canonical method phase-by-phase against the target, in this coordinator context. Preserve their scope checkpoints, run binding, output and completion gates:
    - Default mode: `--depth=lite` (structure + interfaces + risks only)
    - If `--deep` flag: full analysis
    - Target scope: the files from Phase 0
-2. Read `.codebase-xray/runs.json` to resolve the run the workflow just created, and record it in `state.json -> xray` as `run_id`, `run_dir`, `target` and `depth`. Every later phase derives its paths from this block and never from the `.codebase-xray/` root. `$XRAY_RUN_DIR` below always means `state.json -> xray.run_dir`. If the run cannot be resolved, halt: an unresolvable provenance is a broken pipeline, not a reason to fall back to the mirror.
+2. Read `.codebase-map/runs.json` to resolve the run the workflow just created, and record it in `state.json -> xray` as `run_id`, `run_dir`, `target` and `depth`. Every later phase derives its paths from this block and never from the `.codebase-map/` root. `$XRAY_RUN_DIR` below always means `state.json -> xray.run_dir`. If the run cannot be resolved, halt: an unresolvable provenance is a broken pipeline, not a reason to fall back to the mirror.
 3. Verify on completion that at minimum `01-structure.md`, `02-interfaces.md`, and `05-risks.md` exist.
 4. Mark `phase_1a_xray` complete.
 
-If the workflow fails or produces no output, halt the pipeline and report the error: `codebase-xray` is a hard dependency, so a workflow that cannot be loaded is a broken install. Do **not** fall back to spawning a `general-purpose` agent to fake the X-ray output -- the file naming and section anchors that Phase 1b/Phase 2 depend on come from the workflow itself, and a freelance fallback breaks the contract for `logic-integrity-auditor`.
+If the workflow fails or produces no output, halt the pipeline and report the error: `codebase-map` is a hard dependency, so a workflow that cannot be loaded is a broken install. Do **not** fall back to spawning a `general-purpose` agent to fake the Codebase Map output -- the file naming and section anchors that Phase 1b/Phase 2 depend on come from the workflow itself, and a freelance fallback breaks the contract for `logic-integrity-auditor`.
 
 ### Phase 1c: Independent Premise Derivation (parallel with 1a)
 
-Spawn immediately when Phase 1a starts. Do not wait for X-ray. The whole point of this phase is that it derives without seeing what X-ray derived.
+Spawn immediately when Phase 1a starts. Do not wait for Codebase Map. The whole point of this phase is that it derives without seeing what Codebase Map derived.
 
 1. Dispatch the `senior-review:premise-auditor` agent in its own isolated context.
 2. Prompt:
@@ -347,9 +357,9 @@ Spawn immediately when Phase 1a starts. Do not wait for X-ray. The whole point o
    Write .team-review/01b-independent-claims.md in the format your agent
    definition prescribes.
 
-   You have NO access to .codebase-xray/ or to .team-review/02-interconnect.md.
+   You have NO access to .codebase-map/ or to .team-review/02-interconnect.md.
    Neither exists for you. Do not look for them, and report contamination if
-   anything in this prompt paraphrases an X-ray conclusion.
+   anything in this prompt paraphrases a Codebase Map conclusion.
    ```
 
 3. Wait for both 1a and 1c before starting Phase 1d. Mark `phase_1c_premise_audit` complete.
@@ -362,7 +372,7 @@ Runs inline once both 1a and 1c have completed. The premise auditor never compar
 
 Read `.team-review/01a-review-knowledge-leads.md`, `$XRAY_RUN_DIR/knowledge/documentation-leads.md` and `.team-review/01b-independent-claims.md`. Write:
 
-**Degradation when X-ray produced no leads.** If `$XRAY_RUN_DIR/knowledge/documentation-leads.md` does not exist, record `Inherited from X-Ray: not produced` under that heading and **suppress the asymmetry diagnostic** described below for this run. An absent file is not a discovery gap, and treating it as one would report an X-ray gap on every row: a systematically false signal from the mechanism built to stop false signals. A reused older run, a Phase 0 that failed, and an X-ray version predating Phase 0 all land here. Everything else in this phase proceeds normally: `Missing` and `Disputed` are still computed from `01a` and `01b`.
+**Degradation when Codebase Map produced no leads.** If `$XRAY_RUN_DIR/knowledge/documentation-leads.md` does not exist, record `Inherited from Codebase Map: not produced` under that heading and **suppress the asymmetry diagnostic** described below for this run. An absent file is not a discovery gap, and treating it as one would report a Codebase Map gap on every row: a systematically false signal from the mechanism built to stop false signals. A reused older run, a Phase 0 that failed, and a Codebase Map version predating Phase 0 all land here. Everything else in this phase proceeds normally: `Missing` and `Disputed` are still computed from `01a` and `01b`.
 
 **Output:** `.team-review/01-knowledge-provenance.md`
 
@@ -375,7 +385,7 @@ Read `.team-review/01a-review-knowledge-leads.md`, `$XRAY_RUN_DIR/knowledge/docu
 ## Independently discovered by Senior Review
 [rows from 01a-review-knowledge-leads.md]
 
-## Inherited from X-Ray
+## Inherited from Codebase Map
 [rows from $XRAY_RUN_DIR/knowledge/documentation-leads.md]
 
 ## Missing
@@ -384,7 +394,7 @@ Read `.team-review/01a-review-knowledge-leads.md`, `$XRAY_RUN_DIR/knowledge/docu
 | [concept] | [where it appears in the diff] |
 
 ## Disputed
-| Claim | Independent derivation says | X-ray says |
+| Claim | Independent derivation says | Codebase Map says |
 |-------|------------------------------|------------|
 | [claim] | [X at file:line] | [Y at file:line] |
 ```
@@ -398,22 +408,22 @@ Read `.team-review/01a-review-knowledge-leads.md`, `$XRAY_RUN_DIR/knowledge/docu
 
 Collapsing them would drain `disputed` of the precise meaning the rest of this work depends on, which is that two derivations reached incompatible conclusions and a reviewer must settle it.
 
-**The duty of autonomous rediscovery.** X-ray's documentation leads are an input, never a completeness guarantee. Any concept `01a` carried that X-ray's leads missed stays under `Independently discovered by Senior Review`; a concept neither branch found goes to `Missing`. Neither is downgraded because the other branch was silent. Without this duty, the completeness of X-ray's discovery becomes the next shared premise, which is the failure this pipeline exists to prevent.
+**The duty of autonomous rediscovery.** Codebase Map's documentation leads are an input, never a completeness guarantee. Any concept `01a` carried that Codebase Map's leads missed stays under `Independently discovered by Senior Review`; a concept neither branch found goes to `Missing`. Neither is downgraded because the other branch was silent. Without this duty, the completeness of Codebase Map's discovery becomes the next shared premise, which is the failure this pipeline exists to prevent.
 
-Two asymmetries here are diagnostics worth reading, not noise. A row present in `Independently discovered by Senior Review` and absent from `Inherited from X-Ray` means X-ray's discovery had a gap. The reverse means Phase 0c had one. Both are recorded and neither is silently reconciled. Neither is reportable when X-ray produced no leads file at all: the degradation rule above governs that case.
+Two asymmetries here are diagnostics worth reading, not noise. A row present in `Independently discovered by Senior Review` and absent from `Inherited from Codebase Map` means Codebase Map's discovery had a gap. The reverse means Phase 0c had one. Both are recorded and neither is silently reconciled. Neither is reportable when Codebase Map produced no leads file at all: the degradation rule above governs that case.
 
 Mark `phase_1d_reconciliation` complete.
 
 ### Phase 1b: Semantic Interconnect Mapping
 
-1. Dispatch the `codebase-xray:semantic-interconnect-mapper` agent in its own isolated context.
+1. Dispatch the `codebase-map:semantic-interconnect-mapper` agent in its own isolated context.
 2. Prompt:
 
    ```
    Build the interconnect map for this review.
 
    Target scope: [contents of .team-review/00-scope.md]
-   X-ray output: $XRAY_RUN_DIR (files: 01-structure.md, 02-interfaces.md, 05-risks.md, knowledge/documentation-leads.md, ...)
+   Codebase Map output: $XRAY_RUN_DIR (files: 01-structure.md, 02-interfaces.md, 05-risks.md, knowledge/documentation-leads.md, ...)
    Independent claims: .team-review/01b-independent-claims.md
    Knowledge provenance: .team-review/01-knowledge-provenance.md
 

@@ -1,3 +1,13 @@
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 ## Step 4: Consolidate Findings & Extract Score
 
 After all agents complete, run the merge pipeline:
@@ -50,7 +60,7 @@ The cost-guard threshold is a finding-count proxy (no token budget exists in thi
 
 ### Panel
 
-**Lens 0 first.** For each selected finding whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, dispatch lens 0 through the declared `senior-review:premise-auditor` binding (mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the X-ray line resolved to the `.codebase-xray/` mirror and the interconnect-map and knowledge-provenance lines omitted, since this command builds neither. A finding declaring no provenance is `shared-context` whenever `.codebase-xray/` context was injected into the agent prompts, and the report records the agent as format-non-compliant; it is `independent` only when no such context was supplied at all. Defaulting the other way would send exactly the non-compliant findings Lens 0 exists to catch straight past the veto. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
+**Lens 0 first.** For each selected finding whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, dispatch lens 0 through the declared `senior-review:premise-auditor` binding (mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the Codebase Map line resolved to the `.codebase-map/` mirror and the interconnect-map and knowledge-provenance lines omitted, since this command builds neither. A finding declaring no provenance is `shared-context` whenever `.codebase-map/` context was injected into the agent prompts, and the report records the agent as format-non-compliant; it is `independent` only when no such context was supplied at all. Defaulting the other way would send exactly the non-compliant findings Lens 0 exists to catch straight past the veto. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
 
 For each finding that reaches this step, dispatch lenses 1 and 2 independently through the declared `project-protocol:isolated-worker` binding using the skill's full lens briefs, owned scope, authorization, budget and expected report paths. Use the host harness's supported topology, inherit the session model and substitute the finding, diff and full file content. Dispatch lens 3 through that same binding only for findings that survive lenses 1-2, per the skill's gated-lens rule: calibrating a finding about to be discarded is spend for nothing.
 
@@ -68,7 +78,7 @@ Medium and Low findings are no longer skipped by default: they enter the panel l
 
 Skip this step if `--fast` was passed. Otherwise run the critic defined in the `senior-review:review-quality-gates` skill, section `## Completeness Critic`.
 
-1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings, the changed-file scope, the agents that ran, and the X-ray context paths if `.codebase-xray/` exists (else "none").
+1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings, the changed-file scope, the agents that ran, and the Codebase Map context paths if `.codebase-map/` exists (else "none").
 2. If the critic names a single high-risk uncovered area under `## Recommended follow-up` AND the cost guard did not fire: spawn ONE targeted reviewer (the most specialized agent for that area) scoped to the files named, then route its findings back through Step 4 (dedup) and Step 4b (panel). At most one round.
 3. Otherwise degrade to report-only.
 4. Carry the critic's `## Coverage Gaps` list into the Step 5 report.

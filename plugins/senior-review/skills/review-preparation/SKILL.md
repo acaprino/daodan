@@ -15,6 +15,11 @@ Load the `project-protocol:project-protocol` skill for execution preflight and c
 records. A read-only review may use a dirty workspace: record its complete snapshot
 and preserve existing edits. Do not create a mutation authorization by reviewing.
 
+The coordinator alone may perform the project-bound Codebase Map preflight
+before dispatch: move an idle legacy archive intact and write only bound
+relocation metadata. This bounded exception authorizes no application changes,
+analysis run, worker migration or generic filesystem move.
+
 A caller-bound candidate is authoritative. Validate its project/worktree, run,
 scope and current snapshot through project-protocol before deriving review inputs.
 Use its captured baseline and exact candidate content, including scoped untracked
@@ -25,8 +30,8 @@ the actual candidate and leave any gate needing that comparison unavailable.
 
 Read `references/<variant>.md` inside this skill and execute its preparation stages
 once. Existing reviewer inputs remain unchanged. For team review Phase 1a, the
-coordinator directly executes the canonical `codebase-xray:analyze` entry and
-`codebase-xray:xray-method` phase-by-phase in this same context. Loading either
+coordinator directly executes the canonical `codebase-map:analyze` entry and
+`codebase-map:map-method` phase-by-phase in this same context. Loading either
 body alone executes nothing; no declarative `invoke` executor or nested lifecycle
 scheduler is introduced. Analyze is not spawned as a role, and its preparation
 step does not create another review preparation or final report owner. Required

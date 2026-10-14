@@ -21,7 +21,7 @@ from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO_ROOT / "plugins/codebase-xray/skills/xray-method/scripts"
+SCRIPTS = REPO_ROOT / "plugins/codebase-map/skills/map-method/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 

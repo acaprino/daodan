@@ -25,7 +25,7 @@ roles = [
   "project-knowledge/overview-writer",
   "project-knowledge/tech-writer",
   "project-knowledge/instructions-auditor",
-  "codebase-xray/semantic-interconnect-mapper",
+  "codebase-map/semantic-interconnect-mapper",
   "text-humanizer/text-humanizer",
   "senior-review/code-auditor",
   "senior-review/security-auditor",

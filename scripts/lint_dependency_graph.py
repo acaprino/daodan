@@ -17,7 +17,7 @@ passes, each independently reported. Exits non-zero if any fails.
   2. runtime refs   every runtime cross-plugin reference (role dispatch, skill
                     load or shared schema) is declared by its kernel, and an
                     explicit role or shared schema resolves to its provider
-  3. forbidden edge nothing in codebase-xray references a senior-review
+  3. forbidden edge nothing in codebase-map references a senior-review
                     component at runtime. Prose next-steps suggestions are
                     fine; a spawn or skill load is the edge the old dependency
                     cycle was made of (see CLAUDE.md, marketplace 16.0.0)
@@ -92,6 +92,8 @@ PLUGINS = Path("plugins")
 # (source plugin, target namespace, reason)
 FORBIDDEN_EDGES = [
     ("codebase-xray", "senior-review",
+     "legacy compatibility must not reintroduce the review dependency cycle"),
+    ("codebase-map", "senior-review",
      "reintroduces the dependency cycle removed in marketplace 16.0.0"),
 ]
 
@@ -110,8 +112,8 @@ DEGRADE_PROSE_ALLOWLIST = {
 # Real dependencies pass 8 cannot see, because the edge is an artifact contract
 # rather than a spawn or a skill load. (owner, dependency): the artifact.
 ARTIFACT_DEPENDENCIES = {
-    ("abstraction-architect", "codebase-xray"):
-        "reads the .codebase-xray/ run output; xray_path is required in global mode",
+    ("abstraction-architect", "codebase-map"):
+        "reads the .codebase-map/ run output; xray_path is required in global mode",
 }
 
 failures = []
@@ -149,7 +151,7 @@ def load_plugins():
 
 
 def dep_base(entry):
-    """codebase-xray -> codebase-xray, agent-teams@claude-code-workflows -> agent-teams."""
+    """codebase-map -> codebase-map, agent-teams@claude-code-workflows -> agent-teams."""
     return entry.split("@", 1)[0]
 
 
@@ -472,7 +474,7 @@ def check_no_local_degrade_prose(plugins):
                 continue  # states the rule, does not breach it
             for ns in sorted(hard_local):
                 # A dot before the name makes it a path, not a plugin reference:
-                # codebase-xray publishes its artifacts to `.codebase-xray/`, so
+                # codebase-map publishes its artifacts to `.codebase-map/`, so
                 # every line naming that directory near the words "fall back"
                 # would otherwise read as a degrade branch for the plugin.
                 if re.search(rf"(?<![\w.-]){re.escape(ns)}(?![\w-])", line):

@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:data-integrity-auditor; version: 15.1.0; source-sha256: 620cf83e6bbcece1e63f2628522e92a706d338c890b3c19a3c2851ceb4439c2f. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:data-integrity-auditor; version: 15.1.1; source-sha256: 185528825b1263892c4ea4b1a3d565a8eb96b2f29e47d5fdafbc406cb1ed8172. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -173,7 +173,7 @@ For each invariant found in Phase 1, locate its enforcement:
 - **Enforcement gap:** [code-only / missing constraint / missing transaction / missing lock]
 - **Evidence:** `file:line` (write path), `file:line` or schema (missing guard)
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Corruption scenario:** [concrete interleaving or failure: request A ..., request B ..., resulting impossible state]
 - **Who reads the corrupted state:** [downstream consumer and what it does with it]
 - **Fix:** [constraint / transaction boundary / lock / version column / idempotency key, with concrete DDL or code]

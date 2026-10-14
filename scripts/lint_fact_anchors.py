@@ -197,14 +197,14 @@ ANCHORS = {
         "the evidence ladder's rank count, stated in the generic plugin and in the ibkr skill",
     ),
     "xray-incident-apply-share": (
-        "docs/plugins/codebase-xray.md",
+        "docs/plugins/codebase-map.md",
         r"(\d+)% of the applied rules used `@apply`",
         "share of the incident tree's applied rules written with Tailwind @apply, which justifies the expansion in the stylesheet adapter; corrected once from a figure that measured something else",
     ),
     "xray-snapshot-path": (
-        "plugins/codebase-xray/skills/xray-method/references/snapshot.md",
+        "plugins/codebase-map/skills/map-method/references/snapshot.md",
         r"snapshot/([\w.-]+\.json)",
-        "X-ray snapshot manifest path, stated in the skill and the plugin doc",
+        "Codebase Map snapshot manifest path, stated in the skill and the plugin doc",
     ),
 }
 

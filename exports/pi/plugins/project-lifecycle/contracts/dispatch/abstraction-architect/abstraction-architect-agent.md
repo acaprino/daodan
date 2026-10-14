@@ -69,12 +69,23 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.0.3; source-sha256: 8cb1312a3ad3b05aef0bd43665f7c994e4b8922623a6be76e35eb9abfa143a91. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.0.4; source-sha256: fa93f242e8783c320a4525833ad6856a4f2aebc3e340bd6e6bffbce4c89a89fe. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`. The owning plugin's declared logical skill identities are `abstraction-architect:abstraction-architect`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `abstraction-architect:abstraction-architect` -> compiled registry name `abstraction-architect` at `skills/abstraction-architect/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
+
+
+## Existing analysis compatibility
+
+The coordinator must complete root migration before dispatching this worker.
+Load `codebase-map:map-method` through the active host's skill registry. For
+supplied analysis-root bindings, use only the provider's `migrate_root.py resolve`
+command from `references/migration.md` and propagate its returned paths.
+This worker performs no root migration and never writes the legacy store.
+If resolution fails or still selects `.codebase-xray`, stop and report a failed
+dependency for coordinator migration. Preserve run IDs and report/index ownership.
 
 # ROLE
 
@@ -98,7 +109,7 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 
 - `codebase_path` — the codebase root.
 - `mode` (optional, default `global`) — `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
-- `xray_path` — path to `.codebase-xray/`. Required for `global`, optional for `diff`.
+- `xray_path` — path to `.codebase-map/`. Required for `global`, optional for `diff`.
 - `concept_index_path` (optional) — path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.
 - `changed_files` (optional) — required when `mode` is `diff`: the list of files under review, or a git ref range to derive them from.
 - `report_path` (optional) — defaults per mode, see PROCESS.
@@ -116,12 +127,12 @@ Read from `xray_path`. Missing files reduce confidence; they do not abort the au
 - `04-semantics.md` — responsibilities and intent. The strongest seed for behavioural concepts.
 - `08-interconnect-map.md` (optional) — cross-partition contracts. Enables the bounded-context check that gate K6 requires.
 
-Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no X-ray output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
+Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
 
 # PROCESS (mode = global)
 
 1. **Load the skill.** Read `SKILL.md`, then `references/dimensions.md`.
-2. **Read X-ray files.** Record missing ones in Gaps.
+2. **Read Codebase Map files.** Record missing ones in Gaps.
 3. **Build the seed map.** Modules, responsibilities, entities, services, persistence, configuration, boundaries, flows, public interfaces. Per `references/concept-census.md`, the map seeds the census and does not bound it.
 4. **Extract candidate concepts.** Entity nouns and behavioural concepts. The behavioural ones carry most of the knowledge-track findings.
 5. **Discovery.** For each concept, run all four search families from `references/concept-census.md`: by name and near-synonym, by literal, by call, by shape of decision. High recall. Every hit is a candidate.
@@ -182,7 +193,7 @@ Both modes use the same section letters so consolidation is uniform. Omit an emp
 **Generated:** <ISO timestamp>
 **Mode:** global | diff
 **Scope:** <codebase_path[/scope]>
-**X-ray source:** <xray_path | none>
+**Codebase Map source:** <xray_path | none>
 **Concept index:** <path> (<fresh | delta-stale | unusable: reason>)
 **Severity floor:** <low | medium | high>
 **Focus:** <all | knowledge | form | Dn>
@@ -236,7 +247,7 @@ One line per pair, exempt from `severity_floor`, so the next occurrence is recog
   ```
   Or, when degraded, the specific condition and what coverage was lost.
 - **Index contradictions:** entries the source disproved, with what the source says
-- **Gaps:** X-ray files missing, directories not covered, units skipped and why
+- **Gaps:** Codebase Map files missing, directories not covered, units skipped and why
 ````
 
 # CONSTRAINTS
@@ -269,4 +280,4 @@ Return to the caller: the absolute report path, summary counts, the concept inde
 - Do not trust the index over the source. When they disagree, the source wins and the disagreement is reportable.
 - Do not skip `unmapped_changed_files` because the index looked complete. Completeness of an upstream artifact is never a premise.
 - Do not produce a refactoring plan. One sentence of direction.
-- Do not echo X-ray content. The report is your synthesis.
+- Do not echo Codebase Map content. The report is your synthesis.

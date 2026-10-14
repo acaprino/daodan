@@ -131,7 +131,7 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             "project-knowledge/onboarding-writer",
             "project-knowledge/guide-reviewer",
         }
-        permitted = required | {"codebase-xray/semantic-interconnect-mapper"}
+        permitted = required | {"codebase-map/semantic-interconnect-mapper"}
         self.assertTrue(required.issubset(self.references["handover"]))
         self.assertTrue(self.references["handover"].issubset(permitted),
                         f"Unscoped handover worker surface: {self.references['handover'] - permitted}")

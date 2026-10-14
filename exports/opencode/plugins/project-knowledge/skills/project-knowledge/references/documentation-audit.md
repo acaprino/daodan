@@ -122,6 +122,6 @@ For each finding report id, severity, document locator, implementation/intent
 evidence, evidence status, premise provenance, proposed disposition and affected
 paths. State covered and uncovered dimensions, files read and unavailable checks.
 Wrong prose, wrong implementation and unknown intent remain different diagnoses.
-Do not invent the missing requirement or claim that inherited X-ray evidence was
+Do not invent the missing requirement or claim that inherited Codebase Map evidence was
 derived independently. The coordinator wraps the native report without dropping
 its uncertainty or provenance.

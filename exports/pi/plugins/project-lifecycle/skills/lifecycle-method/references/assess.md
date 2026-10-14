@@ -69,11 +69,21 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # Assess
 
 Load the canonical methods before preparing inputs. Diagnosis does not modify
 application files, test files or durable instructions. Run-owned reports and the
-explicit X-ray run are the allowed audit outputs.
+explicit Codebase Map run are the allowed audit outputs.
 
 ## Focus selection and inputs
 
@@ -94,12 +104,12 @@ Count documentation-engineer and guide-reviewer before dispatch. If the quick
 budget cannot cover the requested union, show the selected priorities and remaining
 dimensions; do not silently dispatch extra contexts or imply complete coverage.
 
-For abstraction context, invoke codebase-xray:analyze in this coordinator context
-only when required by the requested scope. Bind the exact new or validated X-ray
+For abstraction context, invoke codebase-map:analyze in this coordinator context
+only when required by the requested scope. Bind the exact new or validated Codebase Map
 run ID, source snapshot, depth and directory. Quick uses lite context and states
 missing flows/semantics; deep can request full context. Diff mode receives actual
 changed_files. The concept index is a lead, never proof; disable its writes for this
-read-only assessment. An interrupted X-ray is not the active completed mirror.
+read-only assessment. An interrupted Codebase Map is not the active completed mirror.
 
 Use the native auditor inputs and boundaries. Missing runner/config or no test
 suite produces evidence and an authoring/configuration remedy, not quarantine.

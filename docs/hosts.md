@@ -240,8 +240,8 @@ There is no second hand-authored operational schema under each consumer skill.
 The coordinator loads canonical specialist methods and prepares their inputs.
 The compiler supplies worker bindings; it is not a general workflow executor.
 Nonempty `invoke` is rejected. In senior-review team-review Phase 1a, the review
-coordinator reads the canonical `codebase-xray:analyze` entry and its
-`codebase-xray:xray-method`, then directly executes their phases in order in the
+coordinator reads the canonical `codebase-map:analyze` entry and its
+`codebase-map:map-method`, then directly executes their phases in order in the
 same context. Loading those bodies alone runs nothing. This direct composition
 introduces no declarative executor or nested lifecycle scheduler. Review
 preparation runs once, consolidation owns the final review report, and required
@@ -267,21 +267,21 @@ is adapted because registration comes from the loader.
 
 Building Daodan needs Python 3.11 or later and uses the standard library. Node is
 needed to exercise the OpenCode loader tests. Runtime helpers use their documented
-executables; optional tree-sitter parsers improve X-ray parsing, while its tested
+executables; optional tree-sitter parsers improve Codebase Map parsing, while its tested
 fallback remains available. No Node build is required for the generated packages.
 
 ## Write boundaries and Tri-Tech Code
 
 Run records and outputs belong in `.daodan/runs/<id>/` inside an identified
 project/worktree. An alternative output root must be dedicated, remain inside that
-project, not equal the project root, and carry a `.daodan-root` sentinel. X-ray's
-separate stable contract stays `.codebase-xray/`.
+project, not equal the project root, and carry a `.daodan-root` sentinel. Codebase Map's
+separate stable contract stays `.codebase-map/`.
 
 Run-state and artifact helpers mechanically check their paths, link identities,
 owned output scope and record transitions. Those checks apply to helper actions.
 General agent-tool confinement stays prompt-level on all five hosts:
-`run-write-confinement` and X-ray's policy both declare `mechanical_wired = false`.
-The Copilot X-ray guard is shipped and tested but is not wired as a hook. A
+`run-write-confinement` and Codebase Map's policy both declare `mechanical_wired = false`.
+The Copilot Codebase Map guard is shipped and tested but is not wired as a hook. A
 session-global confinement hook would also block unrelated project writes.
 
 OpenCode worker permissions are generated from declared role tools and include an
@@ -293,7 +293,7 @@ binding and is outside the implemented `--out` contract.
 
 JSON validation and helper checks cannot establish the truth of reported evidence
 or that a human actually granted a permission. Runtime authorization and semantic
-review remain separate responsibilities. X-ray remains static: inventory, depth
+review remain separate responsibilities. Codebase Map remains static: inventory, depth
 of reading and runtime exercise are distinct coverage claims.
 
 ## Operational compatibility review

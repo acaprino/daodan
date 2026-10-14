@@ -1,6 +1,6 @@
 ---
 name: team-review-workflow
-description: 'Six-phase pipeline. Builds X-ray and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.'
+description: 'Six-phase pipeline. Builds Codebase Map and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.'
 ---
 
 > Arguments: `<target> [--reviewers auto|security,performance,react,typescript,platform,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -105,7 +105,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-xray:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-map:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -129,7 +129,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `chicken-egg-detector`: read `roles/chicken-egg-detector.md` inside this package and pass its complete body verbatim.
 - `cleanup-auditor`: read `roles/cleanup-auditor.md` inside this package and pass its complete body verbatim.
 - `code-auditor`: read `roles/code-auditor.md` inside this package and pass its complete body verbatim.
-- `codebase-xray:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-xray/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
+- `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
 - `data-integrity-auditor`: read `roles/data-integrity-auditor.md` inside this package and pass its complete body verbatim.
 - `distributed-flow-auditor`: read `roles/distributed-flow-auditor.md` inside this package and pass its complete body verbatim.
 - `logic-integrity-auditor`: read `roles/logic-integrity-auditor.md` inside this package and pass its complete body verbatim.

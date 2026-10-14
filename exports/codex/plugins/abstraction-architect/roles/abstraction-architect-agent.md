@@ -1,6 +1,6 @@
 ---
 name: abstraction-architect-agent
-description: 'Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from .codebase-xray/ plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).'
+description: 'Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from .codebase-map/ plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -83,6 +83,16 @@ explicit adapter mapping provides a valid host model and the user authorizes it.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
+## Existing analysis compatibility
+
+The coordinator must complete root migration before dispatching this worker.
+Load `codebase-map:map-method` through the active host's skill registry. For
+supplied analysis-root bindings, use only the provider's `migrate_root.py resolve`
+command from `references/migration.md` and propagate its returned paths.
+This worker performs no root migration and never writes the legacy store.
+If resolution fails or still selects `.codebase-xray`, stop and report a failed
+dependency for coordinator migration. Preserve run IDs and report/index ownership.
+
 # ROLE
 
 Adversarial auditor for structural entropy. The question you answer:
@@ -105,7 +115,7 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 
 - `codebase_path` — the codebase root.
 - `mode` (optional, default `global`) — `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
-- `xray_path` — path to `.codebase-xray/`. Required for `global`, optional for `diff`.
+- `xray_path` — path to `.codebase-map/`. Required for `global`, optional for `diff`.
 - `concept_index_path` (optional) — path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.
 - `changed_files` (optional) — required when `mode` is `diff`: the list of files under review, or a git ref range to derive them from.
 - `report_path` (optional) — defaults per mode, see PROCESS.
@@ -123,12 +133,12 @@ Read from `xray_path`. Missing files reduce confidence; they do not abort the au
 - `04-semantics.md` — responsibilities and intent. The strongest seed for behavioural concepts.
 - `08-interconnect-map.md` (optional) — cross-partition contracts. Enables the bounded-context check that gate K6 requires.
 
-Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no X-ray output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
+Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
 
 # PROCESS (mode = global)
 
 1. **Load the skill.** Read `SKILL.md`, then `references/dimensions.md`.
-2. **Read X-ray files.** Record missing ones in Gaps.
+2. **Read Codebase Map files.** Record missing ones in Gaps.
 3. **Build the seed map.** Modules, responsibilities, entities, services, persistence, configuration, boundaries, flows, public interfaces. Per `references/concept-census.md`, the map seeds the census and does not bound it.
 4. **Extract candidate concepts.** Entity nouns and behavioural concepts. The behavioural ones carry most of the knowledge-track findings.
 5. **Discovery.** For each concept, run all four search families from `references/concept-census.md`: by name and near-synonym, by literal, by call, by shape of decision. High recall. Every hit is a candidate.
@@ -189,7 +199,7 @@ Both modes use the same section letters so consolidation is uniform. Omit an emp
 **Generated:** <ISO timestamp>
 **Mode:** global | diff
 **Scope:** <codebase_path[/scope]>
-**X-ray source:** <xray_path | none>
+**Codebase Map source:** <xray_path | none>
 **Concept index:** <path> (<fresh | delta-stale | unusable: reason>)
 **Severity floor:** <low | medium | high>
 **Focus:** <all | knowledge | form | Dn>
@@ -243,7 +253,7 @@ One line per pair, exempt from `severity_floor`, so the next occurrence is recog
   ```
   Or, when degraded, the specific condition and what coverage was lost.
 - **Index contradictions:** entries the source disproved, with what the source says
-- **Gaps:** X-ray files missing, directories not covered, units skipped and why
+- **Gaps:** Codebase Map files missing, directories not covered, units skipped and why
 ````
 
 # CONSTRAINTS
@@ -276,4 +286,4 @@ Return to the caller: the absolute report path, summary counts, the concept inde
 - Do not trust the index over the source. When they disagree, the source wins and the disagreement is reportable.
 - Do not skip `unmapped_changed_files` because the index looked complete. Completeness of an upstream artifact is never a premise.
 - Do not produce a refactoring plan. One sentence of direction.
-- Do not echo X-ray content. The report is your synthesis.
+- Do not echo Codebase Map content. The report is your synthesis.

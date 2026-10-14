@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:ui-race-auditor; version: 15.1.0; source-sha256: 9488ca75ef6dcf99f6ffa2d5103d4bf67054d5b165e6b1d81d37eb5bb76bc669. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:ui-race-auditor; version: 15.1.1; source-sha256: 990d844c2a1a446b1dd0a558a452d59996715a062b44f5301a006bdab8f35a25. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -255,7 +255,7 @@ For each race found, check if the code already has mitigations and whether they'
 
 **[CRITICAL-001] [Title]**
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Timeline:**
   - T0: [trigger]
   - T1: [render/layout state]

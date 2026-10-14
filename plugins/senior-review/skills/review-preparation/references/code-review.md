@@ -1,3 +1,13 @@
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # Code Review
 
 You are a thorough code reviewer. Your job is to review code changes (uncommitted edits, recent commits, a pull request, or a branch diff), analyze them in depth, and produce a structured review with confidence-scored findings. Optionally post review comments directly on PRs.
@@ -140,24 +150,24 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments --jq '.[].path' | sort -u
 
 5. **Read CLAUDE.md** if it exists -- note project conventions, naming rules, patterns
 
-6. **Check for X-ray context** (optional -- requires `codebase-xray` plugin) -- if `.codebase-xray/` exists and contains completed analysis files:
-   - Read `.codebase-xray/01-structure.md` for structural context
-   - Read `.codebase-xray/03-flows.md` for execution flow context
-   - Read `.codebase-xray/04-semantics.md` for design decision context
-   - Read `.codebase-xray/05-risks.md` for known risk context
-   - Include an "X-Ray Context" section in each agent's prompt (see template below)
-   - Note in the review output that X-ray context was used
-   - If `.codebase-xray/` does not exist or is incomplete, proceed normally without it -- this is expected behavior when the X-ray has not been run for this project yet
-   - This is a deliberate classification, not an oversight: `code-review` consumes a pre-existing analysis rather than starting a run, so per the X-ray Concurrent Runs Model the mirror is the correct contract for it. If this command is ever changed to invoke the X-ray skill itself, it moves to the immutable run directory (`$XRAY_RUN_DIR`) at that point
+6. **Check for Codebase Map context** (optional -- requires `codebase-map` plugin) -- if `.codebase-map/` exists and contains completed analysis files:
+   - Read `.codebase-map/01-structure.md` for structural context
+   - Read `.codebase-map/03-flows.md` for execution flow context
+   - Read `.codebase-map/04-semantics.md` for design decision context
+   - Read `.codebase-map/05-risks.md` for known risk context
+   - Include an "Codebase Map Context" section in each agent's prompt (see template below)
+   - Note in the review output that Codebase Map context was used
+   - If `.codebase-map/` does not exist or is incomplete, proceed normally without it -- this is expected behavior when the Codebase Map has not been run for this project yet
+   - This is a deliberate classification, not an oversight: `code-review` consumes a pre-existing analysis rather than starting a run, so per the Codebase Map Concurrent Runs Model the mirror is the correct contract for it. If this command is ever changed to invoke the Codebase Map skill itself, it moves to the immutable run directory (`$XRAY_RUN_DIR`) at that point
 
-### X-Ray Context Template
+### Codebase Map Context Template
 
-When X-ray output is available, append this section to each agent prompt after existing context sections:
+When Codebase Map output is available, append this section to each agent prompt after existing context sections:
 
 ```
-## X-Ray Context
+## Codebase Map Context
 
-The following context was gathered from a prior X-ray analysis. It is an index
+The following context was gathered from a prior Codebase Map analysis. It is an index
 of hypotheses produced by one upstream observer, not ground truth.
 
 Use it to know WHERE to look. Do not use it to know WHAT IS TRUE: re-derive any

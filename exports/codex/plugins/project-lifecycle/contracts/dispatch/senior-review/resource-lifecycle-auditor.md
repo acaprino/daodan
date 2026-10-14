@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:resource-lifecycle-auditor; version: 15.1.0; source-sha256: 15ac5853a6048d88b133faf6a829de09602030d6b5cc63b66b31ee47716a638a. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:resource-lifecycle-auditor; version: 15.1.1; source-sha256: 77546982d578105397b04fb03162a2642dae9290a0dab69f3f4ea30689748471. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -166,7 +166,7 @@ For each row of the table, verify the three exits:
 - **Broken exit:** [success / error / cancellation / double-release / use-after-release]
 - **Evidence:** `file:line` (acquisition), `file:line` (missing or broken release)
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Exhaustion scenario:** [what load or sequence turns this into an outage, and how fast]
 - **Fix:** [structural construct preferred: with/defer/finally/RAII/AbortController/effect-cleanup, with code]
 

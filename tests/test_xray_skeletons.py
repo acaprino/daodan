@@ -5,11 +5,12 @@ import unittest
 from pathlib import Path
 
 from test_xray_load_budget import _rows, _selected
+from host_binding_assertions import source_instruction_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PLUGIN = ROOT / "plugins/codebase-xray"
-METHOD = PLUGIN / "skills/xray-method"
+PLUGIN = ROOT / "plugins/codebase-map"
+METHOD = PLUGIN / "skills/map-method"
 PHASE_UNITS = {
     1: "phases-1-2", 2: "phases-1-2", 3: "phases-3-4",
     4: "phases-3-4", 5: "phases-5-6", 6: "phases-5-6", 7: "phase-7",
@@ -63,7 +64,7 @@ class XraySkeletonTests(unittest.TestCase):
     def test_each_phase_has_one_canonical_skeleton(self):
         for phase, name in PHASE_UNITS.items():
             text = (METHOD / "references" / f"{name}.md").read_text(encoding="utf-8")
-            title = "# Codebase X-Ray Analysis Report" if phase == 7 else f"# Phase {phase}:"
+            title = "# Codebase Map Analysis Report" if phase == 7 else f"# Phase {phase}:"
             matched = [block for block in blocks(text) if block.startswith(title)]
             with self.subTest(phase=phase):
                 self.assertEqual(len(matched), 1)
@@ -72,8 +73,8 @@ class XraySkeletonTests(unittest.TestCase):
 
     def test_roles_do_not_carry_secondary_phase_skeletons(self):
         for path in [*PLUGIN.glob("roles/*.md"), *PLUGIN.glob("workflows/*.md")]:
-            for block in blocks(path.read_text(encoding="utf-8")):
-                self.assertNotRegex(block, r"^# (?:Phase [1-7]:|Partition:|Codebase X-Ray Analysis Report)", path.name)
+            for block in blocks(source_instruction_text(path)):
+                self.assertNotRegex(block, r"^# (?:Phase [1-7]:|Partition:|Codebase Map Analysis Report)", path.name)
 
     def test_common_headings_have_no_mode_qualifiers(self):
         qualifiers = r"\((?:by partition|per partition|consolidated|global|within this partition|Team Mode)\)|\[if"
@@ -106,7 +107,7 @@ class XraySkeletonTests(unittest.TestCase):
                 if row["mode"] == "consolidated":
                     available.add((row["file"], row["heading"]))
         for rel in ("roles/semantic-interconnect-mapper.md", "workflows/team-analyze.md"):
-            text = (PLUGIN / rel).read_text(encoding="utf-8")
+            text = source_instruction_text(PLUGIN / rel)
             found = re.findall(r"`(?:<RUN_DIR>/)?(0[1-7]-[a-z-]+\.md) ## ([^`]+)`", text)
             self.assertGreaterEqual(len(found), 4, rel)
             for lookup in found:
@@ -120,7 +121,7 @@ class XraySkeletonTests(unittest.TestCase):
             "partition-synthesizer": ("phases-1-2", "phases-3-4", "phases-5-6", "phase-7"),
         }
         for role, names in units.items():
-            text = (PLUGIN / "roles" / f"{role}.md").read_text(encoding="utf-8")
+            text = source_instruction_text(PLUGIN / "roles" / f"{role}.md")
             for name in names:
                 self.assertIn(f"references/{name}.md", text, role)
 
@@ -129,14 +130,14 @@ class XraySkeletonTests(unittest.TestCase):
         for path in PLUGIN.rglob("*.md"):
             if any(path.name == Path(name).name for name in retired):
                 continue
-            text = path.read_text(encoding="utf-8")
+            text = source_instruction_text(path)
             for name in retired:
                 self.assertNotIn(name, text, str(path))
         for name in retired:
             self.assertFalse((METHOD / name).exists(), name)
 
     def test_selected_behavior_instructions_identify_cross_partition_contracts(self):
-        worker = (PLUGIN / "roles/partition-behavior-worker.md").read_text(encoding="utf-8")
+        worker = source_instruction_text(PLUGIN / "roles/partition-behavior-worker.md")
         selected = []
         for path, selector, when in _rows(worker):
             if path != "references/phases-3-4.md":
@@ -154,7 +155,7 @@ class XraySkeletonTests(unittest.TestCase):
     def test_consolidated_heading_order_matches_the_published_contract(self):
         for phase, expected in CONSOLIDATED_HEADINGS.items():
             text = (METHOD / "references" / f"{PHASE_UNITS[phase]}.md").read_text(encoding="utf-8")
-            title = "# Codebase X-Ray" if phase == 7 else f"# Phase {phase}:"
+            title = "# Codebase Map" if phase == 7 else f"# Phase {phase}:"
             skeleton = next(block for block in blocks(text) if block.startswith(title))
             rows = [row for row in extensions(text) if row["file"] == FILES[phase] and row["mode"] == "consolidated"]
             ordered = [row["heading"] for row in rows if row["after"] == "first"]

@@ -104,7 +104,7 @@ Initialization payload: operation, objective, scope {paths, focus}, authorizatio
 budget, phases, plan, deliveries and required_gates. Preserve the helper's exact
 project identity and snapshot. Save the authoritative work.json inside the run.
 On resume, supply current authorizations and validate the exact run, workspace,
-scope and snapshot. The latest completed X-ray or another session's report is not a
+scope and snapshot. The latest completed Codebase Map or another session's report is not a
 resume target.
 
 Preview is the default for assess/repair/retention. --fix authorizes in-scope edits;
@@ -130,14 +130,14 @@ senior-review:review-preparation and senior-review:review-consolidation for asse
 evidence; senior-review:review-method for candidate correctness review;
 testing:test-preparation and testing:test-remediation-method for suite operations;
 abstraction-architect:abstraction-architect for structural diagnosis;
-Load the codebase-xray:xray-method skill for static context.
+Load the codebase-map:map-method skill for static context.
 Load the repo-hygiene:repo-hygiene skill for workspace operations.
 Load the clean-code:readability-method skill for readability. Load only methods required
 by the requested scope, never a second detector prompt.
 
 | Need | Load or dispatch |
 |---|---|
-| Static context and exact X-ray run binding | codebase-xray:analyze, in coordinator context |
+| Static context and exact Codebase Map run binding | codebase-map:analyze, in coordinator context |
 | Candidate correctness, including applicable stack specialists | senior-review:review-method |
 | Assessment provenance consolidation | senior-review:review-preparation and senior-review:review-consolidation |
 | Application subtraction | senior-review:application-cleanup-method |
@@ -151,7 +151,7 @@ by the requested scope, never a second detector prompt.
 | Readability | clean-code:readability-method |
 | General development planning/execution | superpowers:brainstorming, superpowers:writing-plans, superpowers:executing-plans or superpowers:subagent-driven-development |
 
-The X-ray is the single declared workflow-in-context exception. Do not recursively
+The Codebase Map is the single declared workflow-in-context exception. Do not recursively
 launch lifecycle workflows or pretend TOML invoke executes a workflow. Load the
 operation reference below; perform its methods in this context.
 

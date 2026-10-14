@@ -27,6 +27,7 @@ Thumbs.db
 .upstream-scratch/
 
 # Analysis / review command output (transient, local-only)
+.codebase-map/
 .codebase-xray/
 .team-review/
 .marketplace-review/

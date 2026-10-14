@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PreToolUse guard for the codebase-xray agents.
+"""PreToolUse guard for the codebase-map agents.
 
 Reads a VS Code agent-hook JSON payload on stdin and prints a permission
 decision on stdout. Two independent rules:
@@ -10,7 +10,7 @@ decision on stdout. Two independent rules:
 
   2. Write confinement (opt-in via --confine <prefix>). Deny any file-creating
      or file-editing tool call whose target lies outside the given prefix. The
-     worker agents pass `--confine .codebase-xray` so an off-contract write to
+     worker agents pass `--confine .codebase-map` so an off-contract write to
      source code fails at the tool layer instead of silently corrupting a
      sibling partition.
 
@@ -19,7 +19,7 @@ Usage in an .agent.md frontmatter, added by hand (nothing generated wires it):
     hooks:
       PreToolUse:
         - type: command
-          command: "python policies/write-confinement/xray_guard.py --confine .codebase-xray"
+          command: "python policies/write-confinement/xray_guard.py --confine .codebase-map"
 
 It ships under policies/write-confinement/ of the Copilot package as an opt-in.
 It is deliberately not a plugin hook: a plugin-level hook is session-global and
@@ -219,7 +219,7 @@ def main() -> None:
     for path in paths:
         if is_forbidden(path):
             deny(
-                f"codebase-xray: '{path}' matches the forbidden-files list. "
+                f"codebase-map: '{path}' matches the forbidden-files list. "
                 "Note the file's existence only; never read or quote its contents."
             )
 
@@ -229,7 +229,7 @@ def main() -> None:
             candidate = normalize(token)
             if candidate and candidate != "." and is_forbidden(candidate):
                 deny(
-                    f"codebase-xray: the command references '{candidate}', which "
+                    f"codebase-map: the command references '{candidate}', which "
                     "matches the forbidden-files list."
                 )
 
@@ -239,7 +239,7 @@ def main() -> None:
         for path in paths:
             if outside(path, prefix):
                 deny(
-                    f"codebase-xray: this agent may only write under '{prefix}/'. "
+                    f"codebase-map: this agent may only write under '{prefix}/'. "
                     f"Refused a write to '{path}'. Phase output belongs in the "
                     "assigned output directory; source files are the orchestrator's."
                 )

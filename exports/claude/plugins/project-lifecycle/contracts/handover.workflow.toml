@@ -17,7 +17,7 @@ produces = ["artifact:context-brief", "selection:contracts"]
 [[phases]]
 id = "map-contracts"
 needs = ["explore"]
-role = "codebase-xray/semantic-interconnect-mapper"
+role = "codebase-map/semantic-interconnect-mapper"
 fanout_from = "selection:contracts"
 isolation = "required"
 join = "all-delivered"
@@ -62,7 +62,7 @@ consumes = ["artifact:handover-dossier", "artifact:guide-review", "artifact:chec
 produces = ["artifact:result"]
 
 [dispatch]
-roles = ["project-knowledge/codebase-explorer", "project-knowledge/onboarding-writer", "project-knowledge/guide-reviewer", "codebase-xray/semantic-interconnect-mapper"]
+roles = ["project-knowledge/codebase-explorer", "project-knowledge/onboarding-writer", "project-knowledge/guide-reviewer", "codebase-map/semantic-interconnect-mapper"]
 isolated = true
 inline_workers = false
 

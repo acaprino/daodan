@@ -21,3 +21,39 @@ def without_host_binding(case, text, host):
 def canonical_markdown(text):
     """Source parity permits LF line endings and one terminal newline only."""
     return text.replace("\r\n", "\n").replace("\r", "\n").rstrip() + "\n"
+
+
+def shared_instruction_resource(path):
+    """Resolve only the explicit local shared-entry/role reference in a wrapper."""
+    import re
+    path = Path(path)
+    text = path.read_text(encoding="utf-8")
+    if "<!-- Codebase Map shared instruction wrapper. -->" not in text:
+        return None
+    match = re.search(r"references/((?:entry|role)-[a-z0-9-]+\.md)", text)
+    if match is None:
+        return None
+    for ancestor in path.parents:
+        if ancestor.name in {"codebase-map", "codebase-xray"}:
+            owner = ancestor if ancestor.name == "codebase-map" else ancestor.parent / "codebase-map"
+            resource = owner / "skills/map-method/references" / match.group(1)
+            if not resource.is_file():
+                raise FileNotFoundError(resource)
+            return resource
+    raise ValueError(f"Shared instruction has no owning plugin: {path}")
+
+
+def source_instruction_text(path):
+    """Read the behavior's canonical source, rather than a registered wrapper."""
+    resource = shared_instruction_resource(path)
+    return (resource or Path(path)).read_text(encoding="utf-8")
+
+
+def loaded_instruction_text(case, path, host):
+    """Keep the real harness and validate its separately loaded host resource."""
+    text = Path(path).read_text(encoding="utf-8")
+    resource = shared_instruction_resource(path)
+    if resource is not None:
+        shared = resource.read_text(encoding="utf-8")
+        text += "\n\n" + without_host_binding(case, shared, host)
+    return text

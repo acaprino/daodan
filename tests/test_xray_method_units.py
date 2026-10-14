@@ -1,6 +1,6 @@
-"""The X-ray method is a router plus units, and each paragraph lives once.
+"""The Codebase Map method is a router plus units, and each paragraph lives once.
 
-`xray-method/SKILL.md` names every unit under `references/` in its load map, and
+`map-method/SKILL.md` names every unit under `references/` in its load map, and
 the `analyze` workflow loads units instead of restating them. The failure this
 guards against is the one the split removed: two copies of a procedure (Phase 0
 lived in both the skill and the workflow) that drift apart while each stays
@@ -12,11 +12,12 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PLUGIN = REPO_ROOT / "plugins" / "codebase-xray"
-METHOD = PLUGIN / "skills" / "xray-method"
+PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
+METHOD = PLUGIN / "skills" / "map-method"
 ROUTER = METHOD / "SKILL.md"
-ANALYZE = PLUGIN / "workflows" / "analyze.md"
+ANALYZE = METHOD / "references/entry-analyze.md"
 UNITS = (
+    "migration",
     "run",
     "snapshot",
     "update",
@@ -80,7 +81,7 @@ class XrayMethodUnitsTests(unittest.TestCase):
         analyze = ANALYZE.read_text(encoding="utf-8")
         for unit in ("phase-0", "phases-1-2", "phases-3-4", "phases-5-6", "phase-7"):
             self.assertIn(
-                f"${{CLAUDE_PLUGIN_ROOT}}/skills/xray-method/references/{unit}.md", analyze
+                f"${{CLAUDE_PLUGIN_ROOT}}/skills/map-method/references/{unit}.md", analyze
             )
         self.assertNotIn("## Phase 0: Project Knowledge Discovery", analyze)
 

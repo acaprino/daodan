@@ -5,7 +5,7 @@ or migration. Discover code, tests, decisions, instructions and constraints firs
 Look for a useful implementation before adding another representation.
 
 For a requested project-wide architectural refactor or deep rationalization, first
-obtain full static context through codebase-xray:analyze. Reuse an existing run only
+obtain full static context through codebase-map:analyze. Reuse an existing run only
 after validating its source snapshot, requested scope, depth and completion; bind
 that exact run in the ledger. An ordinary scoped change uses the context it needs.
 Inventory, deep reading and runtime exercise remain separate coverage facts.

@@ -23,11 +23,11 @@ FINDING                      only here does precision apply
 
 ## Phase 1: the seed map
 
-Read `.codebase-xray/` and extract the territory: modules, responsibilities, entities and domain concepts, services, persistence, configuration, boundaries, principal flows, public interfaces.
+Read `.codebase-map/` and extract the territory: modules, responsibilities, entities and domain concepts, services, persistence, configuration, boundaries, principal flows, public interfaces.
 
 The census is seeded by this map on purpose. Beginning by sweeping eighty thousand files at random produces order-dependent coverage and burns the budget before reaching the interesting part.
 
-**The seed map's completeness is not a premise.** Extraction starts from it and is not limited by it. A module X-ray did not surface is a gap in the census, and the census may add concepts the map never named. There is no rule of the form "do not search where the map says nothing".
+**The seed map's completeness is not a premise.** Extraction starts from it and is not limited by it. A module Codebase Map did not surface is a gap in the census, and the census may add concepts the map never named. There is no rule of the form "do not search where the map says nothing".
 
 ## Phase 2: concept extraction
 

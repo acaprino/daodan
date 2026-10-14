@@ -174,7 +174,7 @@ available and the requested result relies on interactions, exercise those
 controls, including naming zero-weight/reset behavior. Otherwise state that
 interactions were not exercised; a browser is optional for this renderer.
 
-An X-ray caller stays static. Never add a browser exercise or product runtime
+A Codebase Map caller stays static. Never add a browser exercise or product runtime
 step to its workflow. Development tests of the fixed renderer's controls are
 separate evidence from a caller's live run or product-runtime coverage.
 

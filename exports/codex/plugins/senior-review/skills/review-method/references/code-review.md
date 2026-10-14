@@ -104,7 +104,7 @@ Every finding carries two extra fields:
     Good: "No credential-bearing response path exists after registration."
 - **premise_provenance:** one of `independent`, `shared-context`, `mixed`.
   This records CAUSAL DEPENDENCE, not citation. If you absorbed the premise from
-  the X-ray output or the interconnect map, it is `shared-context`, even if
+  the Codebase Map output or the interconnect map, it is `shared-context`, even if
   your finding never cites an anchor. `mixed` means part of the premise rests on
   shared context and part on evidence you derived yourself. Declare `independent`
   only when you re-derived the whole premise from code, tests or documents you

@@ -112,7 +112,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-xray:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:guide-reviewer`, `project-knowledge:onboarding-writer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:guide-reviewer`, `project-knowledge:onboarding-writer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -121,7 +121,7 @@ Dispatch plan:
 
 1. `prepare`: runs in the orchestrating context; produces `artifact:handover-request`, `artifact:file-audience-plan`.
 2. `explore`: one `project-knowledge:codebase-explorer` in an isolated context; needs `prepare`; consumes `artifact:handover-request`, `artifact:file-audience-plan`; produces `artifact:context-brief`, `selection:contracts`.
-3. `map-contracts`: one `codebase-xray:semantic-interconnect-mapper` per item of `selection:contracts`, each in its own isolated context, in parallel where the host allows; barrier `all-delivered`; needs `explore`; consumes `artifact:context-brief`; produces `artifact:interconnect-report`.
+3. `map-contracts`: one `codebase-map:semantic-interconnect-mapper` per item of `selection:contracts`, each in its own isolated context, in parallel where the host allows; barrier `all-delivered`; needs `explore`; consumes `artifact:context-brief`; produces `artifact:interconnect-report`.
 4. `local-checks`: runs in the orchestrating context; needs `explore`; consumes `artifact:handover-request`, `artifact:context-brief`; produces `artifact:checks-report`.
 5. `prepare-dossier`: runs in the orchestrating context; needs `map-contracts`, `local-checks`; consumes `artifact:context-brief`, `artifact:checks-report`; produces `artifact:handover-evidence`.
 6. `write-dossier`: one `project-knowledge:onboarding-writer` in an isolated context; needs `prepare-dossier`; consumes `artifact:file-audience-plan`, `artifact:handover-evidence`; produces `artifact:handover-dossier`.
@@ -130,7 +130,7 @@ Dispatch plan:
 
 Role body bindings (load the complete body only for the selected worker):
 
-- `codebase-xray:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-xray/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
+- `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:codebase-explorer`: read `contracts/dispatch/project-knowledge/codebase-explorer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:guide-reviewer`: read `contracts/dispatch/project-knowledge/guide-reviewer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:onboarding-writer`: read `contracts/dispatch/project-knowledge/onboarding-writer.md` inside this package and pass its complete role body verbatim.

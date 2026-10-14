@@ -94,7 +94,7 @@ scopes and do not rewrite a generated instruction copy directly.
 Read manifests, source structure, entry points, configured commands and CI before
 checking claims. Map evergreen categories and ownership rather than every file.
 Read approved requirements/decisions separately from implementation. A supplied
-X-ray is consumed through `codebase-xray:xray-method`, bound to its exact run and
+Codebase Map is consumed through `codebase-map:map-method`, bound to its exact run and
 snapshot, preserving unknown/disputed claims and inherited premise provenance.
 For test guidance, derive the policy from this project's configured commands,
 services, conventions and approved behavior. Check its completeness with

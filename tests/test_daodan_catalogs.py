@@ -233,7 +233,7 @@ class OpenCodeManifestTests(unittest.TestCase):
 
     def test_dependencies_are_local_only(self):
         plugins = live_opencode_manifest()["daodan"]["plugins"]
-        self.assertIn("codebase-xray", plugins["senior-review"]["dependencies"])
+        self.assertIn("codebase-map", plugins["senior-review"]["dependencies"])
         for name, entry in plugins.items():
             for dependency in entry.get("dependencies", []):
                 self.assertNotIn("@", dependency, name)

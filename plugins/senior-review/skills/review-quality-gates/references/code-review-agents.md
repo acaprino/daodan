@@ -1,3 +1,13 @@
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # Code-review agent prompts (Agents A-N)
 
 Full spawn prompts for `/senior-review:code-review` Step 3. The command's dispatch
@@ -267,7 +277,7 @@ Isolated worker brief:
     - Load-bearing premise: the single proposition whose falsity collapses this
       finding. Minimal, falsifiable, scoped. Not a paraphrase of the finding
     - premise_provenance: independent | shared-context | mixed (causal dependence
-      on the X-ray output or interconnect map, not citation of it)
+      on the Codebase Map output or interconnect map, not citation of it)
     - What is unused or misplaced, and why
     - Recommended action (remove, prefix with _, verify dynamic usage, add to
       __all__, or `/repo-hygiene:tidy` for anything the filesystem and git decide)
@@ -515,7 +525,7 @@ Isolated worker brief:
 
     mode: diff
     codebase_path: [repo root]
-    xray_path: [.codebase-xray/ if Step 2 produced one, otherwise "none"]
+    xray_path: [.codebase-map/ if Step 2 produced one, otherwise "none"]
     concept_index_path: [repo root]/.abstraction-architect/concept-index.json
     changed_files: [list of changed files]
     report_path: [scratch path for this review]

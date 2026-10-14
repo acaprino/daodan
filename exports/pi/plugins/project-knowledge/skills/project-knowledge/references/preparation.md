@@ -69,6 +69,16 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # Knowledge input preparation
 
 1. Bind the project root, worktree, run and snapshot. Read durable project
@@ -81,9 +91,9 @@ Compiled binding and static checks do not prove an installed host executed a run
    present, configured and loaded files; preserve unresolved precedence or
    activation claims rather than certifying them from an inventory.
 3. Read manifests, entry points and pertinent source. Use the named
-   `codebase-xray:xray-method` to consume an identified analysis when supplied.
+   `codebase-map:map-method` to consume an identified analysis when supplied.
    Bind its exact run and revision; retain claim status and premise provenance.
-   Resolve the supplied run directory under `.codebase-xray/runs/`, verify its
+   Resolve the supplied run directory under `.codebase-map/runs/`, verify its
    recorded target, depth and completed state, and compare its snapshot with the
    relevant current inputs. A latest mirror is not a substitute for that binding.
    Stale or incomplete evidence cannot authorize a factual correction.

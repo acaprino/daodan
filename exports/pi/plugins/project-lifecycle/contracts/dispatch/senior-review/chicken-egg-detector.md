@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:chicken-egg-detector; version: 15.1.0; source-sha256: 1ceada0b74b6798dd6115f040ebda9842af328d94a584603f9c61e672a69cdce. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:chicken-egg-detector; version: 15.1.1; source-sha256: 98b8c2a4a270aa84797633adc9a57c1671ee11d47ced5b65f1640f792bdc91f6. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `senior-review:defect-taxonomy` -> compiled registry name `defect-taxonomy` at `skills/defect-taxonomy/SKILL.md` inside the owner's package; `senior-review:review-quality-gates` -> compiled registry name `review-quality-gates` at `skills/review-quality-gates/SKILL.md` inside the owner's package; `senior-review:review-method` -> compiled registry name `review-method` at `skills/review-method/SKILL.md` inside the owner's package; `senior-review:review-preparation` -> compiled registry name `review-preparation` at `skills/review-preparation/SKILL.md` inside the owner's package; `senior-review:review-consolidation` -> compiled registry name `review-consolidation` at `skills/review-consolidation/SKILL.md` inside the owner's package; `senior-review:application-cleanup-method` -> compiled registry name `application-cleanup-method` at `skills/application-cleanup-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -284,7 +284,7 @@ Find dependencies that work only because of timing coincidence.
   - B requires C: `service-b/path/file:line` (what it needs from C)
   - C requires A: `service-c/path/file:line` (what it needs from A)
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Manifestation:** [when does this break -- cold start, fresh deploy, infra rebuild]
 - **Fix:** [concrete cycle-breaking strategy with code references]
 

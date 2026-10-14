@@ -105,7 +105,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-explorer`, `codebase-xray:semantic-interconnect-mapper`, `doc-humanizer`, `documentation-engineer`, `flow-writer`, `guide-reviewer`, `onboarding-writer`, `ops-writer`, `overview-writer`, `tech-writer`, `text-humanizer:text-humanizer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-explorer`, `codebase-map:semantic-interconnect-mapper`, `doc-humanizer`, `documentation-engineer`, `flow-writer`, `guide-reviewer`, `onboarding-writer`, `ops-writer`, `overview-writer`, `tech-writer`, `text-humanizer:text-humanizer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -116,7 +116,7 @@ Dispatch plan:
 
 Role body bindings (load the complete body only for the selected worker):
 
-- `codebase-xray:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-xray/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
+- `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
 - `codebase-explorer`: read `roles/codebase-explorer.md` inside this package and pass its complete body verbatim.
 - `doc-humanizer`: read `roles/doc-humanizer.md` inside this package and pass its complete body verbatim.
 - `documentation-engineer`: read `roles/documentation-engineer.md` inside this package and pass its complete body verbatim.

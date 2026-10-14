@@ -101,7 +101,7 @@ Analyzes a prompt in one `prompt-engineer` pass and presents the efficiency-vers
 
 ---
 
-**Related:** upstream wshobson/agents agent-teams (generic team orchestration); local team pipelines live in senior-review, codebase-xray, project-knowledge, research
+**Related:** upstream wshobson/agents agent-teams (generic team orchestration); local team pipelines live in senior-review, codebase-map, project-knowledge, research
 
 <!-- daodan:reference:start -->
 ## Source-derived reference

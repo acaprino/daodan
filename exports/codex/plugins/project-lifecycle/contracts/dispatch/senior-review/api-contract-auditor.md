@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:api-contract-auditor; version: 15.1.0; source-sha256: 33dfddd6fc3261bf9b0c38c96d4b214ed9a96a6918089dd0951d2419c703963c. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:api-contract-auditor; version: 15.1.1; source-sha256: 9899ff14c98d6ef65032e68e325aa2f58cd7629d115ad3fb5ab6e73b640fe84f. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -190,7 +190,7 @@ Write findings grouped by severity. Every finding includes spec citation + imple
 - Prior version: `openapi.yaml@v3.7.0:142` -- field `email_address` (removed)
 - Consumer: `web-client/src/types/user.ts:18` still references `email_address`
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - Impact: web client reads `user.email_address`, now undefined -> null coalesces to empty string in display
 - Fix: keep `email_address` as an alias (spec `additionalProperties`), bump to v4.0.0, or coordinate client update before release
 

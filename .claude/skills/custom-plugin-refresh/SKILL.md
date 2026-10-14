@@ -15,7 +15,7 @@ description: >
 
 # Custom plugin maintenance
 
-A "custom plugin" has hand-authored or research-grounded content without a copied upstream source to re-pull. Copied-source targets in the `upstream-sync` table use that skill for upstream comparison. Inspiration-only rows retain provenance without excluding the original local plugin from this refresh method: both `codebase-xray` rows are inspiration-only, so refresh its local content here. Preserve existing copied-source tracking and history; neither route authorizes new vendoring.
+A "custom plugin" has hand-authored or research-grounded content without a copied upstream source to re-pull. Copied-source targets in the `upstream-sync` table use that skill for upstream comparison. Inspiration-only rows retain provenance without excluding the original local plugin from this refresh method: both `codebase-map` rows are inspiration-only, so refresh its local content here. Preserve existing copied-source tracking and history; neither route authorizes new vendoring.
 
 Custom plugins decay differently than vendored ones. There is no upstream commit to diff against. Versions, framework recommendations, breaking-change notes, and "current as of 2026" claims become stale silently. The maintenance protocol below is the antidote.
 
@@ -33,7 +33,7 @@ Classify each plugin into one of four classes. The class determines refresh cade
 | **Very fast** | Versions bump every few months; breaking changes are common; ecosystem reshuffles | Every 3 months | rag-development (embedding models, rerankers, vector DBs), digital-marketing/ga4-implementation (Consent Mode, GA4 events), react-development (React 19, Vercel guidance) |
 | **Fast** | Framework releases 2-3x per year; APIs evolve | Every 6 months | libgdx-development, opentelemetry, tauri-development, stripe (API additions, webhook event types), grabber-development (anti-bot vendor moves), browser-extensions, pwa-expert (browser version churn, WebKit feature rollout, framework PWA library churn), text-humanizer (Wikipedia's signs page and the upstream humanizer both change monthly) |
 | **Moderate** | Major releases ~yearly; breaking changes rare | Every 12 months | trading-broker-integration, csp (OR-Tools), python-development, typescript-development, messaging (RabbitMQ majors), obsidian-development, abstraction-architect (theory is stable; URL list in further-reading.md decays on a yearly cadence) |
-| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, project-protocol, senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, business, clean-code, codebase-xray, platform-engineering, testing methodology, xterm, app-analyzer |
+| **Slow** | Workflow knowledge that ages by behavior change, not version bumps | Opportunistic; review only when symptoms appear | project-lifecycle, project-protocol, senior-review, project-knowledge, team pipeline workflows, marketplace-ops, system-utils, learning, research, business, clean-code, codebase-map, platform-engineering, testing methodology, xterm, app-analyzer |
 
 If unsure, default to "Fast" (6 months). Reclassify after the first refresh based on how much actually changed.
 

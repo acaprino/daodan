@@ -9,8 +9,8 @@ description: >
 Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle.
 Output: native report and the project-result envelope. Do not delegate execution
 to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
-the coordinator directly executes the canonical `codebase-xray:analyze` entry
-and its `codebase-xray:xray-method` phase-by-phase in the same context. This is
+the coordinator directly executes the canonical `codebase-map:analyze` entry
+and its `codebase-map:map-method` phase-by-phase in the same context. This is
 explicit execution of the canonical instructions, not a declarative `invoke`
 executor or automatic skill loading. Loading the skill alone executes no phase.
 Keep one review preparation and final report owner; required workers still run
@@ -53,7 +53,12 @@ budget, expected report path and delivered or failed outcome for every brief.
    `senior-review:application-cleanup-method`; significant semantic refactors are
    returned to the caller's development plan and are never delegated to cleanup.
 
-Read-only review preserves the workspace. Before any accepted fix, load
+Read-only review preserves application files and preexisting edits.
+The coordinator alone may perform the project-bound Codebase Map preflight
+before dispatch: move an idle legacy archive intact and write only bound
+relocation metadata. This bounded exception authorizes no application changes,
+analysis run, worker migration or generic filesystem move.
+Before any accepted fix, load
 `project-protocol:project-protocol` for execution preflight, authorizations,
 baseline, candidate gate and owned recovery. Commit and publication are separate
 authorizations; a request for review is not authorization to publish.

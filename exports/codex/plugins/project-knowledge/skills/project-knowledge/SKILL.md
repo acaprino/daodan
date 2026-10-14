@@ -87,6 +87,11 @@ Modes: audit-only/dry-run, plan-only, fix and commit. Audit-only may write only
 the owned run report, never project source or durable knowledge. A requested
 missing path is an explicit gap; no automatic broadening of scope.
 
+The coordinator alone may perform the project-bound Codebase Map preflight
+before dispatch: move an idle legacy archive intact and write only bound
+relocation metadata. This bounded exception authorizes no application changes,
+analysis run, worker migration or generic filesystem move.
+
 Operational records remain in the run. Durable documents describe verified
 implementation or attributed approved intent, with unknowns labelled. They do
 not accumulate progress, branch names, one-run measurements or session status.

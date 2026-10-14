@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STACK_ROLES = {"react-development/react-performance-optimizer", "typescript-development/type-safety-auditor", "platform-engineering/platform-reviewer"}
 CORE_ROLES = {
     "code-review": {f"senior-review/{name}" for name in ("code-auditor", "security-auditor", "ui-race-auditor", "temporal-resilience-auditor", "data-integrity-auditor", "resource-lifecycle-auditor", "premise-auditor")} | {"testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent"},
-    "team-review": {f"senior-review/{name}" for name in ("api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor")} | {"repo-hygiene/workspace-auditor", "testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent", "codebase-xray/semantic-interconnect-mapper"},
+    "team-review": {f"senior-review/{name}" for name in ("api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor")} | {"repo-hygiene/workspace-auditor", "testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent", "codebase-map/semantic-interconnect-mapper"},
     "pr-review": {f"senior-review/{name}" for name in ("code-auditor", "security-auditor", "premise-auditor")},
 }
 
@@ -310,7 +310,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
             ("project-lifecycle", "repair"): CORE_ROLES["code-review"] | STACK_ROLES | {"clean-code/clean-code-agent"},
             ("project-lifecycle", "verify"): CORE_ROLES["code-review"] | STACK_ROLES,
             ("project-lifecycle", "assess"): {"project-knowledge/documentation-engineer", "project-knowledge/guide-reviewer"},
-            ("project-knowledge", "guide"): {"codebase-xray/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer")},
+            ("project-knowledge", "guide"): {"codebase-map/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer")},
             ("project-knowledge", "maintain"): {f"project-knowledge/{role}" for role in ("documentation-engineer", "guide-reviewer", "instructions-auditor")},
         }
         with tempfile.TemporaryDirectory() as temporary:

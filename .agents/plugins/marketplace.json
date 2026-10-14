@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "32.14.2"
+    "version": "33.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -20,7 +20,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [
-        "codebase-xray"
+        "codebase-map"
       ],
       "description": "Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of /senior-review:team-review and /senior-review:code-review. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD).",
       "license": "MIT",
@@ -30,7 +30,7 @@
         "./skills/audit-workflow"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "4.0.3"
+      "version": "4.0.4"
     },
     {
       "author": {
@@ -124,7 +124,25 @@
       "dependencies": [
         "report-rendering"
       ],
-      "description": "Multi-language systematic codebase X-ray analysis (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS) - analyzes architecture, traces data flows, detects anti-patterns, and generates structured documentation for onboarding, architecture review, or code documentation. Root of the review and documentation dependency graph: it also owns the semantic interconnect mapper (contracts / invariants / domain rules / assumptions) that team-review and project-knowledge both consume. Concurrent-safe: every analysis is an isolated run under .codebase-xray/runs/ published to a stable root mirror. The Next Steps menu wires the output into downstream documentation generators (CLAUDE.md, codebase map, interface docs) as a technical-reference backbone. Renamed from deep-dive-analysis in 2.0.0. Runs are incremental: each records a structural snapshot of the tree it analyzed, and a later run diffs it against the worktree, carries unaffected claims forward and re-derives only what changed.",
+      "description": "Multi-language systematic codebase mapping analysis (Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS) - analyzes architecture, traces data flows, detects anti-patterns, and generates structured documentation for onboarding, architecture review, or code documentation. Root of the review and documentation dependency graph: it also owns the semantic interconnect mapper (contracts / invariants / domain rules / assumptions) that team-review and project-knowledge both consume. Concurrent-safe: every analysis is an isolated run under .codebase-map/runs/ published to a stable root mirror. The Next Steps menu wires the output into downstream documentation generators (CLAUDE.md, codebase map, interface docs) as a technical-reference backbone. Renamed from deep-dive-analysis in 2.0.0. Runs are incremental: each records a structural snapshot of the tree it analyzed, and a later run diffs it against the worktree, carries unaffected claims forward and re-derives only what changed.",
+      "license": "MIT",
+      "name": "codebase-map",
+      "skills": [
+        "./skills/analyze-workflow",
+        "./skills/map-method",
+        "./skills/team-analyze-workflow"
+      ],
+      "source": "./exports/codex/plugins/codebase-map",
+      "version": "6.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "codebase-map"
+      ],
+      "description": "Compatibility entrypoints for Codebase Map, formerly Codebase X-ray. Retains the old workflow, method and worker identities while using the canonical provider's shared instructions and output contract.",
       "license": "MIT",
       "name": "codebase-xray",
       "skills": [
@@ -133,7 +151,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/codex/plugins/codebase-xray",
-      "version": "5.6.1"
+      "version": "6.0.0"
     },
     {
       "author": {
@@ -409,7 +427,7 @@
       },
       "dependencies": [
         "project-protocol",
-        "codebase-xray",
+        "codebase-map",
         "text-humanizer",
         "senior-review"
       ],
@@ -426,7 +444,7 @@
         "./skills/readme-workflow"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "1.3.1"
+      "version": "1.3.2"
     },
     {
       "author": {
@@ -438,7 +456,7 @@
         "senior-review",
         "testing",
         "abstraction-architect",
-        "codebase-xray",
+        "codebase-map",
         "repo-hygiene",
         "clean-code",
         "text-humanizer",
@@ -463,7 +481,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "author": {
@@ -569,7 +587,7 @@
         "./skills/tidy-workflow"
       ],
       "source": "./exports/codex/plugins/repo-hygiene",
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "author": {
@@ -583,7 +601,7 @@
         "./skills/report-renderer"
       ],
       "source": "./exports/codex/plugins/report-rendering",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "author": {
@@ -606,7 +624,7 @@
       },
       "dependencies": [
         "repo-hygiene",
-        "codebase-xray",
+        "codebase-map",
         "abstraction-architect",
         "testing",
         "project-protocol",
@@ -631,7 +649,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "15.1.0"
+      "version": "15.1.1"
     },
     {
       "author": {
@@ -645,7 +663,7 @@
         "./skills/skill-catalog"
       ],
       "source": "./exports/codex/plugins/skill-catalog",
-      "version": "1.0.6"
+      "version": "1.0.7"
     },
     {
       "author": {

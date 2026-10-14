@@ -83,6 +83,14 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # Senior Maintainer
 
 Lead the campaign; the user decides its scope, roadmap and outstanding product
@@ -116,10 +124,10 @@ supported operation arguments to each owner; never forward --pace, --resume or
 --from-handover as an invented lifecycle flag.
 
 Before a helper takes any snapshot, inventory forbidden inputs by names only
-and exclude their concrete project-relative paths. Use codebase-xray:xray-method's
+and exclude their concrete project-relative paths. Use codebase-map:map-method's
 forbidden-file rule without reading credential contents. The protocol hashes
 directory inputs: a prohibition on quoting secrets does not prevent that read.
-Also exclude .daodan/, .codebase-xray/, .team-review/, .repo-hygiene/ and every
+Also exclude .daodan/, .codebase-map/, .codebase-xray/, .team-review/, .repo-hygiene/ and every
 other report root this campaign writes. Declare dependency/build exclusions that
 are outside the intended scope. Scope exclusions are concrete paths, not globs.
 
@@ -149,7 +157,7 @@ request and exact next entry so that a fresh session can reconstruct it.
 Inside every active lifecycle run save campaign-request.json and campaign.json.
 The request records original user text and native arguments, resolved settings,
 intention/authorization sources and the canonical method/reference fingerprints.
-The chain records this run's stage, exact earlier stage/run identities, X-ray run
+The chain records this run's stage, exact earlier stage/run identities, Codebase Map run
 binding, scope and snapshot references, accepted decisions with their scope,
 next entry and interruption reason. It indexes native records; it never replaces
 their work.json, results, checks or approval evidence. Save it before closing the
@@ -160,7 +168,7 @@ Read the request and chain at every batch boundary, handoff, context loss and
 resume. Resume only an explicitly named in-progress stage through the protocol
 helper with identical authorizations and the recorded current candidate. For a
 completed stage validate its historical result and prepare the recorded next
-entry in a new run instead of reopening it. Inspect native review and X-ray runs
+entry in a new run instead of reopening it. Inspect native review and Codebase Map runs
 through their owners. A changed candidate, scope or authorization requires a new
 run with the preserved prior evidence, not a guessed latest run.
 
@@ -174,7 +182,7 @@ in the campaign or replace a missing role with another worker.
 
 | Stage | Method to perform in the coordinator context |
 |---|---|
-| Baseline correctness and static context | senior-review:review-method, variant team-review; its method owns the codebase-xray analyze step |
+| Baseline correctness and static context | senior-review:review-method, variant team-review; its method owns the codebase-map analyze step |
 | Coherence and roadmap | project-lifecycle:lifecycle-method, operation assess |
 | Evidenced product corrections | project-lifecycle:lifecycle-method, operation change |
 | Approved rationalization | project-lifecycle:lifecycle-method, operation repair |

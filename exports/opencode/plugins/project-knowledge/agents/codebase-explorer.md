@@ -115,9 +115,9 @@ changed snapshot or unavailable required check is an explicit delivery gap.
 
 
 Read existing README/instructions/docs/ADRs, manifests, entry points, tooling,
-CI, operational scripts and relevant history. Load `codebase-xray:xray-method`
+CI, operational scripts and relevant history. Load `codebase-map:map-method`
 by name for the owner procedure and exact helper commands. Bind the supplied
-X-ray's run, root, target and `snapshot/manifest.json`; verify current inputs with
+Codebase Map's run, root, target and `snapshot/manifest.json`; verify current inputs with
 `snapshot.py diff --verify`. Its hashes normalize line endings, so after that
 check always write or obtain a current owned source snapshot with
 `snapshot.py write --reuse <previous-manifest>` before passing it to readers,

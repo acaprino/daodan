@@ -15,8 +15,8 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PLUGIN = REPO_ROOT / "plugins" / "codebase-xray"
-METHOD = PLUGIN / "skills" / "xray-method"
+PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
+METHOD = PLUGIN / "skills" / "map-method"
 
 BUDGETS = {
     "workflows/analyze.md": 12_100,
@@ -35,6 +35,8 @@ OPTIONAL_ALLOWANCES = {
     "methodology": 1_919 + 164,
     "patterns": 1_628,
     "comments": 1_869,
+    # New legacy-root branch is measured separately; original core caps stay fixed.
+    "migration": 209,
 }
 READ_CONDITIONS = {
     "always", "full", "lite", "update", "documentation", "not-lite",
@@ -46,6 +48,13 @@ ROLE_RESOURCES = {
     "roles/partition-behavior-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-3-4.md"},
     "roles/partition-quality-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-5-6.md"},
     "roles/semantic-interconnect-mapper.md": {"SKILL.md", "references/evidence.md", "references/reading.md"},
+}
+
+
+# Registration wrappers load exactly one owned instruction unit.
+ROLE_RESOURCES = {
+    role: resources | {f"references/role-{Path(role).stem}.md"}
+    for role, resources in ROLE_RESOURCES.items()
 }
 
 
@@ -72,7 +81,7 @@ def _rows(body: str):
             continue
         if len(fields) != 3:
             raise ValueError(f"Malformed method load: {line}")
-        path = fields[0].removeprefix("${CLAUDE_PLUGIN_ROOT}/skills/xray-method/")
+        path = fields[0].removeprefix("${CLAUDE_PLUGIN_ROOT}/skills/map-method/")
         if path != "SKILL.md" and not re.fullmatch(r"references/[A-Za-z0-9_-]+\.md", path):
             raise ValueError(f"Unknown method resource: {path}")
         result.append((path, fields[1], fields[2]))
@@ -210,6 +219,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
             "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md"},
             "patterns": {"references/SEMANTIC_PATTERNS.md"},
             "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
+            "migration": {"references/migration.md"},
         }
         for role, core in ROLE_RESOURCES.items():
             body = (PLUGIN / role).read_text(encoding="utf-8")
@@ -369,6 +379,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
             "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md"},
             "patterns": {"references/SEMANTIC_PATTERNS.md"},
             "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
+            "migration": {"references/migration.md"},
         }
         for options in _option_sets():
             words, files = load(body, options=options)

@@ -111,14 +111,14 @@ global sources get a note at most, because they are not the repository's to chan
 ### C5 Scratch and pipeline-output directories
 
 ```bash
-for d in .upstream-scratch .codebase-xray .daodan .team-review .codebase-map .research .brainstorm \
+for d in .upstream-scratch .codebase-map .daodan .team-review .codebase-xray .research .brainstorm \
          .peer-review .frontend-review tmp temp scratch _wip wip _drafts; do
   [ -d "$d" ] && echo "$d"
 done
 ls NOTES.md TODO.md SCRATCH.md 2>/dev/null
 ```
 
-Protected protocol roots: never propose removing .daodan/ or .codebase-xray/.
+Protected protocol roots: never propose removing .daodan/, .codebase-map/ or .codebase-xray/.
 Also protect any directory containing a .daodan-root sentinel and its ancestors.
 Recognize these by name/sentinel presence only. Do not parse work.json, classify
 runs or infer retention eligibility. Lifecycle consolidation owns that decision.

@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:cleanup-auditor; version: 15.1.0; source-sha256: be0204c1e91e7d45928918f19324d04cae89ff0a09ae069e92bd150f6fa6db43. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:cleanup-auditor; version: 15.1.1; source-sha256: ef6d796c58f0ad70e198206402c9cc2666452d01c736b46634fea14c6f30362d. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -277,7 +277,7 @@ Tracked generated artifacts, scratch and pipeline-output directories, and checko
 - **Location:** `path` or `file:line`
 - **Evidence:** [concrete count, ratio, or command output line]
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Impact:** [one sentence]
 - **Confidence:** `CONFIRMED|HIGH|MEDIUM|LOW`
 - **Action:** `DELETE|KEEP|KEEP+IGNORE|DELETE+IGNORE|DELETE+PREVENT-GENERATION|UNIGNORE|REVIEW`

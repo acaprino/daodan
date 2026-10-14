@@ -69,6 +69,16 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 ## Phase 2: Adversarial Review (parallel)
 
 1. There is no team-creation step. The host harness dispatches each reviewer as this phase requires and records every one as `delivered` or `failed`.
@@ -114,7 +124,7 @@ You are reviewing for the {dimension} dimension.
 {diff content}
 
 ## Context files (read these before analyzing code)
-- X-ray output: $XRAY_RUN_DIR (see 01-structure.md, 02-interfaces.md, 05-risks.md)
+- Codebase Map output: $XRAY_RUN_DIR (see 01-structure.md, 02-interfaces.md, 05-risks.md)
 - Interconnect map: .team-review/02-interconnect.md
 - Knowledge provenance: .team-review/01-knowledge-provenance.md
 
@@ -148,7 +158,7 @@ Every finding carries two extra fields:
     Good: "No credential-bearing response path exists after registration."
 - **premise_provenance:** one of `independent`, `shared-context`, `mixed`.
   This records CAUSAL DEPENDENCE, not citation. If you absorbed the premise from
-  the X-ray output or the interconnect map, it is `shared-context`, even if
+  the Codebase Map output or the interconnect map, it is `shared-context`, even if
   your finding never cites an anchor. `mixed` means part of the premise rests on
   shared context and part on evidence you derived yourself. Declare `independent`
   only when you re-derived the whole premise from code, tests or documents you
@@ -253,6 +263,6 @@ distributed.
 - Output identical in structure to the pre-pipeline version
 
 Use it for targets under roughly 100 LOC where the context pipeline costs more
-than it returns, for quick scans, and when X-ray produces no usable output.
+than it returns, for quick scans, and when Codebase Map produces no usable output.
 
 `--skip-interconnect` was removed in senior-review 9.0.0. Use `--no-context`.

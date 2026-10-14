@@ -24,7 +24,7 @@ roles = [
   "repo-hygiene/workspace-auditor",
   "testing/test-suite-auditor",
   "abstraction-architect/abstraction-architect-agent",
-  "codebase-xray/semantic-interconnect-mapper",
+  "codebase-map/semantic-interconnect-mapper",
   "react-development/react-performance-optimizer",
   "typescript-development/type-safety-auditor",
   "platform-engineering/platform-reviewer",

@@ -1,8 +1,8 @@
 ---
 name: team-review-coordinator
-description: 'Six-phase pipeline. Builds X-ray and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.'
+description: 'Six-phase pipeline. Builds Codebase Map and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.'
 tools: ['agent', 'edit', 'runCommands', 'search']
-agents: ['abstraction-architect:abstraction-architect-agent', 'api-contract-auditor', 'chicken-egg-detector', 'cleanup-auditor', 'code-auditor', 'codebase-xray:semantic-interconnect-mapper', 'data-integrity-auditor', 'distributed-flow-auditor', 'logic-integrity-auditor', 'platform-engineering:platform-reviewer', 'premise-auditor', 'project-protocol:isolated-worker', 'react-development:react-performance-optimizer', 'repo-hygiene:workspace-auditor', 'resource-lifecycle-auditor', 'security-auditor', 'temporal-resilience-auditor', 'testing:test-suite-auditor', 'typescript-development:type-safety-auditor', 'ui-race-auditor']
+agents: ['abstraction-architect:abstraction-architect-agent', 'api-contract-auditor', 'chicken-egg-detector', 'cleanup-auditor', 'code-auditor', 'codebase-map:semantic-interconnect-mapper', 'data-integrity-auditor', 'distributed-flow-auditor', 'logic-integrity-auditor', 'platform-engineering:platform-reviewer', 'premise-auditor', 'project-protocol:isolated-worker', 'react-development:react-performance-optimizer', 'repo-hygiene:workspace-auditor', 'resource-lifecycle-auditor', 'security-auditor', 'temporal-resilience-auditor', 'testing:test-suite-auditor', 'typescript-development:type-safety-auditor', 'ui-race-auditor']
 ---
 
 > Arguments: `<target> [--reviewers auto|security,performance,react,typescript,platform,...] [--base-branch main] [--all] [--deep] [--no-context] [--fast] [--rigorous]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-xray:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-map:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -135,7 +135,7 @@ Role bindings:
 - `chicken-egg-detector`: dispatch the installed `senior-review:chicken-egg-detector` agent by its qualified identity.
 - `cleanup-auditor`: dispatch the installed `senior-review:cleanup-auditor` agent by its qualified identity.
 - `code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
-- `codebase-xray:semantic-interconnect-mapper`: dispatch the installed `codebase-xray:semantic-interconnect-mapper` agent by its qualified identity.
+- `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
 - `data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
 - `distributed-flow-auditor`: dispatch the installed `senior-review:distributed-flow-auditor` agent by its qualified identity.
 - `logic-integrity-auditor`: dispatch the installed `senior-review:logic-integrity-auditor` agent by its qualified identity.

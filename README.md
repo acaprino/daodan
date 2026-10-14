@@ -162,7 +162,7 @@ commands, paths, installation requirements and runtime limits on each host.
 | [senior-review](docs/plugins/senior-review.md) | Unified correctness review, automatic stack specialists and application subtraction |
 | [testing](docs/plugins/testing.md) | Meaningful test authoring, suite diagnosis and protection-preserving remediation |
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
-| [codebase-xray](docs/plugins/codebase-xray.md) | Static structure, behavior and interconnection evidence |
+| [codebase-map](docs/plugins/codebase-map.md) | Static structure, behavior and interconnection evidence |
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
 | [text-humanizer](docs/plugins/text-humanizer.md) | Voice and clarity of written content |
@@ -228,7 +228,7 @@ Atomic helpers mechanically protect their own records and retained artifacts.
 Semantic truth, test oracles and permission provenance still require evidence and
 the coordinator's judgment. Prompt obligations are identified as such.
 
-X-ray is static: inventory, files read in depth and runtime-exercised paths are
+Codebase Map is static: inventory, files read in depth and runtime-exercised paths are
 reported separately. A generated package test is distinct from an installed-host
 execution probe. External private app storage is not a supported run root until
 its permission binding is demonstrated.

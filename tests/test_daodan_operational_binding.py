@@ -85,7 +85,7 @@ class OperationalBindingTests(unittest.TestCase):
 
     def test_copilot_dispatched_prompt_hands_off_once_to_the_coordinator(self):
         for plugin, workflow in (("react-development", "review-react"),
-                                 ("codebase-xray", "team-analyze"),
+                                 ("codebase-map", "team-analyze"),
                                  ("peer-review", "review")):
             with self.subTest(plugin=plugin):
                 rendered = self.render_in_memory(plugin, "copilot")

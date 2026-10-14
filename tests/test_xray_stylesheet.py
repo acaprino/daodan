@@ -1,7 +1,7 @@
 """The stylesheet adapter and the cascade scanner.
 
 A stylesheet decides whether a screen renders, scrolls and can be completed.
-Until codebase-xray 4.1.0 the X-ray did not record one at all, and until 4.2.0
+Until codebase-map 4.1.0 the Codebase Map did not record one at all, and until 4.2.0
 it recorded one only as a hash. The
 motivating case is a Phazly incident of 2026-09-14: the rule
 `.dark #root > div:first-child { position: relative; }` reached the consent
@@ -33,7 +33,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO_ROOT / "plugins/codebase-xray/skills/xray-method/scripts"
+SCRIPTS = REPO_ROOT / "plugins/codebase-map/skills/map-method/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 

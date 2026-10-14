@@ -26,7 +26,7 @@ CLUSTER = (
     "platform-engineering",
     "typescript-development",
     "testing",
-    "codebase-xray",
+    "codebase-map",
     "abstraction-architect",
     "senior-review",
 )
@@ -108,7 +108,7 @@ class CompiledPackage:
         return self._phase("consolidation")["needs"] == ["cross-examination"]
 
     def artifact_root(self, name: str) -> str:
-        policy = REPO_ROOT / "exports" / self.host / "plugins/codebase-xray/policies/write-confinement.toml"
+        policy = REPO_ROOT / "exports" / self.host / "plugins/codebase-map/policies/write-confinement.toml"
         with policy.open("rb") as handle:
             return tomllib.load(handle)["roots"][name]
 
@@ -160,7 +160,7 @@ class ReviewPipelinePortTests(unittest.TestCase):
                 self.assertTrue(package.has_delivery_barrier)
                 self.assertTrue(package.has_cross_examination)
                 self.assertTrue(package.has_consolidation)
-                self.assertEqual(package.artifact_root("xray"), ".codebase-xray")
+                self.assertEqual(package.artifact_root("xray"), ".codebase-map")
 
     def test_senior_review_no_longer_depends_on_an_external_team_runtime(self):
         plugin = load_plugin(REPO_ROOT / "plugins/senior-review")
@@ -174,7 +174,7 @@ class ReviewPipelinePortTests(unittest.TestCase):
         plugin = load_plugin(REPO_ROOT / "plugins/senior-review")
         for dimension in (
             "repo-hygiene",
-            "codebase-xray",
+            "codebase-map",
             "abstraction-architect",
             "testing",
             "project-protocol",

@@ -14,7 +14,7 @@ consumes = ["artifact:work"]
 produces = ["artifact:result"]
 
 [dispatch]
-roles = ["project-knowledge/codebase-explorer","project-knowledge/doc-humanizer","project-knowledge/documentation-engineer","project-knowledge/flow-writer","project-knowledge/guide-reviewer","project-knowledge/onboarding-writer","project-knowledge/ops-writer","project-knowledge/overview-writer","project-knowledge/tech-writer","project-knowledge/instructions-auditor","codebase-xray/semantic-interconnect-mapper","text-humanizer/text-humanizer"]
+roles = ["project-knowledge/codebase-explorer","project-knowledge/doc-humanizer","project-knowledge/documentation-engineer","project-knowledge/flow-writer","project-knowledge/guide-reviewer","project-knowledge/onboarding-writer","project-knowledge/ops-writer","project-knowledge/overview-writer","project-knowledge/tech-writer","project-knowledge/instructions-auditor","codebase-map/semantic-interconnect-mapper","text-humanizer/text-humanizer"]
 isolated = true
 inline_workers = true
 

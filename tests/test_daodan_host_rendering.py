@@ -1,8 +1,8 @@
 """What each host package must say, checked on the real kernels.
 
-These tests render `codebase-xray` and `senior-review` for every host and read
+These tests render `codebase-map` and `senior-review` for every host and read
 the result the way the host's agent would. They exist because the first
-cross-host review of `codebase-xray` found four things the compiler got wrong
+cross-host review of `codebase-map` found four things the compiler got wrong
 for Codex and Copilot while Claude looked fine: a harness header that said
 "once each" over a workflow that fans out per partition, a Copilot coordinator
 that could not write, `${CLAUDE_PLUGIN_ROOT}` passed through to hosts that do
@@ -26,10 +26,10 @@ from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support  # noqa:
 from scripts.daodan.catalogs import render_catalog  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.render import opencode_permissions, render_plugin  # noqa: E402
-from host_binding_assertions import canonical_markdown, without_host_binding
+from host_binding_assertions import canonical_markdown, without_host_binding, loaded_instruction_text
 
 ADAPTERS = REPO_ROOT / "adapters"
-XRAY = REPO_ROOT / "plugins/codebase-xray"
+XRAY = REPO_ROOT / "plugins/codebase-map"
 REVIEW = REPO_ROOT / "plugins/senior-review"
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
@@ -78,7 +78,7 @@ class HostRenderingTests(unittest.TestCase):
             "pi": f"prompts/{plugin}-{workflow}.md",
             "opencode": f"commands/{workflow}.md",
         }
-        return _read(self.package(host, plugin) / layout[host])
+        return loaded_instruction_text(self, self.package(host, plugin) / layout[host], host)
 
     def markdown(self, host: str, plugin: str):
         root = self.package(host, plugin)
@@ -89,7 +89,7 @@ class HostRenderingTests(unittest.TestCase):
     def test_fanout_per_selection_is_rendered_per_item_on_every_host(self):
         for host in HOSTS:
             with self.subTest(host=host):
-                text = self.harness(host, "codebase-xray", "team-analyze")
+                text = self.harness(host, "codebase-map", "team-analyze")
                 self.assertIn(
                     "one `partition-structure-worker` per item of `selection:partitions`", text
                 )
@@ -103,7 +103,7 @@ class HostRenderingTests(unittest.TestCase):
         # that consolidated output: synthesis must close before interconnect starts.
         for host in HOSTS:
             with self.subTest(host=host):
-                text = self.harness(host, "codebase-xray", "team-analyze")
+                text = self.harness(host, "codebase-map", "team-analyze")
                 plan = text[text.index("Dispatch plan") : text.index("## Method")]
                 order = [
                     match.group(1)
@@ -140,7 +140,7 @@ class HostRenderingTests(unittest.TestCase):
     # -- copilot coordinator -----------------------------------------------
 
     def test_copilot_coordinator_gets_the_tools_its_capabilities_need(self):
-        meta = _frontmatter(self.harness("copilot", "codebase-xray", "team-analyze"))
+        meta = _frontmatter(self.harness("copilot", "codebase-map", "team-analyze"))
         tools = meta["tools"]
         for tool in ("'agent'", "'search'", "'edit'", "'runCommands'"):
             self.assertIn(tool, tools)
@@ -148,13 +148,13 @@ class HostRenderingTests(unittest.TestCase):
     # -- plugin root -------------------------------------------------------
 
     def test_claude_keeps_its_own_plugin_root_variable(self):
-        texts = self.markdown("claude", "codebase-xray")
+        texts = self.markdown("claude", "codebase-map")
         self.assertTrue(any(CLAUDE_ROOT in text for text in texts.values()))
 
     def test_other_hosts_never_see_the_claude_plugin_root_variable(self):
         for host in ("copilot", "codex"):
             with self.subTest(host=host):
-                for name, text in self.markdown(host, "codebase-xray").items():
+                for name, text in self.markdown(host, "codebase-map").items():
                     self.assertNotIn("CLAUDE_PLUGIN_ROOT", text, name)
 
     def test_other_hosts_explain_their_plugin_root_where_they_use_it(self):
@@ -164,27 +164,27 @@ class HostRenderingTests(unittest.TestCase):
         }
         for host, (reference, manifest) in expectations.items():
             with self.subTest(host=host):
-                texts = self.markdown(host, "codebase-xray")
+                texts = self.markdown(host, "codebase-map")
                 using = {name: text for name, text in texts.items() if reference in text}
                 self.assertTrue(using, f"{host}: nothing references {reference}")
                 for name, text in using.items():
                     self.assertIn(manifest, text, name)
-                skill = texts["skills/xray-method/SKILL.md"]
-                self.assertIn(f"{reference}/skills/xray-method/scripts/", skill)
+                skill = texts["skills/map-method/SKILL.md"]
+                self.assertIn(f"{reference}/skills/map-method/scripts/", skill)
 
     # -- workflow frontmatter and arguments --------------------------------
 
     def test_claude_flat_workflow_preserves_kernel_under_execution_binding(self):
-        rendered = _read(self.package("claude", "codebase-xray") / "commands/analyze.md")
+        rendered = _read(self.package("claude", "codebase-map") / "commands/analyze.md")
         kernel = _read(XRAY / "workflows/analyze.md").replace("\r\n", "\n")
         body = without_host_binding(self, rendered, "claude")
         self.assertEqual(body, canonical_markdown(kernel))
 
     def test_codex_flat_workflow_has_skill_frontmatter(self):
-        text = _read(self.package("codex", "codebase-xray") / "skills/analyze-workflow/SKILL.md")
+        text = _read(self.package("codex", "codebase-map") / "skills/analyze-workflow/SKILL.md")
         meta = _frontmatter(text)
         # Codex registers skills by frontmatter name, so the name carries the
-        # directory suffix: `codebase-xray` also ships a skill, and a plugin
+        # directory suffix: `codebase-map` also ships a skill, and a plugin
         # with a skill and a workflow of one name (digital-marketing's
         # brand-naming before marketplace 29.0.0) would otherwise register two skills under it.
         self.assertEqual(meta["name"], "analyze-workflow")
@@ -193,7 +193,7 @@ class HostRenderingTests(unittest.TestCase):
         self.assertIn("Arguments: `<target path>", text)
 
     def test_copilot_flat_workflow_keeps_the_argument_hint(self):
-        text = _read(self.package("copilot", "codebase-xray") / "prompts/analyze.prompt.md")
+        text = _read(self.package("copilot", "codebase-map") / "prompts/analyze.prompt.md")
         meta = _frontmatter(text)
         self.assertEqual(meta["name"], "analyze")
         self.assertIn("argument-hint", meta)
@@ -202,13 +202,25 @@ class HostRenderingTests(unittest.TestCase):
     def test_other_hosts_never_see_the_claude_arguments_variable(self):
         for host in ("copilot", "codex"):
             with self.subTest(host=host):
-                for name, text in self.markdown(host, "codebase-xray").items():
+                for name, text in self.markdown(host, "codebase-map").items():
                     self.assertNotRegex(text, r"\$ARGUMENTS\b", name)
-                harness = self.harness(host, "codebase-xray", "team-analyze")
+                harness = self.harness(host, "codebase-map", "team-analyze")
                 self.assertIn("<arguments>", harness)
                 self.assertIn("Wherever `<arguments>` appears", harness)
 
     # -- opencode ----------------------------------------------------------
+
+    def test_independent_derivation_cannot_consume_either_analysis_store(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                layout = load_adapter(ADAPTERS, host).layout["roles"]
+                relative = layout.replace("${plugin}", "senior-review").replace("${role}", "premise-auditor")
+                body = _read(self.package(host, "senior-review") / relative)
+                mode = body.split("## Mode 1:", 1)[1].split("## Mode 2:", 1)[0]
+                self.assertIn("`.codebase-map/` in any form", mode)
+                self.assertIn("`.codebase-xray/` in any form", mode)
+                self.assertIn("stop and report the contamination", mode)
+                self.assertNotIn("references/migration.md", body)
 
     def test_opencode_agent_is_a_v2_subagent(self):
         text = _read(self.package("opencode", "senior-review") / "agents/code-auditor.md")
@@ -250,11 +262,11 @@ class HostRenderingTests(unittest.TestCase):
         self.assertRegex(text, r"\$ARGUMENTS\b")
 
     def test_opencode_never_sees_the_claude_plugin_root_variable(self):
-        texts = self.markdown("opencode", "codebase-xray")
+        texts = self.markdown("opencode", "codebase-map")
         for name, text in texts.items():
             self.assertNotIn("CLAUDE_PLUGIN_ROOT", text, name)
         self.assertIn(
-            "<plugin-root>/skills/xray-method/scripts/", texts["skills/xray-method/SKILL.md"]
+            "<plugin-root>/skills/map-method/scripts/", texts["skills/map-method/SKILL.md"]
         )
 
     def test_kernel_script_invocations_quote_the_plugin_root(self):
@@ -273,7 +285,7 @@ class HostRenderingTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_opencode_command_bodies_use_no_shell_template_syntax(self):
-        for plugin in ("codebase-xray", "senior-review"):
+        for plugin in ("codebase-map", "senior-review"):
             for path in self.package("opencode", plugin).glob("commands/*.md"):
                 self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
 
@@ -281,7 +293,7 @@ class HostRenderingTests(unittest.TestCase):
 class ReportRenderingHostContracts(unittest.TestCase):
     """Read consumer methods and resources from fresh source renderings."""
 
-    CONSUMERS = ("digital-marketing", "codebase-xray", "senior-review")
+    CONSUMERS = ("digital-marketing", "codebase-map", "senior-review")
     PROVIDER = "report-rendering"
     SKILL = "skills/report-renderer/SKILL.md"
     RESOURCES = ("skills/report-renderer/scripts/render_report.py",
@@ -292,8 +304,8 @@ class ReportRenderingHostContracts(unittest.TestCase):
             "skills/brand-naming-method/SKILL.md": "--profile naming",
             "skills/brand-naming-method/references/report-template.md": "naming",
         },
-        "codebase-xray": {
-            "skills/xray-method/references/human-view.md": "--profile report",
+        "codebase-map": {
+            "skills/map-method/references/human-view.md": "--profile report",
         },
         "senior-review": {
             "skills/review-consolidation/SKILL.md": "--profile review",
@@ -414,7 +426,7 @@ class ReportRenderingHostContracts(unittest.TestCase):
 
                 self.assertIn("structural verification and needs no browser", prose)
                 self.assertIn("a browser is optional for this renderer", prose)
-                self.assertIn("An X-ray caller stays static", prose)
+                self.assertIn("A Codebase Map caller stays static", prose)
                 self.assertIn("Never add a browser exercise or product runtime step to its workflow", prose)
 
     def test_final_method_and_nested_reference_hooks_load_the_registered_provider(self):
@@ -434,16 +446,16 @@ class ReportRenderingHostContracts(unittest.TestCase):
             "claude": "commands/team-analyze.md",
             "copilot": "agents/team-analyze-coordinator.agent.md",
             "codex": "skills/team-analyze-workflow/SKILL.md",
-            "pi": "prompts/codebase-xray-team-analyze.md",
+            "pi": "prompts/codebase-map-team-analyze.md",
             "opencode": "commands/team-analyze.md",
         }
 
         for host in HOSTS:
             with self.subTest(host=host):
-                package = self.package(host, "codebase-xray")
-                coordinator = _read(package / entrypoints[host])
-                phase = _read(package / "skills/xray-method/references/phase-7.md")
-                view = _read(package / "skills/xray-method/references/human-view.md")
+                package = self.package(host, "codebase-map")
+                coordinator = loaded_instruction_text(self, package / entrypoints[host], host)
+                phase = _read(package / "skills/map-method/references/phase-7.md")
+                view = _read(package / "skills/map-method/references/human-view.md")
                 coordinator_prose = " ".join(coordinator.split())
                 phase_prose = " ".join(phase.split())
                 view_prose = " ".join(view.split())
@@ -458,7 +470,7 @@ class ReportRenderingHostContracts(unittest.TestCase):
                 self.assertIn("report-rendering:report-renderer", view)
                 self.assertIn("workers and the synthesizer do not load this reference or generate a separate UI",
                               view_prose)
-                self.assertIn("Do not add browser exercise to the X-ray", view_prose)
+                self.assertIn("Do not add browser exercise to the Codebase Map", view_prose)
                 self.assertIn("07-final-report.md", view)
                 self.assertIn("07-final-report.html", view)
                 self.assertIn("--root $RUN_DIR", view)

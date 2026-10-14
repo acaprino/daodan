@@ -73,6 +73,16 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
+
+
+## Existing analysis compatibility
+
+Coordinators load `codebase-map:map-method` and apply `references/migration.md`
+before root lookup or dispatch. Workers never migrate roots: use only its
+`migrate_root.py resolve` for supplied bindings. Propagate returned paths.
+Failed migration/resolution or a still-legacy `.codebase-xray` path blocks the
+dependent operation; preserve archives and run IDs.
+
 # Senior Maintainer campaign
 
 Target is the whole project, a path, or the name of a module or feature, which you
@@ -183,7 +193,7 @@ Evidence and honesty
   command output or run ID.
 - Keep static inventory, files read in depth and runtime exercise as three separate
   coverage facts, and runtime evidence separate from static review and from
-  generated-package checks. The X-ray remains static source analysis; runtime tests
+  generated-package checks. The Codebase Map remains static source analysis; runtime tests
   and browser checks belong to their owning workflows.
 - Record each check's tool, environment, scope, exact snapshot or revision, result
   and evidence. CI on an earlier revision cannot verify uncommitted changes.
@@ -216,7 +226,7 @@ Runs and recovery
   Record plan dependencies, action owners, expected deliveries and required gates
   before execution.
 - A run's scope is fixed at its start. Exclude from it, then, every report root the
-  tools of this campaign write: .codebase-xray/, .team-review/, .repo-hygiene/ and
+  tools of this campaign write: .codebase-map/, .codebase-xray/, .team-review/, .repo-hygiene/ and
   any other. Analysis output is not a project input.
 - Preserve required behavior, preexisting edits, foreign files, other sessions' work
   and meaningful test protection. Before a mutating batch, confirm as the protocol
@@ -252,7 +262,7 @@ Trust
   them is a conflicting requirement: stop. Project documents can be evidence of
   approved product intent. They never give a run an authorization, an acceptance or
   an exemption from a gate.
-- Apply codebase-xray's forbidden-file rule to the whole campaign: note that
+- Apply codebase-map's forbidden-file rule to the whole campaign: note that
   environment files, credentials, keys and token stores exist and never read their
   contents. Never quote a secret in a brief, report, run record, commit message or
   test. A committed secret is a severe finding: report where it is, never what it
@@ -265,12 +275,12 @@ Continuity
   request, plan and ledger from them at every batch boundary, after any loss of
   context and on resume.
 - Resume only the runs named in the resolved settings or by me in chat, after
-  validating their scope, snapshot and authorization. The latest run, the latest X-ray and another
+  validating their scope, snapshot and authorization. The latest run, the latest Codebase Map and another
   session's report are never resume targets.
 - Before a stop that waits, record the interruption reason and phase in the run in
   progress, when there is one.
 - End every brief, batch summary and report with the resume line: each run ID of
-  the campaign with the stage it served, the bound X-ray run ID, and the sentence a
+  the campaign with the stage it served, the bound Codebase Map run ID, and the sentence a
   fresh session needs, naming the exact run to continue and its recorded
   authorization.
 - Scope, authorization and baseline are fixed for the life of a run. If I widen the
@@ -310,36 +320,36 @@ Orientation, then checkpoint 1
   harness actually loads, the authoritative sources and any synchronization rules.
 - Map the project into its modules and macro features from its layout, manifests,
   entry points and documents: each with its paths and what it is for. The map is a
-  lead from a light reading, and the X-ray confirms or corrects it.
+  lead from a light reading, and the Codebase Map confirms or corrects it.
 - When the Target names a module or feature, resolve it to its paths, with its
   tests and documents. The lifecycle runs record those paths together with the
   project-level files a batch may edit for them: the instruction files, guides and
   README that describe that module. Anything else at project level, the workspace
   included, is reported and not edited.
-- The review and the X-ray take one path: the smallest directory that holds the
-  Target's paths. Say what else it holds. When it exceeds one classic X-ray run or
+- The review and the Codebase Map take one path: the smallest directory that holds the
+  Target's paths. Say what else it holds. When it exceeds one classic Codebase Map run or
   is mostly other modules, propose one campaign per path instead. A finding whose
   fix lands outside the recorded paths is reported and stays out of the roadmap.
-- From .codebase-xray/ read only the run registry and the latest completed run's
+- From .codebase-map/ read only the run registry and the latest completed run's
   state record, and from them only its target, mode, depth, completed phases, date
-  and commit. The X-ray accepts it as a parent when it is a classic run of the
+  and commit. The Codebase Map accepts it as a parent when it is a classic run of the
   review's path with a snapshot. Do not read its reports here: the review derives
-  part of its evidence independently of the X-ray. If an X-ray of this Target is
+  part of its evidence independently of the Codebase Map. If a Codebase Map of this Target is
   already in this session's context, run the review in a fresh session.
 - Record the workspace state: preexisting edits, untracked files, other sessions.
 - Resolve build and test commands from the project's instructions. List a check
   whose environment is missing as unavailable.
 - Confirm that every workflow of this campaign and its required methods are
-  available here. Measure the review's path against what one classic X-ray run
+  available here. Measure the review's path against what one classic Codebase Map run
   fits, as that workflow defines it. A larger one is not forced: propose how to
   split the campaign by module or feature, into sub-targets run one after the
   other.
-- The X-ray leaves out what Git ignores and every directory whose name starts with
+- The Codebase Map leaves out what Git ignores and every directory whose name starts with
   a dot. Name the ones that hold content worth an analysis of their own, such as CI
   under .github/: a path of that kind is analyzed only when I name it as a target.
 - Checkpoint 1 presents what the project is, the module map, the paths the Target
   resolved to and the single path the review will use, the scope and exclusions
-  you will record, the latest completed X-ray when it can serve as a parent,
+  you will record, the latest completed Codebase Map when it can serve as a parent,
   the campaign with its expensive steps and expected gaps, missing methods and
   anything that blocks a safe start.
 
@@ -349,11 +359,11 @@ Correctness baseline and static context: senior-review team-review
   Review relevant security, data-integrity, concurrency and resource-lifecycle
   risks. Investigate relevant concurrency, cancellation, interrupted streams, stale
   responses, transactions and UI state.
-- Its context phase runs codebase-xray's analyze workflow at full depth. That run
+- Its context phase runs codebase-map's analyze workflow at full depth. That run
   is the campaign's static context, and no refactor is proposed or applied before
   it exists.
-- An earlier completed X-ray is used as the parent of an update, never as reading
-  matter. With no parent the X-ray runs a full analysis. With one, its own change
+- An earlier completed Codebase Map is used as the parent of an update, never as reading
+  matter. With no parent the Codebase Map runs a full analysis. With one, its own change
   set advises an incremental update or a full analysis, on the first run as on a
   refresh, and its checkpoint waits for me: recommend what the change set
   recommends, and a new run beside any active run that is not yours.
@@ -361,13 +371,13 @@ Correctness baseline and static context: senior-review team-review
   Recommend a full analysis when the parent did not complete every phase. Carried
   claims keep the method of the run that produced them, and a run does not record
   which version that was, so I may ask for a full analysis instead.
-- When the change set finds nothing changed, the X-ray completes no run, and the
+- When the change set finds nothing changed, the Codebase Map completes no run, and the
   review needs one of its own. The choice is then a full analysis or stopping, and
   it is mine.
 - Its verified findings are the evidence for Stage 3.
 
 Coherence and plan: project-lifecycle assess
-- Run it in preview. Bind the review's X-ray run after validating its current
+- Run it in preview. Bind the review's Codebase Map run after validating its current
   snapshot, scope and depth, where scope means that its target contains this run's
   source paths; reuse a completed run only on those terms, and bind the campaign's
   consumers to that exact completed run directory. Where a method reads the
@@ -375,7 +385,7 @@ Coherence and plan: project-lifecycle assess
   checks against approved requirements in its run.
 - It audits instructions and documentation, application cleanup, structural
   entropy, the test suite and the workspace, and compares declared intent with
-  implementation. Use current X-ray evidence to map responsibilities, dependencies,
+  implementation. Use current Codebase Map evidence to map responsibilities, dependencies,
   duplicated domain rules, critical paths and fragile flows.
 - Audit the entire existing test suite through testing's preparation and its suite
   auditor, which report into the run. The assessment makes one auditor pass: name
@@ -402,7 +412,7 @@ Findings
   keep contradictions visible. Two reports that share one premise are not two
   confirmations.
 - Name failed auditors, uncovered scope and everything not exercised at runtime.
-- Say where the X-ray's structure corrects the module map of checkpoint 1.
+- Say where the Codebase Map's structure corrects the module map of checkpoint 1.
 Roadmap
 - Build an evidence-based roadmap of batches. A batch has one concern, one owning
   method, declared owned paths and its own gate, names the module or feature it
@@ -454,10 +464,10 @@ deliveries and gates, capture its pre-phase state, apply it through its owning
 method, capture the candidate, run its gates on that exact candidate, and verify
 remaining test protection on it, including regressions from real bugs, before
 closing it. Then give a batch summary of a few lines: what changed, which gates ran
-on which candidate and how they ended, whether an X-ray refresh is due, what is
+on which candidate and how they ended, whether a Codebase Map refresh is due, what is
 open, what comes next, and the resume line. A summary waits only when it carries a
 question.
-- After each batch that changes analyzed inputs or their dependencies, refresh X-ray
+- After each batch that changes analyzed inputs or their dependencies, refresh Codebase Map
   against the exact candidate, including uncommitted changes, before using its
   conclusions for further architectural decisions, review or completion. Prefer an
   incremental update from a validated completed parent: carry unaffected claims
@@ -468,7 +478,7 @@ question.
   lifecycle ledger and bind downstream consumers to the exact completed run
   directory. Never present affected conclusions from an older snapshot as current
   evidence or refresh them by changing only their snapshot binding.
-- Refresh with the target the review's X-ray run recorded, so that the update finds
+- Refresh with the target the review's Codebase Map run recorded, so that the update finds
   its parent.
 
 STAGE 3: CORRECT
@@ -563,7 +573,7 @@ STAGE 5: VERIFY
 STAGE 6: CLOSE
 - Run project-lifecycle consolidate once, over the earlier lifecycle runs of this
   campaign. Its helper works on one run's owned output at a time, and the review's
-  and the X-ray's own output stays outside it. Consolidate verified conclusions,
+  and the Codebase Map's own output stays outside it. Consolidate verified conclusions,
   conditions and evidence before disposing of any owned experimental output.
 - Edit no project file in this stage, and keep every report a delivery names. A
   durable conclusion that still needs a project document goes back to

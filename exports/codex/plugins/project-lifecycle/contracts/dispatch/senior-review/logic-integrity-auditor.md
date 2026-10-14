@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:logic-integrity-auditor; version: 15.1.0; source-sha256: 8991e7a96089d6be9b110b0c1645daf02805e96baf15c20e5f7fbf728e7b5e64. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:logic-integrity-auditor; version: 15.1.1; source-sha256: 2022c8804143b3f94af503ef38312679fc210faeac04f7ca56430a22b992a9ed. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -220,7 +220,7 @@ Start at 10/10. Floor at 1/10. Justify any score below 7 with specific deduction
 - **Map anchor:** `## [anchor name]` row "[quoted row]" (or `[MAP-GAP]` -- rule absent from the map; cite the rule's own `file:line` evidence instead)
 - **Violation site:** `file:line`
 - **Load-bearing premise:** [the single proposition whose falsity collapses this finding: minimal, falsifiable, scoped. Not a paraphrase of the finding itself]
-- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the X-ray output or the interconnect map, even when your finding cites no anchor]
+- **premise_provenance:** independent | shared-context | mixed [causal dependence, not citation: shared-context if you absorbed the premise from the Codebase Map output or the interconnect map, even when your finding cites no anchor]
 - **Scenario:** [T1 -> T2 -> T3 sequence showing the broken state]
 - **Observable symptom:** [what a user/operator/downstream sees]
 - **Fix:** [concrete remediation with file:line]
