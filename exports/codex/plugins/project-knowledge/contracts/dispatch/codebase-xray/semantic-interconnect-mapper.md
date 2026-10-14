@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.6.0; source-sha256: 6d70c751d7522c6241cd0cce283348520609e7e2c7cf2127b1896bae1e99c55f. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-xray:semantic-interconnect-mapper; version: 5.6.1; source-sha256: 46fba68cb92698a30b57f2be1e154ae2ad9b48f54777f86ce902d952bb810826. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-xray`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-xray-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-xray`. The owning plugin's declared logical skill identities are `codebase-xray:xray-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -139,7 +139,6 @@ Read named core sections by locating headings or fenced skeletons before bounded
 |---|---|---|
 | `<codebase-xray-plugin-root>/skills/xray-method/SKILL.md` | all | always |
 | `<codebase-xray-plugin-root>/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
-| `<codebase-xray-plugin-root>/skills/xray-method/references/snapshot.md` | before: Prerequisites | always |
 | `<codebase-xray-plugin-root>/skills/xray-method/references/reading.md` | all | always |
 
 ## SOURCE READING

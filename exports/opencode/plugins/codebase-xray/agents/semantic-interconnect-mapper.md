@@ -167,7 +167,6 @@ Read named core sections by locating headings or fenced skeletons before bounded
 |---|---|---|
 | `<plugin-root>/skills/xray-method/SKILL.md` | all | always |
 | `<plugin-root>/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
-| `<plugin-root>/skills/xray-method/references/snapshot.md` | before: Prerequisites | always |
 | `<plugin-root>/skills/xray-method/references/reading.md` | all | always |
 
 ## SOURCE READING

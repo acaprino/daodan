@@ -47,11 +47,9 @@ You DO NOT touch any other file under `.codebase-xray/` (other runs may be in pr
 ## TOOL USAGE
 
 Use the scripts in `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/scripts/`:
-- Load `codebase-xray:xray-method` and read its `references/evidence.md` and `references/phases-5-6.md` for exact commands. Start from `source_manifest` and Wave 1 leads; use `source_reader.py outline` to choose exact definitions and `source_reader.py read` to verify risk/documentation claims. Expand to gates, callers/callees, invariants, constants, types, configuration and CSS/markup as the question requires. Keep `ast_parser.py` for extra details absent from the manifest or single-file diagnosis. Do not reparse or deeply read the entire partition for inventory alone
+- Load `codebase-xray:xray-method`; follow Method loads and evidence.md for commands and source reading. Start from `source_manifest` and Wave 1 leads. Do not reparse or deeply read the entire partition for inventory alone
 - `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, for the usability-blocking check: a global rule meets its victim wherever the victim's stylesheet or markup lives. It lists every rule whose selector reaches the document root or its untargeted children and sets a layout property, with the rules and Tailwind utilities it can override, screen-level ones first. Keep the candidates and conflicts with at least one side in this partition, and record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`. Leads, never verdicts
 - `usage_finder.py` to trace symbol usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
-- `doc_review.py` for link validation and marker checks in `06-documentation.md` work
-- `rewrite_comments.py` for comment quality analysis if `active_flags.comments` is true
 
 Do NOT use raw bash to do these jobs.
 If source content or parser identity changed, report the required refresh to the
@@ -63,12 +61,16 @@ outside the manifest target is an explicit scope gap.
 
 Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
 
+Read Phase 6 at full depth, including updates; comments and documentation verification require Phase 6.
+
 | Resource | Sections | When |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/SKILL.md` | all | always |
 | `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md` | before: Maintained documentation | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md` | before: Team mode; section: Partition worker; section: Team extensions | always |
-| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md` | from: Maintained documentation | documentation |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md` | section: Phase 5: Pattern & Risk Detection; section: Red Flags to Identify; section: Partition worker; section: Team extensions | always |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md` | section: Phase 6: Documentation Health; section: Documentation Diagnosis Commands (Phase 6); section: Documentation diagnosis | not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and not-lite |
+| `${CLAUDE_PLUGIN_ROOT}/skills/xray-method/references/evidence.md` | from: Maintained documentation | documentation and not-lite |
 
 ## PHASE EXECUTION
 

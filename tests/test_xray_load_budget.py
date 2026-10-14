@@ -1,6 +1,6 @@
 """Measure explicit section/mode reads, not every resource mentioned in prose.
 
-The unchanged core caps are the step 1 bounds. Runtime Method loads tables name
+Core caps only decrease as declared reads narrow. Runtime Method loads tables name
 what a context reads; worker briefs belong to their worker, not the coordinator.
 Named sections are actual bounded reads, never a discount on a whole-file read.
 Missing resources, unknown selectors and missing boundaries fail closed.
@@ -21,22 +21,32 @@ METHOD = PLUGIN / "skills" / "xray-method"
 BUDGETS = {
     "workflows/analyze.md": 12_100,
     "workflows/team-analyze.md": 13_900,
-    "roles/partition-structure-worker.md": 5_700,
-    "roles/partition-behavior-worker.md": 4_600,
-    "roles/partition-quality-worker.md": 5_300,
-    "roles/semantic-interconnect-mapper.md": 6_700,
+    "roles/partition-structure-worker.md": 4_514,
+    "roles/partition-behavior-worker.md": 4_521,
+    "roles/partition-quality-worker.md": 5_299,
+    "roles/semantic-interconnect-mapper.md": 5_575,
     "consumer": 3_600,
 }
 
 # Separate optional baseline at 89a47aebbc99e5f92ffb96a7a0c52c425a61bb39.
-# Step 1 did not measure these existing on-demand references. Core caps stay put.
+# Step 1 did not measure these existing on-demand references. Their caps stay put.
 # Methodology includes its already-declared bound-analysis reading dependency.
 OPTIONAL_ALLOWANCES = {
     "methodology": 1_919 + 164,
     "patterns": 1_628,
     "comments": 1_869,
 }
-READ_CONDITIONS = {"always", "full", "lite", "update", "documentation", *OPTIONAL_ALLOWANCES}
+READ_CONDITIONS = {
+    "always", "full", "lite", "update", "documentation", "not-lite",
+    "comments and not-lite", "documentation and not-lite", *OPTIONAL_ALLOWANCES,
+}
+
+ROLE_RESOURCES = {
+    "roles/partition-structure-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-1-2.md", "references/run.md"},
+    "roles/partition-behavior-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-3-4.md"},
+    "roles/partition-quality-worker.md": {"SKILL.md", "references/evidence.md", "references/phases-5-6.md"},
+    "roles/semantic-interconnect-mapper.md": {"SKILL.md", "references/evidence.md", "references/reading.md"},
+}
 
 
 def _words(path: Path) -> int:
@@ -127,11 +137,13 @@ def load(body: str, *, mode="full", documentation=False, options=frozenset()) ->
                 texts[path] = (METHOD / path).read_text(encoding="utf-8")
                 resource_lines[path] = texts[path].splitlines()
             indexes = _selected(texts[path], selector)
-            if when == "documentation" and not documentation:
-                continue
-            if when in ("update", "full", "lite") and mode != when:
-                continue
-            if when in OPTIONAL_ALLOWANCES and when not in options:
+            if any(
+                (condition == "documentation" and not documentation)
+                or (condition == "not-lite" and mode == "lite")
+                or (condition in ("update", "full", "lite") and mode != condition)
+                or (condition in OPTIONAL_ALLOWANCES and condition not in options)
+                for condition in when.split(" and ")
+            ):
                 continue
             already_read = selected.setdefault(path, set())
             if indexes - already_read:
@@ -155,6 +167,90 @@ def _optional_allowance(options):
 
 
 class XrayLoadBudgetTests(unittest.TestCase):
+    def test_roles_load_only_their_owned_core_units(self) -> None:
+        for role, expected in ROLE_RESOURCES.items():
+            body = (PLUGIN / role).read_text(encoding="utf-8")
+            for mode in ("full", "lite", "update"):
+                for documentation in (False, True):
+                    with self.subTest(role=role, mode=mode, documentation=documentation):
+                        self.assertEqual(load(body, mode=mode, documentation=documentation)[1], expected)
+
+    def test_quality_skipped_phase_and_comment_commands_are_not_loaded(self) -> None:
+        body = (PLUGIN / "roles/partition-quality-worker.md").read_text(encoding="utf-8")
+        path = "references/phases-5-6.md"
+        original = (METHOD / path).read_text(encoding="utf-8")
+        original_read = Path.read_text
+        baselines = {
+            (mode, options): load(body, mode=mode, options=options)[0]
+            for mode in ("full", "lite", "update")
+            for options in (frozenset(), frozenset({"comments"}))
+        }
+        sentinels = {
+            "## Phase 6: Documentation Health": "phase-six-sentinel",
+            "## Documentation Diagnosis Commands (Phase 6)": "doc-tools-sentinel",
+            "## Comment Quality Commands (Antirez Standards)": "comment-tools-sentinel",
+            "## Comment Type Classification": "comment-taxonomy-sentinel",
+            "## Comment quality analysis": "comment-boundary-sentinel",
+            "### Red Flags to Identify": "risk-taxonomy-sentinel",
+        }
+        for heading, sentinel in sentinels.items():
+            with self.subTest(heading=heading):
+                modified = original.replace(heading + "\n", heading + "\n\n" + sentinel + "\n")
+                self.assertNotEqual(original, modified)
+                with patch.object(Path, "read_text", autospec=True, side_effect=lambda p, **kw: modified if p == METHOD / path else original_read(p, **kw)):
+                    for mode in ("full", "lite", "update"):
+                        for options in (frozenset(), frozenset({"comments"})):
+                            before = baselines[mode, options]
+                            after, _ = load(body, mode=mode, options=options)
+                            expected = heading == "### Red Flags to Identify" or (mode != "lite" and (not sentinel.startswith("comment-") or "comments" in options))
+                            self.assertEqual(after - before, int(expected), (mode, options, heading))
+
+    def test_role_optional_closures_do_not_admit_unrelated_units(self) -> None:
+        resources = {
+            "methodology": {"references/AI_ANALYSIS_METHODOLOGY.md", "references/reading.md"},
+            "patterns": {"references/SEMANTIC_PATTERNS.md"},
+            "comments": {"references/ANTIREZ_COMMENTING_STANDARDS.md"},
+        }
+        for role, core in ROLE_RESOURCES.items():
+            body = (PLUGIN / role).read_text(encoding="utf-8")
+            for mode in ("full", "lite", "update"):
+                for documentation in (False, True):
+                    for options in _option_sets():
+                        expected = core.union(*(resources[option] for option in options))
+                        with self.subTest(role=role, mode=mode, documentation=documentation, options=sorted(options)):
+                            self.assertEqual(load(body, mode=mode, documentation=documentation, options=options)[1], expected)
+
+    def test_required_worker_evidence_and_partition_sections_remain_loaded(self) -> None:
+        requirements = {
+            "references/evidence.md": ["## Forbidden Files", "### Source reading in every code phase", "## File Classification Criteria"],
+            "references/run.md": ["## Perimeter"],
+            "references/phases-1-2.md": ["### Partition worker", "### Team extensions"],
+            "references/phases-3-4.md": ["### Partition worker"],
+            "references/phases-5-6.md": ["### Partition worker", "### Team extensions"],
+        }
+        original_read = Path.read_text
+        for role, core in ROLE_RESOURCES.items():
+            body = (PLUGIN / role).read_text(encoding="utf-8")
+            for resource in core & requirements.keys():
+                original = original_read(METHOD / resource, encoding="utf-8")
+                for heading in requirements[resource]:
+                    changed = original.replace(heading + "\n", heading + "\n\nrequired-rule-sentinel\n")
+                    self.assertNotEqual(changed, original)
+                    for mode in ("full", "lite", "update"):
+                        before = load(body, mode=mode)[0]
+                        with patch.object(Path, "read_text", autospec=True, side_effect=lambda p, **kw: changed if p == METHOD / resource else original_read(p, **kw)):
+                            with self.subTest(role=role, heading=heading, mode=mode):
+                                self.assertEqual(load(body, mode=mode)[0] - before, 1)
+
+    def test_conjoined_conditions_are_closed_and_validate_inactive_resources(self) -> None:
+        for condition in ("comments and guessing", "full and lite", "not-lite or comments"):
+            body = "## Method loads\n\n| Resource | Sections | When |\n|---|---|---|\n| `SKILL.md` | all | " + condition + " |\n"
+            with self.subTest(condition=condition), self.assertRaisesRegex(ValueError, "Unknown read condition"):
+                load(body)
+        body = "## Method loads\n\n| Resource | Sections | When |\n|---|---|---|\n| `references/missing.md` | all | comments and not-lite |\n"
+        with self.assertRaises(FileNotFoundError):
+            load(body, mode="lite")
+
     def test_optional_loads_are_selected_and_follow_nested_tables(self) -> None:
         with TemporaryDirectory(dir=REPO_ROOT, prefix=".xray-budget-") as directory, patch.dict(globals(), {"METHOD": Path(directory)}):
             (METHOD / "references").mkdir()
