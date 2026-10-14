@@ -22,15 +22,16 @@ plausible and no two were compared.
 This linter compares them. Each anchor names a fact, the file that owns it, and a
 regex whose first group captures the value. Every file in the repository is scanned
 for that regex; if two files report different values, the anchor fails and both are
-named. It is deliberately narrow: it only fires when two places disagree about the
-same measured thing, which is exactly the drift a reviewer cannot see and a reader
-cannot detect.
+named. It also checks explicitly required independent copies: a missing statement
+is a coverage failure. Value comparison remains narrow, comparing statements of
+the same fact rather than judging unrelated prose.
 
 Three failure modes are reported:
 
   1. conflicts     two or more files state different values for one anchor. This is
                    the drift the linter exists for.
-  2. orphans       the owning file no longer states its own fact, so the anchor is
+  2. orphans       an explicitly required copy is missing its statement, or
+                   the owning file no longer states its own fact, so the anchor is
                    watching something that moved. Re-point the anchor or restore the
                    statement; do not delete the anchor to make the build pass.
   3. unanchored    (report mode only) not a failure. Lists anchors found in exactly
@@ -56,6 +57,26 @@ from pathlib import Path
 _COUNT = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)"
 
 ANCHORS = {
+    "working-principle-material-assumptions": (
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        r"(?m)^Working assumptions: ([^\n]+)$",
+        "Material assumptions and essential decisions must agree across independently loaded instructions",
+    ),
+    "working-principle-sufficient-simplicity": (
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        r"(?m)^Working simplicity: ([^\n]+)$",
+        "Sufficient design and existing ownership must agree across independently loaded instructions",
+    ),
+    "working-principle-authorized-scope": (
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        r"(?m)^Working scope: ([^\n]+)$",
+        "Owned edits and authorized removal must agree across independently loaded instructions",
+    ),
+    "working-principle-observable-verification": (
+        "plugins/project-protocol/skills/project-protocol/SKILL.md",
+        r"(?m)^Working verification: ([^\n]+)$",
+        "Observable criteria and required completion gates must agree across independently loaded instructions",
+    ),
     "test-assertion-protection": (
         "plugins/testing/skills/test-hygiene/SKILL.md",
         r"(?m)^Assertion protection: ([^\n]+)$",
@@ -187,6 +208,22 @@ ANCHORS = {
     ),
 }
 
+# These independent instruction surfaces must each carry the compact rules.
+# Rendered host copies are checked by the host contract suite.
+_WORKING_PRINCIPLE_COPIES = (
+    "plugins/project-protocol/skills/project-protocol/SKILL.md",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+    "plugins/project-knowledge/skills/instructions-method/references/instruction-example.md",
+)
+REQUIRED_COPIES = {
+    "working-principle-material-assumptions": _WORKING_PRINCIPLE_COPIES,
+    "working-principle-sufficient-simplicity": _WORKING_PRINCIPLE_COPIES,
+    "working-principle-authorized-scope": _WORKING_PRINCIPLE_COPIES,
+    "working-principle-observable-verification": _WORKING_PRINCIPLE_COPIES,
+}
+
 # Directories that are not shipped content and may legitimately restate a fact in
 # a historical context (a changelog entry describes what a release said at the
 # time, and must not be rewritten when the fact is later corrected).
@@ -269,6 +306,10 @@ def check():
     for anchor_id, (owner, pattern, description) in sorted(ANCHORS.items()):
         owner_path = Path(owner)
         compiled = re.compile(pattern)
+        for required_path in REQUIRED_COPIES.get(anchor_id, ()):
+            if not find(compiled, texts.get(Path(required_path), "")):
+                orphans.append((anchor_id, owner, description,
+                                "required copy is silent: " + required_path))
         by_value = {}
         for path, text in texts.items():
             for value in find(compiled, text):
@@ -346,7 +387,7 @@ def main():
            "at the owning reference instead")
     report("anchor owners", orphans, format_orphan,
            "re-point the anchor at the file that now owns the fact, or restore the "
-           "statement in the owner; never delete an anchor to go green")
+           "statement in the owner and every required copy; never delete an anchor to go green")
 
     if failures:
         sys.exit(f"\n{len(failures)} check(s) failed: {', '.join(failures)}")

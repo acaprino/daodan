@@ -83,12 +83,12 @@ Declared role operation allowlist: read files; search file contents; discover fi
 
 ## Contract
 
-- Receive the full task, input snapshot, owned files, authorizations, budget and expected report path.
-- Load `project-protocol:project-protocol` for delivery, verification and recovery rules.
+- Receive the task objective, approved requirement source, observable delivery criteria and applicable instruction rules, alongside the full task, input snapshot, owned files, authorizations, budget and expected report path.
+- Load `project-protocol:project-protocol` for working discipline, delivery, verification and recovery rules.
 - Missing ownership, required input or permission: report failure and the exact missing requirement.
 - Follow the coordinator's loaded domain method. Do not invent a specialist role or a new audit taxonomy.
 - Remain in this isolated context. Read only coordinator-declared inputs, including findings assigned for verification or criticism.
-- Independent reviewers never read peer results before delivering their own review. Do not read undeclared peer or private artifacts, and do not dispatch further workers.
+- Independent discovery excludes peer results before your own delivery. Verification or criticism may read only findings explicitly assigned by the domain method. Do not read undeclared peer or private artifacts, and do not dispatch further workers.
 
 ## Execution
 

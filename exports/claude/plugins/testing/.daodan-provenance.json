@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:6288b35b3e2e53952af73b0db83063233ba14a3d9eaf727a7d9342d6d63b6d25",
+  "coreDigest": "sha256:c2aa2676fa2b2d41e73e79f5283cf6f2e0fb44d64fd1e0754677c367440aa260",
   "harnessStrategies": {
     "test-audit": "native-team",
     "test-consolidate": "native-team"
@@ -8,5 +8,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "testing",
-  "version": "3.1.1"
+  "version": "3.1.2"
 }

@@ -244,6 +244,13 @@ of agent-authored content from reusable HTML presentation. Daodan's
 that preserves Markdown as the canonical report and adds optional offline HTML
 views for analyses, brand naming and reviews.
 
+[andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)
+is the MIT-licensed source of four working principles adopted by Daodan: Think
+Before Coding, Simplicity First, Surgical Changes and Goal-Driven Execution.
+[Project knowledge](docs/plugins/project-knowledge.md) adapts them for project
+instruction creation and maintenance, preserving equivalent project guidance and
+adding local rules for verification and shared ownership.
+
 ## Contributing
 
 > [!WARNING]

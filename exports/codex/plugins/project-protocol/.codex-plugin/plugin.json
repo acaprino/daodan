@@ -2,8 +2,8 @@
   "author": {
     "name": "Alfio Caprino"
   },
-  "description": "Canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work.",
+  "description": "Shared working discipline and isolated-worker briefs, canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work.",
   "license": "MIT",
   "name": "project-protocol",
-  "version": "1.0.3"
+  "version": "1.1.0"
 }

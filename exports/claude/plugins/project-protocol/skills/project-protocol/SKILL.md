@@ -1,9 +1,10 @@
 ---
 name: project-protocol
 description: >
-  Canonical run identity, snapshot bindings, delivery and verification accounting,
+  Shared working discipline, canonical run identity, snapshot bindings, delivery
+  and verification accounting,
   authorization continuity and safe phase recovery for coordinated project work.
-  Load before recording, resuming or closing a project intervention.
+  Load before briefing workers, recording, resuming or closing a project intervention.
 ---
 
 <daodan_host_binding host="claude">
@@ -92,6 +93,37 @@ Keep operational state under a dedicated root inside the project, default
 `.daodan/runs/<id>/`. The root sentinel is `.daodan-root`. A coordinator owns
 `work.json` and `result.json`; each dispatched worker owns one declared report.
 Never place run state, temporary paths or task progress in durable instructions.
+
+## Working discipline
+
+The coordinator and every worker apply these rules to their assigned task.
+
+Working assumptions: State material assumptions and unresolved alternatives before dependent work. Ask only for an essential decision that existing instructions or authorization cannot resolve; continue independent authorized work.
+
+Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration.
+
+Working scope: Limit edits to the task and owned files, match existing style and preserve unrelated work. Remove code made unused by your changes; remove preexisting code only when its removal is explicitly authorized and any required checks or approvals are satisfied.
+
+Working verification: Define observable success criteria from approved requirements. Run meaningful checks on the actual candidate and preserve independent protection. Report unavailable checks; missing required checks or deliveries keep the task open. Finish when the criteria are met.
+
+Existing task authorization covers removal necessary to the approved change;
+preserve owner-required acceptance and test-retirement rules. This discipline
+grants no additional mutation or runtime authority. For a read-only worker,
+success concerns the assigned evidence and report within its permitted method.
+
+## Isolated worker briefs
+
+Before dispatch, include the task objective, approved requirement source,
+applicable instruction rules and observable delivery criteria in the worker
+brief, alongside its input snapshot, owned files, authorizations, budget and
+expected report path. Carry these four rules into each isolated worker prompt
+rather than relying on inherited coordinator context. A role body alone is not
+the full task.
+
+For independent discovery, omit peer findings and unverified coordinator
+conclusions. Verification or criticism may receive findings explicitly assigned
+by the domain method as declared inputs. Keep those purposes and their delivery
+criteria distinct.
 
 ## Run-state interface
 

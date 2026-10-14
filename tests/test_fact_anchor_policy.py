@@ -13,9 +13,100 @@ POLICY_ANCHORS = (
     "test-assertion-protection",
     "test-retirement-protection",
 )
+WORKING_ANCHORS = (
+    "working-principle-material-assumptions",
+    "working-principle-sufficient-simplicity",
+    "working-principle-authorized-scope",
+    "working-principle-observable-verification",
+)
+WORKING_OWNER = "plugins/project-protocol/skills/project-protocol/SKILL.md"
+WORKING_COPIES = (
+    WORKING_OWNER,
+    "CLAUDE.md",
+    "AGENTS.md",
+    "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+    "plugins/project-knowledge/skills/instructions-method/references/instruction-example.md",
+)
 
 
 class TestPolicyAnchorTests(unittest.TestCase):
+    def working_fixture(self, anchor_id):
+        self.assertIn(anchor_id, linter.ANCHORS, "The shared working rule needs a drift anchor")
+        anchor = linter.ANCHORS[anchor_id]
+        self.assertEqual(anchor[0], WORKING_OWNER)
+        source = (ROOT / WORKING_OWNER).read_text(encoding="utf-8")
+        matches = list(re.finditer(anchor[1], source))
+        self.assertEqual(len(matches), 1, "The actual protocol must state its own anchored rule once")
+        return anchor, matches[0].group(0)
+
+    def check_working_fixture(self, anchor_id, texts):
+        """Control only the filesystem boundary; retain the actual linter algorithm."""
+        with patch.object(linter, "ANCHORS", {anchor_id: linter.ANCHORS[anchor_id]}), \
+                patch.object(linter, "scan_files", return_value=iter(texts)), \
+                patch.object(Path, "read_text", autospec=True,
+                             side_effect=lambda path, **kwargs: texts[path]):
+            return linter.check()
+
+    def test_matching_working_rules_in_all_required_copies_are_accepted(self):
+        for anchor_id in WORKING_ANCHORS:
+            with self.subTest(anchor=anchor_id):
+                _, statement = self.working_fixture(anchor_id)
+                texts = {Path(copy): statement for copy in WORKING_COPIES}
+
+                conflicts, orphans, _, checked, scanned = self.check_working_fixture(anchor_id, texts)
+
+                self.assertEqual((conflicts, orphans, checked, scanned), ([], [], 1, 5))
+
+    def test_changed_working_copy_reports_the_protocol_and_mutated_source(self):
+        for anchor_id in WORKING_ANCHORS:
+            for copy in WORKING_COPIES[1:]:
+                with self.subTest(anchor=anchor_id, copy=copy):
+                    _, statement = self.working_fixture(anchor_id)
+                    texts = {Path(required): statement for required in WORKING_COPIES}
+                    prefix = statement.split(":", 1)[0]
+                    texts[Path(copy)] = prefix + ": Omit this approved execution obligation."
+
+                    conflicts, orphans, _, checked, scanned = self.check_working_fixture(anchor_id, texts)
+
+                    self.assertEqual((len(conflicts), orphans, checked, scanned), (1, [], 1, 5))
+                    self.assertEqual(conflicts[0][0], anchor_id)
+                    reported = {path for paths in conflicts[0][3].values() for path in paths}
+                    self.assertIn(WORKING_OWNER, reported)
+                    self.assertIn(copy, reported)
+
+    def test_every_working_rule_requires_each_independently_loaded_source_copy(self):
+        for anchor_id in WORKING_ANCHORS:
+            for copy in WORKING_COPIES:
+                for absent_file in (False, True):
+                    with self.subTest(anchor=anchor_id, copy=copy, absent_file=absent_file):
+                        _, statement = self.working_fixture(anchor_id)
+                        texts = {Path(required): statement for required in WORKING_COPIES}
+                        if absent_file:
+                            texts.pop(Path(copy))
+                        else:
+                            texts[Path(copy)] = "The file exists but its required execution rule was removed."
+
+                        conflicts, orphans, _, _, scanned = self.check_working_fixture(anchor_id, texts)
+
+                        self.assertEqual(conflicts, [])
+                        missing = [row for row in orphans if row[0] == anchor_id]
+                        self.assertTrue(missing, "Deleting an independently loaded rule must fail the linter")
+                        self.assertTrue(any(copy in row[3] or (copy == WORKING_OWNER and row[1] == copy)
+                                            for row in missing), "The failure must identify the missing source copy")
+                        self.assertEqual(scanned, 4 if absent_file else 5)
+
+    def test_working_rule_cosmetic_case_and_whitespace_remain_equivalent(self):
+        for anchor_id in WORKING_ANCHORS:
+            with self.subTest(anchor=anchor_id):
+                _, statement = self.working_fixture(anchor_id)
+                prefix, value = statement.split(": ", 1)
+                texts = {Path(copy): statement for copy in WORKING_COPIES}
+                texts[Path("AGENTS.md")] = prefix + ": " + value.upper().replace(" ", "  ")
+
+                conflicts, orphans, _, checked, _ = self.check_working_fixture(anchor_id, texts)
+
+                self.assertEqual((conflicts, orphans, checked), ([], [], 1))
+
     def check_fixture(self, anchor_id, owner_text, echo_text):
         anchor = linter.ANCHORS[anchor_id]
         owner = Path(anchor[0])

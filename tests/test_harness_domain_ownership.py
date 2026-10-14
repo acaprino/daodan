@@ -1,6 +1,7 @@
 """Ownership contracts for the harness and its unified correctness review."""
 import json
 from pathlib import Path
+import re
 import tempfile
 import tomllib
 import unittest
@@ -31,7 +32,235 @@ def wrapper_path(host, plugin, entry):
     }[host]
 
 
+def role_path(host, plugin, role):
+    return {
+        "claude": f"agents/{role}.md",
+        "copilot": f"agents/{role}.agent.md",
+        "codex": f"roles/{role}.md",
+        "pi": f"skills/{plugin}-{role}/SKILL.md",
+        "opencode": f"agents/{role}.md",
+    }[host]
+
+
+def working_paragraphs(case, text):
+    """Select each operative paragraph, so unrelated mentions cannot satisfy it."""
+    found = {}
+    for label in ("assumptions", "simplicity", "scope", "verification"):
+        paragraphs = re.findall(rf"(?m)^Working {label}: ([^\n]+)$", text)
+        case.assertEqual(len(paragraphs), 1, f"One working {label} rule is required")
+        found[label] = paragraphs[0]
+    return found
+
+
+def assert_working_discipline(case, text):
+    """Independent approved requirements, applied to the rule owning each action."""
+    paragraphs = working_paragraphs(case, text)
+    requirements = {
+        "assumptions": (
+            r"(?i)state\b[^.]*material assumptions",
+            r"(?i)unresolved alternatives|unresolved choices",
+            r"(?i)essential decision",
+            r"(?i)instructions or authorization cannot resolve",
+            r"(?i)ask|clarif",
+        ),
+        "simplicity": (
+            r"(?i)simplest[^.]*design[^.]*satisfies approved requirements",
+            r"(?i)add no speculative[^.]*features",
+            r"(?i)abstractions",
+        ),
+        "scope": (
+            r"(?i)limit edits[^.]*task[^.]*owned files",
+            r"(?i)remove code made unused by your changes",
+            r"(?i)preexisting code only when its removal is explicitly authorized",
+            r"(?i)required checks or approvals are satisfied",
+        ),
+        "verification": (
+            r"(?i)observable success criteria",
+            r"(?i)meaningful checks[^.]*actual candidate",
+            r"(?i)preserve independent protection",
+            r"(?i)unavailable checks",
+            r"(?i)missing required checks or deliveries keep the task open",
+            r"(?i)finish when the criteria are met",
+        ),
+    }
+    for label, patterns in requirements.items():
+        for pattern in patterns:
+            case.assertRegex(paragraphs[label], pattern, f"Working {label} loses {pattern}")
+    return paragraphs
+
+
+def markdown_section(case, text, title):
+    match = re.search(rf"(?ms)^## {re.escape(title)}\n(.*?)(?=^## |\Z)", text)
+    case.assertIsNotNone(match, f"Required operative section missing: {title}")
+    return " ".join(match.group(1).split())
+
+
+def assert_brief_inputs(case, text):
+    for pattern in (r"(?i)success criteria|observable delivery criteria",
+                    r"(?i)approved requirement source", r"(?i)applicable[^.]*instruction[^.]*rules",
+                    r"(?i)working discipline|four[^.]*rules"):
+        case.assertRegex(text, pattern)
+
+
+def assert_review_input_boundary(case, text, worker=False):
+    case.assertRegex(text, r"(?i)independent discovery")
+    case.assertRegex(text, r"(?i)omit peer findings|excludes peer results before your own delivery")
+    case.assertRegex(text, r"(?i)verification or criticism")
+    case.assertRegex(text, r"(?i)findings explicitly assigned by the domain method")
+    if worker:
+        case.assertIn("Do not read undeclared peer or private artifacts", text)
+        case.assertIn("do not dispatch further workers", text)
+    else:
+        case.assertIn("unverified coordinator conclusions", text)
+
+
+def assert_discipline_authority(case, protocol):
+    discipline = markdown_section(case, protocol, "Working discipline")
+    case.assertRegex(discipline, r"(?i)existing task authorization covers removal necessary to the approved change")
+    case.assertRegex(discipline, r"(?i)grants no additional mutation or runtime authority")
+    case.assertRegex(discipline, r"(?i)read-only worker[^.]*success[^.]*assigned evidence and report[^.]*permitted method")
+
+
+def assert_delegated_writer(case, role):
+    delegated = markdown_section(case, role, "Delegated execution")
+    for pattern in (r"(?i)owned test files|assigned test files", r"(?i)select generation mode",
+                    r"(?i)return[^.]*tests[^.]*observed evidence[^.]*coordinator",
+                    r"(?i)correctly classified intended red|correctly classified expected red",
+                    r"(?i)only[^.]*user[^.]*explicitly[^.]*implement the production code themselves",
+                    r"(?i)new feature[^.]*automated tdd[^.]*does not select the human-wait branch",
+                    r"(?i)coordinator owns[^.]*implementation step[^.]*final green gate"):
+        case.assertRegex(delegated, pattern)
+    case.assertNotIn('Use this when the user explicitly requests "TDD", "red-green-refactor", or is building a new feature from scratch.', role)
+    generation = role[role.index("# MODE 1:"):role.index("# MODE 2:")]
+    case.assertRegex(generation, r"(?i)run the test suite")
+    interactive = role[role.index("# MODE 2:"):role.index("# ANTI-PATTERNS")]
+    case.assertRegex(interactive, r"(?i)only[^.]*user[^.]*explicitly[^.]*interactive tdd teaching[^.]*implement the production code themselves")
+    return delegated
+
+
 class HarnessDomainOwnershipTests(unittest.TestCase):
+    def test_reversed_speculation_rule_cannot_satisfy_working_discipline(self):
+        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        mutation = protocol.replace("add no speculative features", "add speculative features", 1)
+        self.assertNotEqual(mutation, protocol)
+
+        with self.assertRaises(AssertionError):
+            assert_working_discipline(self, mutation)
+
+    def test_shared_execution_rules_reach_authoritative_and_downstream_instructions(self):
+        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        expected = assert_working_discipline(self, protocol)
+        assert_discipline_authority(self, protocol)
+        copies = (
+            "CLAUDE.md", "AGENTS.md",
+            "plugins/project-knowledge/skills/instructions-method/references/working-principles.md",
+            "plugins/project-knowledge/skills/instructions-method/references/instruction-example.md",
+        )
+
+        for relative in copies:
+            with self.subTest(copy=relative):
+                actual = (ROOT / relative).read_text(encoding="utf-8")
+                self.assertEqual(assert_working_discipline(self, actual), expected)
+        working = (ROOT / copies[2]).read_text(encoding="utf-8")
+        self.assertRegex(working, r"(?i)preserve equivalent project-specific guidance")
+        self.assertNotIn("Delete code when it stops paying rent", working)
+        self.assertIn("project-protocol", manifest("project-knowledge")["dependencies"]["required"])
+        self.assertEqual(manifest("project-protocol")["dependencies"]["required"], [])
+
+    def test_protocol_briefs_carry_execution_inputs_without_cross_reading_reviews(self):
+        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        brief = markdown_section(self, protocol, "Isolated worker briefs")
+        worker = (ROOT / "plugins/project-protocol/roles/isolated-worker.md").read_text(encoding="utf-8")
+        worker_contract = markdown_section(self, worker, "Contract")
+
+        for text in (brief, worker_contract):
+            assert_brief_inputs(self, text)
+        assert_review_input_boundary(self, brief)
+        assert_review_input_boundary(self, worker_contract, worker=True)
+        self.assertIn("project-protocol:project-protocol", worker_contract)
+        self.assertIn("coordinator-declared inputs", worker_contract)
+
+    def test_delegated_test_writer_returns_evidence_and_reserves_human_wait_for_teaching(self):
+        role = (ROOT / "plugins/testing/roles/test-writer.md").read_text(encoding="utf-8")
+
+        assert_delegated_writer(self, role)
+
+    def test_execution_discipline_survives_all_five_host_bodies_and_inline_resources(self):
+        from scripts.daodan.adapter import HOSTS, load_adapter
+        from scripts.daodan.load import load_plugin
+        from scripts.daodan.render import render_plugin
+
+        registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
+        self.assertEqual(set(HOSTS), {"claude", "copilot", "codex", "pi", "opencode"})
+        source_protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        expected_rules = dict(re.findall(r"(?m)^Working (assumptions|simplicity|scope|verification): ([^\n]+)$", source_protocol))
+        brief = re.search(r"(?ms)^## Isolated worker briefs\n(.*?)(?=^## |\Z)", source_protocol)
+        expected_brief = " ".join(brief.group(1).split()) if brief else ""
+        source_worker = (ROOT / "plugins/project-protocol/roles/isolated-worker.md").read_text(encoding="utf-8")
+        expected_worker = markdown_section(self, source_worker, "Contract")
+        source_writer = (ROOT / "plugins/testing/roles/test-writer.md").read_text(encoding="utf-8")
+        writer = re.search(r"(?ms)^## Delegated execution\n(.*?)(?=^## |\Z)", source_writer)
+        expected_writer = " ".join(writer.group(1).split()) if writer else ""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            for host in HOSTS:
+                roots = {}
+                for plugin in ("project-protocol", "project-knowledge", "testing", "project-lifecycle", "senior-review"):
+                    roots[plugin] = Path(temporary) / host / plugin
+                    render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), roots[plugin],
+                                  adapters_root=ROOT / "adapters", plugin_registry=registry)
+                protocol = without_host_binding(self, (roots["project-protocol"] / "skills/project-protocol/SKILL.md").read_text(encoding="utf-8"), host)
+                with self.subTest(host=host, component="protocol"):
+                    self.assertEqual(assert_working_discipline(self, protocol), expected_rules)
+                    assert_discipline_authority(self, protocol)
+                    self.assertEqual(markdown_section(self, protocol, "Isolated worker briefs"), expected_brief)
+                    rendered_brief = markdown_section(self, protocol, "Isolated worker briefs")
+                    assert_brief_inputs(self, rendered_brief)
+                    assert_review_input_boundary(self, rendered_brief)
+                with self.subTest(host=host, component="instruction-destination"):
+                    path = roots["project-knowledge"] / "skills/instructions-method/SKILL.md"
+                    method = without_host_binding(self, path.read_text(encoding="utf-8"), host)
+                    instructions = " ".join(method.split())
+                    self.assertIn("Use explicit user destinations first", instructions)
+                    self.assertIn("existing authoritative instruction file and documented synchronization rule", instructions)
+                    self.assertIn("AGENTS.md for Codex", instructions)
+                    self.assertIn("CLAUDE.md for Claude", instructions)
+                    self.assertIn("do not invent a universal filename", instructions)
+                    self.assertIn("do not rewrite a generated instruction copy directly", instructions)
+                for reference in ("working-principles", "instruction-example"):
+                    with self.subTest(host=host, component=reference):
+                        path = roots["project-knowledge"] / f"skills/instructions-method/references/{reference}.md"
+                        self.assertEqual(assert_working_discipline(self, path.read_text(encoding="utf-8")), expected_rules)
+                for plugin, role, title, expected in (
+                        ("project-protocol", "isolated-worker", "Contract", expected_worker),
+                        ("testing", "test-writer", "Delegated execution", expected_writer)):
+                    with self.subTest(host=host, component=role):
+                        text = without_host_binding(self, (roots[plugin] / role_path(host, plugin, role)).read_text(encoding="utf-8"), host)
+                        self.assertEqual(markdown_section(self, text, title), expected)
+                        if role == "isolated-worker":
+                            contract = markdown_section(self, text, title)
+                            assert_brief_inputs(self, contract)
+                            assert_review_input_boundary(self, contract, worker=True)
+                        else:
+                            assert_delegated_writer(self, text)
+                if host in {"codex", "pi"}:
+                    resources = (
+                        ("project-lifecycle", "project-protocol", "isolated-worker", "Contract", expected_worker),
+                        ("senior-review", "project-protocol", "isolated-worker", "Contract", expected_worker),
+                        ("project-lifecycle", "testing", "test-writer", "Delegated execution", expected_writer),
+                    )
+                    for consumer, owner, role, title, expected in resources:
+                        with self.subTest(host=host, consumer=consumer, resource=role):
+                            path = roots[consumer] / f"contracts/dispatch/{owner}/{role}.md"
+                            text = without_host_binding(self, path.read_text(encoding="utf-8"), host)
+                            self.assertEqual(markdown_section(self, text, title), expected)
+                            if role == "isolated-worker":
+                                contract = markdown_section(self, text, title)
+                                assert_brief_inputs(self, contract)
+                                assert_review_input_boundary(self, contract, worker=True)
+                            else:
+                                assert_delegated_writer(self, text)
+
     def test_review_wrapper_bindings_and_owner_resources_ship_on_every_host(self):
         from scripts.daodan.adapter import HOSTS, load_adapter
         from scripts.daodan.load import load_plugin
@@ -82,6 +311,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
             ("project-lifecycle", "verify"): CORE_ROLES["code-review"] | STACK_ROLES,
             ("project-lifecycle", "assess"): {"project-knowledge/documentation-engineer", "project-knowledge/guide-reviewer"},
             ("project-knowledge", "guide"): {"codebase-xray/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer")},
+            ("project-knowledge", "maintain"): {f"project-knowledge/{role}" for role in ("documentation-engineer", "guide-reviewer", "instructions-auditor")},
         }
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
@@ -94,10 +324,12 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                             continue
                         with self.subTest(host=host, plugin=plugin, entry=entry):
                             body = without_host_binding(self, (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8"), host)
+                            dispatch_rule = next(line for line in body.splitlines() if line.startswith("- Dispatch only roles from this set,"))
                             for binding in roles:
                                 owner, role = binding.split("/")
                                 identity = role if owner == plugin else f"{owner}:{role}"
                                 self.assertIn(f"`{identity}`", body)
+                                self.assertIn(f"`{identity}`", dispatch_rule)
                                 if host in {"codex", "pi"} and owner != plugin:
                                     resource = root / "contracts/dispatch" / owner / f"{role}.md"
                                     text = without_host_binding(self, resource.read_text(encoding="utf-8"), host)

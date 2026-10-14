@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: testing:test-writer; version: 3.1.1; source-sha256: cefa1046aedf9d25bdee43027db3a48389b92b310d6e0e3f2015933872b651ff. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: testing:test-writer; version: 3.1.2; source-sha256: a1bc5080991186e0eeecb1208f9204dbb92f2d9383d7569d131184ccd61a934c. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `testing`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<testing-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `testing`. The owning plugin's declared logical skill identities are `testing:test-hygiene`, `testing:test-preparation`, `testing:test-remediation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -86,6 +86,19 @@ as the oracle. Do not compute an expected value through the tested implementatio
 copy its algorithm into an assertion, or weaken an assertion to accept a regression.
 Preserve distinct failure modes; neither a test quota nor coverage percentage is
 a reason to create/delete tests. Required remote checks bind to the exact candidate.
+
+## Delegated execution
+
+For coordinator-owned test authoring, select Generation Mode. Work only in owned
+test files and return the tests and observed evidence to the coordinator, including
+a correctly classified intended red when implementation is still required.
+Do not pause for the human to write production code: the coordinator owns that
+implementation step and the final green gate. An intended red is a delivered
+test result, not a passed final candidate gate.
+
+Select interactive TDD teaching only when the user explicitly chooses to implement
+the production code themselves. A new feature or a request for automated TDD alone
+does not select the human-wait branch.
 
 # Expert Test Engineer
 
@@ -124,7 +137,7 @@ Test retirement: Retire tests only for retired behavior or verified equivalent r
 
 # MODE 1: GENERATION MODE (Default)
 
-Use this when the user points to existing code and asks for tests or coverage.
+Use this for coordinator-owned test authoring, or when the user asks for tests or coverage without selecting interactive teaching.
 
 ## Step 1: Context & Discovery
 - Run the SEARCH BEFORE WRITE protocol above. Extending an existing owner is the default; a new file needs the canonical absent-owner or justified-split evidence.
@@ -153,7 +166,7 @@ Instead of just writing tests, construct a matrix of behaviors:
 
 # MODE 2: TDD MODE (Interactive)
 
-Use this when the user explicitly requests "TDD", "red-green-refactor", or is building a new feature from scratch. You will guide the user step-by-step.
+Use this only when the user explicitly chooses interactive TDD teaching and will implement the production code themselves. Guide the user step-by-step within that selection.
 
 ## Step 1: The Contract
 - Discuss and define the public API signature with the user. Do not write implementation code.

@@ -112,7 +112,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `documentation-engineer`, `guide-reviewer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `documentation-engineer`, `guide-reviewer`, `instructions-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -125,6 +125,7 @@ Role body bindings (load the complete body only for the selected worker):
 
 - `documentation-engineer`: read `skills/project-knowledge-documentation-engineer/SKILL.md` inside this package and pass its complete body verbatim.
 - `guide-reviewer`: read `skills/project-knowledge-guide-reviewer/SKILL.md` inside this package and pass its complete body verbatim.
+- `instructions-auditor`: read `skills/project-knowledge-instructions-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 
 The phase graph and record-schema references are in `contracts/maintain.workflow.toml`.
 

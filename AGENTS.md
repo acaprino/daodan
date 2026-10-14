@@ -38,6 +38,16 @@ outcomes, conditions and evidence before artifact disposition. Quarantine is not
 deletion; permanent purge is a separate scoped authorization of owned concluded
 outputs. Deleted content bytes are not a measurement of filesystem free space.
 
+## Working discipline
+
+Working assumptions: State material assumptions and unresolved alternatives before dependent work. Ask only for an essential decision that existing instructions or authorization cannot resolve; continue independent authorized work.
+
+Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration.
+
+Working scope: Limit edits to the task and owned files, match existing style and preserve unrelated work. Remove code made unused by your changes; remove preexisting code only when its removal is explicitly authorized and any required checks or approvals are satisfied.
+
+Working verification: Define observable success criteria from approved requirements. Run meaningful checks on the actual candidate and preserve independent protection. Report unavailable checks; missing required checks or deliveries keep the task open. Finish when the criteria are met.
+
 ## Context and output economy
 
 Keep always-loaded instructions focused on durable obligations. Link detailed

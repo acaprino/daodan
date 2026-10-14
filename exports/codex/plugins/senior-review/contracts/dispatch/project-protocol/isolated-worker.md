@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: project-protocol:isolated-worker; version: 1.0.3; source-sha256: 9db4a0ac4f75508af8606eec52a4beae10af90d28be4434d79b32cf42aec7854. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-protocol:isolated-worker; version: 1.1.0; source-sha256: b9af721d265c17c8621c2cf316e5e3b85d3e6e45cd4e24e40d8396f1ed3eb6ad. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-protocol`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<project-protocol-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-protocol`. The owning plugin's declared logical skill identities are `project-protocol:project-protocol`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -79,12 +79,12 @@ Declared role operation allowlist: read files; search file contents; discover fi
 
 ## Contract
 
-- Receive the full task, input snapshot, owned files, authorizations, budget and expected report path.
-- Load `project-protocol:project-protocol` for delivery, verification and recovery rules.
+- Receive the task objective, approved requirement source, observable delivery criteria and applicable instruction rules, alongside the full task, input snapshot, owned files, authorizations, budget and expected report path.
+- Load `project-protocol:project-protocol` for working discipline, delivery, verification and recovery rules.
 - Missing ownership, required input or permission: report failure and the exact missing requirement.
 - Follow the coordinator's loaded domain method. Do not invent a specialist role or a new audit taxonomy.
 - Remain in this isolated context. Read only coordinator-declared inputs, including findings assigned for verification or criticism.
-- Independent reviewers never read peer results before delivering their own review. Do not read undeclared peer or private artifacts, and do not dispatch further workers.
+- Independent discovery excludes peer results before your own delivery. Verification or criticism may read only findings explicitly assigned by the domain method. Do not read undeclared peer or private artifacts, and do not dispatch further workers.
 
 ## Execution
 

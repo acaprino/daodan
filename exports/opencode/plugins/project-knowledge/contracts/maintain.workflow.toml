@@ -7,7 +7,7 @@ isolation = "shared"
 produces = ["artifact:maintain-report"]
 
 [dispatch]
-roles = ["project-knowledge/documentation-engineer","project-knowledge/guide-reviewer"]
+roles = ["project-knowledge/documentation-engineer","project-knowledge/guide-reviewer","project-knowledge/instructions-auditor"]
 isolated = true
 inline_workers = false
 

@@ -2428,7 +2428,7 @@
         "root": "plugins/project-protocol",
         "skills": [
           {
-            "description": "Canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before recording, resuming or closing a project intervention.",
+            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before briefing workers, recording, resuming or closing a project intervention.",
             "file": "skills/project-protocol/SKILL.md",
             "id": "project-protocol:project-protocol",
             "name": "project-protocol"
@@ -4485,5 +4485,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.14.1"
+  "version": "32.14.2"
 }
