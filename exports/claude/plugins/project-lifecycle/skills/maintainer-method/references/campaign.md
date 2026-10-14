@@ -592,3 +592,7 @@ FINAL BINDING AND HANDOFF
   the campaign request and chain alongside its native reports. The campaign report
   is an index of validated stage results, not another project-result envelope and
   not a claim that a compiler executes workflows.
+- For requested HTML or useful navigation/comparison, the coordinator reads
+  `${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/human-view.md` and
+  renders campaign-final.md before closing that active run. Earlier stage records
+  remain historical evidence, including in a stopped or dry-run campaign.

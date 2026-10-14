@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "33.0.0"
+    "version": "33.1.0"
   },
   "name": "daodan",
   "owner": {
@@ -429,7 +429,8 @@
         "project-protocol",
         "codebase-map",
         "text-humanizer",
-        "senior-review"
+        "senior-review",
+        "report-rendering"
       ],
       "description": "Durable project knowledge: instructions, audience-specific guides, implementation drift and README maintenance. Reuses existing documents, plans ownership before writing and preserves evidence, intent and author voice. Audit-only methods are callable independently by the project lifecycle.",
       "license": "MIT",
@@ -444,7 +445,7 @@
         "./skills/readme-workflow"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "1.3.2"
+      "version": "1.3.3"
     },
     {
       "author": {
@@ -463,7 +464,8 @@
         "react-development",
         "typescript-development",
         "platform-engineering",
-        "superpowers@claude-plugins-official"
+        "superpowers@claude-plugins-official",
+        "report-rendering"
       ],
       "description": "Complete AI development lifecycle: consultant handover, a guided Senior Maintainer campaign, coherence assessment, evidenced repair, implementation, verification and consolidation. Uses canonical specialist methods, exact run identities and honest coverage.",
       "license": "MIT",
@@ -481,7 +483,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "author": {
@@ -716,7 +718,8 @@
       "dependencies": [
         "mattpocock-skills@mattpocock",
         "developer-essentials@claude-code-workflows",
-        "project-protocol"
+        "project-protocol",
+        "report-rendering"
       ],
       "description": "Canonical behavior-driven test authoring, input preparation and suite remediation. Diagnoses runner/configuration and product/oracle/environment failures before temporary quarantine; consolidates with protected behaviors, distinct failure modes and bugfix provenance, using snapshot-bound gates and owned recovery. Python techniques are supplied by the Python owner without a reverse dependency.",
       "license": "MIT",
@@ -729,7 +732,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/codex/plugins/testing",
-      "version": "3.1.2"
+      "version": "3.1.3"
     },
     {
       "author": {

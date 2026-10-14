@@ -30,6 +30,26 @@ Token savings require a measured comparison with equivalent content, including
 generation, edits and downstream consumption; a fixed renderer alone is not a
 quantitative savings claim.
 
+## Additional report owners
+
+Project Knowledge adds views of instruction audits and documentation changes,
+including creation and maintenance of AGENTS.md and CLAUDE.md. The coordinator
+renders its run-owned report; durable instruction files retain their native
+format and loading rules.
+
+Project Lifecycle adds views of operation summaries, consultant handover dossiers
+and final maintainer campaigns. Stage results, current versus historical checks,
+dry-run limits and open decisions remain visible.
+
+Testing adds views of the canonical test audit and consolidation report, with
+HTML confined to the task's dedicated output root even when TEST_AUDIT.md lives
+in a shared project directory. Cause classification, acceptance and quarantine
+ledgers remain authoritative. A checkbox in the page does not accept an action.
+
+These owners render after report verification and before run closure when HTML
+is requested or navigation/comparison helps. An explicitly requested view that
+fails remains an open deliverable. Small results keep their simplest format.
+
 <!-- daodan:reference:start -->
 ## Source-derived reference
 

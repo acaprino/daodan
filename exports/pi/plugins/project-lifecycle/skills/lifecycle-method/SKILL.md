@@ -182,6 +182,10 @@ specialist's native report, declared limitations, outstanding actions and eviden
 of checks. Account for every expected delivery and required gate before marking the
 run complete. Preserve a failed or interrupted state when requirements remain unmet.
 
+For requested HTML or a final report that benefits from navigation or comparison,
+the coordinator reads `references/human-view.md` before closing the run. Workers
+keep their native deliveries; short results need no additional view.
+
 Validate the final result with run_state.py validate --project ROOT --run-id ID
 --result RESULT_PATH. Its record correspondence check is distinct from reading and
 verifying the specialist evidence. Add newly discovered mandatory gates to the

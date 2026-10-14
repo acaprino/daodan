@@ -70,3 +70,9 @@ on the active run. Never claim a textual obligation is mechanically enforced
 without evidence of the actual guard in the relevant environment.
 Run status, task lists, temporary paths and one-run results stay in the operational
 record, never in durable instructions.
+
+## Coordinator delivery
+
+For requested HTML or useful comparison/navigation, the coordinator reads
+`${CLAUDE_PLUGIN_ROOT}/skills/project-knowledge/references/human-view.md` before
+closing the run. Instructions-auditor deliveries stay native.

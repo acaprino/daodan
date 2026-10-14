@@ -194,6 +194,11 @@ runtime checks not requested may remain explicit limits in a delivered dossier.
 A discovered product defect is an evidenced risk, not a reason to silently repair
 it or to treat its successfully delivered report as a worker failure.
 
+For requested HTML or a dossier that benefits from navigation, the coordinator
+reads `${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/human-view.md`
+and renders the reviewed handover.md before run closure. The writer's native
+delivery and read-only project boundary remain authoritative.
+
 Write the canonical project-result envelope with native report references and
 hashes, deliveries, snapshot-bound checks, output paths, limitations and completion
 state. Validate through run_state.py with --current and --result before declaring

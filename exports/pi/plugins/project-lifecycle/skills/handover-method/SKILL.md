@@ -6,6 +6,8 @@ description: >
   DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).
 ---
 
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -263,6 +265,11 @@ keep the run incomplete. Known unknowns with truthful source/status and optional
 runtime checks not requested may remain explicit limits in a delivered dossier.
 A discovered product defect is an evidenced risk, not a reason to silently repair
 it or to treat its successfully delivered report as a worker failure.
+
+For requested HTML or a dossier that benefits from navigation, the coordinator
+reads `<plugin-root>/skills/lifecycle-method/references/human-view.md`
+and renders the reviewed handover.md before run closure. The writer's native
+delivery and read-only project boundary remain authoritative.
 
 Write the canonical project-result envelope with native report references and
 hashes, deliveries, snapshot-bound checks, output paths, limitations and completion

@@ -2535,7 +2535,8 @@
           "project-protocol",
           "codebase-map",
           "text-humanizer",
-          "senior-review"
+          "senior-review",
+          "report-rendering"
         ],
         "root": "plugins/project-knowledge",
         "skills": [
@@ -2609,7 +2610,8 @@
           "text-humanizer",
           "react-development",
           "typescript-development",
-          "platform-engineering"
+          "platform-engineering",
+          "report-rendering"
         ],
         "root": "plugins/project-lifecycle",
         "skills": [
@@ -4349,7 +4351,8 @@
           }
         ],
         "dependencies": [
-          "project-protocol"
+          "project-protocol",
+          "report-rendering"
         ],
         "root": "plugins/testing",
         "skills": [
@@ -4743,5 +4746,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "33.0.0"
+  "version": "33.1.0"
 }

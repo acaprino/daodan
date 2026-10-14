@@ -100,3 +100,9 @@ project-knowledge apply-method, preserving facts, author voice and inbound links
 For a requested prose pass, load `text-humanizer:anti-ai-writing-patterns` and
 dispatch `text-humanizer:text-humanizer` in the docs register. Record new or
 retained gaps and checks in the same run; do not reproduce a session log in README.
+
+## Coordinator delivery
+
+For requested HTML or useful comparison/navigation, the coordinator reads
+`${CLAUDE_PLUGIN_ROOT}/skills/project-knowledge/references/human-view.md` before
+closing the run.

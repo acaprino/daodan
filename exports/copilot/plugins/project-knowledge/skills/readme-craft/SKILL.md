@@ -4,6 +4,8 @@ description: >
   Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.
 ---
 
+> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -112,3 +114,9 @@ project-knowledge apply-method, preserving facts, author voice and inbound links
 For a requested prose pass, load `text-humanizer:anti-ai-writing-patterns` and
 dispatch `text-humanizer:text-humanizer` in the docs register. Record new or
 retained gaps and checks in the same run; do not reproduce a session log in README.
+
+## Coordinator delivery
+
+For requested HTML or useful comparison/navigation, the coordinator reads
+`${PLUGIN_ROOT}/skills/project-knowledge/references/human-view.md` before
+closing the run.

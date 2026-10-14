@@ -130,4 +130,6 @@ of writers or require a team-only API.
 Preserve native findings and locators. Record changes by owned file, retained or
 migrated information, unresolved intent, stale inputs, checks run and checks not
 available. A missing reviewer or changed snapshot blocks successful completion.
+For requested HTML or useful comparison/navigation, the coordinator reads
+`references/human-view.md` before closing the run.
 Validate and close the operational result with the project-protocol method.

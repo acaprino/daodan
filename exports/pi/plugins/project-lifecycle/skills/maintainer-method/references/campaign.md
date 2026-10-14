@@ -1,3 +1,5 @@
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -600,3 +602,7 @@ FINAL BINDING AND HANDOFF
   the campaign request and chain alongside its native reports. The campaign report
   is an index of validated stage results, not another project-result envelope and
   not a claim that a compiler executes workflows.
+- For requested HTML or useful navigation/comparison, the coordinator reads
+  `<plugin-root>/skills/lifecycle-method/references/human-view.md` and
+  renders campaign-final.md before closing that active run. Earlier stage records
+  remain historical evidence, including in a stopped or dry-run campaign.

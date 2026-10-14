@@ -75,7 +75,14 @@ Flag separately, each with evidence:
 - **Never-failing**: no asserts, tautologies, everything mocked.
 - **Quarantined entries** for this module, each with a keep (behavior worth preserving in the rewrite) or drop proposal. A drop proposal cites evidence beyond age: feature removed, replacement coverage, temporary origin, no bug-fix provenance.
 
-Under `--dry-run`, print the inventory and stop.
+Under `--dry-run`, save this inventory as the native coordinator report at
+`<output-root>/consolidation.md`, reusing the run's already-declared final Markdown
+path. Bind it to the existing `test-consolidate-report` artifact. Include scope,
+snapshot, protected failure modes, oracle/bugfix provenance, unavailable metrics
+and the explicit dry-run status: acceptance, rewrites, removals and mutation gates
+were not executed. Print the inventory. For requested HTML or useful
+navigation/comparison, read `references/human-view.md` before delivery and closure.
+Stop here without entering Steps 3 through 7 or applying any quarantine change.
 
 ## Step 3: Safety-net check
 
@@ -117,7 +124,18 @@ history, and gate the recovery snapshot too.
 
 ## Step 8: Report
 
+Write the native coordinator report to `<output-root>/consolidation.md`, reusing
+the run's already-declared final Markdown path when present. Bind that report to
+the existing `test-consolidate-report` artifact and project-result envelope;
+operational JSON remains state, not report content. Include:
+
 - Before/after table: files, test cases, runtime, coverage.
 - Behaviors dropped, each with the user's recorded reason from Step 4.
 - Quarantine entries processed and entries remaining for other modules.
 - Suggested next module by `/testing:test-audit`'s latest remediation ranking, when a `TEST_AUDIT.md` exists.
+
+Preserve approved behavior/failure-mode mappings, independent oracles, bugfix
+provenance, exact candidate gate results and unavailable or unknown measurements.
+For requested HTML or useful navigation/comparison, the coordinator reads
+`references/human-view.md` in this skill after the native report and required
+gates are final, before run closure. Workers deliver native findings only.

@@ -312,7 +312,7 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 |---|---|
 | Direct local | [project-protocol](<project-protocol.md>), [testing](<testing.md>) |
 | Direct external | None |
-| Local closure (3) | [project-protocol](<project-protocol.md>), [python-development](<python-development.md>), [testing](<testing.md>) |
+| Local closure (4) | [project-protocol](<project-protocol.md>), [python-development](<python-development.md>), [report-rendering](<report-rendering.md>), [testing](<testing.md>) |
 | External closure (2) | `developer-essentials@claude-code-workflows`, `mattpocock-skills@mattpocock` |
 
 External bundles are separate upstream installations, not copied local skills.

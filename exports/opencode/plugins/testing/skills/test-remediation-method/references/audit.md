@@ -77,7 +77,10 @@ Spawn this plugin's `test-suite-auditor` agent with: the target path, the Step 2
 
 Prepend a `## Audit <ISO date>` section to `<path>/TEST_AUDIT.md` (create the file when absent) in the format defined by `remediation-workflow.md` section 1: the metrics table with deltas against the previous audit section, then the findings summary by severity from Step 3, then the recommended remediation order.
 
-Without `--fix`, print the report path, the metrics table, and the top findings, and stop here.
+Without `--fix`, print the report path, the metrics table, and the top findings.
+For requested HTML or useful navigation/comparison, the coordinator reads
+`references/human-view.md` in this skill and renders the completed native audit
+before normal delivery and run closure. Do not proceed to quarantine.
 
 ## Step 5: Quarantine (only with `--fix`)
 
@@ -118,7 +121,8 @@ Process accepted categories in fixed order, lowest ambiguity first: `orphan`, `s
 ### 5d: Refresh the audit
 
 Refresh the current `## Audit <date>` section of `TEST_AUDIT.md` with the measured
-post-quarantine numbers and remaining protection. Finalize owned audit/ledger edits
+post-quarantine numbers and remaining protection. Include the per-batch table,
+suite status and Step 5e next steps in that native section. Finalize owned audit/ledger edits
 before capturing their candidate snapshot and gating an authorized commit. If the
 last batch is already committed, treat this refresh as a separate owned candidate
 with the protocol's required gate, not an ungated trailing commit. Run-envelope
@@ -130,6 +134,11 @@ Per-batch table (category, files, commit sha, gate result), the new suite status
 
 - `/testing:test-consolidate <module>` for the modules ranked worst by duplicate/implementation-coupling density in Step 3.
 - The quarantine lifecycle reminder from the skill: entries are processed when their module is next touched; entries older than 3 months become investigation candidates. Retirement still requires accepted inventory and evidence of retired behavior or verified equivalent replacement beyond age.
+
+For requested HTML or useful navigation/comparison, the coordinator reads
+`references/human-view.md` in this skill after the refreshed native audit and
+required gates are final, before run closure. Render no intermediate audit that
+later quarantine batches or refreshes would invalidate.
 
 ## Output locations
 
