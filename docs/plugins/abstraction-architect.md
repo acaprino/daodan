@@ -130,7 +130,7 @@ mandatory when using this plugin alone. The local closure includes this plugin.
 |---|---|
 | Direct local | [codebase-xray](<codebase-xray.md>) |
 | Direct external | None |
-| Local closure (2) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>) |
+| Local closure (3) | [abstraction-architect](<abstraction-architect.md>), [codebase-xray](<codebase-xray.md>), [report-rendering](<report-rendering.md>) |
 | External closure (0) | None |
 
 External bundles are separate upstream installations, not copied local skills.

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:a0a48f105bb6fbb77024534f0c422a03eee64d29f918046e3306fe07018dd0c6",
+  "coreDigest": "sha256:95787f39914db9f99031d89b42b093fe0e3ba50f360039d760339af8969ec8b2",
   "harnessStrategies": {
     "guide": "parallel-subagents",
     "instructions": "parallel-subagents",
@@ -10,5 +10,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "project-knowledge",
-  "version": "1.2.2"
+  "version": "1.3.0"
 }

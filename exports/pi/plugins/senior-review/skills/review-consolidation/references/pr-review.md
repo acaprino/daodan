@@ -177,6 +177,12 @@ This improves review quality and reduces merge conflict risk.
 
 ### Always: Present the description
 
+Save the complete native description to the caller's declared report path, or
+`pr-description.md` in the prepared owned output root. Use this same Markdown for
+presentation and any authorized PR creation. Keep risk, coverage, evidence, native
+checklists and unknown states intact. Any required approval still receives the
+complete native description.
+
 Show the complete PR description in the conversation and ask:
 
 ```
@@ -217,6 +223,13 @@ After generating the PR description, check if changes suggest the project's `CLA
 1. Read `CLAUDE.md` (if it exists)
 2. Cross-reference changed files with documented conventions, structure, and workflows
 3. If `CLAUDE.md` references outdated information, add a note in the PR description under a `## CLAUDE.md Updates Needed` section
+
+Save final native updates to the same description path, then apply this skill's
+`Optional human view` contract. The final writer loads
+`report-rendering:report-renderer` when warranted and renders its same-stem HTML
+with `--profile review` in the prepared owned output root. The derived view grants
+no publication authorization; an explicitly requested HTML deliverable remains
+open if rendering fails.
 
 ---
 

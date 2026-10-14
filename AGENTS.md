@@ -38,13 +38,34 @@ outcomes, conditions and evidence before artifact disposition. Quarantine is not
 deletion; permanent purge is a separate scoped authorization of owned concluded
 outputs. Deleted content bytes are not a measurement of filesystem free space.
 
+## Context and output economy
+
+Keep always-loaded instructions focused on durable obligations. Link detailed
+procedures and templates, then load the references required by the active step.
+Use targeted searches and bounded tool output; expand reads whenever necessary
+to establish evidence. Required source reading and independent verification keep
+their full scope.
+
+Produce each result once in its owner's canonical format. Coordinators link
+detailed artifacts rather than duplicating them. Reuse fixed renderers for
+recurring human views: agents supply content, code supplies layout, interactions
+and derived values. Presentation code stays out of worker handoffs unless the
+task edits it. Generate a visual view when it helps comparison, navigation or a
+decision; otherwise keep the simplest sufficient format. Preserve provenance,
+uncertainty, coverage and completion gates in every view. Token budgets are
+guidance, and savings require measurement.
+
+The `report-rendering` leaf supplies optional offline HTML views of canonical
+Markdown. Domain owners retain their reports, scoring and verdicts. See
+[report rendering](docs/plugins/report-rendering.md) for the executable contract.
+
 ## Project structure
 
 `plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow with a note giving the exact command to register. `peer-review` is the one plugin that declares one. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
 
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 
-**Everything under `exports/` and every root marketplace manifest is generated.** `scripts/daodan_build.py` compiles kernels plus adapters into `exports/claude/`, `exports/copilot/`, `exports/codex/`, `exports/pi/` and `exports/opencode/`, and into `.claude-plugin/marketplace.json`, `.github/plugin/marketplace.json`, `.agents/plugins/marketplace.json`, the root `package.json` and `exports/opencode/package.json`. The last two are the odd members and neither is a Node project. Pi has no marketplace, it installs a package and reads the manifest at that package's root, so the repository root is where its catalog has to live. OpenCode V2 has none either: a package reaches it only as a plugin, so its catalog is that plugin's own manifest, whose `daodan` key lists every skill, agent, command and MCP server, and the package carries `index.js`, a fixed loader copied verbatim from `adapters/opencode/templates/` that registers them from that key. It is the one runtime JavaScript this repository ships, it imports nothing outside Node's standard library, and its tests run under `node --test` from the Python suite. Never hand-edit any of them; edit the kernel and rebuild.
+**Everything under `exports/` and every root marketplace manifest is generated.** `scripts/daodan_build.py` compiles kernels plus adapters into `exports/claude/`, `exports/copilot/`, `exports/codex/`, `exports/pi/` and `exports/opencode/`, and into `.claude-plugin/marketplace.json`, `.github/plugin/marketplace.json`, `.agents/plugins/marketplace.json`, the root `package.json` and `exports/opencode/package.json`. The last two are the odd members and neither is a Node project. Pi has no marketplace, it installs a package and reads the manifest at that package's root, so the repository root is where its catalog has to live. OpenCode V2 has none either: a package reaches it only as a plugin, so its catalog is that plugin's own manifest, whose `daodan` key lists every skill, agent, command and MCP server, and the package carries `index.js`, a fixed loader copied verbatim from `adapters/opencode/templates/` that registers them from that key. The loader imports nothing outside Node's standard library, and its tests run under `node --test` from the Python suite. Report-rendering browser assets live under their owning skill and require no Node runtime in generated reports. Never hand-edit any of them; edit the kernel and rebuild.
 
 `AGENTS.md` and the four repository workflow skills under `.agents/skills/` are native Codex adaptations of this file and `.agents/skills/`. Generate them with `python scripts/sync_codex_instructions.py`; `--check` is the parity gate. Edit the Claude-side canonical copies, then run the synchronizer. The transformation is deliberately limited to instruction paths, cache paths, install commands and the host-relative downstream description.
 

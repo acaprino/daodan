@@ -1,0 +1,9 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:034e2580d8fde9f5d365b89c03d5bc6760b92a11fd3b871a86237d1b0b183f87",
+  "harnessStrategies": {},
+  "host": "pi",
+  "overrides": [],
+  "plugin": "report-rendering",
+  "version": "1.0.0"
+}

@@ -1,0 +1,18 @@
+schema = "daodan/v1"
+name = "report-rendering"
+version = "1.0.0"
+description = "Render authoritative Markdown reports as local interactive HTML views with reusable presentation assets"
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "shell.execute"]
+optional = []
+
+[dependencies]
+required = []
+
+[components]
+skills = ["report-renderer"]
+roles = []
+workflows = []
+policies = []

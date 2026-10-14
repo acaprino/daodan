@@ -549,6 +549,11 @@ Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On fail
 
 ## Phase 4: Publish, Completion & Next Steps Menu
 
+After successful synthesis, only the coordinator loads
+`${PLUGIN_ROOT}/skills/xray-method/references/human-view.md` for requested
+or useful HTML. Workers never load presentation instructions. Keep requested view
+failures open; `--skip-synthesis` creates no report to render.
+
 1. Update `$RUN_DIR/state.json`: `status: "complete"`, `completed_at: <ISO_TIMESTAMP>`.
 2. **Publish** (skip if `--skip-synthesis`): copy `$RUN_DIR/01-*.md` .. `$RUN_DIR/07-final-report.md` (those that exist), `$RUN_DIR/08-interconnect-map.md` (if Phase 3 ran), and `$RUN_DIR/state.json` to the `.codebase-xray/` root, overwriting the previous mirror. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed`. The root mirror is the downstream contract for `/senior-review:team-review`, `/project-knowledge:guide`, and `/project-knowledge:instructions --create`.
 3. No worker may still be writing after publish. Every dispatched worker has been recorded `delivered` or `failed` by now, and the harness owns whatever cleanup its workers need.

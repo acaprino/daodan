@@ -104,6 +104,16 @@ Skip this phase if `--fast` was passed (mark `phase_4c_critic` as `skipped`). Ot
 
 ## Phase 5: Report and Cleanup
 
+Save this complete native final report to the caller's declared report path, or
+`report.md` in the prepared owned output root. Keep the consolidated, verification
+and worker files as native evidence and link their details rather than generating
+parallel presentation content. After saving, apply this skill's `Optional human
+view` contract: the final writer loads `report-rendering:report-renderer` when
+warranted and renders the same report with `--profile review` in that output root.
+Preserve all fields, provenance, filtered and contested results, coverage gaps,
+degraded dimensions and unknown values. An explicitly requested HTML delivery
+must be accounted for before declaring the requested output complete.
+
 1. Present the consolidated report to the user:
 
    ```

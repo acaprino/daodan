@@ -384,6 +384,30 @@ The template carries, in order:
 
 Every score on all ten criteria for all five ranked names has a motivation citing its evidence, and every unverified or not-screened value is marked as such. Write the report in the language of the brief.
 
+Use the caller's owned run output directory when supplied; otherwise use the
+user's selected output directory or a dedicated `.brand-naming/` directory inside
+the current workspace. Write this native
+Markdown report once to the user's requested report path, or
+`brand-naming-report.md` in the owned output directory when no filename was given.
+Keep required motivations, evidence and unknown states; do not shorten the checks
+or regenerate the same content for another layout. Link to the saved report in the
+conversation with the recommendation and open checks.
+
+When the user requests HTML, or exploring the scorecard's weights would materially
+help the choice, load the `report-rendering:report-renderer` skill and resolve its helper
+through that skill. Render the saved Markdown with `--profile naming`, `--input`
+set to that report, `--output` set to its same-stem `.html` sibling and `--root`
+set to the same dedicated owned output directory. If the user selected a native
+report path in the repository root or a shared directory, keep that Markdown path
+and place its HTML in a dedicated `.brand-naming/` subdirectory instead; pass that
+subdirectory as `--root`. The provider rebases relative evidence links to preserve
+their targets. The fixed renderer supplies presentation
+controls; do not author another HTML/CSS layout or new report content. Preserve the
+template's sections, evidence, provisional values and original recommendation.
+Weight changes are exploratory as the native template explains. Verify the helper
+outcome before linking the HTML. On failure preserve Markdown and report the
+optional view failure; an explicitly requested HTML deliverable remains open.
+
 ## Reference Framework
 
 ### Evaluation Tests (from Spellbrand methodology)

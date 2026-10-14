@@ -9,18 +9,21 @@ that could not write, `${CLAUDE_PLUGIN_ROOT}` passed through to hosts that do
 not define it, and Claude command frontmatter copied into Codex skills.
 """
 
+import json
 import re
 import shutil
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
+from scripts.daodan.adapter import HOSTS, load_adapter, resolve_support  # noqa: E402
+from scripts.daodan.catalogs import render_catalog  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.render import opencode_permissions, render_plugin  # noqa: E402
 from host_binding_assertions import canonical_markdown, without_host_binding
@@ -273,6 +276,195 @@ class HostRenderingTests(unittest.TestCase):
         for plugin in ("codebase-xray", "senior-review"):
             for path in self.package("opencode", plugin).glob("commands/*.md"):
                 self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
+
+
+class ReportRenderingHostContracts(unittest.TestCase):
+    """Read consumer methods and resources from fresh source renderings."""
+
+    CONSUMERS = ("digital-marketing", "codebase-xray", "senior-review")
+    PROVIDER = "report-rendering"
+    SKILL = "skills/report-renderer/SKILL.md"
+    RESOURCES = ("skills/report-renderer/scripts/render_report.py",
+                 "skills/report-renderer/assets/report.css",
+                 "skills/report-renderer/assets/report.js")
+    HOOKS = {
+        "digital-marketing": {
+            "skills/brand-naming-method/SKILL.md": "--profile naming",
+            "skills/brand-naming-method/references/report-template.md": "naming",
+        },
+        "codebase-xray": {
+            "skills/xray-method/references/human-view.md": "--profile report",
+        },
+        "senior-review": {
+            "skills/review-consolidation/SKILL.md": "--profile review",
+            "skills/review-quality-gates/references/code-review-output.md": "--profile review",
+            "skills/review-consolidation/references/team-review.md": "--profile review",
+            "skills/review-consolidation/references/pr-review.md": "--profile review",
+        },
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp = tempfile.TemporaryDirectory(prefix="daodan-report-hosts-")
+        cls.addClassCleanup(cls.temp.cleanup)
+        registry = {path.parent.name: load_plugin(path.parent)
+                    for path in (REPO_ROOT / "plugins").glob("*/plugin.toml")}
+        cls.plugins = [registry[name] for name in (*cls.CONSUMERS, cls.PROVIDER)]
+        cls.packages, cls.catalogs = {}, {}
+        for host in HOSTS:
+            adapter = load_adapter(ADAPTERS, host)
+            packages = {}
+            for plugin in cls.plugins:
+                target = Path(cls.temp.name) / host / plugin.name
+                render_plugin(plugin, adapter, target, adapters_root=ADAPTERS,
+                              plugin_registry=registry)
+                packages[plugin.name] = target
+                cls.packages[(host, plugin.name)] = target
+            cls.catalogs[host] = json.loads(render_catalog(
+                host, cls.plugins, "1.0.0", packages, layout=adapter.layout))
+
+    def package(self, host, plugin):
+        return self.packages[(host, plugin)]
+
+    def test_provider_is_an_actual_registered_skill_with_the_same_shipped_runtime(self):
+        kernel = REPO_ROOT / "plugins" / self.PROVIDER
+
+        for host in HOSTS:
+            with self.subTest(host=host):
+                package = self.package(host, self.PROVIDER)
+                skill = _read(package / self.SKILL)
+                self.assertEqual(_frontmatter(skill)["name"], "report-renderer")
+                self.assertIn("render_report.py", skill)
+                self.assertIn("--input", skill)
+                self.assertIn("--output", skill)
+                self.assertIn("--root", skill)
+                root_reference = load_adapter(ADAPTERS, host).layout["plugin_root_reference"]
+                self.assertIn(f'{root_reference}/skills/report-renderer/scripts/render_report.py', skill)
+                for resource in self.RESOURCES:
+                    self.assertEqual((package / resource).read_bytes(), (kernel / resource).read_bytes(),
+                                     f"{host}: runtime resource did not ship intact: {resource}")
+                catalog = self.catalogs[host]
+                if host == "opencode":
+                    registered = catalog["daodan"]["plugins"][self.PROVIDER]["skills"]
+                    self.assertTrue(any(entry["id"] == "report-rendering:report-renderer"
+                                        and entry["file"] == self.SKILL for entry in registered))
+                elif host == "pi":
+                    self.assertIn("./exports/pi/plugins/*/skills", catalog["pi"]["skills"])
+                    self.assertIn("exact registered names", " ".join(skill.split()))
+                else:
+                    registered = next(entry for entry in catalog["plugins"]
+                                      if entry["name"] == self.PROVIDER)
+                    self.assertIn("./skills/report-renderer", registered["skills"])
+
+    def test_consumers_require_the_provider_in_each_native_catalog(self):
+        for host in HOSTS:
+            for consumer in self.CONSUMERS:
+                with self.subTest(host=host, consumer=consumer):
+                    plugin = next(plugin for plugin in self.plugins if plugin.name == consumer)
+                    self.assertIn(self.PROVIDER, plugin.required_dependencies)
+                    catalog = self.catalogs[host]
+                    if host == "opencode":
+                        registered = catalog["daodan"]["plugins"][consumer]
+                        self.assertIn(self.PROVIDER, registered["dependencies"])
+                    elif host != "pi":
+                        registered = next(entry for entry in catalog["plugins"]
+                                          if entry["name"] == consumer)
+                        self.assertIn(self.PROVIDER, registered["dependencies"])
+                    # Pi filters the whole package; its binding must preserve
+                    # local closure even though its catalog names no dependency.
+                    text = _read(self.package(host, consumer) / next(iter(self.HOOKS[consumer])))
+                    if host == "pi":
+                        self.assertIn("full local dependency closure", text)
+                    self.assertNotRegex(text, r"(?i)if report-rendering (?:is )?installed")
+
+    def test_required_renderer_execution_cannot_fall_back_when_host_shell_is_unavailable(self):
+        provider = next(plugin for plugin in self.plugins if plugin.name == self.PROVIDER)
+
+        for host in HOSTS:
+            with self.subTest(host=host):
+                adapter = load_adapter(ADAPTERS, host)
+                supported = resolve_support(provider, adapter)
+                bindings = dict(adapter.bindings)
+                bindings["shell.execute"] = replace(bindings["shell.execute"], state="unsupported")
+
+                unavailable = resolve_support(provider, replace(adapter, bindings=bindings))
+
+                self.assertIn(supported.state, {"native", "adapted"})
+                self.assertEqual(unavailable.state, "unsupported")
+                self.assertEqual(unavailable.missing_capabilities, ("shell.execute",))
+
+    def test_naming_default_and_root_selected_paths_keep_the_html_in_an_owned_directory(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                method = _read(self.package(host, "digital-marketing") /
+                               "skills/brand-naming-method/SKILL.md")
+                prose = " ".join(method.split())
+
+                self.assertIn("dedicated `.brand-naming/` directory inside the current workspace", prose)
+                self.assertIn("same dedicated owned output directory", prose)
+                self.assertIn("report path in the repository root or a shared directory", prose)
+                self.assertIn("place its HTML in a dedicated `.brand-naming/` subdirectory", prose)
+                self.assertIn("subdirectory as `--root`", prose)
+
+    def test_provider_verification_does_not_add_browser_runtime_to_static_xray(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                skill = _read(self.package(host, self.PROVIDER) / self.SKILL)
+                prose = " ".join(skill.split())
+
+                self.assertIn("structural verification and needs no browser", prose)
+                self.assertIn("a browser is optional for this renderer", prose)
+                self.assertIn("An X-ray caller stays static", prose)
+                self.assertIn("Never add a browser exercise or product runtime step to its workflow", prose)
+
+    def test_final_method_and_nested_reference_hooks_load_the_registered_provider(self):
+        for host in HOSTS:
+            for consumer, hooks in self.HOOKS.items():
+                for resource, profile in hooks.items():
+                    with self.subTest(host=host, consumer=consumer, resource=resource):
+                        text = _read(self.package(host, consumer) / resource)
+                        self.assertIn("report-rendering:report-renderer", text)
+                        self.assertIn(profile, text)
+                        self.assertNotIn("plugins/report-rendering/", text,
+                                         "Consumers must resolve the installed provider, not a checkout")
+                        self.assertNotRegex(text, r"(?i)report-rendering[^\n]*(?:optional dependency|fallback)")
+
+    def test_xray_coordinator_owns_the_view_and_preserves_static_coverage(self):
+        entrypoints = {
+            "claude": "commands/team-analyze.md",
+            "copilot": "agents/team-analyze-coordinator.agent.md",
+            "codex": "skills/team-analyze-workflow/SKILL.md",
+            "pi": "prompts/codebase-xray-team-analyze.md",
+            "opencode": "commands/team-analyze.md",
+        }
+
+        for host in HOSTS:
+            with self.subTest(host=host):
+                package = self.package(host, "codebase-xray")
+                coordinator = _read(package / entrypoints[host])
+                phase = _read(package / "skills/xray-method/references/phase-7.md")
+                view = _read(package / "skills/xray-method/references/human-view.md")
+                coordinator_prose = " ".join(coordinator.split())
+                phase_prose = " ".join(phase.split())
+                view_prose = " ".join(view.split())
+                self.assertIn("references/human-view.md", coordinator)
+                self.assertIn("references/human-view.md", phase)
+                self.assertIn("only the coordinator loads", coordinator_prose)
+                self.assertIn("Workers never load presentation instructions", coordinator_prose)
+                self.assertIn("only the run owner loads", phase_prose)
+                self.assertIn("Workers never load presentation instructions", phase_prose)
+                self.assertIn("Exercised at runtime: none. This is static analysis", phase)
+                self.assertIn("Files read in depth:", phase)
+                self.assertIn("report-rendering:report-renderer", view)
+                self.assertIn("workers and the synthesizer do not load this reference or generate a separate UI",
+                              view_prose)
+                self.assertIn("Do not add browser exercise to the X-ray", view_prose)
+                self.assertIn("07-final-report.md", view)
+                self.assertIn("07-final-report.html", view)
+                self.assertIn("--root $RUN_DIR", view)
+                self.assertIn("Classic owner: set `$RUN_DIR/state.json`", phase_prose)
+                self.assertIn("status to `complete` only after native Markdown and every requested view are delivered", phase_prose)
+                self.assertIn("explicitly requested HTML deliverable remains open", view_prose)
 
 
 if __name__ == "__main__":

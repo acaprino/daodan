@@ -236,6 +236,14 @@ its permission binding is demonstrated.
 Tri-Tech Code can consume these OpenCode packages and run contracts as an external
 application. The marketplace stays public and neutral.
 
+## Upstream projects and inspiration
+
+[agent-html-kit](https://github.com/leex279/agent-html-kit) inspired the separation
+of agent-authored content from reusable HTML presentation. Daodan's
+[report renderer](docs/plugins/report-rendering.md) is an original implementation
+that preserves Markdown as the canonical report and adds optional offline HTML
+views for analyses, brand naming and reviews.
+
 ## Contributing
 
 > [!WARNING]

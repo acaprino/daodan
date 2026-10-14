@@ -78,6 +78,11 @@ Read only the fenced canonical skeletons and Team mode sections, not the classic
 Omit Comment Quality without the comments flag. Lite omits 03, 04 and 06 and condenses 07 to structure, interfaces and risks; preserve its three coverage lines. Units' classic state updates never apply here.
 Merge Source reading ledgers in 01 to 06, retaining manifest lineage, actual reads, diagnostics and gaps; separate carried evidence from current-run reads. Report coverage from these records, never claim that synthesis exercised or newly read source.
 
+Produce native Markdown once, retaining every required section, citation, status
+and coverage fact; cross-reference phase details rather than duplicating them.
+The run coordinator owns any optional HTML rendering through the Phase 7 run-owner
+contract. Your ownership and delivery remain the listed Markdown files only.
+
 ## COMPLETION
 
 When every output file is written (respecting `--depth=lite` skips), report delivered: name their paths and nothing else. If you could not write them, report failed with the reason.

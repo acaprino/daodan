@@ -65,7 +65,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Fill this template for the final report of Step 8. Keep every heading, the section order and the table shapes. Replace each `{placeholder}`. Leave no field blank: write `unverified` when nothing supports a value and `not screened` when a register did not answer. Write the report in the language of the brief. Add no sections and no decoration, and keep prose to the sentence counts the placeholders give.
 
-If the user asks for an HTML report, render this same template as a responsive page: the same headings, section order and table shapes, readable on a phone (tables may stack their cells) and in a light or dark theme. Interaction is allowed only where it works on the template's own content: editable weights that recompute the Overall row, collapsible name blocks, a filter on the Names removed table and tickable checkboxes in Before you commit. It adds no section, no chart and no text the Markdown version would not carry.
+For an HTML view, load the `report-rendering:report-renderer` skill and use its `naming`
+profile on the completed Markdown report. Keep the same headings, section order
+and table shapes, with responsive light/dark presentation and fixed controls.
+Do not generate a second layout or report content. The HTML view remains derived
+from this report; it adds no analysis, section or chart.
 
 Trademark risk is a class from A (lowest risk) to D (highest) for three territories: the reference country, Europe and the world. NS means not screened and is never shown as A.
 
@@ -112,6 +116,12 @@ Class key: **A** no identical or similar mark found. **B** similar marks only in
 | **Overall** | 100% | **{x.x}** | **{x.x}** | **{x.x}** | **{x.x}** | **{x.x}** |
 
 A cell that rests on thin evidence reads `3 (unverified)`. A criterion whose check could not run at all reads `not scored` in every column and in its "Why it scores this way" row, and the Overall is divided by the weights of the scored criteria only. A trademark cell whose reference country is NS reads `3 (not screened)`.
+
+In the HTML view, adjusting weights recomputes only this Scorecard's Overall row
+for exploration. It keeps `unverified` and `not screened` qualifiers visible,
+excludes `not scored` criteria, and shows no score when the total scored weight is
+zero. The original scores, ranking, recommendation and evidence remain unchanged;
+Reset restores the original weights and Overall values.
 
 ## 3. Top 3 names
 

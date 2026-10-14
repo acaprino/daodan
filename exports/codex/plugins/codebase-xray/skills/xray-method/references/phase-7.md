@@ -74,11 +74,9 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 
-**Context management strategy** (to avoid "lost in the middle" on large codebases):
-1. Read each phase file one at a time
-2. After reading each file, extract the key findings into a running summary (max 5 bullet points per phase)
-3. After processing all 6 files, write the final report from the extracted summaries
-4. For detailed sections, cross-reference the original phase files rather than duplicating content
+Read phase files sequentially and retain up to five key-findings bullets per
+phase. Synthesize after all six; link detailed phase reports. This context limit
+never removes required sections or evidence.
 
 **Output file:** `$RUN_DIR/07-final-report.md`
 
@@ -155,7 +153,9 @@ Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
 
 The three coverage lines are mandatory, including in the condensed lite report.
 
-Classic owner: update `$RUN_DIR/state.json`, setting `status` to `"complete"`.
+For requested or useful HTML, only the run owner loads `references/human-view.md`.
+Workers never load presentation instructions. Classic owner: set `$RUN_DIR/state.json`
+status to `complete` only after native Markdown and every requested view are delivered.
 
 ## Team mode
 

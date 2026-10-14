@@ -744,6 +744,9 @@
             "name": "codebase-xray:team-analyze"
           }
         ],
+        "dependencies": [
+          "report-rendering"
+        ],
         "root": "plugins/codebase-xray",
         "skills": [
           {
@@ -913,7 +916,8 @@
           }
         ],
         "dependencies": [
-          "text-humanizer"
+          "text-humanizer",
+          "report-rendering"
         ],
         "root": "plugins/digital-marketing",
         "skills": [
@@ -2947,6 +2951,17 @@
           }
         ]
       },
+      "report-rendering": {
+        "root": "plugins/report-rendering",
+        "skills": [
+          {
+            "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: the task needs only a short answer, a production website, or a diagram renderer.",
+            "file": "skills/report-renderer/SKILL.md",
+            "id": "report-rendering:report-renderer",
+            "name": "report-renderer"
+          }
+        ]
+      },
       "research": {
         "agents": [
           {
@@ -3639,7 +3654,8 @@
           "react-development",
           "typescript-development",
           "platform-engineering",
-          "skill-catalog"
+          "skill-catalog",
+          "report-rendering"
         ],
         "root": "plugins/senior-review",
         "skills": [
@@ -4469,5 +4485,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "32.13.1"
+  "version": "32.14.0"
 }

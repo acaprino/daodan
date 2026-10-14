@@ -210,7 +210,8 @@ If `--phase N` or `--docs-only` flags are set, run only the requested phase(s), 
 
 ## Publish Step
 
-After Phase 7 completes:
+Publish only after native Phase 7 and every requested view are delivered. Keep
+failed requested views open per `references/human-view.md` in the method.
 
 1. Copy `$RUN_DIR/01-*.md` through `$RUN_DIR/07-final-report.md` (the ones that exist for the active flags) and `$RUN_DIR/state.json` to the `.codebase-xray/` root, overwriting the previous mirror.
 

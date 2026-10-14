@@ -83,6 +83,10 @@ The verdict is one of **Ready to merge / Ready with fixes / Not ready**, with 1-
 
 Cross-reference the findings with the project's `CLAUDE.md` (already read in Step 2). If any documented convention, structure, or workflow is stale, add a `### CLAUDE.md Staleness` section to the review output. Details in `references/code-review-output.md`.
 
+Save the finalized native report and apply that reference's optional human-view
+hook once before delivery. Its presentation contract belongs to
+`senior-review:review-consolidation`; do not ask a worker to generate HTML.
+
 ## Step 6: Auto-Comment on PR (if --auto-comment)
 
 When reviewing a PR with `--auto-comment`, post the review as inline PR comments with committable suggestions where the fix is small and self-contained. The full comment format, the suggestion inclusion rules, and the `gh api` invocations are in `references/code-review-output.md`; follow them exactly.

@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-xray",
       "topics": [],
-      "version": "5.5.0"
+      "version": "5.6.0"
     },
     {
       "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
@@ -201,7 +201,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.1.1"
+      "version": "3.2.0"
     },
     {
       "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
@@ -216,7 +216,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.1.1"
+      "version": "3.2.0"
     },
     {
       "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
@@ -238,7 +238,7 @@
       ],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.1.1"
+      "version": "3.2.0"
     },
     {
       "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
@@ -259,7 +259,7 @@
       "topics": [
         "customer-review"
       ],
-      "version": "3.1.1"
+      "version": "3.2.0"
     },
     {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
@@ -669,7 +669,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.2.2"
+      "version": "1.3.0"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -684,7 +684,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.2.2"
+      "version": "1.3.0"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
@@ -705,7 +705,7 @@
       "topics": [
         "readme"
       ],
-      "version": "1.2.2"
+      "version": "1.3.0"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",
@@ -1076,6 +1076,21 @@
       "version": "1.3.3"
     },
     {
+      "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: the task needs only a short answer, a production website, or a diagram renderer.",
+      "dimensions": [],
+      "file": "skills/report-renderer/SKILL.md",
+      "frameworks": [],
+      "id": "report-rendering:report-renderer",
+      "kind": "unknown",
+      "languages": [],
+      "metadata_sha256": null,
+      "name": "report-renderer",
+      "operations": [],
+      "provider": "report-rendering",
+      "topics": [],
+      "version": "1.0.0"
+    },
+    {
       "description": "Knowledge base for web research: query formulation, source authority ranking, the two search backends (native WebSearch, optional serper.dev through websearch.py), reading pages with WebFetch and the webfetch.py bot-block fallback, and the anti-loop rules. Used by quick-searcher, deep-researcher and /research:team-research. TRIGGER WHEN: performing web research with WebSearch, WebFetch, or the research plugin's scripts. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
       "dimensions": [
         "correctness"
@@ -1110,7 +1125,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.4"
+      "version": "15.1.0"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -1132,7 +1147,7 @@
       "topics": [
         "defects"
       ],
-      "version": "15.0.4"
+      "version": "15.1.0"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
@@ -1147,7 +1162,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.4"
+      "version": "15.1.0"
     },
     {
       "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
@@ -1162,7 +1177,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.4"
+      "version": "15.1.0"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
@@ -1177,7 +1192,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.4"
+      "version": "15.1.0"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
@@ -1192,7 +1207,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.0.4"
+      "version": "15.1.0"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",

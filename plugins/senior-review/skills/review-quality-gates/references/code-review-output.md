@@ -8,6 +8,11 @@ the command when it reaches Step 5.
 
 After validation completes, synthesize everything into the final structured review:
 
+Save the complete native Markdown to the caller's declared report path, or
+`report.md` in the prepared owned output root. Fill the existing template once;
+retain native details and evidence in their owned reports rather than producing
+another report layout. Account for each delivery and required verification first.
+
 ```
 ## Code Review -- [PR title or branch name]
 
@@ -117,6 +122,13 @@ After producing the review output, check if findings suggest the project's `CLAU
 1. Read `CLAUDE.md` (if it exists -- it was already read in Step 2)
 2. Cross-reference review findings with documented conventions, structure, and workflows
 3. If any documented information is outdated or missing, add a `### CLAUDE.md Staleness` section to the review output noting what needs updating
+
+After this final native update, apply the `Optional human view` contract in
+`senior-review:review-consolidation`. The final writer alone loads
+the `report-rendering:report-renderer` skill when the view is warranted and renders the saved
+report with `--profile review` inside the same owned output root. Preserve all
+native findings, evidence and unknown states; HTML delivery does not satisfy a
+missing reviewer or gate.
 
 ---
 
