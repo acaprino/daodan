@@ -1,5 +1,9 @@
 # Daodan
 
+<p align="center">
+  <img src="docs/assets/branding/daodan-logo-oni-regular.png" alt="Daodan logo" width="640">
+</p>
+
 Daodan is a development harness for projects built with AI. It augments your coding
 agent with a coherent way to understand a project, make changes, verify their
 consequences and preserve what was learned.
