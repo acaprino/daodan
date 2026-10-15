@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-map",
       "topics": [],
-      "version": "6.4.1"
+      "version": "6.4.2"
     },
     {
       "description": "Compatibility skill for the former Codebase X-ray name. Loads the canonical Codebase Map method while preserving the caller's scope and execution context.",
@@ -1237,7 +1237,7 @@
       "operations": [],
       "provider": "skill-catalog",
       "topics": [],
-      "version": "1.0.9"
+      "version": "1.0.10"
     },
     {
       "description": "Knowledge base loaded by the stripe-integrator and revenue-optimizer agents, also consumable directly. TRIGGER WHEN: working with the Stripe API (Payment Intents, Customers, Subscriptions, Checkout Sessions, Connect, webhooks, tax, usage-based billing), Firebase integration, pricing strategy, or revenue modeling.",

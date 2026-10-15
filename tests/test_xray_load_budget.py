@@ -26,7 +26,7 @@ UNIT_BUDGETS = {
     "references/update.md": 858,
     "references/evidence.md": 2_436,
     "references/reading.md": 132,
-    "references/phase-0.md": 498,
+    "references/phase-0.md": 355,
     "references/phases-1-2.md": 801,
     "references/phases-3-4.md": 1_348,
     "references/phases-5-6.md": 1_265,
@@ -35,8 +35,8 @@ UNIT_BUDGETS = {
 
 BUDGETS = {
     "workflows/analyze.md": 5_000,
-    "roles/map-analyst.md": 9_500,
-    "workflows/team-analyze.md": 13_900,
+    "roles/map-analyst.md": 9_357,
+    "workflows/team-analyze.md": 13_757,
     "roles/partition-structure-worker.md": 4_514,
     "roles/partition-behavior-worker.md": 4_521,
     "roles/partition-quality-worker.md": 5_299,
