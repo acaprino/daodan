@@ -12,9 +12,8 @@ that also covers JSX/TSX. We detect TSX via file path suffix when called.
 from __future__ import annotations
 
 import re
-from typing import Any
 
-from ._treesitter import get_parser, load_failure, node_text
+from ._treesitter import get_parser, load_failure
 from .base import ClassInfo, ParseResult
 from .comments import CommentToken, extract_c_style_comments
 
@@ -96,77 +95,16 @@ def _ts_parse(content: str, is_tsx: bool) -> ParseResult | None:
         _js._TS_ERROR_HOLDER["last"] = f"{type(e).__name__}: {e}"
         return None
 
-    def text(n: Any) -> str:
-        return node_text(n, src)
-
-    # The TypeScript grammar is a superset of JS, so class_declaration,
-    # function_declaration, import_statement, lexical_declaration, and
-    # export_statement keep the same node names. Run the JS walker first
-    # to get those, then layer the TS-only constructs. The walker must use
-    # the SAME grammar as the local parse above: feeding a .tsx file to the
-    # plain typescript grammar yields ERROR nodes around JSX and drops
-    # declarations.
-    js_result = _js._ts_parse(content, language="tsx" if is_tsx else _LANGUAGE_NAME)
+    # The shared declaration walker reads the same tree for JS/TS constructs,
+    # including namespace-qualified members and interface/enum declarations.
+    js_result = _js._ts_parse(
+        content,
+        language="tsx" if is_tsx else _LANGUAGE_NAME,
+        pre_parsed=(tree, src),
+    )
     if js_result is None:
         return None
 
-    ts_classes: list[ClassInfo] = []
-    ts_exported: list[str] = []
-
-    def collect_interface(node: Any, exported_flag: bool) -> None:
-        name_node = node.child_by_field_name("name")
-        bases: list[str] = []
-        heritage = node.child_by_field_name("heritage")
-        if heritage is None:
-            for c in node.children:
-                if c.type in ("extends_type_clause", "extends_clause"):
-                    heritage = c
-                    break
-        if heritage is not None:
-            for c in heritage.children:
-                t2 = text(c).strip()
-                if t2 and t2 not in ("extends", ","):
-                    bases.append(t2)
-        ci = ClassInfo(
-            name=text(name_node) if name_node else "?",
-            bases=bases,
-            kind="interface",
-            line_number=node.start_point[0] + 1,
-            end_line=node.end_point[0] + 1,
-        )
-        ts_classes.append(ci)
-        if exported_flag:
-            ts_exported.append(ci.name)
-
-    def collect_simple(node: Any, kind: str, exported_flag: bool) -> None:
-        name_node = node.child_by_field_name("name")
-        ci = ClassInfo(
-            name=text(name_node) if name_node else "?",
-            kind=kind,
-            line_number=node.start_point[0] + 1,
-            end_line=node.end_point[0] + 1,
-        )
-        ts_classes.append(ci)
-        if exported_flag:
-            ts_exported.append(ci.name)
-
-    def walk(node: Any, exported_flag: bool) -> None:
-        for child in node.children:
-            t = child.type
-            if t == "interface_declaration":
-                collect_interface(child, exported_flag)
-            elif t == "enum_declaration":
-                collect_simple(child, "enum", exported_flag)
-            elif t == "type_alias_declaration":
-                collect_simple(child, "type-alias", exported_flag)
-            elif t == "export_statement":
-                walk(child, exported_flag=True)
-
-    walk(tree.root_node, exported_flag=False)
-
-    js_result.classes.extend(ts_classes)
-    js_result.exported_symbols.extend(ts_exported)
-    js_result.exported_symbols = list(dict.fromkeys(js_result.exported_symbols))
     js_result.language = _LANGUAGE_NAME
     # Re-tag parser provenance so downstream display shows TS, not JS.
     js_result.notes = [n.replace("=tree-sitter", "=tree-sitter (ts)") for n in js_result.notes]

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:eed19d1d5efc1d16809aa4fd31e3d03ecf53f5eb517d53d9dd930ce17a7333a3",
+  "coreDigest": "sha256:ab3a96f9fa1f222385c776aa74b002f47cbcb538271298b0e470cfd3d0d3c966",
   "harnessStrategies": {
     "analyze": "parallel-subagents",
     "team-analyze": "parallel-subagents"
@@ -8,5 +8,5 @@
   "host": "codex",
   "overrides": [],
   "plugin": "codebase-map",
-  "version": "6.0.0"
+  "version": "6.2.0"
 }

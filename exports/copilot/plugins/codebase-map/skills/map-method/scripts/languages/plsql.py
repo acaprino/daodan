@@ -78,19 +78,20 @@ def _parse_params(raw: str) -> list[ParameterInfo]:
 
 
 def _parse(content: str) -> ParseResult:
+    masked = _sql._mask_sql_comments(content)
     # Start with SQL extraction so tables/views/sequences are captured too.
-    result = _sql._parse(content, language=_LANGUAGE_NAME)
+    result = _sql._parse(content, language=_LANGUAGE_NAME, masked_content=masked)
     result.notes = ["parser=regex (plsql)"]
 
     # Packages and package bodies.
     seen_packages: dict[str, ClassInfo] = {}
-    for m in _PACKAGE_RE.finditer(content):
+    for m in _PACKAGE_RE.finditer(masked):
         is_body = bool(re.search(r"PACKAGE\s+BODY", m.group(0), re.IGNORECASE))
         name = m.group("name")
         cls = ClassInfo(
             name=name,
             kind="package-body" if is_body else "package",
-            line_number=_line_no(content, m.start()),
+            line_number=_line_no(masked, m.start()),
         )
         result.classes.append(cls)
         if name not in seen_packages:
@@ -98,40 +99,40 @@ def _parse(content: str) -> ParseResult:
         result.exported_symbols.append(name)
 
     # Type bodies.
-    for m in _TYPE_BODY_RE.finditer(content):
+    for m in _TYPE_BODY_RE.finditer(masked):
         name = m.group("name")
         result.classes.append(
             ClassInfo(
                 name=name,
                 kind="type-body",
-                line_number=_line_no(content, m.start()),
+                line_number=_line_no(masked, m.start()),
             )
         )
         result.exported_symbols.append(name)
 
     # Inner procedures and functions (top-level scan; we don't track exact
     # owning package boundaries - that would require a real parser).
-    for m in _INNER_PROCEDURE_RE.finditer(content):
+    for m in _INNER_PROCEDURE_RE.finditer(masked):
         # Skip if this line is part of a CREATE OR REPLACE PROCEDURE - those
         # are already captured by the SQL adapter.
-        line_start = content.rfind("\n", 0, m.start()) + 1
-        prefix = content[line_start : m.start()].lstrip()
+        line_start = masked.rfind("\n", 0, m.start()) + 1
+        prefix = masked[line_start : m.start()].lstrip()
         if prefix.upper().startswith(("CREATE", "DECLARE")):
             continue
         fn = FunctionInfo(
             name=m.group("name"),
-            parameters=_parse_params(m.group("params") or ""),
+            parameters=_parse_params(content[m.start("params"):m.end("params")] if m.group("params") else ""),
             visibility="procedure",
-            line_number=_line_no(content, m.start()),
+            line_number=_line_no(masked, m.start()),
         )
         result.functions.append(fn)
         result.exported_symbols.append(m.group("name"))
-    for m in _INNER_FUNCTION_RE.finditer(content):
+    for m in _INNER_FUNCTION_RE.finditer(masked):
         fn = FunctionInfo(
             name=m.group("name"),
-            parameters=_parse_params(m.group("params") or ""),
+            parameters=_parse_params(content[m.start("params"):m.end("params")] if m.group("params") else ""),
             return_annotation=m.group("ret"),
-            line_number=_line_no(content, m.start()),
+            line_number=_line_no(masked, m.start()),
         )
         result.functions.append(fn)
         result.exported_symbols.append(m.group("name"))
@@ -140,18 +141,18 @@ def _parse(content: str) -> ParseResult:
     # last package seen (best-effort grouping).
     last_package = next(iter(seen_packages.values())) if seen_packages else None
     if last_package is not None:
-        for m in _CURSOR_RE.finditer(content):
+        for m in _CURSOR_RE.finditer(masked):
             last_package.class_variables.append(f"CURSOR {m.group('name')}")
-        for m in _EXCEPTION_RE.finditer(content):
+        for m in _EXCEPTION_RE.finditer(masked):
             last_package.class_variables.append(f"EXCEPTION {m.group('name')}")
 
     # Constants.
-    for m in _CONSTANT_RE.finditer(content):
+    for m in _CONSTANT_RE.finditer(masked):
         result.constants.append(m.group("name"))
 
     # Implicit type imports (%TYPE / %ROWTYPE references).
     seen_imports: set[str] = {imp.module for imp in result.imports}
-    for m in _ROWTYPE_RE.finditer(content):
+    for m in _ROWTYPE_RE.finditer(masked):
         schema = m.group("schema") or ""
         obj = m.group("obj")
         module = f"{schema}{obj}".strip(".")

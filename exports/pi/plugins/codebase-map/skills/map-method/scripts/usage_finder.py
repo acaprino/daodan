@@ -31,6 +31,7 @@ __all__ = [
     "find_usages_with_grep",
     "find_importing_modules",
     "find_all_usages",
+    "find_all_usages_batch",
     "is_excluded",
     "SOURCE_EXTENSIONS",
     "MARKUP_EXTENSIONS",
@@ -147,17 +148,44 @@ def _classify_usage(line: str, symbol: str) -> str:
     return "reference"
 
 
-def _ripgrep_globs() -> list[str]:
-    globs: list[str] = []
-    for ext in SEARCH_EXTENSIONS:
-        globs.extend(["--glob", f"*{ext}"])
-    for pattern in DEFAULT_EXCLUDES:
-        globs.extend(["--glob", f"!{pattern}"])
-    return globs
+def _searchable_files(search_path: Path, excludes: list[str]) -> list[Path]:
+    """Select files before any backend reads source, including its fallbacks."""
+    from snapshot import iter_files
+
+    base = search_path.resolve() if search_path.is_dir() else search_path.resolve().parent
+    return [path for path in iter_files(search_path)
+            if path.suffix.lower() in SEARCH_EXTENSIONS
+            and path.resolve().is_relative_to(base) and not is_excluded(path, excludes)]
 
 
-def _grep_includes() -> list[str]:
-    return [f"--include=*{ext}" for ext in SEARCH_EXTENSIONS]
+def _search_output(tool: str, symbols: list[str], files: list[Path]) -> str | None:
+    """Search bounded file arguments in batches below Windows' argv limit."""
+    outputs = []
+    batches: list[list[str]] = [[]]
+    length = 0
+    for path in files:
+        value = str(path)
+        if length + len(value) > 16000 and batches[-1]:
+            batches.append([])
+            length = 0
+        batches[-1].append(value)
+        length += len(value) + 3
+    for batch in batches:
+        if not batch:
+            continue
+        command = [tool, "-n", "--with-filename", "-F"] if tool == "rg" else [tool, "-nH", "-F"]
+        for symbol in symbols:
+            command += ["-e", symbol]
+        command += ["--", *batch]
+        try:
+            result = subprocess.run(command, capture_output=True, text=True,
+                                    timeout=SUBPROCESS_TIMEOUT_SECONDS)
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            return None
+        if result.returncode not in (0, 1):
+            return None
+        outputs.append(result.stdout)
+    return "\n".join(outputs)
 
 
 def find_usages_with_grep(
@@ -176,10 +204,8 @@ def find_usages_with_grep(
     for search_path in search_paths:
         if not search_path.exists():
             continue
-        # The three backends disagree on what they skip: ripgrep is told to
-        # read hidden and ignored files, grep reads everything, the fallback
-        # reads what the exclude patterns leave. The perimeter decides for all
-        # of them, so the answer does not depend on which tool is installed.
+        # Select the perimeter before a backend reads bytes. Filtering only
+        # its output would still let it read ignored or hidden source files.
         perimeter = Perimeter(search_path)
         usages.extend(
             usage for usage in _search_one_path(symbol, search_path, excludes)
@@ -193,43 +219,15 @@ def _search_one_path(symbol: str, search_path: Path, excludes: list[str]) -> lis
     """One search path, through the first backend that answers."""
     found: list[UsageLocation] = []
 
-    # 1. ripgrep.
-    try:
-        cmd = ["rg", "-n", "--hidden", "--no-ignore-vcs"]
-        cmd.extend(_ripgrep_globs())
-        for pat in excludes:
-            cmd.extend(["--glob", f"!{pat}"])
-        cmd.extend(["-F", "-e", symbol])
-        cmd.append(str(search_path))
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=SUBPROCESS_TIMEOUT_SECONDS,
-        )
-        if result.returncode in (0, 1):  # 1 = no match, not an error
-            _absorb_grep_lines(result.stdout, found, symbol)
+    files = _searchable_files(search_path, excludes)
+    for tool in ("rg", "grep"):
+        output = _search_output(tool, [symbol], files)
+        if output is not None:
+            _absorb_grep_lines(output, found, symbol)
             return found
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
-
-    # 2. grep.
-    try:
-        cmd = ["grep", "-rn", "-F"] + _grep_includes() + ["-e", symbol, str(search_path)]
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=SUBPROCESS_TIMEOUT_SECONDS,
-        )
-        if result.returncode in (0, 1):
-            _absorb_grep_lines(result.stdout, found, symbol)
-            return found
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
 
     # 3. Pure-Python fallback.
-    return _python_based_search(symbol, search_path, excludes)
+    return _python_based_search(symbol, search_path, excludes, files=files)
 
 
 def _split_grep_line(line: str) -> tuple[str, str, str] | None:
@@ -279,16 +277,16 @@ def _python_based_search(
     symbol: str,
     search_path: Path,
     exclude_patterns: list[str],
+    *, files: list[Path] | None = None,
 ) -> list[UsageLocation]:
-    out: list[UsageLocation] = []
+    selected = files if files is not None else _searchable_files(search_path, exclude_patterns)
+    return _python_search_batch([symbol], selected)[symbol]
 
-    for src in search_path.rglob("*"):
-        if not src.is_file():
-            continue
-        if src.suffix not in SEARCH_EXTENSIONS:
-            continue
-        if is_excluded(src, exclude_patterns):
-            continue
+
+def _python_search_batch(symbols: list[str], files: list[Path]) -> dict[str, list[UsageLocation]]:
+    """Read each allowed file once when neither external search tool answers."""
+    found: dict[str, list[UsageLocation]] = {symbol: [] for symbol in symbols}
+    for src in files:
         try:
             if src.stat().st_size > MAX_FILE_SIZE_BYTES:
                 continue
@@ -296,16 +294,24 @@ def _python_based_search(
         except OSError:
             continue
         for line_num, line in enumerate(content.split("\n"), start=1):
-            if symbol in line:
-                out.append(
-                    UsageLocation(
-                        file_path=str(src),
-                        line_number=line_num,
-                        line_content=line.strip(),
+            for symbol in symbols:
+                if symbol in line:
+                    found[symbol].append(UsageLocation(
+                        file_path=str(src), line_number=line_num, line_content=line.strip(),
                         usage_type=_classify_usage(line, symbol),
-                    )
-                )
-    return out
+                    ))
+    return found
+
+
+def _candidate_importer_files(
+    symbol: str,
+    source_module: str,
+    search_path: Path,
+    perimeter: Perimeter,
+) -> list[Path]:
+    """The same allowed inventory as the symbol search, restricted to source."""
+    return [path for path in _searchable_files(search_path, list(DEFAULT_EXCLUDES))
+            if path.suffix.lower() in SOURCE_EXTENSIONS and perimeter.covers(path)]
 
 
 def find_importing_modules(
@@ -337,18 +343,14 @@ def find_importing_modules(
         rf"\bimport\b[^;]*\b{re.escape(symbol)}\b[^;]*from\s+['\"]{re.escape(source_module)}['\"]",
         rf"\brequire\(['\"]{re.escape(source_module)}['\"]\)",
     ]
-    all_patterns = py_patterns + java_patterns + js_patterns
+    all_patterns = [re.compile(p) for p in (py_patterns + java_patterns + js_patterns)]
 
     for search_path in search_paths:
         if not search_path.exists():
             continue
         perimeter = Perimeter(search_path)
-        for src in search_path.rglob("*"):
-            if not src.is_file() or src.suffix not in SOURCE_EXTENSIONS:
-                continue
+        for src in _candidate_importer_files(symbol, source_module, search_path, perimeter):
             path_str = str(src)
-            if is_excluded(src, DEFAULT_EXCLUDES) or not perimeter.covers(src):
-                continue
             try:
                 if src.stat().st_size > MAX_FILE_SIZE_BYTES:
                     continue
@@ -356,7 +358,7 @@ def find_importing_modules(
             except OSError:
                 continue
             for pattern in all_patterns:
-                if re.search(pattern, content):
+                if pattern.search(content):
                     rel = str(src.relative_to(search_path.parent)) if search_path.parent else path_str
                     module = rel.replace("\\", "/")
                     if module not in seen:
@@ -380,12 +382,10 @@ def _is_same_file(candidate: str, source_file: Path) -> bool:
     return _resolved(candidate) == _resolved(str(source_file))
 
 
-def find_all_usages(
-    symbol: str,
+def _resolve_project_root_and_paths(
     source_file: Path,
     project_root: Path | None = None,
-) -> UsageResult:
-    """Find all usages of a symbol from a source file in the project."""
+) -> tuple[Path, list[Path]]:
     if project_root is None:
         current = source_file.parent
         while current != current.parent:
@@ -410,32 +410,175 @@ def find_all_usages(
             search_paths.append(candidate)
     if not search_paths:
         search_paths = [project_root]
+    return project_root, search_paths
 
-    usages = find_usages_with_grep(symbol, search_paths)
 
-    # Filter out the source file itself. Compare resolved paths: a basename
-    # match would drop every other file sharing the name (all __init__.py,
-    # every index.ts) from the results.
-    usages = [u for u in usages if not _is_same_file(u.file_path, source_file)]
-
-    # Compute source module for import searching.
+def _source_module_for(source_file: Path, project_root: Path) -> str:
     try:
         rel_path = source_file.relative_to(project_root)
-        # Python style: a.b.c (no extension).
         source_module = str(rel_path).replace("\\", ".").replace("/", ".")
         if "." in source_file.name:
             source_module = source_module[: source_module.rfind(".")]
+        return source_module
     except ValueError:
-        source_module = source_file.stem
+        return source_file.stem
 
-    importing = find_importing_modules(symbol, source_module, search_paths)
 
-    return UsageResult(
-        symbol=symbol,
-        source_file=str(source_file),
-        usages=usages,
-        importing_modules=importing,
-    )
+def find_all_usages(
+    symbol: str,
+    source_file: Path,
+    project_root: Path | None = None,
+) -> UsageResult:
+    """Find all usages of a symbol from a source file in the project."""
+    symbol = validate_symbol(symbol)
+    return find_all_usages_batch([symbol], source_file, project_root)[symbol]
+
+
+def _graph_importing_modules(symbols: list[str], source_file: Path,
+                             project_root: Path, manifest: dict | None) -> dict[str, list[str]]:
+    """Match all requested bindings in one graph and one importer pass."""
+    from snapshot import _python_module_candidates, build_manifest, resolved_imports
+
+    manifest = build_manifest(project_root) if manifest is None else manifest
+    root = Path(manifest["root"])
+    target = (root / (manifest.get("target") or ".")).resolve()
+    source = source_file.resolve()
+    graph = resolved_imports(manifest)
+    source_key = next((rel for rel in manifest["files"] if (root / rel).resolve() == source), None)
+    importing = {symbol: [] for symbol in symbols}
+    if source_key is None:
+        return importing
+    default_export = manifest["files"][source_key].get("default_export")
+    for rel, modules in graph.items():
+        if not any(source_key in targets for targets in modules.values()):
+            continue
+        entry = manifest["files"][rel]
+        bindings = entry.get("import_bindings", [])
+        for binding in bindings:
+            if source_key not in modules.get(binding["module"], []):
+                continue
+            names = list(binding.get("names", []))
+            default_import = binding.get("default_import")
+            if default_import in names:
+                # The default binding is a local alias, not an exported name.
+                # Remove only its own occurrence: a combined import may also
+                # name an unrelated export with the same spelling.
+                names.remove(default_import)
+            wildcard = any(name.startswith("*") for name in names)
+            if not binding.get("from"):
+                # Python import and a CommonJS module binding expose every
+                # exported member; destructuring names only exposes its keys.
+                wildcard = not names or not names[0].lstrip().startswith("{")
+                if Path(rel).suffix.lower() == ".py":
+                    wildcard = True
+            elif Path(rel).suffix.lower() == ".py":
+                # `from package import module` binds the module itself and
+                # exposes its members, unlike `from module import Symbol`.
+                candidates = _python_module_candidates(binding["module"], (root / rel).parent, target)
+                wildcard = wildcard or any(
+                    source == Path(candidate.rstrip("/") + "/" + name + ending).resolve()
+                    for candidate in candidates for name in names if name != "*"
+                    for ending in (".py", "/__init__.py")
+                )
+            declared = {part.strip().split(" as ")[0].split(":")[0].strip()
+                        for name in names for part in name.strip("{} ").split(",")}
+            for symbol in symbols:
+                default_match = (default_import or "default" in declared) and symbol == default_export
+                if (wildcard or symbol in declared or default_match) and rel not in importing[symbol]:
+                    importing[symbol].append(rel)
+    return importing
+
+
+def find_all_usages_batch(
+    symbols: list[str],
+    source_file: Path,
+    project_root: Path | None = None,
+    *, manifest: dict | None = None,
+) -> dict[str, UsageResult]:
+    """
+    Find usages for multiple symbols with one graph and one batched search.
+    Every search backend receives only the current allowed source inventory.
+    """
+    valid_symbols: list[str] = []
+    seen_sym: set[str] = set()
+    for sym in symbols:
+        try:
+            validated = validate_symbol(sym)
+        except ValueError:
+            continue
+        if validated not in seen_sym:
+            seen_sym.add(validated)
+            valid_symbols.append(validated)
+
+    if not valid_symbols:
+        return {}
+
+    project_root, search_paths = _resolve_project_root_and_paths(source_file, project_root)
+    source_module = _source_module_for(source_file, project_root)
+    graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
+    if graph_language and manifest is None:
+        from snapshot import build_manifest
+        manifest = build_manifest(project_root)
+    if manifest is not None:
+        inventory_root = Path(manifest["root"])
+        inventory_target = (inventory_root / (manifest.get("target") or ".")).resolve()
+        base = inventory_target if inventory_target.is_dir() else inventory_target.parent
+        perimeter = Perimeter(inventory_target)
+        from snapshot import is_forbidden
+
+        files = [inventory_root / rel for rel in manifest["files"]
+                 if Path(rel).suffix.lower() in SEARCH_EXTENSIONS
+                 and (inventory_root / rel).resolve().is_relative_to(base)
+                 and (inventory_target.is_dir() or (inventory_root / rel).resolve() == inventory_target)
+                 and perimeter.covers(inventory_root / rel)
+                 and not is_forbidden(Path(rel).name)
+                 and not is_excluded(inventory_root / rel, DEFAULT_EXCLUDES)]
+    else:
+        files = list(dict.fromkeys(path for search_path in search_paths
+                                   for path in _searchable_files(search_path, list(DEFAULT_EXCLUDES))))
+    files = [path for path in files if not _is_same_file(str(path), source_file)]
+
+    # Attempt a single batched ripgrep pass across all symbols.
+    by_symbol: dict[str, list[UsageLocation]] = {s: [] for s in valid_symbols}
+    output = _search_output("rg", valid_symbols, files)
+    if output is None:
+        output = _search_output("grep", valid_symbols, files)
+    if output is None:
+        by_symbol = _python_search_batch(valid_symbols, files)
+    else:
+        for raw_line in output.splitlines():
+            parsed = _split_grep_line(raw_line.rstrip("\r"))
+            if parsed is None:
+                continue
+            fpath, line_no_str, raw_content = parsed
+            try:
+                line_num = int(line_no_str)
+            except ValueError:
+                continue
+            if _is_same_file(fpath, source_file):
+                continue
+            content_stripped = raw_content.strip()
+            for sym in valid_symbols:
+                if sym in content_stripped:
+                    by_symbol[sym].append(UsageLocation(
+                        file_path=fpath, line_number=line_num, line_content=content_stripped,
+                        usage_type=_classify_usage(content_stripped, sym),
+                    ))
+
+    if graph_language:
+        importing = _graph_importing_modules(valid_symbols, source_file, project_root, manifest)
+    else:
+        importing = {sym: find_importing_modules(sym, source_module, search_paths) for sym in valid_symbols}
+
+    return {
+        sym: UsageResult(
+            symbol=sym,
+            source_file=str(source_file),
+            usages=by_symbol[sym],
+            importing_modules=importing[sym],
+        )
+        for sym in valid_symbols
+    }
 
 
 if __name__ == "__main__":

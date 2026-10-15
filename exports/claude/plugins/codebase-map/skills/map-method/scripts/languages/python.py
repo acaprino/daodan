@@ -134,6 +134,34 @@ def _decorators(node) -> tuple[bool, bool, bool]:
     return is_cm, is_sm, is_prop
 
 
+def _extract_calls_from_ast(node) -> list[str]:
+    """Collect distinct outgoing function/method calls inside a Python function body."""
+    seen: list[str] = []
+    seen_set: set[str] = set()
+    body = getattr(node, "body", None) or ()
+    stack = list(reversed(body))
+    while stack:
+        curr = stack.pop()
+        if isinstance(curr, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            continue
+        if isinstance(curr, ast.Call):
+            fn = curr.func
+            name = ""
+            if isinstance(fn, ast.Name):
+                name = fn.id
+            elif isinstance(fn, ast.Attribute):
+                try:
+                    name = ast.unparse(fn)
+                except Exception:
+                    name = fn.attr
+            if name and "\n" not in name and len(name) <= 80 and name not in seen_set:
+                seen_set.add(name)
+                seen.append(name)
+        for child in reversed(list(ast.iter_child_nodes(curr))):
+            stack.append(child)
+    return seen
+
+
 def _parse_function(node) -> FunctionInfo:
     params: list[ParameterInfo] = []
     args = node.args
@@ -175,6 +203,7 @@ def _parse_function(node) -> FunctionInfo:
         docstring=_extract_docstring(node),
         line_number=node.lineno,
         end_line=getattr(node, "end_lineno", None),
+        calls_made=_extract_calls_from_ast(node),
     )
 
 
@@ -236,7 +265,7 @@ def _parse_imports(tree: ast.Module) -> list[ImportInfo]:
                     )
                 )
         elif isinstance(node, ast.ImportFrom):
-            module = node.module or ""
+            module = "." * node.level + (node.module or "")
             names = [alias.name for alias in node.names]
             imports.append(
                 ImportInfo(

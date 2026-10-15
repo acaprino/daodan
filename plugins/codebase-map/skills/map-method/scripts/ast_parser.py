@@ -36,7 +36,21 @@ __all__ = [
     "ExternalCallInfo",
     "ParseResult",
     "parse_file",
+    "parse_content",
 ]
+
+
+def parse_content(content: str, file_path: Path) -> ParseResult:
+    """Parse already-loaded source content and return its structure."""
+    file_path = Path(file_path)
+    language = detect_language(file_path, content)
+    if language is None:
+        raise ValueError(
+            f"Unsupported file extension {file_path.suffix!r}. "
+            f"Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}."
+        )
+    adapter = get_adapter(language)
+    return adapter.parse(content, str(file_path))
 
 
 def parse_file(file_path: Path) -> ParseResult:
@@ -50,14 +64,7 @@ def parse_file(file_path: Path) -> ParseResult:
     """
     file_path = Path(file_path)
     content = file_path.read_text(encoding="utf-8")
-    language = detect_language(file_path, content)
-    if language is None:
-        raise ValueError(
-            f"Unsupported file extension {file_path.suffix!r}. "
-            f"Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}."
-        )
-    adapter = get_adapter(language)
-    return adapter.parse(content, str(file_path))
+    return parse_content(content, file_path)
 
 
 if __name__ == "__main__":

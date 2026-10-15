@@ -27,6 +27,7 @@ Standard library only. Parsing reuses the adapters in ./languages/.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import copy
 import fnmatch
 import hashlib
@@ -63,6 +64,7 @@ __all__ = [
     "hash_text",
     "is_forbidden",
     "iter_files",
+    "module_targets",
     "parser_fingerprint",
     "parser_profile",
     "read_text",
@@ -70,9 +72,11 @@ __all__ = [
     "renumber_line",
     "repo_root",
     "resolve_module",
+    "resolved_imports",
     "scan_claims",
     "scope_record",
     "symbol_spans",
+    "ts_path_config",
 ]
 
 SCHEMA = 1
@@ -329,9 +333,12 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
     return spans
 
 
-def file_entry(path: Path, data: bytes | None = None) -> dict:
+def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None,
+               *, parse_result=None) -> dict:
     """One manifest row, parsed from the same bytes whose identity it records."""
-    stat = path.stat()
+    if mtime is None or data is None:
+        stat = path.stat()
+        mtime = round(stat.st_mtime, 3) if mtime is None else mtime
     data = path.read_bytes() if data is None else data
     text = data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
     lines = text.split("\n")
@@ -339,7 +346,7 @@ def file_entry(path: Path, data: bytes | None = None) -> dict:
     profile = parser_profile(path, language)
     entry = {
         "size": len(data),
-        "mtime": round(stat.st_mtime, 3),
+        "mtime": mtime,
         "hash": hash_text(text),
         "raw_hash": hashlib.sha256(data).hexdigest(),
         "language": language,
@@ -356,7 +363,7 @@ def file_entry(path: Path, data: bytes | None = None) -> dict:
     elif language:
         try:
             data.decode("utf-8")  # Lossy decoding cannot supply precise source spans.
-            result = get_adapter(language).parse(text, str(path))
+            result = parse_result if parse_result is not None else get_adapter(language).parse(text, str(path))
         except Exception as exc:  # a parser failure degrades to a file-level entry
             entry["status"] = "parse-error"
             entry["parser_notes"] = [f"{type(exc).__name__}: {exc}"]
@@ -365,8 +372,8 @@ def file_entry(path: Path, data: bytes | None = None) -> dict:
         entry["parser_notes"] = list(result.notes)
         if any(note.startswith("syntax error:") for note in result.notes):
             entry["status"] = "parse-error"
-            return entry
-        entry["status"] = "parsed"
+        else:
+            entry["status"] = "parsed"
         # A loaded grammar can fail on this particular source and fall back.
         # Retain the availability profile for freshness checks, but do not cache
         # this result as a successful native parse. The reader returns it in full.
@@ -374,7 +381,16 @@ def file_entry(path: Path, data: bytes | None = None) -> dict:
             note.startswith("parser=tree-sitter") for note in result.notes
         ):
             entry["status"] = "parse-error"
-        entry["imports"] = sorted({i.module for i in result.imports if i.is_internal and i.module})
+        # A bare specifier can be a configured alias or workspace package. Its
+        # classification becomes known only when the project graph is resolved.
+        entry["imports"] = sorted({i.module for i in result.imports if i.module})
+        entry["import_bindings"] = [
+            {"module": item.module, "names": list(item.names), "from": item.is_from_import,
+             **({"default_import": item.default_import} if getattr(item, "default_import", None) else {})}
+            for item in result.imports if item.module
+        ]
+        if getattr(result, "default_export", None):
+            entry["default_export"] = result.default_export
         if result.language == "css" and max((len(text) for text in lines), default=0) > MAX_STYLESHEET_LINE:
             entry["status"] = "file-level"
             entry["parser_notes"].append("minified stylesheet; precise rule selection disabled")
@@ -407,7 +423,7 @@ def scope_record(perimeter: Perimeter, root: Path) -> dict:
     }
 
 
-def build_manifest(target: Path, previous: dict | None = None) -> dict:
+def build_manifest(target: Path, previous: dict | None = None, *, parse_results: dict | None = None) -> dict:
     """Snapshot the current perimeter; reuse structure only for verified bytes.
 
     A reuse candidate saves parsing, not inventory traversal or hashing. Legacy
@@ -430,16 +446,28 @@ def build_manifest(target: Path, previous: dict | None = None) -> dict:
     old_files = previous.get("files", {}) if reusable else {}
     metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
     perimeter = Perimeter(target)
+    supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
+    pending: list[tuple[str, Path, bytes, float, object]] = []
+    ordered_rels: list[str] = []
+    reused_entries: dict[str, dict] = {}
     for path in iter_files(target, perimeter):
         try:
-            if path.stat().st_size > MAX_FILE_BYTES:
+            st = path.stat()
+            observed = supplied.get(path.resolve())
+            if observed is None and st.st_size > MAX_FILE_BYTES:
                 continue
-            data = path.read_bytes()
-            metrics["files_read"] += 1
-            metrics["source_bytes_read"] += len(data)
+            if observed is not None:
+                content, parsed = observed
+                data = content.encode("utf-8")
+            else:
+                data = path.read_bytes()
+                parsed = None
+                metrics["files_read"] += 1
+                metrics["source_bytes_read"] += len(data)
             if len(data) > MAX_FILE_BYTES:
                 continue
             rel = relative_to_root(path, root)
+            mtime = round(st.st_mtime, 3)
             old = old_files.get(rel)
             raw_hash = hashlib.sha256(data).hexdigest()
             if (isinstance(old, dict) and old.get("raw_hash") == raw_hash
@@ -447,15 +475,46 @@ def build_manifest(target: Path, previous: dict | None = None) -> dict:
                     and old.get("status") in {"parsed", "file-level", "parse-skipped"}):
                 entry = copy.deepcopy(old)
                 entry["size"] = len(data)
-                entry["mtime"] = round(path.stat().st_mtime, 3)
+                entry["mtime"] = mtime
                 metrics["cache_hits"] += 1
+                reused_entries[rel] = entry
             else:
-                entry = file_entry(path, data)
-                if entry["status"] in {"parsed", "parse-error"}:
-                    metrics["parsed_files"] += 1
-            files[rel] = entry
+                pending.append((rel, path, data, mtime, parsed))
+            ordered_rels.append(rel)
         except OSError:
             continue
+
+    parsed_entries: dict[str, dict] = {}
+    if len(pending) >= 8:
+        workers = min(8, (os.cpu_count() or 2))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [
+                (rel, parsed is None, pool.submit(file_entry, path, data, mtime, parse_result=parsed))
+                for rel, path, data, mtime, parsed in pending
+            ]
+            for rel, needs_parse, fut in futures:
+                try:
+                    entry = fut.result()
+                except OSError:
+                    continue
+                if entry["status"] in {"parsed", "parse-error"} and needs_parse:
+                    metrics["parsed_files"] += 1
+                parsed_entries[rel] = entry
+    else:
+        for rel, path, data, mtime, parsed in pending:
+            try:
+                entry = file_entry(path, data, mtime, parse_result=parsed)
+            except OSError:
+                continue
+            if entry["status"] in {"parsed", "parse-error"} and parsed is None:
+                metrics["parsed_files"] += 1
+            parsed_entries[rel] = entry
+
+    for rel in ordered_rels:
+        if rel in reused_entries:
+            files[rel] = reused_entries[rel]
+        elif rel in parsed_entries:
+            files[rel] = parsed_entries[rel]
     from datetime import datetime, timezone
     return {
         "schema": SCHEMA,
@@ -527,6 +586,7 @@ def compare_files(manifest: dict, target: Path, verify: bool = False) -> dict:
 
     return {
         "root": root.as_posix(),
+        "target": relative_to_root(target, root),
         "added": sorted(added),
         "removed": sorted(removed),
         "modified": sorted(modified),
@@ -554,7 +614,9 @@ def compare_symbols(manifest: dict, comparison: dict) -> dict:
             entry = file_entry(path)
         except OSError:
             continue
-        fresh[rel] = {"symbols": entry["symbols"], "imports": entry["imports"]}
+        fresh[rel] = {"symbols": entry["symbols"], "imports": entry["imports"],
+                      "import_bindings": entry.get("import_bindings", []),
+                      "default_export": entry.get("default_export")}
         old_symbols = old_files.get(rel, {}).get("symbols", {})
         new_symbols = entry["symbols"]
         moved: list[dict] = []
@@ -678,7 +740,330 @@ def _resolve_stylesheet(module: str, importer: str, known: dict[str, list[str]])
     return None
 
 
-def resolve_module(module: str, importer: str, known: dict[str, list[str]]) -> str | None:
+def _strip_jsonc_comments(raw: str) -> str:
+    """Strip // and /* */ comments and trailing commas from tsconfig-style JSONC."""
+    out: list[str] = []
+    i = 0
+    n = len(raw)
+    in_string = False
+    while i < n:
+        ch = raw[i]
+        if in_string:
+            out.append(ch)
+            if ch == "\\" and i + 1 < n:
+                out.append(raw[i + 1])
+                i += 2
+                continue
+            if ch == '"':
+                in_string = False
+            i += 1
+            continue
+        if ch == '"':
+            in_string = True
+            out.append(ch)
+            i += 1
+            continue
+        if ch == "/" and i + 1 < n and raw[i + 1] == "/":
+            i += 2
+            while i < n and raw[i] != "\n":
+                i += 1
+            continue
+        if ch == "/" and i + 1 < n and raw[i + 1] == "*":
+            i += 2
+            while i + 1 < n and not (raw[i] == "*" and raw[i + 1] == "/"):
+                i += 1
+            i += 2
+            continue
+        out.append(ch)
+        i += 1
+    cleaned = "".join(out)
+    return re.sub(r'("(?:\\.|[^"\\])*")|,\s*(?=[}\]])',
+                  lambda match: match.group(1) or "", cleaned)
+
+
+def ts_path_config(root: Path) -> dict:
+    """Read project module configuration only inside the target's perimeter.
+
+    Each option retains the directory in which it was declared, including an
+    inherited baseUrl or paths map. Package configs apply to their descendants.
+    Relative extends are supported; package-manager config lookup is outside
+    the analyzed tree's dependency perimeter and is deliberately not guessed.
+    """
+    root = Path(root).resolve()
+    config = {"root": root.as_posix(), "configs": {}, "packages": {}}
+    if not root.is_dir():
+        return config
+    perimeter = Perimeter(root)
+
+    def allowed(path: Path) -> bool:
+        try:
+            path.resolve().relative_to(root)
+        except ValueError:
+            return False
+        return perimeter.covers(path) and not is_forbidden(path.name)
+
+    documents: dict[Path, dict] = {}
+
+    def read(path: Path) -> dict:
+        path = path.resolve()
+        if path in documents:
+            return documents[path]
+        data = {}
+        if allowed(path):
+            try:
+                if path.stat().st_size <= MAX_PARSE_BYTES:
+                    value = json.loads(_strip_jsonc_comments(path.read_text(encoding="utf-8")))
+                    if isinstance(value, dict):
+                        data = value
+            except (OSError, UnicodeError, ValueError, RecursionError):
+                pass
+        documents[path] = data
+        return data
+
+    loaded: dict[Path, dict] = {}
+
+    def options(path: Path, visiting: set[Path]) -> dict:
+        path = path.resolve()
+        # A cycle guard alone does not bound a long, acyclic inheritance chain.
+        if path in visiting or len(visiting) >= 32:
+            return {}
+        if path in loaded:
+            return loaded[path]
+        document = read(path)
+        merged = {}
+        parent = document.get("extends")
+        parents = parent if isinstance(parent, list) else [parent]
+        for name in parents:
+            if isinstance(name, str) and name.startswith("."):
+                candidate = path.parent / name
+                if allowed(candidate) and not candidate.is_file() and candidate.suffix != ".json":
+                    candidate = Path(str(candidate) + ".json")
+                if allowed(candidate):
+                    merged.update(options(candidate, visiting | {path}))
+        own = document.get("compilerOptions", {})
+        if isinstance(own, dict):
+            base = own.get("baseUrl")
+            if isinstance(base, str):
+                merged["baseUrl"] = (path.parent / base).resolve().as_posix()
+            paths = own.get("paths")
+            if isinstance(paths, dict):
+                base_path = Path(merged.get("baseUrl", path.parent))
+                merged["paths"] = {
+                    pattern: [(base_path / target).as_posix() for target in targets
+                              if isinstance(target, str)]
+                    for pattern, targets in paths.items()
+                    if isinstance(pattern, str) and isinstance(targets, list)
+                }
+        loaded[path] = merged
+        return merged
+
+    package_paths = []
+    for directory, names in perimeter.walk():
+        if "tsconfig.json" in names:
+            path = directory / "tsconfig.json"
+            config["configs"][directory.as_posix()] = options(path, set())
+        elif "jsconfig.json" in names:
+            path = directory / "jsconfig.json"
+            config["configs"][directory.as_posix()] = options(path, set())
+        if "package.json" in names:
+            package_paths.append(directory / "package.json")
+
+    project = read(root / "package.json")
+    workspaces = project.get("workspaces", [])
+    if isinstance(workspaces, dict):
+        workspaces = workspaces.get("packages", [])
+    patterns = [item for item in workspaces if isinstance(item, str)] if isinstance(workspaces, list) else []
+    for path in package_paths:
+        directory = path.parent.relative_to(root).as_posix()
+        if directory != "." and not any(fnmatch.fnmatchcase(directory, pattern.rstrip("/")) for pattern in patterns):
+            continue
+        package = read(path)
+        name = package.get("name")
+        if isinstance(name, str) and name:
+            # Duplicate package identities are ambiguous, so neither wins.
+            if name in config["packages"]:
+                config["packages"][name] = None
+            else:
+                config["packages"][name] = {**package, "directory": path.parent.as_posix()}
+    return config
+
+
+def _expand_alias(module: str, aliases: dict[str, list[str]] | None) -> list[str]:
+    """Expand the most specific configured path pattern, without inventing aliases."""
+    expanded: list[str] = []
+    if aliases:
+        if module in aliases:
+            return list(aliases[module])
+        for pat, targets in sorted(aliases.items(), key=lambda item: (-len(item[0].split("*")[0]), -len(item[0]))):
+            if pat.count("*") == 1:
+                prefix, suffix = pat.split("*", 1)
+                if module.startswith(prefix) and module.endswith(suffix):
+                    mid = module[len(prefix): len(module) - len(suffix) if suffix else len(module)]
+                    for t in targets:
+                        expanded.append(t.replace("*", mid))
+                    break
+    return expanded
+
+
+def _module_candidates(candidate: str, importer: str) -> list[str]:
+    """Ordered file forms for this importer's language."""
+    suffix = Path(importer).suffix.lower()
+    if suffix == ".py":
+        return [candidate + ".py", candidate + "/__init__.py"]
+    if suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"}:
+        extensions = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs")
+        paths = [candidate]
+        # TS source commonly imports the JavaScript path emitted by its build.
+        if suffix in {".ts", ".tsx"}:
+            for emitted, source in ((".js", ".ts"), (".jsx", ".tsx"), (".mjs", ".mts"), (".cjs", ".cts")):
+                if candidate.endswith(emitted):
+                    paths.insert(0, candidate[:-len(emitted)] + source)
+        if Path(candidate).suffix.lower() not in extensions:
+            paths += [candidate + ext for ext in extensions]
+            paths += [candidate + "/index" + ext for ext in extensions]
+        return paths
+    return [candidate] + [candidate + ext for ext in _MODULE_EXTENSIONS] + [candidate + "/" + name for name in _PACKAGE_FILES]
+
+
+def _package_candidates(module: str, packages: dict) -> list[str]:
+    for name in sorted(packages, key=len, reverse=True):
+        if module != name and not module.startswith(name + "/"):
+            continue
+        package = packages[name]
+        if not isinstance(package, dict):
+            return []
+        subpath = "." if module == name else "./" + module[len(name) + 1:]
+
+        def targets(value) -> list[str]:
+            if isinstance(value, str):
+                return [value]
+            if isinstance(value, list):
+                return [target for item in value for target in targets(item)]
+            if isinstance(value, dict):
+                for condition in ("types", "import", "require", "default"):
+                    if condition in value:
+                        return targets(value[condition])
+            return []
+
+        exports = package.get("exports")
+        if "exports" in package:
+            if isinstance(exports, dict) and any(key.startswith(".") for key in exports):
+                matches = _expand_alias(subpath, {key: targets(value) for key, value in exports.items()})
+            else:
+                matches = targets(exports) if subpath == "." else []
+        elif subpath == ".":
+            matches = [package[key] for key in ("types", "module", "main") if isinstance(package.get(key), str)] or ["./index"]
+        else:
+            matches = [subpath]
+        directory = Path(package["directory"])
+        return [(directory / value).as_posix() for value in matches
+                if value.startswith("./") or (exports is None and not Path(value).is_absolute())]
+    return []
+
+
+def _python_module_candidates(module: str, home: Path, target: Path) -> list[str]:
+    """Module bases shared by graph resolution and imported-module bindings."""
+    if module.startswith("."):
+        level = len(module) - len(module.lstrip("."))
+        base = home
+        for _ in range(level - 1):
+            base = base.parent
+        return [(base / module[level:].replace(".", "/")).as_posix()]
+    base = target if target.is_dir() else target.parent
+    return [(directory / module.replace(".", "/")).as_posix()
+            for directory in (base, base / "src")]
+
+
+def resolved_imports(manifest: dict, config: dict | None = None) -> dict[str, dict[str, list[str]]]:
+    """Resolve each manifest specifier once, keeping its binding provenance.
+
+    JS/TS paths match only explicit relative, configured or workspace targets.
+    Python absolute modules use the analyzed root and its conventional src
+    directory; relative Python modules start at the importing package.
+    """
+    root = Path(manifest.get("root") or ".").resolve()
+    target = (root / (manifest.get("target") or ".")).resolve()
+    config = ts_path_config(target) if config is None else config
+    files = manifest.get("files", {})
+    perimeter = Perimeter(target)
+    by_absolute = {(root / rel).resolve(): rel for rel in files
+                   if ((root / rel).resolve().is_relative_to(target) or (root / rel).resolve() == target)
+                   and perimeter.covers(root / rel) and not is_forbidden(Path(rel).name)}
+    known = _by_basename(by_absolute.values())
+
+    def lookup(candidate: str, importer: str) -> str | None:
+        for path in _module_candidates(candidate, importer):
+            match = by_absolute.get(Path(path).resolve())
+            if match:
+                return match
+        return None
+
+    graph = {}
+    for importer, entry in files.items():
+        if (root / importer).resolve() not in by_absolute:
+            graph[importer] = {}
+            continue
+        imports = entry.get("imports", [])
+        bindings = entry.get("import_bindings", [])
+        home = (root / importer).parent
+        suffix = Path(importer).suffix.lower()
+        settings = {}
+        applicable = [(Path(directory), value) for directory, value in config.get("configs", {}).items()
+                      if home.is_relative_to(Path(directory))]
+        if applicable:
+            settings = max(applicable, key=lambda item: len(item[0].parts))[1]
+        modules = {}
+        for module in imports:
+            resolved = set()
+            candidates = []
+            if suffix == ".py":
+                candidates = _python_module_candidates(module, home, target)
+            elif suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"}:
+                if module.startswith("."):
+                    candidates = [(home / module).as_posix()]
+                else:
+                    candidates = _expand_alias(module, settings.get("paths"))
+                    if "baseUrl" in settings:
+                        candidates.append((Path(settings["baseUrl"]) / module).as_posix())
+                    candidates += _package_candidates(module, config.get("packages", {}))
+            else:
+                hit = resolve_module(module, importer, known)
+                if hit and hit != importer:
+                    resolved.add(hit)
+            for candidate in candidates:
+                hit = lookup(candidate, importer)
+                if hit and hit != importer:
+                    resolved.add(hit)
+                    # Paths entries are ordered fallbacks, not multiple edges.
+                    break
+            if suffix == ".py":
+                for binding in bindings:
+                    if binding.get("module") == module and binding.get("from"):
+                        for name in binding.get("names", []):
+                            if name == "*":
+                                continue
+                            for candidate in candidates:
+                                hit = lookup(candidate.rstrip("/") + "/" + name, importer)
+                                if hit and hit != importer:
+                                    resolved.add(hit)
+                                    break
+            modules[module] = sorted(resolved)
+        graph[importer] = modules
+    return graph
+
+
+def module_targets(manifest: dict, config: dict | None = None) -> dict[str, list[str]]:
+    """The distinct internal targets of every importer, in a stable order."""
+    return {importer: sorted({target for targets in modules.values() for target in targets})
+            for importer, modules in resolved_imports(manifest, config).items()}
+
+
+def resolve_module(
+    module: str,
+    importer: str,
+    known: dict[str, list[str]],
+    aliases: dict[str, list[str]] | None = None,
+) -> str | None:
     """Map an import specifier to a path in the snapshot, or None."""
     if not module:
         return None
@@ -692,14 +1077,18 @@ def resolve_module(module: str, importer: str, known: dict[str, list[str]]) -> s
         candidates += [joined + ext for ext in _MODULE_EXTENSIONS]
         candidates += [f"{joined}/{name}" for name in _PACKAGE_FILES]
     else:
-        dotted = module.replace(".", "/")
-        candidates += [dotted + ext for ext in _MODULE_EXTENSIONS]
-        candidates += [f"{dotted}/{name}" for name in _PACKAGE_FILES]
-        # A specifier that is already path-shaped ("orders/service").
-        if "/" in module:
-            candidates += [module] + [module + ext for ext in _MODULE_EXTENSIONS]
+        specifiers = _expand_alias(module, aliases) + [module]
+        for spec in specifiers:
+            if "/" in spec:
+                candidates += [spec] + [spec + ext for ext in _MODULE_EXTENSIONS]
+                candidates += [f"{spec}/{name}" for name in _PACKAGE_FILES]
+            dotted = spec.replace(".", "/")
+            candidates += [dotted + ext for ext in _MODULE_EXTENSIONS]
+            candidates += [f"{dotted}/{name}" for name in _PACKAGE_FILES]
     for candidate in candidates:
-        hit = _lookup(candidate, known, importer)
+        hit = (candidate if candidate in known.get(candidate.rsplit("/", 1)[-1], []) else None)
+        if not module.startswith(".") and not importer.lower().endswith((".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs")):
+            hit = _lookup(candidate, known, importer)
         if hit:
             return hit
     return None
@@ -728,15 +1117,16 @@ def build_import_index(manifest: dict, comparison: dict, symbols: dict) -> dict[
         current_imports[rel] = list(entry.get("imports", []))
 
     resolvable = list(current_imports) + [rel for rel in comparison["removed"] if rel not in current_imports]
-    known = _by_basename(resolvable)
+    graph_manifest = {**manifest, "root": comparison.get("root") or manifest.get("root"),
+                      "target": comparison.get("target") or manifest.get("target") or ".", "files": {
+        rel: {**old_files.get(rel, {}), **fresh.get(rel, {}), "imports": current_imports.get(rel, [])}
+        for rel in resolvable
+    }}
+    graph = module_targets(graph_manifest)
     index: dict[str, list[str]] = {}
-    for importer, modules in current_imports.items():
-        for module in modules:
-            imported = resolve_module(module, importer, known)
-            if imported and imported != importer:
-                index.setdefault(imported, [])
-                if importer not in index[imported]:
-                    index[imported].append(importer)
+    for importer in current_imports:
+        for imported in graph[importer]:
+            index.setdefault(imported, []).append(importer)
     return {key: sorted(value) for key, value in index.items()}
 
 

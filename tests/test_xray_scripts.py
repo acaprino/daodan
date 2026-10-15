@@ -241,6 +241,19 @@ class ClassifierTests(unittest.TestCase):
         self.assertEqual(result.classification, classifier.Classification.STANDARD)
         self.assertFalse(result.verification_required)
 
+    def test_high_fan_in_promotes_small_hub_file(self):
+        small_src = "def id_of(x):\n    return x\n"
+        low = classifier.classify_from_content(small_src, "hub.py", fan_in=0)
+        self.assertEqual(low.classification, classifier.Classification.UTILITY)
+
+        mid = classifier.classify_from_content(small_src, "hub.py", fan_in=8)
+        self.assertEqual(mid.classification, classifier.Classification.HIGH_COMPLEXITY)
+        self.assertTrue(mid.verification_required)
+
+        high = classifier.classify_from_content(small_src, "hub.py", fan_in=16)
+        self.assertEqual(high.classification, classifier.Classification.CRITICAL)
+        self.assertTrue(high.verification_required)
+
 
 class ParserTests(unittest.TestCase):
     def setUp(self):
@@ -475,6 +488,98 @@ class UsageFinderTests(unittest.TestCase):
         files = {Path(u.file_path).as_posix() for u in find_all_usages("Engine", temp / "core.py", temp).usages}
         self.assertTrue([f for f in files if f.endswith("/app.py")], files)
         self.assertFalse([f for f in files if "/generated/" in f], files)
+
+    def test_batch_usage_lookup_matches_individual_results(self):
+        from usage_finder import find_all_usages_batch
+
+        temp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(temp, ignore_errors=True))
+        _write(temp, "core.py", "class Engine:\n    pass\n\ndef start_engine():\n    pass\n")
+        _write(temp, "app.py", "from core import Engine, start_engine\n\ne = Engine()\nstart_engine()\n")
+        batched = find_all_usages_batch(["Engine", "start_engine"], temp / "core.py", temp)
+        self.assertIn("Engine", batched)
+        self.assertIn("start_engine", batched)
+        self.assertGreaterEqual(len(batched["Engine"].usages), 2)
+        self.assertGreaterEqual(len(batched["start_engine"].usages), 2)
+        self.assertTrue(any(m.endswith("app.py") for m in batched["Engine"].importing_modules))
+
+
+class AstDepthAndAccuracyTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.temp, ignore_errors=True)
+
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
+    def test_typescript_reuses_ast_and_detects_syntax_errors(self):
+        broken = _write(self.temp, "broken.ts", "export function broken(a: number {\n  return a;\n}\n")
+        res = parse_file(broken)
+        self.assertTrue(any(n.startswith("syntax error:") for n in res.notes), res.notes)
+
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
+    def test_nested_classes_and_enums_are_extracted_in_java_and_rust(self):
+        java_src = (
+            "package com.acme;\n"
+            "public class Outer {\n"
+            "    public enum Mode {\n"
+            "        FAST, SAFE;\n"
+            "        public boolean isFast() { return this == FAST; }\n"
+            "    }\n"
+            "}\n"
+        )
+        j_res = parse_file(_write(self.temp, "Outer.java", java_src))
+        j_classes = {c.name: c for c in j_res.classes}
+        self.assertIn("Outer.Mode", j_classes)
+        self.assertIn("FAST", j_classes["Outer.Mode"].class_variables)
+        self.assertIn("isFast", [m.name for m in j_classes["Outer.Mode"].methods])
+
+        rust_src = (
+            "pub mod network {\n"
+            "    pub struct Client {\n"
+            "        pub timeout: u64,\n"
+            "    }\n"
+            "    impl Client {\n"
+            "        pub fn connect(&self) -> bool { true }\n"
+            "    }\n"
+            "}\n"
+        )
+        r_res = parse_file(_write(self.temp, "lib.rs", rust_src))
+        r_classes = {(c.name, c.kind): c for c in r_res.classes}
+        self.assertIn(("network.Client", "struct"), r_classes)
+        self.assertIn(("network.Client", "impl"), r_classes)
+        self.assertIn("connect", [m.name for m in r_classes[("network.Client", "impl")].methods])
+
+    def test_sql_ignores_ddl_inside_comments_and_strings(self):
+        sql_src = (
+            "-- CREATE TABLE fake_comment_table (id INT);\n"
+            "/* CREATE VIEW fake_block_view AS SELECT 1; */\n"
+            "CREATE TABLE real_orders (\n"
+            "    id INT PRIMARY KEY,\n"
+            "    note VARCHAR(100) DEFAULT 'CREATE TABLE fake_literal (x INT)'\n"
+            ");\n"
+        )
+        res = parse_file(_write(self.temp, "schema.sql", sql_src))
+        names = [c.name for c in res.classes]
+        self.assertEqual(names, ["real_orders"])
+
+    def test_thread_local_parsers_isolate_threads(self):
+        import threading
+        from languages._treesitter import get_parser
+
+        results = []
+
+        def worker():
+            results.append(get_parser("javascript"))
+
+        t1 = threading.Thread(target=worker)
+        t2 = threading.Thread(target=worker)
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+        self.assertEqual(len(results), 2)
+        if results[0] is not None and results[1] is not None:
+            self.assertIsNot(results[0][0], results[1][0])
+            self.assertIs(results[0][1], results[1][1])
 
 
 class DocReviewTests(unittest.TestCase):

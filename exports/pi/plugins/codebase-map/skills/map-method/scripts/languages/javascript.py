@@ -9,9 +9,17 @@ http.*, mysql/pg/mongoose/sequelize, kafkajs/amqplib/redis, child_process).
 from __future__ import annotations
 
 import re
+import threading
 from typing import Any
 
-from ._treesitter import get_parser, load_failure, node_text
+from ._treesitter import (
+    check_syntax_errors,
+    extract_ast_calls,
+    get_parser,
+    load_failure,
+    node_text,
+    scan_ast_external_calls,
+)
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -27,19 +35,17 @@ __all__ = ["adapter"]
 _LANGUAGE_NAME = "javascript"
 
 
-_RELATIVE_IMPORT_PREFIXES = ("./", "../", "/")
+_RELATIVE_IMPORT_PREFIXES = ("./", "../", "/", "@/", "~/", "#")
 
 
 def _is_internal_module(module: str) -> bool:
     """
     Classify a JS/TS import specifier as internal-to-the-project or external.
 
-    Internal: relative path imports (`./foo`, `../bar`, `/baz`).
+    Internal: relative path imports (`./foo`, `../bar`, `/baz`) and standard
+    project path-alias prefixes (`@/foo`, `~/bar`, `#internal`).
     External: `node:` builtins, scoped npm packages (`@scope/name`), and bare
-    npm specifiers (`react`, `lodash/get`). Bare specifiers default to
-    external because they're almost always npm packages -- a workspace
-    setup that aliases them internally is rare enough that we accept the
-    occasional misclassification.
+    npm specifiers (`react`, `lodash/get`).
     """
     if not module:
         return False
@@ -94,21 +100,47 @@ def _scan_external_calls(content: str) -> list[ExternalCallInfo]:
 # ---------------------------------------------------------------------------
 
 
-_TS_ERROR_HOLDER: dict[str, str] = {}
+class _ThreadLocalErrorHolder:
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def __setitem__(self, key: str, value: str) -> None:
+        d = getattr(self._local, "data", None)
+        if d is None:
+            d = {}
+            self._local.data = d
+        d[key] = value
+
+    def pop(self, key: str, default: str | None = None) -> str | None:
+        d = getattr(self._local, "data", None)
+        if d is None:
+            return default
+        return d.pop(key, default)
 
 
-def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | None:
-    pair = get_parser(language)
-    if pair is None:
-        return None
-    parser, _lang = pair
-    src = content.encode("utf-8")
-    try:
-        tree = parser.parse(src)
-    except Exception as e:
-        # Tree-sitter MAY raise on extreme input. Signal caller via None.
-        _TS_ERROR_HOLDER["last"] = f"{type(e).__name__}: {e}"
-        return None
+_TS_ERROR_HOLDER = _ThreadLocalErrorHolder()
+
+
+def _ts_parse(
+    content: str,
+    language: str = _LANGUAGE_NAME,
+    *,
+    pre_parsed: tuple[Any, bytes] | None = None,
+) -> ParseResult | None:
+    if pre_parsed is not None:
+        tree, src = pre_parsed
+    else:
+        pair = get_parser(language)
+        if pair is None:
+            return None
+        parser, _lang = pair
+        src = content.encode("utf-8")
+        try:
+            tree = parser.parse(src)
+        except Exception as e:
+            # Tree-sitter MAY raise on extreme input. Signal caller via None.
+            _TS_ERROR_HOLDER["last"] = f"{type(e).__name__}: {e}"
+            return None
 
     def text(n: Any) -> str:
         return node_text(n, src)
@@ -118,6 +150,7 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
     imports: list[ImportInfo] = []
     constants: list[str] = []
     exported: list[str] = []
+    default_export: str | None = None
 
     def parse_params(node: Any) -> list[ParameterInfo]:
         out: list[ParameterInfo] = []
@@ -161,44 +194,43 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
         )
         ret_ann = node.child_by_field_name("return_type")
         return FunctionInfo(
-            name=text(name_node) if name_node else (default_name or "(anonymous)"),
+            name=default_name or (text(name_node) if name_node else "(anonymous)"),
             parameters=parse_params(params_node),
             return_annotation=text(ret_ann).lstrip(":").strip() if ret_ann else None,
             is_async=is_async,
             line_number=node.start_point[0] + 1,
             end_line=node.end_point[0] + 1,
+            calls_made=extract_ast_calls(node.child_by_field_name("body"), src, language),
         )
 
-    def parse_class(node: Any) -> ClassInfo:
+    def parse_class(node: Any, kind: str = "class") -> ClassInfo:
         name_node = node.child_by_field_name("name")
         bases: list[str] = []
         heritage = node.child_by_field_name("heritage") or None
         if heritage is None:
             # In some grammars heritage clauses are children, not a named field.
             for c in node.children:
-                if c.type in ("class_heritage", "extends_clause"):
+                if c.type in ("class_heritage", "extends_clause", "extends_type_clause"):
                     heritage = c
                     break
         if heritage is not None:
-            for c in heritage.children:
-                if c.type in ("extends_clause", "implements_clause"):
-                    for sub in c.children:
-                        if sub.type not in ("extends", "implements", ",", "extends_keyword"):
-                            t = text(sub).strip()
-                            if t and t not in ("extends", "implements"):
-                                bases.append(t)
-                elif c.type not in ("extends", "implements", ",", "class_heritage"):
-                    t = text(c).strip()
-                    if t and t not in ("extends", "implements"):
-                        bases.append(t)
+            clauses = heritage.named_children if heritage.type == "class_heritage" else [heritage]
+            for clause in clauses:
+                if clause.type == "extends_clause":
+                    # The generic arguments can be a sibling of the base name.
+                    bases.append(text(clause).removeprefix("extends").strip())
+                elif clause.type in ("implements_clause", "extends_type_clause"):
+                    bases.extend(text(c).strip() for c in clause.named_children)
+                elif clause.type not in ("extends", "implements"):
+                    bases.append(text(clause).strip())
         body = node.child_by_field_name("body")
         methods: list[FunctionInfo] = []
         class_vars: list[str] = []
         if body is not None:
             for child in body.children:
-                if child.type in ("method_definition", "method_signature"):
+                if child.type in ("method_definition", "method_signature", "abstract_method_signature", "call_signature", "construct_signature"):
                     methods.append(parse_function_like(child, "method"))
-                elif child.type in ("field_definition", "public_field_definition", "property_definition"):
+                elif child.type in ("field_definition", "public_field_definition", "property_definition", "property_signature"):
                     n = child.child_by_field_name("name") or (child.children[0] if child.children else None)
                     value = child.child_by_field_name("value")
                     if value is not None and value.type in ("arrow_function", "function_expression", "function"):
@@ -208,17 +240,38 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
                         methods.append(method)
                     elif n is not None:
                         class_vars.append(text(n))
+                elif kind == "enum" and child.type in ("enum_assignment", "property_identifier", "identifier", "string"):
+                    n = child.child_by_field_name("name") or child
+                    class_vars.append(text(n).strip("'\""))
         return ClassInfo(
             name=text(name_node) if name_node else "?",
             bases=bases,
             methods=methods,
             class_variables=class_vars,
-            kind="class",
+            kind=kind,
             line_number=node.start_point[0] + 1,
             end_line=node.end_point[0] + 1,
         )
 
-    def walk_for_decls(node: Any, depth: int = 0, in_export: bool = False) -> None:
+    def wrapped_callable(node: Any) -> Any:
+        if node.type in ("arrow_function", "function_expression", "function", "generator_function"):
+            return node
+        if node.type in ("parenthesized_expression", "as_expression", "satisfies_expression", "non_null_expression"):
+            return wrapped_callable(node.named_children[0]) if node.named_children else None
+        if node.type == "call_expression":
+            callee = node.child_by_field_name("function")
+            if callee is None or text(callee) not in ("memo", "forwardRef", "React.memo", "React.forwardRef"):
+                return None
+            args = node.child_by_field_name("arguments")
+            if args is not None and args.named_children:
+                return wrapped_callable(args.named_children[0])
+        return None
+
+    def qualify(name: str, namespace: str) -> str:
+        return f"{namespace}.{name}" if namespace else name
+
+    def walk_for_decls(node: Any, depth: int = 0, in_export: bool = False, namespace: str = "") -> None:
+        nonlocal default_export
         for child in node.children:
             t = child.type
             if t == "import_statement":
@@ -227,11 +280,13 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
                     raw = text(source_node).strip().strip("'\"`")
                     # Collect bound names.
                     names: list[str] = []
+                    default_import = None
                     for c in child.children:
                         if c.type == "import_clause":
                             for sub in c.children:
                                 if sub.type == "identifier":
                                     names.append(text(sub))
+                                    default_import = text(sub)
                                 elif sub.type == "named_imports":
                                     for spec in sub.children:
                                         if spec.type == "import_specifier":
@@ -246,6 +301,7 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
                             names=names,
                             is_from_import=True,
                             is_internal=_is_internal_module(raw),
+                            default_import=default_import,
                         )
                     )
             elif t == "lexical_declaration" or t == "variable_declaration":
@@ -282,40 +338,107 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
                                 continue
                             name = text(n)
                             val = sub.child_by_field_name("value")
-                            if val is not None and val.type in ("arrow_function", "function_expression", "function"):
-                                fn = parse_function_like(val, "function", default_name=name)
+                            fn_node = wrapped_callable(val) if val is not None else None
+                            if fn_node is not None:
+                                fn = parse_function_like(fn_node, "function", default_name=qualify(name, namespace))
                                 fn.line_number = sub.start_point[0] + 1
+                                fn.end_line = sub.end_point[0] + 1
                                 functions.append(fn)
                             elif depth == 0 and name.isidentifier() and name.isupper():
-                                constants.append(name)
-            elif t == "class_declaration":
-                cls = parse_class(child)
+                                constants.append(qualify(name, namespace))
+            elif t in ("class_declaration", "abstract_class_declaration", "class", "interface_declaration", "enum_declaration", "type_alias_declaration"):
+                kind = {"interface_declaration": "interface", "enum_declaration": "enum", "type_alias_declaration": "type-alias"}.get(t, "class")
+                cls = parse_class(child, kind)
+                if cls.name == "?" and in_export:
+                    cls.name = "default"
+                cls.name = qualify(cls.name, namespace)
                 classes.append(cls)
-                if depth == 0 or in_export:
+                if in_export or (depth == 0 and not namespace and kind == "class"):
                     exported.append(cls.name)
-            elif t == "function_declaration":
-                fn = parse_function_like(child, "function")
+            elif t in ("function_declaration", "generator_function_declaration"):
+                fn = parse_function_like(child, "function", default_name="default" if in_export else None)
+                # Named export declarations retain their declared identifier.
+                name_node = child.child_by_field_name("name")
+                if name_node is not None:
+                    fn.name = text(name_node)
+                fn.name = qualify(fn.name, namespace)
                 functions.append(fn)
-                if depth == 0 or in_export:
+                if in_export or (depth == 0 and not namespace):
                     exported.append(fn.name)
             elif t == "export_statement":
-                # Exported variable names are only visible here; classes and
-                # functions are collected by the recursion below (collecting
-                # them here as well would double-count every exported decl).
+                # Re-exports: `export { a, b as c } from './mod'` or `export * from './mod'`
+                source_node = child.child_by_field_name("source")
+                if not namespace and source_node is None and any(c.type == "default" for c in child.children):
+                    value = child.child_by_field_name("declaration") or child.child_by_field_name("value")
+                    if value is not None:
+                        name = value if value.type == "identifier" else value.child_by_field_name("name")
+                        if name is not None:
+                            default_export = text(name)
+                            exported.append(default_export)
+                reexport_names: list[str] = []
                 for sub in child.children:
                     if sub.type in ("lexical_declaration", "variable_declaration"):
                         for d in sub.children:
                             if d.type == "variable_declarator":
                                 n = d.child_by_field_name("name")
                                 if n is not None:
-                                    exported.append(text(n))
-                walk_for_decls(child, depth + 1, in_export=True)
+                                    exported.append(qualify(text(n), namespace))
+                    elif sub.type == "export_clause":
+                        for spec in sub.children:
+                            if spec.type == "export_specifier":
+                                alias_node = spec.child_by_field_name("alias")
+                                orig_node = spec.child_by_field_name("name") or (spec.children[0] if spec.children else None)
+                                exp_name = text(alias_node) if alias_node is not None else (text(orig_node) if orig_node is not None else "")
+                                orig_name = text(orig_node) if orig_node is not None else exp_name
+                                if exp_name:
+                                    exported.append(qualify(exp_name, namespace))
+                                if exp_name == "default" and source_node is None and not namespace:
+                                    default_export = orig_name
+                                    exported.append(orig_name)
+                                if orig_name:
+                                    reexport_names.append(orig_name)
+                    elif sub.type == "namespace_export":
+                        id_node = sub.children[-1] if sub.children else None
+                        ns_name = text(id_node) if id_node is not None else "*"
+                        exported.append(ns_name)
+                        reexport_names.append("* as " + ns_name)
+                if source_node is not None:
+                    raw = text(source_node).strip().strip("'\"`")
+                    if not reexport_names and any(c.type == "*" for c in child.children):
+                        reexport_names.append("*")
+                    imports.append(
+                        ImportInfo(
+                            module=raw,
+                            names=reexport_names,
+                            is_from_import=True,
+                            is_internal=_is_internal_module(raw),
+                        )
+                    )
+                walk_for_decls(child, depth + 1, in_export=True, namespace=namespace)
+                continue
+            elif t in ("internal_module", "module"):
+                n = child.child_by_field_name("name")
+                body = child.child_by_field_name("body")
+                if n is not None and body is not None:
+                    name = qualify(text(n).strip("'\""), namespace)
+                    classes.append(ClassInfo(name=name, kind="namespace", line_number=child.start_point[0] + 1,
+                                             end_line=child.end_point[0] + 1))
+                    if in_export:
+                        exported.append(name)
+                    walk_for_decls(body, depth=0, namespace=name)
                 continue
             # Recurse into program-level structures to find functions inside.
             if t == "statement_block":
-                walk_for_decls(child, depth + 1, in_export=in_export)
+                walk_for_decls(child, depth + 1, in_export=in_export, namespace=namespace)
+            elif t in ("expression_statement", "ambient_declaration"):
+                walk_for_decls(child, depth, in_export=in_export, namespace=namespace)
 
     walk_for_decls(tree.root_node, depth=0)
+
+    notes = ["parser=tree-sitter"]
+    syn_err = check_syntax_errors(tree.root_node)
+    if syn_err is not None:
+        notes.append(syn_err)
 
     return ParseResult(
         file_path="",
@@ -324,9 +447,10 @@ def _ts_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult | Non
         functions=functions,
         imports=imports,
         constants=constants,
-        external_calls=_scan_external_calls(content),
+        external_calls=scan_ast_external_calls(tree.root_node, src, content, language, _scan_external_calls),
         exported_symbols=list(dict.fromkeys(exported)),
-        notes=["parser=tree-sitter"],
+        notes=notes,
+        default_export=default_export,
     )
 
 
@@ -384,6 +508,16 @@ _EXPORT_RE = re.compile(
     r"^\s*export\s+(?:default\s+)?(?:class|function|const|let|var)\s+(?P<name>\w+)",
     re.MULTILINE,
 )
+_DEFAULT_DECL_RE = re.compile(
+    r"^\s*export\s+default\s+(?:(?:abstract\s+)?class|(?:async\s+)?function\s*\*?)\s+(?P<name>[A-Za-z_$][\w$]*)\b",
+    re.MULTILINE,
+)
+_DEFAULT_IDENTIFIER_RE = re.compile(
+    r"^\s*export\s+default\s+(?P<name>[A-Za-z_$][\w$]*)\s*(?=;|$)", re.MULTILINE,
+)
+_EXPORT_CLAUSE_RE = re.compile(
+    r"^\s*export\s*\{(?P<names>[^}]*)\}\s*(?P<from>from\b)?", re.MULTILINE,
+)
 
 
 def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
@@ -391,6 +525,7 @@ def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
     for m in _IMPORT_RE.finditer(content):
         source = m.group("source")
         names: list[str] = []
+        default_import = m.group("default")
         if m.group("default"):
             names.append(m.group("default"))
         if m.group("named"):
@@ -403,6 +538,7 @@ def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
                 names=names,
                 is_from_import=True,
                 is_internal=_is_internal_module(source),
+                default_import=default_import,
             )
         )
     for m in _REQUIRE_RE.finditer(content):
@@ -410,7 +546,9 @@ def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
         binding = m.group("binding")
         names: list[str] = []
         if binding.startswith("{"):
-            names = [n.strip().split(":")[0].strip() for n in binding.strip("{}").split(",") if n.strip()]
+            # Preserve destructuring and aliases, as the native adapter does.
+            # The resolver distinguishes a named binding from the whole module.
+            names = [binding]
         else:
             names = [binding]
         imports.append(
@@ -494,7 +632,20 @@ def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
             )
 
     constants = list({m.group("name") for m in _CONSTANT_RE.finditer(content)})
-    exported = list({m.group("name") for m in _EXPORT_RE.finditer(content)})
+    exported = list(dict.fromkeys(m.group("name") for m in _EXPORT_RE.finditer(content)))
+    default_export = None
+    default_match = _DEFAULT_DECL_RE.search(content) or _DEFAULT_IDENTIFIER_RE.search(content)
+    if default_match is not None and default_match.group("name") not in ("extends", "function", "class"):
+        default_export = default_match.group("name")
+    for clause in _EXPORT_CLAUSE_RE.finditer(content):
+        if clause.group("from"):
+            continue
+        for spec in clause.group("names").split(","):
+            parts = re.split(r"\s+as\s+", spec.strip())
+            if len(parts) == 2 and parts[1] == "default" and parts[0].isidentifier():
+                default_export = parts[0]
+    if default_export is not None and default_export not in exported:
+        exported.append(default_export)
 
     return ParseResult(
         file_path="",
@@ -506,6 +657,7 @@ def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
         external_calls=_scan_external_calls(content),
         exported_symbols=exported,
         notes=["parser=regex-fallback"],
+        default_export=default_export,
     )
 
 

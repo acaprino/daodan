@@ -22,9 +22,11 @@ from typing import Any
 scripts_dir = Path(__file__).parent
 sys.path.insert(0, str(scripts_dir))
 
-from classifier import classify_file
-from ast_parser import parse_file
-from usage_finder import find_all_usages, SOURCE_EXTENSIONS
+from classifier import classify_from_content, compute_fan_in
+from ast_parser import parse_content
+from usage_finder import (
+    find_all_usages_batch, validate_symbol, SOURCE_EXTENSIONS, _resolve_project_root_and_paths,
+)
 
 __all__ = ["analyze_single_file", "format_as_markdown", "format_as_summary"]
 
@@ -60,17 +62,40 @@ def analyze_single_file(
             )
         }
 
-    # Step 1: Classify
-    classification = classify_file(file_path)
+    content = file_path.read_bytes().decode("utf-8")
 
     # Step 2: Parse structure
     try:
-        structure = parse_file(file_path)
+        structure = parse_content(content, file_path)
     except (SyntaxError, ValueError) as e:
+        classification = classify_from_content(content, str(file_path))
         return {
             "error": f"Parse error in file: {e}",
             "classification": classification.classification.value,
         }
+
+    from snapshot import build_manifest, resolved_imports
+
+    graph_target, _ = _resolve_project_root_and_paths(file_path, project_root)
+    manifest = build_manifest(
+        graph_target, parse_results={file_path.resolve(): (content, structure)},
+    )
+    import_bindings = resolved_imports(manifest)
+    graph = {
+        importer: sorted({target for targets in modules.values() for target in targets})
+        for importer, modules in import_bindings.items()
+    }
+    counts = compute_fan_in(graph_target, manifest=manifest, graph=graph)
+    graph_root = Path(manifest["root"])
+    try:
+        relative_path = file_path.resolve().relative_to(graph_root).as_posix()
+    except ValueError:
+        relative_path = ""
+    imported_by_count = counts.get(relative_path, 0)
+    resolved_modules = import_bindings.get(relative_path, {})
+    classification = classify_from_content(
+        content, str(file_path), imported_by_count=imported_by_count, parse_result=structure,
+    )
 
     # Step 3: Find usages (if requested)
     usages = {}
@@ -89,14 +114,21 @@ def analyze_single_file(
         else:
             target_symbols = structure.exported_symbols[:5]  # Limit to first 5
 
+        valid_targets: list[str] = []
         for target in target_symbols:
             try:
-                usage_result = find_all_usages(target, file_path, project_root)
+                validate_symbol(target)
+                valid_targets.append(target)
             except ValueError as err:
                 # A stylesheet exports class names such as `md:flex` that a usage
                 # search refuses; one refusal must not end the whole analysis.
                 usages[target] = {"error": str(err)}
-                continue
+
+        batch_results = find_all_usages_batch(
+            valid_targets, file_path, graph_target, manifest=manifest,
+        )
+        for target in valid_targets:
+            usage_result = batch_results[target]
             usages[target] = {
                 "count": len(usage_result.usages),
                 "importing_modules": usage_result.importing_modules,
@@ -115,10 +147,12 @@ def analyze_single_file(
         "file": str(file_path),
         "language": structure.language,
         "parser_notes": structure.notes,
+        "imported_by_count": imported_by_count,
         "classification": {
             "level": classification.classification.value,
             "lines_of_code": classification.lines_of_code,
             "num_dependencies": classification.num_dependencies,
+            "imported_by_count": classification.imported_by_count,
             "verification_required": classification.verification_required,
             "reasoning": classification.reasoning,
             "critical_patterns": len(classification.critical_patterns_found),
@@ -137,6 +171,7 @@ def analyze_single_file(
                             "is_async": m.is_async,
                             "visibility": m.visibility,
                             "params": [p.name for p in m.parameters],
+                            "calls_made": m.calls_made,
                         }
                         for m in c.methods
                     ],
@@ -153,6 +188,7 @@ def analyze_single_file(
                     "visibility": f.visibility,
                     "params": [p.name for p in f.parameters],
                     "return_type": f.return_annotation,
+                    "calls_made": f.calls_made,
                     "line": f.line_number,
                 }
                 for f in structure.functions
@@ -162,10 +198,10 @@ def analyze_single_file(
         },
         "dependencies": {
             "internal": list(
-                set(i.module for i in structure.imports if i.is_internal)
+                sorted({i.module for i in structure.imports if resolved_modules.get(i.module)})
             ),
             "external": list(
-                set(i.module for i in structure.imports if not i.is_internal and i.module)
+                sorted({i.module for i in structure.imports if i.module and not resolved_modules.get(i.module)})
             ),
         },
         "external_calls": {
@@ -209,6 +245,7 @@ def format_as_markdown(analysis: dict[str, Any]) -> str:
     lines.append(f"- **Level:** {cls['level'].upper()}")
     lines.append(f"- **Lines of Code:** {cls['lines_of_code']}")
     lines.append(f"- **Dependencies:** {cls['num_dependencies']}")
+    lines.append(f"- **Importing files:** {cls.get('imported_by_count', 0)}")
     lines.append(f"- **Verification Required:** {'Yes' if cls['verification_required'] else 'No'}")
     lines.append(f"- **Reasoning:** {cls['reasoning']}")
     lines.append("")
@@ -324,6 +361,7 @@ def format_as_summary(analysis: dict[str, Any]) -> str:
         f"Language: {lang}{note_text}",
         f"Classification: {cls['level'].upper()} ({cls['reasoning']})",
         f"LOC: {cls['lines_of_code']} | Dependencies: {cls['num_dependencies']}",
+        f"Importing files: {cls.get('imported_by_count', 0)}",
         f"Classes/Types: {len(struct['classes'])} | Callables: {callable_total} (top-level: {top_level_funcs}, methods: {method_count})",
         f"Exported: {', '.join(struct['exported_symbols'][:5])}{'...' if len(struct['exported_symbols']) > 5 else ''}",
         f"Internal deps: {len(analysis['dependencies']['internal'])} | External deps: {len(analysis['dependencies']['external'])}",

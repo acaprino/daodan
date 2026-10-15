@@ -81,8 +81,8 @@ class CodebaseMapCompatibilityTests(unittest.TestCase):
         self.assertEqual(self.legacy.components.skills, ("xray-method",))
         self.assertEqual(set(self.legacy.components.roles), set(ROLES))
         self.assertEqual(self.legacy.components.workflows, WORKFLOWS)
-        self.assertEqual(self.legacy.version, "6.0.0")
-        self.assertEqual(self.canonical.version, "6.0.0")
+        for plugin in (self.legacy, self.canonical):
+            self.assertGreaterEqual(tuple(map(int, plugin.version.split("."))), (6, 0, 0))
         issues = validate_plugins(tuple(self.registry.values()), CAPABILITY_REGISTRY)
         self.assertEqual(issues, [], "\n".join(str(issue) for issue in issues))
 

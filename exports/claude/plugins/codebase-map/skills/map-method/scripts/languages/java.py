@@ -6,9 +6,17 @@ fallback extracts classes, methods, imports, and common external calls.
 from __future__ import annotations
 
 import re
+import threading
 from typing import Any
 
-from ._treesitter import get_parser, load_failure, node_text
+from ._treesitter import (
+    check_syntax_errors,
+    extract_ast_calls,
+    get_parser,
+    load_failure,
+    node_text,
+    scan_ast_external_calls,
+)
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -74,7 +82,25 @@ def _scan_external_calls(content: str) -> list[ExternalCallInfo]:
 # ---------------------------------------------------------------------------
 
 
-_TS_ERROR_HOLDER: dict[str, str] = {}
+class _ThreadLocalErrorHolder:
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def __setitem__(self, key: str, value: str) -> None:
+        d = getattr(self._local, "data", None)
+        if d is None:
+            d = {}
+            self._local.data = d
+        d[key] = value
+
+    def pop(self, key: str, default: str | None = None) -> str | None:
+        d = getattr(self._local, "data", None)
+        if d is None:
+            return default
+        return d.pop(key, default)
+
+
+_TS_ERROR_HOLDER = _ThreadLocalErrorHolder()
 
 
 def _ts_parse(content: str) -> ParseResult | None:
@@ -159,6 +185,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             docstring=None,
             line_number=node.start_point[0] + 1,
             end_line=node.end_point[0] + 1,
+            calls_made=extract_ast_calls(node.child_by_field_name("body"), src, "java"),
         )
 
     def parse_class_like(node: Any, kind: str) -> ClassInfo:
@@ -178,14 +205,24 @@ def _ts_parse(content: str) -> ParseResult | None:
         methods: list[FunctionInfo] = []
         class_vars: list[str] = []
         body = node.child_by_field_name("body")
-        if body is not None:
-            for child in body.children:
+
+        def collect_body_members(container: Any) -> None:
+            for child in container.children:
                 if child.type == "method_declaration":
                     methods.append(parse_method(child))
-                elif child.type == "constructor_declaration":
+                elif child.type in ("constructor_declaration", "compact_constructor_declaration"):
                     m = parse_method(child)
                     m.name = m.name or text(name_node)
                     methods.append(m)
+                elif child.type == "enum_constant":
+                    cn = child.child_by_field_name("name") or (child.children[0] if child.children else None)
+                    if cn is not None:
+                        cname = text(cn)
+                        class_vars.append(cname)
+                        if cname.isupper():
+                            constants.append(cname)
+                elif child.type == "enum_body_declarations":
+                    collect_body_members(child)
                 elif child.type == "field_declaration":
                     for sub in child.children:
                         if sub.type == "variable_declarator":
@@ -200,13 +237,29 @@ def _ts_parse(content: str) -> ParseResult | None:
                     "interface_declaration",
                     "enum_declaration",
                     "record_declaration",
+                    "annotation_type_declaration",
                 ):
                     # Nested types are types: a listener interface or a builder
                     # class declared inside its owner is part of the surface.
-                    nested = parse_class_like(child, child.type.removesuffix("_declaration"))
+                    sub_kind = "annotation" if child.type == "annotation_type_declaration" else child.type.removesuffix("_declaration")
+                    nested = parse_class_like(child, sub_kind)
                     if name_node is not None:
                         nested.name = f"{text(name_node)}.{nested.name}"
                     classes.append(nested)
+
+        if body is not None:
+            collect_body_members(body)
+        # Java records also declare component fields in `parameters` (formal_parameters).
+        if kind == "record":
+            rec_params = node.child_by_field_name("parameters")
+            if rec_params is not None:
+                for p in rec_params.children:
+                    if p.type == "formal_parameter":
+                        pn = p.child_by_field_name("name")
+                        if pn is not None:
+                            fname = text(pn)
+                            if fname not in class_vars:
+                                class_vars.append(fname)
         visibility, _is_static, _is_final, _is_abstract = parse_modifiers(node)
         return ClassInfo(
             name=text(name_node) if name_node else "?",
@@ -262,6 +315,11 @@ def _ts_parse(content: str) -> ParseResult | None:
             c = parse_class_like(child, "annotation")
             classes.append(c)
 
+    notes = ["parser=tree-sitter"]
+    syn_err = check_syntax_errors(root)
+    if syn_err is not None:
+        notes.append(syn_err)
+
     return ParseResult(
         file_path="",
         language="java",
@@ -269,9 +327,9 @@ def _ts_parse(content: str) -> ParseResult | None:
         functions=functions,
         imports=imports,
         constants=constants,
-        external_calls=_scan_external_calls(content),
+        external_calls=scan_ast_external_calls(root, src, content, "java", _scan_external_calls),
         exported_symbols=exported,
-        notes=["parser=tree-sitter"],
+        notes=notes,
     )
 
 

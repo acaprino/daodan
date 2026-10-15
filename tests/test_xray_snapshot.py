@@ -1165,5 +1165,51 @@ class CheckTests(_DiffFixture):
         self.assertIn(f"added symbol never documented: {item['file']}::handler", out)
 
 
+class TsconfigAliasAndParallelSnapshotTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="xray-alias-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+
+    def test_tsconfig_paths_alias_resolves_in_import_index(self):
+        import snapshot
+
+        write(
+            self.tmp,
+            "tsconfig.json",
+            '{\n'
+            '  // JSONC comment\n'
+            '  "compilerOptions": {\n'
+            '    "baseUrl": ".",\n'
+            '    "paths": {\n'
+            '      "@core/*": ["src/core/*"],\n'
+            '    }\n'
+            '  }\n'
+            '}\n',
+        )
+        write(self.tmp, "src/core/engine.ts", "export class Engine { run(): number { return 1; } }\n")
+        write(self.tmp, "src/app/main.ts", "import { Engine } from '@core/engine';\nexport function start() { return new Engine().run(); }\n")
+        manifest = snapshot.build_manifest(self.tmp)
+        (self.tmp / "src/core/engine.ts").write_text(
+            "export class Engine { run(): number { return 2; } }\n", encoding="utf-8"
+        )
+        comparison = snapshot.compare_files(manifest, self.tmp)
+        symbols = snapshot.compare_symbols(manifest, comparison)
+        index = snapshot.build_import_index(manifest, comparison, symbols)
+        radius = snapshot.blast_radius(index, comparison, symbols)
+        self.assertTrue(any(r["file"].endswith("src/app/main.ts") for r in radius), radius)
+
+    def test_parallel_manifest_build_over_eight_or_more_files_preserves_order_and_metrics(self):
+        import snapshot
+
+        src = self.tmp / "many"
+        for i in range(10):
+            write(src, f"mod_{i:02d}.py", f"def fn_{i}():\n    return {i}\n")
+        manifest = snapshot.build_manifest(src)
+        self.assertEqual(manifest["metrics"]["files_read"], 10)
+        self.assertEqual(manifest["metrics"]["parsed_files"], 10)
+        keys = list(manifest["files"].keys())
+        self.assertEqual(keys, sorted(keys))
+
+
 if __name__ == "__main__":
     unittest.main()

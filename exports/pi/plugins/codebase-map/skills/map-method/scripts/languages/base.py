@@ -45,6 +45,7 @@ Kind = Literal[
     "record",
     "annotation",
     "type-alias",
+    "namespace",
     "table",
     "view",
     "index",
@@ -95,6 +96,9 @@ class FunctionInfo:
     # Tree-sitter node, stylesheets from their own parser. None from a regex
     # parser: snapshot.py then infers the span from the next symbol's start.
     end_line: int | None = None
+    # Outgoing function/method call names inside the callable's body, in source
+    # order without duplicates.
+    calls_made: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -122,6 +126,9 @@ class ImportInfo:
     names: list[str] = field(default_factory=list)
     is_from_import: bool = False
     is_internal: bool = False
+    # Local alias from a direct ES default clause (`import Alias from ...`).
+    # Named default specifiers retain source name `default` in names instead.
+    default_import: str | None = None
 
 
 @dataclass
@@ -168,6 +175,9 @@ class ParseResult:
     external_calls: list[ExternalCallInfo] = field(default_factory=list)
     exported_symbols: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    # Named declaration or local identifier exported as default. Anonymous
+    # expressions and unresolved re-exports retain None.
+    default_export: str | None = None
 
 
 @runtime_checkable

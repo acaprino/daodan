@@ -18,9 +18,17 @@ Comment doc-block detection (`///`, `//!`, `/*!`) is handled by
 from __future__ import annotations
 
 import re
+import threading
 from typing import Any
 
-from ._treesitter import get_parser, load_failure, node_text
+from ._treesitter import (
+    check_syntax_errors,
+    extract_ast_calls,
+    get_parser,
+    load_failure,
+    node_text,
+    scan_ast_external_calls,
+)
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -108,7 +116,25 @@ def _vis_from_modifier(raw: str | None) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-_TS_ERROR_HOLDER: dict[str, str] = {}
+class _ThreadLocalErrorHolder:
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def __setitem__(self, key: str, value: str) -> None:
+        d = getattr(self._local, "data", None)
+        if d is None:
+            d = {}
+            self._local.data = d
+        d[key] = value
+
+    def pop(self, key: str, default: str | None = None) -> str | None:
+        d = getattr(self._local, "data", None)
+        if d is None:
+            return default
+        return d.pop(key, default)
+
+
+_TS_ERROR_HOLDER = _ThreadLocalErrorHolder()
 
 
 def _ts_parse(content: str) -> ParseResult | None:
@@ -167,6 +193,7 @@ def _ts_parse(content: str) -> ParseResult | None:
         name_node = node.child_by_field_name("name")
         params_node = node.child_by_field_name("parameters")
         ret_node = node.child_by_field_name("return_type")
+        body = node.child_by_field_name("body")
         return FunctionInfo(
             name=text(name_node) if name_node else "?",
             parameters=parse_params(params_node),
@@ -175,6 +202,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             visibility=parse_vis(node),
             line_number=node.start_point[0] + 1,
             end_line=node.end_point[0] + 1,
+            calls_made=extract_ast_calls(body, src, _LANGUAGE_NAME),
         )
 
     def parse_impl_name(node: Any) -> str:
@@ -189,6 +217,7 @@ def _ts_parse(content: str) -> ParseResult | None:
 
     def parse_impl(node: Any) -> ClassInfo:
         name = parse_impl_name(node)
+        trait_node = node.child_by_field_name("trait")
         methods: list[FunctionInfo] = []
         body = node.child_by_field_name("body")
         if body is not None:
@@ -197,6 +226,7 @@ def _ts_parse(content: str) -> ParseResult | None:
                     methods.append(parse_function(child))
         return ClassInfo(
             name=name,
+            bases=[text(trait_node)] if trait_node is not None else [],
             methods=methods,
             kind="impl",
             line_number=node.start_point[0] + 1,
@@ -206,12 +236,12 @@ def _ts_parse(content: str) -> ParseResult | None:
     def parse_struct_like(node: Any, kind: str) -> ClassInfo:
         name_node = node.child_by_field_name("name")
         bases: list[str] = []
-        # Field names go into class_variables for struct/union.
+        # Field names go into class_variables for struct/union; enum variants for enum.
         class_vars: list[str] = []
         body = node.child_by_field_name("body")
         if body is not None:
             for child in body.children:
-                if child.type in ("field_declaration", "named_field_declaration"):
+                if child.type in ("field_declaration", "named_field_declaration", "enum_variant"):
                     n = child.child_by_field_name("name") or (child.children[0] if child.children else None)
                     if n is not None:
                         class_vars.append(text(n))
@@ -297,66 +327,99 @@ def _ts_parse(content: str) -> ParseResult | None:
                 )
             )
 
-    # Walk top-level children.
-    root = tree.root_node
-    for child in root.children:
-        t = child.type
-        if t == "function_item":
-            fn = parse_function(child)
-            functions.append(fn)
-            if fn.visibility == "public":
-                exported.append(fn.name)
-        elif t == "struct_item":
-            ci = parse_struct_like(child, "struct")
-            classes.append(ci)
-            if ci.visibility == "public":
-                exported.append(ci.name)
-        elif t == "enum_item":
-            ci = parse_struct_like(child, "enum")
-            classes.append(ci)
-            if ci.visibility == "public":
-                exported.append(ci.name)
-        elif t == "union_item":
-            ci = parse_struct_like(child, "union")
-            classes.append(ci)
-            if ci.visibility == "public":
-                exported.append(ci.name)
-        elif t == "trait_item":
-            ci = parse_trait(child)
-            classes.append(ci)
-            if ci.visibility == "public":
-                exported.append(ci.name)
-        elif t == "impl_item":
-            ci = parse_impl(child)
-            classes.append(ci)
-        elif t == "mod_item":
-            ci = parse_mod(child)
-            classes.append(ci)
-            if ci.visibility == "public":
-                exported.append(ci.name)
-        elif t == "type_item":
-            name_node = child.child_by_field_name("name")
-            ci = ClassInfo(
-                name=text(name_node) if name_node else "?",
-                kind="type-alias",
-                visibility=parse_vis(child),
-                line_number=child.start_point[0] + 1,
-                end_line=child.end_point[0] + 1,
-            )
-            classes.append(ci)
-            if ci.visibility == "public":
-                exported.append(ci.name)
-        elif t == "use_declaration":
-            parse_use(child)
-        elif t in ("const_item", "static_item"):
-            name_node = child.child_by_field_name("name")
-            if name_node is not None:
-                name = text(name_node)
-                if re.fullmatch(r"[A-Z_][A-Z0-9_]*", name):
-                    constants.append(name)
-                if parse_vis(child) == "public":
-                    exported.append(name)
+    def walk_items(container: Any, prefix: str = "") -> None:
+        for child in container.children:
+            t = child.type
+            if t == "function_item":
+                fn = parse_function(child)
+                if prefix:
+                    fn.name = f"{prefix}.{fn.name}"
+                functions.append(fn)
+                if fn.visibility == "public":
+                    exported.append(fn.name)
+            elif t == "struct_item":
+                ci = parse_struct_like(child, "struct")
+                if prefix:
+                    ci.name = f"{prefix}.{ci.name}"
+                classes.append(ci)
+                if ci.visibility == "public":
+                    exported.append(ci.name)
+            elif t == "enum_item":
+                ci = parse_struct_like(child, "enum")
+                if prefix:
+                    ci.name = f"{prefix}.{ci.name}"
+                classes.append(ci)
+                if ci.visibility == "public":
+                    exported.append(ci.name)
+            elif t == "union_item":
+                ci = parse_struct_like(child, "union")
+                if prefix:
+                    ci.name = f"{prefix}.{ci.name}"
+                classes.append(ci)
+                if ci.visibility == "public":
+                    exported.append(ci.name)
+            elif t == "trait_item":
+                ci = parse_trait(child)
+                if prefix:
+                    ci.name = f"{prefix}.{ci.name}"
+                classes.append(ci)
+                if ci.visibility == "public":
+                    exported.append(ci.name)
+            elif t == "impl_item":
+                ci = parse_impl(child)
+                if prefix:
+                    ci.name = f"{prefix}.{ci.name}"
+                classes.append(ci)
+            elif t == "mod_item":
+                ci = parse_mod(child)
+                mod_name = f"{prefix}.{ci.name}" if prefix else ci.name
+                ci.name = mod_name
+                classes.append(ci)
+                if ci.visibility == "public":
+                    exported.append(ci.name)
+                mod_body = child.child_by_field_name("body")
+                if mod_body is not None:
+                    walk_items(mod_body, prefix=mod_name)
+            elif t == "type_item":
+                name_node = child.child_by_field_name("name")
+                tname = text(name_node) if name_node else "?"
+                if prefix:
+                    tname = f"{prefix}.{tname}"
+                ci = ClassInfo(
+                    name=tname,
+                    kind="type-alias",
+                    visibility=parse_vis(child),
+                    line_number=child.start_point[0] + 1,
+                    end_line=child.end_point[0] + 1,
+                )
+                classes.append(ci)
+                if ci.visibility == "public":
+                    exported.append(ci.name)
+            elif t == "use_declaration":
+                parse_use(child)
+            elif t == "macro_definition":
+                name_node = child.child_by_field_name("name")
+                if name_node is not None:
+                    name = text(name_node)
+                    constants.append(f"{prefix}.{name}" if prefix else name)
+            elif t in ("const_item", "static_item"):
+                name_node = child.child_by_field_name("name")
+                if name_node is not None:
+                    name = text(name_node)
+                    qual_name = f"{prefix}.{name}" if prefix else name
+                    if re.fullmatch(r"[A-Z_][A-Z0-9_]*", name):
+                        constants.append(qual_name)
+                    if parse_vis(child) == "public":
+                        exported.append(qual_name)
 
+    # Walk top-level children and inline `mod { ... }` bodies.
+    root = tree.root_node
+    walk_items(root)
+
+    notes = ["parser=tree-sitter"]
+    syn_err = check_syntax_errors(root)
+    if syn_err is not None:
+        notes.append(syn_err)
     return ParseResult(
         file_path="",
         language=_LANGUAGE_NAME,
@@ -364,9 +427,9 @@ def _ts_parse(content: str) -> ParseResult | None:
         functions=functions,
         imports=imports,
         constants=constants,
-        external_calls=_scan_external_calls(content),
+        external_calls=scan_ast_external_calls(root, src, content, _LANGUAGE_NAME, _scan_external_calls),
         exported_symbols=list(dict.fromkeys(exported)),
-        notes=["parser=tree-sitter"],
+        notes=notes,
     )
 
 

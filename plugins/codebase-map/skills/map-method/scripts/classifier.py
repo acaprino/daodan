@@ -30,12 +30,15 @@ from enum import Enum
 from pathlib import Path
 
 from languages import detect_language, get_adapter
+from languages.base import ParseResult
 
 __all__ = [
     "Classification",
     "ClassificationResult",
     "classify_file",
     "classify_from_content",
+    "classify_directory",
+    "compute_fan_in",
 ]
 
 # Classification thresholds (tunable). The dependency threshold used to be 5,
@@ -67,6 +70,7 @@ class ClassificationResult:
     verification_required: bool
     reasoning: str
     language: str | None = None
+    imported_by_count: int = 0
 
 
 # Critical patterns (security, authentication, sensitive data). These are
@@ -224,25 +228,91 @@ def _complexity_patterns_for(language: str | None) -> list[str]:
     return base
 
 
-def classify_file(file_path: Path) -> ClassificationResult:
+def classify_file(
+    file_path: Path,
+    fan_in: int = 0,
+    *,
+    imported_by_count: int | None = None,
+    parse_result: ParseResult | None = None,
+) -> ClassificationResult:
     """Classify a source file (Python/Java/JS/TS/SQL/PL-SQL)."""
     content = file_path.read_text(encoding="utf-8")
-    return classify_from_content(content, str(file_path))
+    return classify_from_content(
+        content, str(file_path), fan_in=fan_in,
+        imported_by_count=imported_by_count, parse_result=parse_result,
+    )
 
 
-def classify_from_content(content: str, file_name: str = "") -> ClassificationResult:
+def compute_fan_in(
+    target_dir: Path, perimeter=None, *, manifest=None, parse_results=None, graph=None,
+) -> dict[str, int]:
+    """Count distinct importing files in the target's resolved internal graph.
+
+    Paths are relative to the manifest root. A supplied manifest avoids a second
+    inventory; parse_results binds already-read source to its existing parse.
+    """
+    from snapshot import build_manifest, module_targets
+
+    if manifest is None:
+        manifest = build_manifest(Path(target_dir), parse_results=parse_results)
+    root = Path(manifest["root"])
+    allowed = {
+        rel for rel in manifest["files"]
+        if perimeter is None or perimeter.covers(root / rel)
+    }
+    counts = {rel: 0 for rel in sorted(allowed)}
+    targets_by_file = module_targets(manifest) if graph is None else graph
+    for importer, targets in targets_by_file.items():
+        if importer not in allowed:
+            continue
+        for target in set(targets):
+            if target in allowed and target != importer:
+                counts[target] += 1
+    return counts
+
+
+def classify_directory(target_dir: Path, perimeter=None) -> dict[str, ClassificationResult]:
+    """Classify source files using one shared internal dependency graph."""
+    from snapshot import build_manifest
+
+    manifest = build_manifest(Path(target_dir))
+    counts = compute_fan_in(target_dir, perimeter, manifest=manifest)
+    root = Path(manifest["root"])
+    return {
+        rel: classify_file(root / rel, imported_by_count=counts[rel])
+        for rel, entry in manifest["files"].items()
+        if rel in counts and entry.get("language") is not None
+    }
+
+
+HIGH_FAN_IN_THRESHOLD: int = 8
+CRITICAL_FAN_IN_THRESHOLD: int = 15
+
+
+def classify_from_content(
+    content: str,
+    file_name: str = "",
+    fan_in: int = 0,
+    *,
+    imported_by_count: int | None = None,
+    parse_result: ParseResult | None = None,
+) -> ClassificationResult:
     """
     Classify based on a content string. The file name's extension is used to
     pick a language adapter; falls back to a Python-like accounting if the
     extension isn't recognized.
     """
+    fan_in = max(0, imported_by_count if imported_by_count is not None else fan_in)
     language = detect_language(Path(file_name), content) if file_name else None
     if language is not None:
         adapter = get_adapter(language)
         # The stylesheet adapter reads `//` by dialect, which only the file name gives.
         path_argument = (file_name,) if language == "css" else ()
         loc = adapter.strip_comments_and_blanks(content, *path_argument)
-        num_deps = adapter.count_imports(content, *path_argument)
+        num_deps = (
+            len(parse_result.imports) if parse_result is not None
+            else adapter.count_imports(content, *path_argument)
+        )
     else:
         # Generic fallback: count non-empty lines, no import detection.
         loc = sum(1 for line in content.splitlines() if line.strip())
@@ -261,10 +331,16 @@ def classify_from_content(content: str, file_name: str = "") -> ClassificationRe
         else:
             classification = Classification.HIGH_COMPLEXITY
             reasoning.append(f"Some critical patterns: {len(critical_found)}")
+        if fan_in >= HIGH_FAN_IN_THRESHOLD:
+            reasoning.append(f"High fan-in: {fan_in} importers")
+    elif fan_in >= CRITICAL_FAN_IN_THRESHOLD:
+        classification = Classification.CRITICAL
+        reasoning.append(f"Architectural hub (fan-in: {fan_in} importers)")
     elif (
         loc > HIGH_LOC_THRESHOLD
         or num_deps > HIGH_DEPS_THRESHOLD
         or len(complexity_found) >= HIGH_COMPLEXITY_PATTERN_THRESHOLD
+        or fan_in >= HIGH_FAN_IN_THRESHOLD
     ):
         classification = Classification.HIGH_COMPLEXITY
         if loc > HIGH_LOC_THRESHOLD:
@@ -273,7 +349,9 @@ def classify_from_content(content: str, file_name: str = "") -> ClassificationRe
             reasoning.append(f"Many dependencies: {num_deps}")
         if len(complexity_found) >= HIGH_COMPLEXITY_PATTERN_THRESHOLD:
             reasoning.append(f"Complexity patterns: {len(complexity_found)}")
-    elif loc < UTILITY_LOC_MAX and num_deps <= UTILITY_DEPS_MAX and not complexity_found:
+        if fan_in >= HIGH_FAN_IN_THRESHOLD:
+            reasoning.append(f"High fan-in: {fan_in} importers")
+    elif loc < UTILITY_LOC_MAX and num_deps <= UTILITY_DEPS_MAX and not complexity_found and fan_in <= UTILITY_DEPS_MAX:
         classification = Classification.UTILITY
         reasoning.append("Small file with few dependencies")
     else:
@@ -294,6 +372,7 @@ def classify_from_content(content: str, file_name: str = "") -> ClassificationRe
         verification_required=verification_required,
         reasoning="; ".join(reasoning),
         language=language,
+        imported_by_count=fan_in,
     )
 
 
