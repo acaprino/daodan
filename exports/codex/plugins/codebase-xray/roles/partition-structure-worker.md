@@ -1,6 +1,6 @@
 ---
 name: partition-structure-worker
-description: 'Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline (use codebase-map:map-analyst via /codebase-map:analyze).'
+description: 'Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.'
 ---
 
 <daodan_host_binding host="codex">

@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:8c2e0a57b04b089c649374ab0eaf45e4a30548b660943a9e526506d9e167a8e6",
+  "coreDigest": "sha256:723ecdba205777ef31b77da4b74aeca271d5fc8b3accc8b6716dd93190d67fd0",
   "harnessStrategies": {
     "analyze": "parallel-subagents",
     "team-analyze": "parallel-subagents"
@@ -8,5 +8,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "codebase-map",
-  "version": "6.5.2"
+  "version": "6.5.3"
 }

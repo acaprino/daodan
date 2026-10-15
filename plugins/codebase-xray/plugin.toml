@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "codebase-xray"
-version = "6.0.2"
+version = "6.0.3"
 description = "Compatibility entrypoints for Codebase Map, formerly Codebase X-ray. Retains the old workflow, method and worker identities while using the canonical provider's shared instructions and output contract."
 license = "MIT"
 

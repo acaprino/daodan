@@ -643,7 +643,7 @@
             ]
           },
           {
-            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline (use codebase-map:map-analyst via /codebase-map:analyze).",
+            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-structure-worker.md",
             "id": "codebase-map:partition-structure-worker",
             "permissions": [
@@ -690,7 +690,7 @@
             ]
           },
           {
-            "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline (use codebase-map:map-analyst via /codebase-map:analyze).",
+            "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-synthesizer.md",
             "id": "codebase-map:partition-synthesizer",
             "permissions": [
@@ -901,7 +901,7 @@
             ]
           },
           {
-            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline (use codebase-map:map-analyst via /codebase-map:analyze).",
+            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-structure-worker.md",
             "id": "codebase-xray:partition-structure-worker",
             "permissions": [
@@ -948,7 +948,7 @@
             ]
           },
           {
-            "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline (use codebase-map:map-analyst via /codebase-map:analyze).",
+            "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-synthesizer.md",
             "id": "codebase-xray:partition-synthesizer",
             "permissions": [
@@ -4793,5 +4793,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "33.5.2"
+  "version": "33.5.3"
 }

@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-map:partition-synthesizer; version: 6.5.2; source-sha256: 0ca404836d34a25af76c5d667eca1083a1fc035b1046b913e044ee577d5dbe41. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-map:partition-synthesizer; version: 6.5.3; source-sha256: b9cf17191adcf9b22d4fcb748f2a96c68d59f6a2ba0694bf922fcdd2b8acaae1. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-map`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-map-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-map`. The owning plugin's declared logical skill identities are `codebase-map:map-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `codebase-map:map-method` -> compiled registry name `map-method` at `skills/map-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
