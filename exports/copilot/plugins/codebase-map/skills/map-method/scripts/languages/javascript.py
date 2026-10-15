@@ -516,7 +516,8 @@ _DEFAULT_IDENTIFIER_RE = re.compile(
     r"^\s*export\s+default\s+(?P<name>[A-Za-z_$][\w$]*)\s*(?=;|$)", re.MULTILINE,
 )
 _EXPORT_CLAUSE_RE = re.compile(
-    r"^\s*export\s*\{(?P<names>[^}]*)\}\s*(?P<from>from\b)?", re.MULTILINE,
+    r"^\s*export\s*\{(?P<names>[^}]*)\}\s*"
+    r"(?:(?P<from>from)\s+['\"`](?P<source>[^'\"`]+)['\"`])?", re.MULTILINE,
 )
 
 
@@ -639,6 +640,15 @@ def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
         default_export = default_match.group("name")
     for clause in _EXPORT_CLAUSE_RE.finditer(content):
         if clause.group("from"):
+            names = []
+            for spec in clause.group("names").split(","):
+                parts = re.split(r"\s+as\s+", spec.strip())
+                if parts[0]:
+                    names.append(parts[0])
+                    exported.append(parts[-1])
+            source = clause.group("source")
+            imports.append(ImportInfo(module=source, names=names, is_from_import=True,
+                                      is_internal=_is_internal_module(source)))
             continue
         for spec in clause.group("names").split(","):
             parts = re.split(r"\s+as\s+", spec.strip())

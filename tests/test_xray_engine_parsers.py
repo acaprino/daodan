@@ -74,6 +74,29 @@ class AstParserTests(unittest.TestCase):
         if ts.get_parser(language) is None:
             self.skipTest(f"{language} grammar unavailable")
 
+    def assert_reexport_binding(self, module, suffix, provenance):
+        result = module.adapter.parse(
+            "export { default as PublicEngine, Other as Renamed } from './core.js';\n",
+            f"barrel.{suffix}")
+        self.assertTrue(result.notes[0].startswith(provenance), result.notes)
+        self.assertEqual([(i.module, i.names, i.is_from_import, i.is_internal, i.default_import)
+                          for i in result.imports],
+                         [("./core.js", ["default", "Other"], True, True, None)])
+        self.assertEqual(result.exported_symbols, ["PublicEngine", "Renamed"])
+        self.assertIsNone(result.default_export)
+
+    def test_reexport_bindings_are_preserved_without_a_native_grammar(self):
+        for module, suffix in ((javascript, "js"), (typescript, "ts")):
+            with self.subTest(language=module.adapter.language):
+                with mock.patch.object(module, "_ts_parse", return_value=None):
+                    self.assert_reexport_binding(module, suffix, "parser=regex-fallback")
+
+    def test_reexport_bindings_match_the_native_parser(self):
+        for module, suffix in ((javascript, "js"), (typescript, "ts")):
+            with self.subTest(language=module.adapter.language):
+                self.require(module.adapter.language)
+                self.assert_reexport_binding(module, suffix, "parser=tree-sitter")
+
     def test_js_wrappers_are_callables_but_map_results_are_values(self):
         self.require("javascript")
         result = javascript.adapter.parse(

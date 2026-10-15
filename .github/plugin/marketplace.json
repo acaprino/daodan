@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "33.3.1"
+    "version": "33.3.2"
   },
   "name": "daodan",
   "owner": {
@@ -159,7 +159,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/copilot/plugins/codebase-map",
-      "version": "6.2.0"
+      "version": "6.2.1"
     },
     {
       "agents": [

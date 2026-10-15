@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-map",
       "topics": [],
-      "version": "6.2.0"
+      "version": "6.2.1"
     },
     {
       "description": "Compatibility skill for the former Codebase X-ray name. Loads the canonical Codebase Map method while preserving the caller's scope and execution context.",
