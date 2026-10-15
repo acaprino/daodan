@@ -7,6 +7,7 @@ Missing resources, unknown selectors and missing boundaries fail closed.
 """
 
 import re
+import tomllib
 import unittest
 from collections import deque
 from itertools import combinations
@@ -19,11 +20,13 @@ PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
 METHOD = PLUGIN / "skills" / "map-method"
 
 BUDGETS = {
-    "workflows/analyze.md": 12_100,
+    "workflows/analyze.md": 5_000,
+    "roles/map-analyst.md": 9_500,
     "workflows/team-analyze.md": 13_900,
     "roles/partition-structure-worker.md": 4_514,
     "roles/partition-behavior-worker.md": 4_521,
     "roles/partition-quality-worker.md": 5_299,
+    "roles/partition-synthesizer.md": 3_968,
     "roles/semantic-interconnect-mapper.md": 5_575,
     "consumer": 3_600,
 }
@@ -41,6 +44,9 @@ OPTIONAL_ALLOWANCES = {
 READ_CONDITIONS = {
     "always", "full", "lite", "update", "documentation", "not-lite",
     "comments and not-lite", "documentation and not-lite", *OPTIONAL_ALLOWANCES,
+    *(f"phase-{phase}" for phase in range(8)),
+    "comments and phase-6",
+    "comments and phase-6 and not-lite",
 }
 
 ROLE_RESOURCES = {
@@ -129,12 +135,16 @@ def _selected(text: str, selector: str) -> set[int]:
     return result
 
 
-def load(body: str, *, mode="full", documentation=False, options=frozenset()) -> tuple[int, set[str]]:
+def load(body: str, *, mode="full", documentation=False, options=frozenset(), phases=None) -> tuple[int, set[str]]:
     """Follow declared loads in selected text, counting each source line once."""
     if mode not in ("full", "lite", "update"):
         raise ValueError(f"Unknown read mode: {mode}")
     if unknown := set(options) - OPTIONAL_ALLOWANCES.keys():
         raise ValueError(f"Unknown read options: {sorted(unknown)}")
+    if phases is None:
+        phases = {0, 1, 2, 5, 7} if mode == "lite" else set(range(8))
+    if any(type(phase) is not int or phase not in range(8) for phase in phases):
+        raise ValueError("Unknown analysis phase")
     selected, texts, resource_lines = {}, {}, {}
     pending = deque([body])
     while pending:
@@ -151,6 +161,7 @@ def load(body: str, *, mode="full", documentation=False, options=frozenset()) ->
                 or (condition == "not-lite" and mode == "lite")
                 or (condition in ("update", "full", "lite") and mode != condition)
                 or (condition in OPTIONAL_ALLOWANCES and condition not in options)
+                or (condition.startswith("phase-") and int(condition[6:]) not in phases)
                 for condition in when.split(" and ")
             ):
                 continue
@@ -176,6 +187,77 @@ def _optional_allowance(options):
 
 
 class XrayLoadBudgetTests(unittest.TestCase):
+    def test_every_registered_reader_has_a_budget(self) -> None:
+        components = tomllib.loads((PLUGIN / "plugin.toml").read_text(encoding="utf-8"))["components"]
+        readers = {f"{kind}/{name}.md" for kind in ("roles", "workflows")
+                   for name in components[kind]}
+        self.assertEqual(set(BUDGETS) - {"consumer"}, readers,
+                         "A registered reader must not silently escape load measurement")
+
+    def test_lite_phase_six_does_not_load_analyst_comment_procedures(self) -> None:
+        body = (PLUGIN / "roles/map-analyst.md").read_text(encoding="utf-8")
+        path = METHOD / "references/phases-5-6.md"
+        original_read = Path.read_text
+        text = path.read_text(encoding="utf-8")
+        changed = text.replace("## Comment Type Classification\n", "## Comment Type Classification\n\ncomment-sentinel\n")
+        self.assertNotEqual(text, changed)
+        options = frozenset({"comments"})
+        baseline = load(body, mode="lite", phases={0, 6}, options=options)
+        with patch.object(Path, "read_text", autospec=True, side_effect=lambda p, **kw: changed if p == path else original_read(p, **kw)):
+            self.assertEqual(load(body, mode="lite", phases={0, 6}, options=options), baseline)
+
+    def test_analyst_partial_profiles_exclude_unselected_phase_units(self) -> None:
+        body = (PLUGIN / "roles/map-analyst.md").read_text(encoding="utf-8")
+        cases = {
+            frozenset({0, 5}): {"references/phase-0.md", "references/phases-5-6.md"},
+            frozenset({0, 6}): {"references/phase-0.md", "references/phases-5-6.md"},
+            frozenset({0, 1, 2, 3, 4}): {"references/phase-0.md", "references/phases-1-2.md", "references/phases-3-4.md"},
+            frozenset({7}): {"references/phase-7.md"},
+        }
+        common = {"SKILL.md", "references/evidence.md", "references/snapshot.md"}
+        for phases, resources in cases.items():
+            with self.subTest(phases=sorted(phases)):
+                words, files = load(body, phases=phases)
+                self.assertEqual(files, common | resources)
+                self.assertLessEqual(words + len(body.split()), BUDGETS["roles/map-analyst.md"])
+
+    def test_classic_coordinator_closure_excludes_analysis_units(self) -> None:
+        body = (PLUGIN / "workflows/analyze.md").read_text(encoding="utf-8")
+        core = {"SKILL.md", "references/entry-analyze.md", "references/run.md", "references/snapshot.md"}
+        for mode in ("full", "lite", "update"):
+            for documentation in (False, True):
+                for options in _option_sets():
+                    _, files = load(body, mode=mode, documentation=documentation, options=options)
+                    expected = core | ({"references/migration.md"} if "migration" in options else set())
+                    with self.subTest(mode=mode, documentation=documentation, options=sorted(options)):
+                        self.assertEqual(files, expected)
+
+    def test_phase_seven_does_not_grant_workers_completion_or_view_ownership(self) -> None:
+        body = (METHOD / "references/phase-7.md").read_text(encoding="utf-8")
+        self.assertNotIn("Classic owner: set", body)
+        self.assertIn("entry coordinator", body)
+        self.assertIn("Workers never load presentation instructions", body)
+
+    def test_phase_reads_select_only_requested_analysis_units(self) -> None:
+        body = (
+            "## Method loads\n\n| Resource | Sections | When |\n|---|---|---|\n"
+            "| `references/phases-1-2.md` | all | phase-1 |\n"
+            "| `references/phases-3-4.md` | all | phase-3 |\n"
+            "| `references/phase-7.md` | all | phase-7 |\n"
+        )
+        self.assertEqual(load(body, phases={0, 1})[1], {"references/phases-1-2.md"})
+        self.assertEqual(load(body, mode="lite")[1], {"references/phases-1-2.md", "references/phase-7.md"})
+        self.assertEqual(load(body, phases={0, 3})[1], {"references/phases-3-4.md"})
+        self.assertEqual(load(body, phases={7})[1], {"references/phase-7.md"})
+
+    def test_phase_selectors_validate_inactive_inputs_and_reject_unknown_phase(self) -> None:
+        for phases in ({8}, {-1}, {True}, {"1"}):
+            with self.subTest(phases=phases), self.assertRaisesRegex(ValueError, "Unknown analysis phase"):
+                load("", phases=phases)
+        missing = "## Method loads\n\n| Resource | Sections | When |\n|---|---|---|\n| `references/missing.md` | all | phase-3 |\n"
+        with self.assertRaises(FileNotFoundError):
+            load(missing, phases={0, 1})
+
     def test_roles_load_only_their_owned_core_units(self) -> None:
         for role, expected in ROLE_RESOURCES.items():
             body = (PLUGIN / role).read_text(encoding="utf-8")

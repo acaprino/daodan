@@ -1,6 +1,6 @@
 ---
 name: audit
-description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-map:analyze when .codebase-map/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
+description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; binds a current Codebase Map run through phase 4, obtaining one when needed. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
 argument-hint: '[path] [--diff [<base-ref>]] [--scope <subpath>] [--severity-floor low|medium|high] [--focus all|knowledge|form|D1..D7] [--no-index] [--rebuild-index]'
 ---
 

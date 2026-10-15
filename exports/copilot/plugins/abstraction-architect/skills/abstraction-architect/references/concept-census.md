@@ -98,7 +98,7 @@ FINDING                      only here does precision apply
 
 ## Phase 1: the seed map
 
-Read `.codebase-map/` and extract the territory: modules, responsibilities, entities and domain concepts, services, persistence, configuration, boundaries, principal flows, public interfaces.
+Read the supplied bound run's phase files and extract the territory: modules, responsibilities, entities and domain concepts, services, persistence, configuration, boundaries, principal flows, public interfaces. Retain its run and snapshot identity; the root mirror is not this input.
 
 The census is seeded by this map on purpose. Beginning by sweeping eighty thousand files at random produces order-dependent coverage and burns the budget before reaching the interesting part.
 

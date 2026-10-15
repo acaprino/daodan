@@ -9,6 +9,7 @@ entrypoint = "team-review.md"
 
 [dispatch]
 roles = [
+  "codebase-map/map-analyst",
   "senior-review/api-contract-auditor",
   "senior-review/chicken-egg-detector",
   "senior-review/cleanup-auditor",

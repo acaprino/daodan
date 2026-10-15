@@ -136,7 +136,7 @@ by the requested scope, never a second detector prompt.
 
 | Need | Load or dispatch |
 |---|---|
-| Static context and exact Codebase Map run binding | codebase-map:analyze, in coordinator context |
+| Static context and exact Codebase Map run binding | codebase-map:analyze preflight and delivery; codebase-map:map-analyst in an isolated context |
 | Candidate correctness, including applicable stack specialists | senior-review:review-method |
 | Assessment provenance consolidation | senior-review:review-preparation and senior-review:review-consolidation |
 | Application subtraction | senior-review:application-cleanup-method |
@@ -150,9 +150,13 @@ by the requested scope, never a second detector prompt.
 | Readability | clean-code:readability-method |
 | General development planning/execution | superpowers:brainstorming, superpowers:writing-plans, superpowers:executing-plans or superpowers:subagent-driven-development |
 
-The Codebase Map is the single declared workflow-in-context exception. Do not recursively
-launch lifecycle workflows or pretend TOML invoke executes a workflow. Load the
-operation reference below; perform its methods in this context.
+For Codebase Map, execute the canonical analyze entry's preflight, answerable
+checkpoints, delivery check and publication decision here. Dispatch
+`codebase-map:map-analyst` through the consuming workflow's declared host harness
+in one isolated context for the phases. Bind the returned run and snapshot;
+loading the role as a skill executes no analysis. Do not recursively launch
+lifecycle workflows or pretend TOML invoke executes a workflow. Load the
+operation reference below; perform its coordinating methods in this context.
 
 ## Operation references
 

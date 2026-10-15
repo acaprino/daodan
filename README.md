@@ -198,6 +198,14 @@ consumer with an explicit hard dependency; the core does not install every domai
 Playwright is required by the browser-facing plugins that declare it. Design
 specialists used by frontend-review remain upstream.
 
+Reverse engineering of shipped applications and binaries is delegated to
+[REA (Reverse Engineer Anything)](https://github.com/morluto/rea). Its upstream
+`reverse-engineer-anything` skill works with the `rea-agents` CLI/MCP runtime.
+Follow [REA setup](https://github.com/morluto/rea/blob/main/docs/installation.md)
+to install the matching instructions and tools for your agent. Native analysis
+also requires a supported analysis engine. Source-repository mapping remains
+with Codebase Map.
+
 ## Presentations, spreadsheets and documents
 
 The [Office plugin](docs/plugins/office.md) creates and revises editable `.pptx`,

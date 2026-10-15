@@ -123,7 +123,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
    - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
    - Set `RUN_DIR = .codebase-map/runs/<run-id>`
    - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-map/runs/legacy-<date>/` first
-   - Register the run in `runs.json` (`read-modify-write`, append `{run_id, target, mode: "team", started_at}` to `active`)
+   - Register through `snapshot.py register $RUN_DIR` after initializing state below; never write `runs.json` directly
 4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and `.codebase-map/runs/<id>/snapshot/manifest.json` exists. With a candidate, run the change set once over the whole target:
 
    ```bash
@@ -174,7 +174,8 @@ Create `$RUN_DIR/` and `$RUN_DIR/state.json`:
 
 Pre-flight point 4 already ran the change set before this file is written. On an incremental run, `parent_run` (the parent's run-id), `base_snapshot_created_at` (the parent manifest's `created_at`) and `incremental` (holding `{affected_files, files_in_snapshot}` from the change set's `totals`) are written here with their real values, not left for later. `git` cannot follow that rule: the snapshot that supplies it is not written until after the checkpoint is accepted, so it starts `null` here and is copied in right after that write. A full run leaves `parent_run` and `incremental` as `null` and still records `git` and the snapshot: every run is a possible parent.
 
-Register `parent_run` in the run's `runs.json` entry as well, `null` for a full run.
+Invoke `snapshot.py register $RUN_DIR` after initializing state; repeat after
+lineage changes so the registry records `parent_run` (`null` for a full run).
 
 ### Project Knowledge Discovery (Codebase Map Phase 0)
 
@@ -267,7 +268,7 @@ Spawn plan: <structure count> structure + <behavior count> behavior + <quality c
 
 Use the host's user-input tool when available and permitted in the current mode. If no suitable tool is available, end the turn with the actual question in plain text so the user can reply in chat. Do not switch into plan mode to obtain a tool. Never end with only a statement that confirmation is required or that `--yes` was omitted. Keep the decision pending until the user answers; an unavailable tool or elapsed time is not an answer.
 
-If the user cancels, set state to `cancelled`, remove the run from `active` in `runs.json`, and exit. If the user modifies or supplies partitions, finalize that list before proceeding. Recompute update eligibility and the preview when the partition set changes.
+If the user cancels, set state to `cancelled`, invoke `snapshot.py unregister $RUN_DIR`, and exit. If the user modifies or supplies partitions, finalize that list before proceeding. Recompute update eligibility and the preview when the partition set changes.
 
 Finalize `partitions` array in `state.json` with `{name, path, language_primary, file_count, loc_estimate, status: "pending"}` for each. Mark `phase_0_detection: "complete"`.
 
@@ -291,6 +292,12 @@ LF/CRLF-only differences. Parent analysis/provenance and its manifest remain
 intact. Returning supported parent analysis without any source-reading phase
 does not oblige a new full analysis; a later block reader still obtains its own
 current snapshot before reading.
+
+Before dispatch, invoke `prepare $RUN_DIR` from `references/snapshot.md` with
+the accepted team mode/flags. Keep its produced/inherited/skipped declarations,
+including depth skips, synthesis/interconnect skips and requested comment health.
+`08-interconnect-map.md` remains the team-only artifact when selected. Do not
+change declarations to turn a failed worker or missing map into a skipped phase.
 
 Every source reader derives `source_manifest` as `$RUN_DIR/snapshot/manifest.json`.
 It is a prompt alias for this existing run artifact, not a new state field or a
@@ -467,7 +474,9 @@ Produce the full structured map following your agent definition: Call Graph limi
 Every claim must cite file:line. No recommendations, no fixes. Empty sections are acceptable if nothing applies. Scale the map with the number of cross-partition edges, never with the size of the codebase.
 ```
 
-Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On failure: mark `phase_3_interconnect: "failed"` and continue to Phase 4 (failure is non-blocking).
+Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On failure:
+mark `phase_3_interconnect: "failed"` and continue to Phase 4's delivery gate;
+an undeclared skip or failed map never permits publication.
 
 ## Phase 4: Publish, Completion & Next Steps Menu
 
@@ -476,14 +485,24 @@ After successful synthesis, only the coordinator loads
 or useful HTML. Workers never load presentation instructions. Keep requested view
 failures open; `--skip-synthesis` creates no report to render.
 
-1. Update `$RUN_DIR/state.json`: `status: "complete"`, `completed_at: <ISO_TIMESTAMP>`.
-2. **Publish** (skip if `--skip-synthesis`): copy `$RUN_DIR/01-*.md` .. `$RUN_DIR/07-final-report.md` (those that exist), `$RUN_DIR/08-interconnect-map.md` (if Phase 3 ran), and `$RUN_DIR/state.json` to the `.codebase-map/` root, overwriting the previous mirror. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed`. The root mirror is the downstream contract for `/senior-review:team-review`, `/project-knowledge:guide`, and `/project-knowledge:instructions --create`.
-3. No worker may still be writing after publish. Every dispatched worker has been recorded `delivered` or `failed` by now, and the harness owns whatever cleanup its workers need.
+1. Account for every dispatched worker as delivered or failed; no worker may
+   still be writing during publication. The harness owns worker cleanup.
+2. Invoke `check $RUN_DIR --json` from `references/snapshot.md`. Verify all
+   declared artifacts and coverage. Missing/empty produced artifacts, stale
+   markers, invalid inherited provenance or unexpected files keep the run open.
+   Recover through the existing resume stages or report the concrete blocker;
+   do not mark a failed delivery complete.
+3. **Publish** only when `complete` and `may_publish` are true and every requested
+   view is delivered: invoke `publish $RUN_DIR` from the snapshot unit. It replaces
+   the whole mirror, including declared team `08`, and updates the registry with
+   rollback protection. `--skip-synthesis` results stay in the run without
+   publication; record partial status, invoke `snapshot.py unregister $RUN_DIR`,
+   and leave the mirror/latest pointer intact.
 4. Present summary:
 
 ```
 Codebase Map (team mode) complete for: <target>
-Run: <run-id> (published to .codebase-map/ root)
+Run: <run-id> (<published to .codebase-map/ root | partial, run only>)
 Parent: <parent-id or "none (full run)">
 
 Partitions: <N> (<list of names + status>)

@@ -42,7 +42,7 @@ outputs. Deleted content bytes are not a measurement of filesystem free space.
 
 Working assumptions: State material assumptions and unresolved alternatives before dependent work. Ask only for an essential decision that existing instructions or authorization cannot resolve; continue independent authorized work.
 
-Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration.
+Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration. Prefer suitable existing code, standard-library facilities and maintained libraries over reimplementing solved problems. Before recommending or adopting a dependency, verify maintenance and support status, fit, compatibility, license, security and total integration cost using current official sources. Disclose unverified status; do not recommend discontinued or unverified libraries by default. Justify custom code when reuse is unsuitable or more complex.
 
 Working scope: Limit edits to the task and owned files, match existing style and preserve unrelated work. Remove code made unused by your changes; remove preexisting code only when its removal is explicitly authorized and any required checks or approvals are satisfied.
 
@@ -349,12 +349,23 @@ Standing policy since 2026-08-04: this repository no longer maintains vendored c
 | Brainstorming, planning, execution (`ai-tooling` skills `brainstorming`, `writing-plans`, `executing-plans`) | `obra/superpowers` | marketplace 8.0.0, ai-tooling 3.0.0 |
 | Multi-agent generic core (`agent-teams` plugin: 6 commands, 4 agents, 6 skills) | `wshobson/agents` | marketplace 9.0.0 |
 | Browser automation (`playwright-skill` plugin: 1 skill) | `lackeyjb/playwright-skill` | marketplace 11.0.0 |
-| Binary reverse engineering (`reverse-engineering` plugin: 3 agents, 4 skills) | `wshobson/agents` | marketplace 12.0.0 |
+| Binary reverse engineering (`reverse-engineering` plugin: 3 agents, 4 skills) | `morluto/rea` (REA; originally `wshobson/agents`) | marketplace 12.0.0 |
 | Git worktree parallel development (`git-worktrees` plugin: 1 agent, 1 skill, 1 command) | `obra/superpowers` (`using-git-worktrees` skill) | marketplace 13.0.0 |
 | Prompt-improver hook (`prompt-improver` plugin: 1 skill, 4 hook handlers) | `severity1/claude-code-prompt-improver` | marketplace 17.0.0 |
 | Language-agnostic TDD knowledge base (`testing` skill `tdd`) | `mattpocock/skills` | marketplace 18.0.0 |
 | Browser E2E patterns (`testing` skill `e2e-testing-patterns`) | `wshobson/agents` | marketplace 18.0.0 |
 | Cleanup command trio (`codebase-cleanup` plugin: 3 commands) | `wshobson/agents` | marketplace 19.0.0 |
+
+Application and binary reverse engineering is delegated to [REA](https://github.com/morluto/rea),
+with its upstream `reverse-engineer-anything` skill and `rea-agents` CLI/MCP runtime.
+Follow its [installation contract](https://github.com/morluto/rea/blob/main/docs/installation.md)
+for the active host and required analysis engines. A skill-only installation does
+not provision MCP tools or engines. Verify the actual session tools and target
+support before execution; configuration support alone is not a live host probe.
+REA owns shipped-artifact and requested runtime investigations; codebase-map owns
+source-repository mapping. This delegation does not assert equivalent coverage of
+the retired `memory-forensics` or `anti-reversing-techniques` skills. Preserve the
+original retirement history without restoring a local copy or a sync-table row.
 
 As of marketplace 8.2.0, superpowers is a declared hard dependency of `ai-tooling` (`dependencies: ["superpowers@claude-plugins-official"]` in `marketplace.json`; cross-marketplace dependencies MUST use the qualified `name@marketplace` form, because a bare name resolves against this marketplace and fails the whole plugin load, which is what silently broke `ai-tooling` until marketplace 12.0.2). Any place that points at the superpowers planning skills says so unconditionally: load the skills, and if they are unavailable stop the dependent phase and recover superpowers through the active host provisioning mechanism; the Claude command `claude plugin install superpowers@claude-plugins-official` applies only on Claude Code. This supersedes the earlier rule that kept superpowers references conditional; do not reintroduce conditional phrasing.
 

@@ -29,8 +29,9 @@ Map structure, purpose, integrations, consequences.
 
 ## How This Skill Is Invoked
 
-`/codebase-map:analyze` runs inline; `/codebase-map:team-analyze` uses isolated
-partition workers. Both own `.codebase-map/` state (`references/run.md`).
+`/codebase-map:analyze` dispatches isolated `codebase-map:map-analyst`;
+`/codebase-map:team-analyze` uses isolated partition workers. Their entries own
+`.codebase-map/` publication (`references/run.md`).
 Loading `codebase-map:map-method` alone starts no analysis or run.
 
 ## Load map
@@ -40,20 +41,20 @@ Loading `codebase-map:map-method` alone starts no analysis or run.
 | `references/migration.md` | legacy root migration and bound-path resolution | legacy archives, redirects, bindings or blocked preflight |
 | `references/run.md` | concurrent runs model, perimeter, classic or team | whoever owns the run |
 | `references/snapshot.md` | snapshot write, scope count, diff, carry, check commands and owner prerequisites | whoever owns the run's snapshot |
-| `references/update.md` | incremental updates and the incremental depth procedure | a run accepted as an update |
+| `references/update.md` | incremental re-derivation | analyst on accepted updates |
 | `references/evidence.md` | evidence-anchored output, forbidden files, script commands, source reading, file classification; maintained-document verification is separate | every phase worker and every consumer that reads source |
 | `references/reading.md` | how to read a finished analysis | every consumer of a bound analysis |
-| `references/phase-0.md` | Phase 0, project knowledge discovery | the run owner, before Phase 1 |
+| `references/phase-0.md` | Phase 0, project knowledge discovery | analyst and team entry |
 | `references/phases-1-2.md` | Phase 1 structure, Phase 2 interfaces | phase 1 and 2 workers |
 | `references/phases-3-4.md` | Phase 3 flows, Phase 4 semantics and the analysis loop | phase 3 and 4 workers |
 | `references/phases-5-6.md` | Phase 5 patterns and risks, Phase 6 documentation health | phase 5 and 6 workers |
-| `references/phase-7.md` | Phase 7 final report | the run owner |
+| `references/phase-7.md` | Phase 7 final report | analyst and synthesizer |
 
 ## Consumer map
 
 - Forbidden files: `references/evidence.md`.
 - Consuming a bound analysis: `references/reading.md`, plus `references/evidence.md` before Maintained documentation for source. For durable-document verification, read its Maintained documentation section. Snapshot verification/refresh uses `references/snapshot.md` before Prerequisites.
-- Run analyses through `codebase-map:analyze`, never through this skill alone.
+- Run analyses through `codebase-map:analyze`; composed callers declare isolated `codebase-map/map-analyst`. Loading this skill starts none.
 
 ## Team bindings
 

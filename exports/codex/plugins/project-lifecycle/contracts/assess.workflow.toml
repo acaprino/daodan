@@ -69,7 +69,7 @@ consumes = ["artifact:cleanup-report", "artifact:tests-report", "artifact:struct
 produces = ["artifact:plan", "artifact:result"]
 
 [dispatch]
-roles = ["project-knowledge/instructions-auditor","project-knowledge/documentation-engineer","project-knowledge/guide-reviewer"]
+roles = ["codebase-map/map-analyst","project-knowledge/instructions-auditor","project-knowledge/documentation-engineer","project-knowledge/guide-reviewer"]
 isolated = true
 inline_workers = true
 

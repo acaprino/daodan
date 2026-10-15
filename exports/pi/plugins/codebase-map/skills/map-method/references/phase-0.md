@@ -73,11 +73,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Phase 0: Project Knowledge Discovery
 
-Runs in **every depth, including `--depth=lite`**, and runs first, in the orchestrating context: reading project instructions and globbing for index files is cheap, and what it finds shapes what every later phase looks for.
+Runs first in **every depth, including `--depth=lite`**, in the isolated analyst for classic mode and in the team entry for team mode. Discovery shapes later phases.
 
 Phases 1 through 7 keep their numbers. `--phase N` is a user-facing flag and renumbering would break every invocation that names a phase.
 
-**Phase 0 is a preamble, not a selectable analysis phase.** It runs before every invocation, `--phase 5` and `--docs-only` included, and it does not change the numbering semantics of phases 1 to 7. `--phase 5` still means "run phase 5 and nothing else from the analysis set", with the preamble in front of it. `--phase 0` runs the preamble alone, which is a legitimate way to ask only "how does this repository document itself".
+**Phase 0 is a preamble, not a selectable analysis phase.** Every fresh run includes it, with `--phase N` (N from 1 to 6) and `--docs-only` included. A resume can inherit its confirmed knowledge files. It does not change the numbering of phases 1 to 7; `--phase 0` and `--phase 7` are refused.
 
 This phase owns discovery of **how the repository documents itself**. It does not evaluate whether the documentation is accurate, which is Phase 6.
 

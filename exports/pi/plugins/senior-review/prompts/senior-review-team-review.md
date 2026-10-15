@@ -112,7 +112,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-map:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -136,6 +136,7 @@ Role body bindings (load the complete body only for the selected worker):
 - `chicken-egg-detector`: read `skills/senior-review-chicken-egg-detector/SKILL.md` inside this package and pass its complete body verbatim.
 - `cleanup-auditor`: read `skills/senior-review-cleanup-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `code-auditor`: read `skills/senior-review-code-auditor/SKILL.md` inside this package and pass its complete body verbatim.
+- `codebase-map:map-analyst`: read `contracts/dispatch/codebase-map/map-analyst.md` inside this package and pass its complete role body verbatim.
 - `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
 - `data-integrity-auditor`: read `skills/senior-review-data-integrity-auditor/SKILL.md` inside this package and pass its complete body verbatim.
 - `distributed-flow-auditor`: read `skills/senior-review-distributed-flow-auditor/SKILL.md` inside this package and pass its complete body verbatim.

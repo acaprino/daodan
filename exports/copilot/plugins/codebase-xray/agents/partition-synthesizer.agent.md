@@ -1,6 +1,6 @@
 ---
 name: partition-synthesizer
-description: 'Consolidates per-partition Codebase Map outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-map:analyze writes its phase files directly.'
+description: 'Consolidates per-partition Codebase Map outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.'
 tools: ['search', 'edit']
 ---
 

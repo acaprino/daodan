@@ -105,12 +105,13 @@ the actual candidate and leave any gate needing that comparison unavailable.
 
 Read `references/<variant>.md` inside this skill and execute its preparation stages
 once. Existing reviewer inputs remain unchanged. For team review Phase 1a, the
-coordinator directly executes the canonical `codebase-map:analyze` entry and
-`codebase-map:map-method` phase-by-phase in this same context. Loading either
-body alone executes nothing; no declarative `invoke` executor or nested lifecycle
-scheduler is introduced. Analyze is not spawned as a role, and its preparation
-step does not create another review preparation or final report owner. Required
-workers retain isolated contexts. Resolve the exact run in runs.json and never
+coordinator executes the canonical `codebase-map:analyze` entry's preflight,
+answerable checkpoints, delivery check and publication decision, dispatching
+`codebase-map:map-analyst` in one isolated context through the consuming
+workflow's declared host harness. Loading either body alone executes nothing;
+the analyst is a role, while analyze remains the entry. This step introduces no
+second review preparation or final report owner. Required workers retain
+isolated contexts. Resolve the exact run in runs.json and never
 substitute a mirror for a missing run.
 
 Native report locations in the reference are relative to the explicit review

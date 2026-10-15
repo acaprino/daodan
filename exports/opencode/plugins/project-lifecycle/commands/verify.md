@@ -114,7 +114,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `platform-engineering:platform-reviewer`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `platform-engineering:platform-reviewer`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -127,6 +127,7 @@ Dispatch plan:
 Role bindings:
 
 - `abstraction-architect:abstraction-architect-agent`: dispatch the installed `abstraction-architect:abstraction-architect-agent` agent by its qualified identity.
+- `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `platform-engineering:platform-reviewer`: dispatch the installed `platform-engineering:platform-reviewer` agent by its qualified identity.
 - `project-knowledge:documentation-engineer`: dispatch the installed `project-knowledge:documentation-engineer` agent by its qualified identity.
 - `project-knowledge:guide-reviewer`: dispatch the installed `project-knowledge:guide-reviewer` agent by its qualified identity.

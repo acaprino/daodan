@@ -2,9 +2,24 @@ name = "analyze"
 entrypoint = "analyze.md"
 
 [[phases]]
-id = "run"
+id = "preflight"
 isolation = "shared"
+produces = ["artifact:analysis-brief"]
+
+[[phases]]
+id = "analysis"
+needs = ["preflight"]
+role = "codebase-map/map-analyst"
+isolation = "required"
+consumes = ["artifact:analysis-brief"]
 produces = ["artifact:analyze-report"]
+
+[[phases]]
+id = "publish"
+needs = ["analysis"]
+isolation = "shared"
+consumes = ["artifact:analyze-report"]
+produces = ["artifact:published-map"]
 
 [contract]
 inputs = ["repository"]

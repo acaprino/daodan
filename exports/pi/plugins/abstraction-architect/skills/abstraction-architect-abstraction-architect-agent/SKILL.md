@@ -1,6 +1,6 @@
 ---
 name: abstraction-architect-abstraction-architect-agent
-description: 'Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from .codebase-map/ plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).'
+description: 'Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from a bound Codebase Map run plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).'
 disable-model-invocation: true
 ---
 
@@ -113,7 +113,10 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 
 - `codebase_path` — the codebase root.
 - `mode` (optional, default `global`) — `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
-- `xray_path` — path to `.codebase-map/`. Required for `global`, optional for `diff`.
+- `xray_path` — immutable `.codebase-map/runs/<run-id>/` directory. Required for `global`, optional for `diff`. Retain this compatibility input name; never read the mirror's phase files as a supplied run.
+- `map_run_id`, `map_snapshot_path` (optional) — exact run identity and its `snapshot/manifest.json`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
+- `map_changes_path` (optional) — coordinator's verified snapshot diff against the current worktree.
+- `map_outside_diff_changed_files` (optional) — every path changed since the bound snapshot outside `changed_files`; preserve the complete list in Gaps.
 - `concept_index_path` (optional) — path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.
 - `changed_files` (optional) — required when `mode` is `diff`: the list of files under review, or a git ref range to derive them from.
 - `report_path` (optional) — defaults per mode, see PROCESS.
@@ -123,7 +126,9 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 
 # REQUIRED DEEP-DIVE FILES
 
-Read from `xray_path`. Missing files reduce confidence; they do not abort the audit.
+Read only from `xray_path`, retaining its run and snapshot binding. Read
+`08-interconnect-map.md` only from the same bound run. Missing files reduce
+confidence; they do not abort the audit. This worker never launches a Map.
 
 - `01-structure.md` — modules, classes, file sizes. Seeds the concept census and finds god modules.
 - `02-interfaces.md` — public APIs. Seeds representation discovery for types, DTOs and enums.
@@ -132,6 +137,22 @@ Read from `xray_path`. Missing files reduce confidence; they do not abort the au
 - `08-interconnect-map.md` (optional) — cross-partition contracts. Enables the bounded-context check that gate K6 requires.
 
 Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
+
+For a compatibility caller that supplies the root directory as `xray_path`, read
+only its `state.json -> run_id` to resolve `.codebase-map/runs/<run-id>/`.
+Validate that run's own identity, target and snapshot before reading any phase.
+Missing or inconsistent identity is a binding gap; never fall back to mirror
+phase files or launch a Map. Preserve returned migration paths and run IDs.
+
+Before using Map context, load `references/reading.md` and
+`references/snapshot.md` through `codebase-map:map-method`. Validate supplied
+currentness evidence against this run and worktree. When it is absent, run
+`snapshot.py diff <xray_path> <codebase_path> --out <temporary-check-dir> --verify`
+through the provider's script directory. Preserve the bound snapshot and Map
+files. Under `diff`, enumerate the union of added, modified and removed files
+minus `changed_files`, including every path in Gaps. A failed check or invalid
+binding is a freshness gap, never evidence that the Map is current. Changed
+Map claims remain discovery leads until re-read against current source.
 
 # PROCESS (mode = global)
 
@@ -251,12 +272,12 @@ One line per pair, exempt from `severity_floor`, so the next occurrence is recog
   ```
   Or, when degraded, the specific condition and what coverage was lost.
 - **Index contradictions:** entries the source disproved, with what the source says
-- **Gaps:** Codebase Map files missing, directories not covered, units skipped and why
+- **Gaps:** Codebase Map files missing, directories not covered, units skipped and why; every path changed since the bound Map snapshot outside the review diff, plus failed currentness checks
 ````
 
 # CONSTRAINTS
 
-- **Report-only.** Edit nothing except `report_path` and, in global mode only, `concept_index_path`.
+- **Report-only.** Edit nothing except `report_path` and, in global mode only, `concept_index_path`. Helper check outputs may use a temporary directory; never write source or the Map store.
 - **Diff mode never writes the concept index.**
 - **Never restrict the diff search to changed files.** What you are looking for is by definition outside the diff.
 - **Re-read before promoting.** A finding whose cited representations you have not opened on current source is not reportable, and an index entry is never a substitute.

@@ -105,7 +105,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `text-humanizer:text-humanizer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `text-humanizer:text-humanizer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -117,6 +117,7 @@ Dispatch plan:
 
 Role body bindings (load the complete body only for the selected worker):
 
+- `codebase-map:map-analyst`: read `contracts/dispatch/codebase-map/map-analyst.md` inside this package and pass its complete role body verbatim.
 - `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:codebase-explorer`: read `contracts/dispatch/project-knowledge/codebase-explorer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:doc-humanizer`: read `contracts/dispatch/project-knowledge/doc-humanizer.md` inside this package and pass its complete role body verbatim.

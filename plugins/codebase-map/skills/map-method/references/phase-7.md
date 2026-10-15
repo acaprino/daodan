@@ -83,9 +83,9 @@ never removes required sections or evidence.
 
 The three coverage lines are mandatory, including in the condensed lite report.
 
-For requested or useful HTML, only the run owner loads `references/human-view.md`.
-Workers never load presentation instructions. Classic owner: set `$RUN_DIR/state.json`
-status to `complete` only after native Markdown and every requested view are delivered.
+For requested or useful HTML, only the entry coordinator loads `references/human-view.md`.
+Workers never load presentation instructions. The entry coordinator marks the run
+complete only after native delivery and every requested view pass their gates.
 
 ## Team mode
 

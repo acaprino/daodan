@@ -281,7 +281,7 @@ Working assumptions: State material assumptions and unresolved alternatives befo
 - Surface unknowns instead of guessing
 
 ### 2. Simplicity First
-Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration.
+Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration. Prefer suitable existing code, standard-library facilities and maintained libraries over reimplementing solved problems. Before recommending or adopting a dependency, verify maintenance and support status, fit, compatibility, license, security and total integration cost using current official sources. Disclose unverified status; do not recommend discontinued or unverified libraries by default. Justify custom code when reuse is unsuitable or more complex.
 - One responsibility per function or module
 - Remove preexisting code only with evidence, within the approved task authorization and any required checks or approvals.
 - Prefer composition over premature inheritance

@@ -96,8 +96,10 @@ Count documentation-engineer and guide-reviewer before dispatch. If the quick
 budget cannot cover the requested union, show the selected priorities and remaining
 dimensions; do not silently dispatch extra contexts or imply complete coverage.
 
-For abstraction context, invoke codebase-map:analyze in this coordinator context
-only when required by the requested scope. Bind the exact new or validated Codebase Map
+For abstraction context, execute the canonical codebase-map:analyze preflight
+and delivery/publication steps only when required by the requested scope.
+Dispatch codebase-map:map-analyst in one isolated context through the consuming
+workflow's declared host harness. Bind the exact new or validated Codebase Map
 run ID, source snapshot, depth and directory. Quick uses lite context and states
 missing flows/semantics; deep can request full context. Diff mode receives actual
 changed_files. The concept index is a lead, never proof; disable its writes for this

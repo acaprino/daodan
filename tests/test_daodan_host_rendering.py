@@ -30,6 +30,7 @@ from host_binding_assertions import canonical_markdown, without_host_binding, lo
 
 ADAPTERS = REPO_ROOT / "adapters"
 XRAY = REPO_ROOT / "plugins/codebase-map"
+LEGACY_XRAY = REPO_ROOT / "plugins/codebase-xray"
 REVIEW = REPO_ROOT / "plugins/senior-review"
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
@@ -57,7 +58,7 @@ class HostRenderingTests(unittest.TestCase):
         cls.packages = {}
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
-            for plugin_root in (XRAY, REVIEW):
+            for plugin_root in (XRAY, REVIEW, LEGACY_XRAY):
                 plugin = load_plugin(plugin_root)
                 staging = cls.temp / host / plugin.name
                 render_plugin(plugin, adapter, staging, adapters_root=ADAPTERS)
@@ -85,6 +86,77 @@ class HostRenderingTests(unittest.TestCase):
         return {path.relative_to(root).as_posix(): _read(path) for path in root.rglob("*.md")}
 
     # -- dispatch plan -----------------------------------------------------
+
+    def test_classic_entries_bind_one_isolated_analyst_before_publication_on_every_host(self):
+        for host in HOSTS:
+            for plugin, role in (("codebase-map", "map-analyst"),
+                                 ("codebase-xray", "codebase-map:map-analyst")):
+                with self.subTest(host=host, plugin=plugin):
+                    text = self.harness(host, plugin, "analyze")
+                    plan = text[text.index("Dispatch plan:"):text.index("## Method")]
+                    phases = re.findall(r"^\d+\. `([a-z-]+)`:", plan, re.MULTILINE)
+
+                    self.assertEqual(phases, ["preflight", "analysis", "publish"])
+                    self.assertIn(f"`analysis`: one `{role}` in an isolated context", plan)
+                    self.assertIn("needs `preflight`; consumes `artifact:analysis-brief`", plan)
+                    self.assertIn("`publish`: runs in the orchestrating context; needs `analysis`", plan)
+                    self.assertIn("consumes `artifact:analyze-report`", plan)
+                    self.assertIn("produces `artifact:published-map`", plan)
+                    self.assertIn("required", text.split("Dispatch plan:", 1)[0])
+                    self.assertIn("An empty final message or", text)
+                    self.assertIn("worker stop remains missing delivery", text)
+
+    def test_legacy_classic_analyst_binding_uses_the_canonical_owner_on_every_host(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                package = self.package(host, "codebase-xray")
+                text = self.harness(host, "codebase-xray", "analyze")
+                self.assertNotIn("codebase-xray:map-analyst", text)
+                resource = package / "contracts/dispatch/codebase-map/map-analyst.md"
+
+                if host in {"codex", "pi"}:
+                    self.assertIn("read `contracts/dispatch/codebase-map/map-analyst.md`", text)
+                    role = _read(resource)
+                    self.assertIn("Owner: codebase-map:map-analyst", role)
+                    self.assertIn("# Classic analysis owner", role)
+                    self.assertIn("Ask no questions.", role)
+                    self.assertIn("Never publish", role)
+                    self.assertIn("<codebase-map-plugin-root>/skills/map-method/", role)
+                    self.assertNotIn("<codebase-xray-plugin-root>", role)
+                    source = _read(XRAY / "roles/map-analyst.md")
+                    expected = source.split("\n---\n", 1)[1].lstrip("\n").replace(
+                        CLAUDE_ROOT, "<codebase-map-plugin-root>"
+                    )
+                    self.assertEqual(role[role.index("# Classic analysis owner"):],
+                                     canonical_markdown(expected))
+                else:
+                    self.assertIn("dispatch the installed `codebase-map:map-analyst` agent", text)
+                    self.assertFalse(resource.exists())
+
+    def test_classic_entries_reject_hosts_without_isolated_dispatch(self):
+        for host in HOSTS:
+            adapter = load_adapter(ADAPTERS, host)
+            shared_only = replace(adapter, strategies=tuple(
+                replace(strategy, isolated=False) for strategy in adapter.strategies
+            ))
+            for root in (XRAY, LEGACY_XRAY):
+                plugin = load_plugin(root)
+                classic = replace(plugin, workflows=tuple(
+                    workflow for workflow in plugin.workflows if workflow.name == "analyze"
+                ))
+                with self.subTest(host=host, plugin=plugin.name):
+                    self.assertIn(resolve_support(classic, adapter).state, {"native", "adapted"})
+                    unavailable = resolve_support(classic, shared_only)
+                    self.assertEqual(unavailable.state, "unsupported")
+                    self.assertEqual(unavailable.workflow_strategies, (("analyze", "none"),))
+                    self.assertEqual(unavailable.missing_capabilities, ())
+
+                    for capability in ("contexts.isolate", "roles.dispatch"):
+                        bindings = dict(adapter.bindings)
+                        bindings[capability] = replace(bindings[capability], state="unsupported")
+                        unavailable = resolve_support(classic, replace(adapter, bindings=bindings))
+                        self.assertEqual(unavailable.state, "unsupported")
+                        self.assertEqual(unavailable.missing_capabilities, (capability,))
 
     def test_fanout_per_selection_is_rendered_per_item_on_every_host(self):
         for host in HOSTS:
@@ -174,11 +246,12 @@ class HostRenderingTests(unittest.TestCase):
 
     # -- workflow frontmatter and arguments --------------------------------
 
-    def test_claude_flat_workflow_preserves_kernel_under_execution_binding(self):
+    def test_claude_classic_workflow_preserves_kernel_method_under_execution_binding(self):
         rendered = _read(self.package("claude", "codebase-map") / "commands/analyze.md")
         kernel = _read(XRAY / "workflows/analyze.md").replace("\r\n", "\n")
         body = without_host_binding(self, rendered, "claude")
-        self.assertEqual(body, canonical_markdown(kernel))
+        kernel_body = kernel.split("\n---\n", 1)[1].lstrip("\n")
+        self.assertEqual(body.split("## Method\n\n", 1)[1], canonical_markdown(kernel_body))
 
     def test_codex_flat_workflow_has_skill_frontmatter(self):
         text = _read(self.package("codex", "codebase-map") / "skills/analyze-workflow/SKILL.md")
@@ -456,14 +529,18 @@ class ReportRenderingHostContracts(unittest.TestCase):
                 coordinator = loaded_instruction_text(self, package / entrypoints[host], host)
                 phase = _read(package / "skills/map-method/references/phase-7.md")
                 view = _read(package / "skills/map-method/references/human-view.md")
+                classic = loaded_instruction_text(
+                    self, package / entrypoints[host].replace("team-analyze", "analyze"), host
+                )
                 coordinator_prose = " ".join(coordinator.split())
                 phase_prose = " ".join(phase.split())
+                classic_prose = " ".join(classic.split())
                 view_prose = " ".join(view.split())
                 self.assertIn("references/human-view.md", coordinator)
                 self.assertIn("references/human-view.md", phase)
                 self.assertIn("only the coordinator loads", coordinator_prose)
                 self.assertIn("Workers never load presentation instructions", coordinator_prose)
-                self.assertIn("only the run owner loads", phase_prose)
+                self.assertIn("only the entry coordinator loads", phase_prose)
                 self.assertIn("Workers never load presentation instructions", phase_prose)
                 self.assertIn("Exercised at runtime: none. This is static analysis", phase)
                 self.assertIn("Files read in depth:", phase)
@@ -474,8 +551,11 @@ class ReportRenderingHostContracts(unittest.TestCase):
                 self.assertIn("07-final-report.md", view)
                 self.assertIn("07-final-report.html", view)
                 self.assertIn("--root $RUN_DIR", view)
-                self.assertIn("Classic owner: set `$RUN_DIR/state.json`", phase_prose)
-                self.assertIn("status to `complete` only after native Markdown and every requested view are delivered", phase_prose)
+                self.assertIn("The entry coordinator marks the run complete only after native delivery and every requested view pass their gates",
+                              phase_prose)
+                self.assertIn("only this coordinator loads `human-view.md`", classic_prose)
+                self.assertIn("Verify native output and every requested view before completion", classic_prose)
+                self.assertIn("requested view failure keeps the run open", classic_prose)
                 self.assertIn("explicitly requested HTML deliverable remains open", view_prose)
 
 

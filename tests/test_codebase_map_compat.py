@@ -21,6 +21,7 @@ from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.render import opencode_permissions, render_plugin  # noqa: E402
 from scripts.daodan.templates import render_path  # noqa: E402
 from scripts.daodan.validate import CAPABILITY_REGISTRY, validate_plugins  # noqa: E402
+from host_binding_assertions import canonical_markdown, without_host_binding  # noqa: E402
 
 
 ROLES = (
@@ -76,6 +77,28 @@ class CodebaseMapCompatibilityTests(unittest.TestCase):
         variables = {"plugin": plugin, "skill": name, "workflow": name, "role": name}
         return self.package(host, plugin) / render_path(self.adapters[host].layout[kind], variables)
 
+    def adapt_placeholders(self, host: str, text: str) -> str:
+        layout = self.adapters[host].layout
+        text = text.replace("${CLAUDE_PLUGIN_ROOT}", layout["plugin_root_reference"])
+        return re.sub(r"\$ARGUMENTS\b", lambda _: layout["arguments_reference"], text)
+
+    def assert_shared_resource(self, host: str, resource: str) -> str:
+        relative = Path("skills/map-method/references") / resource
+        source = read(self.canonical.root / relative)
+        rendered = read(self.package(host, "codebase-map") / relative)
+        expected = self.adapt_placeholders(host, source)
+        layout = self.adapters[host].layout
+        notes = []
+        for reference, note in (("plugin_root_reference", "plugin_root_note"),
+                                ("arguments_reference", "arguments_note")):
+            if layout.get(note) and layout[reference] in expected:
+                notes.append(f"> {layout[note]}\n")
+        if notes:
+            expected = "".join(notes) + "\n" + expected
+        self.assertEqual(canonical_markdown(without_host_binding(self, rendered, host)),
+                         canonical_markdown(expected), f"{host}: incomplete shared resource {resource}")
+        return rendered
+
     def test_old_installation_requires_the_canonical_provider(self):
         self.assertEqual(self.legacy.required_dependencies, ("codebase-map",))
         self.assertEqual(self.legacy.components.skills, ("xray-method",))
@@ -95,7 +118,17 @@ class CodebaseMapCompatibilityTests(unittest.TestCase):
                 legacy = read(self.legacy.root / "workflows" / f"{workflow}.md")
                 self.assertFalse(source.startswith("---\n"), "Shared behavior does not duplicate registration metadata")
                 self.assertEqual(frontmatter(wrapper), frontmatter(legacy))
-                self.assertIn("## CRITICAL RULES", source)
+                if workflow == "analyze":
+                    self.assertIn("## Coordinator boundary", source)
+                    self.assertIn("## Isolated analysis", source)
+                    self.assertIn("## Publish and completion", source)
+                    self.assertIn("codebase-map:map-analyst", source)
+                    for entry in (wrapper, legacy):
+                        self.assertNotIn("## Preflight", entry)
+                        self.assertNotIn("## Isolated analysis", entry)
+                        self.assertNotIn("## Publish and completion", entry)
+                else:
+                    self.assertIn("## CRITICAL RULES", source)
                 self.assertIn("## Method loads", source)
                 self.assertNotIn("## Pre-flight", wrapper)
                 self.assertNotIn("## Pre-flight", legacy)
@@ -117,25 +150,35 @@ class CodebaseMapCompatibilityTests(unittest.TestCase):
 
     def test_all_five_hosts_ship_shared_resources_and_old_registered_entries(self):
         for host in HOSTS:
-            canonical = self.package(host, "codebase-map")
             for workflow in WORKFLOWS:
                 with self.subTest(host=host, workflow=workflow):
                     resource = f"entry-{workflow}.md"
-                    shared = read(canonical / "skills/map-method/references" / resource)
-                    self.assertIn("## CRITICAL RULES", shared)
+                    shared = self.assert_shared_resource(host, resource)
+                    self.assertIn("## Coordinator boundary" if workflow == "analyze"
+                                  else "## CRITICAL RULES", shared)
                     for plugin in ("codebase-map", "codebase-xray"):
                         path = self.component(host, plugin, "workflows", workflow)
                         wrapper = read(path)
-                        if host == "copilot" and workflow == "team-analyze":
-                            self.assertIn(f"{plugin}:team-analyze-coordinator", wrapper)
-                            wrapper = read(self.package(host, plugin) / "agents/team-analyze-coordinator.agent.md")
+                        if host == "copilot":
+                            self.assertIn(f"{plugin}:{workflow}-coordinator", wrapper)
+                            wrapper = read(self.package(host, plugin) /
+                                           f"agents/{workflow}-coordinator.agent.md")
+                        self.assertIn("## Execution harness", wrapper)
                         self.assertIn(resource, wrapper)
                         self.assertIn("## Method loads", wrapper)
                         self.assertIn("same coordinator context", wrapper)
+                        source = read(self.registry[plugin].root / "workflows" / f"{workflow}.md")
+                        method = source.split("\n---\n", 1)[1].lstrip("\n")
+                        self.assertEqual(canonical_markdown(wrapper.split("\n## Method\n\n", 1)[1]),
+                                         canonical_markdown(self.adapt_placeholders(host, method)))
+                        if workflow == "analyze":
+                            analyst = "map-analyst" if plugin == "codebase-map" else "codebase-map:map-analyst"
+                            self.assertIn(f"`analysis`: one `{analyst}` in an isolated context", wrapper)
+                            self.assertIn("`publish`: runs in the orchestrating context; needs `analysis`", wrapper)
             for role in ROLES:
                 with self.subTest(host=host, role=role):
                     resource = f"role-{role}.md"
-                    self.assertTrue((canonical / "skills/map-method/references" / resource).is_file())
+                    self.assert_shared_resource(host, resource)
                     for plugin in ("codebase-map", "codebase-xray"):
                         wrapper = read(self.component(host, plugin, "roles", role))
                         self.assertIn(resource, wrapper)
@@ -258,7 +301,8 @@ class CodebaseMapCompatibilityTests(unittest.TestCase):
                 self.assertNotIn("and apply its `references/migration.md`", text)
                 census = read(self.package(host, "abstraction-architect") /
                               "skills/abstraction-architect/references/concept-census.md")
-                self.assertIn("Read `.codebase-map/`", census)
+                self.assertIn("Read the supplied bound run's phase files", census)
+                self.assertIn("the root mirror is not this input", census)
                 self.assertNotIn("## Existing analysis compatibility", census)
                 self.assertNotIn("references/migration.md", census)
 

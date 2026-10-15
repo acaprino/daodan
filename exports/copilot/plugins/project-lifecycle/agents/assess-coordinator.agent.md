@@ -2,7 +2,7 @@
 name: assess-coordinator
 description: 'Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
 tools: ['agent', 'edit', 'runCommands', 'search']
-agents: ['abstraction-architect:abstraction-architect-agent', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor']
+agents: ['abstraction-architect:abstraction-architect-agent', 'codebase-map:map-analyst', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor']
 ---
 
 > Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `senior-review:cleanup-auditor`, `testing:test-suite-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `senior-review:cleanup-auditor`, `testing:test-suite-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -129,6 +129,7 @@ Dispatch plan:
 Role bindings:
 
 - `abstraction-architect:abstraction-architect-agent`: dispatch the installed `abstraction-architect:abstraction-architect-agent` agent by its qualified identity.
+- `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `project-knowledge:documentation-engineer`: dispatch the installed `project-knowledge:documentation-engineer` agent by its qualified identity.
 - `project-knowledge:guide-reviewer`: dispatch the installed `project-knowledge:guide-reviewer` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.

@@ -4,7 +4,7 @@
       "abstraction-architect": {
         "agents": [
           {
-            "description": "Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from .codebase-map/ plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).",
+            "description": "Adversarial auditor for structural entropy, report-only. Global mode censuses the whole codebase from a bound Codebase Map run plus its own discovery pass; diff mode anchors on the changed files. TRIGGER WHEN: spawned by /abstraction-architect:audit, or as the abstraction dimension of /senior-review:team-review or /senior-review:code-review; the user asks who canonically owns a fact, policy or state, asks about missed unification or wrong abstractions, or asks whether what they just wrote already exists elsewhere. DO NOT TRIGGER WHEN: the task is implementation, security review (use senior-review:security-auditor), distributed-flow tracing (use senior-review:distributed-flow-auditor), dead-code removal (use senior-review:cleanup-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).",
             "file": "agents/abstraction-architect-agent.md",
             "id": "abstraction-architect:abstraction-architect-agent",
             "permissions": [
@@ -53,7 +53,7 @@
         ],
         "commands": [
           {
-            "description": "Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-map:analyze when .codebase-map/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.",
+            "description": "Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; binds a current Codebase Map run through phase 4, obtaining one when needed. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.",
             "file": "commands/audit.md",
             "name": "abstraction-architect:audit"
           }
@@ -502,6 +502,53 @@
       "codebase-map": {
         "agents": [
           {
+            "description": "Owns the declared classic Codebase Map phases in one isolated context, reading the bound snapshot and writing only its runs analysis artifacts. TRIGGER WHEN: dispatched by an analysis coordinator with a prepared classic run and resolved scope.",
+            "file": "agents/map-analyst.md",
+            "id": "codebase-map:map-analyst",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
             "description": "Runs Flow Tracing and Semantic Understanding over one partition, reading every partitions structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its second wave.",
             "file": "agents/partition-behavior-worker.md",
             "id": "codebase-map:partition-behavior-worker",
@@ -596,7 +643,7 @@
             ]
           },
           {
-            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-map:analyze extracts structure inline without an agent.",
+            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-structure-worker.md",
             "id": "codebase-map:partition-structure-worker",
             "permissions": [
@@ -643,7 +690,7 @@
             ]
           },
           {
-            "description": "Consolidates per-partition Codebase Map outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-map:analyze writes its phase files directly.",
+            "description": "Consolidates per-partition Codebase Map outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-synthesizer.md",
             "id": "codebase-map:partition-synthesizer",
             "permissions": [
@@ -854,7 +901,7 @@
             ]
           },
           {
-            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-map:analyze extracts structure inline without an agent.",
+            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-structure-worker.md",
             "id": "codebase-xray:partition-structure-worker",
             "permissions": [
@@ -901,7 +948,7 @@
             ]
           },
           {
-            "description": "Consolidates per-partition Codebase Map outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that pipeline; /codebase-map:analyze writes its phase files directly.",
+            "description": "Consolidates per-partition Codebase Map outputs into the standard 01..07.md layout in the run directory, adding cross-partition sections and a team-mode final report, with the classic common headings and declared team extensions. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-synthesizer.md",
             "id": "codebase-xray:partition-synthesizer",
             "permissions": [
@@ -4746,5 +4793,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "33.3.2"
+  "version": "33.3.3"
 }

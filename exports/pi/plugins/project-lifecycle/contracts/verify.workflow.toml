@@ -15,6 +15,7 @@ produces = ["artifact:result"]
 
 [dispatch]
 roles = [
+  "codebase-map/map-analyst",
   "project-knowledge/instructions-auditor",
   "project-knowledge/documentation-engineer",
   "project-knowledge/guide-reviewer",

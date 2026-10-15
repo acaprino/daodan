@@ -96,10 +96,13 @@ Working assumptions: State material assumptions and unresolved alternatives befo
 - Surface unknowns instead of guessing
 
 ### 2. Simplicity First
-Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration.
+Working simplicity: Choose the simplest design that satisfies approved requirements. Reuse existing owners and conventions; add no speculative features, abstractions or configuration. Prefer suitable existing code, standard-library facilities and maintained libraries over reimplementing solved problems. Before recommending or adopting a dependency, verify maintenance and support status, fit, compatibility, license, security and total integration cost using current official sources. Disclose unverified status; do not recommend discontinued or unverified libraries by default. Justify custom code when reuse is unsuitable or more complex.
 - One responsibility per function or module
 - Remove preexisting code only with evidence, within the approved task authorization and any required checks or approvals.
 - Prefer composition over premature inheritance
+- Before building a common capability, check existing project implementations, standard-library facilities and dependencies already in use. Evaluate established libraries when those do not meet the requirement; honor project dependency constraints.
+- Before recommending or adopting a library, check current official sources for archival, deprecation, supported releases and meaningful maintenance. Record the source and check date instead of relying on model memory. If verification is unavailable, state the gap and do not present the library as a verified recommendation. A stable library need not release frequently; recent commits or popularity alone do not prove suitability.
+- Compare the total cost of reuse, including transitive dependencies, adaptation, upgrades and long-term ownership. Prefer custom code when it is simpler overall or no suitable solution exists, and record the concrete reason.
 
 ### 3. Surgical Changes
 Working scope: Limit edits to the task and owned files, match existing style and preserve unrelated work. Remove code made unused by your changes; remove preexisting code only when its removal is explicitly authorized and any required checks or approvals are satisfied.

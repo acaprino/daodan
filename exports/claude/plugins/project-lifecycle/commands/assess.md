@@ -93,7 +93,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `senior-review:cleanup-auditor`, `testing:test-suite-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `repo-hygiene:workspace-auditor`, `senior-review:cleanup-auditor`, `testing:test-suite-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -111,6 +111,7 @@ Dispatch plan:
 Role bindings:
 
 - `abstraction-architect:abstraction-architect-agent`: dispatch the installed `abstraction-architect:abstraction-architect-agent` agent by its qualified identity.
+- `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `project-knowledge:documentation-engineer`: dispatch the installed `project-knowledge:documentation-engineer` agent by its qualified identity.
 - `project-knowledge:guide-reviewer`: dispatch the installed `project-knowledge:guide-reviewer` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.

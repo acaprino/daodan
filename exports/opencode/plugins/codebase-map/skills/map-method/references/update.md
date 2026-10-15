@@ -1,5 +1,3 @@
-> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
-
 <daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -98,7 +96,7 @@ or infer byte freshness from unchanged normalized claims.
 
 **The carry** (`snapshot.py carry`) copies the parent's phase files, except the final report, which is never carried and is always regenerated. It renumbers every citation whose symbol survived, and marks every affected claim with `<!-- xray:stale reason=... cites=... -->`. The model then reads only the affected files and re-derives only the marked claims.
 
-**The gate** (`snapshot.py check`) fails if any marker survives or any added symbol went undocumented. An incremental run does not publish until it passes. That gate is the whole reason an incremental result can be trusted the way a full one is: the claims it kept were not re-checked, so what it did not carry must be provably finished.
+**The gate** (`snapshot.py check`) checks every mode's declared delivery and the update's stale markers and added symbols. Only a complete publishing mode with no stale marker left may publish. A stop leaves later work pending, never skipped. Inherited claims retain their carry provenance.
 
 Two things this deliberately does not do. It never uses a git range as the source of truth, because the tree a developer wants re-analyzed is usually dirty and sometimes not in a repository at all; git is metadata. And it never widens the blast radius past one hop, because the transitive closure of imports is, on most codebases, the whole tree.
 
@@ -106,37 +104,33 @@ Two things this deliberately does not do. It never uses a git range as the sourc
 
 The phases and their numbering are unchanged. What changes is that most claims are already on disk and only the affected ones are re-derived.
 
-1. **Write the snapshot** for this run, as `references/snapshot.md` says.
+The entry already wrote the current snapshot, carried the accepted parent and
+prepared delivery (`references/snapshot.md`). The analyst owns any subsequent
+snapshot refresh; it never repeats carry or prepares new mode declarations.
 
-2. **Carry the parent forward**, mechanically:
+1. **Phase 0 runs in full** when selected, overwriting carried `knowledge/`.
+   A resume inherits confirmed earlier knowledge rather than rerunning it.
+2. **Selected produced phases 1 to 6 run in order, only where work exists.** For
+   each marked claim re-derive it through source blocks from this run's manifest,
+   then delete its marker. A `symbol-removed` or `file-removed` marker retires the
+   claim: delete both. Write claims for added symbols assigned to this phase
+   (`01` and `02` always, `03` to `06` at full depth). **A phase with no marker
+   and no added symbol is inherited and not opened at all.** Missing parent
+   files are produced obligations; create them when their phase is selected.
+3. **Read only affected files** from `changes.json -> affected_files`. A flow or
+   contract requiring an extra file logs it under `## Extra reads` in `changes.md`,
+   naming the claim that required it. **A flow citing one affected symbol is
+   re-derived whole.** Flows cite every step; changed steps can affect later ones.
+4. **Regenerate Phase 7** when selected, from the mode's phase files. Never
+   carry the parent's final report. A stop bounds only this invocation; leave
+   later claims marked until resume completes them, including in inherited files.
+5. **Write the completion sections of `changes.md`**: `## Claims confirmed`,
+   `## Claims revised` (old and new text, one row each), `## Claims retired`,
+   `## Claims added`, `## Extra reads`. Report pending phases on an intentional stop.
+6. **Check delivery** using the snapshot unit. Report its gaps and complete
+   selected work. Passing an invocation's gate does not itself authorize
+   publication; only the entry applies `complete`, `may_publish` and requested
+   view gates and publishes the whole mirror.
 
-   ```bash
-   python "<plugin-root>/skills/map-method/scripts/snapshot.py" carry \
-     .codebase-map/runs/<parent-id> $RUN_DIR
-   ```
-
-   This copies the parent's `01` to `06` and `knowledge/` into the run, renumbers every carried `file:line` citation whose symbol survived the edit, and inserts an `<!-- xray:stale reason=... cites=... -->` marker above every claim the change set affects. Phase 7 is never carried: it is regenerated.
-
-3. **Phase 0 runs in full**, exactly as in a fresh run, overwriting the carried `knowledge/`. It is the cheap discovery pass and what it finds shapes what the re-derivation looks for.
-
-4. **Phases 1 to 6, in order, only where work exists.** For each phase file: open it, and for every `xray:stale` marker re-derive that claim through source blocks from this run's manifest, then delete the marker. A marker whose reason is `symbol-removed` or `file-removed` means the claim is retired: delete the claim with the marker. Then write claims for the symbols listed under `## Added symbols` in `changes.md` that belong to this phase file (`01` and `02` always, `03` to `06` at full depth). **A phase file with no marker and no added symbol is not opened at all.**
-
-5. **Read only the affected files.** `changes.json` lists them under `affected_files`. When re-deriving a flow or a contract genuinely requires a file outside that set, read it and log it under `## Extra reads` in `changes.md`, naming the claim that needed it. That log is the evidence a future threshold gets tuned from.
-
-6. **A flow that cites even one affected symbol is re-derived whole.** Flows cite every step, and a step that changed can change the steps after it.
-
-7. **Phase 7 is regenerated** from the phase files, as in a full run.
-
-8. **Gate publication:**
-
-   ```bash
-   python "<plugin-root>/skills/map-method/scripts/snapshot.py" check $RUN_DIR
-   ```
-
-   Exit `0` means clean: proceed to publish. Exit `1` means a claim is still marked stale or an added symbol was never documented: do not publish, report what the check named, and finish the work. Exit `2` means `changes.json` is missing, which should not happen this late in an incremental run: do not publish, and treat it as a bug in the run rather than in the code under analysis. This gate is what makes an incremental run worth trusting.
-
-9. **Write the completion sections of `changes.md`**: `## Claims confirmed`, `## Claims revised` (old and new text, one row each), `## Claims retired`, `## Claims added`, `## Extra reads`.
-
-10. **Publish** exactly as a full run does.
-
-`--phase N` and `--docs-only` are full-run flags. They change this run's flags, so the change set already recommends a full run.
+Single-phase and docs-only requests are fresh partial runs. Resuming preserves
+the original mode/flags and parent; a changed mode is a new run.

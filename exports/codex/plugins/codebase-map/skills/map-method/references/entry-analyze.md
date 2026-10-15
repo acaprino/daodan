@@ -1,5 +1,4 @@
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
-> Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
 
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
@@ -73,295 +72,174 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Codebase Map Analysis
 
-## CRITICAL RULES
+## Coordinator boundary
 
-1. **Execute phases in order.** Unless `--phase N` skips to a specific phase.
-2. **Write output files.** Each phase produces a file in the run directory for context passing.
-3. **Run isolation.** All writes go to `$RUN_DIR` until the publish step. Never write phase files to the `.codebase-map/` root during analysis: concurrent runs share that root.
-4. **Stop at checkpoints.** Confirm scope before starting analysis and before applying changes.
-5. **Never enter plan mode.** Execute immediately.
-6. **Code is ground truth.** Document what the code actually does, not what you think it should do.
-
-## Method
+Resolve the run, present scope, dispatch one isolated `codebase-map:map-analyst`,
+verify its delivery and publish only when the gate permits it. Do not read analyzed
+source or execute phase procedures in this context. Helpers may inventory and
+parse it mechanically. If required isolation is unavailable, stop with that
+capability gap. Honor existing authorization; ask only for an unresolved choice
+or an explicitly requested approval. Questions stay in this answerable context.
+Never enter plan mode or apply changes to analyzed source.
 
 ## Method loads
 
-Read named core sections by locating headings or fenced skeletons before bounded reads. On demand, add the router's conditional Method loads and their declared nested reads. Other references are pointers.
+Read these resources and their selected nested loads in the coordinator context.
+The analyst has its own load contract; do not load its phase units here.
 
 | Resource | Sections | When |
 |---|---|---|
-| `<plugin-root>/skills/map-method/SKILL.md` | all | always |
-| `<plugin-root>/skills/map-method/references/evidence.md` | before: Maintained documentation | always |
+| `<plugin-root>/skills/map-method/SKILL.md` | before: Method loads; section: Resources | always |
 | `<plugin-root>/skills/map-method/references/run.md` | all | always |
-| `<plugin-root>/skills/map-method/references/snapshot.md` | all | always |
-| `<plugin-root>/skills/map-method/references/update.md` | all | update |
-| `<plugin-root>/skills/map-method/references/phase-0.md` | all | always |
-| `<plugin-root>/skills/map-method/references/phases-1-2.md` | before: Team mode | always |
-| `<plugin-root>/skills/map-method/references/phases-3-4.md` | before: Team mode | always |
-| `<plugin-root>/skills/map-method/references/phases-5-6.md` | before: Team mode | always |
-| `<plugin-root>/skills/map-method/references/phase-7.md` | before: Team mode | always |
-
-
-## Pre-flight
-
-### 1. Resolve the run
-
-Analyses are concurrent-safe: each invocation is an isolated **run** under `.codebase-map/runs/<run-id>/` (see `## Concurrent Runs Model` in the method's `references/run.md`).
-
-1. Compute `run-id`: value of `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`. On collision with an existing run directory, append `-2`, `-3`, ...
-2. Set `RUN_DIR = .codebase-map/runs/<run-id>`.
-3. Read `.codebase-map/runs.json` if it exists:
-   - **Active runs listed**: show them (run-id, target, mode, started_at) and ask: resume one of them, or start this new run alongside? Starting alongside is normal and safe; runs never share files.
-   - **Legacy layout** (root `state.json` with a `current_phase` field and no `runs.json`): offer to migrate the old files into `.codebase-map/runs/legacy-<date>/` before proceeding.
-4. Register the run: create/update `runs.json` with read-modify-write, appending `{run_id, target, mode: "classic", started_at}` to `active`. Never drop entries you did not create.
-
-### 1b. Detect an update base
-
-A Codebase Map run is a set of claims about a tree. When that tree has barely moved since the last run, re-deriving every claim is the whole reading cost paid again for an answer already on disk. This step finds out mechanically whether that is the case. It spends no model tokens: `snapshot.py` does the work.
-
-Skip this step entirely if `--no-update` was passed.
-
-1. From `runs.json`, take `latest_completed`. The candidate parent is that run when its recorded `target` normalizes to the same path as this invocation's target, `.codebase-map/runs/<id>/state.json` records `mode: "classic"`, and `.codebase-map/runs/<id>/snapshot/manifest.json` exists. A completed **team** run is never a usable parent here: its `08-interconnect-map.md` is cross-partition output this workflow has no phase to regenerate, so carrying it forward would leave a stale marker nothing in `## Execution Order` ever revisits, and the check in step 8 would then refuse to publish. Treat a `latest_completed` team run the same as no candidate parent at all.
-2. With a candidate, run the change set:
-
-   ```bash
-   python "<plugin-root>/skills/map-method/scripts/snapshot.py" diff \
-     .codebase-map/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
-   ```
-
-3. Read `$RUN_DIR/changes.json` and take `recommendation` and `totals`. They drive the checkpoint in step 3.
-
-With `--update` and no candidate parent, stop and say which condition failed (no completed run for this target, the latest completed run for this target is a team run, or a parent with no manifest), and that a full run is the way to create one. Never fabricate a parent. With a candidate present, `--update` changes nothing else: the checkpoint in step 3 still presents both options and waits, exactly as CRITICAL RULE 4 requires.
-
-A parent from before this feature has no manifest, and the change set says so with `recommendation: full`. That is reported, never guessed at.
-
-### 2. Initialize state
-
-Create `$RUN_DIR/` and `$RUN_DIR/state.json`:
-
-```json
-{
-  "run_id": "<run-id>",
-  "target": "<arguments>",
-  "mode": "classic",
-  "status": "in_progress",
-  "flags": {
-    "critical": false,
-    "comments": false,
-    "docs_only": false,
-    "phase": null,
-    "depth": "full"
-  },
-  "parent_run": null,
-  "base_snapshot_created_at": null,
-  "git": null,
-  "incremental": null,
-  "current_phase": 1,
-  "completed_phases": [],
-  "files_created": [],
-  "started_at": "ISO_TIMESTAMP"
-}
-```
-
-Parse flags: `--critical` (prioritize high-risk code), `--comments` (comment quality mode), `--docs-only` (documentation health only, skip to Phase 6), `--phase N` (start at phase N), `--depth=lite` (lightweight analysis: skip flow tracing diagrams, state machine diagrams, and detailed dependency analysis for non-critical files, producing only structure + interfaces + risks + final summary), `--run-name <name>` (explicit run identity for concurrent or repeated analyses).
-
-On an incremental run, step 1b's change set already exists by the time this file is written, so `parent_run` (the parent's run-id), `base_snapshot_created_at` (the parent manifest's `created_at`) and `incremental`'s `affected_files`, `files_in_snapshot` and `claims_affected` (from the change set's `totals`) are written here with their real values, not left for later. `extra_reads` has no source in the change set: it counts reads outside the affected-files budget, which cannot happen before any phase has run, so it starts at `0` here and is updated once the `## Extra reads` log is written, at step 9 of the incremental depth procedure in `references/update.md`. `git` cannot follow the at-creation rule either: the snapshot that supplies it is not written until `## Execution Order`, so it starts `null` here and is copied in right after that step. A full run leaves `parent_run` and `incremental` as `null` and still records `git` and the snapshot: every run is a possible parent.
-
-Register `parent_run` in the run's `runs.json` entry as well, `null` for a full run. The chain of `parent_run` values is the analysis history; nothing else is added to hold it.
-
-### 3. Confirm scope
-
-Count the scope mechanically, then present it:
-
-```bash
-python "<plugin-root>/skills/map-method/scripts/snapshot.py" scope <target>
-```
-
-It prints the file count by set and by language from the same walk the manifest takes, and the `scope` block: whether Git's ignore rules were applied, the dot directories left out and how many ignored paths the walk met. Never count by hand: a hand count does not apply the perimeter, and the user would confirm one number and get another.
-
-With no candidate parent from step 1b, present the classic block below. With a candidate, present the variant that matches the change set's `recommendation`. Every variant carries the `Not analyzed` line, with the directory names in full or, when they are many, the outermost ones and a count. A user who needs one of them analyzed names it as a target.
-
-**With `recommendation: incremental`:**
-
-```
-Codebase Map target: [path]
-Run: [run-id]   parent: [parent-id] ([commit], [age])
-Since parent: [N] modified, [N] added, [N] removed files; [N] symbols changed, [N] added, [N] removed
-Blast radius: [N] importing files
-Affected claims: [N] ([per-phase-file breakdown])
-Files affected: [N] of [total]
-Not analyzed: [N] dot directories ([names]), [N] paths Git ignores (ignore rules: [applied | unavailable])
-
-1. Incremental update from [parent-id] ([N] affected files)
-2. Full analysis ([total] inventoried files; source reading follows the claims)
-3. Cancel
-```
-
-`[commit]` and `[age]` describe the parent run, not this one: read `[commit]` from `.codebase-map/runs/<parent-id>/state.json -> git.commit` (copied into that run's own state right after it wrote its snapshot) and derive `[age]` from that run's `started_at`. `changes.json`'s own `git` field describes the current worktree instead, and is never the source for this line.
-
-**With `recommendation: full`**, present the same figures with the options reversed, and print every entry of `reasons` under the figures so the user sees why (ratio over threshold, parent without a manifest, parent not complete, flags differing from the parent's). The incremental option stays selectable: the recommendation is advice, and the user decides.
-
-**With `recommendation: none`**, say that no analysis change was detected in the
-normalized content, name the parent's published output, and offer a full
-analysis or return that supported parent analysis. Do not run an incremental
-update that would re-derive nothing. If no phase reads source, this shortcut
-does not require a new full run. A caller wanting source blocks still obtains a
-current snapshot in its owned run with `snapshot.py write --reuse` before
-reading: verified diff normalizes LF/CRLF, while the reader checks exact bytes.
-Preserve the parent analysis and snapshot.
-
-**With no candidate parent:**
-
-```
-Codebase Map target: [path]
-Run: [run-id]  (concurrent active runs: [count or "none"])
-Files to analyze: [count] ([language breakdown])
-Not analyzed: [N] dot directories ([names]), [N] paths Git ignores (ignore rules: [applied | unavailable])
-Flags: [active flags]
-
-Analysis phases:
-0. Project Knowledge Discovery (always runs)
-1. Structure Extraction -- file inventory, dependency graph
-2. Interface Analysis -- public APIs, contracts, exports
-3. Flow Tracing -- data flow, control flow, critical paths
-4. Semantic Understanding -- WHY code exists, design decisions, ADRs
-5. Pattern & Risk Detection -- anti-patterns, red flags, tech debt
-6. Documentation Health -- existing docs accuracy, gaps
-7. Final Report -- consolidated findings
-
-1. Proceed with full analysis
-2. Analyze specific phase only (--phase N)
-3. Quick scan (phases 1-2 only)
-4. Lite mode (--depth=lite: structure + interfaces + risks + summary, skip detailed flows/diagrams)
-5. Cancel
-```
-
-## Execution Order
-
-After scope confirmation, execute phases inline in order. Classic scope is one package, under about 200 files, one language. For a larger target, recommend `/codebase-map:team-analyze` at scope confirmation and stop.
-
-**Every run writes a snapshot**, right after scope confirmation and before Phase 0, as `<plugin-root>/skills/map-method/references/snapshot.md` says, including its `--reuse` and `state.json` steps.
-
-### Source reading in every code phase
-
-Every code phase reads source from this run's snapshot as `<plugin-root>/skills/map-method/references/evidence.md` says, and its report carries the `## Source reading` section that unit defines.
-
-### Full depth (default)
-
-1. **Phase 0**, Project Knowledge Discovery. Writes `$RUN_DIR/knowledge/navigation.md` and `$RUN_DIR/knowledge/documentation-leads.md`.
-2. **Phases 1 and 2**, Structure and Interfaces. Their output (dependency graph, entry points, module inventory) is what every later phase reads first.
-3. **Phases 3 and 4**, Flows and Semantics, then **Phases 5 and 6**, Risks and Documentation. Each phase re-reads `$RUN_DIR/01-structure.md` and `$RUN_DIR/02-interfaces.md` from disk rather than relying on what is still in context.
-4. **Phase 7**, Final Report, with the context-management strategy it describes.
-
-Write each phase file the moment its phase completes. A phase file on disk is the context the next phase reads; nothing carried only in this context survives a long run.
-
-### Lite depth (`--depth=lite`)
-
-Lightweight mode for smaller projects, MVPs, or quick assessments: Phase 0, then Phases 1 and 2, then Phase 5, then a condensed Phase 7.
-
-Skip Phase 3 (Flow Tracing), Phase 4 (Semantic Understanding), and Phase 6 (Documentation Health). **Phase 0 (Project Knowledge Discovery) is not skippable and runs in lite exactly as in full**: it is the cheap discovery pass, while Phase 6 is the expensive audit. Conflating the two is what made lite mode blind to a project's own documentation. In Phase 5, skip detailed state machine diagrams and Mermaid flowcharts for non-critical files, focusing on anti-patterns, red flags, and tech debt items.
-
-The condensed `$RUN_DIR/07-final-report.md` covers structure, interfaces, and risks only. It omits the "Critical Paths", "Design Insights", "Key Process Diagrams", and "Documentation vs Reality" sections.
-
-### Incremental depth (an update accepted at the checkpoint)
-
-Follow `<plugin-root>/skills/map-method/references/update.md`: carry the parent, re-derive only what changed, gate with `snapshot.py check`, then publish as a full run.
-
-### Overrides
-
-If `--phase N` or `--docs-only` flags are set, run only the requested phase(s), after Phase 0.
-
----
-
-## Publish Step
-
-Publish only after native Phase 7 and every requested view are delivered. Keep
-failed requested views open per `references/human-view.md` in the method.
-
-1. Copy `$RUN_DIR/01-*.md` through `$RUN_DIR/07-final-report.md` (the ones that exist for the active flags) and `$RUN_DIR/state.json` to the `.codebase-map/` root, overwriting the previous mirror.
-
-`changes.md`, `changes.json` and `snapshot/` stay in the run directory and are never mirrored: the root mirror is the latest-state contract, and history lives under `runs/`.
-
-2. Update `runs.json` with read-modify-write: remove this run from `active`, set `latest_completed` to this run-id.
-3. The root mirror is what downstream consumers (`/senior-review:team-review`, `/senior-review:code-review`, `/project-knowledge:guide`, `/project-knowledge:instructions --create`, `/project-knowledge:instructions --fix`) read. The run directory stays intact for history and comparison.
-
-If the analysis is aborted or fails, remove the run from `active` in `runs.json` and leave the root mirror untouched.
-
----
-
-## Completion
-
-Present the analysis summary and a proposed action plan derived from findings, then ask the user what they want to do.
-
-```
-Codebase Map complete for: <arguments>
-Run: [run-id] (published to .codebase-map/ root)
-Parent: [parent-id or "none (full run)"]
-
-Output Files:
-- Structure: .codebase-map/runs/[run-id]/01-structure.md
-- Interfaces: .codebase-map/runs/[run-id]/02-interfaces.md
-- Flows: .codebase-map/runs/[run-id]/03-flows.md
-- Semantics: .codebase-map/runs/[run-id]/04-semantics.md
-- Risks: .codebase-map/runs/[run-id]/05-risks.md
-- Documentation: .codebase-map/runs/[run-id]/06-documentation.md
-- Final Report: .codebase-map/runs/[run-id]/07-final-report.md
-(mirrored to .codebase-map/ root for downstream consumers)
-
-Summary:
-- Files in inventory: [count] | Read in depth: [count] | Exercised at runtime: none
-- Anti-patterns: [count] | Red flags: [count] | Tech debt items: [count]
-- Documentation gaps: [count]
-```
-
-On an incremental run, add a fourth line after `Parent:` naming the same four buckets `### Incremental depth` step 9 writes to `changes.md`: `Claims: [N] confirmed, [N] revised, [N] retired, [N] added. Detail in .codebase-map/runs/[run-id]/changes.md`. A full run has no such line: there is no `changes.md` to point at, and "carried" is not a bucket anything writes, since counting it would mean reading every citation in the parent's phase files, the cost this whole mechanism exists to avoid.
-
-### Proposed Action Plan
-
-After presenting the summary, generate a prioritized action plan based on the analysis findings. Group actions by urgency:
-
-```
-Proposed Action Plan
-====================
-
-CRITICAL (fix now):
-1. [Action derived from 05-risks critical findings]
-2. [Action derived from security red flags]
-
-HIGH (fix soon):
-3. [Action derived from anti-patterns or tech debt]
-4. [Action derived from documentation gaps]
-
-RECOMMENDED (improve when possible):
-5. [Action derived from code quality observations]
-6. [Action derived from naming/convention inconsistencies]
-```
-
-Each action must reference the specific finding and file from the analysis (e.g., "Fix missing input validation in `src/auth/login.py:45` - see 05-risks.md").
-
-### Next steps
-
-The analysis ends with its evidence, coverage and action plan. Offer the user the
-appropriate development, knowledge or specialist path as a separate task. Do not
-apply application fixes inside a Codebase Map run: it owns only its analysis artifacts.
-Comments, type annotations, stale references and document changes require their
-own scope, authorization, baseline and verification.
-
-Keep the exact run directory and source snapshot in every downstream reference.
-A mutable root mirror is suitable only for an explicitly latest-state consumer.
-
-## Quick Examples
-
-- `/codebase-map:analyze src/` -- Full 7-phase analysis
-- `/codebase-map:analyze src/ --depth=lite` -- Lightweight: structure + interfaces + risks only
-- `/codebase-map:analyze src/auth/ --critical` -- Prioritize security-critical code
-- `/codebase-map:analyze src/ --docs-only` -- Documentation health check only
-- `/codebase-map:analyze src/ --comments` -- Include comment quality audit
-- `/codebase-map:analyze src/ --phase 5` -- Jump to pattern & risk detection
-- `/codebase-map:analyze src/api --run-name api` -- Named run; a second session can run `/codebase-map:analyze src/web --run-name web` concurrently
-- `/codebase-map:analyze src/ --update` -- require an update base; a missing or unusable parent run is a hard stop instead of a silent full run
-- `/codebase-map:analyze src/ --no-update` -- skip detection and run a full analysis
-
-## Integration with Code Review
-
-Published analysis output in `.codebase-map/` is automatically picked up by `/senior-review:code-review`. `/senior-review:team-review` builds the same context itself: its Phase 1a invokes this command (`--depth=lite` by default). Run a Codebase Map first, then run a code review for the most thorough analysis possible.
+| `<plugin-root>/skills/map-method/references/snapshot.md` | before: Prerequisites | always |
+| `<plugin-root>/skills/map-method/references/migration.md` | all | migration |
+
+## Preflight
+
+### Resolve controls and run identity
+
+Run the project-bound migration in `references/run.md` before root lookup.
+Parse target and existing flags (`critical`, `comments`, `docs_only`, `phase`,
+`depth`), `--run-name`, `--update` and `--no-update`. Additional controls:
+
+- `--phase N`, N from 1 to 6: Phase 0 plus N only. Refuse `--phase 7`; a final
+  report needs the phase files it summarizes. Never publish a single-phase run.
+- `--docs-only`: Phase 0 plus 6 only, never published.
+- `--stop-after N`, N from 1 to 6: stop this invocation after N, retaining the
+  run's complete mode obligations. Later artifacts are `not_yet_produced`, not
+  skipped or delivery gaps. Refuse it with single-phase or docs-only controls.
+- `--resume-from [N]`: require `--run-name` identifying the exact interrupted
+  run. Resume from N (1 to 7), or the gate's `first_incomplete_phase`. Keep the
+  same mode and flags; a different mode or flags require a new run. The stop
+  bounds an invocation, so resume drops it.
+
+Use `references/run.md` for registration and collision handling. On resume select
+that existing directory without a collision suffix; require classic mode,
+matching normalized project/target, state and manifest. Do not overwrite its
+state or silently choose another active run. Show other active runs and start
+alongside when the user requested a new run. Offer legacy-layout migration when
+the run reference identifies it. Cancel leaves the shared mirror untouched.
+
+For a fresh run initialize `state.json` with run id, normalized target,
+`mode: "classic"`, `status: "in_progress"`, effective flags, timestamps,
+`current_phase: 0`, empty completed phases/files, and real parent/incremental
+fields (null for a full run). Do not put stop or resume in immutable mode flags.
+Invoke `snapshot.py register $RUN_DIR`; repeat after resolving parent lineage.
+
+### Resolve an update base
+
+Skip parent detection with `--no-update`, on resume, or for docs/single-phase
+requests. Otherwise use `latest_completed` only when its recorded target matches,
+its mode is classic and its manifest exists. Team output, including `08`, is never
+carried into an ordinary classic update. `--update` without a usable parent is
+an error; name the failed binding and explain that a full run creates a base.
+
+A composed caller may supply an exact `parent_run` binding instead of
+`latest_completed`. Validate its project/root, target, common flags and manifest.
+A partial or team parent is usable only for a caller's bounded `--stop-after 4`
+request when the gate confirms its declared `01` through `04` deliveries. Carry
+only those canonical files into a new classic child by setting its
+`parent_phases: [1,2,3,4]`; never carry `08`, merge run
+modes or resume a team run as classic. Absent later files remain future produced
+obligations, never missing inherited artifacts. Keep normal completed classic
+parent requirements for unbound parent selection.
+
+With a candidate, run the verified diff from `references/snapshot.md`, passing
+this run's effective flags. Read only metadata and recommendation. Show modified,
+added and removed files/symbols, affected claims by phase, blast radius and affected
+files versus inventory. Parent commit/age come from the parent's state; the
+change set's git field describes the current tree. A recommendation is advice:
+resolve incremental versus full from the request or existing answers, and ask
+when undecided. With `full`, show every reason and retain both choices. With
+`none`, offer the supported bound parent or a full analysis. Returning the parent
+without source reading needs no new analysis; preserve its snapshot.
+
+### Present the scope
+
+Use `snapshot.py scope` from the snapshot unit. Show target, run id, parent,
+active run count, file/language totals, selected flags and expected phases.
+Always repeat the scope's not-analyzed dot directories (names or outermost names
+and count), ignored paths and ignore status (`applied` or `unavailable`). A user
+can name an excluded directory as a target.
+
+Fresh choices are full analysis, one phase, quick scan (`--stop-after 2`), lite
+or cancel. Full selects 0 through 7; lite selects 0, 1, 2, 5 and condensed 7.
+Docs-only selects 0 and 6. Single-phase selects 0 and N. The delivery helper,
+not a second prompt table, decides produced/inherited/skipped artifacts. For a
+large, multi-language or multi-workspace scope recommend the team entry before
+dispatch and resolve that choice. A classic run stays one isolated context.
+
+Use a permitted input tool for an unresolved decision. If unavailable, ask the
+actual question in chat and wait; elapsed time is no answer. Do not pause merely
+because the workflow has a scope checkpoint.
+
+### Prepare the binding
+
+After scope is settled, write the initial current snapshot and copy its own `git`
+field to this run's state, following `references/snapshot.md`. Reuse the verified
+same-target parent manifest even for a selected full analysis; preserve the
+parent. On an accepted update record actual parent id, base snapshot time and
+incremental counts, then run `carry` before `prepare`. This lets the helper
+classify unaffected files with the carry record's provenance. It never inherits
+missing files. Full mode leaves parent/incremental null.
+
+Invoke `prepare $RUN_DIR` from the snapshot unit.
+
+Pass applicable `--phase N` or `--stop-after N` controls. Require successful
+preparation; its `delivery` fixes effective mode/flags, artifacts and `run_phases`.
+Keep skipped reasons and inherited parent/carry provenance intact. The
+coordinator owns this first snapshot; ownership transfers to the analyst for
+refresh during analysis. Do not repeat an initial snapshot write.
+
+On resume first check the existing run, then verify its manifest against the
+current target using `diff --verify` in `$RUN_DIR/resume-check/`. If source or
+parser identity changed, do not retain earlier artifacts as current: report
+the mismatch and resolve a new full/update run. With unchanged inputs invoke
+`prepare $RUN_DIR --resume-from [N] --run-name <exact-id>`; pass supplied
+mode/flags only for equality validation. Earlier confirmed artifacts acquire
+same-run provenance; the helper selects the first incomplete produced phase
+when N was omitted. Never fresh-prepare over a resume declaration.
+
+## Isolated analysis
+
+Dispatch the required `codebase-map:map-analyst` role with exact project root,
+target, run id/directory, prepared state/delivery, manifest, accepted flags,
+parent/changes/carry bindings and `run_phases`. State the exclusive run write
+root and snapshot handoff. The analyst asks nothing, reads source, executes only
+declared phases and reports paths plus its check result.
+
+Wait for an artifact delivery. An empty response, idle worker or stopped turn
+does not deliver a report. Verify native paths and rerun the single gate:
+
+Invoke `check $RUN_DIR --json` from the snapshot unit.
+
+Use `missing`, `empty`, `unexpected`, `invalid_inherited`, `stale` and
+`undocumented_added` to identify gaps. Recover only missing produced work;
+inherited/skipped artifacts never become incomplete phases. Re-dispatch from
+`first_incomplete_phase` after a prepared same-mode resume, or name the blocker.
+Do not restart successful phases or replace parent evidence.
+
+## Publish and completion
+
+For a delivered stop record partial status and pending `not_yet_produced`
+artifacts. Docs-only and single-phase results stay in the run. Report their
+exact paths, coverage and continuation; never replace the shared mirror.
+
+For a complete publishing mode, only this coordinator loads `human-view.md`
+when a view is requested or useful. Verify native output and every requested
+view before completion; a requested view failure keeps the run open. Then
+require `complete` and `may_publish` from the gate and invoke `publish $RUN_DIR`
+from the snapshot unit.
+
+The helper replaces the whole mirror and updates the registry as specified in
+`references/run.md`; never copy just the files that happen to exist. On partial,
+failed or aborted delivery, record recoverable state and invoke
+`snapshot.py unregister $RUN_DIR`; the mirror stays untouched.
+
+Present exact run directory, parent and publication/partial status, produced
+files, inventory/read-in-depth/runtime coverage (runtime: none unless supplied),
+risks and documentation gaps. Updates link `changes.md` and count confirmed,
+revised, retired and added claims. Derive a prioritized action plan from cited
+findings and offer development, readability or knowledge work as a separate task.
+Specific downstream invocations retain this run and snapshot; only an explicitly
+latest-state consumer reads the mutable mirror.

@@ -256,9 +256,9 @@ Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `ph
 
 ### Phase 1a: Codebase Map Analysis
 
-> **`codebase-map:analyze` is the canonical workflow entry of `codebase-map`, not an agent or executor.** The host lists it as `analyze` (hosts that render workflows as skills suffix it `-workflow`). The review coordinator reads that entry and its `codebase-map:map-method`, then directly executes their canonical phases in order in this same context with the resolved arguments. Loading either body alone runs no phase and creates no run directory. This direct composition introduces no declarative `invoke` executor, nested lifecycle scheduler or automatic skill loading. Review preparation runs once and consolidation retains sole final review report ownership. Phase 1c, Phase 1b and all selected reviewers still require their declared isolated worker contexts.
+> **`codebase-map:analyze` is the canonical workflow entry of `codebase-map`, not an agent or executor.** The host lists it as `analyze` (hosts that render workflows as skills suffix it `-workflow`). The review coordinator executes the entry's preflight, answerable checkpoints, delivery check and publication decision. Dispatch `codebase-map:map-analyst` through the consuming workflow's declared host harness in one isolated context for the phases. Loading a method or role body alone executes no analysis. Review preparation runs once and consolidation retains sole final review report ownership. Phase 1c, Phase 1b and all selected reviewers still require their declared isolated worker contexts.
 
-1. Directly execute the `codebase-map:analyze` entry and its canonical method phase-by-phase against the target, in this coordinator context. Preserve their scope checkpoints, run binding, output and completion gates:
+1. Execute the `codebase-map:analyze` preflight and coordinator-owned delivery/publication steps against the target. Dispatch `codebase-map:map-analyst` in an isolated context for its requested phases, preserving the canonical scope checkpoints, run binding, output and completion gates:
    - Default mode: `--depth=lite` (structure + interfaces + risks only)
    - If `--deep` flag: full analysis
    - Target scope: the files from Phase 0

@@ -2,7 +2,7 @@
 name: consolidate-coordinator
 description: 'Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
 tools: ['agent', 'edit', 'runCommands', 'search']
-agents: ['codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'project-protocol:isolated-worker', 'text-humanizer:text-humanizer']
+agents: ['codebase-map:map-analyst', 'codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'project-protocol:isolated-worker', 'text-humanizer:text-humanizer']
 ---
 
 > Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit] [--purge]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `text-humanizer:text-humanizer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `text-humanizer:text-humanizer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -123,6 +123,7 @@ Dispatch plan:
 
 Role bindings:
 
+- `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
 - `project-knowledge:codebase-explorer`: dispatch the installed `project-knowledge:codebase-explorer` agent by its qualified identity.
 - `project-knowledge:doc-humanizer`: dispatch the installed `project-knowledge:doc-humanizer` agent by its qualified identity.

@@ -1,5 +1,5 @@
 ---
-description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; auto-launches /codebase-map:analyze when .codebase-map/ is missing. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
+description: 'Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; binds a current Codebase Map run through phase 4, obtaining one when needed. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.'
 ---
 
 <daodan_host_binding host="pi">
@@ -112,7 +112,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect-agent`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect-agent`, `codebase-map:map-analyst`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -125,6 +125,7 @@ Dispatch plan:
 Role body bindings (load the complete body only for the selected worker):
 
 - `abstraction-architect-agent`: read `skills/abstraction-architect-abstraction-architect-agent/SKILL.md` inside this package and pass its complete body verbatim.
+- `codebase-map:map-analyst`: read `contracts/dispatch/codebase-map/map-analyst.md` inside this package and pass its complete role body verbatim.
 
 The phase graph and record-schema references are in `contracts/audit.workflow.toml`.
 
@@ -169,11 +170,9 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 1. **Resolves the target path.** Defaults to the current working directory.
 
-2. **Checks for `.codebase-map/`.** Looks for `01-structure.md`, `02-interfaces.md`, `03-flows.md`, `04-semantics.md`. The optional `08-interconnect-map.md` enables the bounded-context check; without it, knowledge-track findings carry `Bounded-context exception: unverified`.
+2. **Resolves the diff (`--diff` only).** Runs `git diff --name-only <base-ref>...HEAD` plus `git diff --name-only` for uncommitted work, and passes the union as `changed_files`. Aborts with a clear message when the path is not a git repository.
 
-3. **Auto-launches Codebase Map if needed.** If `.codebase-map/` is missing or incomplete, prints *"No Codebase Map output found at `.codebase-map/`. Launching `/codebase-map:analyze` first. This may take several minutes on a large codebase."* then invokes it without a confirmation prompt. Aborts with the log path if the Codebase Map fails.
-
-   Under `--diff` this step is skipped. Diff mode consumes only `01-structure.md` and `02-interfaces.md`, uses whatever is on disk, and runs on the concept index plus host file-discovery binding and host content-search binding when nothing is.
+3. **Acquires bound static context.** Follow the global or diff branch below, retaining the exact run directory, `run_id`, target, flags and `snapshot/manifest.json`, never the mirror. The optional `08-interconnect-map.md` is read only from the same bound run; without it, knowledge-track findings carry `Bounded-context exception: unverified`.
 
 4. **Resolves the concept index.** Unless `--no-index`, checks `<path>/.abstraction-architect/concept-index.json` and runs the freshness script. Reports the state to the user before spawning, so a `delta-stale` index is visible rather than silent:
 
@@ -183,15 +182,84 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
    An absent or unusable index is not an error. The audit proceeds and declares the reduced coverage in its Gaps section.
 
-5. **Resolves the diff (`--diff` only).** Runs `git diff --name-only <base-ref>...HEAD` plus `git diff --name-only` for uncommitted work, and passes the union as `changed_files`. Aborts with a clear message when the path is not a git repository.
+5. **Spawns the `abstraction-architect-agent` agent** through its declared host harness, placing in the worker prompt `codebase_path`, `mode`, `xray_path` (the bound run directory), `map_run_id`, `map_snapshot_path`, `map_changes_path`, `map_outside_diff_changed_files`, `concept_index_path`, `changed_files` under `--diff`, and the parsed scope, severity-floor and focus flags.
 
-6. **Spawns the `abstraction-architect-agent` agent** through its declared host harness, placing in the worker prompt `codebase_path`, `mode`, `xray_path`, `concept_index_path`, `changed_files` under `--diff`, and the parsed scope, severity-floor and focus flags.
+6. **The agent writes the report** to `<path>/.abstraction-architect/findings.md`, or `findings-diff.md` under `--diff`. In global mode it also rewrites `concept-index.json`. **Diff mode never writes the index.**
 
-7. **The agent writes the report** to `<path>/.abstraction-architect/findings.md`, or `findings-diff.md` under `--diff`. In global mode it also rewrites `concept-index.json`. **Diff mode never writes the index.**
-
-8. **Prints to the user:** the report path, summary counts, the concept index state, and the top three findings as one-line previews.
+7. **Prints to the user:** the report path, summary counts, the concept index state, and the top three findings as one-line previews.
 
 The full report stays in the file so the user opens it deliberately.
+
+### Global acquisition
+
+After the migration preflight, inspect `.codebase-map/runs/*/state.json`, not just
+`runs.json -> latest_completed`. Select the newest run by its recorded start time
+that holds nonempty `01-structure.md`, `02-interfaces.md`, `03-flows.md` and
+`04-semantics.md`. Validate `run_id` against the run directory, the snapshot's
+`root` against this worktree and its `target` against the resolved audit target.
+Exclude active or failed runs and broken bindings. A stopped partial run with all
+four delivered files is eligible; its later phases need not exist.
+
+Load the provider's `references/snapshot.md` and `references/reading.md` through
+`codebase-map:map-method`. Check the selected run against the current worktree:
+
+```bash
+python "<codebase-map script directory>/snapshot.py" diff \
+  <bound-run-dir> <target> --out <audit-check-dir> --verify
+```
+
+`<audit-check-dir>` is owned by this audit, outside the Map store and analyzed
+source. Preserve the parent snapshot and phase files. A current run has no
+added, modified or removed files, no stale claims in `01` to `04`, and a valid
+parser/root/target binding. Read it as is. Partial publication status by itself
+does not make its delivered first four phases stale; `recommendation` alone is
+not the currentness check. Parser mismatch or other invalid evidence requires
+fresh context, never an assumption of freshness.
+
+For a stale eligible run, execute the canonical analyze entry with its exact
+`parent_run` supplied as an internal caller binding and its original flags:
+
+```text
+/codebase-map:analyze <target> --update --stop-after 4 --run-name <new-audit-run-name> <original flags>
+```
+
+The child keeps the parent's identity in its lineage, preserves its source
+snapshot, and re-derives stale claims through phase 4. Keep the new child's
+returned run binding, not the old run or `latest_completed`. Do not inherit an
+`08-interconnect-map.md` that the bounded child did not regenerate.
+
+When no eligible run exists, obtain the first four phases with:
+
+```text
+/codebase-map:analyze <target> --no-update --stop-after 4 --run-name <new-audit-run-name> --depth=full
+```
+
+Execute only the canonical entry's preflight, answerable scope checkpoints,
+dispatch, delivery gate and publication decision here. Dispatch its
+`codebase-map:map-analyst` through this workflow's declared harness in an isolated
+context; loading the role as a skill executes no analysis. The partial Map stays
+in its run and never publishes. Require the gate's valid delivered `01` to `04`
+and bound snapshot before auditing. Missing or failed delivery stops the audit
+with its diagnostic path; do not substitute the mirror.
+
+### Diff acquisition
+
+Under `--diff`, this command never launches a Map. Bind the newest target-bound
+run with `01-structure.md` and `02-interfaces.md` when one exists, using the same
+root, target and identity checks. Run the verified snapshot diff into this
+audit's check directory. Compute the union of `files.added`, `files.modified`
+and `files.removed`, subtract the resolved `changed_files` under review, and pass
+every remaining path as `map_outside_diff_changed_files`. The auditor reports
+every path in Gaps as changed since that bound snapshot outside the review diff.
+Do not present the stale Map as current; read current source before promoting a
+finding. An invalid snapshot, parser mismatch or failed check is a named gap.
+With no valid run, continue on the concept index and independent discovery at
+reduced confidence and state the missing Map and freshness evidence in Gaps.
+
+### Auditor delivery
+
+The worker consumes only the supplied immutable binding and never acquires a
+new Map. The coordinator retains the native report owner and delivery checks.
 
 ## Output location
 
@@ -207,7 +275,7 @@ The directory is created automatically if missing. Re-running the command overwr
 
 ## Related commands
 
-- `/codebase-map:analyze` — produces the `.codebase-map/` input this command consumes. Auto-launched by this command when missing.
+- `/codebase-map:analyze` — produces the bound run this command consumes; acquisition stops after phase 4 when context is missing or stale.
 - `/codebase-map:team-analyze` — partitioned Codebase Map for monorepos; adds `08-interconnect-map.md` to the output.
 - `/senior-review:code-review` and `/senior-review:team-review` — both run this agent in diff mode as their abstraction dimension, so a review already answers the "was this already available?" question for the changed code. Use `--diff` here when you want that check on its own, without the rest of the review.
 - `/clean-code:clean-code` — style and readability cleanup. Different concern.

@@ -63,12 +63,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Snapshot
 
-**Every run writes a snapshot.** Right after scope confirmation, before Phase 0:
-
-```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write \
-  <target> --out $RUN_DIR/snapshot/manifest.json
-```
+**Every run writes a snapshot.** After scope confirmation and before Phase 0,
+the coordinator writes the initial current manifest with the commands below.
+Classic snapshot ownership then transfers to the isolated analyst for required
+refreshes. Team snapshot ownership remains with the coordinator; partition
+workers and the mapper report refresh gaps rather than changing its manifest.
 
 The snapshot records the tree this run is about to read: every file with its size, mtime and content hash, every symbol with its span and a hash of its body, and the git commit as metadata. It is what makes this run a possible parent for the next one. A full run writes it too.
 
@@ -81,7 +80,9 @@ For every path that reads source, perform this current write after the verified
 diff even when it reports `none` or only LF/CRLF bytes changed. That result can
 support the parent's claims without making its recorded source bytes current.
 
-Immediately after, copy the manifest's own `git` field into `$RUN_DIR/state.json`'s `git` field. This is the only new `state.json` field this step fills: `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created, in pre-flight step 2 of the `analyze` workflow, because its step 1b change set already existed by then.
+Immediately copy the manifest's own `git` field into the run's state. Its parent,
+base snapshot time and incremental counts already carry preflight's real values.
+Never infer current source bytes from a normalized diff or change a parent snapshot.
 
 ## Incremental Update Commands
 
@@ -110,7 +111,7 @@ Write the current manifest in the owned run; preserve the parent snapshot.
 target mismatch rebuilds structure safely; malformed reuse input fails without
 replacing the output. Bind the recorded root, target and run before reuse.
 
-### 15. Diff, carry and check an update
+### 15. Diff and carry an update
 
 ```bash
 # what changed since a parent run, and which of its claims that affects
@@ -120,8 +121,6 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" diff \
 # copy the parent's phase files, renumber citations, mark the stale claims
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" carry <parent-run-dir> <run-dir>
 
-# publication gate: no marker left, no undocumented new symbol
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" check <run-dir>
 ```
 
 `--verify` hashes every file instead of trusting size and mtime. Use it when
@@ -131,6 +130,69 @@ This check uses normalized line endings. Always follow it with a current
 `snapshot.py write --reuse` before source-block reading, even when the result
 is `none` or only line-ending bytes differ. Returning the supported parent
 analysis without reading source does not require a new full analysis.
+
+The coordinator carries an accepted parent after the initial current snapshot
+and before delivery preparation. `carry.json` records source/copied hashes and
+parent provenance. A composed caller's bounded classic child sets
+`state.json -> parent_phases: [1,2,3,4]` to carry only those canonical files from
+a bound partial or team parent. Classic children never carry a team's `08`.
+
+### 16. Prepare, check and publish every mode
+
+```bash
+# after initializing state, register or refresh only this run's active entry
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" register $RUN_DIR
+
+# effective mode/flags are in state.json; add applicable invocation controls
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" prepare $RUN_DIR \
+  [--phase N] [--stop-after N]
+
+# continue the named interrupted run, preserving its mode and flags
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" prepare $RUN_DIR \
+  --resume-from [N] --run-name <exact-id> [--mode classic|team] [--flags '<JSON>']
+
+# the single native-delivery gate for full, lite, updates and partial modes
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" check $RUN_DIR --json
+
+# only the coordinator calls this after native and requested-view gates
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" publish $RUN_DIR
+
+# on cancellation, partial delivery or failure; preserves the latest pointer
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" unregister $RUN_DIR
+```
+
+`prepare` writes `state.json -> delivery` with schema 1, immutable mode/flags,
+artifact declarations and invocation controls (`run_phases`, `stop_after`,
+`resume_from`). Each artifact is produced, inherited with parent/carry or same-run
+provenance, or skipped with a reason. Knowledge requires both Phase 0 files.
+The helper owns the mode table; callers do not invent expected files.
+Only the coordinator prepares declarations. Workers read them and write results.
+
+`--phase N` accepts 1 through 6 and selects Phase 0 plus N; 7 is refused.
+Docs-only selects 0 and 6. Both stay in their run. `--stop-after N` accepts
+1 through 6, conflicts with docs/single-phase modes and leaves later work pending.
+It is not a mode flag. Resume requires the exact run name, verifies earlier
+artifacts/current source and keeps the same mode/flags. It drops the stop and
+starts at N (1 through 7), or the first incomplete produced phase when omitted.
+Missing inherited provenance never silently becomes fresh work.
+
+`check --json` reports `missing`, `empty`, `unexpected`, `invalid_inherited`,
+`stale`, `undocumented_added`, `not_yet_produced`, `first_incomplete_phase`,
+`complete`, `may_publish` and errors. Exit 0 means this invocation delivered,
+including an intentional stop; it does not mean publishable. Exit 1 reports
+delivery gaps; exit 2 reports an invalid binding. Skipped and verified inherited
+artifacts are never missing produced work. On a stop, later artifacts remain
+`not_yet_produced` and stale markers there are pending, not completed.
+
+Only a complete publishing mode with no remaining stale marker may publish.
+Team `08-interconnect-map.md` is legitimate when declared; its absence is a gap
+unless the mode skipped it. With comments and full-depth Phase 6, classic requires
+`comment_health.md`; team requires each partition's Comment Quality section in
+`06-documentation.md`. The entry also verifies requested human views.
+`publish` rechecks delivery and replaces all known mirror phase files plus state
+with locked rollback protection, updates only its registry entry/latest pointer,
+and preserves run archives and unrelated root files. Never hand-copy a partial
+set over a previous mirror.
 
 ## Prerequisites
 

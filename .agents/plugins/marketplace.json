@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "33.3.2"
+    "version": "33.3.3"
   },
   "name": "daodan",
   "owner": {
@@ -30,7 +30,7 @@
         "./skills/audit-workflow"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "4.0.4"
+      "version": "4.1.0"
     },
     {
       "author": {
@@ -133,7 +133,7 @@
         "./skills/team-analyze-workflow"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "6.2.1"
+      "version": "6.3.0"
     },
     {
       "author": {
@@ -151,7 +151,7 @@
         "./skills/xray-method"
       ],
       "source": "./exports/codex/plugins/codebase-xray",
-      "version": "6.0.0"
+      "version": "6.0.1"
     },
     {
       "author": {
@@ -445,7 +445,7 @@
         "./skills/readme-workflow"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "1.3.3"
+      "version": "1.3.4"
     },
     {
       "author": {
@@ -483,7 +483,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.3.5"
+      "version": "1.4.0"
     },
     {
       "author": {
@@ -497,7 +497,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/codex/plugins/project-protocol",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "author": {
@@ -651,7 +651,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "15.1.1"
+      "version": "15.2.0"
     },
     {
       "author": {
@@ -665,7 +665,7 @@
         "./skills/skill-catalog"
       ],
       "source": "./exports/codex/plugins/skill-catalog",
-      "version": "1.0.7"
+      "version": "1.0.8"
     },
     {
       "author": {

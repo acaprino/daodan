@@ -14,6 +14,10 @@ isolation = "required"
 consumes = ["artifact:scope"]
 produces = ["artifact:audit-report"]
 
+[dispatch]
+roles = ["codebase-map/map-analyst"]
+isolated = true
+
 [contract]
 inputs = ["repository"]
 outcomes = ["audit-completed"]

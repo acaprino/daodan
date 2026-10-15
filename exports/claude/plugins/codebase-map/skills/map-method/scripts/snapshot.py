@@ -19,7 +19,13 @@ Subcommands:
     carry <parent_run> <run_dir>
         Copy the parent run's phase files forward, renumbering citations and marking stale claims.
     check <run_dir>
-        Publication gate: fail on any surviving stale marker or undocumented added symbol.
+        Check the declared mode's delivery and whether it may publish.
+    prepare <run_dir> [--phase N] [--stop-after N] [--resume-from [N] --run-name ID]
+        Declare a run's artifacts, or verify and resume that same named run.
+    publish <run_dir>
+        Replace the phase-file mirror only after a complete delivery passes.
+    register <run_dir> / unregister <run_dir>
+        Update only this run's active entry under the publication registry lock.
 
 Standard library only. Parsing reuses the adapters in ./languages/.
 """
@@ -39,6 +45,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Iterator
 
@@ -1523,6 +1530,11 @@ def cmd_carry(args: argparse.Namespace) -> int:
         shutil.copytree(knowledge, run_dir / "knowledge", dirs_exist_ok=True)
 
     renumber = changes.get("renumber", {})
+    child_state = _read_json(run_dir / "state.json") or {}
+    parent_phases = child_state.get("parent_phases")
+    if parent_phases is not None and parent_phases != [1, 2, 3, 4]:
+        print("carry: bound parent_phases must be [1, 2, 3, 4]", file=sys.stderr)
+        return 2
     index = _path_index(
         set(renumber)
         | set(changes["files"]["modified"])
@@ -1535,10 +1547,16 @@ def cmd_carry(args: argparse.Namespace) -> int:
 
     copied = 0
     marked = 0
+    carried = {}
     for name in PHASE_FILES:
+        phase = PHASE_FILES.index(name) + 1
         source = parent_dir / name
         if not source.exists() or name == "07-final-report.md":
             continue  # Phase 7 is regenerated, never carried.
+        if child_state.get("mode") == "classic" and phase == 8:
+            continue
+        if parent_phases is not None and phase not in parent_phases:
+            continue
         marks = by_file.get(name, {})
         out_lines: list[str] = []
         # A carried claim must survive byte for byte, so the source is read
@@ -1566,7 +1584,20 @@ def cmd_carry(args: argparse.Namespace) -> int:
         # whatever ending style each line already carries.
         with (run_dir / name).open("w", encoding="utf-8", newline="") as handle:
             handle.write("\n".join(out_lines))
+        carried[name] = {
+            "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "sha256": hashlib.sha256((run_dir / name).read_bytes()).hexdigest(),
+        }
         copied += 1
+
+    parent_state = _read_json(parent_dir / "state.json") or {}
+    record = {
+        "schema": 1, "parent_run": parent_state.get("run_id") or parent_dir.name,
+        "parent_path": parent_dir.resolve().as_posix(), "artifacts": carried,
+        "parent_manifest_sha256": hashlib.sha256((parent_dir / "snapshot/manifest.json").read_bytes()).hexdigest()
+        if (parent_dir / "snapshot/manifest.json").is_file() else None,
+    }
+    (run_dir / "carry.json").write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     added = changes.get("symbols", {}).get("added", [])
     if added:
@@ -1581,7 +1612,7 @@ def cmd_carry(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_check(args: argparse.Namespace) -> int:
+def _legacy_check(args: argparse.Namespace) -> int:
     """
     The publication gate for an incremental run: no claim may still be marked
     stale, and every symbol the change set added must be cited somewhere.
@@ -1634,6 +1665,573 @@ def cmd_check(args: argparse.Namespace) -> int:
         return 1
     print("check: clean")
     return 0
+
+
+class RunControlError(ValueError):
+    """A malformed or unsafe run binding; no state may be written."""
+
+
+def _reject_links(path: Path) -> None:
+    for part in (path, *path.parents):
+        try:
+            metadata = part.lstat()
+        except FileNotFoundError:
+            metadata = None
+        if part.is_symlink() or (metadata is not None and getattr(metadata, "st_file_attributes", 0) & 0x400):
+            raise RunControlError(f"linked path is not a run-owned regular path: {part}")
+
+
+def _run_context(run_dir: Path) -> tuple[Path, Path, dict]:
+    _reject_links(run_dir)
+    run_dir = run_dir.resolve()
+    if run_dir.parent.name != "runs" or run_dir.parent.parent.name != ".codebase-map":
+        raise RunControlError("run must be inside the project's .codebase-map/runs/<run-id>")
+    root = run_dir.parent.parent
+    _reject_links(run_dir / "state.json")
+    state = _read_json(run_dir / "state.json")
+    if not isinstance(state, dict) or state.get("run_id") != run_dir.name:
+        raise RunControlError("state.run_id must equal the exact run directory name")
+    if state.get("mode") not in ("classic", "team"):
+        raise RunControlError("state.mode must be classic or team")
+    if not isinstance(state.get("flags"), dict) or not isinstance(state.get("target"), str):
+        raise RunControlError("state requires flags and target")
+    return run_dir, root, state
+
+
+def _effective_flags(flags: dict) -> dict:
+    effective = {"critical": False, "comments": False, "docs_only": False,
+                 "phase": None, "depth": "full", "skip_synthesis": False,
+                 "skip_interconnect": False}
+    effective.update(flags)
+    if effective["depth"] not in ("full", "lite"):
+        raise RunControlError("depth must be full or lite")
+    for key in ("critical", "comments", "docs_only", "skip_synthesis", "skip_interconnect"):
+        if not isinstance(effective[key], bool):
+            raise RunControlError(f"{key} must be a boolean")
+    phase = effective["phase"]
+    if phase is not None and (type(phase) is not int or phase not in range(1, 7)):
+        raise RunControlError("--phase accepts 1 through 6; phase 7 summarizes a complete run")
+    if effective["docs_only"] and phase is not None:
+        raise RunControlError("--docs-only and --phase cannot be combined")
+    if "stop_after" in effective or "resume_from" in effective:
+        raise RunControlError("stop and resume are invocation controls, not immutable flags")
+    return effective
+
+
+def _artifact_bytes(run_dir: Path, name: str) -> bytes | None:
+    paths = [run_dir / name]
+    if name == "knowledge/":
+        paths = [run_dir / "knowledge/navigation.md", run_dir / "knowledge/documentation-leads.md"]
+    chunks = []
+    for path in paths:
+        _reject_links(path)
+        if not path.is_file():
+            return None
+        data = path.read_bytes()
+        if not data.strip():
+            return b""
+        chunks.append(path.name.encode() + b"\0" + data)
+    return b"\0".join(chunks) if name == "knowledge/" else paths[0].read_bytes()
+
+
+def _artifact_hash(run_dir: Path, name: str) -> str:
+    data = _artifact_bytes(run_dir, name)
+    if not data:
+        raise RunControlError(f"missing or empty artifact: {name}")
+    return hashlib.sha256(data).hexdigest()
+
+
+def _bound_manifest(run_dir: Path, root: Path, state: dict, fresh: bool = False) -> dict:
+    path = run_dir / "snapshot/manifest.json"
+    _reject_links(path)
+    manifest = _read_json(path)
+    if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), dict):
+        raise RunControlError("run requires snapshot/manifest.json")
+    validate_reuse_manifest(manifest)
+    target = Path(state["target"])
+    if not target.is_absolute():
+        target = root.parent / target
+    target = target.resolve()
+    try:
+        target.relative_to(root.parent)
+    except ValueError as exc:
+        raise RunControlError("target is outside this run's project") from exc
+    if not isinstance(manifest.get("root"), str) or not isinstance(manifest.get("target"), str):
+        raise RunControlError("snapshot requires root and target binding")
+    if (Path(manifest["root"]) / manifest["target"]).resolve() != target:
+        raise RunControlError("snapshot and state target bindings differ")
+    if Path(manifest["root"]).resolve() != repo_root(target).resolve():
+        raise RunControlError("snapshot root differs from the target's repository binding")
+    for name in manifest["files"]:
+        relative = Path(name)
+        source = (Path(manifest["root"]) / relative).resolve()
+        if relative.is_absolute() or ".." in relative.parts:
+            raise RunControlError("snapshot file paths must be confined relative paths")
+        try:
+            source.relative_to(root.parent)
+            if target.is_file():
+                if source != target:
+                    raise ValueError("file target differs")
+            else:
+                source.relative_to(target)
+        except ValueError as exc:
+            raise RunControlError("snapshot file is outside this run's target") from exc
+    if fresh:
+        if manifest.get("parser_fingerprint") != parser_fingerprint():
+            raise RunControlError("snapshot parser identity changed; start a new run")
+        comparison = compare_files(manifest, target, verify=True)
+        if comparison["added"] or comparison["removed"] or comparison["modified"]:
+            raise RunControlError("worktree changed since the run snapshot; start a new run or update")
+        for name, entry in manifest["files"].items():
+            source = Path(manifest["root"]) / name
+            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != entry.get("raw_hash"):
+                raise RunControlError("worktree bytes changed since the run snapshot; start a new run or update")
+            if entry.get("parser_profile") != parser_profile(source, entry.get("language")):
+                raise RunControlError("effective parser changed since the run snapshot; start a new run")
+    return manifest
+
+
+def _write_json_atomic(path: Path, value: dict) -> None:
+    _reject_links(path)
+    fd, temporary = tempfile.mkstemp(prefix=".map-write-", dir=path.parent)
+    temporary_path = Path(temporary)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(value, indent=2, sort_keys=True) + "\n")
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+
+def _initial_delivery(run_dir: Path, root: Path, state: dict, stop_after: int | None,
+                      classify_carry: bool = True) -> dict:
+    flags = _effective_flags(state["flags"])
+    mode = state["mode"]
+    if mode == "team" and (flags["phase"] is not None or flags["docs_only"]):
+        raise RunControlError("single-phase controls require classic mode")
+    if stop_after is not None and (stop_after not in range(1, 7) or flags["phase"] or flags["docs_only"]):
+        raise RunControlError("--stop-after accepts 1 through 6 and cannot combine with --phase or --docs-only")
+    selected = {1, 2, 3, 4, 5, 6, 7}
+    if flags["phase"] is not None:
+        selected = {flags["phase"]}
+    elif flags["docs_only"]:
+        selected = {6}
+    elif flags["depth"] == "lite":
+        selected = {1, 2, 5, 7}
+    if mode == "team" and flags["skip_synthesis"]:
+        selected = set()
+    if mode == "team" and not flags["skip_synthesis"] and not flags["skip_interconnect"]:
+        selected.add(8)
+    artifacts = {"knowledge/": {"phase": 0, "status": "produced"}}
+    changes = _read_json(run_dir / "changes.json")
+    updating = state.get("incremental") is not None
+    if updating and (not isinstance(changes, dict) or not state.get("parent_run")):
+        raise RunControlError("update requires changes.json and parent_run")
+    record = _read_json(run_dir / "carry.json") or {}
+    added = (changes or {}).get("symbols", {}).get("added", [])
+    for phase, name in enumerate(PHASE_FILES, start=1):
+        if phase not in selected:
+            artifacts[name] = {"phase": phase, "status": "skipped", "reason": "not selected by the run's mode and flags"}
+            continue
+        artifact = {"phase": phase, "status": "produced"}
+        data = _artifact_bytes(run_dir, name)
+        if classify_carry and updating and phase != 7 and data:
+            carried = record.get("artifacts", {}).get(name)
+            if not isinstance(carried, dict):
+                raise RunControlError(f"existing update artifact requires carry proof: {name}")
+            provenance = {
+                "kind": "carry", "run_id": record.get("parent_run"),
+                "parent_path": record.get("parent_path"),
+                "source_sha256": carried.get("source_sha256"), "sha256": carried.get("sha256"),
+                "parent_manifest_sha256": record.get("parent_manifest_sha256"),
+                "record_sha256": hashlib.sha256((run_dir / "carry.json").read_bytes()).hexdigest(),
+            }
+            if not _valid_inheritance(run_dir, root, state, name, {"provenance": provenance}):
+                raise RunControlError(f"invalid carry proof for existing update artifact: {name}")
+            if MARKER_PREFIX.encode() not in data and not added:
+                artifact.update(status="inherited", provenance=provenance)
+        artifacts[name] = artifact
+    if flags["comments"] and flags["depth"] != "lite":
+        if mode == "classic" and 6 in selected:
+            artifacts["comment_health.md"] = {"phase": 6, "status": "produced"}
+        elif mode == "team":
+            partitions = state.get("partitions", [])
+            if not isinstance(partitions, list):
+                raise RunControlError("team partitions must be a list")
+            for partition in partitions:
+                name = partition.get("name") if isinstance(partition, dict) else None
+                if not isinstance(name, str) or name in ("", ".", "..") or "/" in name or "\\" in name:
+                    raise RunControlError("partition name must be one run-owned directory name")
+                artifacts[f"partitions/{name}/06-documentation.md"] = {"phase": 6, "status": "produced"}
+    if updating:
+        artifacts["changes.md"] = {"phase": 7, "status": "produced"}
+    return {
+        "schema": 1, "mode": mode, "flags": flags,
+        "binding": {"project": root.parent.as_posix(), "target": state["target"], "parent_run": state.get("parent_run"), "parent_phases": state.get("parent_phases"), "incremental": updating},
+        "stop_after": stop_after, "resume_from": None, "artifacts": artifacts,
+        "run_phases": sorted({a["phase"] for a in artifacts.values() if a["status"] == "produced" and (stop_after is None or a["phase"] <= stop_after)}),
+    }
+
+
+def _validate_delivery(run_dir: Path, root: Path, state: dict) -> dict:
+    delivery = state.get("delivery")
+    if not isinstance(delivery, dict) or delivery.get("schema") != 1:
+        raise RunControlError("run has no declared delivery; run prepare before dispatch")
+    if delivery.get("mode") != state["mode"] or delivery.get("flags") != _effective_flags(state["flags"]):
+        raise RunControlError("run mode or immutable flags changed; create a new run")
+    binding = delivery.get("binding")
+    expected = {"project": root.parent.as_posix(), "target": state["target"], "parent_run": state.get("parent_run"), "parent_phases": state.get("parent_phases"), "incremental": state.get("incremental") is not None}
+    if binding != expected:
+        raise RunControlError("run project, target or lineage binding changed")
+    artifacts = delivery.get("artifacts")
+    if not isinstance(artifacts, dict):
+        raise RunControlError("delivery artifacts must be an object")
+    original = _initial_delivery(run_dir, root, state, delivery.get("stop_after"),
+                                 classify_carry=False)["artifacts"]
+    if set(original) != set(artifacts):
+        raise RunControlError("delivery artifact set differs from the run's declared mode")
+    for name, artifact in artifacts.items():
+        if not isinstance(artifact, dict) or artifact.get("phase") != original[name]["phase"] or artifact.get("status") not in ("produced", "inherited", "skipped"):
+            raise RunControlError(f"invalid artifact declaration: {name}")
+        if (original[name]["status"] == "skipped") != (artifact["status"] == "skipped"):
+            raise RunControlError(f"artifact skip conflicts with the run's mode: {name}")
+        if artifact["status"] == "skipped" and not artifact.get("reason"):
+            raise RunControlError(f"skipped artifact requires a reason: {name}")
+    return delivery
+
+
+def _valid_inheritance(run_dir: Path, root: Path, state: dict, name: str, artifact: dict) -> bool:
+    provenance = artifact.get("provenance")
+    if not isinstance(provenance, dict) or provenance.get("sha256") != _artifact_hash(run_dir, name):
+        return False
+    if provenance.get("kind") == "resume":
+        return (provenance.get("run_id") == state["run_id"] and provenance.get("manifest_sha256") == hashlib.sha256((run_dir / "snapshot/manifest.json").read_bytes()).hexdigest())
+    if provenance.get("kind") != "carry" or provenance.get("run_id") != state.get("parent_run"):
+        return False
+    record_path = run_dir / "carry.json"
+    _reject_links(record_path)
+    record = _read_json(record_path)
+    if not isinstance(record, dict) or provenance.get("record_sha256") != hashlib.sha256(record_path.read_bytes()).hexdigest():
+        return False
+    parent = root / "runs" / str(state.get("parent_run"))
+    _reject_links(parent)
+    if parent.parent.resolve() != run_dir.parent or provenance.get("parent_path") != parent.as_posix() or record.get("parent_path") != parent.as_posix() or record.get("parent_run") != parent.name:
+        return False
+    parent_state = _read_json(parent / "state.json")
+    if not isinstance(parent_state, dict) or parent_state.get("run_id") != parent.name or parent_state.get("target") != state["target"]:
+        return False
+    if parent_state.get("mode") != state["mode"] and not (state["mode"] == "classic" and parent_state.get("mode") == "team" and state.get("parent_phases") == [1, 2, 3, 4] and name in PHASE_FILES[:4]):
+        return False
+    parent_flags = _effective_flags(parent_state.get("flags") or {})
+    if any(parent_flags[key] != _effective_flags(state["flags"])[key] for key in ("depth", "critical", "comments")):
+        return False
+    _bound_manifest(parent, root, parent_state)
+    parent_manifest = hashlib.sha256((parent / "snapshot/manifest.json").read_bytes()).hexdigest()
+    if provenance.get("parent_manifest_sha256") != parent_manifest or record.get("parent_manifest_sha256") != parent_manifest:
+        return False
+    if not _artifact_bytes(parent, name):
+        return False
+    recorded = record.get("artifacts", {}).get(name)
+    return (isinstance(recorded, dict) and recorded.get("sha256") == provenance.get("sha256") and recorded.get("source_sha256") == provenance.get("source_sha256") and provenance.get("source_sha256") == _artifact_hash(parent, name))
+
+
+def check_delivery(run_dir: Path) -> dict:
+    run_dir, root, state = _run_context(run_dir)
+    delivery = _validate_delivery(run_dir, root, state)
+    _bound_manifest(run_dir, root, state)
+    result = {key: [] for key in ("missing", "empty", "unexpected", "invalid_inherited", "stale", "undocumented_added", "not_yet_produced", "coverage_gaps")}
+    artifacts = delivery["artifacts"]
+    flags = delivery["flags"]
+    stop = delivery.get("stop_after")
+    incomplete = []
+    documented = set()
+    changes = _read_json(run_dir / "changes.json") or {}
+    added = changes.get("symbols", {}).get("added", [])
+    index = _path_index({item["file"] for item in added})
+    for name, artifact in artifacts.items():
+        phase = artifact["phase"]
+        if artifact["status"] == "skipped":
+            if (run_dir / name).exists():
+                result["unexpected"].append(name)
+            continue
+        produced = artifact["status"] == "produced"
+        deferred = produced and stop is not None and phase > stop
+        if deferred:
+            result["not_yet_produced"].append(name)
+            incomplete.append(phase)
+        data = _artifact_bytes(run_dir, name)
+        bad = False
+        if not deferred:
+            if data is None:
+                result["missing"].append(name)
+                bad = True
+            elif not data:
+                result["empty"].append(name)
+                bad = True
+            if artifact["status"] == "inherited" and (not data or not _valid_inheritance(run_dir, root, state, name, artifact)):
+                result["invalid_inherited"].append(name)
+                bad = True
+        if data and name in PHASE_FILES:
+            for number, line in enumerate(data.decode("utf-8", errors="replace").splitlines(), start=1):
+                if MARKER_PREFIX in line:
+                    result["stale"].append({"artifact": name, "line": number, "deferred": deferred})
+                    bad = not deferred or bad
+                    continue
+                if not deferred:
+                    for path_text, symbol in cited_symbols(line):
+                        resolved = _match_cited_path(path_text, index)
+                        if resolved:
+                            documented.add((resolved, symbol))
+        if data and name == "changes.md" and not deferred:
+            required = ("Claims confirmed", "Claims revised", "Claims retired", "Claims added", "Extra reads")
+            if any(f"## {heading}" not in data.decode("utf-8", errors="replace") for heading in required):
+                result["empty"].append(name)
+                bad = True
+        documentation = name == "06-documentation.md" or name.endswith("/06-documentation.md")
+        if data and documentation and flags["comments"] and flags["depth"] != "lite" and not deferred:
+            text = data.decode("utf-8", errors="replace")
+            section = re.search(r"^## Comment Quality\s*\n(.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL)
+            if not section or not section.group(1).strip():
+                result["empty"].append(name)
+                bad = True
+        if bad and produced:
+            incomplete.append(phase)
+    if added:
+        eligible = [a["phase"] for name, a in artifacts.items() if name in PHASE_FILES[:6] and a["status"] == "produced"]
+        due = [phase for phase in eligible if stop is None or phase <= stop]
+        if due:
+            for item in added:
+                if (item["file"], item["symbol"]) not in documented:
+                    result["undocumented_added"].append(f"{item['file']}::{item['symbol']}")
+                    incomplete.append(min(due))
+    for path in run_dir.glob("[0-9][0-9]-*.md"):
+        _reject_links(path)
+        if path.name not in artifacts:
+            result["unexpected"].append(path.name)
+    if (run_dir / "comment_health.md").exists() and "comment_health.md" not in artifacts:
+        result["unexpected"].append("comment_health.md")
+    if delivery["mode"] == "team":
+        for ledger, complete_status in (("partitions", "done"), ("agents_spawned", "delivered")):
+            entries = state.get(ledger, [])
+            if not isinstance(entries, list):
+                raise RunControlError(f"team {ledger} must be a list")
+            for number, entry in enumerate(entries):
+                if not isinstance(entry, dict) or entry.get("status") != complete_status:
+                    result["coverage_gaps"].append({"ledger": ledger, "index": number,
+                        "name": entry.get("name") if isinstance(entry, dict) else None,
+                        "status": entry.get("status") if isinstance(entry, dict) else None})
+    for key in ("missing", "empty", "unexpected", "invalid_inherited"):
+        result[key] = sorted(set(result[key]))
+    result["first_incomplete_phase"] = min(incomplete) if incomplete else None
+    blocking = any(result[key] for key in ("missing", "empty", "unexpected", "invalid_inherited", "undocumented_added", "coverage_gaps")) or any(not marker["deferred"] for marker in result["stale"])
+    result.update(run_id=state["run_id"], mode=delivery["mode"], invocation_complete=not blocking,
+                  complete=not blocking and stop is None,
+                  may_publish=not blocking and stop is None and flags["phase"] is None and not flags["docs_only"] and not flags["skip_synthesis"])
+    return result
+
+
+def cmd_prepare(args: argparse.Namespace) -> int:
+    try:
+        run_dir, root, state = _run_context(Path(args.run_dir))
+        if args.mode is not None and args.mode != state["mode"]:
+            raise RunControlError("requested mode differs; create a new run")
+        if args.flags is not None and _effective_flags(json.loads(args.flags)) != _effective_flags(state["flags"]):
+            raise RunControlError("requested flags differ; create a new run")
+        if args.resume_from is not None:
+            if args.run_name != state["run_id"]:
+                raise RunControlError("resume requires --run-name naming this exact existing run")
+            if args.phase is not None or args.stop_after is not None:
+                raise RunControlError("resume cannot combine with phase or stop controls")
+            delivery = _validate_delivery(run_dir, root, state)
+            _bound_manifest(run_dir, root, state, fresh=True)
+            checked = check_delivery(run_dir)
+            if checked["invalid_inherited"]:
+                raise RunControlError("inherited proof is invalid; restore its bound evidence or create a new run")
+            start = checked["first_incomplete_phase"] if args.resume_from == "auto" else args.resume_from
+            if start is None:
+                raise RunControlError("run has no incomplete phase; use --resume-from 7 to regenerate its report")
+            if args.resume_from != "auto" and args.resume_from not in range(1, 8):
+                raise RunControlError("explicit resume accepts 1 through 7")
+            if checked["unexpected"]:
+                raise RunControlError("unexpected artifacts must be resolved before resume")
+            invalid = set(checked["missing"] + checked["empty"])
+            invalid.update(marker["artifact"] for marker in checked["stale"] if not marker["deferred"])
+            if checked["undocumented_added"]:
+                invalid.update(name for name, item in delivery["artifacts"].items() if item["phase"] == checked["first_incomplete_phase"])
+            earlier = {name: item for name, item in delivery["artifacts"].items() if item["status"] != "skipped" and item["phase"] < start}
+            if any(name in invalid or name in checked["not_yet_produced"] for name in earlier):
+                print(json.dumps({"error": "earlier required artifacts are incomplete", "check": checked}))
+                return 1
+            manifest_hash = hashlib.sha256((run_dir / "snapshot/manifest.json").read_bytes()).hexdigest()
+            delivery = copy.deepcopy(delivery)
+            for name, item in delivery["artifacts"].items():
+                if item["status"] == "skipped":
+                    continue
+                if item["phase"] < start and item["status"] == "produced":
+                    item.update(status="inherited", provenance={"kind": "resume", "run_id": state["run_id"], "sha256": _artifact_hash(run_dir, name), "manifest_sha256": manifest_hash})
+                elif item["status"] == "produced":
+                    item["status"] = "produced"
+                    item.pop("provenance", None)
+            delivery.update(stop_after=None, resume_from=start,
+                            run_phases=sorted({item["phase"] for item in delivery["artifacts"].values() if item["status"] == "produced" and item["phase"] >= start}))
+            state["status"] = "in_progress"
+        else:
+            if state.get("delivery") is not None:
+                raise RunControlError("run already has a declaration; use --resume-from")
+            if args.phase is not None:
+                state["flags"]["phase"] = args.phase
+            _bound_manifest(run_dir, root, state)
+            delivery = _initial_delivery(run_dir, root, state, args.stop_after)
+        state["delivery"] = delivery
+        _write_json_atomic(run_dir / "state.json", state)
+        print(json.dumps(delivery, sort_keys=True))
+        return 0
+    except (RunControlError, OSError, ValueError, TypeError, KeyError) as exc:
+        print(json.dumps({"error": str(exc)}))
+        return 2
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    state = _read_json(Path(args.run_dir) / "state.json")
+    if not isinstance(state, dict) or "delivery" not in state:
+        if not args.json:
+            return _legacy_check(args)
+        print(json.dumps({"error": "run has no declared mode-aware delivery", "may_publish": False}))
+        return 2
+    try:
+        result = check_delivery(Path(args.run_dir))
+        print(json.dumps(result, sort_keys=True) if args.json else "check: " + json.dumps(result, sort_keys=True))
+        return 0 if result["invocation_complete"] else 1
+    except (RunControlError, OSError, ValueError, TypeError, KeyError) as exc:
+        print(json.dumps({"error": str(exc), "may_publish": False}))
+        return 2
+
+
+def _acquire_registry_lock(root: Path) -> Path:
+    lock = root / ".registry.lock"
+    deadline = time.monotonic() + 10
+    while True:
+        _reject_links(lock)
+        try:
+            descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError as exc:
+            if time.monotonic() >= deadline:
+                raise RunControlError("another coordinator holds the registry lock; retry after it finishes") from exc
+            time.sleep(0.05)
+        else:
+            os.close(descriptor)
+            return lock
+
+
+def _read_registry(root: Path) -> dict:
+    path = root / "runs.json"
+    _reject_links(path)
+    if not path.exists():
+        return {"schema": 2, "active": [], "latest_completed": None}
+    registry = _read_json(path)
+    if (not isinstance(registry, dict) or not isinstance(registry.get("active"), list)
+            or any(not isinstance(item, dict) or not isinstance(item.get("run_id"), str)
+                   or not item["run_id"] for item in registry["active"])):
+        raise RunControlError("malformed runs registry")
+    return registry
+
+
+def update_registration(run_dir: Path, *, active: bool) -> dict:
+    run_dir, root, state = _run_context(run_dir)
+    if active and (not isinstance(state.get("started_at"), str) or not state["started_at"]):
+        raise RunControlError("registration requires state.started_at")
+    lock = _acquire_registry_lock(root)
+    try:
+        registry = _read_registry(root)
+        entries = [item for item in registry["active"] if item["run_id"] != state["run_id"]]
+        if active:
+            entries.append({key: state.get(key) for key in
+                            ("run_id", "target", "mode", "started_at", "parent_run")})
+        registry["active"] = entries
+        _write_json_atomic(root / "runs.json", registry)
+        return {"run_id": state["run_id"], "active": active,
+                "registry": (root / "runs.json").as_posix()}
+    finally:
+        lock.unlink()
+
+
+def cmd_registry(args: argparse.Namespace) -> int:
+    try:
+        result = update_registration(Path(args.run_dir), active=args.command == "register")
+        print(json.dumps(result, sort_keys=True))
+        return 0
+    except (RunControlError, OSError, ValueError, TypeError, KeyError) as exc:
+        print(json.dumps({"error": str(exc)}))
+        return 2
+
+
+def publish_run(run_dir: Path) -> dict:
+    run_dir, root, state = _run_context(run_dir)
+    lock = _acquire_registry_lock(root)
+    try:
+        checked = check_delivery(run_dir)
+        if not checked["may_publish"]:
+            return {"published": False, "check": checked}
+        _bound_manifest(run_dir, root, state, fresh=True)
+        names = (*PHASE_FILES, "state.json", "runs.json")
+        before = {}
+        for name in names:
+            path = root / name
+            _reject_links(path)
+            if path.exists() and not path.is_file():
+                raise RunControlError(f"mirror path is not a regular file: {name}")
+            before[name] = path.read_bytes() if path.exists() else None
+        registry = _read_registry(root)
+        payloads = {name: (run_dir / name).read_bytes() for name in PHASE_FILES if state["delivery"]["artifacts"][name]["status"] != "skipped"}
+        from datetime import datetime, timezone
+        published_state = copy.deepcopy(state)
+        published_state.update(status="complete", completed_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        registry["active"] = [item for item in registry["active"] if item["run_id"] != state["run_id"]]
+        registry["latest_completed"] = state["run_id"]
+        payloads["state.json"] = (json.dumps(published_state, indent=2, sort_keys=True) + "\n").encode()
+        payloads["runs.json"] = (json.dumps(registry, indent=2, sort_keys=True) + "\n").encode()
+        run_state_before = (run_dir / "state.json").read_bytes()
+        with tempfile.TemporaryDirectory(prefix=".map-publish-", dir=root) as temporary:
+            staged = Path(temporary)
+            for name, data in payloads.items():
+                (staged / name).write_bytes(data)
+            # Re-check after staging; publication never trusts an earlier coordinator check.
+            rechecked = check_delivery(run_dir)
+            if not rechecked["may_publish"] or any((run_dir / name).read_bytes() != data for name, data in payloads.items() if name in PHASE_FILES):
+                raise RunControlError("delivery changed while preparing publication")
+            _bound_manifest(run_dir, root, state, fresh=True)
+            try:
+                for name in names:
+                    destination = root / name
+                    if name in payloads:
+                        os.replace(staged / name, destination)
+                    elif destination.exists():
+                        destination.unlink()
+                _write_json_atomic(run_dir / "state.json", published_state)
+            except OSError:
+                for name, data in before.items():
+                    destination = root / name
+                    if data is None:
+                        if destination.exists():
+                            destination.unlink()
+                    else:
+                        destination.write_bytes(data)
+                (run_dir / "state.json").write_bytes(run_state_before)
+                raise
+        return {"published": True, "run_id": state["run_id"], "mirror": root.as_posix()}
+    finally:
+        lock.unlink()
+
+
+def cmd_publish(args: argparse.Namespace) -> int:
+    try:
+        result = publish_run(Path(args.run_dir))
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result["published"] else 1
+    except (RunControlError, OSError, ValueError, TypeError, KeyError) as exc:
+        print(json.dumps({"published": False, "error": str(exc)}))
+        return 2
 
 
 def cmd_scope(args: argparse.Namespace) -> int:
@@ -1778,9 +2376,29 @@ def main(argv: list[str] | None = None) -> int:
     carry_parser.add_argument("run_dir")
     carry_parser.set_defaults(func=cmd_carry)
 
-    check_parser = sub.add_parser("check", help="verify an incremental run before publishing")
+    prepare_parser = sub.add_parser("prepare", help="declare or resume a mode-aware run delivery")
+    prepare_parser.add_argument("run_dir")
+    prepare_parser.add_argument("--phase", type=int)
+    prepare_parser.add_argument("--stop-after", type=int)
+    prepare_parser.add_argument("--resume-from", nargs="?", const="auto", type=lambda value: int(value) if value != "auto" else value)
+    prepare_parser.add_argument("--run-name")
+    prepare_parser.add_argument("--mode", choices=("classic", "team"))
+    prepare_parser.add_argument("--flags", help="requested immutable flags as a JSON object")
+    prepare_parser.set_defaults(func=cmd_prepare)
+
+    check_parser = sub.add_parser("check", help="verify run delivery before publishing")
     check_parser.add_argument("run_dir")
+    check_parser.add_argument("--json", action="store_true", help="emit the mode-aware delivery result")
     check_parser.set_defaults(func=cmd_check)
+
+    publish_parser = sub.add_parser("publish", help="replace the complete phase-file mirror")
+    publish_parser.add_argument("run_dir")
+    publish_parser.set_defaults(func=cmd_publish)
+
+    for command in ("register", "unregister"):
+        registry_parser = sub.add_parser(command, help="update this run's active registry entry")
+        registry_parser.add_argument("run_dir")
+        registry_parser.set_defaults(func=cmd_registry)
 
     args = parser.parse_args(argv)
     return args.func(args)

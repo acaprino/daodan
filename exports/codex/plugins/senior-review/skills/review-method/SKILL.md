@@ -79,10 +79,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle.
 Output: native report and the project-result envelope. Do not delegate execution
 to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
-the coordinator directly executes the canonical `codebase-map:analyze` entry
-and its `codebase-map:map-method` phase-by-phase in the same context. This is
-explicit execution of the canonical instructions, not a declarative `invoke`
-executor or automatic skill loading. Loading the skill alone executes no phase.
+the coordinator executes the canonical `codebase-map:analyze` entry's preflight,
+answerable checkpoints, delivery check and publication decision. Its
+`codebase-map:map-analyst` runs the requested phases in one isolated context
+through this workflow's declared host harness. Loading the method alone executes
+no phase; use the analyst as a role, never as a skill or declarative `invoke`.
 Keep one review preparation and final report owner; required workers still run
 in isolated contexts through the declared host bindings.
 

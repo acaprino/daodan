@@ -93,7 +93,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-map:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `api-contract-auditor`, `chicken-egg-detector`, `cleanup-auditor`, `code-auditor`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `data-integrity-auditor`, `distributed-flow-auditor`, `logic-integrity-auditor`, `platform-engineering:platform-reviewer`, `premise-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `resource-lifecycle-auditor`, `security-auditor`, `temporal-resilience-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`, `ui-race-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -117,6 +117,7 @@ Role bindings:
 - `chicken-egg-detector`: dispatch the installed `senior-review:chicken-egg-detector` agent by its qualified identity.
 - `cleanup-auditor`: dispatch the installed `senior-review:cleanup-auditor` agent by its qualified identity.
 - `code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
+- `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
 - `data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
 - `distributed-flow-auditor`: dispatch the installed `senior-review:distributed-flow-auditor` agent by its qualified identity.
