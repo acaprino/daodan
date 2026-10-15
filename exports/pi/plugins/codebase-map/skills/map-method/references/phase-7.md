@@ -73,11 +73,10 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Phase 7: Final Report
 
-Synthesize all `$RUN_DIR/*.md` files (01 through 06) into a consolidated report.
-
-Read phase files sequentially and retain up to five key-findings bullets per
-phase. Synthesize after all six; link detailed phase reports. This context limit
-never removes required sections or evidence.
+Read `$RUN_DIR` reports 01 through 06 sequentially, retaining up to five
+key-findings bullets each. Synthesize and link details; keep required sections
+and evidence. Graph-assisted source mapping is static: metadata is neither deep
+reading nor runtime evidence.
 
 **Output file:** `$RUN_DIR/07-final-report.md`
 
@@ -145,8 +144,9 @@ never removes required sections or evidence.
 - Mode: classic
 - Run: [run-id]
 - Target: [path]
-- Files in inventory: [count] (parsed source: [N], configuration and documentation: [N], presentation: [N]; extensions outside those three sets are absent from every count). Outside the perimeter by rule: [N] dot directories ([names]) and [N] paths Git ignores, ignore rules [applied | unavailable], from the manifest's `scope` block
-- Files read in depth: [count, and the list or the directories]
+- Files in inventory: [count]: parsed source [N], configuration/documentation [N], presentation [N]; other extensions absent from all counts. Manifest `scope` excludes [N] dot directories ([names]) and [N] Git-ignored paths; ignore rules [applied | unavailable]
+- Static graph mapping: [manifest binding, seeds/hops, AST coverage/gaps, truncation, parser fallback; phase-ledger links]
+- Files read in depth: [count; actual files/ranges from phase ledgers]
 - Exercised at runtime: none. This is static analysis; if the user supplied runtime evidence, cite it here instead
 - Phases completed: [list]
 - Date: [timestamp]
@@ -188,4 +188,4 @@ The report is written by the synthesizer, not partition workers.
 | 07-final-report.md | Documentation vs Reality | Aggregate mismatches. |
 | 07-final-report.md | Top Priority Actions | Critical/high findings with cross-partition impact and citations. |
 | 07-final-report.md | Quick Reference: Which File to Consult | Add the team-only cross-partition design-decisions row: 04 Cross-Partition ADR and 01; also 02 Cross-Partition Exports. Code review also checks 08. |
-| 07-final-report.md | Analysis Metadata | Mode: team; include partition count/list; coverage comes from the consolidated reading ledger, not new source reads. |
+| 07-final-report.md | Analysis Metadata | Mode: team; partition count/list; preserve graph diagnostics; deduplicate phase-ledger reads without synthesis source reads. |

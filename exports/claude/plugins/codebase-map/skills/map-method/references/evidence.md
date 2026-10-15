@@ -103,10 +103,39 @@ If encountered: note file existence only ("`.env` present - contains environment
 
 All scripts live in `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`.
 
-For an identified run, use its bound manifest for inventory and symbol structure
-and `source_reader.py` for source reading. The standalone commands below serve
-classification, usage search or parser diagnosis when the question needs them;
-they do not create a second authoritative index.
+Use the current owned manifest for inventory, graph discovery and source reading.
+Standalone commands supplement classification, usage search or parser diagnosis;
+they do not create another authoritative index.
+
+### Static Graph Discovery
+
+Before mapping structure, calls or flows, run:
+
+```bash
+python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" graph \
+  "<source_manifest>" --path src/service.py --hops 3 --limit 100
+```
+
+Repeat `--path` for exact repository-relative files, never directories; omit it
+for the whole inventoried scope. Hops range from 1 to 3. The read-only query uses
+the supplied manifest's semantic/import graphs, checks source identity and parser
+fingerprint, and neither reparses nor writes a snapshot.
+
+Select question-relevant candidate `requests`; read them with `source_reader.py read`
+before claims.
+Retain JSON only at an explicitly brief-owned run-artifact path; a saved graph
+object is directly accepted by `read --requests`. Otherwise read selected
+requests without saving. Never write into a parent or another worker's run.
+
+The `xray/source-graph/v1` packet binds its manifest/query, declarations,
+callsite spans, target identities, resolution/reasons, imports, coverage and
+diagnostics. Record seeds/hops, manifest binding, unavailable AST coverage,
+parser fallback, section totals and `truncated`. Narrow clipped queries or raise
+their limit; retain remaining gaps. AST metadata is not deep reading, and static
+resolution does not cover dynamic dispatch or arbitrary receiver types. Cycles,
+transitive importers and PageRank guide reading, not criticality or incremental
+invalidation. Usage search/Grep supplements dynamic, uncovered or ambiguous
+cases; it never replaces a successful graph query.
 
 ### 1. Analyze Single File
 
@@ -157,46 +186,43 @@ Emits the raw structural extraction (classes, functions, imports, exports) as JS
 
 ## Tool Integration
 
-The scripts in `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/` support
-**Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust,
-CSS (incl. SCSS and LESS)**. Use the current run's manifest for recorded
-structure and `source_reader.py` for source evidence throughout Phases 1-6.
+Scripts support the languages in `SKILL.md`. Throughout Phases 1-6, recorded
+structure comes from the current manifest; source evidence uses `source_reader.py`.
 
-- **Phase 1-2 (Structure):** Use manifest file/import metadata and `source_reader.py outline` for existing structure. Read selected public definitions with `source_reader.py read`. Use `ast_parser.py` only for required extra details absent from the manifest, such as signatures/export annotations, or single-file parser diagnosis; use `classifier.py` when additional triage metrics are needed. Do not reparse the target for recorded structure
+- **Phase 1-2 (Structure):** Query `source_reader.py graph` first; use manifest metadata/outline for exact definitions and `read` for public contracts. `ast_parser.py` supplies only required missing details, such as signatures/export annotations, or single-file diagnosis. Use `classifier.py` for additional triage metrics; never reparse recorded structure
 - **Phase 5 (Risks):** Use `usage_finder.py` to trace symbol usages across the codebase. Multi-language: matches Python `from/import`, Java `import`, JS/TS `import`/`require`, Rust `use`, etc.
 - **Phase 6 (Docs):** Use `doc_review.py` for link validation and marker checks, and `rewrite_comments.py` for multi-language comment quality analysis (Python `#`/docstrings, Java/JS/TS `//` / `/* */` / Javadoc / JSDoc, SQL/PL-SQL `--` / `/* */`, Rust `//` / rustdoc).
 
-Inventoried file-level formats, including configuration and markup, use the
-reader's whole-file fallback; extensions absent from the manifest remain absent
-from inventory coverage. Tree-sitter is optional (see Prerequisites in `references/snapshot.md`): Java/JS/TS/Rust use it when their grammar
-loads, otherwise a regex fallback. Python uses stdlib `ast`, SQL/PL-SQL a regex
-DDL extractor, and CSS/SCSS/LESS a stdlib tokenizer.
+Inventoried file-level formats use whole-file fallback; uninventoried extensions
+remain outside coverage. Tree-sitter is optional (Prerequisites in
+`references/snapshot.md`): Java/JS/TS/Rust fall back to regex. Python uses stdlib
+`ast`, SQL/PL-SQL regex DDL and CSS/SCSS/LESS a stdlib tokenizer.
 
 Do NOT use raw bash commands (cat, grep, find) to extract structure when a dedicated script exists. The scripts use real parsers, which are faster, more accurate, and consume fewer tokens than reading files line by line.
 
 ## Source Reading from the Bound Snapshot
 
-Load `codebase-map:map-method` by name to use this procedure from another
-plugin. The helper paths below belong to this skill's installed package. Use the
-identified analysis run for evidence lineage and a current owned
-`snapshot/manifest.json` for source reading; keep both exact paths downstream.
-A latest mirror does not identify its snapshot. After every verified diff,
-write or obtain the current source manifest with `snapshot.py write --reuse`
-before block reading, including a `none` result or LF/CRLF-only differences.
-Unchanged normalized claims can support parent evidence while the reader needs
-new source-byte identity. Use this one current manifest, preserving the parent.
+Other plugins load `codebase-map:map-method` by name; helpers belong to its installed
+package. Preserve the identified analysis run's evidence lineage and the exact
+current owned `snapshot/manifest.json` path downstream. A latest mirror identifies
+no snapshot. After every verified diff, obtain the current source manifest with
+`snapshot.py write --reuse` before graph queries or block reads, including `none`
+and LF/CRLF-only differences. Normalized parent claims do not establish current
+source-byte identity. Missing/stale manifests require a caller-owned refresh;
+never alter the parent or create an unowned index. Context-brief callers supply
+this same current `source_manifest` prerequisite.
 
-1. State the source question. Use the outline to choose exact symbol names and
-   paths from the bound manifest; paths are relative to its recorded repository
-   root. Outline output is metadata and does not validate current source bytes
-   or count as deep reading.
+1. State the source question. For structural/call/flow mapping, query the graph
+   first as above. Use question-relevant requests and outline names/paths to select
+   source, relative to the manifest's repository root. Outline metadata neither
+   validates current source bytes nor counts as deep reading.
 2. Read the selected definitions or inclusive line ranges. The reader checks
    current content identity and parser identity before emitting numbered source.
    Changed or deleted files and parser mismatches require a refreshed manifest.
-3. Follow the question's callers, callees, validation gates, constants, types,
-   configuration reads and implicit references. Include applicable stylesheets
-   and markup when tracing a screen. Import neighbours alone cannot supply those
-   relationships. Expand the request or use `--full` until the claim is supported.
+3. Follow callers, callees, validation gates, constants, types, configuration and
+   implicit references. Include applicable stylesheets/markup for screens.
+   Graph/import neighbours cannot establish completeness. Expand requests or
+   use `--full` until each claim is supported.
 4. Record the files and ranges actually examined, parser diagnostics and any
    remaining gaps. Keep inventory, source read in depth and runtime evidence as
    separate coverage facts. Codebase Map remains static.
@@ -221,41 +247,33 @@ by the outline, including `Class.method`. A requests file is a JSON list, or an
 object with `requests`, containing `path`, `symbols`, `ranges` (`start`/`end`)
 and optional `full_file` entries.
 
-Selected definitions retain shared file/class text outside the complete
-function/method intervals, plus start/end lines of Java/JavaScript/TypeScript/Rust
-callables. Imports, types, constants, static fields and decorators outside those
-intervals stay; boundary lines also preserve globals or fields sharing a
-callable's opening or closing line. The reader falls back to a whole file for legacy or unreliable
-spans, including inferred, merged or parser-error entries, single-line,
-overlapping or class-boundary spans, and long lines,
-and reports that fallback. Minified or shared-line definitions can also force
-whole-file fallback even with exact end lines, preserving class declarations
-and static fields on those lines. This retained context does not prove that omitted
-function bodies are irrelevant or that semantic dependencies are complete.
-Block selection limits the source presented to the model; each requested file
-is still read and hash-checked in full. It is not a measured model-time guarantee.
+Selections retain shared file/class text outside complete function/method
+intervals and Java/JavaScript/TypeScript/Rust callable boundary lines, preserving
+imports, types, constants, static fields, decorators and shared-line declarations.
+The reader reports whole-file fallback for legacy/unreliable spans: inferred,
+merged, parser-error, single-line, overlapping, class-boundary, long-line,
+minified or shared-line definitions, even with exact end lines. Retained context
+proves neither omitted bodies irrelevant nor semantic dependencies complete.
+Block selection limits model input; every requested file is still read and
+hash-checked in full. It promises no measured model-time saving.
 
 ### Source reading in every code phase
 
-Derive `source_manifest = $RUN_DIR/snapshot/manifest.json` from the run directory;
-this is a prompt alias, not a new `state.json` field or another index. Use
-`source_reader.py outline` with bounded exact-path/pattern queries to locate
-definitions. Narrow truncated output. Use `source_reader.py read` with exact
-symbols or line ranges to examine source, expanding to callers/callees, gates,
-constants, types, invariants, configuration and applicable CSS/markup until each
-claim is supported. Keep whole-target cascade scans for entry-gating paths.
-Import neighbours and retained file/class context do not establish completeness.
+Derive `source_manifest = $RUN_DIR/snapshot/manifest.json`; this prompt alias adds
+no `state.json` field or index. Graph discovery precedes mapping; bounded
+exact-path/pattern outlines locate definitions. Narrow truncated output. Read
+selected symbols/ranges and expand the evidence as above. Preserve whole-target
+cascade scans and mandatory entry-gating paths.
 
-Changed/deleted source or parser mismatches require refreshing the current run's
-snapshot before continuing; never substitute a latest mirror or edit the parent.
-Use full-file reading where needed, rather than reading every file by default.
-Each code phase's owned report includes `## Source reading`: exact manifest,
-actual source files/ranges examined, diagnostics and gaps. Derive final deep-read
-coverage from that union, separately from inventory and user-supplied runtime
-evidence. Outline metadata does not count as deep reading.
-On an update, keep carried parent reading provenance separate from source
-actually examined in this run; copied `## Source reading` sections do not count
-as a current read. Add current re-derivation reads to the relevant phase ledger.
+Changed/deleted source or parser mismatch requires a current owned refresh before
+continuing. Whole-manifest discovery requires neither blanket reading nor expanded
+source/partition boundaries.
+Each phase report's `## Source reading` records exact manifest, graph query/gaps,
+actual files/ranges, diagnostics and fallback. Deduplicate actual reads for final
+deep-read coverage, separately from inventory and user-supplied runtime evidence.
+Graph/outline metadata is not deep reading. On updates, preserve carried parent
+reading provenance separately; copied ledgers never count as current reads. Add
+current re-derivation reads to the relevant phase ledger.
 
 ## File Classification Criteria
 

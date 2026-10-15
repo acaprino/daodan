@@ -138,22 +138,18 @@ Read named core sections by locating headings or fenced skeletons before bounded
 
 ## SOURCE READING
 
-Use the owner commands and source-reading sections declared in Method loads. Use
-`source_reader.py outline` on `source_manifest` to locate exact definitions,
-then `source_reader.py read` for the source evidence behind each contract or
-invariant. Metadata and prior claims are discovery leads. Expand validated reads
-to callers/callees, gates, constants, types, configuration, dynamic registration
-and relevant CSS/markup; import edges alone cannot select all necessary context.
-Use full-file reading when needed. Keep `ast_parser.py` for missing structural
-details or single-file parser diagnosis, rather than reparsing the mapped scope.
-Changed/deleted files or parser mismatch require a refreshed manifest from the
-caller. A required caller outside its target is a scope gap, not permission to
-read past the bound perimeter.
+Follow the graph and source-reading commands in `references/evidence.md`.
+Graph discovery comes first; read question-relevant candidate requests with `source_reader.py read`
+before contract/invariant claims. Outline locates exact definitions.
+Expand validated reads to callers/callees, gates, constants, types, configuration,
+dynamic registration and relevant CSS/markup; graph/import edges do not establish
+completeness. Use full-file reading when needed; reserve `ast_parser.py` for
+missing details or single-file diagnosis. Missing/stale source or parser mismatch
+requires the caller's current owned snapshot; never cross its perimeter.
 
-Record actual source files/ranges and fallback/parser diagnostics in the owned
-map. Outline metadata does not count as deep reading; retained file/class text
-does not prove that omitted function bodies are irrelevant. No requirement to
-read every inventoried file follows from the inventory.
+Record graph query/binding, coverage gaps, truncation, parser/fallback diagnostics
+and actual files/ranges. Metadata is not deep reading. Inventory and retained
+context require neither reading every file nor assuming omitted bodies irrelevant.
 
 ## ANALYSIS PHASES
 
@@ -161,12 +157,15 @@ Execute sequentially. Each phase feeds the next.
 
 ### Phase 1: Call Graph Expansion
 
-For each target file, use the manifest and targeted source reads to identify its
-exported symbols (functions, classes, constants, routes, handlers, events).
-Locate candidate call sites outside the requested file set within the bound
-manifest scope, using usage search or Grep (up to 2-3 hops). Verify each relevant
-caller/callee and outgoing non-stdlib boundary (DB, HTTP, queue, FS, external
-services) through source blocks before making a contract claim.
+First query `source_reader.py graph source_manifest` with exact target-file seeds
+and `--hops 2` or `--hops 3`. Inspect calls/imports within the bound scope; read
+question-relevant candidate requests, retaining callsite/declaration identities, spans and unresolved
+reasons. Narrow clipping before claiming coverage. Usage search/Grep supplements
+dynamic, uncovered or ambiguous cases; it never substitutes for a successful
+query. Verify relevant callers/callees and non-stdlib boundaries (DB, HTTP, queue,
+FS, services) through source blocks before contract claims. Static resolution and
+evidence status are separate: a resolved edge does not verify its contract.
+Keep unresolved targets explicit; never infer a callee from a matching name.
 
 Build an expanded call graph as a table.
 
@@ -290,6 +289,7 @@ Follow this exact structure with stable anchors regardless of output path:
 ## Target scope
 
 - Source manifest: [exact current path, root and target]
+- Graph discovery: [queried files/hops, manifest binding, coverage gaps, truncation]
 - Files in manifest inventory: [count within its recorded scope]
 - Files read in depth: [count and actual files/ranges; exclude outline-only metadata]
 - Runtime evidence: [none unless supplied by the user; cite any supplied evidence]
@@ -298,13 +298,13 @@ Follow this exact structure with stable anchors regardless of output path:
 
 ## Source reading
 
-[Files/ranges examined, parser/fallback diagnostics, unresolved input/scope gaps.]
+[Files/ranges examined; graph coverage, parser/fallback diagnostics and unresolved scope gaps.]
 
 ## Call Graph (expanded, 2-3 hops)
 
-| Exported symbol | Declared at | External callers | External callees |
-|-----------------|-------------|------------------|------------------|
-| `...` | `file:line` | `file:line`, `file:line` | `file:line` |
+| Caller identity | Callsite identity / source | Callee identity / declaration | Resolution / reason | Evidence status |
+|-----------------|----------------------------|-------------------------------|---------------------|-----------------|
+| [caller ID] | [reference ID], `file:line` | [target ID], `file:line`, or unresolved | [returned resolution/reason] | verified / documented / unverified / disputed |
 
 ## Contracts
 
@@ -371,7 +371,7 @@ Follow this exact structure with stable anchors regardless of output path:
 ## ANTI-PATTERNS (DO NOT DO THESE)
 
 - Do NOT summarize what the code does (Codebase Map already did that; do not duplicate).
-- Do NOT list every function -- only exported ones, and only in the Call Graph.
+- List only exported targets and their relevant call edges, preserving unresolved gaps.
 - Do NOT propose fixes or improvements.
 - Do NOT include file contents; cite `file:line` and move on.
 - Do NOT mark assumptions as `verified` without citing where they are enforced.

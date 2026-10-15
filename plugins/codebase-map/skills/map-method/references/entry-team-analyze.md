@@ -239,9 +239,11 @@ change declarations to turn a failed worker or missing map into a skipped phase.
 Every source reader derives `source_manifest` as `$RUN_DIR/snapshot/manifest.json`.
 It is a prompt alias for this existing run artifact, not a new state field or a
 second index. Pass that exact current path to both worker waves and the mapper.
-Workers use recorded file/import metadata and `source_reader.py outline` for
-structure, then `source_reader.py read` for selected evidence. Extra parsing is
-limited to required details absent from the manifest or single-file diagnosis.
+Before structure/call/flow mapping, workers query `source_reader.py graph` with
+exact-file seeds, never partition directories, and read question-relevant candidate requests with
+`source_reader.py read`. Outline supplies exact recorded definitions. Preserve
+graph binding/query, unresolved coverage, truncation and parser/fallback diagnostics.
+Extra parsing supplies only required missing details or single-file diagnosis.
 Selection follows flows, gates, invariants, configuration and effective styles,
 including implicit and cross-partition relationships beyond import edges.
 Keep the whole-target cascade scan and mandatory entry-gating paths. A stale
@@ -278,11 +280,12 @@ Sibling partitions (for cross-partition citation lookup if needed):
 Required reads before writing:
   - <RUN_DIR>/snapshot/manifest.json: inventory/import metadata for <P_i.path>
   - Follow the assigned role's Method loads; never load every method unit.
-Use source_reader.py outline for recorded structure and source_reader.py read
-for definitions/ranges selected from the phase's questions. Expand evidence as
-needed; do not reparse or read all source files merely for inventory. Keep
-ast_parser.py for required extra details or single-file diagnosis. Record actual
-source files/ranges in each output's ## Source reading.
+First query source_reader.py graph on the current source manifest, with exact
+inventoried file seeds below the partition, never a directory. Read question-relevant candidate requests
+through source_reader.py read; use outline for exact definitions. Expand evidence
+as needed, without reparsing or reading every file for inventory. Record graph
+seeds/hops, binding, coverage/truncation, parser fallback and actual files/ranges
+in each output's ## Source reading. Resolution alone never verifies a contract.
 
 Completion: when both owned files are written, report delivered and name them. If you could not write them, report failed and say why.
 ```
@@ -327,11 +330,13 @@ Required reads before writing:
   - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
   - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)
 
-Use source_reader.py outline and read for targeted evidence. Expand to callers,
-callees, gates, invariants, configuration and relevant CSS/markup rather than
-using imports as the semantic boundary. Keep whole-target cascade scanning and
-mandatory entry-gating paths. Record actual files/ranges in ## Source reading;
-inventory and outline metadata do not count as deep reading.
+First query source_reader.py graph on the current source manifest, seeding exact
+files from Wave 1 leads with 2-3 hops. Read question-relevant candidate requests through read; use
+outline for exact symbols. Expand to callers/callees, gates, invariants,
+configuration and relevant CSS/markup beyond graph/import edges. Preserve
+whole-target cascade scans and mandatory entry-gating paths. Record graph
+binding/query, gaps/truncation, parser fallback and actual files/ranges in
+## Source reading. Metadata is not deep reading or contract verification.
 
 Cross-partition citations: when you find an outgoing call/import that leaves
 your partition, cite it as <other-partition>::<symbol>.
@@ -374,8 +379,9 @@ For any partition with status=failed, add a "⚠ Missing partitions" callout in 
 
 Read <RUN_DIR>/partitions/*/ and apply the consolidation rules in your agent definition.
 Union the workers' ## Source reading sections to report actual deep-read files
-and ranges, deduplicated by path. Keep outline/inventory metadata separate and
-carry parser/fallback diagnostics and gaps; do not re-read source for synthesis.
+and ranges, deduplicated by path. Keep graph/outline/inventory metadata separate;
+preserve graph queries, coverage/truncation and parser/fallback diagnostics/gaps.
+Do not re-read source for synthesis.
 Distinguish source examined in this run from reading carried with unchanged
 parent partitions. Preserve that parent provenance without counting it as a
 current source read.
@@ -400,15 +406,20 @@ Current source manifest: `<RUN_DIR>/snapshot/manifest.json` (read-only).
 Scope: the cross-partition surface only. Read `<RUN_DIR>/02-interfaces.md ## Cross-Partition Exports`,
 `<RUN_DIR>/03-flows.md ## Cross-Partition Flows`, `<RUN_DIR>/04-semantics.md ## Hidden Contracts (cross-partition)`
 and `<RUN_DIR>/05-risks.md ## Cross-Partition Risk Attribution` (whichever exist at this depth), then the
-source definitions those sections cite using source_reader.py outline/read from
-that manifest. Expand evidence for relevant callers/callees, gates, invariants,
+source files those sections cite. First query source_reader.py graph from that
+manifest with exact-file seeds and 2-3 hops; read question-relevant candidate requests with read and
+use outline for exact definitions. Expand evidence for callers/callees, gates, invariants,
 configuration and styles beyond import edges. Partition-internal contracts are already in the partition outputs;
 do not re-derive them here.
 Output path: `<RUN_DIR>/08-interconnect-map.md`
 
 Produce the full structured map following your agent definition: Call Graph limited to the symbols that cross a partition boundary (2-3 hops out from each crossing, cross-partition edges marked), Contracts (formal / structural / implicit), Invariants, Domain Rules, Assumptions (verified / documented / unverified / disputed), Integration Hot-Spots, Change Impact Radius, Reviewer Hints.
 
-Every claim must cite file:line. No recommendations, no fixes. Empty sections are acceptable if nothing applies. Scale the map with the number of cross-partition edges, never with the size of the codebase.
+Every claim must cite file:line. Call rows retain graph identities, callsite and
+declaration evidence, resolution/reason and a separate evidence status. Record
+graph query/binding, unresolved coverage, truncation and parser fallback; usage
+search only supplements ambiguous/dynamic/uncovered cases. No recommendations,
+no fixes. Empty sections are acceptable. Scale with cross-partition edges.
 ```
 
 Wait for delivery. On delivery: mark `phase_3_interconnect: "complete"`. On failure:

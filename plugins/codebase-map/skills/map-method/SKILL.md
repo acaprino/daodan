@@ -88,7 +88,7 @@ Scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/` (Python >= 3.10; mul
 - `doc_review.py`: documentation maintenance (Phase 6).
 - `migrate_root.py`: project-bound legacy migration and historical path resolution.
 - `snapshot.py`: scope counts, structural snapshots and incremental change sets.
-- `source_reader.py`: snapshot outline and validated source blocks with shared context.
+- `source_reader.py`: manifest graphs, outlines and validated source blocks.
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
 - `cascade_scan.py`: global stylesheet layout risks, cascade override candidates and screen rules (Phase 5).
 - `languages/`: per-language adapters using the Language Support methods.

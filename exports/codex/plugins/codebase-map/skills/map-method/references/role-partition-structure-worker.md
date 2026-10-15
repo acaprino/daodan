@@ -109,21 +109,22 @@ Inside `partition_path`, never analyze what Git ignores, any directory whose nam
 
 ## TOOL USAGE
 
-Load `codebase-map:map-method` and follow the bound-snapshot source-reading
-procedure in its `references/evidence.md`. Start with `source_manifest` file/import metadata and
-`source_reader.py outline`, filtered to repository-relative paths below
-`partition_path`. Use an anchored path pattern for a partition, or `--path` for
-one exact file. Narrow a truncated outline before choosing symbols.
+Load `codebase-map:map-method` and follow `references/evidence.md`. First query
+`source_reader.py graph` on `source_manifest`, seeding exact inventoried files
+below `partition_path`, never directories. Keep the whole-run manifest for
+inbound/cross-partition edges. Read question-relevant candidate requests through `source_reader.py read`.
+Use manifest metadata/outline for exact definitions: anchored patterns select a
+partition; `--path` selects one file. Narrow truncated queries.
 
-Read selected definitions through `source_reader.py read` to establish entry
-points, exports and interface claims. Expand to registration, constants, types,
-configuration and callers/callees when needed. Keep `ast_parser.py` for extra
-details absent from the manifest, such as signatures or export annotations, or
-single-file parser diagnosis; do not reparse the partition for recorded structure.
-Use `classifier.py` only when a claim requires its additional triage metrics.
-Inventoried file-level formats use the reader's whole-file fallback. A changed
-source/parser identity is a delivery gap for the orchestrator to refresh; never
-rewrite the shared manifest. Metadata alone does not count as deep source reading.
+Read source to establish entry points, exports and interface claims. Expand to
+registration, constants, types, configuration and callers/callees as needed.
+Graph resolution is not contract verification; record unresolved/AST coverage
+gaps. Search supplements ambiguous/dynamic/uncovered cases, never replaces the
+graph query. Reserve `ast_parser.py` for missing signatures/export annotations
+or single-file diagnosis; never reparse recorded structure. `classifier.py`
+supplies additional triage metrics. File-level formats use whole-file fallback.
+Source/parser mismatch requires orchestrator refresh; never rewrite the shared
+manifest. Graph/outline metadata is not deep reading.
 
 ## Method loads
 
@@ -143,9 +144,9 @@ Use the Team mode rules for partition scope and declared extensions.
 
 ## COMPLETION
 
-Include `## Source reading` in each owned file: exact manifest path, source files
-and ranges actually examined, parser/fallback diagnostics and unresolved gaps.
-Inventory and outline metadata do not count as source read in depth; no runtime
-exercise is performed. A complete inventory does not require reading every file.
+Include `## Source reading` in each owned file: exact manifest binding, graph
+seeds/hops, truncation and coverage gaps, actual files/ranges, parser/fallback
+diagnostics. Inventory/graph/outline metadata is not deep reading; runtime
+exercise is none. Inventory alone does not require reading every file.
 
 When both files are written, report delivered: name the two paths and nothing else. If you could not write them, report failed with the reason. Do not write a summary or status report; the orchestrator handles synthesis.

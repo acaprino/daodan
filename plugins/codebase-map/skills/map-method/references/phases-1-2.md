@@ -2,7 +2,18 @@
 
 ## Phase 1: Structure Extraction
 
-Build the structural map from the current manifest. The inventory is what `snapshot.py` records: source in the parsed languages, stylesheets included with one symbol per rule, except a minified one, which stays file-level; configuration and documentation; and presentation files no adapter parses (markup, single-file components, indented Sass: file-level with no symbols). Any other extension is absent from the inventory and from every count derived from it, and the final report says so rather than letting a file count read as coverage. All of it sits inside the perimeter: nothing Git ignores and nothing under a dot directory enters the inventory, and the manifest's `scope` block says what was left out.
+Build the structural map from the current manifest. Inventory covers parsed
+languages, stylesheets (one symbol per rule; minified stays file-level),
+configuration/documentation and unparsed presentation (markup, single-file
+components, indented Sass; file-level without symbols). Other extensions are
+absent from every derived count; state that limit in the final report. The
+manifest's `scope` declares perimeter exclusions: Git-ignored paths and dot
+directories never enter inventory.
+
+First query `source_reader.py graph` on `source_manifest` for the mapped files
+(exact-file seeds, never directories; omit seeds for whole scope). Consume its
+imports/calls; read question-relevant candidate requests before claims. Preserve unresolved edges,
+AST coverage gaps and truncation; supplement with usage search only where needed.
 
 A minified stylesheet has any line over 10,000 characters. Configuration/documentation entries have no symbols; presentation formats include HTML, HTM, Vue, Svelte and indented Sass. Forbidden files never enter the manifest, even as hashes.
 
@@ -47,7 +58,7 @@ additional claims required by the phase:
 - Classes: [pattern]
 
 ## Source reading
-[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
+[Manifest binding, graph seeds/hops/coverage/truncation, actual files/ranges, parser/fallback diagnostics and gaps]
 ```
 
 Classic owner: add phase 1 to `$RUN_DIR/state.json -> completed_phases`.
@@ -58,8 +69,8 @@ Classic owner: add phase 1 to `$RUN_DIR/state.json -> completed_phases`.
 
 For each module, document the public interface:
 
-Locate definitions in the manifest, then verify their public contract through
-source blocks and the types, validators and configuration it depends on.
+Use graph-discovered definitions; verify public contracts through source blocks,
+types, validators and configuration. Resolution alone is not verification.
 
 - Function signatures with parameter types and return types
 - Class hierarchies and method signatures
@@ -89,7 +100,7 @@ source blocks and the types, validators and configuration it depends on.
 4. Add tests at `[test path]`
 
 ## Source reading
-[Manifest, actual files/ranges, parser diagnostics and unresolved gaps]
+[Manifest binding, graph seeds/hops/coverage/truncation, actual files/ranges, parser/fallback diagnostics and gaps]
 ```
 
 ## Team mode

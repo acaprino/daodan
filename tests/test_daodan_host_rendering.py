@@ -198,6 +198,53 @@ class HostRenderingTests(unittest.TestCase):
                 self.assertIn("consumes `artifact:xray-report`", lines["interconnect"])
                 self.assertIn("`partition-selection`: runs in the orchestrating context", plan)
 
+    def test_graph_mapping_obligations_survive_in_loaded_roles_and_nested_methods_on_every_host(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                package = self.package(host, "codebase-map")
+                role_layout = load_adapter(ADAPTERS, host).layout["roles"]
+                roles = {}
+                for role in ("map-analyst", "semantic-interconnect-mapper",
+                             "partition-structure-worker", "partition-behavior-worker"):
+                    relative = role_layout.replace("${plugin}", "codebase-map").replace("${role}", role)
+                    roles[role] = loaded_instruction_text(self, package / relative, host)
+                    self.assertIn("references/evidence.md", roles[role])
+                    self.assertIn("before: Maintained documentation", roles[role])
+
+                # These are the actual resources reached through the rendered
+                # roles, rather than matching hashes or inspecting kernel prose.
+                evidence = _read(package / "skills/map-method/references/evidence.md")
+                core = " ".join(evidence.split("## Maintained documentation", 1)[0].split())
+                self.assertIn("Before mapping structure, calls or flows, run:", core)
+                self.assertRegex(evidence, r'python "[^"\n]+/scripts/source_reader\.py" graph')
+                self.assertIn("question-relevant candidate `requests`", core)
+                self.assertIn("read them with `source_reader.py read` before claims", core)
+                self.assertIn("AST metadata is not deep reading", core)
+                self.assertIn("static resolution does not cover dynamic dispatch or arbitrary receiver types", core)
+                self.assertIn("Cycles, transitive importers and PageRank guide reading, not criticality or incremental invalidation", core)
+                self.assertIn("checks source identity and parser fingerprint", core)
+                self.assertIn("neither reparses nor writes a snapshot", core)
+                self.assertIn("`truncated`", core)
+
+                mapper = " ".join(roles["semantic-interconnect-mapper"].split())
+                self.assertIn("First query `source_reader.py graph source_manifest`", mapper)
+                self.assertIn("`--hops 2` or `--hops 3`", mapper)
+                self.assertIn("Keep unresolved targets explicit", mapper)
+                self.assertIn("a resolved edge does not verify its contract", mapper)
+                self.assertIn("through source blocks before contract claims", mapper)
+                self.assertIn("Static resolution and evidence status are separate", mapper)
+                for role in ("partition-structure-worker", "partition-behavior-worker"):
+                    worker = " ".join(roles[role].split())
+                    self.assertIn("`source_reader.py graph` on `source_manifest`", worker)
+                    self.assertIn("requests through `source_reader.py read`", worker)
+                    self.assertIn("unresolved/AST coverage gaps", worker)
+                analyst = roles["map-analyst"]
+                self.assertIn("references/phases-1-2.md", analyst)
+                self.assertIn("references/phases-3-4.md", analyst)
+                for phase in ("phases-1-2.md", "phases-3-4.md"):
+                    text = _read(package / "skills/map-method/references" / phase)
+                    self.assertIn("## Source reading", text)
+
     def test_static_fanout_still_dispatches_once_each(self):
         text = self.harness("claude", "senior-review", "team-review")
         self.assertIn(

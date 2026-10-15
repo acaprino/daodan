@@ -801,13 +801,15 @@ def _strip_jsonc_comments(raw: str) -> str:
                   lambda match: match.group(1) or "", cleaned)
 
 
-def ts_path_config(root: Path) -> dict:
+def ts_path_config(root: Path, *, source_observations: dict[Path, bytes] | None = None) -> dict:
     """Read project module configuration only inside the target's perimeter.
 
     Each option retains the directory in which it was declared, including an
     inherited baseUrl or paths map. Package configs apply to their descendants.
     Relative extends are supported; package-manager config lookup is outside
     the analyzed tree's dependency perimeter and is deliberately not guessed.
+    Supplied observations use absolute Path keys and replace live discovery and
+    content reads, so snapshot consumers cannot acquire unrecorded configuration.
     """
     root = Path(root).resolve()
     config = {"root": root.as_posix(), "configs": {}, "packages": {}}
@@ -831,8 +833,13 @@ def ts_path_config(root: Path) -> dict:
         data = {}
         if allowed(path):
             try:
-                if path.stat().st_size <= MAX_PARSE_BYTES:
-                    value = json.loads(_strip_jsonc_comments(path.read_text(encoding="utf-8")))
+                if source_observations is None:
+                    text = path.read_text(encoding="utf-8") if path.stat().st_size <= MAX_PARSE_BYTES else None
+                else:
+                    captured = source_observations.get(path)
+                    text = captured.decode("utf-8") if isinstance(captured, bytes) and len(captured) <= MAX_PARSE_BYTES else None
+                if text is not None:
+                    value = json.loads(_strip_jsonc_comments(text))
                     if isinstance(value, dict):
                         data = value
             except (OSError, UnicodeError, ValueError, RecursionError):
@@ -856,8 +863,11 @@ def ts_path_config(root: Path) -> dict:
         for name in parents:
             if isinstance(name, str) and name.startswith("."):
                 candidate = path.parent / name
-                if allowed(candidate) and not candidate.is_file() and candidate.suffix != ".json":
-                    candidate = Path(str(candidate) + ".json")
+                if allowed(candidate) and candidate.suffix != ".json":
+                    is_file = (candidate.resolve() in source_observations if source_observations is not None
+                               else candidate.is_file())
+                    if not is_file:
+                        candidate = Path(str(candidate) + ".json")
                 if allowed(candidate):
                     merged.update(options(candidate, visiting | {path}))
         own = document.get("compilerOptions", {})
@@ -878,7 +888,17 @@ def ts_path_config(root: Path) -> dict:
         return merged
 
     package_paths = []
-    for directory, names in perimeter.walk():
+    if source_observations is None:
+        directories = perimeter.walk()
+    else:
+        observed_directories: dict[Path, set[str]] = {}
+        for path in source_observations:
+            if not isinstance(path, Path) or not path.is_absolute():
+                raise ValueError("configuration observations require absolute Path keys")
+            if allowed(path):
+                observed_directories.setdefault(path.parent, set()).add(path.name)
+        directories = sorted(observed_directories.items())
+    for directory, names in directories:
         if "tsconfig.json" in names:
             path = directory / "tsconfig.json"
             config["configs"][directory.as_posix()] = options(path, set())
