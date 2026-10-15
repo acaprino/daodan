@@ -240,15 +240,23 @@ class EngineImportTests(unittest.TestCase):
         manifest = snapshot.build_manifest(self.root)
         manifest["files"][".records/fake.py"] = {"imports": []}
         self.write(".gitignore", "generated/\n")
-        commands = []
+        reads = []
+        original_read = Path.read_bytes
 
-        def search(tool, symbols, files):
-            commands.append([path.relative_to(self.root).as_posix() for path in files])
-            return ""
+        def read_allowed(path):
+            if path.is_relative_to(self.root):
+                relative = path.relative_to(self.root).as_posix()
+                self.assertNotIn(relative, {"generated/fake.py", ".records/fake.py"})
+                reads.append(relative)
+            return original_read(path)
 
-        with mock.patch.object(usage_finder, "_search_output", side_effect=search):
+        with mock.patch.object(Path, "read_bytes", read_allowed):
             result = usage_finder.find_all_usages_batch(["Engine", "Engine"], source, self.root, manifest=manifest)
-        self.assertEqual(commands, [["main.py"]])
+        self.assertEqual(sorted(reads), ["core.py", "main.py"])
+        self.assertEqual([Path(usage.file_path).name for usage in result["Engine"].usages if usage.usage_type == "call"], ["main.py"])
+        self.assertEqual([Path(usage.file_path).name for usage in result["Engine"].usages if usage.usage_type == "import"], ["main.py"])
+        self.assertEqual(result["Engine"].resolved_count, 1)
+        self.assertEqual(result["Engine"].importing_modules, ["main.py"])
         self.assertEqual(list(result), ["Engine"])
 
     def test_usage_batch_resolves_the_shared_graph_once(self):
@@ -449,8 +457,9 @@ class EngineImportTests(unittest.TestCase):
         source = self.write("core.py", "class Engine: pass\ndef start(): pass\n")
         self.write("main.py", "from core import Engine, start\nEngine(); start()\n")
         manifest = snapshot.build_manifest(self.root)
+        observations = {"core.py": source.read_bytes()}
         observed = []
-        read = Path.read_text
+        read = Path.read_bytes
         run = subprocess.run
 
         def no_search_tool(command, *args, **kwargs):
@@ -459,11 +468,13 @@ class EngineImportTests(unittest.TestCase):
             return run(command, *args, **kwargs)
 
         def record(path, *args, **kwargs):
-            observed.append(path.name)
+            if path.is_relative_to(self.root):
+                observed.append(path.name)
             return read(path, *args, **kwargs)
 
-        with mock.patch.object(subprocess, "run", no_search_tool), mock.patch.object(Path, "read_text", record):
-            result = usage_finder.find_all_usages_batch(["Engine", "start"], source, self.root, manifest=manifest)
+        with mock.patch.object(subprocess, "run", no_search_tool), mock.patch.object(Path, "read_bytes", record):
+            result = usage_finder.find_all_usages_batch(["Engine", "start"], source, self.root,
+                                                       manifest=manifest, source_observations=observations)
         self.assertEqual(observed, ["main.py"])
         self.assertEqual(result["Engine"].importing_modules, ["main.py"])
         self.assertEqual(result["start"].importing_modules, ["main.py"])

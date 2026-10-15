@@ -31,6 +31,40 @@ from usage_finder import (
 __all__ = ["analyze_single_file", "format_as_markdown", "format_as_summary"]
 
 
+def _semantic_view(index: dict, relative_path: str, manifest: dict) -> dict:
+    """Expose source-bound call facts without operation-local source caches."""
+    declarations = [item for item in index["declarations"].values()
+                    if item["file"] == relative_path and item["kind"] in {"function", "class"}]
+    own_ids = {item["id"] for item in declarations}
+    calls = [item for item in index["references"] if item["kind"] == "call"]
+    outgoing = [item for item in calls if item["file"] == relative_path]
+    incoming = [item for item in calls
+                if item["file"] != relative_path and item["target_id"] in own_ids]
+    coverage_counts = {}
+    for entry in index["coverage"].values():
+        status = entry["status"]
+        coverage_counts[status] = coverage_counts.get(status, 0) + 1
+    return {
+        "coverage": index["coverage"].get(relative_path, {"status": "unavailable"}),
+        "project_coverage": coverage_counts,
+        "raw_hash": manifest["files"].get(relative_path, {}).get("raw_hash"),
+        "parser_fingerprint": manifest.get("parser_fingerprint"),
+        "declarations": declarations,
+        "callsites": outgoing,
+        "incoming_calls": incoming,
+        "counts": {
+            "callsites": len(outgoing),
+            "resolved_callsites": sum(item["resolution"] == "resolved" for item in outgoing),
+            "unresolved_callsites": sum(item["resolution"] != "resolved" for item in outgoing),
+            "incoming_calls": len(incoming),
+            "project_unresolved_calls": sum(item["resolution"] != "resolved" for item in calls),
+        },
+        "notes": ["Static bindings only; unknown receivers and ambiguous bindings have no asserted target.",
+                  "An empty incoming list does not establish that a declaration is unused.",
+                  "Application runtime coverage: none."],
+    }
+
+
 def analyze_single_file(
     file_path: Path,
     find_usages: bool = False,
@@ -75,12 +109,16 @@ def analyze_single_file(
         }
 
     from snapshot import build_manifest, resolved_imports
+    from dependency_graph import dependency_graph_metrics, transitive_importers
+    from semantic_index import build_semantic_index
 
     graph_target, _ = _resolve_project_root_and_paths(file_path, project_root)
+    source_observations = {}
     manifest = build_manifest(
         graph_target, parse_results={file_path.resolve(): (content, structure)},
+        source_observations=source_observations,
     )
-    import_bindings = resolved_imports(manifest)
+    import_bindings = resolved_imports(manifest, include_self=True)
     graph = {
         importer: sorted({target for targets in modules.values() for target in targets})
         for importer, modules in import_bindings.items()
@@ -92,7 +130,18 @@ def analyze_single_file(
     except ValueError:
         relative_path = ""
     imported_by_count = counts.get(relative_path, 0)
-    resolved_modules = import_bindings.get(relative_path, {})
+    resolved_modules = {
+        module: [target for target in targets if target != relative_path]
+        for module, targets in import_bindings.get(relative_path, {}).items()
+    }
+    semantic_index = build_semantic_index(
+        manifest, import_graph=import_bindings, source_observations=source_observations,
+    )
+    graph_metrics = dependency_graph_metrics(graph)
+    reverse_graph = {}
+    for importer, targets in graph.items():
+        for target in targets:
+            reverse_graph.setdefault(target, []).append(importer)
     classification = classify_from_content(
         content, str(file_path), imported_by_count=imported_by_count, parse_result=structure,
     )
@@ -126,17 +175,27 @@ def analyze_single_file(
 
         batch_results = find_all_usages_batch(
             valid_targets, file_path, graph_target, manifest=manifest,
+            source_observations=source_observations, semantic_index=semantic_index,
         )
         for target in valid_targets:
             usage_result = batch_results[target]
             usages[target] = {
                 "count": len(usage_result.usages),
+                "resolved_count": usage_result.resolved_count,
+                "ast_candidate_count": usage_result.ast_candidate_count,
+                "lexical_candidate_count": usage_result.lexical_candidate_count,
+                "precision": usage_result.precision,
                 "importing_modules": usage_result.importing_modules,
                 "sample_usages": [
                     {
                         "file": u.file_path,
                         "line": u.line_number,
                         "type": u.usage_type,
+                        "precision": u.precision,
+                        "span": u.span,
+                        "caller": u.caller,
+                        "target_id": u.target_id,
+                        "reason": u.reason,
                     }
                     for u in usage_result.usages[:5]
                 ],
@@ -148,6 +207,17 @@ def analyze_single_file(
         "language": structure.language,
         "parser_notes": structure.notes,
         "imported_by_count": imported_by_count,
+        "semantic_analysis": _semantic_view(semantic_index, relative_path, manifest),
+        "dependency_graph": {
+            "nodes": len(graph_metrics["nodes"]),
+            "edges": len(graph_metrics["edges"]),
+            "import_cycles": [cycle for cycle in graph_metrics["import_cycles"] if relative_path in cycle],
+            "project_cycle_count": len(graph_metrics["import_cycles"]),
+            "transitive_importers": transitive_importers(reverse_graph, [relative_path]),
+            "pagerank": graph_metrics["pagerank"].get(relative_path, 0.0),
+            **{key: value for key, value in graph_metrics.items() if key.startswith("pagerank_")},
+            "interpretation": "Static import reachability and centrality; no runtime propagation or criticality claim.",
+        },
         "classification": {
             "level": classification.classification.value,
             "lines_of_code": classification.lines_of_code,
@@ -250,6 +320,22 @@ def format_as_markdown(analysis: dict[str, Any]) -> str:
     lines.append(f"- **Reasoning:** {cls['reasoning']}")
     lines.append("")
 
+    semantic = analysis.get("semantic_analysis")
+    if semantic:
+        counts = semantic["counts"]
+        lines += ["## Static call bindings", "",
+                  f"Coverage: {semantic['coverage']['status']}. "
+                  f"Recorded callsites: {counts['callsites']}; resolved: {counts['resolved_callsites']}; "
+                  f"unresolved: {counts['unresolved_callsites']}.",
+                  f"Resolved incoming calls: {counts['incoming_calls']}. "
+                  "An empty incoming list does not establish that a declaration is unused.", ""]
+    graph = analysis.get("dependency_graph")
+    if graph:
+        lines += ["## Import graph diagnostics", "",
+                  f"Cycles containing this file: {len(graph['import_cycles'])}. "
+                  f"Transitive importing files: {len(graph['transitive_importers'])}.",
+                  "Reachability describes static imports. It does not change the one-hop update recommendation.", ""]
+
     # Structure - Classes (and class-like: interface, enum, type-alias, package, table...)
     if analysis["structure"]["classes"]:
         lines.append("## Classes / Types")
@@ -329,6 +415,13 @@ def format_as_markdown(analysis: dict[str, Any]) -> str:
                 continue
             lines.append(f"### `{symbol}` ({usage_data['count']} usages)")
             lines.append("")
+            if "resolved_count" in usage_data:
+                lines.append(
+                    f"Resolved: {usage_data['resolved_count']}; "
+                    f"AST candidates: {usage_data['ast_candidate_count']}; "
+                    f"lexical candidates: {usage_data['lexical_candidate_count']}."
+                )
+                lines.append("")
             if usage_data["importing_modules"]:
                 lines.append("**Imported by:**")
                 for mod in usage_data["importing_modules"][:5]:
@@ -366,6 +459,12 @@ def format_as_summary(analysis: dict[str, Any]) -> str:
         f"Exported: {', '.join(struct['exported_symbols'][:5])}{'...' if len(struct['exported_symbols']) > 5 else ''}",
         f"Internal deps: {len(analysis['dependencies']['internal'])} | External deps: {len(analysis['dependencies']['external'])}",
     ]
+
+    semantic = analysis.get("semantic_analysis")
+    if semantic:
+        counts = semantic["counts"]
+        lines.append(f"Static calls ({semantic['coverage']['status']}): "
+                     f"{counts['resolved_callsites']} resolved, {counts['unresolved_callsites']} unresolved")
 
     if cls["verification_required"]:
         lines.append("*** VERIFICATION REQUIRED ***")

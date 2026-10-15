@@ -21,6 +21,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_python_comments
+from .semantic import python_semantics
 
 __all__ = ["adapter"]
 
@@ -409,6 +410,13 @@ class _PythonAdapter:
         visitor = _CallVisitor(content.split("\n"))
         visitor.visit(tree)
 
+        semantic = None
+        notes = ["parser=stdlib-ast"]
+        try:
+            semantic = python_semantics(tree)
+        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+
         return ParseResult(
             file_path=file_path,
             language=self.language,
@@ -418,7 +426,8 @@ class _PythonAdapter:
             constants=_find_constants(tree),
             external_calls=visitor.calls,
             exported_symbols=_find_exported(tree),
-            notes=["parser=stdlib-ast"],
+            notes=notes,
+            semantic=semantic,
         )
 
     def count_imports(self, content: str) -> int:

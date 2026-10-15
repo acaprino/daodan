@@ -178,6 +178,9 @@ class ParseResult:
     # Named declaration or local identifier exported as default. Anonymous
     # expressions and unresolved re-exports retain None.
     default_export: str | None = None
+    # Additive syntax evidence from the existing native tree. Regex or invalid
+    # syntax cannot supply authoritative lexical bindings or reference spans.
+    semantic: dict | None = None
 
 
 @runtime_checkable

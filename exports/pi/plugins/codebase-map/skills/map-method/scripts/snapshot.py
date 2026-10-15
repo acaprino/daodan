@@ -194,7 +194,8 @@ def parser_fingerprint() -> str:
     """
     digest = hashlib.sha256()
     helpers = [SCRIPT_DIR / name for name in
-               ("snapshot.py", "ast_parser.py", "tree_scope.py", "source_reader.py")]
+               ("snapshot.py", "ast_parser.py", "tree_scope.py", "source_reader.py",
+                "semantic_index.py", "dependency_graph.py")]
     helpers += sorted((SCRIPT_DIR / "languages").rglob("*.py"))
     for helper in helpers:
         if helper.is_file():
@@ -398,6 +399,11 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
         ]
         if getattr(result, "default_export", None):
             entry["default_export"] = result.default_export
+        # Semantic facts belong to these exact bytes and the same parser
+        # identity. A damaged parse cannot certify complete reference coverage.
+        semantic = getattr(result, "semantic", None)
+        if entry["status"] == "parsed" and isinstance(semantic, dict):
+            entry["semantic"] = copy.deepcopy(semantic)
         if result.language == "css" and max((len(text) for text in lines), default=0) > MAX_STYLESHEET_LINE:
             entry["status"] = "file-level"
             entry["parser_notes"].append("minified stylesheet; precise rule selection disabled")
@@ -430,14 +436,19 @@ def scope_record(perimeter: Perimeter, root: Path) -> dict:
     }
 
 
-def build_manifest(target: Path, previous: dict | None = None, *, parse_results: dict | None = None) -> dict:
+def build_manifest(target: Path, previous: dict | None = None, *, parse_results: dict | None = None,
+                   source_observations: dict | None = None) -> dict:
     """Snapshot the current perimeter; reuse structure only for verified bytes.
 
     A reuse candidate saves parsing, not inventory traversal or hashing. Legacy
     manifests and a different helper identity/root/target cause a fresh parse.
+    An optional output dictionary receives the already-read bytes by relative
+    path, for consumers that verify semantic evidence without reading again.
     """
     if previous is not None:
         validate_reuse_manifest(previous)
+    if source_observations is not None:
+        source_observations.clear()
     target = target.resolve()
     if not (target.is_dir() or target.is_file()):
         raise ValueError(f"snapshot target does not exist: {target}")
@@ -474,6 +485,8 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
             if len(data) > MAX_FILE_BYTES:
                 continue
             rel = relative_to_root(path, root)
+            if source_observations is not None:
+                source_observations[rel] = data
             mtime = round(st.st_mtime, 3)
             old = old_files.get(rel)
             raw_hash = hashlib.sha256(data).hexdigest()
@@ -981,7 +994,8 @@ def _python_module_candidates(module: str, home: Path, target: Path) -> list[str
             for directory in (base, base / "src")]
 
 
-def resolved_imports(manifest: dict, config: dict | None = None) -> dict[str, dict[str, list[str]]]:
+def resolved_imports(manifest: dict, config: dict | None = None, *,
+                     include_self: bool = False) -> dict[str, dict[str, list[str]]]:
     """Resolve each manifest specifier once, keeping its binding provenance.
 
     JS/TS paths match only explicit relative, configured or workspace targets.
@@ -1035,11 +1049,11 @@ def resolved_imports(manifest: dict, config: dict | None = None) -> dict[str, di
                     candidates += _package_candidates(module, config.get("packages", {}))
             else:
                 hit = resolve_module(module, importer, known)
-                if hit and hit != importer:
+                if hit and (include_self or hit != importer):
                     resolved.add(hit)
             for candidate in candidates:
                 hit = lookup(candidate, importer)
-                if hit and hit != importer:
+                if hit and (include_self or hit != importer):
                     resolved.add(hit)
                     # Paths entries are ordered fallbacks, not multiple edges.
                     break
@@ -1051,7 +1065,7 @@ def resolved_imports(manifest: dict, config: dict | None = None) -> dict[str, di
                                 continue
                             for candidate in candidates:
                                 hit = lookup(candidate.rstrip("/") + "/" + name, importer)
-                                if hit and hit != importer:
+                                if hit and (include_self or hit != importer):
                                     resolved.add(hit)
                                     break
             modules[module] = sorted(resolved)
@@ -1059,10 +1073,11 @@ def resolved_imports(manifest: dict, config: dict | None = None) -> dict[str, di
     return graph
 
 
-def module_targets(manifest: dict, config: dict | None = None) -> dict[str, list[str]]:
+def module_targets(manifest: dict, config: dict | None = None, *,
+                   include_self: bool = False) -> dict[str, list[str]]:
     """The distinct internal targets of every importer, in a stable order."""
     return {importer: sorted({target for targets in modules.values() for target in targets})
-            for importer, modules in resolved_imports(manifest, config).items()}
+            for importer, modules in resolved_imports(manifest, config, include_self=include_self).items()}
 
 
 def resolve_module(
@@ -1129,7 +1144,7 @@ def build_import_index(manifest: dict, comparison: dict, symbols: dict) -> dict[
         rel: {**old_files.get(rel, {}), **fresh.get(rel, {}), "imports": current_imports.get(rel, [])}
         for rel in resolvable
     }}
-    graph = module_targets(graph_manifest)
+    graph = module_targets(graph_manifest, include_self=True)
     index: dict[str, list[str]] = {}
     for importer in current_imports:
         for imported in graph[importer]:
@@ -1392,6 +1407,23 @@ def _changes_markdown(changes: dict) -> str:
         ]
     else:
         lines.append("No file imports anything that changed.")
+    if "transitive_importers" in changes:
+        reachable = changes["transitive_importers"]
+        cycles = changes.get("import_cycles", [])
+        lines += ["", "## Transitive import diagnostics", "",
+                  "Static reachability is separate from the one-hop blast radius and update recommendation.",
+                  f"Reachable importing files: {len(reachable)}. Cycle components: {len(cycles)}.", ""]
+        if reachable:
+            lines += ["| File | Shortest hops | Via | Seed |", "|---|---:|---|---|"]
+            lines += [f"| `{_cell(item['file'])}` | {item['depth']} | `{_cell(item['via'])}` | `{_cell(item['seed'])}` |"
+                      for item in reachable[:50]]
+            if len(reachable) > 50:
+                lines += ["", f"Showing 50 of {len(reachable)} importers; changes.json contains every record."]
+            lines.append("")
+        for component in cycles[:20]:
+            lines.append("- Cycle component: " + ", ".join(f"`{_cell(path)}`" for path in component))
+        if len(cycles) > 20:
+            lines.append(f"Showing 20 of {len(cycles)} components; changes.json contains every component.")
     lines += ["", "## Affected claims", ""]
     if changes["claims"]:
         lines += ["| Phase file | Line | Section | Cites | Reason |", "|---|---|---|---|---|"]
@@ -1440,6 +1472,16 @@ def cmd_diff(args: argparse.Namespace) -> int:
     symbols = compare_symbols(manifest, comparison)
     index = build_import_index(manifest, comparison, symbols)
     importers = blast_radius(index, comparison, symbols)
+    from dependency_graph import dependency_graph_metrics, transitive_importers
+
+    diagnostic_graph = {rel: [] for rel in comparison["current"]}
+    for dependency, importing_files in index.items():
+        diagnostic_graph.setdefault(dependency, [])
+        for importer in importing_files:
+            diagnostic_graph.setdefault(importer, []).append(dependency)
+    graph_metrics = dependency_graph_metrics(diagnostic_graph)
+    diagnostic_seeds = sorted(set(comparison["added"]) | set(comparison["removed"]) | set(comparison["modified"]))
+    reachable_importers = transitive_importers(index, diagnostic_seeds)
     claims = scan_claims(parent_dir, comparison, symbols, importers) if manifest.get("files") else []
 
     affected_files = sorted(
@@ -1473,6 +1515,16 @@ def cmd_diff(args: argparse.Namespace) -> int:
         },
         "renumber": symbols["renumber"],
         "importers": importers,
+        "import_cycles": graph_metrics["import_cycles"],
+        "transitive_importers": reachable_importers,
+        "transitive_seeds": diagnostic_seeds,
+        "dependency_graph": {
+            "nodes": len(graph_metrics["nodes"]),
+            "edges": len(graph_metrics["edges"]),
+            "pagerank": graph_metrics["pagerank"],
+            **{key: value for key, value in graph_metrics.items() if key.startswith("pagerank_")},
+            "interpretation": "Static import reachability and centrality; the one-hop recommendation is unchanged.",
+        },
         "affected_files": affected_files,
         "claims": claims,
         "totals": {

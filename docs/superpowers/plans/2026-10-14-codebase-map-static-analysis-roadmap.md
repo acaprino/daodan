@@ -97,16 +97,23 @@ host execution. All five generated packages must reproduce, repository linters
 and documentation parity must pass, versions must increase, and an independent
 review must resolve material findings before publication. Preserve foreign edits.
 
-## Future phases, outside this change
+## Follow-on phases
 
-### Step 6: Multi-hop dependency centrality (PageRank / k-core) & cycle detection
+### Step 6: Portable references and import graph diagnostics
 
-**Why:** Step 4 added direct 1-hop fan-in (`imported_by_count`). A utility imported by 1 file that is itself imported by 50 files has high transitive impact. Computing a lightweight stdlib power-iteration PageRank and Tarjan strongly-connected-components (SCC) cycle detector over `manifest.json`'s import graph will surface transitive bottlenecks and circular dependencies automatically for Phase 1 (`01-structure.md`) and Phase 5 (`05-risks.md`).
+The [portable semantic increment](2026-10-15-codebase-map-portable-semantics.md)
+implements source-bound Python and native JS/TS references and callsite positions,
+conservative direct declaration links, iterative strongly connected cycle
+components, reverse import reachability and stdlib PageRank. It reuses the parsed
+trees and resolved import graph. Parameters and convergence remain visible;
+centrality does not automatically establish product criticality or runtime impact.
 
-Planned tasks:
-- [ ] Add `dependency_graph_metrics(manifest)` in `snapshot.py` or `classifier.py` using pure Python stdlib (power-iteration PageRank, 15 iterations, damping 0.85, plus Tarjan SCC for import cycles).
-- [ ] Include `pagerank` and `import_cycles` in `classifier.py` directory summary and `snapshot.py` analysis metadata.
-- [ ] Add deterministic graph-metric tests in `tests/test_xray_snapshot.py`.
+The implemented owner is `dependency_graph.py`, not a second classifier score.
+File and change reports expose the diagnostics while retaining the existing
+one-hop affected-file and recommendation rules. K-core, host-native graph
+integration, embedding retrieval and compiler type inference remain outside this
+increment. Native syntax metadata has a measured size and extraction-time cost,
+documented with its sample limitations in the new plan and engine documentation.
 
 ### Step 7: Additional `tree-sitter` language adapters (Go, C#, Kotlin, PHP, Ruby)
 

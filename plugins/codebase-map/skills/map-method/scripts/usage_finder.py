@@ -9,10 +9,12 @@ Finds where symbols are used across the codebase. Multi-language:
   JS/TS `import`/`require`; Rust, SQL/PL-SQL and stylesheets have no import
   pattern, so only raw usages are reported for them). Markup (.vue, .svelte,
   .html, .htm) is searched for raw usages too, because it applies CSS classes.
-- Inheritance / call detection uses language-agnostic heuristics that work
-  reasonably across the targeted set.
+- Batch searches use source-bound Python and native JS/TS AST references and
+  conservative static bindings. Other backends retain labelled lexical
+  candidates with heuristic import, inheritance and call classifications.
 
-Uses ripgrep when available, then grep, then a pure-Python rglob fallback.
+Standalone lexical search uses ripgrep, then grep, then a bounded Python scan.
+Batch analysis shares verified source observations and one import graph.
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ import logging
 import os
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 __all__ = [
@@ -118,6 +120,14 @@ class UsageLocation:
     line_number: int
     line_content: str
     usage_type: str  # "import", "call", "inheritance", "reference"
+    precision: str = "lexical-candidate"
+    column: int | None = None
+    end_line: int | None = None
+    end_column: int | None = None
+    span: list[int] | None = None
+    caller: str | None = None
+    target_id: str | None = None
+    reason: str | None = None
 
 
 @dataclass
@@ -126,6 +136,12 @@ class UsageResult:
     source_file: str
     usages: list[UsageLocation]
     importing_modules: list[str]
+    resolved_count: int = 0
+    ast_candidate_count: int = 0
+    lexical_candidate_count: int = 0
+    precision: str = "lexical"
+    coverage: dict = field(default_factory=dict)
+    notes: list[str] = field(default_factory=list)
 
 
 def _classify_usage(line: str, symbol: str) -> str:
@@ -314,22 +330,8 @@ def _candidate_importer_files(
             if path.suffix.lower() in SOURCE_EXTENSIONS and perimeter.covers(path)]
 
 
-def find_importing_modules(
-    symbol: str,
-    source_module: str,
-    search_paths: list[Path],
-) -> list[str]:
-    """
-    Find files that import a specific symbol. Recognizes:
-
-    - Python:     `from <mod> import ... <symbol> ...`, `import <mod>`
-    - Java:       `import <mod>.<symbol>`, `import static <mod>.<symbol>`
-    - JS / TS:    `import { <symbol> } from '<mod>'`, `import <symbol> from '<mod>'`,
-                  `const { <symbol> } = require('<mod>')`
-    """
-    importing: list[str] = []
-    seen: set[str] = set()
-
+def _import_patterns(symbol: str, source_module: str) -> list[re.Pattern]:
+    """The legacy lexical import patterns shared by bounded readers."""
     py_patterns = [
         rf"from\s+{re.escape(source_module)}\s+import\s+.*\b{re.escape(symbol)}\b",
         rf"from\s+{re.escape(source_module)}\s+import\s+\*",
@@ -343,7 +345,18 @@ def find_importing_modules(
         rf"\bimport\b[^;]*\b{re.escape(symbol)}\b[^;]*from\s+['\"]{re.escape(source_module)}['\"]",
         rf"\brequire\(['\"]{re.escape(source_module)}['\"]\)",
     ]
-    all_patterns = [re.compile(p) for p in (py_patterns + java_patterns + js_patterns)]
+    return [re.compile(p) for p in (py_patterns + java_patterns + js_patterns)]
+
+
+def find_importing_modules(
+    symbol: str,
+    source_module: str,
+    search_paths: list[Path],
+) -> list[str]:
+    """Find lexical Python, Java and JS import candidates in the current perimeter."""
+    importing: list[str] = []
+    seen: set[str] = set()
+    all_patterns = _import_patterns(symbol, source_module)
 
     for search_path in search_paths:
         if not search_path.exists():
@@ -435,7 +448,8 @@ def find_all_usages(
 
 
 def _graph_importing_modules(symbols: list[str], source_file: Path,
-                             project_root: Path, manifest: dict | None) -> dict[str, list[str]]:
+                             project_root: Path, manifest: dict | None,
+                             *, import_graph: dict | None = None) -> dict[str, list[str]]:
     """Match all requested bindings in one graph and one importer pass."""
     from snapshot import _python_module_candidates, build_manifest, resolved_imports
 
@@ -443,13 +457,15 @@ def _graph_importing_modules(symbols: list[str], source_file: Path,
     root = Path(manifest["root"])
     target = (root / (manifest.get("target") or ".")).resolve()
     source = source_file.resolve()
-    graph = resolved_imports(manifest)
+    graph = resolved_imports(manifest) if import_graph is None else import_graph
     source_key = next((rel for rel in manifest["files"] if (root / rel).resolve() == source), None)
     importing = {symbol: [] for symbol in symbols}
     if source_key is None:
         return importing
     default_export = manifest["files"][source_key].get("default_export")
     for rel, modules in graph.items():
+        if rel == source_key:
+            continue
         if not any(source_key in targets for targets in modules.values()):
             continue
         entry = manifest["files"][rel]
@@ -493,11 +509,14 @@ def find_all_usages_batch(
     symbols: list[str],
     source_file: Path,
     project_root: Path | None = None,
-    *, manifest: dict | None = None,
+    *, manifest: dict | None = None, source_observations: dict | None = None,
+    semantic_index: dict | None = None,
 ) -> dict[str, UsageResult]:
     """
-    Find usages for multiple symbols with one graph and one batched search.
-    Every search backend receives only the current allowed source inventory.
+    Inspect every AST reference, including renamed calls absent from text search.
+    Unsupported files retain explicitly lexical candidates from verified cached
+    reads. Static bindings, unresolved AST candidates and lexical matches have
+    separate counts. None of these claims runtime execution.
     """
     valid_symbols: list[str] = []
     seen_sym: set[str] = set()
@@ -513,69 +532,122 @@ def find_all_usages_batch(
     if not valid_symbols:
         return {}
 
-    project_root, search_paths = _resolve_project_root_and_paths(source_file, project_root)
-    source_module = _source_module_for(source_file, project_root)
+    project_root, _ = _resolve_project_root_and_paths(source_file, project_root)
     graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
-    if graph_language and manifest is None:
+    if manifest is None:
         from snapshot import build_manifest
-        manifest = build_manifest(project_root)
-    if manifest is not None:
-        inventory_root = Path(manifest["root"])
-        inventory_target = (inventory_root / (manifest.get("target") or ".")).resolve()
-        base = inventory_target if inventory_target.is_dir() else inventory_target.parent
-        perimeter = Perimeter(inventory_target)
-        from snapshot import is_forbidden
+        source_observations = {} if source_observations is None else source_observations
+        manifest = build_manifest(project_root, source_observations=source_observations)
+    from semantic_index import _index_reusable, build_semantic_index
 
-        files = [inventory_root / rel for rel in manifest["files"]
-                 if Path(rel).suffix.lower() in SEARCH_EXTENSIONS
-                 and (inventory_root / rel).resolve().is_relative_to(base)
-                 and (inventory_target.is_dir() or (inventory_root / rel).resolve() == inventory_target)
-                 and perimeter.covers(inventory_root / rel)
-                 and not is_forbidden(Path(rel).name)
-                 and not is_excluded(inventory_root / rel, DEFAULT_EXCLUDES)]
-    else:
-        files = list(dict.fromkeys(path for search_path in search_paths
-                                   for path in _searchable_files(search_path, list(DEFAULT_EXCLUDES))))
-    files = [path for path in files if not _is_same_file(str(path), source_file)]
-
-    # Attempt a single batched ripgrep pass across all symbols.
+    # A prebuilt index is reusable within the same observed-source operation.
+    # Without observations, validate live bytes once rather than trusting an
+    # arbitrarily old in-memory index and its cached text.
+    if not _index_reusable(semantic_index, manifest, source_observations):
+        semantic_index = build_semantic_index(manifest,
+                                              source_observations=source_observations)
+    root = Path(manifest["root"])
+    source_key = next((rel for rel in manifest["files"] if _is_same_file(str(root / rel), source_file)), None)
+    text = semantic_index.get("_source_text", {})
+    coverage = semantic_index["coverage"]
+    lines = {rel: content.splitlines() for rel, content in text.items()}
+    searched = {rel for rel in text if Path(rel).suffix.lower() in SEARCH_EXTENSIONS
+                and not _is_same_file(str(root / rel), source_file)
+                and not is_excluded(root / rel, DEFAULT_EXCLUDES)}
     by_symbol: dict[str, list[UsageLocation]] = {s: [] for s in valid_symbols}
-    output = _search_output("rg", valid_symbols, files)
-    if output is None:
-        output = _search_output("grep", valid_symbols, files)
-    if output is None:
-        by_symbol = _python_search_batch(valid_symbols, files)
-    else:
-        for raw_line in output.splitlines():
-            parsed = _split_grep_line(raw_line.rstrip("\r"))
-            if parsed is None:
+    declarations = semantic_index["declarations"]
+    target_ids = {symbol: {identity for identity, item in declarations.items()
+                          if item["file"] == source_key and item["name"] == symbol
+                          and item["kind"] in {"function", "class"}}
+                  for symbol in valid_symbols}
+    exported_names = {symbol: {symbol} for symbol in valid_symbols}
+    if source_key is not None and coverage.get(source_key, {}).get("status") == "ast":
+        for exported in manifest["files"][source_key]["semantic"]["exports"]:
+            if not exported.get("module") and exported.get("local") in exported_names:
+                exported_names[exported["local"]].add(exported["exported"])
+    for reference in semantic_index["references"]:
+        rel = reference["file"]
+        if rel not in searched:
+            continue
+        for symbol in valid_symbols:
+            resolved = reference["target_id"] in target_ids[symbol]
+            if reference["resolution"] == "resolved" and not resolved:
                 continue
-            fpath, line_no_str, raw_content = parsed
-            try:
-                line_num = int(line_no_str)
-            except ValueError:
+            candidate = (not reference.get("known_unrelated") and reference["resolution"] != "resolved"
+                         and ((source_key in reference.get("candidate_files", [])
+                               and reference.get("imported_name") in {symbol, "default"})
+                              or any(source_key in item["files"] and item["imported"] in {symbol, "default"}
+                                     for item in reference.get("candidate_bindings", []))
+                              or (not reference.get("candidate_files") and reference["parts"]
+                                  and reference["parts"][-1] == symbol)))
+            if not resolved and not candidate:
                 continue
-            if _is_same_file(fpath, source_file):
-                continue
-            content_stripped = raw_content.strip()
-            for sym in valid_symbols:
-                if sym in content_stripped:
-                    by_symbol[sym].append(UsageLocation(
-                        file_path=fpath, line_number=line_num, line_content=content_stripped,
-                        usage_type=_classify_usage(content_stripped, sym),
-                    ))
+            start_line, column, end_line, end_column = reference["span"]
+            content = lines[rel][start_line - 1].strip() if start_line <= len(lines[rel]) else ""
+            by_symbol[symbol].append(UsageLocation(
+                file_path=str(root / rel), line_number=start_line, line_content=content,
+                usage_type="call" if reference["kind"] == "call" else "reference",
+                precision="resolved-static" if resolved else "ast-candidate", column=column,
+                end_line=end_line, end_column=end_column, span=reference["span"], caller=reference["caller"],
+                target_id=reference["target_id"], reason=reference["reason"]))
+    for rel in sorted(searched):
+        if coverage[rel]["status"] == "ast":
+            modules = semantic_index["_import_graph"].get(rel, {})
+            for imported in manifest["files"][rel]["semantic"]["imports"]:
+                if source_key not in modules.get(imported["module"], []):
+                    continue
+                for symbol in valid_symbols:
+                    relevant = (imported["mode"] == "namespace"
+                                or (imported["mode"] == "named" and imported["imported"] in exported_names[symbol])
+                                or (imported["mode"] == "default" and "default" in exported_names[symbol]))
+                    if not relevant:
+                        continue
+                    start_line, column, end_line, end_column = imported["span"]
+                    content = lines[rel][start_line - 1].strip() if start_line <= len(lines[rel]) else ""
+                    by_symbol[symbol].append(UsageLocation(
+                        file_path=str(root / rel), line_number=start_line, line_content=content,
+                        usage_type="import", precision="ast-candidate", column=column,
+                        end_line=end_line, end_column=end_column, span=imported["span"],
+                        reason="import-binding-not-call"))
+            continue
+        for number, line in enumerate(lines[rel], 1):
+            for symbol in valid_symbols:
+                if symbol in line:
+                    by_symbol[symbol].append(UsageLocation(
+                        file_path=str(root / rel), line_number=number, line_content=line.strip(),
+                        usage_type=_classify_usage(line, symbol), precision="lexical-candidate",
+                        reason=coverage[rel].get("reason")))
 
     if graph_language:
-        importing = _graph_importing_modules(valid_symbols, source_file, project_root, manifest)
+        importing = _graph_importing_modules(valid_symbols, source_file, project_root, manifest,
+                                             import_graph=semantic_index["_import_graph"])
     else:
-        importing = {sym: find_importing_modules(sym, source_module, search_paths) for sym in valid_symbols}
+        # Import declarations remain a separate legacy fact. Reuse the cached
+        # permitted reads rather than opening every source once per symbol.
+        source_module = _source_module_for(source_file, project_root)
+        importing = {sym: [] for sym in valid_symbols}
+        for sym in valid_symbols:
+            patterns = _import_patterns(sym, source_module)
+            for rel in sorted(searched):
+                if Path(rel).suffix.lower() in SOURCE_EXTENSIONS and any(p.search(text[rel]) for p in patterns):
+                    importing[sym].append(rel)
+
+    ast_files = sum(coverage[rel]["status"] == "ast" for rel in searched)
+    lexical_files = len(searched) - ast_files
+    precision = "ast-and-lexical" if ast_files and lexical_files else "ast" if ast_files else "lexical"
 
     return {
         sym: UsageResult(
             symbol=sym,
             source_file=str(source_file),
-            usages=by_symbol[sym],
+            usages=sorted(by_symbol[sym], key=lambda usage: (usage.file_path, usage.line_number, usage.column or 0)),
             importing_modules=importing[sym],
+            resolved_count=sum(u.precision == "resolved-static" for u in by_symbol[sym]),
+            ast_candidate_count=sum(u.precision == "ast-candidate" for u in by_symbol[sym]),
+            lexical_candidate_count=sum(u.precision == "lexical-candidate" for u in by_symbol[sym]),
+            precision=precision, coverage=coverage,
+            notes=["Resolved static bindings, unresolved AST candidates and lexical matches are separate evidence.",
+                   *semantic_index["notes"]],
         )
         for sym in valid_symbols
     }
@@ -598,15 +670,28 @@ if __name__ == "__main__":
         "symbol": result.symbol,
         "source_file": result.source_file,
         "usage_count": len(result.usages),
+        "usage_count_meaning": "Total includes candidates; see the separate precision counts.",
+        "precision": result.precision,
+        "resolved_count": result.resolved_count,
+        "ast_candidate_count": result.ast_candidate_count,
+        "lexical_candidate_count": result.lexical_candidate_count,
         "usages": [
             {
                 "file": u.file_path,
                 "line": u.line_number,
                 "type": u.usage_type,
                 "content": u.line_content[:100],
+                "precision": u.precision,
+                "span": u.span,
+                "caller": u.caller,
+                "target_id": u.target_id,
+                "reason": u.reason,
             }
             for u in result.usages[:20]
         ],
         "importing_modules": result.importing_modules,
+        "coverage": {status: sum(item["status"] == status for item in result.coverage.values())
+                     for status in sorted({item["status"] for item in result.coverage.values()})},
+        "notes": result.notes,
     }
     print(json.dumps(output, indent=2))

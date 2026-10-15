@@ -29,6 +29,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .semantic import javascript_semantics
 
 __all__ = ["adapter"]
 
@@ -440,6 +441,13 @@ def _ts_parse(
     if syn_err is not None:
         notes.append(syn_err)
 
+    semantic = None
+    if not tree.root_node.has_error:
+        try:
+            semantic = javascript_semantics(tree.root_node, src, language)
+        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+
     return ParseResult(
         file_path="",
         language=language,
@@ -451,6 +459,7 @@ def _ts_parse(
         exported_symbols=list(dict.fromkeys(exported)),
         notes=notes,
         default_export=default_export,
+        semantic=semantic,
     )
 
 
