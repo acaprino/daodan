@@ -30,9 +30,9 @@ Map structure, purpose, integrations, consequences.
 ## How This Skill Is Invoked
 
 `/codebase-map:analyze` dispatches isolated `codebase-map:map-analyst`;
-`/codebase-map:team-analyze` uses isolated partition workers. Their entries own
+`/codebase-map:team-analyze` uses isolated partition workers. Entries own
 `.codebase-map/` publication (`references/run.md`).
-Loading `codebase-map:map-method` alone starts no analysis or run.
+Loading `codebase-map:map-method` starts no analysis or run.
 
 ## Load map
 
@@ -54,7 +54,7 @@ Loading `codebase-map:map-method` alone starts no analysis or run.
 
 - Forbidden files: `references/evidence.md`.
 - Consuming a bound analysis: `references/reading.md`, plus `references/evidence.md` before Maintained documentation for source. For durable-document verification, read its Maintained documentation section. Snapshot verification/refresh uses `references/snapshot.md` before Prerequisites.
-- Run analyses through `codebase-map:analyze`; composed callers declare isolated `codebase-map/map-analyst`. Loading this skill starts none.
+- Run analyses through `codebase-map:analyze`; composed callers declare isolated `codebase-map/map-analyst`.
 
 ## Team bindings
 
@@ -77,23 +77,19 @@ Conditional reads: methodology, patterns, comments; migration for legacy roots, 
 
 ## Resources
 
-- **Scripts**: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/` - analysis tools (Python >= 3.10 runtime, multi-language targets)
-  - `ast_parser.py` - structural extraction dispatcher
-  - `analyze_file.py` - per-file CLI (classification + structure + usages)
-  - `classifier.py` - language-aware criticality classifier
-  - `usage_finder.py` - cross-file symbol usage finder (multi-language extensions)
-  - `comment_rewriter.py` - multi-language comment analysis engine
-  - `rewrite_comments.py` - comment quality CLI (scan / analyze / rewrite / report)
-  - `doc_review.py` - documentation maintenance (Phase 6)
-  - `migrate_root.py` - project-bound legacy root migration and historical path resolution
-  - `snapshot.py` - scope count, structural snapshots and incremental change sets
-  - `source_reader.py` - snapshot outline and validated source blocks with shared context
-  - `tree_scope.py` - shared Git, dot-directory and dependency/build perimeter
-  - `cascade_scan.py` - global stylesheet layout risks, cascade override candidates and screen rules (Phase 5)
-  - `languages/` - per-language adapters (Python `ast`, Java/JS/TS/Rust via tree-sitter or regex, SQL/PL-SQL regex, CSS/SCSS/LESS stdlib tokenizer)
-    - `base.py` - shared dataclasses + `LanguageAdapter` Protocol
-    - `__init__.py` - extension dispatch (`detect_language`, `get_adapter`)
-    - `comments.py` - per-language comment lexer (includes rustdoc post-processor)
-    - `_treesitter.py` - optional tree-sitter loader with fallbacks
-    - `python.py`, `java.py`, `javascript.py`, `typescript.py`, `sql.py`, `plsql.py`, `rust.py`, `stylesheet.py`
-  - `requirements.txt` - optional dependencies (tree-sitter + tree-sitter-language-pack)
+Scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/` (Python >= 3.10; multi-language targets).
+
+- `ast_parser.py`: structural extraction dispatcher.
+- `analyze_file.py`: per-file CLI for classification, structure and usages.
+- `classifier.py`: language-aware criticality classification.
+- `usage_finder.py`: cross-file symbol usages across supported extensions.
+- `comment_rewriter.py`: multi-language comment analysis engine.
+- `rewrite_comments.py`: comment quality CLI: scan/analyze/rewrite/report.
+- `doc_review.py`: documentation maintenance (Phase 6).
+- `migrate_root.py`: project-bound legacy migration and historical path resolution.
+- `snapshot.py`: scope counts, structural snapshots and incremental change sets.
+- `source_reader.py`: snapshot outline and validated source blocks with shared context.
+- `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
+- `cascade_scan.py`: global stylesheet layout risks, cascade override candidates and screen rules (Phase 5).
+- `languages/`: per-language adapters using the Language Support methods.
+- `requirements.txt`: optional tree-sitter and tree-sitter-language-pack dependencies.

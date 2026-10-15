@@ -20,7 +20,7 @@ PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
 METHOD = PLUGIN / "skills" / "map-method"
 
 UNIT_BUDGETS = {
-    "SKILL.md": 916,
+    "SKILL.md": 835,
     "references/run.md": 1_216,
     "references/snapshot.md": 1_411,
     "references/update.md": 858,
@@ -34,15 +34,15 @@ UNIT_BUDGETS = {
 }
 
 BUDGETS = {
-    "workflows/analyze.md": 5_000,
-    "roles/map-analyst.md": 9_357,
-    "workflows/team-analyze.md": 13_757,
-    "roles/partition-structure-worker.md": 4_514,
-    "roles/partition-behavior-worker.md": 4_521,
-    "roles/partition-quality-worker.md": 5_299,
-    "roles/partition-synthesizer.md": 3_968,
-    "roles/semantic-interconnect-mapper.md": 5_564,
-    "consumer": 3_589,
+    "workflows/analyze.md": 4_919,
+    "roles/map-analyst.md": 9_276,
+    "workflows/team-analyze.md": 13_676,
+    "roles/partition-structure-worker.md": 4_433,
+    "roles/partition-behavior-worker.md": 4_440,
+    "roles/partition-quality-worker.md": 5_218,
+    "roles/partition-synthesizer.md": 3_887,
+    "roles/semantic-interconnect-mapper.md": 5_483,
+    "consumer": 3_508,
 }
 
 # Separate optional baseline at 89a47aebbc99e5f92ffb96a7a0c52c425a61bb39.
