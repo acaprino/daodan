@@ -82,58 +82,50 @@ Require exit 0. Workers only resolve bindings; legacy roots/bindings activate mi
 
 ## Concurrent Runs Model
 
-Multiple analyses can run at the same time (different targets, different sessions, or a re-analysis while an older one is still in flight). Every analysis is an isolated **run**:
+Every analysis is an isolated run; targets, sessions and re-analyses may overlap.
 
-```
-.codebase-map/
-├── runs.json                          # registry: active runs + latest completed
-├── runs/
-│   └── <run-id>/                      # one directory per analysis run
-│       ├── state.json                 # per-run phase tracking, flags, lineage
-│       ├── snapshot/manifest.json     # the tree this run analyzed: files, symbols, hashes
-│       ├── changes.json               # incremental runs: the change set since the parent
-│       ├── changes.md                 # incremental runs: what changed and what it did to the claims
-│       ├── knowledge/                   # Phase 0: navigation.md, documentation-leads.md
-│       ├── 01-structure.md .. 07-final-report.md
-│       ├── partitions/<name>/...      # team mode only
-│       └── 08-interconnect-map.md     # team mode only
-├── state.json                         # mirror of the latest published run
-└── 01-structure.md .. 08-*.md         # mirror of the latest published run
-```
+Within `.codebase-map/`:
+- `runs.json`: active-run registry and latest completed run.
+- `runs/<run-id>/`: isolated analysis directory containing:
+  - `state.json`: phase tracking, flags and lineage.
+  - `snapshot/manifest.json`: analyzed files, symbols and hashes.
+  - `changes.json`, `changes.md`: incremental change set and claim consequences.
+  - `knowledge/navigation.md`, `knowledge/documentation-leads.md`: Phase 0.
+  - `01-structure.md` through `07-final-report.md`.
+  - `partitions/<name>/...`, `08-interconnect-map.md`: team only.
+- `state.json`, `01-structure.md` through `08-*.md`: latest published mirror.
 
-Rules:
-
-1. **Run identity.** `run-id` = slug of the target path + `-YYYYMMDD-HHMMSS`, or the value of `--run-name <name>` (normalized to `[a-z0-9-]`; on collision append `-2`, `-3`, ...).
-2. **Isolation.** A run writes ONLY inside `.codebase-map/runs/<run-id>/` while in progress. Concurrent runs never share files.
-3. **Registry.** `runs.json` holds `{"schema": 2, "active": [{run_id, target, mode, started_at}], "latest_completed": "<run-id>"}`. After state initialization or lineage changes, invoke `snapshot.py register $RUN_DIR`. On cancellation, partial delivery or failure invoke `snapshot.py unregister $RUN_DIR`. These commands and publication share one registry lock. Never write the registry directly or remove another run's entry.
-4. **Publish step.** Only the entry publishes after `snapshot.py check` reports `complete` and `may_publish`, and every requested view is delivered. Its `publish` helper replaces the whole mirror of known phase files and `state.json`, then sets `latest_completed`, with locked rollback-protected replacement. A lite run removes older `03`, `04` and `06`; a classic run removes an older team's `08-interconnect-map.md`. Partial, docs-only, single-phase and stopped runs never publish. The mirror is the downstream latest-state contract; invocation-specific consumers retain the run directory. Concurrent publishing preserves both archives; the last successful publisher owns the mirror.
-5. **Resume.** `--resume-from [N] --run-name <exact-id>` selects the interrupted directory without collision suffixes. Keep its mode and flags; a different mode is a new run. The gate confirms earlier artifacts with same-run provenance, selects the first incomplete produced phase when N is omitted, and drops an invocation's stop. Interrupted or stopped runs retain recoverable state; neither alters `latest_completed`. A root `state.json` with `current_phase` but no `runs.json` is a pre-runs layout: offer migration into `runs/legacy-<date>/`.
-6. **Mirror is for latest-state consumers only.** `.codebase-map/` is a mutable convenience mirror of the latest published run. It MUST NOT be used by an orchestrated workflow to consume the output of a specific Codebase Map invocation: rule 4 makes the root mirror owned by whichever run published last, so a concurrent run can replace it between production and consumption. A workflow that started a run and then consumes it MUST retain and propagate the immutable run directory `.codebase-map/runs/<run-id>/`. The general form: a specific invocation implies the immutable run directory, a latest-state consumer implies the mirror. One-shot commands asking for the most recent published analysis are correct on the mirror.
-7. **Lineage.** Every run writes `snapshot/manifest.json`, the structural record of the tree it analyzed, which makes it a possible parent for a later run. An incremental run records its parent in `state.json -> parent_run` and in its `runs.json` entry. The chain of those values is the analysis history, and no other structure holds it. A mirror consumer never needs any of this: `snapshot/`, `changes.json` and `changes.md` stay in the run directory and are never published to the root.
+1. **Identity.** `run-id` is the target-path slug + `-YYYYMMDD-HHMMSS`, or `--run-name <name>` normalized to `[a-z0-9-]`; append `-2`, `-3`, ... on collision.
+2. **Isolation.** Write only inside `.codebase-map/runs/<run-id>/` while in progress. Concurrent runs never share files.
+3. **Registry.** `runs.json` holds `{"schema": 2, "active": [{run_id, target, mode, started_at}], "latest_completed": "<run-id>"}`. Invoke `snapshot.py register $RUN_DIR` after state initialization or lineage changes; `snapshot.py unregister $RUN_DIR` on cancellation, partial delivery or failure. These commands and publication share one registry lock. Never write the registry directly or remove another run's entry.
+4. **Publish.** Only the entry publishes after `snapshot.py check` reports `complete` and `may_publish` and every requested view is delivered. Its `publish` helper replaces the whole mirror of known phase files and `state.json`, then sets `latest_completed`, with locked rollback-protected replacement. Lite removes older `03`, `04`, `06`; classic removes an older team's `08-interconnect-map.md`. Partial, docs-only, single-phase and stopped runs never publish. Concurrent publishers preserve both archives; the last successful publisher owns the mirror.
+5. **Resume.** `--resume-from [N] --run-name <exact-id>` selects the interrupted directory without collision suffixes. Keep mode and flags; a different mode requires a new run. The gate confirms earlier artifacts with same-run provenance, selects the first incomplete produced phase when N is omitted, and drops the invocation's stop. Interrupted/stopped runs retain recoverable state and never alter `latest_completed`. Root `state.json` with `current_phase` but no `runs.json` is pre-runs layout: offer migration into `runs/legacy-<date>/`.
+6. **Consumers.** A workflow consuming a specific invocation must retain and propagate its immutable `.codebase-map/runs/<run-id>/`, never the mutable `.codebase-map/` mirror. The mirror serves latest-state consumers, including one-shot requests for the most recent published analysis.
+7. **Lineage.** Every run writes `snapshot/manifest.json` of its analyzed tree, making it a possible parent. Incremental runs record the parent in `state.json -> parent_run` and their `runs.json` entry; this chain alone is the analysis history. `snapshot/`, `changes.json` and `changes.md` stay run-local and never publish to the root.
 
 ## Perimeter
 
-The Codebase Map never analyzes three things below its target: what Git ignores, any directory whose name starts with a dot, and dependency or build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). `scripts/tree_scope.py` owns the rule, and every script that walks a tree applies it: the snapshot, the cascade scan, the usage search, the comment scan and the documentation review. Reading by hand follows it too. A path the snapshot left out is not opened, globbed or cited in a phase file.
+Below its target, exclude what Git ignores, every directory whose name starts with a dot, and dependency/build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). `scripts/tree_scope.py` owns this general rule; every tree-walking script applies it: snapshot, cascade scan, usage search, comment scan and documentation review. Manual reading follows it too. A path the snapshot left out is not opened, globbed or cited in a phase file.
 
-The target itself is analyzed as given. Naming a dot directory, or a directory Git ignores, as the target is how its content gets a Codebase Map of its own. A dot file beside analyzed source (`.eslintrc.json`) is not a directory and stays, subject to the forbidden list in `evidence.md`. A file Git tracks is never ignored, whatever pattern it matches, because Git does not ignore what it tracks.
+Analyze the target as given, including dot or Git-ignored directories. Dot files beside analyzed source (`.eslintrc.json`) remain, subject to the forbidden list in `evidence.md`. Git-tracked files are never ignored, regardless of patterns.
 
-The rule exists because tools write beside the code they work on: run records under `.daodan/`, a review under `.team-review/`, editor settings, caches. Counted as project files they enter every later change set, and an incremental update of an untouched project asks for a full analysis. A parent run recorded before this rule holds paths the perimeter now leaves out. Its first update reports them as removed and retires the claims that cite them: they left the inventory, whether or not they left the disk.
+On the first update of a parent recorded before this rule, report newly excluded paths as removed and retire claims citing them, even if they remain on disk.
 
-What the rule leaves out is declared, never silent. `snapshot.py scope <target>` prints it before a run starts, and the manifest's `scope` block keeps it: `git_ignore` is `applied`, or `unavailable` when the target is in no work tree or git did not answer, in which case no ignore rule was applied; `skipped.dot_directories` names the dot directories the walk pruned; `skipped.git_ignored` counts the ignored paths it met. The scope confirmation and the final report repeat those figures. `.github/` holds a project's CI: a reader who needs it analyzed must be able to see that it was not, and can name it as a target.
+Declare exclusions: `snapshot.py scope <target>` prints them before a run; the manifest's `scope` keeps `git_ignore` as `applied` or `unavailable` (outside a work tree or Git did not answer; no ignore rule applied), `skipped.dot_directories` naming pruned dot directories and `skipped.git_ignored` counting ignored paths met. Scope confirmation and the final report repeat those figures. Name excluded `.github/` as the target to analyze CI.
 
 ## Team Mode Integration
 
-The classic `/codebase-map:analyze` entry delegates its declared phases to one isolated `codebase-map:map-analyst` context. For monorepos, multi-language repos, or any target where one context would have to hold too much, switch to the team variant:
+Classic `/codebase-map:analyze` delegates declared phases to one isolated `codebase-map:map-analyst` context. Use the team variant for monorepos, multi-language repos or targets exceeding one context:
 
 ```
 /codebase-map:team-analyze <target>
 ```
 
 The team command:
-1. Auto-detects partitions (workspaces, top-level dirs, or language clusters) and shows the concrete scope before dispatch. A fresh run proceeds on the invocation's authorization, without requiring `--yes`; an unresolved choice or an explicit request for approval gets an answerable question, through a permitted input tool or ordinary chat.
-2. Spawns three workers per partition in two waves (Wave 1 = Structure; Wave 2 = Behavior + Quality). Wave 2 workers read every partition's Wave 1 output, so cross-partition contracts and flows can be cited directly.
-3. Synthesizes a backward-compatible `01..07.md` set inside the run directory; the same all-mode gate and whole-mirror publication bind it to downstream consumers.
-4. Adds `08-interconnect-map.md` produced by `codebase-map:semantic-interconnect-mapper` on top of the consolidated set, giving a global Call Graph, Contracts, Invariants, and Integration Hot-Spots view.
+1. Auto-detects partitions (workspaces, top-level dirs or language clusters) and shows concrete scope before dispatch. Fresh invocation authorization requires no `--yes`; unresolved choices or explicit approval requests get answerable questions through a permitted input tool or ordinary chat.
+2. Spawns three workers per partition: Wave 1 Structure; Wave 2 Behavior + Quality. Wave 2 reads every partition's Wave 1 output to cite cross-partition contracts and flows directly.
+3. Synthesizes a backward-compatible `01..07.md` set inside the run directory; the same all-mode gate and whole-mirror publication bind downstream consumers.
+4. `codebase-map:semantic-interconnect-mapper` adds `08-interconnect-map.md` on the consolidated set: global Call Graph, Contracts, Invariants and Integration Hot-Spots.
 
 ### Choosing between classic and team
 

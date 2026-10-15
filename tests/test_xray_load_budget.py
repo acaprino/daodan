@@ -21,7 +21,7 @@ METHOD = PLUGIN / "skills" / "map-method"
 
 UNIT_BUDGETS = {
     "SKILL.md": 835,
-    "references/run.md": 1_216,
+    "references/run.md": 811,
     "references/snapshot.md": 1_411,
     "references/update.md": 858,
     "references/evidence.md": 2_436,
@@ -34,10 +34,10 @@ UNIT_BUDGETS = {
 }
 
 BUDGETS = {
-    "workflows/analyze.md": 4_919,
+    "workflows/analyze.md": 4_514,
     "roles/map-analyst.md": 9_276,
-    "workflows/team-analyze.md": 13_676,
-    "roles/partition-structure-worker.md": 4_433,
+    "workflows/team-analyze.md": 13_271,
+    "roles/partition-structure-worker.md": 4_280,
     "roles/partition-behavior-worker.md": 4_440,
     "roles/partition-quality-worker.md": 5_218,
     "roles/partition-synthesizer.md": 3_887,
