@@ -19,6 +19,20 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
 METHOD = PLUGIN / "skills" / "map-method"
 
+UNIT_BUDGETS = {
+    "SKILL.md": 916,
+    "references/run.md": 1_216,
+    "references/snapshot.md": 1_411,
+    "references/update.md": 858,
+    "references/evidence.md": 2_436,
+    "references/reading.md": 132,
+    "references/phase-0.md": 498,
+    "references/phases-1-2.md": 801,
+    "references/phases-3-4.md": 1_348,
+    "references/phases-5-6.md": 1_265,
+    "references/phase-7.md": 871,
+}
+
 BUDGETS = {
     "workflows/analyze.md": 5_000,
     "roles/map-analyst.md": 9_500,
@@ -27,8 +41,8 @@ BUDGETS = {
     "roles/partition-behavior-worker.md": 4_521,
     "roles/partition-quality-worker.md": 5_299,
     "roles/partition-synthesizer.md": 3_968,
-    "roles/semantic-interconnect-mapper.md": 5_575,
-    "consumer": 3_600,
+    "roles/semantic-interconnect-mapper.md": 5_564,
+    "consumer": 3_589,
 }
 
 # Separate optional baseline at 89a47aebbc99e5f92ffb96a7a0c52c425a61bb39.
@@ -187,6 +201,11 @@ def _optional_allowance(options):
 
 
 class XrayLoadBudgetTests(unittest.TestCase):
+    def test_method_units_stay_within_their_word_budgets(self) -> None:
+        for resource, budget in UNIT_BUDGETS.items():
+            with self.subTest(resource=resource):
+                self.assertLessEqual(_words(METHOD / resource), budget)
+
     def test_every_registered_reader_has_a_budget(self) -> None:
         components = tomllib.loads((PLUGIN / "plugin.toml").read_text(encoding="utf-8"))["components"]
         readers = {f"{kind}/{name}.md" for kind in ("roles", "workflows")

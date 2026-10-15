@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:4e128899acec2f4ed02890006c83103bb1abf0693dfe586d07a4e1d432d38b51",
+  "coreDigest": "sha256:fbeadb8d5a227987bb5cab9b8dfcb1e47fdf0e599c35c550680adf9da1621590",
   "harnessStrategies": {
     "analyze": "native-team",
     "team-analyze": "native-team"
@@ -8,5 +8,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "codebase-map",
-  "version": "6.4.0"
+  "version": "6.4.1"
 }
