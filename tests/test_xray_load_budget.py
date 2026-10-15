@@ -23,7 +23,7 @@ UNIT_BUDGETS = {
     "SKILL.md": 835,
     "references/run.md": 811,
     "references/snapshot.md": 938,
-    "references/update.md": 858,
+    "references/update.md": 597,
     "references/evidence.md": 2_436,
     "references/reading.md": 132,
     "references/phase-0.md": 355,
@@ -35,7 +35,7 @@ UNIT_BUDGETS = {
 
 BUDGETS = {
     "workflows/analyze.md": 4_339,
-    "roles/map-analyst.md": 9_101,
+    "roles/map-analyst.md": 8_840,
     "workflows/team-analyze.md": 12_798,
     "roles/partition-structure-worker.md": 4_280,
     "roles/partition-behavior-worker.md": 4_440,
