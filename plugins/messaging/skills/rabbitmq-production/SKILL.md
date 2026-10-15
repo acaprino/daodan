@@ -1,9 +1,9 @@
 ---
 name: rabbitmq-production
 description: >
-  Knowledge base for running the broker under real load, split into references loaded on demand.
-  TRIGGER WHEN: designing, operating, upgrading, monitoring, or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC).
-  DO NOT TRIGGER WHEN: the task is a quick conceptual question the rabbitmq-expert agent answers without production detail.
+  Knowledge base for running RabbitMQ under production load, split into on-demand references.
+  TRIGGER WHEN: designing, operating, upgrading, monitoring or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC).
+  DO NOT TRIGGER WHEN: quick conceptual questions (use rabbitmq-expert directly).
 ---
 
 # RabbitMQ Production

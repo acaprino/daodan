@@ -1,7 +1,7 @@
 ---
 name: review-method
 description: >
-  Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.
+  Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists. Load when executing any senior-review workflow or lifecycle review phase.
 ---
 
 <daodan_host_binding host="copilot">

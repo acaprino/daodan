@@ -1,7 +1,7 @@
 ---
 name: readability-method
 description: >
-  Canonical readability-only plan, transformation, candidate validation and owned recovery.
+  Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /clean-code:clean-code or lifecycle readability phases.
 ---
 
 <daodan_host_binding host="claude">

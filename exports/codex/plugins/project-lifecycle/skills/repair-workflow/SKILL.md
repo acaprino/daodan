@@ -1,6 +1,6 @@
 ---
 name: repair-workflow
-description: 'Apply an identified repair plan through canonical owners and verified phase gates. TRIGGER WHEN: the user requests lifecycle repair or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Apply an identified repair plan through canonical owners and verified phase gates. TRIGGER WHEN: the user requests lifecycle repair or its complete project outcome. DO NOT TRIGGER WHEN: a single-domain fix suffices (use /senior-review:code-review --fix, /clean-code:clean-code, or /repo-hygiene:tidy --fix).'
 ---
 
 > Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.

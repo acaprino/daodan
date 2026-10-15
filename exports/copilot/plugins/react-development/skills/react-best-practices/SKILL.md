@@ -204,10 +204,10 @@ Reference these guidelines when:
 
 ## How to Use
 
-Read individual rule files in the `rules/` directory for detailed explanations and code examples. Each rule file contains:
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
-
-The `references.md` file contains all 70 rules expanded into a single compiled document.
+- Read `references/react19-stores-and-effects.md` for React 19 Compiler limits, external store selector fixes (`useShallow`, `createSelector`, `subscribeWithSelector`, Jotai `atomFamily`), `useEffect`/`useCallback` loop and stale-closure fixes, teardown patterns, and TanStack Query/Virtual configurations.
+- Read individual rule files in the `rules/` directory for detailed explanations and code examples. Each rule file contains:
+  - Brief explanation of why it matters
+  - Incorrect code example with explanation
+  - Correct code example with explanation
+  - Additional context and references
+- The `references.md` file contains all 70 rules expanded into a single compiled document.

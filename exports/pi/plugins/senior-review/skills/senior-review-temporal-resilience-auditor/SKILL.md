@@ -1,6 +1,6 @@
 ---
 name: senior-review-temporal-resilience-auditor
-description: 'Reviewer for failure-over-time behavior: missing backoff or cap, errors swallowed until a subsystem dies silently, guards never cleared, notification floods and silence, clock hazards (suspend, DST, throttling). TRIGGER WHEN: the diff or target touches timers, schedulers, polling loops, retry and reconnect logic, queues, cron jobs, background workers, or watchdogs; or the pipeline flagged long-running execution. DO NOT TRIGGER WHEN: the concern is startup and bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).'
+description: 'Reviewer for failure-over-time defects: missing backoff/caps, silent subsystem death, uncleared guards, notification floods and clock hazards. TRIGGER WHEN: reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs. DO NOT TRIGGER WHEN: startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).'
 disable-model-invocation: true
 ---
 

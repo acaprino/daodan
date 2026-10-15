@@ -3,7 +3,7 @@ name: lifecycle-method
 description: >
   Coordinate complete AI development work across code, tests, project knowledge and artifacts.
   TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence.
-  DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.
+  DO NOT TRIGGER WHEN: an isolated specialist audit suffices (use senior-review, codebase-map or testing directly).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

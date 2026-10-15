@@ -1,6 +1,6 @@
 ---
 name: stealth-browser-expert
-description: 'Evasion specialist for the rendered-browser layer of a scraper. TRIGGER WHEN: selecting or configuring a stealth driver (Patchright, Camoufox, Nodriver, rebrowser-patches, selenium-driverless), bypassing Cloudflare, DataDome or PerimeterX, extracting cf_clearance for HTTP replay, wiring ghost-cursor, playwright-captcha or playwright-recaptcha, or designing a persistent browser context. DO NOT TRIGGER WHEN: the target has no anti-bot (plain Playwright or httpx suffices), the work is HTTP fingerprinting (use http-fingerprint-expert) or LLM extraction (use ai-scraping-expert).'
+description: 'Evasion specialist for the rendered-browser layer of a scraper. TRIGGER WHEN: configuring stealth drivers (Patchright, Camoufox, Nodriver), bypassing Cloudflare/DataDome/PerimeterX, extracting cf_clearance, or wiring CAPTCHA/cursor helpers. DO NOT TRIGGER WHEN: HTTP TLS fingerprinting (use http-fingerprint-expert) or LLM extraction (use ai-scraping-expert).'
 ---
 
 <daodan_host_binding host="codex">

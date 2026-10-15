@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:15510f77b044a09fe251b7b5bdb63565cadb719d67cb9aca9ca6489f28b4863a",
+  "coreDigest": "sha256:c886d5f513ccded5f61c59e4b2dd6df719f0d0f27229016d65c3769d6ba5fef4",
   "harnessStrategies": {
     "deps-audit": "native-team"
   },
   "host": "claude",
   "overrides": [],
   "plugin": "dependency-audit",
-  "version": "1.1.2"
+  "version": "1.1.3"
 }

@@ -2,6 +2,7 @@
 name: documentation-engineer
 description: >
   Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode.
+  TRIGGER WHEN: spawned by /project-knowledge:maintain or lifecycle knowledge phases to audit or repair documentation drift.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

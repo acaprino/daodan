@@ -1,5 +1,5 @@
 ---
-description: 'Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files.'
+description: 'Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files. TRIGGER WHEN: spawned by /project-knowledge:instructions or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md.'
 mode: subagent
 permissions:
   - action: "*"

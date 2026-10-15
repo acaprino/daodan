@@ -1,7 +1,8 @@
 ---
 name: instructions-method
 description: >
-  Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's established instruction file. Provides an explicit audit-only method.
+  Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file.
+  TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

@@ -1,14 +1,9 @@
 ---
 name: broker-vocabulary
 description: >
-  Vendor-neutral vocabulary for programmatic broker integration: the five access archetypes, the
-  second axis separating a single broker from a multi-broker platform, the reference order state
-  machine, session and recovery, and the evidence ladder that decides what a claim about a venue is
-  worth.
-  TRIGGER WHEN: comparing brokers or integration paths, starting an integration against a broker with
-  no dedicated skill, or naming what kind of access path a system uses.
-  DO NOT TRIGGER WHEN: the question is about one specific broker that has its own skill (use the ibkr
-  or mt5 skill), or about strategy, backtesting, or portfolio construction.
+  Vendor-neutral broker integration vocabulary: the five archetypes, single-broker vs multi-broker platforms, order state machine, session recovery and evidence ladder.
+  TRIGGER WHEN: comparing brokers or integration paths, integrating a broker without a dedicated skill, or classifying an access path.
+  DO NOT TRIGGER WHEN: targeting a broker with its own skill (use ibkr or mt5).
 ---
 
 <daodan_host_binding host="copilot">

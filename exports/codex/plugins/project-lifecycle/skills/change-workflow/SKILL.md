@@ -1,6 +1,6 @@
 ---
 name: change-workflow
-description: 'Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task covers the outcome (use clean-code, testing or project-knowledge directly).'
 ---
 
 > Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.

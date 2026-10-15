@@ -1,6 +1,6 @@
 ---
 name: flow-writer
-description: 'Document scoped user and data flows from verified call paths and contracts.'
+description: 'Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: spawned by /project-knowledge:guide to author user and data flow documentation.'
 tools: ['search', 'edit', 'runCommands']
 ---
 

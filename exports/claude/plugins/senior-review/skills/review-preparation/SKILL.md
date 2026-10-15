@@ -1,7 +1,7 @@
 ---
 name: review-preparation
 description: >
-  Prepare the existing code, team or PR review inputs without writing another detection prompt.
+  Prepare the existing code, team or PR review inputs without writing another detection prompt. Load before dispatching reviewers in senior-review or project-lifecycle.
 ---
 
 <daodan_host_binding host="claude">

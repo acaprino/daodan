@@ -1,6 +1,6 @@
 ---
 name: team-research-workflow
-description: '"Deep web research run: clarify scope only when needed, show a plan of sub-questions for approval, spawn one iterative researcher per sub-question in parallel, verify contradictions, synthesize a long-form cited report and write it to disk. Web only."'
+description: 'Deep web research run: plan sub-questions, spawn parallel iterative researchers, verify contradictions and write a cited report to disk. TRIGGER WHEN: the user asks for a deep multi-source web research report on a topic. DO NOT TRIGGER WHEN: single-fact lookup (use research:quick-searcher) or local codebase analysis (use codebase-map).'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

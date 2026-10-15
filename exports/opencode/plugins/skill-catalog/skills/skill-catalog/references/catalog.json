@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "description": "Knowledge base for structural entropy: the cost of change when one concept lives in many places. TRIGGER WHEN: the user asks \"should I extract this\", \"who owns this rule\", \"is this DRY enough\", \"is this the wrong abstraction\"; centralizing, inlining or removing a layer; auditing for duplicated domain knowledge, competing sources of truth, redundant models or derivable state stored anyway; loaded under /abstraction-architect:audit or the /senior-review:team-review abstraction dimension. DO NOT TRIGGER WHEN: the concern is formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead-code removal (use /senior-review:code-review --commit), security (use senior-review:security-auditor), contract drift (use senior-review:api-contract-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).",
+      "description": "Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness. TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under /abstraction-architect:audit or /senior-review:team-review. DO NOT TRIGGER WHEN: formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead code (use /senior-review:code-review --commit), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor).",
       "dimensions": [
         "architecture"
       ],
@@ -21,7 +21,7 @@
         "abstraction",
         "architecture"
       ],
-      "version": "4.1.0"
+      "version": "4.1.1"
     },
     {
       "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
@@ -36,7 +36,7 @@
       "operations": [],
       "provider": "ai-tooling",
       "topics": [],
-      "version": "5.5.2"
+      "version": "5.5.3"
     },
     {
       "description": "Design and improve model instructions using practical prompting foundations and model-aware guidance. TRIGGER WHEN: writing or reviewing prompts, system messages, examples, extraction or judge prompts, tool descriptions, skills or orchestrator briefs. DO NOT TRIGGER WHEN: implementing a Claude Agent SDK app (use agent-sdk-builder).",
@@ -61,10 +61,10 @@
         "llm",
         "prompts"
       ],
-      "version": "5.5.2"
+      "version": "5.5.3"
     },
     {
-      "description": "Report templates for the app-analyzer teardown: the competitive analysis, the user-flow diagrams and the visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the app itself (that is the app-analyzer agent's Phase 1), or auditing a codebase rather than a running product.",
+      "description": "Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report. TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html). DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).",
       "dimensions": [
         "correctness"
       ],
@@ -82,7 +82,7 @@
       "topics": [
         "app-analysis"
       ],
-      "version": "1.4.4"
+      "version": "1.4.5"
     },
     {
       "description": "Reference knowledge base behind the firefox-extension-dev-agent agent. TRIGGER WHEN: any Firefox WebExtension or add-on work touching manifest.json, browser.* APIs, AMO submission or the web-ext CLI.",
@@ -136,7 +136,7 @@
       "version": "1.12.2"
     },
     {
-      "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery.",
+      "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /clean-code:clean-code or lifecycle readability phases.",
       "dimensions": [],
       "file": "skills/readability-method/SKILL.md",
       "frameworks": [],
@@ -148,7 +148,7 @@
       "operations": [],
       "provider": "clean-code",
       "topics": [],
-      "version": "2.0.4"
+      "version": "2.0.5"
     },
     {
       "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-map",
       "topics": [],
-      "version": "6.5.1"
+      "version": "6.5.2"
     },
     {
       "description": "Compatibility skill for the former Codebase X-ray name. Loads the canonical Codebase Map method while preserving the caller's scope and execution context.",
@@ -178,10 +178,10 @@
       "operations": [],
       "provider": "codebase-xray",
       "topics": [],
-      "version": "6.0.1"
+      "version": "6.0.2"
     },
     {
-      "description": "Knowledge base for the evidence-first method: the per-ecosystem tool matrix, the obligations analysis model, and the verifiable signal catalog. TRIGGER WHEN: auditing dependencies for vulnerabilities, license obligations, outdated packages, or supply-chain risk in any ecosystem; loaded by the /dependency-audit:deps-audit command. DO NOT TRIGGER WHEN: dead-code or unused-dependency cleanup (use senior-review:code-review or typescript-development:knip), Python-only lint/type audits (use python-development:python-audit), or code-level security review (use senior-review:security-auditor).",
+      "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; loaded by /dependency-audit:deps-audit. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:code-review or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",
       "dimensions": [
         "correctness",
         "security"
@@ -201,10 +201,10 @@
       "topics": [
         "dependencies"
       ],
-      "version": "1.1.2"
+      "version": "1.1.3"
     },
     {
-      "description": "Ideates candidates, filters them against archetypes and phonotactic rules, then scores survivors on domain availability, market saturation, and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
+      "description": "Ideate brand names, filter against archetypes and phonotactic rules, and score survivors on domain availability, market saturation and trademark risk. TRIGGER WHEN: \"brand name\", \"naming\", \"name my app\", \"name my product\", \"product name\", \"startup name\", \"come up with a name\", \"nome del brand\", \"naming strategico\".",
       "dimensions": [],
       "file": "skills/brand-naming-method/SKILL.md",
       "frameworks": [],
@@ -216,7 +216,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.2.1"
     },
     {
       "description": "Finds what is available and what it truly costs, promo codes included. TRIGGER WHEN: the user wants to buy a domain, check domain prices, compare registrars, find domain deals, or search for .ai/.com names.",
@@ -231,7 +231,7 @@
       "operations": [],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.2.1"
     },
     {
       "description": "Knowledge base behind the ga4-implementation-expert agent: the EU legal detail, CMP choice, event taxonomy, and per-framework install recipes its workflow cites. TRIGGER WHEN: a GA4 or GTM task needs that reference material directly, or a site has traffic but no conversions and the diagnostic patterns are wanted.",
@@ -253,7 +253,7 @@
       ],
       "provider": "digital-marketing",
       "topics": [],
-      "version": "3.2.0"
+      "version": "3.2.1"
     },
     {
       "description": "Reads sentiment and severity, then adapts tone and operational advice to the sector, hospitality or e-commerce. TRIGGER WHEN: review, recensione, reply to review, respond to review, risposta recensione, customer review, negative review, bad review, rispondere alla recensione, gestione recensioni, review response.",
@@ -274,7 +274,7 @@
       "topics": [
         "customer-review"
       ],
-      "version": "3.2.0"
+      "version": "3.2.1"
     },
     {
       "description": "Ship a runtime layer that carries only what it executes, for any language or framework. TRIGGER WHEN: creating Dockerfiles, optimizing container images, multi-stage builds, Docker best practices.",
@@ -297,7 +297,7 @@
       ],
       "provider": "docker",
       "topics": [],
-      "version": "1.4.2"
+      "version": "1.4.3"
     },
     {
       "description": "Knowledge base for production crawlers, from target assessment through observability. TRIGGER WHEN: building, debugging or optimizing a Python web scraper, or working on anti-bot bypass for Cloudflare, DataDome or PerimeterX, CAPTCHA solving, proxy architecture or rate limiting.",
@@ -323,10 +323,10 @@
         "crawling",
         "scraping"
       ],
-      "version": "1.8.4"
+      "version": "1.8.5"
     },
     {
-      "description": "Idiomatic patterns for concurrent, shared-code, and UI-layer work. TRIGGER WHEN: building, writing, or reviewing Kotlin code using coroutines / Flow / StateFlow / SharedFlow / suspend functions, Kotlin Multiplatform (KMP) and expect/actual, Compose composables / ViewModels, Ktor routing with JWT auth and Exposed, sealed-class state modeling, scope functions, or DSL builders. DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development), or Android Java without Kotlin.",
+      "description": "Idiomatic Kotlin patterns for coroutines, Kotlin Multiplatform (KMP), Jetpack Compose and Ktor. TRIGGER WHEN: writing or reviewing Kotlin with coroutines, Flow, StateFlow, SharedFlow, KMP expect/actual, Compose ViewModels, Ktor JWT/Exposed, sealed classes or DSL builders. DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development).",
       "dimensions": [
         "correctness",
         "resource-lifecycle"
@@ -348,7 +348,7 @@
       ],
       "provider": "kotlin-development",
       "topics": [],
-      "version": "1.1.2"
+      "version": "1.1.3"
     },
     {
       "description": "Render a JSON outline into a standalone browser page; needs internet for the CDN. TRIGGER WHEN: the user says 'interactive map', 'force graph', 'web mindmap', or 'HTML mindmap', or asks for a zoomable, draggable visual export. DO NOT TRIGGER WHEN: the user wants Obsidian MarkMind format (use markmind-exporter).",
@@ -423,7 +423,7 @@
       "version": "1.1.3"
     },
     {
-      "description": "Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages. TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports. DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages.",
+      "description": "Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages. TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports. DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages (use marketplace-audit or skills-creator instead).",
       "dimensions": [
         "correctness"
       ],
@@ -444,10 +444,10 @@
         "marketplace",
         "plugins"
       ],
-      "version": "2.4.3"
+      "version": "2.4.4"
     },
     {
-      "description": "Validates the integrity of any Claude Code plugin marketplace. Use PROACTIVELY before any commit that modifies plugin files or marketplace.json. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan plugins/skills/agents/commands, checking dependency resolution or cycles, confirming documented plugin counts still match README and docs tables, or checking naming conventions. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding new plugins (use marketplace-scaffold-plugin / skills-creator).",
+      "description": "Validate structural integrity, dependencies, naming, colors and doc counts of a plugin marketplace. TRIGGER WHEN: verifying marketplace.json integrity, finding orphan components, checking dependencies or doc count drift. DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding (use skills-creator).",
       "dimensions": [],
       "file": "skills/marketplace-audit/SKILL.md",
       "frameworks": [],
@@ -459,10 +459,10 @@
       "operations": [],
       "provider": "marketplace-ops",
       "topics": [],
-      "version": "2.4.3"
+      "version": "2.4.4"
     },
     {
-      "description": "Creates new Claude Code plugin components: skills, agents, commands, full plugins. Also decides skill vs agent architecture. TRIGGER WHEN: the user asks to create, add, scaffold or build a new skill, agent, command or plugin, or says \"new skill\", \"new agent\", \"new plugin\", \"skills-creator\", \"skills-hammer\". DO NOT TRIGGER WHEN: editing or updating an existing component, or auditing marketplace integrity (use marketplace-audit instead).",
+      "description": "Create plugin components (skills, agents, commands, full plugins) and decide skill vs agent architecture. TRIGGER WHEN: creating, adding or scaffolding a new skill, agent, command or plugin (\"new skill\", \"new agent\", \"new plugin\", \"skills-creator\"). DO NOT TRIGGER WHEN: auditing marketplace integrity (use marketplace-audit).",
       "dimensions": [],
       "file": "skills/skills-creator/SKILL.md",
       "frameworks": [],
@@ -474,10 +474,10 @@
       "operations": [],
       "provider": "marketplace-ops",
       "topics": [],
-      "version": "2.4.3"
+      "version": "2.4.4"
     },
     {
-      "description": "Knowledge base for running the broker under real load, split into references loaded on demand. TRIGGER WHEN: designing, operating, upgrading, monitoring, or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: the task is a quick conceptual question the rabbitmq-expert agent answers without production detail.",
+      "description": "Knowledge base for running RabbitMQ under production load, split into on-demand references. TRIGGER WHEN: designing, operating, upgrading, monitoring or securing RabbitMQ in production, or implementing delivery patterns (retry, outbox, idempotency, RPC). DO NOT TRIGGER WHEN: quick conceptual questions (use rabbitmq-expert directly).",
       "dimensions": [
         "data-integrity",
         "distributed-flow"
@@ -498,7 +498,7 @@
       ],
       "provider": "messaging",
       "topics": [],
-      "version": "2.1.2"
+      "version": "2.1.3"
     },
     {
       "description": "Report every automated-review violation with its file location and fix. TRIGGER WHEN: preparing an Obsidian plugin for submission or before pushing code.",
@@ -557,7 +557,7 @@
       "version": "1.5.3"
     },
     {
-      "description": "Create, read and edit native Word documents with professional styles, page layouts, tables, images and editable text. Preserve existing document features, select a compatible engine for advanced content and verify saved document pages.",
+      "description": "Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features. TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates. DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:slidepoise).",
       "dimensions": [],
       "file": "skills/docx/SKILL.md",
       "frameworks": [],
@@ -569,7 +569,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.1.2"
     },
     {
       "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
@@ -584,10 +584,10 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.1.2"
     },
     {
-      "description": "Create, edit, inspect and analyze native Excel workbooks with editable formulas, tables, charts and professional formatting. Preserve existing workbook features, verify calculated results with a compatible engine and disclose unsupported fidelity.",
+      "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:slidepoise).",
       "dimensions": [],
       "file": "skills/xlsx/SKILL.md",
       "frameworks": [],
@@ -599,7 +599,7 @@
       "operations": [],
       "provider": "office",
       "topics": [],
-      "version": "1.1.1"
+      "version": "1.1.2"
     },
     {
       "description": "Knowledge base for OTel in Python: async gotchas, non-HTTP transports, production patterns. TRIGGER WHEN: working with OpenTelemetry, distributed tracing, span instrumentation, context propagation, OTLP exporters, sampling strategies, or observability pipelines.",
@@ -626,7 +626,7 @@
       "version": "1.4.4"
     },
     {
-      "description": "Doctrine for putting a plan, a spec, or a session's own decisions in front of a second model family: when the cost is earned, the GIVEN versus DERIVED provenance rules, when to skip it. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external challenge, or interpreting a verdict's standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review), or running same-family multi-reviewer pipelines (use senior-review:review-quality-gates).",
+      "description": "Doctrine for challenging a plan, spec or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).",
       "dimensions": [
         "correctness"
       ],
@@ -644,7 +644,7 @@
       "topics": [
         "peer-review"
       ],
-      "version": "2.4.5"
+      "version": "2.4.6"
     },
     {
       "description": "Rulebook of MUST/DO/DON'T rules backed by real-world incident references. TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri) apps for security posture, architecture decisions, performance, or compliance with OWASP, Core Web Vitals, and OAuth 2.1.",
@@ -672,7 +672,7 @@
       "version": "1.3.5"
     },
     {
-      "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's established instruction file. Provides an explicit audit-only method.",
+      "description": "Create, audit and maintain durable project instructions in AGENTS.md, CLAUDE.md or the target host's instruction file. TRIGGER WHEN: auditing, creating or updating AGENTS.md, CLAUDE.md or durable project instruction files.",
       "dimensions": [],
       "file": "skills/instructions-method/SKILL.md",
       "frameworks": [],
@@ -684,7 +684,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -699,10 +699,10 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
-      "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.",
+      "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
       "dimensions": [
         "correctness"
       ],
@@ -720,7 +720,7 @@
       "topics": [
         "readme"
       ],
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",
@@ -735,10 +735,10 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
-      "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit or a single factual answer is sufficient.",
+      "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit suffices (use senior-review, codebase-map or testing directly).",
       "dimensions": [],
       "file": "skills/lifecycle-method/SKILL.md",
       "frameworks": [],
@@ -750,7 +750,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.",
@@ -765,7 +765,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before briefing workers, recording, resuming or closing a project intervention.",
@@ -783,7 +783,7 @@
       "version": "1.1.1"
     },
     {
-      "description": "Knowledge base for the app layer of the web platform, and the gaps between engines. TRIGGER WHEN: building or auditing a PWA: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, @angular/pwa, @vite-pwa/nuxt, Web Push, VAPID, Declarative Push, beforeinstallprompt, Window Controls Overlay, OPFS, Background Sync, Wake Lock, Project Fugu, Bubblewrap, TWA, PWA Builder, Capacitor. DO NOT TRIGGER WHEN: React performance (use react-development:review-react), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).",
+      "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:review-react), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
       "dimensions": [
         "correctness",
         "resource-lifecycle"
@@ -808,7 +808,7 @@
         "pwa",
         "service-worker"
       ],
-      "version": "1.3.6"
+      "version": "1.3.7"
     },
     {
       "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
@@ -836,10 +836,10 @@
         "asyncio",
         "concurrency"
       ],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
-      "description": "Deep reference for the data layer of a production service. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+; migrating a codebase from Pydantic v1 to v2; choosing between `Annotated[Decimal, ...]` and `condecimal` for money; hitting v2 validator, serialization or performance surprises; designing FastAPI request/response schemas or error envelopes. DO NOT TRIGGER WHEN: the task is Python testing (use pytest-patterns) or non-Python schema work (use typescript-development).",
+      "description": "Pydantic v2 models, validators, serialization, FastAPI schemas and v1-to-v2 migration. TRIGGER WHEN: writing or refactoring Pydantic v2 models in Python 3.10+, migrating from Pydantic v1, handling Decimal money fields, or designing FastAPI request/response schemas. DO NOT TRIGGER WHEN: Python testing (use pytest-patterns) or TypeScript schemas (use typescript-development).",
       "dimensions": [
         "correctness",
         "security"
@@ -862,7 +862,7 @@
       ],
       "provider": "python-development",
       "topics": [],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Python-specific pytest fixtures, async tests, parametrization, mocks and framework configuration. Load as technical context for testing:test-writer or Python development; universal test principles and TDD belong to testing.",
@@ -886,7 +886,7 @@
       ],
       "provider": "python-development",
       "topics": [],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Grade and rewrite code prose against antirez's 9-type taxonomy, mapped to PEP 257. TRIGGER WHEN: the user asks to improve comments, add docstrings, review comment quality, or audit documentation in a Python codebase.",
@@ -910,7 +910,7 @@
       "topics": [
         "comments"
       ],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Find and remove unused variables, functions, classes and unreachable branches with vulture and ruff, filtering framework false positives (Django, FastAPI, pytest, click). TRIGGER WHEN: cleaning up Python codebases, enforcing import hygiene, or integrating dead code checks into CI.",
@@ -925,7 +925,7 @@
       "operations": [],
       "provider": "python-development",
       "topics": [],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Build wheels and sdists from a pyproject.toml, then publish them. TRIGGER WHEN: packaging Python libraries, choosing a src or flat layout, setting up dynamic versioning, creating CLI entry points, or uploading to TestPyPI and PyPI.",
@@ -949,7 +949,7 @@
       "topics": [
         "packaging"
       ],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Measure first with cProfile, line_profiler, memory_profiler or py-spy, then fix what the numbers show. TRIGGER WHEN: debugging slow Python code, optimizing bottlenecks, cutting memory usage, or improving application performance.",
@@ -973,7 +973,7 @@
       "topics": [
         "performance"
       ],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for \"readable\", \"maintainable\" or \"clean\" code, a review flags comprehension issues, or the task is legacy modernization or onboarding cleanup.",
@@ -988,7 +988,7 @@
       "operations": [],
       "provider": "python-development",
       "topics": [],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Handle virtual environments, lockfiles and interpreter version pinning. TRIGGER WHEN: setting up Python projects, managing dependencies, migrating off pip/poetry, or optimizing Python development workflows with uv.",
@@ -1012,7 +1012,7 @@
       ],
       "provider": "python-development",
       "topics": [],
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "description": "Knowledge base for production question-answering pipelines. TRIGGER WHEN: building, optimizing, or auditing RAG systems, including Graph RAG, CRAG, Self-RAG, and Agentic RAG.",
@@ -1065,10 +1065,10 @@
       ],
       "provider": "react-development",
       "topics": [],
-      "version": "1.11.4"
+      "version": "1.11.5"
     },
     {
-      "description": "The check catalog for workspace tidying: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch directories, orphan doc-assets, and git auxiliary state. Two profiles, full and lite, over one set of check definitions. TRIGGER WHEN: running `/repo-hygiene:tidy`, spawned as the repo-hygiene dimension of a review pipeline, or running the diff-scoped VCS check inside a code or PR review. DO NOT TRIGGER WHEN: the question needs source comprehension (dead exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review`.",
+      "description": "Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: running /repo-hygiene:tidy or the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review).",
       "dimensions": [
         "repo-hygiene"
       ],
@@ -1088,10 +1088,10 @@
         "filesystem",
         "git"
       ],
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
-      "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: the task needs only a short answer, a production website, or a diagram renderer.",
+      "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: diagram-only exports (use learning:forcegraph-exporter or learning:markmind-exporter).",
       "dimensions": [],
       "file": "skills/report-renderer/SKILL.md",
       "frameworks": [],
@@ -1103,10 +1103,10 @@
       "operations": [],
       "provider": "report-rendering",
       "topics": [],
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
-      "description": "Knowledge base for web research: query formulation, source authority ranking, the two search backends (native WebSearch, optional serper.dev through websearch.py), reading pages with WebFetch and the webfetch.py bot-block fallback, and the anti-loop rules. Used by quick-searcher, deep-researcher and /research:team-research. TRIGGER WHEN: performing web research with WebSearch, WebFetch, or the research plugin's scripts. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
+      "description": "Web research methodology: query formulation, source authority ranking, WebSearch/serper.dev backends, bot-block fallbacks and anti-loop rules. TRIGGER WHEN: performing web research in quick-searcher, deep-researcher or /research:team-research. DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).",
       "dimensions": [
         "correctness"
       ],
@@ -1125,10 +1125,10 @@
         "research",
         "web-search"
       ],
-      "version": "6.2.5"
+      "version": "6.2.6"
     },
     {
-      "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates.",
+      "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /senior-review:code-review Step 7c or lifecycle cleanup.",
       "dimensions": [],
       "file": "skills/application-cleanup-method/SKILL.md",
       "frameworks": [],
@@ -1140,7 +1140,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.2.0"
+      "version": "15.2.1"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -1162,10 +1162,10 @@
       "topics": [
         "defects"
       ],
-      "version": "15.2.0"
+      "version": "15.2.1"
     },
     {
-      "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.",
+      "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating /senior-review:code-review, team-review or pr-review results.",
       "dimensions": [],
       "file": "skills/review-consolidation/SKILL.md",
       "frameworks": [],
@@ -1177,10 +1177,10 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.2.0"
+      "version": "15.2.1"
     },
     {
-      "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists.",
+      "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists. Load when executing any senior-review workflow or lifecycle review phase.",
       "dimensions": [],
       "file": "skills/review-method/SKILL.md",
       "frameworks": [],
@@ -1192,10 +1192,10 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.2.0"
+      "version": "15.2.1"
     },
     {
-      "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt.",
+      "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt. Load before dispatching reviewers in senior-review or project-lifecycle.",
       "dimensions": [],
       "file": "skills/review-preparation/SKILL.md",
       "frameworks": [],
@@ -1207,10 +1207,10 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.2.0"
+      "version": "15.2.1"
     },
     {
-      "description": "Verification panel, completeness critic, pipeline conventions, and the shared-context provenance rule. TRIGGER WHEN: running /senior-review:team-review quality gates; running /senior-review:code-review Steps 4b and 4c; consolidating or deduplicating findings from multiple parallel reviewers. DO NOT TRIGGER WHEN: single-reviewer style review with no consolidation phase, or generic team coordination (the host harness covers that).",
+      "description": "Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation. TRIGGER WHEN: running /senior-review:team-review or /senior-review:code-review quality gates, or consolidating findings from parallel reviewers.",
       "dimensions": [],
       "file": "skills/review-quality-gates/SKILL.md",
       "frameworks": [],
@@ -1222,7 +1222,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "15.2.0"
+      "version": "15.2.1"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",
@@ -1301,10 +1301,10 @@
       ],
       "provider": "tauri-development",
       "topics": [],
-      "version": "2.8.2"
+      "version": "2.8.3"
     },
     {
-      "description": "Binding placement rules, plus the measure, quarantine, consolidate remediation ladder for degraded suites. TRIGGER WHEN: creating or placing any test file, choosing between extending an existing test and writing a new one, auditing test-suite health, quarantining failing or flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: writing the test content itself (use mattpocock-skills:tdd), browser E2E mechanics like page objects and waiting (use developer-essentials:e2e-testing-patterns).",
+      "description": "Test placement rules and the measure, quarantine, consolidate remediation ladder for degraded test suites. TRIGGER WHEN: creating or placing test files, deciding whether to extend an existing test or add a new file, auditing test-suite health, quarantining flaky tests, or consolidating redundant tests. DO NOT TRIGGER WHEN: TDD workflow mechanics (use mattpocock-skills:tdd) or browser E2E page objects/waiting (use developer-essentials:e2e-testing-patterns).",
       "dimensions": [
         "test-quality"
       ],
@@ -1324,10 +1324,10 @@
         "testing",
         "tests"
       ],
-      "version": "3.1.3"
+      "version": "3.1.4"
     },
     {
-      "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence.",
+      "description": "Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence. Load before dispatching testing:test-suite-auditor.",
       "dimensions": [],
       "file": "skills/test-preparation/SKILL.md",
       "frameworks": [],
@@ -1339,10 +1339,10 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "3.1.3"
+      "version": "3.1.4"
     },
     {
-      "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance.",
+      "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when running /testing:test-audit or /testing:test-consolidate.",
       "dimensions": [],
       "file": "skills/test-remediation-method/SKILL.md",
       "frameworks": [],
@@ -1354,10 +1354,10 @@
       "operations": [],
       "provider": "testing",
       "topics": [],
-      "version": "3.1.3"
+      "version": "3.1.4"
     },
     {
-      "description": "Knowledge base of the 24 catalogued patterns, with the ground rules against invented content, the register table and the language policy that govern every rewrite. TRIGGER WHEN: editing or reviewing text to remove AI traces, or when asked to humanize text.",
+      "description": "Catalog of the 24 AI writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
       "dimensions": [
         "correctness"
       ],
@@ -1376,10 +1376,10 @@
         "humanize",
         "prose"
       ],
-      "version": "1.2.4"
+      "version": "1.2.5"
     },
     {
-      "description": "Vendor-neutral vocabulary for programmatic broker integration: the five access archetypes, the second axis separating a single broker from a multi-broker platform, the reference order state machine, session and recovery, and the evidence ladder that decides what a claim about a venue is worth. TRIGGER WHEN: comparing brokers or integration paths, starting an integration against a broker with no dedicated skill, or naming what kind of access path a system uses. DO NOT TRIGGER WHEN: the question is about one specific broker that has its own skill (use the ibkr or mt5 skill), or about strategy, backtesting, or portfolio construction.",
+      "description": "Vendor-neutral broker integration vocabulary: the five archetypes, single-broker vs multi-broker platforms, order state machine, session recovery and evidence ladder. TRIGGER WHEN: comparing brokers or integration paths, integrating a broker without a dedicated skill, or classifying an access path. DO NOT TRIGGER WHEN: targeting a broker with its own skill (use ibkr or mt5).",
       "dimensions": [
         "correctness",
         "data-integrity"
@@ -1401,10 +1401,10 @@
         "broker",
         "trading"
       ],
-      "version": "2.1.5"
+      "version": "2.1.6"
     },
     {
-      "description": "Authoritative reference for Interactive Brokers integration in Python, across every asset class, with tooling to verify venue behaviour against a paper Gateway instead of guessing. TRIGGER WHEN: building, auditing or debugging anything that talks to TWS or IB Gateway via the TWS API and ib_async: contracts, market data, orders, brackets, error codes, reconnection, deployment, or a question about how IBKR actually behaves. DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5), or the IBKR Web API with no TWS connection.",
+      "description": "Interactive Brokers integration in Python via TWS API and ib_async, with paper Gateway verification tooling. TRIGGER WHEN: building, auditing or debugging TWS / IB Gateway integrations (contracts, market data, orders, brackets, error codes, reconnection, IBC deployment). DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5).",
       "dimensions": [
         "correctness",
         "data-integrity",
@@ -1427,7 +1427,7 @@
       ],
       "provider": "trading-broker-integration",
       "topics": [],
-      "version": "2.1.5"
+      "version": "2.1.6"
     },
     {
       "description": "Knowledge base for the official API, its polling model, and Windows-side production concerns. TRIGGER WHEN: building, implementing, writing, coding, creating, optimizing, or debugging MT5 or MetaTrader 5 trading systems with Python, including the aiomql and ZeroMQ bridge alternatives. DO NOT TRIGGER WHEN: the broker is Interactive Brokers (use ibkr), or the question is about strategy design rather than the terminal and its API.",
@@ -1452,10 +1452,10 @@
       ],
       "provider": "trading-broker-integration",
       "topics": [],
-      "version": "2.1.5"
+      "version": "2.1.6"
     },
     {
-      "description": "Run Knip to find unused files, exports and types, with per-framework and per-test-runner plugins. TRIGGER WHEN: cleaning up TypeScript/JavaScript codebases, optimizing bundle size, or enforcing strict dependency hygiene in CI. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",
+      "description": "Run Knip to find unused files, dependencies, exports and types in TypeScript and JavaScript projects. TRIGGER WHEN: cleaning up TypeScript/JavaScript dead code, finding unused npm dependencies or exports, or configuring knip.json/knip.ts. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",
       "dimensions": [],
       "file": "skills/knip/SKILL.md",
       "frameworks": [],
@@ -1467,10 +1467,10 @@
       "operations": [],
       "provider": "typescript-development",
       "topics": [],
-      "version": "2.3.3"
+      "version": "2.3.4"
     },
     {
-      "description": "Deep reference for advanced TypeScript. TRIGGER WHEN: migrating JavaScript to TypeScript, bootstrapping a TS project (strict tsconfig, ESLint, Vite/Vitest, pnpm), writing generics, mapped or conditional types, `satisfies`, branded types, discriminated unions or template literal types, designing Zod schemas for runtime validation, building type-safe NestJS APIs, deep React and TypeScript typing, typing LangChain.js, or comparing TS with Java/Python enterprise approaches. DO NOT TRIGGER WHEN: routine TS/JS (use typescript-development:typescript-write), React performance (use react-development:review-react), or dead-code detection (use typescript-development:knip).",
+      "description": "Advanced TypeScript 5.x patterns, strict tsconfig/Vite/Vitest setup, type-level programming and Zod runtime schemas. TRIGGER WHEN: migrating JS to TS, bootstrapping a TS project, writing generics, conditional/mapped/branded types, discriminated unions, Zod schemas, or typing React/NestJS. DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:review-react), or dead code (use knip).",
       "dimensions": [
         "correctness"
       ],
@@ -1490,7 +1490,7 @@
       ],
       "provider": "typescript-development",
       "topics": [],
-      "version": "2.3.3"
+      "version": "2.3.4"
     },
     {
       "description": "20 rules across 7 categories, each with detection and fix guidance. TRIGGER WHEN: reviewing or hardening TypeScript against type-system erosion: `any` leakage, unsound casts, missing boundary validation, assertion abuse, tsconfig strictness, exhaustiveness and generics soundness. DO NOT TRIGGER WHEN: style and naming review (use typescript-write), or dead-code detection (use knip).",
@@ -1514,7 +1514,7 @@
       ],
       "provider": "typescript-development",
       "topics": [],
-      "version": "2.3.3"
+      "version": "2.3.4"
     },
     {
       "description": "Apply house coding standards to everyday application work. TRIGGER WHEN: writing or reviewing TypeScript/JavaScript code, including types, generics, async patterns, module boundaries, and style conventions. DO NOT TRIGGER WHEN: React performance (use react-development), or advanced type-system depth (use mastering-typescript).",
@@ -1536,10 +1536,10 @@
       ],
       "provider": "typescript-development",
       "topics": [],
-      "version": "2.3.3"
+      "version": "2.3.4"
     },
     {
-      "description": "Build, configure, debug, and extend in-page console UIs. TRIGGER WHEN: the user mentions xterm, xterm.js, @xterm/xterm, terminal emulator in the browser, web terminal, WebSSH, in-browser shell, addons like FitAddon, WebglAddon, SearchAddon, AttachAddon, integration with node-pty, ANSI/VT sequences, terminal theming, PTY over WebSocket, custom key handlers, parser hooks, or embedding a terminal in React/Vue/Angular/Electron apps.",
+      "description": "Build, configure, debug and extend browser and Electron terminal UIs with xterm.js (@xterm/xterm). TRIGGER WHEN: working with xterm.js, @xterm/xterm, FitAddon, WebglAddon, SearchAddon, AttachAddon, node-pty over WebSocket, ANSI/VT sequences, or embedding a web terminal in React/Vue/Electron.",
       "dimensions": [
         "correctness",
         "resource-lifecycle"
@@ -1564,7 +1564,7 @@
       ],
       "provider": "xterm",
       "topics": [],
-      "version": "1.2.2"
+      "version": "1.2.3"
     }
   ],
   "installation_evidence": false,

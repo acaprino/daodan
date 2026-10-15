@@ -1,5 +1,5 @@
 ---
-description: 'Explain the project and implemented features for planned audiences.'
+description: 'Explain the project and implemented features for planned audiences. TRIGGER WHEN: spawned by /project-knowledge:guide to author project overview documentation.'
 mode: subagent
 permissions:
   - action: "*"

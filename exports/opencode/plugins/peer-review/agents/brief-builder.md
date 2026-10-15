@@ -1,5 +1,5 @@
 ---
-description: 'Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b. DO NOT TRIGGER WHEN: the run already has a plan or spec on disk (Phase 0b is skipped).'
+description: 'Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).'
 mode: subagent
 permissions:
   - action: "external_directory"

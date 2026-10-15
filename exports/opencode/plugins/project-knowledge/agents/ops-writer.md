@@ -1,5 +1,5 @@
 ---
-description: 'Own operational reference and configuration how-to, absorbing the former config writers techniques.'
+description: 'Own operational reference and configuration how-to, absorbing the former config writers techniques. TRIGGER WHEN: spawned by /project-knowledge:guide to author operational and configuration documentation.'
 mode: subagent
 permissions:
   - action: "*"

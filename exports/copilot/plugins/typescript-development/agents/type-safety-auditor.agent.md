@@ -1,6 +1,6 @@
 ---
 name: type-safety-auditor
-description: 'Adversarial reviewer that assumes the annotations are lying. TRIGGER WHEN: auditing TypeScript changes or codebases for type safety, `any` leakage, unsound casts, missing runtime validation at boundaries, assertion abuse, strict-mode and tsconfig drift, non-exhaustive handling, or unsound generics and type guards before a release. DO NOT TRIGGER WHEN: style and naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead-code detection (use knip).'
+description: 'TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling. TRIGGER WHEN: auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift. DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).'
 tools: ['search', 'edit', 'runCommands']
 ---
 

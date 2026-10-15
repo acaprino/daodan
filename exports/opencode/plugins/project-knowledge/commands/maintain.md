@@ -1,5 +1,5 @@
 ---
-description: 'Audit documentation drift and apply authorized evidence-backed maintenance.'
+description: 'Audit documentation drift and apply authorized evidence-backed maintenance. TRIGGER WHEN: the user asks to check documentation drift against code or maintain project documentation.'
 ---
 
 <daodan_host_binding host="opencode">

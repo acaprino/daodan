@@ -1,9 +1,9 @@
 ---
 name: xlsx
 description: >
-  Create, edit, inspect and analyze native Excel workbooks with editable formulas,
-  tables, charts and professional formatting. Preserve existing workbook features,
-  verify calculated results with a compatible engine and disclose unsupported fidelity.
+  Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting.
+  TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models.
+  DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:slidepoise).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

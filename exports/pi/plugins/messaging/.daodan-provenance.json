@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:cd96df28da2d509b2263e4e7f0013e8eb8cf55ab87eb9c7e4bff9746f3d650a8",
+  "coreDigest": "sha256:c6d9b889d0fbbc0b02a195b5a986fd82420761fe4e94e28431f46254c9cc584c",
   "harnessStrategies": {},
   "host": "pi",
   "overrides": [],
   "plugin": "messaging",
-  "version": "2.1.2"
+  "version": "2.1.3"
 }

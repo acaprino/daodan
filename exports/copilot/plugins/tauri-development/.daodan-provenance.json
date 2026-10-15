@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:d92f569a0d86d37ca8d470be445cff7d106efcacf3cee18f28f8a900968d3c81",
+  "coreDigest": "sha256:0720b4a9d4cd71370ea22cd96f597883997c130b9b265ee2c84862de94c67cad",
   "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "tauri-development",
-  "version": "2.8.2"
+  "version": "2.8.3"
 }

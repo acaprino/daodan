@@ -1,5 +1,5 @@
 ---
-description: 'Lead architect for production Python crawlers: owns the upstream decisions, routes the rest to three experts. TRIGGER WHEN: designing a scraping pipeline end to end, assessing target protection before tool choice, reverse-engineering an API via network interception, picking between Scrapy, Crawlee, Crawl4AI and Firecrawl, or setting rate limits, observability and cost. DO NOT TRIGGER WHEN: the task sits wholly in one specialty: browser stealth (use stealth-browser-expert), HTTP fingerprints (use http-fingerprint-expert), or LLM extraction (use ai-scraping-expert).'
+description: 'Lead architect for production Python crawlers: assesses target protection, selects frameworks and routes to transport, stealth or LLM specialists. TRIGGER WHEN: designing a scraping pipeline end to end, reverse-engineering APIs via network interception, choosing between Scrapy/Crawlee/Crawl4AI/Firecrawl, or setting rate limits and observability. DO NOT TRIGGER WHEN: purely browser stealth (use stealth-browser-expert), HTTP fingerprints (use http-fingerprint-expert), or LLM extraction (use ai-scraping-expert).'
 mode: subagent
 permissions:
   - action: "*"

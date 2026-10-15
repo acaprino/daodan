@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e6f5a23cc1211fe09b5bc7a290233574d43f64c5325b9f3f49bf7876d50e9b49",
+  "coreDigest": "sha256:07aac0ba79a87ea5ddc5f1a06edc1a1ffe389b316866d5b76692bbbd2c6c2459",
   "harnessStrategies": {
     "review-frontend": "parallel-subagents"
   },
   "host": "opencode",
   "overrides": [],
   "plugin": "frontend-review",
-  "version": "2.1.3"
+  "version": "2.1.4"
 }

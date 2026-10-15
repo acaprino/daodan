@@ -45,23 +45,23 @@ Evaluate the `description` field:
 #### B. Agent Quality (for each agent in the plugin)
 
 Read the agent `.md` file:
-- **Description directive voice**: Uses "ALWAYS invoke", "You MUST", "Use PROACTIVELY" or similar (vs passive "Helps with", "Can be used for")
-- **TRIGGER WHEN clause**: present, specific, uses concrete verbs / domain terms
+- **Description calibration**: Clear third-person purpose and concrete `TRIGGER WHEN` (avoid passive vagueness like "Helps with" and avoid emphasis escalation like "CRITICAL: ALWAYS invoke")
+- **TRIGGER WHEN clause**: present on user-triggered agents, specific, uses concrete verbs / domain terms
 - **DO NOT TRIGGER WHEN clause**: present only where a confusable sibling exists, and naming it (which other agent should handle this case instead). A clause that names none is context cost with no routing value: flag it for deletion
 - **Body structure**: clear sections (ROLE, CAPABILITIES, CONVENTIONS, OUTPUT FORMAT or similar)
-- **Body size**: 60-200 lines for simple agents, up to ~560 lines for complex; flag over 700 lines
-- **Tool restrictions**: minimal but sufficient (e.g., a read-only reviewer should NOT have Write/Edit)
-- **Model choice**: justified if not `opus`
+- **Body size**: 60-200 lines for simple agents, up to ~700 lines for complex; domain textbooks belong in a skill's `references/`
+- **Tool restrictions**: minimal but sufficient (a read-only reviewer should NOT have Write/Edit; omit `tools` only when MCP or full host defaults are needed)
+- **Model choice**: `inherit` by default
 - **Color consistency**: matches siblings in the same plugin where appropriate
 
 #### C. Skill Quality (for each skill in the plugin)
 
 Read the skill `SKILL.md`:
-- **Description**: same directive voice + TRIGGER WHEN / DO NOT TRIGGER WHEN checks as agents
-- **Body size**: under 500 lines; larger content should go in `references/`
-- **Progressive disclosure**: uses `references/` for deep content, keeps SKILL.md scannable
-- **Action-oriented**: teaches what Claude doesn't already know; avoids restating general best practices
-- **Examples**: 3-5 `<example>` tags for high-activation skills
+- **Description**: clear purpose + `TRIGGER WHEN` / `DO NOT TRIGGER WHEN` checks (internal coordinator-loaded method skills may state purpose and caller concisely)
+- **Body size**: under 500 lines; larger content belongs in `references/`
+- **Progressive disclosure**: uses `references/` for deep content with a router table in `SKILL.md`
+- **Action-oriented**: teaches what the model does not already know; avoids restating general best practices
+- **Examples**: zero-shot by default for agent instructions; add reviewed input/output examples only to resolve an ambiguous format or boundary
 
 #### D. Command Quality (for each command in the plugin)
 

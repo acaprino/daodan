@@ -1,8 +1,8 @@
 ---
 description: >
-  Checks whether a page is quotable by generative assistants, not merely rankable.
-  TRIGGER WHEN: the user asks to audit for AI search or answer engines, check visibility in Google AI Overviews / SGE, Perplexity, ChatGPT Search, Claude Search, or Bing Copilot, verify the AI-bot crawler allowlist, or check E-E-A-T, llms.txt, JSON-LD citation readiness, passage extractability, and prompt-injection hardening.
-  DO NOT TRIGGER WHEN: the task is traditional organic / SERP ranking SEO (use /digital-marketing:seo-audit), or content tone and voice only (use the content-marketer agent).
+  Audit pages for generative search / answer engine citation readiness (AI Overviews, Perplexity, ChatGPT/Claude Search, Bing Copilot).
+  TRIGGER WHEN: auditing AI search visibility, AI-bot crawler allowlists, E-E-A-T, llms.txt, JSON-LD citation schemas, passage extractability or prompt-injection hardening.
+  DO NOT TRIGGER WHEN: traditional SERP ranking SEO (use /digital-marketing:seo-audit) or copy tone/voice (use content-marketer).
 argument-hint: "<url or local path> [--focus <comma-separated: crawlers,eeat,schema,passages,injection | all>] [--strict-mode]"
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: ai-scraping-expert
-description: 'Specialist for the AI-assisted half of a scraping pipeline. TRIGGER WHEN: picking between Crawl4AI, Firecrawl, ScrapeGraphAI, Browser Use, Stagehand, Skyvern, Jina Reader and Spider.cloud, designing Pydantic schema-driven extraction, building a CSS plus LLM-fallback hybrid, reverse-engineering a GraphQL API, or estimating extraction cost at scale. DO NOT TRIGGER WHEN: the work is TLS fingerprinting (use http-fingerprint-expert), browser stealth or CAPTCHA (use stealth-browser-expert), or boilerplate with no LLM (use grabber-architect).'
+description: 'Specialist for LLM-assisted web extraction and hybrid CSS+LLM scraping pipelines. TRIGGER WHEN: choosing between Crawl4AI, Firecrawl, ScrapeGraphAI, Browser Use, Stagehand, Skyvern or Jina Reader, designing Pydantic extraction schemas, or estimating LLM extraction cost. DO NOT TRIGGER WHEN: TLS fingerprinting (use http-fingerprint-expert), browser stealth (use stealth-browser-expert), or non-LLM crawler architecture (use grabber-architect).'
 tools: ['search', 'edit', 'runCommands', 'fetch']
 ---
 

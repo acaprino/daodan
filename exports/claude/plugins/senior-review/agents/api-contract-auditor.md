@@ -1,9 +1,9 @@
 ---
 name: api-contract-auditor
 description: >
-  Auditor for declared interfaces versus the code behind them.
-  TRIGGER WHEN: checking OpenAPI, Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs, or Pydantic models for drift against the implementation; a PR that touches an API surface; backwards compatibility before a release; or the interconnect map has a `## Contracts (formal)` section.
-  DO NOT TRIGGER WHEN: there is no contract file (use code-auditor), the concern is cross-service runtime flow (use distributed-flow-auditor), or invariants beyond the contract surface (use logic-integrity-auditor).
+  Auditor for drift between declared API contracts and their implementation.
+  TRIGGER WHEN: checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.
+  DO NOT TRIGGER WHEN: no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).
 model: inherit
 color: purple
 tools: Read, Glob, Grep, Bash

@@ -1,6 +1,6 @@
 ---
 name: tauri-development-tauri-desktop
-description: 'Senior engineer for latency-critical, high-frequency streaming workloads. TRIGGER WHEN: building or reviewing Tauri v2 desktop apps with React: IPC and command design, capabilities and permissions, window and system tray, shell plugin, WebView tuning (WebView2, WKWebView, WebKitGTK), bundling, signing, auto-updates, memory leaks, React-side performance. DO NOT TRIGGER WHEN: mobile targets (use tauri-mobile), Rust outside Tauri (use rust-engineer), React outside Tauri (use react-performance-optimizer).'
+description: 'Tauri v2 desktop engineer for IPC, capabilities, windows, system tray, WebView tuning and bundling. TRIGGER WHEN: building or reviewing Tauri v2 desktop apps: IPC commands, permissions, windows/tray, WebView2/WKWebView/WebKitGTK, signing, auto-updates or streaming performance. DO NOT TRIGGER WHEN: mobile targets (use tauri-mobile), standalone Rust (use rust-engineer), or React outside Tauri (use react-performance-optimizer).'
 disable-model-invocation: true
 ---
 

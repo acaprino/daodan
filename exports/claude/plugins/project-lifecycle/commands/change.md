@@ -1,5 +1,5 @@
 ---
-description: Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.
+description: Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task covers the outcome (use clean-code, testing or project-knowledge directly).
 ---
 
 <daodan_host_binding host="claude">

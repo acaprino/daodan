@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:97ff056d8d55ebb7a58d79b5e4dce0e02dbc07d025cd2414fbb949b614072b39",
+  "coreDigest": "sha256:1cb0d52a202b7ab44cde8f1ab368ab1fb18c81d82262d54c9524c976e39fd9b9",
   "harnessStrategies": {
     "team-research": "parallel-subagents"
   },
   "host": "copilot",
   "overrides": [],
   "plugin": "research",
-  "version": "6.2.5"
+  "version": "6.2.6"
 }

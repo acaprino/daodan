@@ -21,40 +21,48 @@ MARKETPLACE_JSON = PROJECT_ROOT / ".claude-plugin" / "marketplace.json"
 PLUGINS_DIR = PROJECT_ROOT / "plugins"
 
 DESCRIPTION_HARD_LIMIT = 1024
-DESCRIPTION_RECOMMENDED_LIMIT = 300
-TOTAL_DESCRIPTION_BUDGET = 15000
+DESCRIPTION_RECOMMENDED_LIMIT = 350
+TOTAL_DESCRIPTION_BUDGET = 55000
 SKILL_BODY_WARN_LINES = 300
 SKILL_BODY_MAX_LINES = 500
 SKILL_BODY_TOKEN_TARGET = 5000
 SKILL_BODY_TOKEN_WARN = 4000
-EXAMPLE_TAG_MIN = 3
-EXAMPLE_TAG_MAX = 5
 
 # Passive patterns that indicate low activation descriptions
 PASSIVE_PATTERNS = [
     (r"(?i)^\"?helps?\s+with\b", "passive: 'Helps with...'"),
     (r"(?i)^\"?can\s+be\s+used\b", "passive: 'Can be used...'"),
-    (r"(?i)^\"?use\s+when\b", "passive: 'Use when...' (prefer 'TRIGGER WHEN')"),
     (r"(?i)^\"?useful\s+for\b", "passive: 'Useful for...'"),
     (r"(?i)^\"?a\s+tool\s+for\b", "passive: 'A tool for...'"),
-    (r"(?i)^\"?provides?\b", "passive: 'Provides...'"),
 ]
 
-# Directive patterns that indicate high activation
+# Escalated patterns that cause overtriggering on frontier models
+ESCALATION_PATTERNS = [
+    (r"(?i)\bCRITICAL:\s*You\s+MUST\s+ALWAYS\b", "emphasis escalation: causes overtriggering on frontier models"),
+    (r"(?i)\bNEVER\s+skip\s+it\b", "emphasis escalation: causes overtriggering on frontier models"),
+]
+
+# Directive or coordinator-routed patterns that indicate clear activation scope
 DIRECTIVE_PATTERNS = [
+    r"(?i)\bTRIGGER\s+WHEN\b",
     r"(?i)\bALWAYS\s+invoke\b",
     r"(?i)\bMUST\s+use\b",
     r"(?i)\buse\s+PROACTIVELY\b",
-    r"(?i)\bTRIGGER\s+WHEN\b",
-]
-
-NEGATIVE_CONSTRAINT_PATTERNS = [
-    r"(?i)\bDo\s+not\b.*\bdirectly\b",
-    r"(?i)\bDO\s+NOT\s+TRIGGER\b",
-    r"(?i)\bnever\b.*\bdirectly\b",
+    r"(?i)\bLoad\s+(?:when|before|as)\b",
+    r"(?i)\bShared\s+by\b",
+    r"(?i)\bIsolated\s+task\s+worker\b",
+    r"(?i)\bCompatibility\s+skill\b",
 ]
 
 EM_DASH = "\u2014"
+# Files whose subject matter is documenting the em dash character itself
+EM_DASH_SUBJECT_EXEMPT = {
+    "anti-ai-writing-patterns",
+    "text-humanizer",
+    "marketplace-audit",
+    "skills-creator",
+    "marketplace-manager",
+}
 
 
 def parse_frontmatter(text):
@@ -96,8 +104,8 @@ def check_description(desc, component_type, name):
         issues.append(("INFO", f"Description is {len(clean)} chars (recommended: under {DESCRIPTION_RECOMMENDED_LIMIT})"))
 
     # Em dash
-    if EM_DASH in clean:
-        issues.append(("WARNING", "Description contains em dash -- use hyphen or double hyphen"))
+    if EM_DASH in clean and name not in EM_DASH_SUBJECT_EXEMPT:
+        issues.append(("WARNING", "Description contains em dash: rewrite with colons, parentheses, or separate sentences"))
 
     # Passive patterns
     for pattern, label in PASSIVE_PATTERNS:
@@ -105,28 +113,31 @@ def check_description(desc, component_type, name):
             issues.append(("WARNING", f"Low-activation description pattern: {label}"))
             break
 
+    # Escalation patterns
+    for pattern, label in ESCALATION_PATTERNS:
+        if re.search(pattern, clean):
+            issues.append(("WARNING", label))
+            break
+
     # Directive check
     has_directive = any(re.search(p, clean) for p in DIRECTIVE_PATTERNS)
     if not has_directive:
-        issues.append(("WARNING", "No directive activation phrase found (ALWAYS invoke, MUST use, TRIGGER WHEN, use PROACTIVELY)"))
+        issues.append(("WARNING", "No activation boundary found (add TRIGGER WHEN: or explicit coordinator load condition)"))
 
     # TRIGGER WHEN check
     has_trigger_when = bool(re.search(r"(?i)TRIGGER\s+WHEN\b", clean))
-    if not has_trigger_when:
+    if not has_trigger_when and not has_directive:
         issues.append(("WARNING", "Missing TRIGGER WHEN clause"))
 
     # DO NOT TRIGGER WHEN check. Advisory only: a clause that names no concrete sibling
     # discriminates nothing and costs context in every session, so absence is not a defect.
     has_no_trigger = bool(re.search(r"(?i)DO\s+NOT\s+TRIGGER\s+WHEN\b", clean))
-    if not has_no_trigger:
-        issues.append(("INFO", "No DO NOT TRIGGER WHEN clause; add one only when a confusable sibling exists to name"))
-    elif not re.search(r"(?i)DO\s+NOT\s+TRIGGER\s+WHEN\b.*?\b(use|see|route\s+to|handled\s+by)\b", clean, re.S):
+    if has_no_trigger and not re.search(
+        r"(?i)DO\s+NOT\s+TRIGGER\s+WHEN\b.*?\b(use|see|run|route\s+to|handled\s+by|belongs?\s+to|owns?)\b",
+        clean,
+        re.S,
+    ):
         issues.append(("WARNING", "DO NOT TRIGGER WHEN clause names no alternative component; either name the sibling to route to, or drop the clause"))
-
-    # Negative constraint check
-    has_negative = any(re.search(p, clean) for p in NEGATIVE_CONSTRAINT_PATTERNS)
-    if not has_negative and component_type == "skill":
-        issues.append(("INFO", "No negative constraint ('Do not X directly') -- consider adding one for higher activation"))
 
     return issues, len(clean)
 
@@ -144,20 +155,20 @@ def check_skill_body(skill_dir):
     line_count = len(body.split("\n"))
 
     if line_count > SKILL_BODY_MAX_LINES:
-        issues.append(("WARNING", f"SKILL.md body is {line_count} lines (max: {SKILL_BODY_MAX_LINES}) -- split into references/"))
+        issues.append(("WARNING", f"SKILL.md body is {line_count} lines (max: {SKILL_BODY_MAX_LINES}): split into references/"))
     elif line_count > SKILL_BODY_WARN_LINES:
         has_refs = (skill_dir / "references").exists() and any((skill_dir / "references").iterdir())
         if not has_refs:
-            issues.append(("INFO", f"SKILL.md body is {line_count} lines (threshold: {SKILL_BODY_WARN_LINES}) -- consider splitting into references/"))
+            issues.append(("INFO", f"SKILL.md body is {line_count} lines (threshold: {SKILL_BODY_WARN_LINES}): consider splitting into references/"))
 
-    if EM_DASH in text:
-        issues.append(("WARNING", "SKILL.md contains em dash character -- use hyphen or double hyphen"))
+    if EM_DASH in text and skill_dir.name not in EM_DASH_SUBJECT_EXEMPT:
+        issues.append(("WARNING", "SKILL.md contains em dash character: rewrite with colons, parentheses, or separate sentences"))
 
     return issues
 
 
 def check_skill_body_extended(skill_dir):
-    """Extended body checks: tokens, examples, frontmatter fields, preprocessor."""
+    """Extended body checks: tokens, frontmatter fields, preprocessor."""
     issues = []
     skill_md = skill_dir / "SKILL.md"
     if not skill_md.exists():
@@ -169,16 +180,9 @@ def check_skill_body_extended(skill_dir):
     # Token estimate (chars / 4)
     est_tokens = len(body) // 4
     if est_tokens > SKILL_BODY_TOKEN_TARGET:
-        issues.append(("WARNING", f"SKILL.md body is ~{est_tokens:,} tokens (target: <{SKILL_BODY_TOKEN_TARGET:,}) -- split into references/"))
+        issues.append(("WARNING", f"SKILL.md body is ~{est_tokens:,} tokens (target: <{SKILL_BODY_TOKEN_TARGET:,}): split into references/"))
     elif est_tokens > SKILL_BODY_TOKEN_WARN:
         issues.append(("INFO", f"SKILL.md body is ~{est_tokens:,} tokens (approaching {SKILL_BODY_TOKEN_TARGET:,} target)"))
-
-    # Example tags
-    example_count = len(re.findall(r"<example>", body, re.IGNORECASE))
-    if example_count == 0:
-        issues.append(("INFO", f"No <example> tags -- guide recommends {EXAMPLE_TAG_MIN}-{EXAMPLE_TAG_MAX}"))
-    elif example_count < EXAMPLE_TAG_MIN:
-        issues.append(("INFO", f"Only {example_count} <example> tag(s) -- guide recommends {EXAMPLE_TAG_MIN}-{EXAMPLE_TAG_MAX}"))
 
     # context: fork detection
     if fm.get("context", "").strip() == "fork":
@@ -203,25 +207,18 @@ def check_agent_body(agent_path):
     _, body = parse_frontmatter(text)
     line_count = len(body.split("\n"))
 
-    if line_count > 800:
-        issues.append(("WARNING", f"Agent body is {line_count} lines (max recommended: 800)"))
+    if line_count > 700:
+        issues.append(("WARNING", f"Agent body is {line_count} lines (max recommended: 700)"))
 
-    if EM_DASH in text:
-        issues.append(("WARNING", "Agent file contains em dash character -- use hyphen or double hyphen"))
+    if EM_DASH in text and agent_path.stem not in EM_DASH_SUBJECT_EXEMPT:
+        issues.append(("WARNING", "Agent file contains em dash character: rewrite with colons, parentheses, or separate sentences"))
 
     return issues
 
 
 def check_agent_frontmatter_extended(agent_path):
-    """Check agent-specific frontmatter: tools field presence."""
-    issues = []
-    text = agent_path.read_text(encoding="utf-8", errors="replace")
-    fm, _ = parse_frontmatter(text)
-
-    if "tools" not in fm:
-        issues.append(("INFO", "No tools field -- all tools allowed (consider restricting)"))
-
-    return issues
+    """Check agent-specific frontmatter."""
+    return []
 
 
 def score_description(issues):

@@ -1,0 +1,152 @@
+# Anti-AI Writing Patterns: Detailed Catalog and Specimens
+
+On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains before/after specimens, open-point examples, and the full end-to-end report example for the 24 catalogued patterns.
+
+## Content Patterns (1-6)
+
+### 1. Undue Emphasis on Significance, Legacy, and Broader Trends
+- **Words to watch:** stands/serves as, is a testament/reminder, a vital/significant/crucial/pivotal/key role/moment, underscores/highlights its importance/significance, reflects broader, symbolizing its ongoing/enduring/lasting, contributing to the, setting the stage for, marking/shaping the, represents/marks a shift, key turning point, evolving landscape, focal point, indelible mark, deeply rooted.
+- **Before:** > The Statistical Institute of Catalonia was officially established in 1989, marking a pivotal moment in the evolution of regional statistics in Spain. This initiative was part of a broader movement across Spain to decentralize administrative functions and enhance regional governance.
+- **After:** > The Statistical Institute of Catalonia was established in 1989, as part of a wider move in Spain to decentralize administration and strengthen regional government.
+
+### 2. Undue Emphasis on Notability and Media Coverage
+- **Words to watch:** independent coverage, local/regional/national media outlets, trade publications, cited/featured in, was identified by, written by a leading expert, active social media presence.
+- **Before:** > Her views have been cited in The New York Times, BBC, Financial Times, and The Hindu. She maintains an active social media presence with over 500,000 followers.
+- **After:** > Her views have been cited by The New York Times, the BBC, the Financial Times, and The Hindu, and she has over 500,000 followers on social media.
+- **Open point:** name one article and what she argued in it. A list of outlets shows reach, not substance.
+
+### 3. Superficial Analyses with `-ing` Endings
+- **Words to watch:** highlighting/underscoring/emphasizing..., ensuring..., reflecting/symbolizing..., contributing to..., cultivating/fostering..., encompassing..., enhancing..., showcasing...
+- **Problem:** GPT-4o writes present participial clauses at 5.3 times the human rate (Reinhart et al., PNAS 2025). Cut the rider, or give it a sentence of its own when it carries a fact.
+- **Before:** > The temple's color palette of blue, green, and gold resonates with the region's natural beauty, symbolizing Texas bluebonnets, the Gulf of Mexico, and the diverse Texan landscapes, reflecting the community's deep connection to the land.
+- **After:** > The temple's colors, blue, green, and gold, symbolize Texas bluebonnets, the Gulf of Mexico, and the Texan landscape.
+
+### 4. Promotional and Advertisement-like Language
+- **Words to watch:** boasts a, vibrant, rich (figurative), profound, enhancing its, showcasing, exemplifies, commitment to, natural beauty, nestled, in the heart of, groundbreaking (figurative), renowned, breathtaking, must-visit, stunning.
+- **Before:** > Nestled within the breathtaking region of Gonder in Ethiopia, Alamata Raya Kobo stands as a vibrant town with a rich cultural heritage and stunning natural beauty.
+- **After:** > Alamata Raya Kobo is a town in the Gonder region of Ethiopia.
+- **Open point:** what the town is known for.
+
+### 5. Vague Attributions and Weasel Words
+- **Words to watch:** Industry reports, Observers have cited, Experts argue, Some critics argue, several sources/publications; in connection with, connected with/to, in association with, associated with.
+- **Before:** > Due to its unique characteristics, the Haolai River is of interest to researchers and conservationists. Experts believe it plays a crucial role in the regional ecosystem.
+- **After:** > The Haolai River is of interest to researchers and conservationists.
+- **Open point:** "Experts believe it plays a crucial role in the regional ecosystem" was cut. Name the experts or the study, and the role, to restore it.
+
+### 6. Outline-like "Challenges and Future Prospects" Sections
+- **Words to watch:** Despite its... faces several challenges..., Despite these challenges, Challenges and Legacy, Future Outlook.
+- **Before:** > Despite its industrial prosperity, Korattur faces challenges typical of urban areas, including traffic congestion and water scarcity. Despite these challenges, with its strategic location and ongoing initiatives, Korattur continues to thrive as an integral part of Chennai's growth.
+- **After:** > Korattur is a prosperous industrial area of Chennai. It has traffic congestion and water scarcity.
+- **Open point:** which "ongoing initiatives", and what makes the location "strategic".
+
+---
+
+## Language and Grammar Patterns (7-12)
+
+### 7. Overused "AI Vocabulary" Words
+- **High-frequency AI words:** Additionally (opening a sentence), align with, boasts (meaning "has"), bolstered, crucial, deep dive, delve, emphasizing, enduring, enhance, fostering, garner, highlight (verb), interplay, intricate/intricacies, key (adjective), landscape (abstract noun), meticulous/meticulously, pivotal, robust, showcase, tapestry (abstract noun), testament, underscore (verb), valuable, vibrant.
+- **Note:** Density is the tell. "delve", "tapestry" and "testament" belong to 2023-24 models, while "enhance", "emphasizing", "highlighting" and "showcasing" persist in 2025-26 models (Kobak et al., Science Advances 2025).
+- **Before:** > Additionally, a distinctive feature of Somali cuisine is the incorporation of camel meat. An enduring testament to Italian colonial influence is the widespread adoption of pasta in the local culinary landscape, showcasing how these dishes have integrated into the traditional diet.
+- **After:** > Camel meat is a distinctive part of Somali cuisine. Pasta, a legacy of Italian colonial influence, is widely eaten and has become part of the traditional diet.
+
+### 8. Avoidance of "is"/"are" (Copula Avoidance)
+- **Words to watch:** serves as/stands as/functions as/operates as/marks/represents [a], refers to, maintains, boasts/features/offers [a].
+- **Before:** > Gallery 825 serves as LAAA's exhibition space for contemporary art. The gallery features four separate spaces and boasts over 3,000 square feet.
+- **After:** > Gallery 825 is LAAA's exhibition space for contemporary art. It has four separate spaces and over 3,000 square feet.
+
+### 9. Negative Parallelisms
+- **Problem:** "Not only...but...", "It's not just about..., it's...", "Y rather than X", staged reveals ("The result? ...", "Here's the thing:"), arguing with no one ("This isn't about speed").
+- **Before:** > It's not just about the beat riding under the vocals; it's part of the aggression and atmosphere. It's not merely a song, it's a statement.
+- **After:** > The beat under the vocals adds to the aggression and the atmosphere.
+
+### 10. Rule of Three Overuse (**weak alone**)
+- **Before:** > The event features keynote sessions, panel discussions, and networking opportunities. Attendees can expect innovation, inspiration, and industry insights.
+- **After:** > The event has keynote sessions, panel discussions, and time for networking.
+
+### 11. Elegant Variation / Synonym Cycling (**weak alone**)
+- **Before:** > The protagonist faces many challenges. The main character must overcome obstacles. The central figure eventually triumphs. The hero returns home.
+- **After:** > The protagonist faces many challenges but eventually triumphs and returns home.
+
+### 12. False Ranges (**weak alone**)
+- **Before:** > Our journey through the universe has taken us from the singularity of the Big Bang to the grand cosmic web, from the birth and death of stars to the enigmatic dance of dark matter.
+- **After:** > We have covered the Big Bang, the cosmic web, the life cycle of stars, and dark matter.
+
+---
+
+## Style, Communication, and Filler Specimens (13-24)
+
+### 13. Em Dash and Hyphen Overuse
+- **Before:** > The term is primarily promoted by Dutch institutions — not by the people themselves. You don't say "Netherlands, Europe" as an address — yet this mislabeling continues — even in official documents.
+- **After:** > The term is primarily promoted by Dutch institutions, not by the people themselves. You don't say "Netherlands, Europe" as an address, yet this mislabeling continues, even in official documents.
+- **Before:** > She built the prototype in two weeks--a record for the team--and launched it to beta users immediately.
+- **After:** > She built the prototype in two weeks (a record for the team) and launched it to beta users immediately.
+
+### 14. Overuse of Boldface
+- **Before:** > It blends **OKRs (Objectives and Key Results)**, **KPIs (Key Performance Indicators)**, and visual strategy tools such as the **Business Model Canvas (BMC)** and **Balanced Scorecard (BSC)**.
+- **After:** > It blends OKRs (objectives and key results), KPIs (key performance indicators), and visual strategy tools such as the Business Model Canvas (BMC) and the Balanced Scorecard (BSC).
+
+### 15. Inline-Header Vertical Lists
+- **Before:**
+  > - **User Experience:** The user experience has been significantly improved with a new interface.
+  > - **Performance:** Performance has been enhanced through optimized algorithms.
+  > - **Security:** Security has been strengthened with end-to-end encryption.
+- **After:** > A new interface improves the user experience, optimized algorithms improve performance, and end-to-end encryption strengthens security.
+
+### 16-24. Additional Specimens
+- **16. Title Case in Headings (**weak alone** in English, strong in Italian):** `## Strategic Negotiations And Global Partnerships` -> `## Strategic negotiations and global partnerships`.
+- **17. Emojis (**weak alone**):** Strip decorative line-initial emojis (`🚀`, `💡`, `✅`).
+- **18. Curly Quotation Marks (**weak alone**):** Unify mixed curly and straight quotes within a document while preserving native language quotation marks.
+- **19. Collaborative Communication Artifacts:** Strip chatbot openings/closers ("I hope this helps", "Certainly!"), citation tokens (`:contentReference[oaicite:N]{index=N}`, `citeturn0search0`), and tracking params (`utm_source=chatgpt.com`, `utm_source=openai`, `utm_source=copilot.com`, `referrer=grok.com`).
+- **20. Knowledge-Cutoff Disclaimers:** `While specific details about the company's founding are not extensively documented in readily available sources, it appears to have been established sometime in the 1990s.` -> `The company appears to date from the 1990s.`
+- **21. Sycophantic/Servile Tone:** `Great question! You're absolutely right...` -> state the relevant point directly.
+- **22. Filler Phrases (**weak alone** for wordiness; strong for meta-commentary like "In this section, we will explore"):** `"In order to achieve this goal"` -> `"To achieve this"`, `"Due to the fact that"` -> `"Because"`, `"At this point in time"` -> `"Now"`.
+- **23. Excessive Hedging:** `"It could potentially possibly be argued that the policy might have some effect"` -> `"The policy may affect outcomes"`.
+- **24. Generic Positive Conclusions:** Cut upbeat closers ("The future looks bright", "Exciting times lie ahead") and end on the last concrete fact.
+
+---
+
+## Full End-to-End Example
+
+**Before (AI-sounding):**
+> Great question! Here is an essay on this topic. I hope this helps!
+>
+> AI-assisted coding serves as an enduring testament to the transformative potential of large language models, marking a pivotal moment in the evolution of software development. In today's rapidly evolving technological landscape, these groundbreaking tools--nestled at the intersection of research and practice--are reshaping how engineers ideate, iterate, and deliver, underscoring their vital role in modern workflows.
+>
+> At its core, the value proposition is clear: streamlining processes, enhancing collaboration, and fostering alignment. It's not just about autocomplete; it's about unlocking creativity at scale, ensuring that organizations can remain agile while delivering seamless, intuitive, and powerful experiences to users. The tool serves as a catalyst. The assistant functions as a partner. The system stands as a foundation for innovation.
+>
+> Industry observers have noted that adoption has accelerated from hobbyist experiments to enterprise-wide rollouts, from solo developers to cross-functional teams. The technology has been featured in The New York Times, Wired, and The Verge. Additionally, the ability to generate documentation, tests, and refactors showcases how AI can contribute to better outcomes, highlighting the intricate interplay between automation and human judgment.
+>
+> - **Speed:** Code generation is significantly faster, reducing friction and empowering developers.
+> - **Quality:** Output quality has been enhanced through improved training, contributing to higher standards.
+> - **Adoption:** Usage continues to grow, reflecting broader industry trends.
+>
+> While specific details are limited based on available information, it could potentially be argued that these tools might have some positive effect. Despite challenges typical of emerging technologies--including hallucinations, bias, and accountability--the ecosystem continues to thrive. In order to fully realize this potential, teams must align with best practices.
+>
+> In conclusion, the future looks bright. Exciting times lie ahead as we continue this journey toward excellence. Let me know if you'd like me to expand on any section!
+
+**Report (`docs` register):**
+
+**Final text**
+
+````text
+AI coding assistants generate code, documentation, tests, and refactors. With them, code generation is faster, output quality has improved with better training, and usage keeps growing: adoption has spread from hobbyists and solo developers to enterprise-wide rollouts and cross-functional teams. The New York Times, Wired, and The Verge have covered them.
+
+Known problems include hallucinations, bias, and questions of accountability.
+````
+
+**Changes:**
+- 19, 21: chatbot wrappers removed ("Great question!", "Here is an essay", "I hope this helps!", "Let me know...")
+- 1, 4, 7, 8: significance inflation, promotional language, AI vocabulary and copula avoidance cut ("enduring testament", "pivotal moment", "groundbreaking", "nestled", "serves as", "functions as", "stands as", "showcases", "intricate interplay")
+- 9, 10, 11: negative parallelism, triads and synonym cycling cut ("It's not just about autocomplete", "ideate, iterate, and deliver", "catalyst/partner/foundation")
+- 5: "Industry observers have noted" dropped; the adoption claim kept, stated plainly
+- 12: the doubled "from X to Y" range folded into one statement
+- 15: the inline-header list merged into prose
+- 6, 20, 23: the challenges formula, the knowledge-cutoff disclaimer and the stacked hedging cut; the named problems kept
+- 22, 24: "At its core", "In order to" and the generic conclusion cut
+- 13: dash asides removed
+
+**Open points:**
+- "significantly faster": by how much, measured how? Kept as "faster".
+- "improved training" raising output quality: which models, what evidence?
+- "streamlining processes, enhancing collaboration, and fostering alignment": no concrete benefit named; cut.
+- "teams must align with best practices": which practices? Cut.

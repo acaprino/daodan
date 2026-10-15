@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: text-humanizer:text-humanizer; version: 1.2.4; source-sha256: 6eec8828219b84dcc03b06b1f9731f3db0017802cb7b8bbac1b49504b652af65. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: text-humanizer:text-humanizer; version: 1.2.5; source-sha256: 6eec8828219b84dcc03b06b1f9731f3db0017802cb7b8bbac1b49504b652af65. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `text-humanizer`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<text-humanizer-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `text-humanizer`. The owning plugin's declared logical skill identities are `text-humanizer:anti-ai-writing-patterns`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `text-humanizer:anti-ai-writing-patterns` -> compiled registry name `anti-ai-writing-patterns` at `skills/anti-ai-writing-patterns/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

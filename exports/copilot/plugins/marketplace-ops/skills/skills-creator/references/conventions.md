@@ -119,7 +119,7 @@ Optional: `dependencies`, `optionalDependencies` (arrays of plugin names)
 - Agent filenames: kebab-case `.md`, filename matches `name` frontmatter
 - Skill directories: kebab-case, directory name matches `name` frontmatter
 - Command filenames: kebab-case `.md`
-- No em dash character anywhere -- use `-` or `--`
+- Avoid the dash-aside construct in any form (`—`, `--`, or ` - `); rewrite with colons, parentheses, or separate sentences
 
 ## Agent Body Structure
 
@@ -141,39 +141,38 @@ Terse keyword-list style, imperative tone. Standard sections:
 - Format instructions
 ```
 
-Simple agents: 60-200 lines. Complex agents: up to 800 lines.
+Simple agents: 60-200 lines. Complex agents: up to 700 lines (move domain knowledge to a skill's `references/`).
 
 ## Description Format (Skills and Agents)
 
-The description is the single most important line. It determines activation rate.
+The description sits in context in every session and governs routing accuracy.
 
-### High-Activation Template (97-100%)
+### Calibrated Trigger Template
 
 ```yaml
 # Skill description
 description: >
-  "<Domain summary>" argument-hint: "<usage hint>".
-  TRIGGER WHEN: <specific triggers, comma-separated>
-  DO NOT TRIGGER WHEN: <exclusions>.
+  <Concise third-person summary>.
+  TRIGGER WHEN: <specific triggers, comma-separated>.
+  DO NOT TRIGGER WHEN: <the confusable case> (use <sibling-component> instead).
 
 # Agent description (multiline with >)
 description: >
-  <Domain> expert for <specific tasks>.
+  <Concise third-person role summary>.
   TRIGGER WHEN: <triggers>.
   DO NOT TRIGGER WHEN: <the confusable case> (use <sibling-component> instead).
 ```
 
 ### Rules
 
-- **Directive voice** -- "ALWAYS invoke" or imperative triggers, not "Can be used for"
-- **Negative constraint** -- "Do not X directly" prevents Claude from bypassing
-- **TRIGGER WHEN always** -- it carries the distinctive vocabulary that routes to this component
-- **DO NOT TRIGGER WHEN only when it names a sibling** -- see the rule below
-- **Third person** -- "Processes X when Y" not "I process X"
+- **Calibrated trigger phrasing**: state purpose and concrete `TRIGGER WHEN:` conditions; avoid emphasis escalation (`CRITICAL: ALWAYS invoke`) which causes overtriggering on frontier models
+- **TRIGGER WHEN on user-triggered components**: carries the distinctive vocabulary that routes to this component (internal coordinator-loaded method skills and sub-roles may state their purpose and caller without `TRIGGER WHEN`)
+- **DO NOT TRIGGER WHEN only when it names a sibling**: see the rule below
+- **Third person**: "Processes X when Y", not "I process X"
 - **Max 1024 characters** per description
 - **Under 300 characters** recommended (token budget)
-- **Specific trigger phrases** -- list exact words/actions that should activate
-- **No term in both the opening sentence and TRIGGER WHEN** -- the trigger line keeps it, the opening sentence yields
+- **Specific trigger phrases**: list exact words/actions that should activate
+- **No term in both the opening sentence and TRIGGER WHEN**: the trigger line keeps it, the opening sentence yields
 
 ### The DO NOT TRIGGER WHEN rule
 
@@ -189,12 +188,11 @@ DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code inste
 
 When no confusable sibling exists, omit the clause. Adding one anyway costs every session context and buys no routing accuracy.
 
-### Low-Activation Anti-patterns
+### Low-Activation and Overtriggering Anti-patterns
 
-- "Helps with stuff" -- vague, no triggers
-- "Use when working with Docker" -- passive suggestion, Claude bypasses it
-- "Docker expert for containerization" -- no negative constraint, no trigger phrases
-- A `DO NOT TRIGGER WHEN` clause naming no sibling -- pure context cost, delete it
+- "Helps with stuff": vague, no concrete triggers
+- "CRITICAL: You MUST ALWAYS invoke this skill": emphasis escalation that causes false-positive triggers
+- A `DO NOT TRIGGER WHEN` clause naming no sibling: pure context cost, delete it
 
 ## Token Budget
 

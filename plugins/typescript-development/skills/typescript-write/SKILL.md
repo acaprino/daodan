@@ -8,52 +8,32 @@ description: >
 
 # TypeScript/JavaScript Development Skill
 
-## When to Invoke
-
-- Writing new TypeScript or JavaScript files
-- Refactoring existing TS/JS code
-- Reviewing code for type safety and best practices
-- Converting JavaScript to TypeScript
-- Designing module APIs and type interfaces
-- Fixing type errors or improving type coverage
-
 ## Code Style
 
 ### Naming Conventions
 - `camelCase` for variables, functions, parameters
 - `PascalCase` for types, interfaces, classes, enums, React components
 - `UPPER_SNAKE_CASE` for constants and enum members
-- Prefix interfaces with `I` only if project convention requires it - otherwise plain `PascalCase`
+- Prefix interfaces with `I` only if project convention requires it; otherwise plain `PascalCase`
 - Boolean variables: use `is`, `has`, `should`, `can` prefixes (`isLoading`, `hasPermission`)
 - Event handlers: `handleClick`, `onSubmit` pattern
 
-### File Organization
-- One primary export per file when possible
-- Group related types with their implementation
-- Barrel exports (`index.ts`) for public module APIs only - avoid deep barrel re-exports
+### File Organization and Import Ordering
+- One primary export per file when possible; group related types with their implementation
+- Barrel exports (`index.ts`) for public module APIs only; avoid deep barrel re-exports
 - File naming: `kebab-case.ts` for utilities, `PascalCase.tsx` for React components
-
-### Import Ordering
-1. Node built-in modules (`node:fs`, `node:path`)
-2. External packages (`react`, `lodash`)
-3. Internal aliases (`@/utils`, `@/components`)
-4. Relative imports (`./helpers`, `../types`)
-5. Type-only imports (`import type { Foo }`)
-- Blank line between each group
+- Order imports with a blank line between groups: (1) Node built-ins (`node:fs`), (2) external packages, (3) internal aliases (`@/utils`), (4) relative imports, (5) `import type { ... }`
 
 ## TypeScript Patterns
 
-### Strict Mode
-- Enable `strict: true` in `tsconfig.json` - never disable individual strict checks
+### Strict Mode and Proper Typing
+- Enable `strict: true` in `tsconfig.json`; never disable individual strict checks
 - No `// @ts-ignore` or `// @ts-expect-error` without an explanatory comment
-- Prefer `unknown` over `any` - narrow with type guards
-
-### Proper Typing
-- Avoid `any` - use `unknown` and narrow, or define a proper type
-- Prefer `interface` for object shapes that may be extended
-- Prefer `type` for unions, intersections, mapped types, and utility types
-- Use `readonly` for properties that should not be mutated
-- Use `as const` for literal type inference on objects and arrays
+- Prefer `unknown` over `any` and narrow with type guards
+- Prefer `interface` for extensible object shapes; prefer `type` for unions, intersections, and mapped/utility types
+- Use `readonly` for immutable properties and `as const` for literal inference
+- Prefer string union types (`type Status = "active" | "inactive"`) over enums unless runtime iteration or reverse mapping is required
+- Prefer built-in utility types (`Partial<T>`, `Required<T>`, `Pick<T, K>`, `Omit<T, K>`, `Record<K, V>`, `Extract<T, U>`, `Exclude<T, U>`) over custom mapped types
 
 ### Discriminated Unions
 ```typescript
@@ -100,20 +80,6 @@ type ApiResponse<T = unknown> = {
   timestamp: string;
 };
 ```
-
-### Utility Types
-- `Partial<T>` - all properties optional (use for update/patch operations)
-- `Required<T>` - all properties required
-- `Pick<T, K>` - select subset of properties
-- `Omit<T, K>` - exclude properties
-- `Record<K, V>` - typed key-value map
-- `Extract<T, U>` / `Exclude<T, U>` - filter union members
-- Prefer built-in utility types over manual type manipulation
-
-### Enums vs Union Types
-- Prefer string union types for simple sets: `type Status = "active" | "inactive"`
-- Use `const enum` only if you need numeric values and tree-shaking
-- Use regular `enum` when you need runtime reverse mapping or iteration
 
 ## React Patterns
 

@@ -1,5 +1,5 @@
 ---
-description: 'Tidy the workspace: filesystem garbage, generated artifacts tracked in git, `.gitignore` gaps and stale rules, scratch directories, orphan doc-assets, and git auxiliary state. Detects by default; applies with --fix or --commit. TRIGGER WHEN: the user asks to clean up a repository, remove committed build output, fix or audit `.gitignore`, clear scratch and pipeline-output directories, or list stale stashes, orphan worktrees and gone-upstream branches. DO NOT TRIGGER WHEN: the target needs source comprehension (dead code, unused exports, unused dependencies, orphan application assets), which belongs to `/senior-review:code-review`; or the target is test files, which belongs to `/testing:test-consolidate`.'
+description: 'Tidy the workspace: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: cleaning up a repository, removing committed build output, auditing .gitignore, clearing scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use /senior-review:code-review) or test consolidation (use /testing:test-consolidate).'
 ---
 
 <daodan_host_binding host="opencode">

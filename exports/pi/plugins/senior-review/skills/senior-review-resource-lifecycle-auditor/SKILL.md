@@ -1,6 +1,6 @@
 ---
 name: senior-review-resource-lifecycle-auditor
-description: 'Reviewer for resource ownership and release on the success, error, and cancellation paths: leaks, double-release, use-after-release, unbounded pool growth. TRIGGER WHEN: the diff or target acquires file handles, sockets, streams, DB connections, subprocesses, event listeners, subscriptions, locks, threads, goroutines, timers, object URLs, or GPU and native memory; especially in C, C++, Rust, Go, or async code. DO NOT TRIGGER WHEN: the concern is behavior over time AFTER a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).'
+description: 'Reviewer for resource acquisition and release across success, error and cancellation paths: leaks, double-release, use-after-release and unbounded pools. TRIGGER WHEN: target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory. DO NOT TRIGGER WHEN: behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).'
 disable-model-invocation: true
 ---
 

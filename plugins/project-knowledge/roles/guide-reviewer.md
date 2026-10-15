@@ -2,6 +2,7 @@
 name: guide-reviewer
 description: >
   Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer.
+  TRIGGER WHEN: spawned by /project-knowledge:guide to verify authored guide files.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

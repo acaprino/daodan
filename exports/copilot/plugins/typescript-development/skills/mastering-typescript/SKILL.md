@@ -1,9 +1,9 @@
 ---
 name: mastering-typescript
 description: >
-  Deep reference for advanced TypeScript.
-  TRIGGER WHEN: migrating JavaScript to TypeScript, bootstrapping a TS project (strict tsconfig, ESLint, Vite/Vitest, pnpm), writing generics, mapped or conditional types, `satisfies`, branded types, discriminated unions or template literal types, designing Zod schemas for runtime validation, building type-safe NestJS APIs, deep React and TypeScript typing, typing LangChain.js, or comparing TS with Java/Python enterprise approaches.
-  DO NOT TRIGGER WHEN: routine TS/JS (use typescript-development:typescript-write), React performance (use react-development:review-react), or dead-code detection (use typescript-development:knip).
+  Advanced TypeScript 5.x patterns, strict tsconfig/Vite/Vitest setup, type-level programming and Zod runtime schemas.
+  TRIGGER WHEN: migrating JS to TS, bootstrapping a TS project, writing generics, conditional/mapped/branded types, discriminated unions, Zod schemas, or typing React/NestJS.
+  DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:review-react), or dead code (use knip).
 ---
 
 <daodan_host_binding host="copilot">

@@ -1,5 +1,5 @@
 ---
-description: 'Persistence-layer reviewer: impossible or inconsistent stored state. TRIGGER WHEN: the diff or target touches schemas, models, ORM entities, repositories, raw SQL, caches, or transaction boundaries; or the concern is partial writes, read-modify-write races, uniqueness enforced in code but not in the database, cache and database divergence, or eventual consistency consumed as strong. DO NOT TRIGGER WHEN: the concern is domain rules and state machines (use logic-integrity-auditor), migration mechanics (the data-migrations dimension), or cross-service message flows (use distributed-flow-auditor).'
+description: 'Persistence-layer reviewer for partial writes, read-modify-write races, missing DB uniqueness constraints and cache-database divergence. TRIGGER WHEN: target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries. DO NOT TRIGGER WHEN: domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).'
 mode: subagent
 permissions:
   - action: "*"

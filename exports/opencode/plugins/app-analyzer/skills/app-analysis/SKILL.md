@@ -1,9 +1,9 @@
 ---
 name: app-analysis
 description: >
-  Report templates for the app-analyzer teardown: the competitive analysis, the user-flow diagrams and the visual HTML report.
+  Report templates for the app-analyzer teardown: competitive analysis, user-flow diagrams and visual HTML report.
   TRIGGER WHEN: writing the Phase 2 reports of an app-analyzer run ({APP}_ANALYSIS.md, {APP}_USER_FLOWS.md, {APP}_REPORT.html).
-  DO NOT TRIGGER WHEN: exploring the app itself (that is the app-analyzer agent's Phase 1), or auditing a codebase rather than a running product.
+  DO NOT TRIGGER WHEN: exploring the live app in Phase 1 (use app-analyzer) or auditing source code (use codebase-map).
 ---
 
 <daodan_host_binding host="opencode">

@@ -1,6 +1,6 @@
 ---
 name: instructions-coordinator
-description: 'Audit, create or maintain the projects authoritative durable instructions.'
+description: 'Audit, create or maintain the projects authoritative durable instructions. TRIGGER WHEN: the user asks to audit, create or update AGENTS.md, CLAUDE.md or host instruction files.'
 tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['instructions-auditor']
 ---

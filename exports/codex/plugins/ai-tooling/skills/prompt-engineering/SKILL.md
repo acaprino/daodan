@@ -176,6 +176,7 @@ conservative row for output shape and the more specific row for thinking control
 | How to write the prompt of an LLM-as-judge, a rubric verifier or a grader, and which additions measured as harmful | `references/judge-prompting.md` | The default judge shape, the per-class table, the lever table (reference, checklist, scale, permutation, strictness, persona, debate), the agreement check |
 | What has a measured effect in an agent's instruction surface: tool descriptions, rule and instruction files, skill descriptions, history scope, long-job persistence, coding-agent workflows | `references/agent-instructions.md` | Description anatomy, guardrails over guidance, per-model history scope, verified state, fresh-context test generation, and what is still unmeasured |
 | What a vendor currently says about a named model before restating it | `references/model-guidance.md` | Quoted, dated vendor statements and their consequence for a prompt |
+| Detailed benchmark numbers, sample sizes and per-model curves behind the role's digest rules | `references/empirical-notes.md` | Persona ratings, shot-count curves, delimiter spreads, compositional constraint half-lives, RAG abstention rates and language/modality measurements |
 
 Skip reference reads for a simple persona or single-turn free-text prompt when the working
 baseline suffices, with no reasoning component, parsed output or cost constraint. That is the

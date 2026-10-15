@@ -1,7 +1,8 @@
 ---
 name: readme-craft
 description: >
-  Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. Callable audit-only and authorized apply modes.
+  Create or audit README.md from verified project facts, retaining author voice and proportional information architecture.
+  TRIGGER WHEN: creating, auditing or updating README.md.
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.

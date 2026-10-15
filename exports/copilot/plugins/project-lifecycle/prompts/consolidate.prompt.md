@@ -1,6 +1,6 @@
 ---
 name: consolidate
-description: 'Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: workspace tidying without experiment consolidation (use /repo-hygiene:tidy).'
 argument-hint: '[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit] [--purge]'
 ---
 

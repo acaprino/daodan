@@ -1,7 +1,7 @@
 ---
 name: test-preparation
 description: >
-  Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence.
+  Prepare existing test-auditor inputs, runner/configuration diagnosis and snapshot-bound baseline evidence. Load before dispatching testing:test-suite-auditor.
 ---
 
 <daodan_host_binding host="copilot">

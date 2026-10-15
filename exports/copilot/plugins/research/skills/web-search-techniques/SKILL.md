@@ -1,8 +1,8 @@
 ---
 name: web-search-techniques
 description: >
-  Knowledge base for web research: query formulation, source authority ranking, the two search backends (native WebSearch, optional serper.dev through websearch.py), reading pages with WebFetch and the webfetch.py bot-block fallback, and the anti-loop rules. Used by quick-searcher, deep-researcher and /research:team-research.
-  TRIGGER WHEN: performing web research with WebSearch, WebFetch, or the research plugin's scripts.
+  Web research methodology: query formulation, source authority ranking, WebSearch/serper.dev backends, bot-block fallbacks and anti-loop rules.
+  TRIGGER WHEN: performing web research in quick-searcher, deep-researcher or /research:team-research.
   DO NOT TRIGGER WHEN: searching a local codebase (use Grep or Glob directly).
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: instagram-grab-workflow
-description: 'Download every photo and video from an Instagram profile at full resolution, including carousel slides and reels, into a local folder that can be re-run to pick up only what is new. TRIGGER WHEN: the user asks to grab, download, archive, mirror or back up the media of an Instagram profile or account, or wants the photos and videos of a page for reuse elsewhere. DO NOT TRIGGER WHEN: the target is a single post URL the user already has, a platform other than Instagram, or the task is building a new scraper for a different site, which belongs to the grabber-development skill and its specialists.'
+description: 'Download all full-resolution photos, videos, carousels and reels from an Instagram profile into an incremental local archive. TRIGGER WHEN: downloading, archiving, mirroring or backing up media from an Instagram profile. DO NOT TRIGGER WHEN: building a custom scraper for another site (use grabber-development).'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

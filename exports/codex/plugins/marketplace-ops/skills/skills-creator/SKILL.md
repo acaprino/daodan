@@ -1,9 +1,9 @@
 ---
 name: skills-creator
 description: >
-  Creates new Claude Code plugin components: skills, agents, commands, full plugins. Also decides skill vs agent architecture.
-  TRIGGER WHEN: the user asks to create, add, scaffold or build a new skill, agent, command or plugin, or says "new skill", "new agent", "new plugin", "skills-creator", "skills-hammer".
-  DO NOT TRIGGER WHEN: editing or updating an existing component, or auditing marketplace integrity (use marketplace-audit instead).
+  Create plugin components (skills, agents, commands, full plugins) and decide skill vs agent architecture.
+  TRIGGER WHEN: creating, adding or scaffolding a new skill, agent, command or plugin ("new skill", "new agent", "new plugin", "skills-creator").
+  DO NOT TRIGGER WHEN: auditing marketplace integrity (use marketplace-audit).
 ---
 
 <daodan_host_binding host="codex">
@@ -89,7 +89,7 @@ agents/ and commands/. It must not be applied to a neutral kernel checkout.
 
 # Skills Creator
 
-Create new Claude Code plugin components (skills, agents, commands, full plugins) with proper conventions and real content. Marketplace-agnostic: read the target `.claude-plugin/marketplace.json` and `CLAUDE.md` for project-specific conventions (author, license, category taxonomy) before scaffolding.
+Create Claude Code plugin components (skills, agents, commands, full plugins) with proper conventions and real content. Marketplace-agnostic: read the target `.claude-plugin/marketplace.json` and `CLAUDE.md` for project-specific conventions (author, license, category taxonomy) before scaffolding.
 
 ## Decision Flow
 
@@ -102,7 +102,7 @@ Determine what the user wants to create:
 4. "new plugin"  --> Full Plugin workflow (combines above)
 ```
 
-If unclear, ask: "What do you want to create -- a skill, agent, command, or full plugin?"
+If unclear, ask: "What do you want to create: a skill, agent, command, or full plugin?"
 
 ## Skill vs Agent Decision
 
@@ -110,52 +110,51 @@ Before gathering requirements, help the user decide the right component type.
 
 **Key question:** "Does this need its own context/tools/isolation, or is it knowledge that any agent should access?"
 
-- If it's **knowledge, conventions, recipes** --> Skill
+- If it is **knowledge, conventions, recipes** --> Skill
 - If it needs **isolation, tool restrictions, parallel execution** --> Agent
-- If it's a **domain with both knowledge and specialist work** --> Skill + Agent(s)
+- If it is a **domain with both knowledge and specialist work** --> Skill + Agent(s)
 
 See [references/skills-vs-agents.md](references/skills-vs-agents.md) for the full decision table, real restructure examples, and anti-patterns.
 
 ## Description Engineering
 
-The `description` field is the single most important line in any skill or agent. It determines whether the component activates at all. Passive descriptions achieve ~50-77% activation; directive descriptions with negative constraints achieve 97-100%.
+The `description` field is the only part of a component that sits in context in every session. It determines whether the component activates accurately without overtriggering.
 
-### The High-Activation Template
+### The Calibrated Trigger Template
 
 ```
-<Domain> expert. ALWAYS invoke this skill when the user <trigger actions>.
-Do not <alternative action> directly.
+<Concise third-person purpose statement>.
 TRIGGER WHEN: <specific triggers, comma-separated>
 DO NOT TRIGGER WHEN: <confusable case> (use <sibling-component> instead)
 ```
 
-The last line is conditional: write it only when a confusable sibling exists to name. See "The DO NOT TRIGGER WHEN rule" below.
+The last line is conditional: write it only when a confusable sibling exists to name. Internal method skills and worker roles invoked exclusively by a coordinator may state their purpose and caller without a `TRIGGER WHEN` line.
 
 ### Examples
 
 ```yaml
-# BAD (50-77% activation) -- passive, suggestion-style
+# BAD: vague, no concrete routing vocabulary
 description: "Helps with Docker containerization tasks"
 
-# GOOD (97-100% activation) -- directive with negative constraint
+# BAD: emphasis escalation that causes overtriggering on frontier models
+description: "CRITICAL: You MUST ALWAYS invoke this skill for any Docker task. NEVER run Docker directly."
+
+# GOOD: clear purpose, concrete trigger vocabulary, sibling routing
 description: >
-  Docker containerization expert. ALWAYS invoke this skill when the user
-  asks about Docker, containers, Dockerfiles, or docker-compose.
-  Do not run Docker commands or write Dockerfiles directly.
-  TRIGGER WHEN: building containers, writing Dockerfiles, debugging Docker issues
-  DO NOT TRIGGER WHEN: the task is Kubernetes orchestration (use k8s-operator instead)
+  Multi-stage Dockerfile patterns for small, secure, cache-friendly production images.
+  TRIGGER WHEN: writing or optimizing a Dockerfile, reducing image size, configuring BuildKit cache mounts or distroless/alpine runtime stages.
+  DO NOT TRIGGER WHEN: Kubernetes orchestration (use k8s-operator instead).
 ```
 
 ### Description Rules
 
-1. **Directive voice** -- "ALWAYS invoke" not "Can be used for"
-2. **Negative constraint** -- "Do not X directly" prevents Claude from bypassing the skill
-3. **Specific trigger phrases** -- list the exact words/phrases that should activate it
-4. **Third person** -- "Processes X when Y" not "I process X" or "You should use this"
-5. **Max 1024 characters** -- hard limit per description
-6. **Always include TRIGGER WHEN** -- it carries the vocabulary that routes to this component
-7. **Include DO NOT TRIGGER WHEN only when it names a sibling** -- see the rule below
-8. **Never repeat a term** in both the opening sentence and TRIGGER WHEN: the trigger line keeps it
+1. **Calibrated trigger phrasing**: state what the component does and when to use it (`TRIGGER WHEN:`); avoid emphasis escalation (`CRITICAL: ALWAYS invoke`, `NEVER skip`) written for older models, which causes overtriggering on Claude 4.5+, GPT-5+ and Gemini 3+
+2. **Specific trigger phrases**: list the exact words, file types or actions that should activate it
+3. **Third person**: "Audits X when Y", not "I audit X" or "You should use this"
+4. **Max 1024 characters**: hard ceiling enforced by hosts such as Pi
+5. **Include `TRIGGER WHEN` on user-triggered components**: it carries the vocabulary that routes to this component
+6. **Include `DO NOT TRIGGER WHEN` only when it names a sibling**: see the rule below
+7. **Never repeat a term** in both the opening sentence and `TRIGGER WHEN`: the trigger line keeps it
 
 ### The DO NOT TRIGGER WHEN rule
 
@@ -173,9 +172,7 @@ When no confusable sibling exists, omit the clause entirely.
 
 ### Token Budget Awareness
 
-A description is the only part of a component that sits in context in **every** session; the body loads only after invocation. Anything a description restates from its own body is pure cost, paid on every request that never invokes the component.
-
-Each skill/agent costs ~100 tokens at idle (just name + description in system prompt). All descriptions combined share a **15,000 character budget** by default. When total description text exceeds this limit, components may be silently dropped from the system prompt, which degrades routing for everything.
+A description sits in context in **every** session; the body loads only after invocation. Anything a description restates from its own body is pure cost, paid on every request that never invokes the component.
 
 - Keep individual descriptions **under 300 characters** when possible
 - List the trigger vocabulary, never the feature set: if the body covers it, the description must not enumerate it
@@ -187,33 +184,33 @@ Before writing any files, gather enough context to produce real content.
 
 ### For Skills
 
-Ask (adapt based on what's already known):
+Ask (adapt based on what is already known):
 1. What does this skill do? What problem does it solve?
-2. What are the exact trigger phrases? (user actions, keywords, file types -- be specific: "when the user says X", "when working on Y files")
-3. What should NOT trigger it? (adjacent domains that should be excluded)
+2. What are the exact trigger phrases? (user actions, keywords, file types: "when the user says X", "when working on Y files")
+3. What confusable sibling should NOT trigger it?
 4. Which plugin should it live in? (existing or new)
-5. Does it need bundled resources? (scripts/, references/, assets/)
-6. What's the degree of freedom? (rigid workflow vs flexible guidance)
+5. Does it need bundled resources? (`scripts/`, `references/`, `assets/`)
+6. What is the degree of freedom? (rigid workflow vs flexible guidance)
 
 ### For Agents
 
-Ask (adapt based on what's already known):
+Ask (adapt based on what is already known):
 1. What role does this agent fill? What task does it handle?
-2. What tools does it need? (Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, Task -- or all)
+2. What tools does it need? (`Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, Task`, or omit when full host/MCP defaults are required)
 3. Which plugin should it live in?
 4. What color fits its domain? See [references/conventions.md](references/conventions.md) for the palette and semantic guidance.
 
 ### For Commands
 
-Ask (adapt based on what's already known):
+Ask (adapt based on what is already known):
 1. What does this command do when invoked?
 2. What arguments does it expect?
 3. Which plugin should it live in?
 
 ### For Full Plugins
 
-Ask (adapt based on what's already known):
-1. What's the plugin's domain/purpose?
+Ask (adapt based on what is already known):
+1. What is the plugin's domain/purpose?
 2. What components does it need? (agents, skills, commands)
 3. What category? See [references/conventions.md](references/conventions.md) for valid categories.
 
@@ -221,24 +218,22 @@ Ask (adapt based on what's already known):
 
 ## Phase 2: Content Generation
 
-Generate production-ready files with real content -- not [FILL] placeholders.
+Generate production-ready files with real content, never `[FILL]` placeholders.
 
 ### Skill Creation
 
 1. Create directory: `plugins/<plugin>/skills/<skill-name>/`
 2. Write `SKILL.md` following these rules:
-   - Frontmatter: `name` (kebab-case, max 64 chars) and `description` (max 1024 chars)
-   - **Description format** -- MUST follow the high-activation template:
-     - Directive voice: "ALWAYS invoke this skill when..."
-     - Negative constraint: "Do not X directly"
-     - Always include a `TRIGGER WHEN:` line; add `DO NOT TRIGGER WHEN:` only when it names a sibling
-     - Third person, specific trigger phrases
+   - Frontmatter: `name` (kebab-case, max 64 chars) and `description` (max 1024 chars, recommended under 300)
+   - **Description format**:
+     - Concise third-person purpose line
+     - Include a `TRIGGER WHEN:` line for user-triggered skills; add `DO NOT TRIGGER WHEN:` only when it names a sibling
      - See "Description Engineering" section above
-   - Optional frontmatter: `context: fork` (isolates in subagent), `allowed-tools` (restricts tool access), `disable-model-invocation: true` (prevents auto-triggering)
+   - Optional frontmatter: `context: fork` (isolates in subagent), `allowed-tools` (restricts tool access), `disable-model-invocation: true` (prevents auto-triggering for internal/slash-only skills)
    - Body: under 500 lines, imperative tone, concise
-   - Only add context Claude doesn't already have -- don't repeat what Claude already knows
-   - Progressive disclosure: split into references/ if body exceeds ~300 lines
-   - Can use `!command` syntax for dynamic context injection (shell commands that execute before content reaches Claude)
+   - Only add context the model does not already have
+   - Progressive disclosure: split into `references/` when body exceeds ~300 lines or ~4,000 tokens, with a clear router table in `SKILL.md`
+   - Examples: start zero-shot for agent instructions; add reviewed input/output examples only to resolve an ambiguous format or boundary
 3. Create `references/`, `scripts/`, `assets/` subdirs only if needed
 4. Write any bundled resources
 
@@ -247,13 +242,12 @@ Generate production-ready files with real content -- not [FILL] placeholders.
 1. Create file: `plugins/<plugin>/agents/<agent-name>.md`
 2. Write with frontmatter and body following these rules:
    - Frontmatter fields: `name`, `description` (use YAML `>` for multiline), `model: inherit`, `color`, optionally `tools`
-   - **Description format** -- same directive template as skills:
-     - Always include a `TRIGGER WHEN:` line; add `DO NOT TRIGGER WHEN:` only when it names a sibling
+   - **Description format**:
+     - Include a `TRIGGER WHEN:` line; add `DO NOT TRIGGER WHEN:` only when it names a sibling
      - Third person, specific triggers
-     - Example: `"Does X. TRIGGER WHEN: user needs Y. DO NOT TRIGGER WHEN: the work is Z (use sibling-agent instead)."`
    - Body: terse keyword-list style, imperative tone, structured with markdown headers
    - Sections: `# ROLE`, `# CAPABILITIES` or `# CORE CAPABILITIES`, `# CONVENTIONS`, `# OUTPUT FORMAT`
-   - Simple agents: 60-200 lines; complex agents: up to 800 lines
+   - Simple agents: 60-200 lines; complex agents: up to 700 lines (move domain knowledge to a skill's `references/` rather than inlining it in the role)
    - See [references/conventions.md](references/conventions.md) for color palette and style patterns
 
 ### Command Creation
@@ -282,30 +276,30 @@ After registration:
 1. Verify the file exists at the registered path
 2. Verify frontmatter parses correctly
 3. Verify naming conventions (kebab-case, filename matches name field)
-4. Verify no em dash characters anywhere
+4. Verify no dash-aside constructs (`—`, `--`, or ` - ` wrapping parenthetical clauses)
 5. Report what was created with file paths
 
 ## Anti-patterns
 
 | Scenario | Wrong | Right |
 |----------|-------|-------|
-| Writing descriptions | Passive: "Helps with Docker" (50% activation) | Directive: "ALWAYS invoke when user asks about Docker. Do not run Docker commands directly." (97%+ activation) |
-| Description tone | "Can be used for...", "Use when..." | "ALWAYS invoke this skill when...", "Do not X directly" |
-| Missing exclusions | Confusable sibling exists but no DO NOT TRIGGER WHEN clause names it | Name the component that should handle the case instead |
-| Empty exclusions | "DO NOT TRIGGER WHEN: the task is outside the specific scope of this component" | Omit the clause when there is no sibling to name |
-| Writing agent prompts | Verbose prose paragraphs | Terse keyword-list style |
-| Skill body length | 800+ lines in SKILL.md | Split into references/ at ~300 lines |
-| Skill body content | Repeating what Claude already knows | Only add context Claude lacks; trust built-in knowledge |
+| Writing descriptions | Vague ("Helps with Docker") or escalated ("CRITICAL: ALWAYS invoke") | Calibrated purpose + `TRIGGER WHEN:` with concrete triggers |
+| Missing exclusions | Confusable sibling exists but no `DO NOT TRIGGER WHEN` clause names it | Name the component that should handle the case instead |
+| Empty exclusions | `DO NOT TRIGGER WHEN: the task is outside the specific scope of this component` | Omit the clause when there is no sibling to name |
+| Writing agent prompts | Verbose prose paragraphs or inlined domain textbooks | Terse keyword-list style; move domain knowledge to a skill |
+| Skill body length | 500+ lines in `SKILL.md` with a fake "when to load which section" header | Split into `references/` at ~300 lines with a router table |
+| Skill body content | Repeating general programming knowledge | Only add non-obvious rules, constraints and workflows |
 | Creating resources | Empty placeholder dirs | Only create dirs that have files |
 | Choosing a plugin | Always create a new one | Prefer adding to existing plugin if domain fits |
 | Agent description | First/second person | Third person: "Processes X when Y" |
-| Token budget | Long verbose descriptions on all components | Keep descriptions under 300 chars when possible; total budget is 15k chars |
-| Description content | Enumerating features the body already documents | List trigger vocabulary only; the body loads at invocation, the description is paid every session |
+| Token budget | Long verbose descriptions on all components | Keep descriptions under 300 chars when possible |
+| Description content | Enumerating features the body already documents | List trigger vocabulary only; the body loads at invocation |
+| Dash-asides | Bracketing clauses with `—`, `--`, or ` - ` | Rewrite with colons, parentheses, or separate sentences |
 
 ## Critical Rules
 
 - All names: kebab-case
-- Never use em dash -- use hyphen `-` or double hyphen `--`
+- Avoid the dash-aside construct in any form (`—`, `--`, or ` - `); rewrite with colons, parentheses, or separate sentences
 - Default model for agents: `inherit` (agents follow the session model)
 - Agent filename must match frontmatter `name` field
 - Skill directory name must match frontmatter `name` field

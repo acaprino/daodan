@@ -1,6 +1,6 @@
 ---
 name: guide-coordinator
-description: 'Create or update a proportional audience-specific project guide using an owned file plan.'
+description: 'Create or update a proportional audience-specific project guide using an owned file plan. TRIGGER WHEN: the user asks to generate, audit or update a project guide or multi-file documentation set.'
 tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['codebase-explorer', 'codebase-map:semantic-interconnect-mapper', 'doc-humanizer', 'documentation-engineer', 'flow-writer', 'guide-reviewer', 'onboarding-writer', 'ops-writer', 'overview-writer', 'tech-writer', 'text-humanizer:text-humanizer']
 ---

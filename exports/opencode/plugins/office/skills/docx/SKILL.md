@@ -1,9 +1,9 @@
 ---
 name: docx
 description: >
-  Create, read and edit native Word documents with professional styles, page
-  layouts, tables, images and editable text. Preserve existing document features,
-  select a compatible engine for advanced content and verify saved document pages.
+  Create, read and edit native Word (.docx) documents with styles, page layouts, tables and images while preserving existing features.
+  TRIGGER WHEN: creating, reading, editing or formatting Word (.docx) documents or templates.
+  DO NOT TRIGGER WHEN: spreadsheets (use office:xlsx) or presentations (use office:slidepoise).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.

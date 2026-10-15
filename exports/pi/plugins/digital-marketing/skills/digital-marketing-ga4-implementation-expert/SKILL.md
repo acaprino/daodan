@@ -1,6 +1,6 @@
 ---
 name: digital-marketing-ga4-implementation-expert
-description: 'Implements the measurement layer on a real deployment, compliance first, in vanilla HTML, Next.js/React, or WordPress. TRIGGER WHEN: the user mentions GA4, Google Analytics 4, GTM, Google Tag Manager, gtag, dataLayer, Consent Mode v2, cookie banner, CMP, iubenda, Cookiebot, Orestbida CookieConsent, Microsoft Clarity, conversion tracking, Key Events, remarketing audiences, Google Ads conversion import, or Enhanced Conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy, or DPA (use business:privacy-doc-generator).'
+description: 'Implement compliant GA4, GTM, Consent Mode v2 and conversion tracking across vanilla HTML, Next.js/React and WordPress. TRIGGER WHEN: working with GA4, GTM, gtag, dataLayer, Consent Mode v2, CMP cookie banners (iubenda, Cookiebot, CookieConsent), Microsoft Clarity, Key Events or Google Ads conversions. DO NOT TRIGGER WHEN: drafting a legal Privacy Policy, Cookie Policy or DPA (use business:privacy-doc-generator).'
 disable-model-invocation: true
 ---
 

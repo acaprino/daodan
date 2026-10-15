@@ -1,6 +1,6 @@
 ---
 name: quick-searcher
-description: 'Lite web search agent for single-fact lookups and quick web answers on any topic; also the verifier /research:team-research spawns to settle one contested claim with a third independent source. TRIGGER WHEN: the user asks for a single fact, definition, stat, URL, or quick confirmation answerable by 1-3 web searches from one source; or spawned with a verifier block. DO NOT TRIGGER WHEN: the question needs synthesis across 3+ sources (use deep-researcher or /research:team-research), the task is about local code or files, or the user is implementing or editing code.'
+description: 'Fast web search agent for single-fact lookups and the verifier spawned by /research:team-research to settle contested claims. TRIGGER WHEN: asking for a single fact, definition, stat, URL or confirmation answerable in 1-3 web searches, or spawned with a verifier block. DO NOT TRIGGER WHEN: multi-source synthesis (use deep-researcher or /research:team-research) or local codebase work.'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

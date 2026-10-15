@@ -3,7 +3,7 @@ name: kernel-marketplace
 description: >
   Maintain neutral multi-host plugin kernels through their compiler instead of editing generated host packages.
   TRIGGER WHEN: marketplace operations target daodan/v1 kernels or compiler-managed exports.
-  DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages.
+  DO NOT TRIGGER WHEN: the target is a legacy Claude marketplace with hand-authored native packages (use marketplace-audit or skills-creator instead).
 ---
 
 # Kernel marketplace operations

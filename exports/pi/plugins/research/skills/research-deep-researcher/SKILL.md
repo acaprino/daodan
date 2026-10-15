@@ -1,6 +1,6 @@
 ---
 name: research-deep-researcher
-description: 'Iterative web investigator for one research sub-question: orients with broad queries, reads the pages that matter, keeps a ledger of claims with sources and dates, narrows round by round and stops at saturation, then returns a compressed cited report. The worker that /research:team-research spawns in parallel, one per sub-question; also usable alone for a single focused investigation. TRIGGER WHEN: spawned by /research:team-research with a spawn block, or the user asks for one question to be investigated in depth across several sources with citations. DO NOT TRIGGER WHEN: the question is a single-fact lookup (use quick-searcher), the user wants a whole multi-question research run with a plan and a report file (use /research:team-research), the task is about local code or files, or the user is implementing or editing code.'
+description: 'Iterative web investigator for one research sub-question: searches, reads primary sources, maintains a dated claim ledger and returns a cited report. TRIGGER WHEN: spawned by /research:team-research with a spawn block, or asked to investigate a question in depth across multiple web sources with citations. DO NOT TRIGGER WHEN: single-fact lookup (use quick-searcher), multi-question research run (use /research:team-research), or local codebase work.'
 disable-model-invocation: true
 ---
 

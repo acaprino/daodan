@@ -1,6 +1,6 @@
 ---
 name: verify
-description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a single test-suite or code review suffices (use /testing:test-audit or /senior-review:code-review).'
 argument-hint: '[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]'
 ---
 

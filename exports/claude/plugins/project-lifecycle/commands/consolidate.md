@@ -1,5 +1,5 @@
 ---
-description: Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.
+description: Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: workspace tidying without experiment consolidation (use /repo-hygiene:tidy).
 ---
 
 <daodan_host_binding host="claude">

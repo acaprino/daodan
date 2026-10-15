@@ -1,9 +1,9 @@
 ---
 name: cross-model-peer-review
 description: >
-  Doctrine for putting a plan, a spec, or a session's own decisions in front of a second model family: when the cost is earned, the GIVEN versus DERIVED provenance rules, when to skip it.
-  TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external challenge, or interpreting a verdict's standoffs and promotions.
-  DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review), or running same-family multi-reviewer pipelines (use senior-review:review-quality-gates).
+  Doctrine for challenging a plan, spec or session decisions with a second model family, including GIVEN vs DERIVED provenance rules.
+  TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions.
+  DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

@@ -4,8 +4,7 @@ description: >
   Render an authoritative Markdown report as a standalone local HTML view using
   fixed reusable assets. TRIGGER WHEN: a report benefits from navigation,
   comparison, table filtering or naming-weight exploration, or the user requests
-  an HTML report. DO NOT TRIGGER WHEN: the task needs only a short answer, a
-  production website, or a diagram renderer.
+  an HTML report. DO NOT TRIGGER WHEN: diagram-only exports (use learning:forcegraph-exporter or learning:markmind-exporter).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

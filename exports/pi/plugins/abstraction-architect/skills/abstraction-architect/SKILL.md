@@ -1,9 +1,9 @@
 ---
 name: abstraction-architect
 description: >
-  Knowledge base for structural entropy: the cost of change when one concept lives in many places.
-  TRIGGER WHEN: the user asks "should I extract this", "who owns this rule", "is this DRY enough", "is this the wrong abstraction"; centralizing, inlining or removing a layer; auditing for duplicated domain knowledge, competing sources of truth, redundant models or derivable state stored anyway; loaded under /abstraction-architect:audit or the /senior-review:team-review abstraction dimension.
-  DO NOT TRIGGER WHEN: the concern is formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead-code removal (use /senior-review:code-review --commit), security (use senior-review:security-auditor), contract drift (use senior-review:api-contract-auditor), or cycles, cohesion and single-file patterns (use senior-review:code-auditor and senior-review:chicken-egg-detector).
+  Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness.
+  TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under /abstraction-architect:audit or /senior-review:team-review.
+  DO NOT TRIGGER WHEN: formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead code (use /senior-review:code-review --commit), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor).
 ---
 
 <daodan_host_binding host="pi">

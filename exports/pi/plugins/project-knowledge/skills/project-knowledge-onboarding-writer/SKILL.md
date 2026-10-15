@@ -1,6 +1,6 @@
 ---
 name: project-knowledge-onboarding-writer
-description: 'Write verified reader-specific onboarding and real open questions.'
+description: 'Write verified reader-specific onboarding and real open questions. TRIGGER WHEN: spawned by /project-knowledge:guide to author onboarding documentation.'
 disable-model-invocation: true
 ---
 

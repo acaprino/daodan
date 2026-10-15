@@ -1,6 +1,6 @@
 ---
 name: consolidate-coordinator
-description: 'Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: workspace tidying without experiment consolidation (use /repo-hygiene:tidy).'
 tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['codebase-map:map-analyst', 'codebase-map:semantic-interconnect-mapper', 'project-knowledge:codebase-explorer', 'project-knowledge:doc-humanizer', 'project-knowledge:documentation-engineer', 'project-knowledge:flow-writer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-knowledge:onboarding-writer', 'project-knowledge:ops-writer', 'project-knowledge:overview-writer', 'project-knowledge:tech-writer', 'project-protocol:isolated-worker', 'text-humanizer:text-humanizer']
 ---

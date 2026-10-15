@@ -1,6 +1,6 @@
 ---
 name: assess-coordinator
-description: 'Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a single-domain audit suffices (use /senior-review:code-review, /codebase-map:analyze, or /testing:test-audit).'
 tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['abstraction-architect:abstraction-architect-agent', 'codebase-map:map-analyst', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor']
 ---

@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.1.0; source-sha256: 309d881a83d1bcccfaff7e88b37954da774f8b78834cae39b62ea9806a233107. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.1.1; source-sha256: fe36b7e57d0f2a061632cfef44dc0159b399056ab726d5ac19f1a63fb09980ee. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`. The owning plugin's declared logical skill identities are `abstraction-architect:abstraction-architect`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `abstraction-architect:abstraction-architect` -> compiled registry name `abstraction-architect` at `skills/abstraction-architect/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -107,18 +107,18 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 
 # INPUTS
 
-- `codebase_path` — the codebase root.
-- `mode` (optional, default `global`) — `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
-- `xray_path` — immutable `.codebase-map/runs/<run-id>/` directory. Required for `global`, optional for `diff`. Retain this compatibility input name; never read the mirror's phase files as a supplied run.
-- `map_run_id`, `map_snapshot_path` (optional) — exact run identity and its `snapshot/manifest.json`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
-- `map_changes_path` (optional) — coordinator's verified snapshot diff against the current worktree.
-- `map_outside_diff_changed_files` (optional) — every path changed since the bound snapshot outside `changed_files`; preserve the complete list in Gaps.
-- `concept_index_path` (optional) — path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.
-- `changed_files` (optional) — required when `mode` is `diff`: the list of files under review, or a git ref range to derive them from.
-- `report_path` (optional) — defaults per mode, see PROCESS.
-- `scope` (optional) — a subpath. Only emit findings whose evidence falls inside it.
+- `codebase_path`: the codebase root.
+- `mode` (optional, default `global`): `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
+- `xray_path`: immutable `.codebase-map/runs/<run-id>/` directory. Required for `global`, optional for `diff`. Retain this compatibility input name; never read the mirror's phase files as a supplied run.
+- `map_run_id`, `map_snapshot_path` (optional): exact run identity and its `snapshot/manifest.json`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
+- `map_changes_path` (optional): coordinator's verified snapshot diff against the current worktree.
+- `map_outside_diff_changed_files` (optional): every path changed since the bound snapshot outside `changed_files`; preserve the complete list in Gaps.
+- `concept_index_path` (optional): path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.
+- `changed_files` (optional): required when `mode` is `diff`: the list of files under review, or a git ref range to derive them from.
+- `report_path` (optional): defaults per mode, see PROCESS.
+- `scope` (optional): a subpath. Only emit findings whose evidence falls inside it.
 - `severity_floor` (optional, default `medium`).
-- `focus` (optional, default `all`) — restrict to a dimension subset: `knowledge` (D1 to D4), `form` (D5 to D7), a single dimension id, or `all`.
+- `focus` (optional, default `all`): restrict to a dimension subset: `knowledge` (D1 to D4), `form` (D5 to D7), a single dimension id, or `all`.
 
 # REQUIRED DEEP-DIVE FILES
 
@@ -126,11 +126,11 @@ Read only from `xray_path`, retaining its run and snapshot binding. Read
 `08-interconnect-map.md` only from the same bound run. Missing files reduce
 confidence; they do not abort the audit. This worker never launches a Map.
 
-- `01-structure.md` — modules, classes, file sizes. Seeds the concept census and finds god modules.
-- `02-interfaces.md` — public APIs. Seeds representation discovery for types, DTOs and enums.
-- `03-flows.md` — call graphs. Finds writers and consumers per concept, which is what D2 needs.
-- `04-semantics.md` — responsibilities and intent. The strongest seed for behavioural concepts.
-- `08-interconnect-map.md` (optional) — cross-partition contracts. Enables the bounded-context check that gate K6 requires.
+- `01-structure.md`: modules, classes, file sizes. Seeds the concept census and finds god modules.
+- `02-interfaces.md`: public APIs. Seeds representation discovery for types, DTOs and enums.
+- `03-flows.md`: call graphs. Finds writers and consumers per concept, which is what D2 needs.
+- `04-semantics.md`: responsibilities and intent. The strongest seed for behavioural concepts.
+- `08-interconnect-map.md` (optional): cross-partition contracts. Enables the bounded-context check that gate K6 requires.
 
 Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
 
@@ -232,13 +232,13 @@ Both modes use the same section letters so consolidation is uniform. Omit an emp
 ## F. Missed unification (D5)
 ## G. Abstraction fitness (D7)
 
-### <Section letter><n>. <one-line title> — <severity>
+### <Section letter><n>. <one-line title> (<severity>)
 
 - **Dimension:** <Dn name>
 - **Pattern:** <catalog id and name, or `uncatalogued`>
 - **Evidence:**
-  - <path/file.ext>:<line-range> — <role: candidate_owner | implementation | parameter | ...>
-  - <path/file.ext>:<line-range> — <role>
+  - <path/file.ext>:<line-range>: <role: candidate_owner | implementation | parameter | ...>
+  - <path/file.ext>:<line-range>: <role>
 - **Why this is a problem:** <one or two sentences naming the force that makes these change together>
 - **Change amplification (L1):** <count> sites must change when this concept changes
 - **Suggested direction:** <target layer or move, one sentence, per the remediation table>

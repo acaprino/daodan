@@ -1,6 +1,6 @@
 ---
 name: grabber-development-http-fingerprint-expert
-description: 'Specialist for the transport layer of a scraper. TRIGGER WHEN: picking an HTTP client that impersonates a browser TLS fingerprint (curl_cffi, primp, async-tls-client), debugging why httpx or requests gets blocked, matching JA3, JA4+ or HTTP/2 fingerprints, replaying a reverse-engineered API, choosing a proxy tier (datacenter, ISP, residential, mobile), or integrating a Web Unlocker API. DO NOT TRIGGER WHEN: the work needs a rendered browser (use stealth-browser-expert) or LLM extraction (use ai-scraping-expert).'
+description: 'Specialist for scraper transport, TLS/JA3/JA4/HTTP2 fingerprinting and proxy tier selection. TRIGGER WHEN: choosing curl_cffi/primp/async-tls-client, debugging blocked httpx/requests calls, replaying reverse-engineered APIs, or selecting datacenter/ISP/residential/mobile proxies. DO NOT TRIGGER WHEN: rendered browser stealth (use stealth-browser-expert) or LLM extraction (use ai-scraping-expert).'
 disable-model-invocation: true
 ---
 

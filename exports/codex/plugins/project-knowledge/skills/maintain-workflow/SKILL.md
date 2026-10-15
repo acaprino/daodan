@@ -1,6 +1,6 @@
 ---
 name: maintain-workflow
-description: 'Audit documentation drift and apply authorized evidence-backed maintenance.'
+description: 'Audit documentation drift and apply authorized evidence-backed maintenance. TRIGGER WHEN: the user asks to check documentation drift against code or maintain project documentation.'
 ---
 
 > Arguments: `[path] [--scope dimensions] [--audit-only | --plan-only | --fix | --commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.

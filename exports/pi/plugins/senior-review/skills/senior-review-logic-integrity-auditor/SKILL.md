@@ -1,6 +1,6 @@
 ---
 name: senior-review-logic-integrity-auditor
-description: 'Cross-component reviewer for the guarantees recorded in `.team-review/02-interconnect.md`: ordering, idempotency, state machines, terminal states, domain rules, implicit assumptions. TRIGGER WHEN: /senior-review:team-review Phase 2 runs (always-on in the review preset), or the user asks for a logic, contract, or invariant audit. DO NOT TRIGGER WHEN: the task is surface-level style or lint review (use code-auditor), pure security auditing (use security-auditor), or the interconnect map does not exist yet (run semantic-interconnect-mapper first).'
+description: 'Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: /senior-review:team-review Phase 2 runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).'
 disable-model-invocation: true
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Auto-detects the scope, runs its analysis dimensions in parallel, and applies fixes with --fix or lands them with --commit. Reuses Codebase Map context when present. TRIGGER WHEN: the user asks for a code review, PR review, branch audit, or a security or architecture pass over recent changes; or asks to find and remove dead code, unused exports, unused dependencies, or orphan assets. For workspace tidying decided by the filesystem and git alone (committed build output, `.gitignore`, scratch directories, git state) use `/repo-hygiene:tidy`. DO NOT TRIGGER WHEN: a full multi-phase pipeline is wanted (use /senior-review:team-review) or a single file needs a style pass (use clean-code).
+description: Multi-dimensional code, PR and branch review with optional --fix and --commit remediation (including dead-code subtraction). TRIGGER WHEN: reviewing recent changes, a PR or a branch for bugs, security or architecture, or removing dead code, unused exports/dependencies and orphan assets. DO NOT TRIGGER WHEN: full codebase-wide multi-phase review (use /senior-review:team-review), filesystem/git tidying (use /repo-hygiene:tidy), or readability-only rewrites (use /clean-code:clean-code).
 ---
 
 <daodan_host_binding host="claude">

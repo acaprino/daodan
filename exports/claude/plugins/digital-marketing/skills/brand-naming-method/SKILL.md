@@ -1,7 +1,7 @@
 ---
 name: brand-naming-method
 description: >
-  Ideates candidates, filters them against archetypes and phonotactic rules, then scores survivors on domain availability, market saturation, and trademark risk.
+  Ideate brand names, filter against archetypes and phonotactic rules, and score survivors on domain availability, market saturation and trademark risk.
   TRIGGER WHEN: "brand name", "naming", "name my app", "name my product", "product name", "startup name", "come up with a name", "nome del brand", "naming strategico".
 ---
 
@@ -70,305 +70,120 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Brand Naming Strategist
 
-You are a world-class Brand Naming Strategist. Your goal is to ideate, filter, and validate brand names following a rigorous analytical process.
+Ideate, filter, and validate brand names through a structured analytical workflow. Execute all steps inline in this conversation; do not delegate generation, filtering, domain checks, or scoring to a subagent or separate context.
 
-**CRITICAL: Execute ALL steps yourself in this conversation. Do NOT delegate any step to a subagent, worker, or separate context. Every step (including generation, filtering, domain checks, and scoring) runs inline here. Never call this skill, or any part of it, through a delegation mechanism.**
+## Reference router
 
-## BEFORE ANYTHING ELSE: Decide Where the Brief Comes From
+| Need | Reference |
+|---|---|
+| Domain checker script flags, RDAP/whois/Patchright rules, Playwright MCP trademark register procedures (UIBM, TMview, USPTO, WIPO), phonotactic refinement, and fail-fast market saturation checks | `references/screening-and-domains.md` |
+| Archetypes, Spellbrand 5 tests, phonosymbolism research, case studies, and register URLs | `references/naming-frameworks.md` |
+| Final Markdown report structure and table templates | `references/report-template.md` |
 
-The brief has six fields (listed in Step 1). Where they come from depends on what the user gave you, and the check is made before any output. No greetings, no generic questionnaire in either branch.
+## BEFORE ANYTHING ELSE: Resolve the Brief
 
-**Branch A: the user's message already carries the brief.** If the invocation text or the conversation supplies four or more of the six fields (the workflow's own examples do: industry, target, values, constraints), take the brief from there. Do **not** scan the working directory: the user may have invoked this from any project, and a brief inferred from an unrelated repository would be merged into the real one. Present the brief you extracted for confirmation and go to Step 1.
+The brief has six fields (Step 1) plus a reference country. Resolve them before any output, without greetings or blank questionnaires:
 
-**Branch B: the brief is thin or the user names a project.** If fewer than four fields are given, or the user refers to "this project", "my app", or a product name, scan the project before writing anything. Read files first, then present what you found.
-
-**Reference country (both branches).** Trademark risk is graded per territory in Step 5, and the territory that matters most is the country the brand launches in, so the run needs that country before Step 1. Take it from `--country`, from the brief, or from the project (company address, currency, locale, the language of the README or landing copy). If none of those names one, ask this single question and wait: "Which country is the reference market for the trademark check?" It is asked in Branch A too, because it is not one of the six brief fields. A brief that spans several countries still gets one reference country, the one where the brand will be registered first.
-
-**Branch C: the user supplies the names.** When the user pastes or attaches a list of candidate names (typed, from another tool, from a screenshot), the job is to vet them, not to invent new ones. Skip Step 2's generation and Step 3c's refinement, and run Steps 1b, 3, 3b, 4, 5 and 6 on every name supplied, one pass per step over the whole list. Do not cap the list to a shortlist before the filters have run; Step 5 is where names are removed, and each removal is recorded in the "Names removed" table with its step. Score every survivor in Step 7. Do not generate replacement names unless the user asks. A name in a screenshot that cannot be read with confidence is listed as `unreadable` instead of guessed.
-
-**WRONG (never do this in either branch):**
-> Welcome to Brand Naming! I need a brief to get started. What are you naming?
-> Please share: - What it is ... - Industry/category ... - Target audience ...
-
-### Scan procedure for Branch B (execute silently before any output):
-
-1. **Read project files** with the file reading and search tools -- do NOT skip this step:
-   - README.md, CLAUDE.md, package.json, pyproject.toml, Cargo.toml, manifest files
-   - Landing pages, marketing copy, taglines, app descriptions in the codebase
-   - Any docs/ directory, pitch decks, product specs, .planning/ directory
-   - Project structure, tech stack, and existing branding assets
-   - Also check the user's message and conversation history for context about what they're naming
-
-2. **If the user mentioned a product/project name**, search for it in the codebase and in project docs to understand what it is before responding.
-
-3. **Present a pre-filled brief** showing what you inferred -- never a blank questionnaire:
-   > **Inferred brief** (confirm or adjust):
-   > - What it is: [inferred from project files]
-   > - Industry: [inferred]
-   > - Target audience: [inferred]
-   > - Core values/tone: [inferred]
-   > - Languages: [inferred or default: en, it, es, fr, de, pt. If the user passed `--languages`, use exactly that list instead]
-   > - Constraints: [inferred or none detected]
-   > - Reference country: [inferred from the project, or ask]
-
-4. Only ask follow-up questions for fields you genuinely could not infer from any source. If you found enough context to fill 4+ fields, proceed with confirmation -- do NOT show a generic questionnaire.
-
-5. **Fallback only**: If there is truly zero project context (empty directory, no README, no manifests, no docs, no user context), then and only then ask targeted questions for missing fields -- but still NOT as a generic welcome message.
+- **Branch A (user message supplies 4+ brief fields):** Extract the brief directly from the message/conversation. Do not scan the working directory (which may be an unrelated repo). Present the extracted brief for confirmation and proceed to Step 1.
+- **Branch B (thin brief or user references a local project/app):** Read project files silently first (`README.md`, `CLAUDE.md`, `package.json`/`pyproject.toml`/`Cargo.toml`, landing copy, `docs/`). Present a pre-filled inferred brief for confirmation and ask only for fields that could not be inferred.
+- **Branch C (user supplies candidate names to vet):** Skip Step 2 generation and Step 3c refinement. Run Steps 1b, 3, 3b, 4, 5, and 6 across all supplied names (recording removals in "Names removed"), and score every survivor in Step 7. Mark unreadable screenshot names as `unreadable`.
+- **Reference country (all branches):** Needed before Step 1 to grade national trademark risk in Step 5. Take it from `--country`, the brief, or project metadata (address, currency, locale, copy language). If still unknown, ask: *"Which country is the reference market for the trademark check?"*
 
 ## Workflow
 
-Execute these steps in order:
+### Step 1: Brief Analysis and Sector Ban List
 
-### Step 1: Brief Analysis
+Confirm the brief fields:
+1. Industry/sector and competitive landscape
+2. Target audience
+3. Core values and emotions
+4. Tone (playful, serious, premium, technical, natural)
+5. Target languages/markets (default: `en, it, es, fr, de, pt`, or `--languages`)
+6. Constraints (length, letter preferences, sounds to avoid)
+7. Reference country and assumed Nice classes (e.g. 9 and 42 for software)
 
-Using the brief you extracted or scanned above, extract or confirm these **brief fields**:
-- Industry/sector and competitive landscape
-- Target audience (demographics, psychographics)
-- Core values and emotions to convey
-- Tone (playful, serious, premium, techy, natural, etc.)
-- Languages/markets the name must work in
-- Any constraints (length, letter preferences, sounds to avoid)
-- Reference country (see above) and the Nice classes the product falls in; state the classes you assume (for example 9 and 42 for software) so the user can correct them
-
-**Sector Ban List** - After extracting the brief, identify the 5-10 most overused prefixes, suffixes, and roots in the target sector. Create a BAN LIST that all generated names must avoid. Examples:
-- Fitness sector: ban `Fit`, `Nutri`, `Cal`, `Diet`, `Food`, `Meal`, `Gym`, `Health`, `Body`, `Lean`
-- AI/tech sector: ban `AI`, `Bot`, `Mind`, `Think`, `Brain`, `Smart`, `Logic`, `Synth`, `Cogni`, `Neural`
-- Finance sector: ban `Fin`, `Pay`, `Cash`, `Coin`, `Money`, `Wealth`, `Capital`, `Fund`
-- Travel sector: ban `Trip`, `Tour`, `Fly`, `Go`, `Wander`, `Roam`, `Trek`, `Voyage`
-
-Display the ban list before proceeding.
+Create and display a **Sector Ban List** of the 5-10 most overused prefixes, suffixes, and roots in the target sector (e.g. Fitness: `Fit, Nutri, Cal, Diet, Meal, Gym, Health, Body, Lean`; AI/Tech: `AI, Bot, Mind, Think, Brain, Smart, Logic, Synth, Cogni, Neural`; Finance: `Fin, Pay, Cash, Coin, Money, Wealth, Capital, Fund`; Travel: `Trip, Tour, Fly, Go, Wander, Roam, Trek, Voyage`).
 
 ### Step 1b: Instant Kill Pre-screening
 
-Hard constraints for all name generation - apply during generation, not post-hoc:
+Apply during generation:
+- Never use morphemes from the Sector Ban List.
+- Reject common words native to the sector. Single dictionary words are allowed only if obscure, archaic, or decontextualized from an unrelated domain (like Apple, Slack, Notion).
 
-- **NEVER use banned morphemes** from the sector ban list
-- Skip common, overused words that saturate the sector
-- Single dictionary words are allowed ONLY if truly obscure, archaic, or decontextualized - not top-5000 frequency words in any major language. Words like Apple, Slack, Tinder work because they're common words ripped from their original context into an unrelated domain. Words like "Health" or "Cloud" in their native sector do not.
-- The only exception for foreign words: truly obscure words from non-major languages (e.g., Basque, Swahili, Finnish) that have zero tech/brand presence - and even these must be verified
+### Step 2: Strategic Semantic Generation (12-15 Curated Names)
 
-### Step 2: Strategic Semantic Generation (Quality over Quantity)
+Do not invent meaningless syllable combinations (no CVCV letter-mashing like "Nivo", "Rivo", "Zivo"), do not use cheap suffixes (`-ify`, `-ly`, `-io`), and do not staple two obvious words together. Generate **12-15 real, obscure, or decontextualized words** across four directions, each with `[Name] (X chars): [Etymology/Origin]. Brand Story: [1-sentence strategic fit]`:
 
-CRITICAL INSTRUCTION: **ABSOLUTELY NO ALGORITHMIC LETTER-MASHING.** Do NOT invent fake words by combining random syllables (e.g., if the user wants CVCV, do NOT generate meaningless words like "Nivo", "Rivo", "Tero", "Zivo"). Do NOT use cheap suffixes (-ify, -ly, -io). Do NOT glue two obvious words together.
+1. **Etymological Hijacking:** Obscure, modern-looking words from Ancient Greek, Latin, Sanskrit, or philosophy (`Eidos`, `Kalon`).
+2. **Scientific & Mathematical Decontextualization:** Precise terms from physics, biology, mathematics, or navigation applied metaphorically (`Basal`, `Ratio`, `Zenith`).
+3. **The Metaphorical Shift:** Terms from art, architecture, or nature describing the product's function with a 1-second "aha!" connection (`Tessera`, `Kroma`).
+4. **The Phonetic Real-Word:** When a short phonetic shape (such as CVCV) is requested, select real words with strong meaning (`Vela`, `Soma`, `Nova`) rather than coined strings.
 
-You must act as a high-end Silicon Valley Brand Naming Strategist. Premium brands (like Oura, Notion, Strava, Linear, Palantir) are NOT invented fake words; they are **real, obscure, or decontextualized words** with profound semantic roots.
+### Step 3: Linguistic and Cultural Filtering (Filter to 8-10)
 
-Generate exactly 12-15 highly curated names (not 30+ garbage ones), divided into these 4 Strategic Directions. For each name, provide the "Name Story" (why it works strategically).
-
-**Direction 1: Etymological Hijacking (Philosophy & Ancient Roots)**
-Find extremely obscure but beautiful-sounding words from Ancient Greek, Latin, Sanskrit, or ancient philosophy that perfectly encapsulate the brand's core transformation.
-- *Example:* "Eidos" (Greek for the ideal Form/Essence), "Kalon" (Greek for physical and moral perfect beauty).
-- *Rule:* The word must look modern and tech-friendly, avoiding overly complex spellings.
-
-**Direction 2: Scientific & Mathematical Decontextualization**
-Steal cold, precise, and elegant terms from physics, biology, mathematics, or navigation, and apply them metaphorically to the brand's sector.
-- *Example:* "Basal" (from Basal Metabolic Rate, used as a premium tech name), "Ratio" (proportion), "Zenith".
-- *Rule:* Do not use basic industry terms. Find the "invisible mechanics" behind the industry.
-
-**Direction 3: The Metaphorical Shift (Art, Architecture, Nature)**
-Look at how artists sculpt, how architects build, or how nature grows. Use a word from these domains to describe the user's product function.
-- *Example:* "Tessera" (a mosaic piece -> meal planning), "Kroma" (gradient/scale -> progress).
-- *Rule:* The metaphor must be elegant and not immediately obvious. It must require a 1-second "aha!" moment.
-
-**Direction 4: The Phonetic Real-Word (Sonorous but Meaningful)**
-If the user requests a specific phonetic structure (like short 4-5 letter CVCV words), **DO NOT INVENT THEM**. Search your vocabulary for REAL words in Italian, English, or other languages that naturally fit that structure and have a poetic or strong meaning.
-- *Example:* If user wants CVCV: "Vela" (Italian for sail), "Soma" (Greek for body), "Nova" (Latin for new).
-
-**Output format for Generation:**
-For each name, output:
-- **[Name]** ([X] chars): [Etymology/Origin]. *Brand Story:* [1-sentence explanation of why it fits the brief perfectly without being generic].
-
-### Step 3: Linguistic and Cultural Filtering
-
-From the 12-15 candidates, filter down to the best 8-10 by checking:
-- Pronunciation ease in all target languages
-- No negative/offensive meanings in the target languages: the brief's language list, which defaults to English, Italian, Spanish, French, German and Portuguese, the same six the workflow's `--languages` default names. If the user passed `--languages`, check exactly that list. When the brief says global or names an Asian market, add Chinese and Japanese and say so in the brief.
-- No unfortunate phonetic associations (sounds like profanity, disease, etc.)
-- **Phonosymbolism alignment** - Does the sound match the brand personality? Use the Phonosymbolism Quick Reference below. Reject names whose sound contradicts the intended brand feel.
-- No excessive similarity to existing major brands
+Filter the 12-15 candidates down to the best **8-10** by verifying:
+- Pronunciation ease and absence of negative/offensive meanings across all target languages (defaulting to `en, it, es, fr, de, pt`, plus Chinese and Japanese when global/Asian markets apply).
+- Phonosymbolism alignment with brand tone (see `references/naming-frameworks.md`).
+- No phonetic collision with profanity, disease, or major existing brands.
 
 ### Step 3b: Quick Domain Gate
 
-Before full analysis, run one registration check on all 8-10 filtered candidates at once. This is the only place `.com` registration is established; Steps 4 and 6a reuse the result rather than checking again.
-
-- Run the domain checker script (see Domain Checker Script below) with every candidate in one invocation, over the target TLD set: `.com`, `.app`, `.io`, `.co` by default, or exactly the user's `--tlds` list when they passed one. Keep the output; it is the registration table Steps 4 and 6a read from.
-- A name is **blocked** when every requested TLD the script could read is `TAKEN`. `.it`, `.eu` and `.io` publish no RDAP, so the script first reads their registry's own whois and prints an answer with `(via whois.nic.it)`, `(via whois.eu)` or `(via whois.nic.io)`. When a TLD without RDAP has no readable registry answer, the script checks a registrar page in headless Patchright and prints `(Gandi page, headless Patchright)`; that counts as read, with the registrar identified as the source rather than the registry. A TLD that remains `UNKNOWN` has no usable registration answer, so it neither blocks a name nor counts as free: say in the drop reason which checks failed or were not available.
-- A name whose requested TLDs are all `UNKNOWN` is not blocked. Retry it once only when the note is not "no RDAP service"; that note is final and a retry changes nothing, and so is the missing-Patchright reason, which is an install to report. If it is still unknown, carry the name forward flagged for registrar verification, with the registrar link given to the user to click, never opened by you.
-- For a blocked name, one web search for `"name" app` or `"name" company` settles whether the holder is an established business. If it is, drop the name; if the domains are parked or dormant, carry the name forward with a note, because Step 6a decides what a taken-but-inactive domain costs.
-- **Never discard silently.** List every dropped name with the one-line reason (which TLDs were taken and by whom), so the user can overrule a drop.
-- Generate a replacement for each dropped name using the 4 Strategic Directions and re-filter it, then run the script on the replacements
-- Only names that pass this gate proceed to the full Step 4-6 analysis
-- Goal: settle the cheap mechanical fact once, with the reliable tool, before spending web searches on deep analysis
-
-If the script cannot run, fall back to one web search per name for `"name.com"` and apply the same rules, saying in the report that registration was inferred from search results rather than from the registry.
+Read `references/screening-and-domains.md` (Section 1) and run `${CLAUDE_PLUGIN_ROOT}/skills/domain-hunter/scripts/domain_checker.py` once across all 8-10 candidates for `.com, .app, .io, .co` (or `--tlds`).
+- Keep the registration table for Steps 4 and 6a.
+- List every dropped name with the exact reason (which TLDs were taken and by whom), generate replacements via Step 2, and re-filter.
 
 ### Step 3c: Phonotactic Refinement
 
-For the 8-10 candidates that survived filtering, offer targeted phonotactic refinement for promising-but-rough names:
-
-- If a name has the right meaning/feel but sounds harsh, generate 10 variants softening consonants or opening final vowels
-- If a name is too long, try clipping techniques (remove interior syllables, truncate endings)
-- Apply suffix shifts to improve mouthfeel (-ia, -o, -a endings for warmth; -ix, -ik, -os for precision)
-- Swap vowels to change personality (a/o for openness, i/e for sharpness)
-- Soften or harden consonant clusters to match brand tone
-
-This is where the morphological toolkit (see Refinement Toolkit below) is genuinely useful - for polishing promising names, not for generating them from scratch.
+For promising-but-rough survivors, apply the Refinement Toolkit in `references/screening-and-domains.md` (Section 2): vowel swaps, consonant softening, suffix shifts, or clipping.
 
 ### Step 4: Domain and Social Check
 
-> **Tip:** For deep registrar price comparison, promo code hunting, and purchase guidance on your final picks, use the `digital-marketing:domain-hunter` skill.
-
-For the top 8-10 names that passed the Quick Domain Gate:
-- Take domain availability per TLD from the Step 3b registration table. Do not run the script again; re-run it only for a replacement name generated after the gate, or for a TLD still `UNKNOWN` after the retry (never for a "no RDAP service" TLD). Show an unread TLD in the table as `unverified`, never as free.
-- Check social media handle availability on major platforms with a web search per name.
-
-Report findings in a table with one column per checked TLD, in the order they were requested:
-```
-| Name | .com | .app | .io | Twitter/X | Instagram |
-```
+Reuse the Step 3b domain table (showing any unread TLD as `unverified`, never `free`) and check social handle availability via web search. Present:
+`| Name | .com | .app | .io | Twitter/X | Instagram |`
+For registrar price comparison and purchase guidance on finalists, point to `digital-marketing:domain-hunter`.
 
 ### Step 5: Trademark Pre-screening
 
-Trademark risk is graded for three territories: the reference country (Step 1), Europe and the world. The registers are the national register of the reference country, EUIPO TMview, USPTO Trademark Search (the system that replaced TESS on 2023-11-30) and the WIPO Global Brand Database; their URLs and the UIBM procedure are in `references/naming-frameworks.md`. A web search engine does not index their records, so **a web search for the name never queries a register**, and a class A built on one is unearned.
-
-| Territory | Registers that must answer |
-|---|---|
-| Reference country | Italy: UIBM banca dati. United States: USPTO. Any other country: that national office's own trademark database, found from the office's official site and never from a guessed URL; if none can be reached the territory is NS |
-| Europe | EUIPO TMview, or EUIPO eSearch plus when TMview did not answer (EU trade marks only) |
-| World | WIPO Global Brand Database and USPTO |
-
-A register serves every territory it is listed under, so one USPTO search covers both the United States as reference country and the world.
-
-Query them through a real browser with the Playwright MCP tools of the `playwright` plugin (Microsoft's Playwright MCP server), a declared dependency of this plugin. Use the browser **headless**: the plugin's own `.mcp.json` starts the server with `--headless`, and if a visible window opens the server was started without it, so tell the user once to reload the plugins and carry on rather than working with a window in their way. For each remaining candidate, on each register: open the register's home page, type the exact name in its search box, and read the result list for exact matches and confusingly similar marks, noting the Nice class of each (the classes assumed in Step 1). Never compose a results URL yourself (a `#/tmview/results?criteria=...` deep link, for example): those are undocumented, change without notice, and are what bot protection flags first.
-
-**Pace the registers.** Query one register for one name at a time, wait several seconds between consecutive requests to the same register, and never run searches against one register in parallel, because a burst of automated queries is what makes TMview's firewall refuse the session. A refusal is NOT SCREENED; do not try to hide the browser or route around it.
-
-**Search every spelling.** A "contains" search on a one-word name hides marks written as two words. For each name also search the spaced variant ("new orbit" for NewOrbit, "horizon gate" for HorizonGate); a mark found only that way still counts against the name.
-
-**Confirm the register answered.** A register that blocks the browser serves a page that is not a result list, and reading it as "no matches" is the error that makes a class A unearned. After each search, the page must show the register's own result list or its explicit zero-results message. Anything else means the register was not queried: a page titled "Problem detected" or "Access denied", a CAPTCHA or consent wall, a redirect to `tmdn.org/error/revise.html`, an empty shell. Record `NOT SCREENED: <register>` with the page's own words (its title and any Reference Number) and go on to the next register. Do not retry URL variations, a second browser engine or any other workaround for the block.
-
-Two further pages look like an answer and are not one. The UIBM name field disappears after a zero-results page, so the next search types into nothing and reads the old page: reload the search page for every name. The WIPO Global Brand Database serves a generic list of tens of millions of records when it fails to run the query, and the page shows an owner list either way: a result is valid only when the header restates the query (`contains the word <name>` or `sounds like <name>`). Any other list is NOT SCREENED. TMview lists only the first 30 rows of a "contains" search; if the name is a common string and the list is full, say the list was truncated and do not read the absence of a close mark in it as class A.
-
-**Phonetic similarity.** The registers above match on the typed letters, so a mark that merely sounds like the name (`BEYONDATA` for `BeyondGate`) is missed by an exact or "contains" search. For the finalists, run the WIPO Global Brand Database's phonetic ("sounds like") search too, check it first on a pair with a known answer, and report what it found in the World row. The registers cannot compare logos, so say in "Before you commit" that figurative similarity was not screened.
-
-**EU fallback.** When TMview did not answer, search the same name in EUIPO eSearch plus (`https://euipo.europa.eu/eSearch/`): type it in the home page search box and read the Trade marks and Designs counts. It covers EU trade marks only, not the national registers TMview aggregates, so report it as "EU trade marks only, national registers not screened".
-
-If the browser tools are unavailable, stop and tell the user:
-
-```
-Missing required dependency: Playwright MCP (Microsoft, @playwright/mcp)
-
-Trademark pre-screening queries the national register of the reference country,
-EUIPO TMview, USPTO Trademark Search and the WIPO Global Brand Database, which
-cannot be searched from a search engine.
-
-Install Microsoft's Playwright MCP server for the host you run in, then
-run this again:
-  Claude Code  claude plugin install playwright@claude-plugins-official
-  Codex        codex mcp add playwright npx "@playwright/mcp@latest"
-  VS Code      code --add-mcp '{"name":"playwright","command":"npx","args":["@playwright/mcp@latest"]}'
-  Copilot CLI  /mcp add  (name playwright, command npx @playwright/mcp@latest)
-  Pi           pi install npm:pi-mcp-adapter, then add the same server under
-               "playwright" in mcpServers of ~/.config/mcp/mcp.json
-  OpenCode     opencode mcp add playwright --global -- npx @playwright/mcp@latest
-```
-
-Do not grade trademark risk without the registers: a class A built on anything else is unearned.
-
-**Risk classes.** Grade each territory from what its registers returned, A being the lowest risk and D the highest:
-- **A**: no identical or similar mark found
-- **B**: similar marks only in Nice classes unrelated to the product
-- **C**: a similar mark in the product's class, or an identical mark in a related class
-- **D**: an identical or near-identical mark, registered or pending, in the product's class
-- **NS** (not screened): a register the territory needs did not answer. NS is never A and never hides a conflict.
-
-A conflict found on any register stands, whatever the other registers did, so a territory's class is the worst class any of its registers returned. Class A needs every register of the territory to have answered. Europe answered by eSearch plus alone is graded with the note "EU trade marks only, national registers not screened".
-
-A D in the reference country removes the name here and goes in the removed-names list as step 5, because the brand could not be registered where it launches. A D in Europe or the world does not remove the name: it lowers the Trademark Risk score (Step 7) and goes in the report's "Before you commit" list.
+Read `references/screening-and-domains.md` (Section 3) and `references/naming-frameworks.md`. Query the required trademark registers for the **Reference country**, **Europe** (EUIPO TMview / eSearch plus), and **World** (WIPO Global Brand Database + USPTO) using the `playwright` MCP browser tools in headless mode:
+- Pace queries sequentially, check spaced variants, verify that each page is a genuine result list (recording WAF/error pages as `NOT SCREENED: <register>`), and run WIPO phonetic search on finalists.
+- If Playwright MCP is unavailable, stop and print the recovery block in `references/screening-and-domains.md`.
+- Grade each territory **A**, **B**, **C**, **D**, or **NS**. A **D in the reference country** removes the name at Step 5; a D in Europe or World lowers the Step 7 score and enters "Before you commit".
 
 ### Step 6: Market Saturation Analysis (Fail-Fast)
 
-The online-presence checks (who already uses the name in search results, in app listings and as a social account) need a web search or a logged-in browser. When the host offers no web search, or the search engine answers with an anti-bot challenge, do not solve the challenge or switch engines to get past it: report each of those checks as `not checked` (the status words are `in use`, `free` and `not checked`, never a platform's name), keep the app lookup (the iTunes Search API, `https://itunes.apple.com/search?term=<name>&country=<cc>&entity=software`), and list each skipped check in "Before you commit".
+Follow `references/screening-and-domains.md` (Section 4) in fail-fast order:
+- **6a. Domain activity gate** (`ACTIVE BUSINESS` in same sector -> discard immediately and replace; `PARKED`; `AVAILABLE`)
+- **6b. App store saturation** (`SATURATED` / `MODERATE` / `CLEAR`)
+- **6c. SERP saturation (Google Test)** (`DOMINATED` / `COMPETITIVE` / `OPEN`)
+- **6d. Social media presence** (`TAKEN BY BRAND` / `INACTIVE/PERSONAL` / `AVAILABLE`)
+- **6e. Industry-specific saturation** (`LOW` / `MEDIUM` / `HIGH` / `BLOCKED`)
+- **6f. SEO Potential** (`HIGH` / `MEDIUM` / `LOW`)
 
-For each candidate, perform a fail-fast market saturation check with web searches. Run checks in order - if a name fails an early gate, skip remaining checks and discard, listing the name and the reason:
-
-**6a. Domain activity check (GATE - run first)**
-- Registration is already known from the Step 3b table; do not check it again. For each requested TLD marked `TAKEN`, fetch the page (or search `site:name.tld`) to determine whether it is an active business, a parked domain, or a dead page
-- Rate: ACTIVE BUSINESS (red flag) / PARKED (moderate risk) / AVAILABLE (clear)
-- **If ACTIVE BUSINESS in same sector: discard immediately, generate replacement, skip remaining checks**
-
-**6b. App store saturation (only if 6a passed)**
-- Search "name" on Google Play Store and Apple App Store (web searches `"name" site:play.google.com` and `"name" site:apps.apple.com`)
-- Count apps with identical or very similar names in the same category
-- Rate: SATURATED (3+ same-category matches) / MODERATE (1-2 matches) / CLEAR (no matches)
-
-**6c. SERP saturation - Google Test (only if 6a passed)**
-- Google the exact name in quotes: `"exactname"`
-- Assess first page results: are they dominated by an existing brand/product?
-- Rate: DOMINATED (existing brand owns page 1) / COMPETITIVE (mixed results) / OPEN (few/no relevant results)
-
-**6d. Social media presence (only if 6a passed)**
-- Check if accounts with that name are active on Instagram, Twitter/X, TikTok, LinkedIn
-- Distinguish between active brand accounts vs unused/personal handles
-- Rate: TAKEN BY BRAND (red flag) / INACTIVE/PERSONAL (recoverable) / AVAILABLE (clear)
-
-**6e. Industry-specific saturation (only if 6a passed)**
-- Search `"name" + industry keywords` to find competitors using similar names
-- Check Product Hunt, Crunchbase, AngelList for startups with that name (via web search)
-- Look for same-name businesses in adjacent sectors that could cause confusion
-
-Present saturation findings in a summary table:
-```
-| Name | Domain Status | App Stores | SERP | Social | Industry | Overall Risk |
-|------|--------------|------------|------|--------|----------|-------------|
-```
-
-Overall Risk rating: LOW (mostly clear) / MEDIUM (some conflicts) / HIGH (established competitor exists) / BLOCKED (identical active business in same sector)
-
-### Step 6f: SEO Potential
-
-For each candidate:
-- Evaluate keyword relevance for organic discovery
-- Estimate ranking difficulty based on SERP saturation findings above
-- Rate SEO potential: HIGH / MEDIUM / LOW
+Summarize in: `| Name | Domain Status | App Stores | SERP | Social | Industry | Overall Risk |`.
 
 ### Step 7: Scoring and Ranking
 
-Score the 5 names that survived Step 6 from 1 to 5 on each criterion, using these weights:
+Score the 5 survivors from 1 to 5 (whole numbers: 5 excellent, 4 good, 3 acceptable/unverified, 2 weak, 1 poor) using these weights:
 
 | Criterion | Weight | Description |
-|-----------|--------|-------------|
+|---|---|---|
 | Memorability | 15% | Easy to recall after one hearing (Phone Test: 70%+ recall) |
 | Distinctiveness | 15% | Unique vs competitors, not generic |
-| Market Saturation | 15% | No active businesses, apps, or dominant SERP presence with same name (invert: low saturation = high score) |
+| Market Saturation | 15% | Low saturation across domains, app stores, and SERP (inverted: low saturation = high score) |
 | Simplicity/Pronunciation | 10% | Easy to say and spell (Spelling Test: 80%+ accuracy) |
-| Relevance | 10% | Connection to brand values/product |
-| SEO Potential | 10% | Online visibility, keyword alignment |
-| Domain Availability | 10% | .com or strong alternative TLD available |
-| Trademark Risk | 5% | Low conflict probability (invert: low risk = high score), from the Step 5 risk classes weighted to the reference country; the rule is under this table |
-| Emotional Impact | 5% | Evocative power, storytelling potential |
-| Cultural Adaptability | 5% | Works across target languages and cultures |
+| Relevance | 10% | Connection to brand values and product |
+| SEO Potential | 10% | Organic discoverability and SERP openness |
+| Domain Availability | 10% | `.com` or strong alternative TLD available |
+| Trademark Risk | 5% | Reference country class (`A`=5, `B`=4, `C`=2, `D`=1), minus 1 (floor 1) if Europe or World is worse; if Reference country is `NS`, cap at `3 (not screened)` |
+| Emotional Impact | 5% | Evocative power and storytelling potential |
+| Cultural Adaptability | 5% | Works cleanly across all target languages |
 
-**Trademark Risk score.** Start from the reference country's class: A 5, B 4, C 2, D 1. Take off 1 (never below 1) when Europe or the world has a worse class than the reference country. When the reference country is NS, the score is 3 or what the worst class that did answer would score, whichever is lower, and the cell reads "3 (not screened)", so the total is visibly provisional.
-
-Scale, whole numbers: 5 excellent, 4 good, 3 acceptable, 2 weak, 1 poor or disqualifying. Every score cites the evidence behind it (a test result, a search finding, a register answer). A criterion with thin evidence scores 3 and is marked "unverified", never guessed high. A criterion whose check could not run at all in this session (SEO Potential when no SERP lookup was possible, see Step 6) is **not scored**: entering 3 would add the same constant to every name and tell the user nothing. Its cell reads `not scored`, its weight is left out, and it is listed in "Before you commit" with the check that would score it.
-
-Formula: `Overall = SUM(criterion_score * weight) / SUM(weight of the scored criteria)`, which is the plain weighted sum when every criterion is scored and always lands between 1.0 and 5.0; round to one decimal. Rank by Overall and break ties on Distinctiveness, then Market Saturation.
+Every score cites concrete evidence. A check that could not run at all (e.g. SEO Potential when SERP lookup was unavailable) is marked `not scored`, omitted from the weight denominator, and listed in "Before you commit".
+Formula: `Overall = SUM(criterion_score * weight) / SUM(weight of scored criteria)`, rounded to one decimal. Break ties on Distinctiveness, then Market Saturation.
 
 ### Step 8: Evaluation Report
 
-Read `references/report-template.md` and fill it in. The template is the report: keep its sections, their order and its table shapes, and replace every placeholder. Do not add sections, change the headings or improvise another layout, so every run produces the same document.
-
-The template carries, in order:
-1. **Summary**: the recommended name, why it ranks first, and a ranked table of the 5 scored names with their trademark class for the reference country, Europe and the world.
-2. **Scorecard**: the criteria as rows with their weights, the 5 names as columns, the Overall score last.
-3. **Top 3 names**: for each, a description (etymology, meaning, why it fits), every criterion's score with a one-sentence motivation that cites its evidence, availability, a trademark table with the class A to D for the reference country, Europe and the world, market, wordmark, tagline and the main risk.
-4. **Runners-up**: ranks 4 and 5 with their weakest criterion and every criterion's score, each with a one-sentence motivation citing its evidence.
-5. **Names removed**: every name dropped in Steps 1b to 6 with the step and the reason, so the user can overrule a drop.
-6. **Before you commit**: one checkbox per open check, such as an unscreened register or an unverified TLD.
-7. **Evidence**: which registers answered and which did not, with the page's own words for a register that did not.
-
-Every score on all ten criteria for all five ranked names has a motivation citing its evidence, and every unverified or not-screened value is marked as such. Write the report in the language of the brief.
+Read `references/report-template.md` and populate every section in order (1. Summary, 2. Scorecard, 3. Top 3 names, 4. Runners-up, 5. Names removed, 6. Before you commit, 7. Evidence) in the language of the brief. Every score across all 10 criteria for all 5 ranked names must include a one-sentence evidence-backed motivation.
 
 Use the caller's owned run output directory when supplied; otherwise use the
 user's selected output directory or a dedicated `.brand-naming/` directory inside
@@ -393,64 +208,3 @@ template's sections, evidence, provisional values and original recommendation.
 Weight changes are exploratory as the native template explains. Verify the helper
 outcome before linking the HTML. On failure preserve Markdown and report the
 optional view failure; an explicitly requested HTML deliverable remains open.
-
-## Reference Framework
-
-### Evaluation Tests (from Spellbrand methodology)
-
-Five checks: **Phone** (70%+ recall after one hearing), **Spelling** (80%+ spell it correctly), **Google** (SERP not saturated with unrelated content), **T-shirt** (likable enough to wear), **Radio** (findable online after hearing it once).
-
-See `references/naming-frameworks.md` for the full wording of each test.
-
-### Name Style Decision Guide
-
-| Goal | Best Archetype | Example |
-|------|---------------|---------|
-| Strong trademark | Brandable Names | Kodak, Rolex, Noom |
-| Emotional energy | Evocative | RedBull, Forever21, Nike |
-| Instant clarity | Short Phrase | Dollar Shave Club, MyFitnessPal |
-| SEO advantage | Short Phrase | Booking.com, WeTransfer |
-| Balanced clarity + distinctiveness | Compound Words | FedEx, YouTube, WordPress |
-| Distinctive + registrable | Alternate Spelling | Lyft, Fiverr, Tumblr |
-| Cultural depth | Non-English Words | Toyota, Audi, Volvo |
-| Global expansion | Brandable Names | Google, Rolex, Kodak |
-| Maximum memorability | Real Words | Apple, Slack, Notion |
-| Premium positioning | Non-English Words / Evocative | Audi, Tesla, Lululemon |
-
-### Refinement Toolkit
-
-These tools are for Step 3c phonotactic refinement - polishing promising names, not generating from scratch.
-
-#### Phonosymbolism Quick Reference
-
-Vowels: `a`/`o` open and warm, `i`/`e` small and precise, `u` deep and serious. Consonants: `b`/`m`/`l` soft and round, `k`/`t`/`p` sharp and energetic, `s`/`f`/`v` flowing and elegant, `r`/`g` rugged and dynamic.
-
-See `references/naming-frameworks.md` for the research basis and brand examples.
-
-#### Morphological Refinement Techniques
-
-- **Suffix shifts** - Swap endings to change personality: -ia/-a (warm, approachable), -ix/-ik (sharp, technical), -os/-io (balanced, international), -eo/-ova (modern, distinctive)
-- **Vowel swaps** - Open vowels (a, o) for warmth and trust; closed vowels (i, e) for precision and speed
-- **Consonant softening** - Replace hard stops (k, t, p) with softer alternatives (g, d, b) or fricatives (s, f, v) to reduce harshness
-- **Clipping** - Remove interior syllables or truncate endings to shorten (e.g., Tumbler -> Tumblr, Flicker -> Flickr)
-- **Cross-linguistic blending** - Fuse morphemes from different languages where both carry meaning (e.g., Auralux from Latin aura + lux)
-
-See `references/naming-frameworks.md` for the Name Archetypes table, the full Evaluation Tests, and the Phonosymbolism research. Its Morphological Generation Techniques section is legacy material for evaluating existing and competitor names only. Do not generate from it: the Step 2 ban on coined words, letter-mashing, and cheap suffixes still applies.
-
-## Domain Checker Script
-
-Use the domain checker script (located in domain-hunter) for the Step 3b registration table, passing every candidate in one invocation:
-
-```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/domain-hunter/scripts/domain_checker.py" name1 name2 --tlds .com,.io
-```
-
-The script checks availability via RDAP, sending each lookup to the registry that runs the TLD, several at a time (`--workers`, default 8). No API key is needed, and RDAP and whois use the standard library only. It defaults to `.com`, `.app`, `.io`, `.co`; pass the user's `--tlds` list through when they supplied one. Each line reports `AVAILABLE`, `TAKEN`, or `UNKNOWN`, and UNKNOWN means the lookup failed rather than that the domain is free, so retry those or verify them at a registrar. `.it`, `.eu` and `.io` have no RDAP, so the script first asks the registry's whois on port 43 (pacing one request per second per host) and prints `(via whois.nic.it)` and the like. A whois reply it cannot classify is `UNKNOWN`, never `AVAILABLE`.
-
-A TLD with no RDAP service and no readable registry whois answer (`.co` has no reachable registry service) is read from Gandi's search page with Patchright in headless mode (a throwaway browser, no window, no user profile), and its line ends `(Gandi page, headless Patchright)`. That step needs `pip install patchright && patchright install chromium`. Without it the line prints `UNKNOWN  (no RDAP service for .co; patchright not installed ...)`: retrying cannot help, so report the missing install and say which registry checks could not be read. When both whois and the registrar fail, retain both failure reasons. Never run `open` or `start` on a registrar URL, and never use a visible browser for the domain check, since either one opens the user's own browser. `--no-registrar` skips only the registrar step; registry whois still runs.
-
-If the script cannot run, fall back to web searches and give the user registrar links to check by hand, and say in the report that registration was inferred rather than read from the registry.
-
-## Related Skills
-
-- **`digital-marketing:domain-hunter`** - Once you have final name picks, use domain-hunter for registrar price comparison, promo code hunting, and purchase recommendations. Complements this skill's availability checks with pricing intelligence.

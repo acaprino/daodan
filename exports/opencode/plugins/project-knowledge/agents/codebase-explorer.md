@@ -1,5 +1,5 @@
 ---
-description: 'Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately.'
+description: 'Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately. TRIGGER WHEN: spawned by project-knowledge workflows to gather repository context before writing or auditing docs.'
 mode: subagent
 permissions:
   - action: "*"

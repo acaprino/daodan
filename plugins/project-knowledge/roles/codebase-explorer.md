@@ -2,6 +2,7 @@
 name: codebase-explorer
 description: >
   Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately.
+  TRIGGER WHEN: spawned by project-knowledge workflows to gather repository context before writing or auditing docs.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

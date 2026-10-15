@@ -1,6 +1,6 @@
 ---
 name: team-analyze-workflow
-description: 'Multi-agent Codebase Map for large or multi-workspace codebases: splits the project into its natural units, works them in parallel, and publishes one consolidated result set to the .codebase-map/ root. TRIGGER WHEN: the user wants Codebase Map analysis on a monorepo, or a cross-partition interconnection map produced as part of the same flow. DO NOT TRIGGER WHEN: the target is a single small directory, or the user wants a documentation-only audit (use /codebase-map:analyze, optionally with --docs-only).'
+description: 'Multi-agent Codebase Map for monorepos and multi-workspace projects: analyzes partitions in parallel and publishes consolidated results to .codebase-map/. TRIGGER WHEN: running Codebase Map analysis on a monorepo or generating a cross-partition interconnection map. DO NOT TRIGGER WHEN: single small directory or documentation-only audit (use /codebase-map:analyze).'
 ---
 
 > Arguments: `<target> [--critical] [--comments] [--depth=lite|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.

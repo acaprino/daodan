@@ -1,9 +1,9 @@
 ---
 name: kotlin-specialist
 description: >
-  Idiomatic patterns for concurrent, shared-code, and UI-layer work.
-  TRIGGER WHEN: building, writing, or reviewing Kotlin code using coroutines / Flow / StateFlow / SharedFlow / suspend functions, Kotlin Multiplatform (KMP) and expect/actual, Compose composables / ViewModels, Ktor routing with JWT auth and Exposed, sealed-class state modeling, scope functions, or DSL builders.
-  DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development), or Android Java without Kotlin.
+  Idiomatic Kotlin patterns for coroutines, Kotlin Multiplatform (KMP), Jetpack Compose and Ktor.
+  TRIGGER WHEN: writing or reviewing Kotlin with coroutines, Flow, StateFlow, SharedFlow, KMP expect/actual, Compose ViewModels, Ktor JWT/Exposed, sealed classes or DSL builders.
+  DO NOT TRIGGER WHEN: libGDX game work (use libgdx-development).
 ---
 
 <daodan_host_binding host="pi">
@@ -121,7 +121,7 @@ sealed class UiState<out T> {
     data class Error(val message: String, val cause: Throwable? = null) : UiState<Nothing>()
 }
 
-// Consume exhaustively — compiler enforces all branches
+// Consume exhaustively: compiler enforces all branches
 fun render(state: UiState<User>) = when (state) {
     is UiState.Loading  -> showSpinner()
     is UiState.Success  -> showUser(state.data)
@@ -132,7 +132,7 @@ fun render(state: UiState<User>) = when (state) {
 ### Coroutines & Flow
 
 ```kotlin
-// Use structured concurrency — never GlobalScope
+// Use structured concurrency: never GlobalScope
 class UserRepository(private val api: UserApi, private val scope: CoroutineScope) {
 
     fun userUpdates(id: String): Flow<UiState<User>> = flow {
@@ -148,7 +148,7 @@ class UserRepository(private val api: UserApi, private val scope: CoroutineScope
     val user: StateFlow<UiState<User>> = _user.asStateFlow()
 }
 
-// Anti-pattern — blocks the calling thread; avoid in production
+// Anti-pattern: blocks the calling thread; avoid in production
 // runBlocking { api.fetchUser(id) }
 ```
 
@@ -168,16 +168,16 @@ val config = requireNotNull(System.getenv("APP_CONFIG")) { "APP_CONFIG must be s
 ### Scope Functions
 
 ```kotlin
-// apply — configure an object, returns receiver
+// apply: configure an object, returns receiver
 val request = HttpRequest().apply {
     url = "https://api.example.com/users"
     headers["Authorization"] = "Bearer $token"
 }
 
-// let — transform nullable / introduce a local scope
+// let: transform nullable / introduce a local scope
 val length = name?.let { it.trim().length } ?: 0
 
-// also — side-effects without changing the chain
+// also: side-effects without changing the chain
 val user = createUser(form).also { logger.info("Created user ${it.id}") }
 ```
 

@@ -1,6 +1,7 @@
 ---
 description: >
   Audit documentation drift and apply authorized evidence-backed maintenance.
+  TRIGGER WHEN: the user asks to check documentation drift against code or maintain project documentation.
 argument-hint: "[path] [--scope dimensions] [--audit-only | --plan-only | --fix | --commit]"
 ---
 

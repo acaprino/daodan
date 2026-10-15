@@ -1,9 +1,9 @@
 ---
 name: marketplace-audit
 description: >
-  Validates the integrity of any Claude Code plugin marketplace. Use PROACTIVELY before any commit that modifies plugin files or marketplace.json.
-  TRIGGER WHEN: verifying marketplace.json integrity, finding orphan plugins/skills/agents/commands, checking dependency resolution or cycles, confirming documented plugin counts still match README and docs tables, or checking naming conventions.
-  DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding new plugins (use marketplace-scaffold-plugin / skills-creator).
+  Validate structural integrity, dependencies, naming, colors and doc counts of a plugin marketplace.
+  TRIGGER WHEN: verifying marketplace.json integrity, finding orphan components, checking dependencies or doc count drift.
+  DO NOT TRIGGER WHEN: content quality review (use marketplace-review) or scaffolding (use skills-creator).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -133,7 +133,7 @@ The script checks:
    - Skill directory name matches frontmatter `name` field
    - Workflow command output directories match command filename (e.g., `feature-e2e.md` typically writes to `.feature-e2e/`)
    - No naming collisions between commands in different plugins
-   - No em dash characters anywhere (use hyphen `-` or double hyphen `--`)
+   - No dash-aside constructs (`—`, `--`, or ` - ` wrapping parenthetical clauses; rewrite with colons, parentheses, or separate sentences)
 6. **Cross-reference consistency (project-specific, best-effort)**
    - If a git remote is configured, suggest that the marketplace `name` align with the repo name (warning only)
    - If a `CLAUDE.md` is present at the project root, suggest that its project header match the marketplace name (warning only)

@@ -1,6 +1,6 @@
 ---
 name: semantic-interconnect-mapper
-description: 'Phase 1b context builder whose output downstream reviewers, doc writers and drift hunters work against. Produces no verdicts of its own. TRIGGER WHEN: spawned by /codebase-map:team-analyze, /senior-review:team-review or /project-knowledge:guide, or the user explicitly asks to map contracts, invariants, domain rules, call graphs, or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists (neither .codebase-map/ nor codebase-explorers context-brief.md), or the task is a surface-level operation that does not need the map.'
+description: 'Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers. TRIGGER WHEN: spawned by /codebase-map:team-analyze, /senior-review:team-review or /project-knowledge:guide, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /codebase-map:analyze or codebase-explorer first).'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

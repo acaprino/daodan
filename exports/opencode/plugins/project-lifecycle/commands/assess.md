@@ -1,5 +1,5 @@
 ---
-description: 'Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a single-domain audit suffices (use /senior-review:code-review, /codebase-map:analyze, or /testing:test-audit).'
 ---
 
 <daodan_host_binding host="opencode">

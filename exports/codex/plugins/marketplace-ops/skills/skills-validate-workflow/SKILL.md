@@ -142,22 +142,19 @@ Deterministic activation-quality checks plus AI-powered body review for all skil
 
 ### Deterministic checks (script)
 
-1. **Directive voice** -- description uses ALWAYS invoke, MUST use, TRIGGER WHEN, or use PROACTIVELY
-2. **TRIGGER WHEN clause** -- explicit activation boundary present
-3. **DO NOT TRIGGER WHEN clause** -- when present, must name the sibling to route to; absence is fine when no confusable sibling exists
-4. **Negative constraint** -- "Do not X directly" prevents Claude from bypassing (skills only)
-5. **Passive pattern detection** -- flags "Helps with", "Can be used for", "Use when" and similar low-activation wording
-6. **Description length** -- hard limit 1024 chars, recommended under 300
-7. **Token budget** -- total description chars across all components vs 15,000 char budget
-8. **SKILL.md body size** -- warn over 300 lines, flag over 500 lines, suggest references/ split
-9. **Agent body size** -- flag over 800 lines
-10. **Em dash detection** -- flags the em dash character anywhere
-11. **Token estimate** -- SKILL.md body chars/4, target under 5,000 tokens
-12. **Example tags** -- detects `<example>` tags, recommends 3-5
-13. **context: fork** -- reports if skill uses isolated subagent context
-14. **disable-model-invocation** -- reports if auto-triggering is disabled
-15. **allowed-tools in agents** -- flags agents with unrestricted tool access
-16. **!command preprocessor** -- detects shell command injection in skill body
+1. **Trigger calibration**: description states purpose and `TRIGGER WHEN:` (or explicit coordinator caller for internal method skills/worker roles) without emphasis escalation (`CRITICAL: ALWAYS invoke`)
+2. **TRIGGER WHEN clause**: explicit activation boundary present on user-triggered components
+3. **DO NOT TRIGGER WHEN clause**: when present, must name the sibling to route to; absence is fine when no confusable sibling exists
+4. **Passive pattern detection**: flags vague openings ("Helps with", "Can be used for", "Useful for")
+5. **Description length**: hard limit 1024 chars, recommended under 300
+6. **Token budget**: total description chars across all components vs 35,000 char budget
+7. **SKILL.md body size**: warn over 300 lines without `references/`, flag over 500 lines
+8. **Agent body size**: flag over 700 lines
+9. **Dash-aside detection**: flags em dash (`—`) outside pattern-catalog documentation
+10. **Token estimate**: SKILL.md body chars/4, target under 5,000 tokens
+11. **context: fork**: reports if skill uses isolated subagent context
+12. **disable-model-invocation**: reports if auto-triggering is disabled
+13. **!command preprocessor**: detects shell command injection in skill body
 
 ### AI review dimensions (Step 5)
 

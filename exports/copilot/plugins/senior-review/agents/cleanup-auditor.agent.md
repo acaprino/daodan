@@ -1,6 +1,6 @@
 ---
 name: cleanup-auditor
-description: 'Always-on hygiene dimension of /senior-review:team-review. TRIGGER WHEN: the user asks for a cleanup review, technical-debt audit, dead code, orphan assets, unused dependencies, stale docs and historical artifacts, or leftovers of finished work (migrations, debug tooling). DO NOT TRIGGER WHEN: the user wants removal (use /senior-review:code-review --commit, Step 7c), workspace hygiene decided by the filesystem and git alone such as generated artifacts tracked in VCS, `.gitignore`, scratch directories, stale branches, stashes or worktrees (use repo-hygiene:workspace-auditor or /repo-hygiene:tidy), architecture or security review (use code-auditor or security-auditor), or one language only (use typescript-development:knip or python-development:python-dead-code).'
+description: 'Application-hygiene auditor for dead code, orphan assets, unused dependencies, stale docs and migration/debug leftovers. TRIGGER WHEN: spawned in /senior-review:team-review or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit. DO NOT TRIGGER WHEN: applying removals (use /senior-review:code-review --commit), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).'
 tools: ['search', 'edit', 'runCommands']
 ---
 

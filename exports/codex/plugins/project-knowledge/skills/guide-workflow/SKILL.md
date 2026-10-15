@@ -1,6 +1,6 @@
 ---
 name: guide-workflow
-description: 'Create or update a proportional audience-specific project guide using an owned file plan.'
+description: 'Create or update a proportional audience-specific project guide using an owned file plan. TRIGGER WHEN: the user asks to generate, audit or update a project guide or multi-file documentation set.'
 ---
 
 > Arguments: `[scope] [--audit-only | --plan-only | --fix | --commit] [--full]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.

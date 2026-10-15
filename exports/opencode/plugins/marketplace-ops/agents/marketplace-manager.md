@@ -1,5 +1,5 @@
 ---
-description: 'Maintains any Claude Code plugin marketplace end to end. TRIGGER WHEN: adding, auditing, reorganizing, versioning or syncing plugins, skills, agents and commands; marketplace.json consistency; plugin scaffolding; structural validation. DO NOT TRIGGER WHEN: working on an individual plugins internal logic (route to the plugins own agents/skills) or on a non-Claude-Code project.'
+description: 'Maintain plugin marketplace consistency, scaffolding, versioning and structural validation. TRIGGER WHEN: adding, auditing, reorganizing, versioning or syncing plugins, skills, agents and commands in a marketplace. DO NOT TRIGGER WHEN: working on an individual plugins domain logic (route to that plugins own agents/skills).'
 mode: subagent
 permissions:
   - action: "*"
@@ -146,9 +146,9 @@ When invoked, first read `.claude-plugin/marketplace.json` to learn:
 - Check naming conventions (kebab-case, filename matches `name` frontmatter field)
 - Report version inconsistencies (semver format, metadata.version present)
 - Detect duplicate plugin names, duplicate command names across plugins
-- Flag em-dash characters in all markdown files (use `-` or `--`)
+- Flag dash-aside constructs (`—`, `--`, or ` - ` wrapping a parenthetical clause; rewrite with colons, parentheses, or separate sentences)
 
-The deterministic checks live in `skills/marketplace-audit/scripts/audit_marketplace.py` -- prefer running the script over re-implementing checks by hand.
+The deterministic checks live in `skills/marketplace-audit/scripts/audit_marketplace.py`: prefer running the script over re-implementing checks by hand.
 
 ## 2. PLUGIN SCAFFOLDING
 
@@ -192,13 +192,13 @@ Do NOT assume a specific upstream-sync table -- read the target project's CLAUDE
 ## 5. AI QUALITY REVIEW
 
 Evaluate semantic quality of plugin content:
-- Description trigger accuracy: specific enough for Claude to auto-invoke?
-- Description pushiness: Claude under-triggers; prefer directive voice ("Use PROACTIVELY", "ALWAYS invoke", "You MUST")
-- TRIGGER WHEN / DO NOT TRIGGER WHEN clauses present and specific (not boilerplate like "the task is outside the specific scope")
+- Description trigger accuracy: specific enough to activate on target tasks without overtriggering
+- Description calibration: clear purpose + `TRIGGER WHEN:` (avoid emphasis escalation such as `CRITICAL: ALWAYS invoke` on modern models)
+- `TRIGGER WHEN` / `DO NOT TRIGGER WHEN` clauses specific (with `DO NOT TRIGGER WHEN` naming the sibling component to route to)
 - Agent prompt structure: terse keyword-list style, proper sections
-- Agent prompt sizing: simple agents 60-200 lines, complex up to ~560 lines
+- Agent prompt sizing: simple agents 60-200 lines, complex up to ~700 lines (domain knowledge in skills, not roles)
 - Skill conciseness: under 500 lines body; larger content belongs in `references/`
-- Tool selection: minimal but sufficient
+- Tool selection: minimal but sufficient (omit `tools` only when MCP or full host defaults are needed)
 - Keyword relevance and completeness in marketplace.json
 - Cross-plugin coherence and overlap detection
 
@@ -231,10 +231,10 @@ See `skills/skills-creator/references/skills-vs-agents.md` for the full decision
 # CONVENTIONS (standard across Claude Code marketplaces)
 
 - Agent and skill names: kebab-case matching their filename / directory
-- Default model: `opus` (or as set in the target marketplace's own defaults)
+- Default model: `inherit` (or as set in the target marketplace's own defaults)
 - Agent body style: terse keyword lists, imperative tone, structured with markdown headers
 - Command frontmatter: `description` and `argument-hint` as separate YAML keys (not a single concatenated string)
-- Never use the em dash character (`-` or `--` only)
+- Avoid the dash-aside construct in any form (`—`, `--`, or ` - `); rewrite with colons, parentheses, or separate sentences
 - Valid agent colors: red, blue, green, yellow, purple, orange, pink, cyan
 
 Plugin categories are marketplace-specific -- read existing `marketplace.json` entries to learn the local taxonomy rather than applying a fixed list.

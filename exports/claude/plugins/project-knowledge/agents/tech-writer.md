@@ -2,6 +2,7 @@
 name: tech-writer
 description: >
   Document the verified stack, architecture and data model in planned files.
+  TRIGGER WHEN: spawned by /project-knowledge:guide to author technical architecture and data-model documentation.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:1e69946a23f374f1bbb3e0f34e48724b4191bf971223dfe986794cf1d09b4dfe",
+  "coreDigest": "sha256:39c6ad5fb350f329a90b510b9b54009539969089d42ace2ea222e76f56032c95",
   "harnessStrategies": {},
   "host": "codex",
   "overrides": [],
   "plugin": "report-rendering",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

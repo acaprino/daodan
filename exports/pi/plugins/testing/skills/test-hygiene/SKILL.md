@@ -1,9 +1,9 @@
 ---
 name: test-hygiene
 description: >
-  Binding placement rules, plus the measure, quarantine, consolidate remediation ladder for degraded suites.
-  TRIGGER WHEN: creating or placing any test file, choosing between extending an existing test and writing a new one, auditing test-suite health, quarantining failing or flaky tests, or consolidating redundant tests.
-  DO NOT TRIGGER WHEN: writing the test content itself (use mattpocock-skills:tdd), browser E2E mechanics like page objects and waiting (use developer-essentials:e2e-testing-patterns).
+  Test placement rules and the measure, quarantine, consolidate remediation ladder for degraded test suites.
+  TRIGGER WHEN: creating or placing test files, deciding whether to extend an existing test or add a new file, auditing test-suite health, quarantining flaky tests, or consolidating redundant tests.
+  DO NOT TRIGGER WHEN: TDD workflow mechanics (use mattpocock-skills:tdd) or browser E2E page objects/waiting (use developer-essentials:e2e-testing-patterns).
 ---
 
 <daodan_host_binding host="pi">

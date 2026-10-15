@@ -1,6 +1,6 @@
 ---
 name: premise-auditor
-description: 'Second, independent derivation of the codes claims, and attack on the load-bearing assumptions behind findings built from a common artifact. Two modes set by the spawning prompt: derivation blind to Codebase Map and the map, attack with both. TRIGGER WHEN: /senior-review:team-review Phase 1c runs, or the verification panel spawns Lens 0 for a finding whose premise_provenance is shared-context or mixed. DO NOT TRIGGER WHEN: the task is to find defects (use the dimension auditors), to build the interconnect map (use codebase-map:semantic-interconnect-mapper), or to judge whether a defect is reachable (Lens 1).'
+description: 'Derives independent code claims (Mode 1, blind to shared maps) and challenges load-bearing finding premises (Mode 2, Lens 0). TRIGGER WHEN: /senior-review:team-review Phase 1c runs, or the verification panel spawns Lens 0 for a finding premise. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).'
 ---
 
 <daodan_host_binding host="codex">

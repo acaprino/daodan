@@ -2,6 +2,7 @@
 name: overview-writer
 description: >
   Explain the project and implemented features for planned audiences.
+  TRIGGER WHEN: spawned by /project-knowledge:guide to author project overview documentation.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

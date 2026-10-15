@@ -1,7 +1,9 @@
 ---
 name: doc-humanizer
 description: >
-  Restructure existing technical documents for their planned readers without changing facts, code examples or author voice; voice editing belongs to text-humanizer.
+  Restructure existing technical documents for their planned readers without changing facts, code examples or author voice.
+  TRIGGER WHEN: spawned by project-knowledge workflows to restructure technical documentation.
+  DO NOT TRIGGER WHEN: editing prose voice (use text-humanizer).
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

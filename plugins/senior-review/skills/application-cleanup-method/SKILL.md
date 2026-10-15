@@ -1,7 +1,7 @@
 ---
 name: application-cleanup-method
 description: >
-  Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates.
+  Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /senior-review:code-review Step 7c or lifecycle cleanup.
 ---
 
 # Application cleanup

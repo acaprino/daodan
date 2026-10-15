@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:aae6d31bb0437678242f014b291d031f61b1f52f1cb86ea41a22438017853b46",
+  "coreDigest": "sha256:c1377ea4a9c41133a383b93774315d4b56ed7d1a1efb0414f4d1e4c401439b28",
   "harnessStrategies": {
     "python-audit": "parallel-subagents",
     "python-refactor": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "opencode",
   "overrides": [],
   "plugin": "python-development",
-  "version": "3.0.2"
+  "version": "3.0.3"
 }

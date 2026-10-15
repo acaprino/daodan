@@ -1,6 +1,6 @@
 ---
 name: readme-coordinator
-description: 'Audit, create or maintain README.md without losing facts or author voice.'
+description: 'Audit, create or maintain README.md without losing facts or author voice. TRIGGER WHEN: the user asks to audit, write or update README.md.'
 tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['text-humanizer:text-humanizer']
 ---

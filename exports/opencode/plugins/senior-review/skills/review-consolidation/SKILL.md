@@ -1,7 +1,7 @@
 ---
 name: review-consolidation
 description: >
-  Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification.
+  Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating /senior-review:code-review, team-review or pr-review results.
 ---
 
 <daodan_host_binding host="opencode">

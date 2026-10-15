@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: repo-hygiene:workspace-auditor; version: 1.3.4; source-sha256: 3dfb21db103c899e0b141323d1ed3d9d39c826c133d345de24251f2216ae2b78. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: repo-hygiene:workspace-auditor; version: 1.3.5; source-sha256: 6d942f3e116312b8510c58cfff71cf1f985e79943dbb93fc160884ad2047dd1f. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `repo-hygiene`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<repo-hygiene-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `repo-hygiene`. The owning plugin's declared logical skill identities are `repo-hygiene:repo-hygiene`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `repo-hygiene:repo-hygiene` -> compiled registry name `repo-hygiene` at `skills/repo-hygiene/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

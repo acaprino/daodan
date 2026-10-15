@@ -1,5 +1,5 @@
 ---
-description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a single test-suite or code review suffices (use /testing:test-audit or /senior-review:code-review).'
 ---
 
 <daodan_host_binding host="pi">

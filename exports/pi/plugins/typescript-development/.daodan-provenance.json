@@ -1,11 +1,11 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:28b5f7004baee00783e859179dc14a77cfd94197a0d207ac7591c12c083a30f8",
+  "coreDigest": "sha256:f83dcaccc94222805db2e17516288b8dc52f85de0dbdf08542547df9dafb9bb5",
   "harnessStrategies": {
     "review-typescript": "parallel-subagents"
   },
   "host": "pi",
   "overrides": [],
   "plugin": "typescript-development",
-  "version": "2.3.3"
+  "version": "2.3.4"
 }

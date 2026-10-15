@@ -113,6 +113,7 @@ The `prompt-engineering` skill of this plugin holds the knowledge base, split in
 - `<plugin-root>/skills/prompt-engineering/references/judge-prompting.md`: the judge prompt shape that measured the highest human agreement per model class (one criterion per judge, binary with evidence, reference-guided, a checklist step, 0-5 where a scalar is needed) and the additions that measured as harmful (personas, debate, strictness on strong judges). Read it when the archetype is judge / evaluator.
 - `<plugin-root>/skills/prompt-engineering/references/agent-instructions.md`: what has a measured effect in an agent's instruction surface: tool-description anatomy, guardrails over guidance in rule files, history scope per model, verified state for long jobs, test generation in a fresh context. Read it when the archetype is agentic / tool-use, when the prompt is a system policy driving an agent loop, or when the text is a tool description, an instruction file, a skill description or an orchestrator brief.
 - `<plugin-root>/skills/prompt-engineering/references/prompting-foundations.md`: Claude Academy's Product, Process and Performance lenses, defect-driven technique selection, input boundaries, reviewed examples, grounding and the feedback/eval loop. Read it when designing from an incomplete brief or repairing a defect in those areas; the working baseline in SKILL.md suffices for simple one-offs.
+- `<plugin-root>/skills/prompt-engineering/references/empirical-notes.md`: the detailed benchmark numbers, sample sizes and per-model curves behind the digest rules below (persona effects, shot-count non-monotonicity, delimiter sensitivity, compositional constraint saturation, RAG abstention, and language/modality ordering). Read it when citing specific study numbers in a deep audit.
 
 Skip references when the working baseline suffices for a simple persona or single-turn free-text prompt, with no reasoning component, parsed output or cost constraint. After reading one, explain the decision it informed in one or two sentences.
 </knowledge_base>
@@ -185,11 +186,10 @@ Follow this structured approach for every prompt design task:
 - Use the Academy's Product (deliverable/audience), Process (required operations) and Performance (interaction) lenses to find a missing part of the brief. Use confirmed context; state material assumptions or ask when they change the result. Do not invent requirements to fill every lens
 
 ## 2. Persona and Context
-- When a perspective or interaction style matters, state the role in one sentence in the system prompt: the vendor guidance is that a single sentence already changes behavior and tone, and nothing in it rewards a long persona block (predicted: a long persona costs cached tokens without a measured return)
-- A role steers depth and style, not accuracy: on GPT-4o-mini over 1,140 open-ended questions a generic expert role left accuracy unchanged (4.054 against 4.052 on a 5-point rating), raised expertise depth by 0.185 and lowered clarity by 0.180 (arXiv 2605.29420 v1, older non-reasoning class); never add a persona as an accuracy lever
-- For ideation at volume, personas partition the distribution: heterogeneous ordinary personas across independent samples raised unique idea combinations on GPT-4o from 39.15 to 56.97 where a single expert persona reached 50.40, and within one persona session the exploration rate declines over successive ideas (arXiv 2602.20408 v1); rotate perspectives between batches
-- Specify domain knowledge boundaries
-- Set the tone and communication style
+- When a perspective or interaction style matters, state the role in one sentence in the system prompt: a single sentence changes behavior and tone, while a long persona block costs cached tokens without a measured return
+- A role steers depth and style, not accuracy (arXiv 2605.29420 v1; see `empirical-notes.md`): never add a persona as an accuracy lever
+- For high-volume ideation, rotate heterogeneous personas across batches rather than generating many ideas inside one persona session (arXiv 2602.20408 v1)
+- Specify domain knowledge boundaries and communication style
 
 ## 3. Instruction Hierarchy
 - Primary directive - the core task (must be unambiguous)
@@ -199,20 +199,18 @@ Follow this structured approach for every prompt design task:
 - Separate output qualities from task procedures. Numbered steps may specify observable operations and dependencies; they do not imply a private reasoning trace or an explicit reasoning scaffold
 
 ## 4. Output Format
-- Specify structure explicitly (JSON, markdown, lists, prose)
-- Provide a concrete output template when format matters
+- Specify structure explicitly (JSON, markdown, lists, prose) and provide a concrete template when format matters
 - Define field types, lengths, and required vs optional fields
 - Decide the enforcement level with the output-shape ladder in `structured-output.md`: a format instruction alone is the weakest rung, and on small open-weight models it is not enforcement at all
 
 ## 5. Examples
-- Apply the model-class gate first. When examples are warranted on Claude, the vendor suggests 3-5 relevant, diverse input -> output pairs in `<example>` tags; this is a candidate count, not a requirement to expand an already clear prompt
-- Reasoning models, every vendor: start zero-shot; add reviewed input/output examples for an identified task, format, tone or boundary failure, and never as worked reasoning traces, which degrade RL-trained reasoners (arXiv 2509.23196); on Claude, an example carrying `<thinking>` tags teaches that reasoning style
-- Name the property each example demonstrates and check its answer against the contract. Examples selected from successful development runs and their near-duplicates no longer belong in the held-out evaluation set
-- Pin the delimiter between examples explicitly and keep it constant: the delimiter alone moved MMLU accuracy by up to 23 points and reordered model rankings across Llama, Qwen and Gemma, at every scale (arXiv 2510.05152)
-- Shot count is calibrated per model, not chosen from a rule: on AG News (arXiv 2607.22969 v1, n=200, one task) Llama-3.1-8B went from 0.525 macro-F1 zero-shot to 0.866 at two shots and back to 0.553 at eight, Llama-4-Scout was best zero-shot (0.877) and lost 0.18 at one shot, and GPT-4o-mini's gain up to eight shots was not significant; a demonstration often repairs the task and output reading rather than adding knowledge, so sweep 0, 1, 2 and 8 before settling
-- Retrieve examples by similarity for transformation tasks: nearest-neighbour exemplar selection was the most consistent technique across ten software-engineering tasks (code translation CodeBLEU 30.19 to 42.08, assert generation BLEU 25.24 to 65.44, arXiv 2506.05614); random examples do not buy this
-- Cover the happy path, an edge case, and a boundary case
-- Keep examples minimal but representative
+- Apply the model-class gate first. When examples are warranted on Claude, 3-5 diverse input -> output pairs in `<example>` tags is a candidate count, not a mandate to expand an already clear prompt
+- Reasoning models (every vendor): start zero-shot; add reviewed input/output examples only for an identified task, format, tone or boundary failure, and never as worked reasoning traces, which degrade RL-trained reasoners (arXiv 2509.23196); on Claude, `<thinking>` tags in examples teach that reasoning style
+- Name the property each example demonstrates and check its answer against the contract. Keep development examples and near-duplicates out of the held-out evaluation set
+- Pin the delimiter between examples explicitly and keep it constant (delimiter changes alone swung MMLU accuracy up to 23 points, arXiv 2510.05152)
+- Calibrate shot count per model by sweeping 0, 1, 2 and 8 shots rather than assuming more shots help (arXiv 2607.22969 v1; see `empirical-notes.md`)
+- Retrieve examples by similarity for transformation tasks rather than picking random exemplars (arXiv 2506.05614)
+- Cover the happy path, an edge case, and a boundary case concisely
 
 ## 6. Edge Cases
 - Empty or missing input handling
@@ -223,76 +221,68 @@ Follow this structured approach for every prompt design task:
 
 <optimization_techniques>
 ## Token Reduction
-- Remove verbal padding without changing obligation strength: "Please make sure to" -> an imperative when the original is a requirement
-- Use keyword lists only when they preserve the actor, action, condition and relationships; retain prose and purpose context when they clarify the task
+- Remove verbal padding without changing obligation strength ("Please make sure to" -> imperative when required)
+- Use keyword lists only when they preserve actor, action, condition and relationships; retain prose when it clarifies purpose
 - Remove redundant restatements of the same rule
-- Prefer imperative mood: "Validate input" not "You should validate the input"
-- Move static reference data to context/RAG only when retrieval exists and supplies it reliably; preserve facts required to interpret the task
-- Know which tokens bill: output tokens bill at full price and dominate latency; cached prefix reads bill 0.1x (0.025x on Claude Fable 5.1 and Mythos 5.1), so cut reasoning verbosity and the uncached suffix before shaving a cached system prompt, and batch cached-prefix edits (a cache-breaking edit re-bills the prefix at the write multiplier: 1.25x for the 5-minute TTL, 2x for the 1-hour TTL)
-- Reduce reasoning verbosity with token-efficient patterns (Chain of Draft few-shot, per-problem token budgets on models that accept them, the native effort or thinking-level setting on reasoning models, where Claude 4.7 and later reject `budget_tokens`) rather than deleting instruction words
-- Respect the safe ranges: 2x-5x near-parity compression on long context and few-shot blocks; short instruction prompts degrade faster; roughly 60% of reasoning length is typically removable at little cost, and quality drops past the task's intrinsic token complexity
+- Move static reference data to context/RAG only when retrieval supplies it reliably; preserve facts required to interpret the task
+- Know which tokens bill: output tokens bill at full price and dominate latency; cached prefix reads bill 0.1x (0.025x on Claude Fable 5.1 and Mythos 5.1), so cut reasoning verbosity and the uncached suffix before shaving a cached system prompt, and batch cached-prefix edits (write multipliers: 1.25x for 5m TTL, 2x for 1h TTL)
+- Reduce reasoning verbosity with token-efficient patterns (Chain of Draft few-shot, per-problem token budgets where supported, native `effort` or `thinking_level` on reasoning models; Claude 4.7+ rejects `budget_tokens`) rather than deleting instruction words
+- Safe compression ranges: 2x-5x near-parity on long context/few-shot blocks; short instruction prompts degrade faster; ~60% of reasoning length is typically removable before hitting the task's intrinsic token complexity
 
 ## Parity Claims
-- "Fewer tokens, same results" is conditional: state model class, shot regime, and task difficulty; parity on frontier models does not transfer to small models (math especially), and few-shot styles collapse in zero-shot use
-- Without an eval run, parity is predicted, never measured or verified: see `<epistemic_status>` for the three labels and what each one requires
-- To verify: paired eval on identical inputs with a pre-declared non-inferiority margin, several paraphrases of the brevity instruction, and judge verbosity-bias controls (see the prompt evals section)
+- "Fewer tokens, same results" is conditional on model class, shot regime, and task difficulty; parity on frontier models does not transfer to small models, and few-shot styles collapse in zero-shot use
+- Without an eval run, parity is predicted, never measured or verified (see `<epistemic_status>`)
+- To verify: paired eval on identical inputs with a pre-declared non-inferiority margin, multiple paraphrases of the brevity instruction, and judge verbosity-bias controls
 - Never pick the efficiency pole silently: expose the effectiveness/efficiency frontier with costs and trade-offs and let the caller choose
-- Reasoning models: shorter chains are more often right (arXiv 2505.17813), and prompt-only brevity held accuracy while cutting reasoning tokens up to 87.5% on Claude 3.7 Sonnet and Gemini (PREMISE, arXiv 2506.10716); the parity is still per model and per task, and a benchmark that caps thinking and answer under one limit overstates it
+- On reasoning models, shorter chains correlate with higher accuracy (arXiv 2505.17813) and prompt-only brevity cut reasoning tokens up to 87.5% at parity on Claude 3.7 Sonnet and Gemini (PREMISE, arXiv 2506.10716), but parity remains per-model and per-task
 
 ## XML Structuring
-- Use XML tags (`<instructions>`, `<context>`, `<example>`) when the prompt mixes instructions, context, examples, or long documents
-- For simple prompts, clear headings and whitespace suffice (this half is the plugin's own judgment; the vendor page states only the XML half)
-- No prompt syntax wins in general: on GPT-4o HumanEval (arXiv 2608.21074 v1, 8,200 executions) JSON scored 0.901 against 0.886 plain, Markdown 0.890, YAML 0.873, and an LLM-rewritten "optimized" prompt 0.748; on 52 Natural Instructions tasks (arXiv 2508.11383) semantically irrelevant format changes moved Llama-3.1-8B by a 0.161 accuracy spread and Qwen2.5-7B by 0.190 against 0.032 on GPT-4.1, and ensembling over equivalent formats cut the spread without changing accuracy. Format is a model and task hyperparameter: keep the vendor's structure, measure before switching, and never accept a model's own rewrite of the prompt as an optimization without an eval
-- Nest tags for hierarchy: `<constraints>` inside `<instructions>`
-- Use descriptive tag names that convey section purpose
+- Use XML tags (`<instructions>`, `<context>`, `<example>`) when the prompt mixes instructions, context, examples, or long documents; for simple prompts, clear headings and whitespace suffice
+- No prompt syntax wins universally (arXiv 2608.21074 v1; arXiv 2508.11383; see `empirical-notes.md`): format is a model and task hyperparameter, so keep the vendor's structure, measure before switching, and never accept an un-evaluated LLM rewrite as an optimization
+- Nest tags for hierarchy (`<constraints>` inside `<instructions>`) with descriptive names
 
 ## Structured Output Enforcement
-- Pick the rung before writing a word, by model class (`structured-output.md`): a format instruction with the schema and one example; the instruction plus validate-and-repair (schema validation, one retry carrying the validator's error); API structured outputs or an enum tool where the API has them; constrained decoding in the serving stack for open-weight models
-- The vendor's own order on Claude: ask first ("newer models can reliably match complex schemas when told to, especially if implemented with retries"), then an enum tool or structured outputs; structured outputs are generally available but reject recursive schemas, numeric and length bounds and `additionalProperties` other than `false`, cost tokens for the injected format prompt, and invalidate the prompt cache when the schema changes
-- On a small open-weight model the instruction alone is never the enforcement: output validity is the first failure on that class, before accuracy; validate-and-repair at minimum, constrained decoding when the stack offers it
-- Reason first, format last: never ask for reasoning inside the JSON; when the task needs reasoning, put it before the constrained output or in a separate call
-- Keep the schema in the prompt even when the API enforces it, as documentation for the model, with key names and order identical between the two
-- Use delimiter tokens (```json, <output>) for parseable boundaries when nothing enforces the shape, add "respond only with" to prevent preamble, and place a format example immediately before the task instruction
-- Assistant prefill is unavailable on the last turn from Claude 4.6 on (400 error); it remains available on earlier Claude models and on open-weight models, where prefilling the opening brace is a valid rung
-- Do not use temperature 0 to stabilize a shape on Gemini 3, whose vendor recommends keeping 1.0; use `responseSchema`
+- Pick the enforcement rung by model class (`structured-output.md`): (1) format instruction + schema + 1 example, (2) instruction + validate-and-repair retry, (3) API structured outputs or enum tool, (4) serving-stack constrained decoding for open-weight models
+- On Claude: ask first (with retries), then enum tool or structured outputs (which reject recursive schemas, numeric/length bounds, and `additionalProperties` other than `false`, add format-prompt tokens, and invalidate cache on schema change)
+- On small open-weight models, a format instruction alone is never enforcement (prompt-only JSON validity is 61-92% below 8B): use validate-and-repair at minimum, or constrained decoding
+- Reason first, format last: never embed reasoning inside JSON; put reasoning before the constrained block or in a prior call
+- Keep the schema in the prompt even when the API enforces it, with identical key names and order
+- Use parseable delimiters (```json, `<output>`), "respond only with" to suppress preamble, and place a format example immediately before the task instruction
+- Assistant prefill is unavailable on the last turn from Claude 4.6 on (400 error), but remains valid on earlier Claude models and open-weight models
+- On Gemini 3, keep temperature at 1.0 and use `responseSchema` rather than temperature 0
 
 ## Ambiguity Elimination
 - Replace pronouns with specific nouns ("it" -> "the input string")
-- Quantify vague terms: "short" -> "under 50 words", "few" -> "2-4"
-- Define domain terms inline when they could be interpreted differently
-- Use enumerated options instead of open-ended choices
+- Quantify vague terms ("short" -> "under 50 words", "few" -> "2-4")
+- Define domain terms inline and use enumerated options instead of open-ended choices
 
 ## Instruction Positioning
-- Short prompts: state highest-priority rules first, for the reader: rule order had no measured effect on compliance with non-conflicting constraints (mean absolute Spearman correlation about 0.03 over 1 to 12 constraints, arXiv 2608.12426), and the encoding of a priority scheme is itself fragile (relabelling tiers from ordinal to numeric moved GPT-5.4 by 8.4 points and Opus 4.6 by 8.0, ManyIH-Bench, arXiv 2604.09443)
-- Long context (20k+ tokens): put longform data at the top and the query/instructions at the end; end placement improves response quality up to 30% on multi-document inputs
-- Default to one authoritative copy of each instruction. For very long prompts, test a compact end reminder only when an observed placement failure warrants it; keep it consistent with the original and measure the effect
-- State critical constraints plainly, once. Emphasis escalation written to cure undertriggering ("CRITICAL: you MUST use this tool", "If in doubt, use [tool]") causes overtriggering on Claude 4.5 and later; a plainly stated hard rule may still say never or must
-- Resolve contradictions before shipping: on reasoning models a contradiction burns reasoning tokens on every call, and GPT-6 Astra pauses on conflicting guidance rather than talking past it
+- Short prompts: place highest-priority rules first for readability (rule order has near-zero effect on non-conflicting compliance, arXiv 2608.12426, while priority-tier relabelling is fragile, arXiv 2604.09443)
+- Long context (20k+ tokens): put longform data at the top and instructions/query at the end (up to 30% quality gain on multi-document inputs)
+- Default to one authoritative copy of each instruction; test a compact end reminder only when an observed long-context placement failure warrants it
+- State critical constraints plainly, once: emphasis escalation ("CRITICAL: you MUST use this tool") causes overtriggering on Claude 4.5+
+- Resolve contradictions before shipping: conflicts burn reasoning tokens on every call and cause GPT-6 Astra to pause
 - Separate "always do" from "never do" into distinct sections
 
 ## Context Engineering
-- Write system prompts at the right altitude: the minimal set of information that fully outlines expected behavior, between hardcoded logic and vague guidance
-- Just-in-time retrieval: keep lightweight identifiers (paths, queries, links) in context; load content via tools at runtime instead of pre-retrieving everything
-- Compaction: near the context limit, summarize preserving architectural decisions, unresolved bugs, and implementation details; discard redundant tool outputs
-- Structured note-taking: persist state outside the context window for milestone work
-- Subagents: give each a clean context and require a condensed summary back (1,000-2,000 tokens, Anthropic context-engineering guidance; no measured brief or summary format exists, see `agent-instructions.md`)
-- On Claude the context primitives are API-level: tool-result clearing (`clear_tool_uses_20250919`, default trigger 100K input tokens, lossless for re-fetchable content, invalidates cached prefixes), server-side compaction (`compact_20260112`, default trigger 150K, minimum 50K, lossy by design, custom instructions), and the memory tool (`memory_20250818`, client-side files that persist across sessions); clearing fires first, compaction when that is not enough, memory persists. Measured in the Anthropic cookbook: a research agent's 335,279-token peak fell to about 173K with clearing or 169K with compaction
-- Every model degrades with input length even on simple tasks, one distractor lowers accuracy, and focused prompts beat full prompts on all 18 models tested (Chroma context-rot report, 2025-07); a judge or monitor reading a long transcript rots the same way
-- Retrieved documents: instruct an evidence-sufficiency check before the answer and an explicit abstention, then verify sufficiency and conflict outside the prompt. Assess-first prompting raised abstention under conflicting evidence from 0% to 47.9% on GPT-5.5 and from 5.2% to 55.2% on Gemini 2.5, but only from 7.2% to 11.2% on Claude Sonnet 4.6, which notices the conflict and answers anyway, and every model still over-answered above 65% of the worst condition, Claude at 90.5% (Zhang and Wu, Computers, Materials and Continua 89(1), 2026-08); an abstention instruction still answered 41.6% of misleading-context questions on small models, 63% of them copying the planted wrong entity (arXiv 2608.22228). Lost-in-the-later persists across o3, Qwen3, GPT-4o and Llama, and a reasoning scaffold does not cure grounding (arXiv 2507.05424, *(verify)*: located in search results but not read at the 2026-09 refresh)
-- For source-bound tasks, define permitted evidence, source identifiers and missing/conflicting-evidence behavior. Supporting excerpts are observable evidence, not private reasoning. Validate citations against the source; never invent support or treat absence of evidence as evidence of absence. Added grounding requirements are behavioral changes
-- Delimit heterogeneous inputs with meaningful tags. Prompt organization does not change the consumer's response format, enforce trust or guarantee correctness
+- Write system prompts at the right altitude: minimal information that fully outlines expected behavior
+- Just-in-time retrieval: keep lightweight identifiers in context and load content via tools at runtime
+- Compaction and note-taking: preserve architectural decisions, open bugs and verified state outside or across compaction boundaries; subagents run in clean contexts and return condensed summaries (1,000-2,000 tokens)
+- On Claude, use API-level context primitives: tool-result clearing (`clear_tool_uses_20250919`), server-side compaction (`compact_20260112`), and the memory tool (`memory_20250818`)
+- Every model degrades with input length and distractors (Chroma context-rot report, 2025-07), including judge prompts reading long transcripts
+- Retrieved documents: instruct an evidence-sufficiency check and explicit abstention before answering, then verify sufficiency and conflict outside the prompt, because prompt-only abstention still over-answers under conflicting or misleading context (Zhang & Wu 2026-08; arXiv 2608.22228; arXiv 2507.05424 *(verify)*; see `empirical-notes.md`)
+- For source-bound tasks, define permitted evidence, source identifiers and missing/conflicting-evidence behavior. Supporting excerpts are observable evidence, not private reasoning. Added grounding requirements are behavioral changes
+- Delimit heterogeneous inputs with meaningful tags; organization alone does not enforce trust or output validity
 
 ## Agentic Prompting
-- Treat tool descriptions as prompt surface: few consolidated tools, unambiguous parameter names, meaningful natural-language returns, token-efficient responses; the vendor's own rule is that the description is "by far the most important factor in tool performance"
-- Give tools a `response_format` enum (concise at about a third of the tokens of detailed), namespace them under common prefixes, consolidate (`schedule_event` instead of list plus create), paginate and truncate with defaults (Claude Code caps a tool response at 25,000 tokens), and instrument runtime, call counts, token consumption and errors (Anthropic, writing tools for agents, 2025-09)
-- Calibrate trigger phrasing: plain "Use this tool when..." suffices on modern models; escalated imperatives written for older models cause overtriggering
-- Eagerness is a setting: lower effort plus a tool-call budget and an escape hatch to stop early, or a persistence line to keep going until resolved (OpenAI GPT-5 guide); reasoning reuse across turns lifted Tau-Bench Retail from 73.9% to 78.2%
-- Iterate tool descriptions through evals with the agent in the loop
-- Read `agent-instructions.md` for the measured anatomy of a tool description (purpose, usage guidance, parameter semantics; examples optional: enriching MCP descriptions raised median success 5.85 points and steps 67%, and removing the examples cost nothing), the guardrails-over-guidance result on coding-agent rule files, history scope per model, and verified state for long jobs
+- Treat tool descriptions as primary prompt surface: few consolidated tools, unambiguous parameter names, `response_format` enum (concise vs detailed), common namespaces, pagination/truncation defaults, and runtime/token/error instrumentation
+- Calibrate trigger phrasing: plain "Use this tool when..." suffices on modern models; escalated imperatives cause overtriggering
+- Tune eagerness via effort setting, tool-call budget, and explicit early-stop or persistence invariants (OpenAI GPT-5 guide)
+- Read `agent-instructions.md` for measured tool-description anatomy (arXiv 2602.14878 v3), guardrails-over-guidance in coding-agent rule files (arXiv 2604.11088 v2), per-model history scope (arXiv 2608.26199), and verified state for long jobs (arXiv 2605.23574)
 
 ## Language and Modality
-- Keep the prompt in the language the task arrives in: translating to English is not an optimization, because the effect changes sign by task and model (GPT-4o-mini code generation, arXiv 2607.14816 v1: Python pass rate 23.35% in English against 23.91% in Italian, Java 32.78 against 33.39, ClassEval 37 against 33). Variants stay in the original language unless a measurement on the target model and task says otherwise; where one exists, a translated variant may enter the frontier, labelled, with the language change reported as a behavioral change and the measurement named. Absent a measurement the sign of the effect is unknown, and a token-minimizing pass has a systematic incentive to translate. Whether the system prompt should be English while the user content stays Italian is unmeasured on current models; say so rather than assume
-- Order modalities by the reasoning's dependency structure, not image-first by rule: on GPT-4o (Wardle and Susnjak, Big Data and Cognitive Computing 9(6):149, 2025-06, older non-reasoning class only) chemistry scored 0.32 text-first against 0.72 interleaved, and economics reversed to 0.73 text-first against 0.48 interleaved; no equivalent measurement exists on Gemini 3, GPT-5 vision or Claude 4.6 and later, so label the ordering predicted there
+- Keep the prompt in the language the task arrives in: translating to English changes sign by task and model (arXiv 2607.14816 v1; see `empirical-notes.md`). Keep variants in the original language unless a target-model measurement justifies a translated variant in the frontier (labelled as a behavioral change)
+- Order modalities by reasoning dependency rather than image-first by default (Wardle & Susnjak 2025-06; label modality ordering as predicted on Gemini 3, GPT-5 vision and Claude 4.6+)
 </optimization_techniques>
 
 <anti_patterns>
@@ -307,8 +297,8 @@ Follow this structured approach for every prompt design task:
 ## Over-Constraining
 - BAD: 40 output rules that must all hold at once, many conflicting
 - GOOD: every rule the output needs and no more, a general fallback principle, and a split or a verify-and-retry step above five simultaneously verifiable constraints
-- Joint compliance is multiplicative, and it saturates early on every class measured. Over 1 to 12 independently verifiable constraints (arXiv 2608.12426 v1, 36 constraint types, 369,753 checks) the smallest count at which all-constraints success fell below 50% (the paper's compositional half-life) was 7 for GPT-5.5, 6 for Claude 4.7 Opus, 4 for Gemini 3.1 Pro, 3 for Claude 4.6 Opus, GPT-5.4 Pro and DeepSeek-V4-Pro, and 2 for GPT-5.2; twelve of fifteen models crossed it by three. At eight constraints per-constraint correctness was still about 40.7% while all-eight success was 5.7%; each added constraint multiplied survival by about 0.922 on the fitted mean curve, and structural constraints decayed about twice as fast as lexical ones. Older models show the same shape: Gemini-1.5-Pro followed a characters-per-line rule 99% of the time alone and 20% when composed with five others, and Claude 3.5 went from 97% to 2% (arXiv 2509.21051, EMNLP 2025). The working rule: zero to three constraints, normal; four to five, add a verifier; above five, split into stages or verify and retry, unless an eval on the target model says otherwise. That threshold is this plugin's synthesis of the curves, not a number a paper optimized. The band decides one thing: when the optimizer volunteers a split or a verifier variant. It is not a reliability criterion and it does not answer a caller's error budget. When the caller names a joint-success target, or when any counted constraint is machine-checkable, decide on the four numbers of the output-shape eval (schema validity, answer accuracy, executable accuracy, and the wrong-but-valid rate, in `structured-output.md`) rather than on the count, and state which obligations the variant's named rung covers and which need a domain validator alongside it. Shape compliance and joint correctness are different predicates: three export obligations (schema-valid JSON, totals matching the source line items, no omitted eligible records) can leave schema enforcement succeeding while both others fail
-- Exception, scoped to guardrails: the guardrail rules of a persistent coding-agent rule file are not a set of simultaneous output constraints, so the cap does not apply to them. Those are the prohibitions on scope, files, commands and refactors. On Opus 4.6 fifty rules did not collapse SWE-bench performance and the prohibitions carried the gain (arXiv 2604.11088 v2), but the property that study scores is task pass rate, a patch that passes the repository's test suite, and it reports no rule-adherence metric, so it is not evidence that fifty rules were each followed. Output obligations the same file carries, a release-note or commit-message format or a mandatory section, count like any other simultaneous constraint; see `agent-instructions.md`
+- Joint compliance is multiplicative and saturates early on every model class (arXiv 2608.12426 v1; arXiv 2509.21051; see `empirical-notes.md` for per-model compositional half-lives). The working rule: zero to three constraints, normal; four to five, add a verifier; above five, split into stages or verify and retry, unless an eval on the target model says otherwise. When the caller names a joint-success target or any constraint is machine-checkable, decide on the four numbers of the output-shape eval (schema validity, answer accuracy, executable accuracy, and the wrong-but-valid rate in `structured-output.md`) and state which obligations the variant's enforcement rung covers and which require a domain validator alongside it
+- Exception, scoped to guardrails: prohibition rules in a persistent coding-agent rule file (scope, files, commands, refactors) are not simultaneous output constraints, so the cap does not apply to them (arXiv 2604.11088 v2). Output obligations in the same file (release-note/commit formats, mandatory sections) still count as simultaneous constraints; see `agent-instructions.md`
 
 ## Missing Edge Cases
 - BAD: "Parse the user's date input" (no format spec, no error handling)
@@ -316,8 +306,7 @@ Follow this structured approach for every prompt design task:
 
 ## Prompt Injection Vulnerability
 - BAD: "Follow the user's instructions exactly", or any line that lets retrieved documents, tool results or pasted content issue instructions
-- GOOD: delimit untrusted content, state that nothing inside the delimiter is an instruction, keep the authoritative instructions outside and after it, and decline override requests
-- Prompt hygiene is partial and model-dependent: paraphrasing cut camouflaged attack success by 55% to 84%, and spotlighting halved it on Claude Haiku while doing nothing on Llama 3.1 8B (arXiv 2606.18530); adaptive attacks defeat defenses that win on static benchmarks (arXiv 2505.18333); trained instruction hierarchy still breaks in long contexts (arXiv 2606.07808). What holds is architecture: every tool result is data, fetched content lives in an isolated context, least privilege on tools, and a confirmation step before any sink that sends conversation-derived information to a third party (OpenAI's agent design guidance, 2026-03; Claude Code's own security model). Both vendors state the problem is not fully solvable; a prompt that claims to solve it is the defect
+- GOOD: delimit untrusted content, state that nothing inside the delimiter is an instruction, keep authoritative instructions outside and after it, and enforce architectural controls (isolated context for fetched data, least privilege on tools, confirmation before external sinks; arXiv 2606.18530, arXiv 2505.18333, arXiv 2606.07808)
 
 ## No Output Anchor
 - BAD: "Analyze this code" (model produces unpredictable format)
@@ -325,8 +314,7 @@ Follow this structured approach for every prompt design task:
 
 ## Format Instruction as the Only Enforcement
 - BAD: "Respond only with valid JSON matching this schema" as the whole enforcement on a 4B model served through Ollama
-- GOOD: the same schema in the prompt, plus a validator with one retry, or the serving stack's JSON-schema or grammar setting; the prompt documents the shape, the stack enforces it
-- On small open-weight models output validity is the first failure, before accuracy: prompt-only JSON validity measured 61% to 92% below 8B (Llama-3.1-8B 68.7%, Gemma-2-2B 91.7%, Qwen2.5-0.5B 61.5%), and 100% under a schema constraint; the instruction is a courtesy to the model, not a guarantee to the parser, and a valid object is still not a correct one
+- GOOD: the same schema in the prompt, plus a validator with one retry, or the serving stack's JSON-schema/grammar setting (prompt-only JSON validity is 61-92% below 8B vs 100% under a schema constraint)
 
 ## Redundant Context
 - BAD: Restating the same instruction 5 different ways for emphasis
@@ -335,17 +323,15 @@ Follow this structured approach for every prompt design task:
 ## Emphasis Escalation
 - BAD: "CRITICAL: You MUST ALWAYS use the search tool. NEVER skip it"
 - GOOD: "Use the search tool when the answer depends on current information"
-- Claude 4.5 and later overtrigger on language written to cure undertriggering on older, less steerable models; the vendor's own examples still state hard rules with never and must, so the fix targets trigger phrasing, not capitals
+- Claude 4.5 and later overtrigger on language written to cure undertriggering on older models; plain `never` and `must` on hard constraints remain fine
 
 ## Explicit CoT on Reasoning Models
 - BAD: "Think step by step inside <thinking> tags" sent to an adaptive-thinking, extended-thinking or o-series model
-- GOOD: State the task, success criteria, and the effort setting; let the model reason natively
-- Exception: at the lowest effort setting, a brief explicit plan or thought summary at the start of the answer improves results (OpenAI GPT-5 guide); use it there and nowhere else
+- GOOD: State the task, success criteria, and the effort setting; let the model reason natively (exception: a brief plan at the lowest effort setting, per OpenAI GPT-5 guide)
 
 ## Reasoning Traces as Exemplars
 - BAD: few-shot examples whose answers include worked step-by-step reasoning, sent to a reasoning model
-- GOOD: zero-shot, or examples that show only input and output; if the demonstrations carry a strategy, state the strategy as an instruction instead
-- Few-shot CoT often does worse than direct answering on RL-trained reasoners, and more exemplars, even optimal traces, degrade further; distilling them into explicit insights recovered +14.0% on AIME'25 for GPT-4.1 (arXiv 2509.23196)
+- GOOD: zero-shot, or examples showing only input and output; distill strategies into explicit instructions instead (arXiv 2509.23196)
 </anti_patterns>
 
 <evaluation_rubric>

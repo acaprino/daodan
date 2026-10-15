@@ -1,9 +1,9 @@
 ---
 name: repo-hygiene
 description: >
-  The check catalog for workspace tidying: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch directories, orphan doc-assets, and git auxiliary state. Two profiles, full and lite, over one set of check definitions.
-  TRIGGER WHEN: running `/repo-hygiene:tidy`, spawned as the repo-hygiene dimension of a review pipeline, or running the diff-scoped VCS check inside a code or PR review.
-  DO NOT TRIGGER WHEN: the question needs source comprehension (dead exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review`.
+  Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state.
+  TRIGGER WHEN: running /repo-hygiene:tidy or the repo-hygiene dimension of a review pipeline.
+  DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review).
 ---
 
 <daodan_host_binding host="opencode">

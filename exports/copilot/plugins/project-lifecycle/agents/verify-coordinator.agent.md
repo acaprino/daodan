@@ -1,6 +1,6 @@
 ---
 name: verify-coordinator
-description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task already covers the requested outcome.'
+description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a single test-suite or code review suffices (use /testing:test-audit or /senior-review:code-review).'
 tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['abstraction-architect:abstraction-architect-agent', 'codebase-map:map-analyst', 'platform-engineering:platform-reviewer', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'react-development:react-performance-optimizer', 'senior-review:code-auditor', 'senior-review:data-integrity-auditor', 'senior-review:premise-auditor', 'senior-review:resource-lifecycle-auditor', 'senior-review:security-auditor', 'senior-review:temporal-resilience-auditor', 'senior-review:ui-race-auditor', 'testing:test-suite-auditor', 'typescript-development:type-safety-auditor']
 ---

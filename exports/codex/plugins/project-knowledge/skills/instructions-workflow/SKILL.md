@@ -1,6 +1,6 @@
 ---
 name: instructions-workflow
-description: 'Audit, create or maintain the projects authoritative durable instructions.'
+description: 'Audit, create or maintain the projects authoritative durable instructions. TRIGGER WHEN: the user asks to audit, create or update AGENTS.md, CLAUDE.md or host instruction files.'
 ---
 
 > Arguments: `[path] [--create | --audit-only | --fix | --commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.

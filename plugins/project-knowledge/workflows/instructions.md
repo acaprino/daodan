@@ -1,6 +1,7 @@
 ---
 description: >
   Audit, create or maintain the project's authoritative durable instructions.
+  TRIGGER WHEN: the user asks to audit, create or update AGENTS.md, CLAUDE.md or host instruction files.
 argument-hint: "[path] [--create | --audit-only | --fix | --commit]"
 ---
 

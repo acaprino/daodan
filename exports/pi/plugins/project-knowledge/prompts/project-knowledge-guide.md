@@ -1,5 +1,5 @@
 ---
-description: 'Create or update a proportional audience-specific project guide using an owned file plan.'
+description: 'Create or update a proportional audience-specific project guide using an owned file plan. TRIGGER WHEN: the user asks to generate, audit or update a project guide or multi-file documentation set.'
 ---
 
 <daodan_host_binding host="pi">

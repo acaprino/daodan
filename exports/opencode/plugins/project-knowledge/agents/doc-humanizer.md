@@ -1,5 +1,5 @@
 ---
-description: 'Restructure existing technical documents for their planned readers without changing facts, code examples or author voice; voice editing belongs to text-humanizer.'
+description: 'Restructure existing technical documents for their planned readers without changing facts, code examples or author voice. TRIGGER WHEN: spawned by project-knowledge workflows to restructure technical documentation. DO NOT TRIGGER WHEN: editing prose voice (use text-humanizer).'
 mode: subagent
 permissions:
   - action: "*"

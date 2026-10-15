@@ -1,6 +1,6 @@
 ---
 name: workspace-auditor
-description: 'Adversarial workspace-hygiene auditor: filesystem garbage, generated artifacts tracked in git, `.gitignore` completeness and archaeology, scratch and pipeline-output directories, orphan doc-assets, and git auxiliary state. Report-only, no edits. TRIGGER WHEN: the user asks to tidy a repository, find committed build output, audit or repair `.gitignore`, locate scratch directories or leftover pipeline output, or list stale stashes, orphan worktrees and gone-upstream branches. Spawned as the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: the finding would need source comprehension (dead code, unused exports, unused dependencies, orphan application assets, rebrand residue), which belongs to `senior-review:cleanup-auditor`; or the user wants the removal applied, which belongs to `/repo-hygiene:tidy`.'
+description: 'Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches; spawned in review pipelines. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (use /repo-hygiene:tidy).'
 tools: ['search', 'edit', 'runCommands']
 ---
 

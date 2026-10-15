@@ -1,12 +1,9 @@
 ---
 name: ibkr
 description: >
-  Authoritative reference for Interactive Brokers integration in Python, across every asset class,
-  with tooling to verify venue behaviour against a paper Gateway instead of guessing.
-  TRIGGER WHEN: building, auditing or debugging anything that talks to TWS or IB Gateway via the
-  TWS API and ib_async: contracts, market data, orders, brackets, error codes, reconnection,
-  deployment, or a question about how IBKR actually behaves.
-  DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5), or the IBKR Web API with no TWS connection.
+  Interactive Brokers integration in Python via TWS API and ib_async, with paper Gateway verification tooling.
+  TRIGGER WHEN: building, auditing or debugging TWS / IB Gateway integrations (contracts, market data, orders, brackets, error codes, reconnection, IBC deployment).
+  DO NOT TRIGGER WHEN: MetaTrader 5 (use mt5).
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
