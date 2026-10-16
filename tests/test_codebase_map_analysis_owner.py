@@ -138,7 +138,7 @@ class CodebaseMapTeamRoleMetadataTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory(prefix="daodan-map-role-metadata-")
         cls.addClassCleanup(cls.temp.cleanup)
         cls.plugins = {name: load_plugin(ROOT / "plugins" / name)
-                       for name in ("codebase-map", "codebase-xray")}
+                       for name in ("codebase-map",)}
         cls.adapters = {host: load_adapter(ROOT / "adapters", host) for host in HOSTS}
         cls.packages = {}
         for host, adapter in cls.adapters.items():
@@ -166,13 +166,8 @@ class CodebaseMapTeamRoleMetadataTests(unittest.TestCase):
     def test_source_role_metadata_keeps_team_triggers_and_redirects_classic_to_the_analyst(self):
         for role in TEAM_ROLE_TRIGGERS:
             canonical = read(f"roles/{role}.md")
-            legacy = (self.plugins["codebase-xray"].root / "roles" / f"{role}.md").read_text(
-                encoding="utf-8"
-            )
-            self.assertEqual(canonical.split("\n---\n", 1)[0], legacy.split("\n---\n", 1)[0])
-            for name, body in (("codebase-map", canonical), ("codebase-xray", legacy)):
-                with self.subTest(plugin=name, role=role):
-                    self.assert_team_only(description(body), role)
+            with self.subTest(role=role):
+                self.assert_team_only(description(canonical), role)
 
     def test_all_five_hosts_preserve_the_complete_team_role_description(self):
         for host, adapter in self.adapters.items():

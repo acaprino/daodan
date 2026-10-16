@@ -1,6 +1,6 @@
 # Claude Code Agent Teams — Best Practices Reference
 
-> Cross-cutting knowledge base for designing, reviewing, and restructuring agentic teams in Claude Code. Used to inform changes to the team pipelines in this marketplace (project-lifecycle, senior-review, codebase-xray, project-knowledge, research) and the upstream wshobson/agents agent-teams plugin they build on, plus any agent that participates in a multi-agent pipeline.
+> Cross-cutting knowledge base for designing, reviewing, and restructuring agentic teams in Claude Code. Used to inform changes to the team pipelines in this marketplace (project-lifecycle, senior-review, codebase-map, project-knowledge, research) and the upstream wshobson/agents agent-teams plugin they build on, plus any agent that participates in a multi-agent pipeline.
 >
 > **Snapshot date:** 2026-05-16. Re-verify when Claude Code crosses a minor version or when the agent-teams feature flag is graduated out of experimental.
 
@@ -228,7 +228,7 @@ the roles its loaded methods can use independently of phase scheduling.
 Use this reference's design guidance alongside the current kernel contracts and
 adapter bindings when changing:
 
-- `plugins/codebase-xray/` — partition worker and synthesizer agents that participate in `/team-analyze`.
+- `plugins/codebase-map/` — partition worker and synthesizer agents that participate in `/team-analyze`.
 - `plugins/senior-review/` — every reviewer agent that participates in `/team-review` Phase 2.
 - `plugins/project-lifecycle/` and `plugins/project-protocol/`: specialist dispatch, generic isolated tasks, delivery accounting and candidate gates.
 - `plugins/project-knowledge/`: assigned writers in the file/audience guide plan.

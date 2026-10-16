@@ -47,9 +47,10 @@ verify use the same candidate review, without another plugin choice.
 
 The lifecycle uses canonical methods instead of executing arbitrary nested
 workflows. Sidecar `invoke` is rejected. In senior-review team-review Phase 1a,
-the review coordinator directly executes the canonical `codebase-xray:analyze`
-entry and its `codebase-xray:xray-method` phase-by-phase in the same context.
-Loading their bodies alone runs nothing; this is direct composition, with no
+the review coordinator composes the canonical `codebase-map:map-method` and
+dispatches `codebase-map:map-analyst` in its required isolated context. The
+coordinator binds inputs and verifies publication; it does not execute analysis
+phases in its own context. Loading bodies alone runs nothing; there is no
 declarative executor or nested lifecycle scheduler. Review preparation runs once
 and consolidation owns the final review report. Required workers keep their
 isolated contexts and delivery gates. Cross-plugin role bindings are compiled to

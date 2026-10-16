@@ -18,8 +18,8 @@ Each host picks a different topology to do that. The topology may differ; the co
   `initial-consolidation`, `consolidation` needs `cross-examination`
 - only `consolidation` produces `artifact:final-report`
 - all seven record contracts exist and travel with every package
-- `codebase-xray` keeps `.codebase-xray` as its artifact root, through the neutral write-confinement
-  policy
+- `codebase-map` writes only `.codebase-map` through the neutral write-confinement
+  policy; historical `.codebase-xray` report archives use the project-bound migration helper
 - `senior-review` declares no external team runtime, and every dimension plugin stays a hard
   dependency
 

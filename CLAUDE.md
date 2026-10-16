@@ -86,9 +86,9 @@ The compiler is `scripts/daodan/`: `model.py` and `load.py` (strict TOML loading
 `codebase-map` is the canonical static analysis plugin, formerly `codebase-xray`
 (and `deep-dive-analysis` before marketplace 14.0.0). Its downstream artifact
 contract is `.codebase-map/`, declared in its write-confinement policy. The
-`codebase-xray` compatibility plugin retains old commands, method and worker
-identities and uses the canonical implementation. Before producer or consumer
-root lookup, `map-method`'s project-bound migration helper moves an idle
+former compatibility plugin is retired: only `codebase-map` commands, methods
+and worker identities are registered. Before producer or consumer root lookup,
+`map-method`'s project-bound migration helper moves an idle
 `.codebase-xray/` archive without changing evidence bytes and leaves an explicit
 relocation record. Historical analysis paths are resolved through that record;
 new runs only write `.codebase-map/`. Active legacy runs and conflicting populated
@@ -404,7 +404,6 @@ decision, and do not make required specialist edges optional.
 | project-protocol | none |
 | skill-catalog | none |
 | codebase-map | none |
-| codebase-xray | codebase-map |
 | repo-hygiene | none |
 | abstraction-architect | codebase-map |
 | testing | project-protocol |

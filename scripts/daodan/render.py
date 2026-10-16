@@ -1045,8 +1045,10 @@ def _dispatch_bindings(
     return ids, "\n".join(bindings)
 
 
-def _rename_with_retry(source: Path, destination: Path, attempts: int = 10) -> None:
-    """Rename a tree, retrying a transient sharing violation.
+def _rename_with_retry(
+    source: Path, destination: Path, attempts: int = 10, *, replace_existing: bool = False
+) -> None:
+    """Rename a tree or replace a file, retrying a transient sharing violation.
 
     On Windows a directory rename fails with access denied while any process
     still holds a handle inside it, and an indexer or scanner routinely holds one
@@ -1055,7 +1057,10 @@ def _rename_with_retry(source: Path, destination: Path, attempts: int = 10) -> N
     """
     for attempt in range(attempts):
         try:
-            source.rename(destination)
+            if replace_existing:
+                source.replace(destination)
+            else:
+                source.rename(destination)
             return
         except OSError:
             if attempt == attempts - 1:

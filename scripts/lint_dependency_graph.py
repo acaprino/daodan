@@ -91,8 +91,6 @@ PLUGINS = Path("plugins")
 # Runtime edges that must never exist, regardless of declarations.
 # (source plugin, target namespace, reason)
 FORBIDDEN_EDGES = [
-    ("codebase-xray", "senior-review",
-     "legacy compatibility must not reintroduce the review dependency cycle"),
     ("codebase-map", "senior-review",
      "reintroduces the dependency cycle removed in marketplace 16.0.0"),
 ]

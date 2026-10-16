@@ -34,8 +34,8 @@ def shared_instruction_resource(path):
     if match is None:
         return None
     for ancestor in path.parents:
-        if ancestor.name in {"codebase-map", "codebase-xray"}:
-            owner = ancestor if ancestor.name == "codebase-map" else ancestor.parent / "codebase-map"
+        if ancestor.name == "codebase-map":
+            owner = ancestor
             resource = owner / "skills/map-method/references" / match.group(1)
             if not resource.is_file():
                 raise FileNotFoundError(resource)

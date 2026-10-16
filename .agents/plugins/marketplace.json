@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "33.5.3"
+    "version": "34.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -134,24 +134,6 @@
       ],
       "source": "./exports/codex/plugins/codebase-map",
       "version": "6.5.3"
-    },
-    {
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [
-        "codebase-map"
-      ],
-      "description": "Compatibility entrypoints for Codebase Map, formerly Codebase X-ray. Retains the old workflow, method and worker identities while using the canonical provider's shared instructions and output contract.",
-      "license": "MIT",
-      "name": "codebase-xray",
-      "skills": [
-        "./skills/analyze-workflow",
-        "./skills/team-analyze-workflow",
-        "./skills/xray-method"
-      ],
-      "source": "./exports/codex/plugins/codebase-xray",
-      "version": "6.0.3"
     },
     {
       "author": {

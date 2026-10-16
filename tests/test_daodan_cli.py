@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.daodan_build import build_repository, main  # noqa: E402
+from scripts.daodan_build import _publish_file, build_repository, main  # noqa: E402
 from scripts.daodan.adapter import HOSTS  # noqa: E402
 from scripts.daodan.overrides import source_digest  # noqa: E402
 
@@ -524,6 +524,54 @@ class CompilerCliTests(unittest.TestCase):
                                             for issue in diagnoses))
         sidecar.write_text(original, encoding="utf-8")
         self.assertEqual(self.run_cli("--check")[0], 0)
+
+
+
+class ManifestPublicationTests(unittest.TestCase):
+    def test_transient_manifest_sharing_violation_retries_the_same_complete_file(self):
+        import os
+
+        with tempfile.TemporaryDirectory(prefix="daodan-manifest-") as holder:
+            root = Path(holder)
+            manifest = root / "package.json"
+            manifest.write_bytes(b"original manifest")
+            original_replace = os.replace
+            attempts = []
+
+            def replace_after_sharing(source, destination):
+                attempts.append(Path(source))
+                self.assertEqual(Path(source).read_bytes(), b"complete new manifest")
+                if len(attempts) == 1:
+                    self.assertEqual(manifest.read_bytes(), b"original manifest")
+                    error = OSError("transient Windows sharing violation")
+                    error.winerror = 32
+                    raise error
+                return original_replace(source, destination)
+
+            with patch("scripts.daodan_build.os.replace", replace_after_sharing), \
+                    patch("scripts.daodan.render.time.sleep"):
+                _publish_file(manifest, b"complete new manifest")
+
+            self.assertEqual(len(attempts), 2)
+            self.assertEqual(attempts[0], attempts[1])
+            self.assertEqual(manifest.read_bytes(), b"complete new manifest")
+            self.assertEqual(list(root.iterdir()), [manifest])
+
+    def test_persistent_manifest_publication_failure_preserves_the_original_and_cleans_temp(self):
+        from scripts.daodan.render import RenderError
+
+        with tempfile.TemporaryDirectory(prefix="daodan-manifest-") as holder:
+            root = Path(holder)
+            manifest = root / "package.json"
+            manifest.write_bytes(b"original manifest")
+            with patch("scripts.daodan_build.os.replace", side_effect=OSError("locked")) as replace, \
+                    patch("scripts.daodan.render.time.sleep"):
+                with self.assertRaises(RenderError):
+                    _publish_file(manifest, b"complete new manifest")
+
+            self.assertEqual(replace.call_count, 10)
+            self.assertEqual(manifest.read_bytes(), b"original manifest")
+            self.assertEqual(list(root.iterdir()), [manifest])
 
 
 if __name__ == "__main__":

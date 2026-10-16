@@ -29,8 +29,7 @@ from scripts.daodan.render import opencode_permissions, render_plugin  # noqa: E
 from host_binding_assertions import canonical_markdown, without_host_binding, loaded_instruction_text
 
 ADAPTERS = REPO_ROOT / "adapters"
-XRAY = REPO_ROOT / "plugins/codebase-map"
-LEGACY_XRAY = REPO_ROOT / "plugins/codebase-xray"
+MAP = REPO_ROOT / "plugins/codebase-map"
 REVIEW = REPO_ROOT / "plugins/senior-review"
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
@@ -58,7 +57,7 @@ class HostRenderingTests(unittest.TestCase):
         cls.packages = {}
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
-            for plugin_root in (XRAY, REVIEW, LEGACY_XRAY):
+            for plugin_root in (MAP, REVIEW):
                 plugin = load_plugin(plugin_root)
                 staging = cls.temp / host / plugin.name
                 render_plugin(plugin, adapter, staging, adapters_root=ADAPTERS)
@@ -89,8 +88,7 @@ class HostRenderingTests(unittest.TestCase):
 
     def test_classic_entries_bind_one_isolated_analyst_before_publication_on_every_host(self):
         for host in HOSTS:
-            for plugin, role in (("codebase-map", "map-analyst"),
-                                 ("codebase-xray", "codebase-map:map-analyst")):
+            for plugin, role in (("codebase-map", "map-analyst"),):
                 with self.subTest(host=host, plugin=plugin):
                     text = self.harness(host, plugin, "analyze")
                     plan = text[text.index("Dispatch plan:"):text.index("## Method")]
@@ -106,11 +104,11 @@ class HostRenderingTests(unittest.TestCase):
                     self.assertIn("An empty final message or", text)
                     self.assertIn("worker stop remains missing delivery", text)
 
-    def test_legacy_classic_analyst_binding_uses_the_canonical_owner_on_every_host(self):
+    def test_composed_classic_analyst_binding_uses_the_canonical_owner_on_every_host(self):
         for host in HOSTS:
             with self.subTest(host=host):
-                package = self.package(host, "codebase-xray")
-                text = self.harness(host, "codebase-xray", "analyze")
+                package = self.package(host, "senior-review")
+                text = self.harness(host, "senior-review", "team-review")
                 self.assertNotIn("codebase-xray:map-analyst", text)
                 resource = package / "contracts/dispatch/codebase-map/map-analyst.md"
 
@@ -123,7 +121,7 @@ class HostRenderingTests(unittest.TestCase):
                     self.assertIn("Never publish", role)
                     self.assertIn("<codebase-map-plugin-root>/skills/map-method/", role)
                     self.assertNotIn("<codebase-xray-plugin-root>", role)
-                    source = _read(XRAY / "roles/map-analyst.md")
+                    source = _read(MAP / "roles/map-analyst.md")
                     expected = source.split("\n---\n", 1)[1].lstrip("\n").replace(
                         CLAUDE_ROOT, "<codebase-map-plugin-root>"
                     )
@@ -139,7 +137,7 @@ class HostRenderingTests(unittest.TestCase):
             shared_only = replace(adapter, strategies=tuple(
                 replace(strategy, isolated=False) for strategy in adapter.strategies
             ))
-            for root in (XRAY, LEGACY_XRAY):
+            for root in (MAP,):
                 plugin = load_plugin(root)
                 classic = replace(plugin, workflows=tuple(
                     workflow for workflow in plugin.workflows if workflow.name == "analyze"
@@ -295,7 +293,7 @@ class HostRenderingTests(unittest.TestCase):
 
     def test_claude_classic_workflow_preserves_kernel_method_under_execution_binding(self):
         rendered = _read(self.package("claude", "codebase-map") / "commands/analyze.md")
-        kernel = _read(XRAY / "workflows/analyze.md").replace("\r\n", "\n")
+        kernel = _read(MAP / "workflows/analyze.md").replace("\r\n", "\n")
         body = without_host_binding(self, rendered, "claude")
         kernel_body = kernel.split("\n---\n", 1)[1].lstrip("\n")
         self.assertEqual(body.split("## Method\n\n", 1)[1], canonical_markdown(kernel_body))

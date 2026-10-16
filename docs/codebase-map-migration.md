@@ -1,26 +1,23 @@
 # Codebase Map migration
 
 Codebase Map is the canonical name and `codebase-map` is its plugin identity.
-New analysis output lives in `.codebase-map/`. The old `codebase-xray` plugin
-remains an installable compatibility entry with a required `codebase-map`
-dependency. Its `analyze`, `team-analyze`, `xray-method` and five worker identities
-execute the canonical methods. The implementation is shared, including the
-isolated-worker contracts; a legacy worker does not spawn another worker.
+New analysis output lives in `.codebase-map/`. The former `codebase-xray`
+compatibility plugin is removed from the kernels, catalogs and all five host
+exports. Its commands, skills and worker identities are no longer registered.
 
 ## Existing installations
 
 Update Daodan through your host's ordinary marketplace or package update path.
-The retained `codebase-xray` entry declares `codebase-map` as a required
-provider. Ensure that provider is installed and enabled through the host's normal
-dependency resolution or plugin manager. New installations can select
-`codebase-map` directly. Pi's full repository package includes both identities.
-OpenCode's plugin selector keeps the canonical dependency when the legacy plugin
-is selected.
+Remove the old `codebase-xray` installation or selection and enable `codebase-map`.
+Use `/codebase-map:analyze` or `/codebase-map:team-analyze` through the host's
+native workflow entry. Pi's repository package and the OpenCode catalog contain
+only the canonical plugin. An explicit OpenCode `options.plugins` selection must
+name `codebase-map`; the removed name is not an alias.
 
-The current entries migrate before their first output-root lookup. Producers
-and consumers resolve the project's root independently of an analysis subtarget.
-Old commands keep their existing arguments. The old `xray_path` input key and
-existing report names and run-state fields remain accepted.
+Removing the old plugin does not remove analysis archives. Current producers and
+consumers migrate before their first output-root lookup and resolve the project's
+root independently of an analysis subtarget. The old `xray_path` input key and
+existing report names and run-state fields remain accepted as data contracts.
 
 ## Inspect or migrate a repository
 
@@ -59,7 +56,7 @@ JSON statuses `absent`, `current`, `migrated` and `recovered` permit continuatio
   retains a bound origin record so a later call can complete its redirect.
 
 Stop original legacy writers before migration. Old binaries that ignore the
-redirect record do not gain a filesystem alias; use the updated compatibility
+redirect record do not gain a filesystem alias; use the canonical Codebase Map
 entries. Raw executable paths inside an old plugin cache are not a public helper
 API. This migration covers `.codebase-xray/`, including its older flat layout;
 the historical `.deep-dive/` archive predating marketplace 27 requires a separate

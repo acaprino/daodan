@@ -37,7 +37,7 @@ from scripts.daodan.catalogs import (  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
 from scripts.daodan.model import ModelError, PluginSpec  # noqa: E402
 from scripts.daodan.overrides import OverrideError, load_overrides, validate_override  # noqa: E402
-from scripts.daodan.render import RenderError, render_plugin, replace_tree, tree_digest  # noqa: E402
+from scripts.daodan.render import _rename_with_retry, RenderError, render_plugin, replace_tree, tree_digest  # noqa: E402
 from scripts.daodan.provenance import KEYS, PROVENANCE_FILENAME  # noqa: E402
 from scripts.daodan.report import BuildReport  # noqa: E402
 from scripts.daodan.trust import scan_trust  # noqa: E402
@@ -260,7 +260,7 @@ def _publish_file(destination: Path, content: bytes) -> None:
     os.close(handle)
     try:
         temporary.write_bytes(content)
-        os.replace(temporary, destination)
+        _rename_with_retry(temporary, destination, replace_existing=True)
     except OSError as error:
         raise RenderError(f"could not publish {destination}: {error}") from error
     finally:

@@ -56,39 +56,6 @@ class CodebaseMapCompositionTests(unittest.TestCase):
                         self.assertTrue(workflow.dispatch.isolated)
                         self.assertNotIn("map-analyst", plugin.components.skills)
 
-    def test_legacy_classic_entry_preserves_the_canonical_phase_contract(self):
-        canonical = next(workflow for workflow in self.registry["codebase-map"].workflows
-                         if workflow.name == "analyze")
-        legacy = self.registry["codebase-xray"]
-        alias = next(workflow for workflow in legacy.workflows if workflow.name == "analyze")
-
-        self.assertIn("codebase-map", legacy.required_dependencies)
-        self.assertEqual(alias.phases, tuple(
-            replace(phase, role=ANALYST) if phase.role == "map-analyst" else phase
-            for phase in canonical.phases
-        ))
-        self.assertEqual(alias.worker_references(legacy.components.roles), (ANALYST,))
-        self.assertEqual(alias.contract, canonical.contract)
-
-    def test_legacy_classic_analyst_requires_its_declared_provider(self):
-        legacy = self.registry["codebase-xray"]
-        candidate = replace(legacy, required_dependencies=())
-        issues = validate_dependencies(candidate, self.registry)
-
-        self.assertTrue(any(issue.code == "undeclared-dependency"
-                            and ANALYST in issue.message for issue in issues))
-
-    def test_legacy_classic_wrapper_keeps_the_coordinator_load_boundary(self):
-        text = self.body("codebase-xray/workflows/analyze.md")
-
-        self.assertIn("[--resume-from [N]] [--stop-after N]", text)
-        self.assertIn("| `codebase-map:map-method` | before: Method loads; section: Resources | always |", text)
-        self.assertNotIn("| `codebase-map:map-method` | all | always |", text)
-        self.assertIn("Dispatch `codebase-map:map-analyst`", text)
-        self.assertIn("required isolated analysis phase", text)
-        self.assertIn("Do not read analyzed source or execute phase procedures in this context",
-                      " ".join(text.split()))
-
     def test_nested_method_paragraphs_preserve_analysis_isolation(self):
         for relative in (
             "senior-review/skills/review-method/SKILL.md",

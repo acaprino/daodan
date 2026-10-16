@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "33.5.3"
+    "version": "34.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -162,31 +162,6 @@
       ],
       "source": "./exports/copilot/plugins/codebase-map",
       "version": "6.5.3"
-    },
-    {
-      "agents": [
-        "./agents/analyze-coordinator.agent.md",
-        "./agents/partition-behavior-worker.agent.md",
-        "./agents/partition-quality-worker.agent.md",
-        "./agents/partition-structure-worker.agent.md",
-        "./agents/partition-synthesizer.agent.md",
-        "./agents/semantic-interconnect-mapper.agent.md",
-        "./agents/team-analyze-coordinator.agent.md"
-      ],
-      "author": {
-        "name": "Alfio Caprino"
-      },
-      "dependencies": [
-        "codebase-map"
-      ],
-      "description": "Compatibility entrypoints for Codebase Map, formerly Codebase X-ray. Retains the old workflow, method and worker identities while using the canonical provider's shared instructions and output contract.",
-      "license": "MIT",
-      "name": "codebase-xray",
-      "skills": [
-        "./skills/xray-method"
-      ],
-      "source": "./exports/copilot/plugins/codebase-xray",
-      "version": "6.0.3"
     },
     {
       "agents": [
