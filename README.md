@@ -237,7 +237,12 @@ Semantic truth, test oracles and permission provenance still require evidence an
 the coordinator's judgment. Prompt obligations are identified as such.
 
 Codebase Map is static: inventory, files read in depth and runtime-exercised paths are
-reported separately. A generated package test is distinct from an installed-host
+reported separately. Since Map 7.0.0 / marketplace 35.0.0, snapshots default to
+SQLite; `--format json` explicitly selects upstream compatibility. Source tools
+send selected text with counts and truncation, while reports remain Markdown.
+See [snapshot formats and source reading](docs/plugins/codebase-map.md#reading-source-from-a-snapshot)
+and the [release verification record](docs/superpowers/reports/2026-10-16-codebase-map-binary-storage.md).
+A generated package test is distinct from an installed-host
 execution probe. External private app storage is not a supported run root until
 its permission binding is demonstrated.
 

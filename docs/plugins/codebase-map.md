@@ -12,7 +12,7 @@ Every analysis is an isolated run under `.codebase-map/runs/<run-id>/` with its 
 
 Only an eligible completed run is **published**: the coordinator requires `complete` and `may_publish` from the delivery gate and every requested view before replacing the whole known phase-file mirror and `state.json` at `.codebase-map/`. The mirror contains the files declared for that mode, including `08-interconnect-map.md` only when a team run produces it; older files outside that set are removed. Partial, stopped, docs-only and single-phase runs stay in their own directory. Downstream workflows consuming a specific invocation retain that run directory and snapshot; the mutable root mirror serves latest-state consumers.
 
-Every run also records the tree it analyzed as `snapshot/manifest.sqlite`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry is `/codebase-map:analyze` only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. `/codebase-map:team-analyze` updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
+By default, every run also records the tree it analyzed as `snapshot/manifest.sqlite`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry is `/codebase-map:analyze` only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. `/codebase-map:team-analyze` updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
 
 ## Reading source from a snapshot
 
@@ -26,7 +26,12 @@ Indexed semantic facts and graph diagnostics remain static, source-bound evidenc
 Workflow per-file analysis uses `analyze_file.py --snapshot <resolved-path>`;
 bounded packets retain full counts, explicit truncation and coverage. Binary
 storage is local: the model receives targeted text, never database/base64 bytes.
-No percentage of token savings is inferred from disk size.
+No percentage of token savings is inferred from disk size. Format selection is
+independent of full/lite depth and the filename extension. State, events and
+protocol responses remain JSON; reports remain Markdown. SQLite indexes may use
+more disk space than a compact JSON manifest. See the
+[35.0.0 verification record](../superpowers/reports/2026-10-16-codebase-map-binary-storage.md)
+for executed checks and limits.
 
 The resolved snapshot is the single structural index for a bound run.
 `snapshot.py write <target> --out <new-manifest> --reuse <previous-manifest>`
@@ -160,6 +165,8 @@ Phase 0 reads the project's own instruction files and indexes and records where 
 
 ```
 /codebase-map:analyze src/core/ --critical
+/codebase-map:analyze src/ --format sqlite        # explicit default
+/codebase-map:analyze src/ --format json          # upstream compatibility format
 /codebase-map:analyze src/api --run-name api      # named run, safe to run others concurrently
 /codebase-map:analyze src/                        # second time on the same target: offers an incremental update
 /codebase-map:analyze src/ --update               # require an update base; no usable parent is a hard stop
@@ -171,7 +178,7 @@ Phase 0 reads the project's own instruction files and indexes and records where 
 /codebase-map:analyze src/ --run-name core --resume-from
 ```
 
-**Output:** `.codebase-map/runs/<run-id>/` holds the selected phases, Phase 0's `knowledge/` directory and a current `snapshot/manifest.sqlite`. A full run produces `01-structure.md` through `06-documentation.md` and `07-final-report.md`. Lite selects 0, 1, 2, 5 and a condensed 7, omitting 03, 04 and 06. Single-phase and docs-only runs produce no final report and never publish. A classic run never writes `08-interconnect-map.md`. Only eligible complete full or lite delivery replaces the root mirror; snapshots, and an update's `changes.json` and `changes.md`, stay in the run directory.
+**Output:** `.codebase-map/runs/<run-id>/` holds the selected phases, Phase 0's `knowledge/` directory and a current `snapshot/manifest.sqlite` by default (`snapshot/manifest.json` for explicit JSON). A full run produces `01-structure.md` through `06-documentation.md` and `07-final-report.md`. Lite selects 0, 1, 2, 5 and a condensed 7, omitting 03, 04 and 06. Single-phase and docs-only runs produce no final report and never publish. A classic run never writes `08-interconnect-map.md`. Only eligible complete full or lite delivery replaces the root mirror; snapshots, and an update's `changes.json` and `changes.md`, stay in the run directory.
 
 `--stop-after N` accepts 1 through 6 and stops that invocation while retaining the selected mode's later obligations as pending. It cannot combine with single-phase or docs-only controls. Resume uses `--resume-from [N] --run-name <exact-id>` on the same interrupted run, with unchanged mode, flags, target and verified source binding. N accepts 1 through 7; omitting it selects the first incomplete produced phase. Resume drops the invocation's stop, preserves confirmed earlier and inherited artifacts, and re-executes declared produced work from the selected phase onward.
 
@@ -214,7 +221,7 @@ Multi-agent variant of `/codebase-map:analyze` for large or partitioned codebase
 
 | | |
 |---|---|
-| **Invoke** | `/codebase-map:team-analyze <target> [--critical] [--comments] [--depth=lite\|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]` |
+| **Invoke** | `/codebase-map:team-analyze <target> [--format sqlite\|json] [--critical] [--comments] [--depth=lite\|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]` |
 
 `--partition-name <name>` gives the N-th manual `--partition` a symbolic name; without it the name derives from the path basename. `--phase N` and `--docs-only` are rejected with an explicit error that points to `/codebase-map:analyze`.
 
@@ -480,7 +487,8 @@ formatted-string and template substitutions remain code. Source-local declaratio
 IDs are qualified as `file::source_id` in the project index. These IDs identify
 one snapshot, not a declaration across revisions.
 
-`semantic_index.build_semantic_index` reuses the existing resolved import mapping.
+Storage-backed semantic resolution follows the same conservative binding rules
+as the explicit in-memory `semantic_index.build_semantic_index` API.
 Only unique lexical function/class bindings and direct internal named, default
 or namespace imports receive declaration targets. Parameters, assignments and
 other binding sites prevent lookup from bypassing shadowing or rebinding.
@@ -490,14 +498,19 @@ unresolved reasons. This is a bounded binding layer, without compiler type
 inference or project execution.
 
 The snapshot stores semantic payloads beside `raw_hash` under its parser/helper
-fingerprint. `build_manifest(..., source_observations=...)` optionally captures
-the exact bytes already read, keyed by manifest-relative path. Index consumers
-reuse these observations or read each permitted live source once, check its hash
-and the current fingerprint, and validate payload shape, scope links and spans.
-Stale, excluded, malformed or unbound entries cannot supply resolved references.
-Old manifests and unavailable backends retain explicitly lexical candidates.
-Observation reuse describes one source operation; it does not assert later
-filesystem freshness.
+fingerprint. Production extraction uses `write_snapshot` and an explicit
+`SnapshotStore`: derived facts and hashes are persisted, then observed source
+bytes and parse payloads are released. Semantic bindings and graph indexes are
+derived in the owned staging store.
+Queries validate permitted live sources, hashes, fingerprint, payload shape,
+scope links and spans. Stale, excluded, malformed or unbound entries cannot supply
+resolved references. Unavailable backends retain explicitly lexical candidates.
+
+`build_manifest(..., source_observations=...)` remains an explicit in-memory API
+for legacy callers and fixtures; the progressive writer does not call it.
+Its optional observations bind one operation's bytes, not later filesystem
+freshness. An old parser snapshot can remain historical evidence without
+qualifying current-source queries or incremental reuse.
 
 `analyze_file.py` exposes `semantic_analysis` even without `--find-usages`. Its
 public view contains declarations, outgoing `callsites`, resolved `incoming_calls`,
@@ -592,21 +605,24 @@ criticality threshold or evidence that a change propagates at runtime.
 
 ### Bounded work and performance
 
-The manifest still inventories and hashes its target. Unchanged entries can reuse
-verified structure; pending entries are parsed concurrently once the batch reaches
-eight files, with at most eight workers and deterministic output order. Caller
-preparses bind source content to its parse rather than rereading that target.
+The writer still inventories and hashes its target. Unchanged entries reuse
+structure only after source and parser checks. Production storage writes one
+file record at a time and releases its parse; readers use explicit iterators,
+lookups and operation-owned connections instead of rebuilding a global manifest.
+The in-memory compatibility API is a separate path, not the production memory
+contract.
 
-Semantic usage lookup shares one index across the requested symbols and reuses
-verified cached text for bounded lexical fallback. The separate lexical search
-helpers retain their ripgrep/grep/Python backends. Import verification uses one
-resolved graph rather than a dotted filename heuristic or a fresh parse for each
-requested symbol. Fan-in and cross-file references require an inventory of the
-selected project; callers classifying several files should share its manifest or
-use `classify_directory`.
+Semantic lookup and graph queries use persisted facts and indexes. JSON readers
+build an operation-owned temporary semantic index when needed and remove it on
+close. Bounded responses expose exact totals and truncation; lexical fallback
+reads one permitted file at a time. Separate lexical search helpers retain their
+ripgrep/grep/Python backends. Multiple symbol requests reuse the bound store,
+not a new project parse or a retained collection of every source text.
 
 Semantic extraction enriches eligible snapshots by default. It avoids another
-parse but adds traversal time and payload size. A local Windows sample used
+parse but adds traversal time and payload size. The following historical
+per-file adapter sample predates the SQLite storage change; it does not measure
+SQLite extraction, refresh, query latency or database size. The Windows sample used
 Python 3.13.14, Tree-sitter 0.26.0 and language-pack 1.13.5, warm grammars and nine
 repetitions per mode. Medians compare the same adapter with and without its
 semantic hook; they measure added extraction cost, not a speedup:
