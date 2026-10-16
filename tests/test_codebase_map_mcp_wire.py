@@ -33,11 +33,11 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.sequence = 0
         self.start()
 
-    def start(self):
+    def start(self, *options):
         self.messages = queue.Queue()
         self.diagnostics = []
         self.process = subprocess.Popen(
-            [sys.executable, "-u", str(SERVER), "--project", str(self.project)],
+            [sys.executable, "-u", str(SERVER), "--project", str(self.project), *options],
             cwd=self.project, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True, encoding="utf-8", bufsize=1,
         )
@@ -194,6 +194,16 @@ class CodebaseMapWireTests(unittest.TestCase):
         })
         self.assertTrue(result.get("isError"), result)
         self.assertIn("source changed", result["content"][0]["text"])
+
+    def test_store_option_binds_the_custom_store_through_actual_transport(self):
+        self.close()
+        self.start("--store", ".app/codebase-map")
+        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "stored"}))
+        self.assertTrue((self.project / ".app/codebase-map/runs/stored/state.json").is_file())
+        self.assertFalse((self.project / ".codebase-map").exists())
+        refused = self.call("codebase_map_scope", {"target": ".app"})
+        self.assertTrue(refused.get("isError"), refused)
+        self.assertIn("analysis output", refused["content"][0]["text"])
 
 
 if __name__ == "__main__":

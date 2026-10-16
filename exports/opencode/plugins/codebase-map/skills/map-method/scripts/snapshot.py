@@ -1769,12 +1769,74 @@ def _reject_links(path: Path) -> None:
             raise RunControlError(f"linked path is not a run-owned regular path: {part}")
 
 
+CANONICAL_STORE = ".codebase-map"
+STORE_MARKER = ".codebase-map-store.json"
+STORE_SCHEMA = "daodan/codebase-map-store/v1"
+_STORE_RESERVED = {CANONICAL_STORE, ".codebase-xray", ".git"}
+_DEVICE_NAMES = frozenset({"con", "prn", "aux", "nul", "conin$", "conout$",
+                           *(f"{port}{i}" for port in ("com", "lpt")
+                             for i in (*range(1, 10), "\u00b9", "\u00b2", "\u00b3"))})
+_STORE_FORBIDDEN = re.compile(r'[\x00-\x1f<>:"|?*\\]')
+
+
+def validate_store(value) -> str:
+    """Return a project-relative custom store path, or raise RunControlError.
+
+    A custom store starts with a dot directory, so every perimeter already
+    leaves it out of the analyzed sources, and never reuses a canonical or
+    legacy store name, which identify their project by position alone.
+    """
+    if (not isinstance(value, str) or not value or len(value) > 255 or value.startswith("/")
+            or _STORE_FORBIDDEN.search(value)):
+        raise RunControlError("analysis store must be an exact project-relative POSIX path")
+    parts = value.split("/")
+    if any(part in ("", ".", "..") or part != part.strip() or part.endswith(".") for part in parts):
+        raise RunControlError("analysis store must be an exact project-relative POSIX path")
+    if not parts[0].startswith("."):
+        raise RunControlError("analysis store must begin with a dot directory outside the analyzed sources")
+    if any(part.casefold() in _STORE_RESERVED or part.casefold().lstrip(".").split(".")[0] in _DEVICE_NAMES
+           for part in parts):
+        raise RunControlError("analysis store must not reuse a canonical, legacy, git or device name")
+    return value
+
+
+def store_project(root: Path) -> Path:
+    """Project bound by an analysis store.
+
+    The canonical store is the project's `.codebase-map`. A custom store
+    records its own project-relative path in a marker; the project is the
+    ancestor that path names, and the marker must resolve back to the store.
+    """
+    if root.name == CANONICAL_STORE:
+        return root.parent
+    marker = root / STORE_MARKER
+    _reject_links(marker)
+    if not marker.is_file():
+        raise RunControlError(f"run must be inside a project's {CANONICAL_STORE}/runs/<run-id> "
+                              f"or a custom store carrying {STORE_MARKER}")
+    try:
+        value = json.loads(marker.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        value = None
+    if not isinstance(value, dict) or value.get("schema") != STORE_SCHEMA:
+        raise RunControlError(f"custom store marker {STORE_MARKER} is unreadable or has another schema")
+    store = validate_store(value.get("store"))
+    project = root
+    for _ in store.split("/"):
+        project = project.parent
+    if (project / store).resolve() != root.resolve():
+        raise RunControlError("custom store marker does not name this store")
+    return project
+
+
 def _run_context(run_dir: Path) -> tuple[Path, Path, dict]:
     _reject_links(run_dir)
     run_dir = run_dir.resolve()
-    if run_dir.parent.name != "runs" or run_dir.parent.parent.name != ".codebase-map":
-        raise RunControlError("run must be inside the project's .codebase-map/runs/<run-id>")
+    if run_dir.parent.name != "runs":
+        raise RunControlError(f"run must be inside a project's {CANONICAL_STORE}/runs/<run-id> "
+                              f"or a custom store carrying {STORE_MARKER}")
     root = run_dir.parent.parent
+    store_project(root)
     _reject_links(run_dir / "state.json")
     state = _read_json(run_dir / "state.json")
     if not isinstance(state, dict) or state.get("run_id") != run_dir.name:
@@ -1836,12 +1898,13 @@ def _bound_manifest(run_dir: Path, root: Path, state: dict, fresh: bool = False)
     if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), dict):
         raise RunControlError("run requires snapshot/manifest.json")
     validate_reuse_manifest(manifest)
+    project = store_project(root)
     target = Path(state["target"])
     if not target.is_absolute():
-        target = root.parent / target
+        target = project / target
     target = target.resolve()
     try:
-        target.relative_to(root.parent)
+        target.relative_to(project)
     except ValueError as exc:
         raise RunControlError("target is outside this run's project") from exc
     if not isinstance(manifest.get("root"), str) or not isinstance(manifest.get("target"), str):
@@ -1856,7 +1919,7 @@ def _bound_manifest(run_dir: Path, root: Path, state: dict, fresh: bool = False)
         if relative.is_absolute() or ".." in relative.parts:
             raise RunControlError("snapshot file paths must be confined relative paths")
         try:
-            source.relative_to(root.parent)
+            source.relative_to(project)
             if target.is_file():
                 if source != target:
                     raise ValueError("file target differs")
@@ -1956,7 +2019,7 @@ def _initial_delivery(run_dir: Path, root: Path, state: dict, stop_after: int | 
         artifacts["changes.md"] = {"phase": 7, "status": "produced"}
     return {
         "schema": 1, "mode": mode, "flags": flags,
-        "binding": {"project": root.parent.as_posix(), "target": state["target"], "parent_run": state.get("parent_run"), "parent_phases": state.get("parent_phases"), "incremental": updating},
+        "binding": {"project": store_project(root).as_posix(), "target": state["target"], "parent_run": state.get("parent_run"), "parent_phases": state.get("parent_phases"), "incremental": updating},
         "stop_after": stop_after, "resume_from": None, "artifacts": artifacts,
         "run_phases": sorted({a["phase"] for a in artifacts.values() if a["status"] == "produced" and (stop_after is None or a["phase"] <= stop_after)}),
     }
@@ -1969,7 +2032,7 @@ def _validate_delivery(run_dir: Path, root: Path, state: dict) -> dict:
     if delivery.get("mode") != state["mode"] or delivery.get("flags") != _effective_flags(state["flags"]):
         raise RunControlError("run mode or immutable flags changed; create a new run")
     binding = delivery.get("binding")
-    expected = {"project": root.parent.as_posix(), "target": state["target"], "parent_run": state.get("parent_run"), "parent_phases": state.get("parent_phases"), "incremental": state.get("incremental") is not None}
+    expected = {"project": store_project(root).as_posix(), "target": state["target"], "parent_run": state.get("parent_run"), "parent_phases": state.get("parent_phases"), "incremental": state.get("incremental") is not None}
     if binding != expected:
         raise RunControlError("run project, target or lineage binding changed")
     artifacts = delivery.get("artifacts")

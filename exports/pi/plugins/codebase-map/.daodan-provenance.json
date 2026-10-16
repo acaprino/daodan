@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:31466d72b7ee39e15fb6c47529c4206b5b23c68713b169eb8d70066dbd39dbe0",
+  "coreDigest": "sha256:bcf6438af8ecfb269c92437442663d5502d05a4b90a6c96d332e771dc68b4a05",
   "harnessStrategies": {
     "analyze": "parallel-subagents",
     "team-analyze": "parallel-subagents"
@@ -8,5 +8,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "codebase-map",
-  "version": "6.6.1"
+  "version": "6.7.0"
 }

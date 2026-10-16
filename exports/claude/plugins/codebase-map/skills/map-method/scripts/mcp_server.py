@@ -40,8 +40,8 @@ async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
     return result
 
 
-def create_server(project: str | Path) -> MCPServer:
-    service = MapService(project)
+def create_server(project: str | Path, store: str | None = None) -> MCPServer:
+    service = MapService(project, store)
     server = MCPServer("codebase-map")
     read_only = ToolAnnotations(read_only_hint=True, open_world_hint=False)
     writes = ToolAnnotations(read_only_hint=False, open_world_hint=False)
@@ -147,8 +147,15 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", type=Path, default=Path.cwd(),
                         help="project binding, fixed for the lifetime of this server")
+    parser.add_argument("--store", default=None,
+                        help="project-relative analysis store beginning with a dot directory; "
+                             "default .codebase-map, fixed for the lifetime of this server")
     args = parser.parse_args(argv)
-    create_server(args.project).run(transport="stdio")
+    try:
+        server = create_server(args.project, args.store)
+    except ValueError as exc:
+        parser.error(str(exc))
+    server.run(transport="stdio")
 
 
 if __name__ == "__main__":

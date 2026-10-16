@@ -82,9 +82,13 @@ def _write(path: Path, value: dict) -> None:
 class MapService:
     """Reuse canonical helpers within one explicit, existing project directory."""
 
-    def __init__(self, project_root):
+    def __init__(self, project_root, store=None):
         self.project_root = migrate_root._project(project_root)
-        self.root = self.project_root / ".codebase-map"
+        self.store = None if store is None else snapshot.validate_store(store)
+        self.root = self.project_root / (self.store or snapshot.CANONICAL_STORE)
+        self._outputs = {".codebase-map", ".codebase-xray"}
+        if self.store is not None:
+            self._outputs.add(self.store.split("/")[0])
 
     @contextmanager
     def _operation(self, *, write=False):
@@ -92,21 +96,42 @@ class MapService:
         # implementation avoids reacquiring a POSIX lock on another descriptor.
         migrate_root._reject_link_chain(self.project_root)
         with migrate_root._migration_lock(self.project_root):
-            migration = migrate_root._migrate_locked(self.project_root, check=not write)
-            if migration["status"] in {"migration_required", "recovery_required"}:
-                raise ValueError("analysis-root migration is required; run migrate_root.py --project for this bound project before querying")
+            if self.store is None:
+                migration = migrate_root._migrate_locked(self.project_root, check=not write)
+                if migration["status"] in {"migration_required", "recovery_required"}:
+                    raise ValueError("analysis-root migration is required; run migrate_root.py --project for this bound project before querying")
             migrate_root._reject_link_chain(self.root)
+            if self.store is not None:
+                self._bind_store(write=write)
             yield
+
+    def _bind_store(self, *, write):
+        # A custom store names itself, so standalone CLI commands bind the
+        # same project. An existing directory without the matching marker
+        # belongs to something else and is never adopted.
+        marker = self.root / snapshot.STORE_MARKER
+        migrate_root._reject_link_chain(marker)
+        expected = {"schema": snapshot.STORE_SCHEMA, "store": self.store}
+        if marker.exists():
+            if _json(marker) != expected:
+                raise ValueError("analysis store marker names another store")
+            return
+        if self.root.exists() and (not self.root.is_dir() or any(self.root.iterdir())):
+            raise ValueError("analysis store exists without its marker; choose an empty or new directory")
+        if write:
+            self.root.mkdir(parents=True, exist_ok=True)
+            migrate_root._reject_link_chain(self.root)
+            _write(marker, expected)
 
     def _target(self, value, *, require_exists=True):
         relative = _relative(value, root=True)
-        if relative.split("/")[0].casefold() in {".codebase-map", ".codebase-xray"}:
+        if relative.split("/")[0].casefold() in {name.casefold() for name in self._outputs}:
             raise ValueError("analysis output cannot be the source target")
         target = self.project_root / relative
         migrate_root._reject_link_chain(target)
         resolved = target.resolve()
         if any(resolved.is_relative_to((self.project_root / name).resolve())
-               for name in (".codebase-map", ".codebase-xray")):
+               for name in self._outputs):
             raise ValueError("analysis output cannot be the source target")
         if (require_exists or target.exists()) and not (target.is_dir() or target.is_file()):
             raise ValueError("target must be an existing project-relative file or directory")

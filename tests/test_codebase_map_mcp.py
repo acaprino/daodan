@@ -551,5 +551,115 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual((self.project / ".codebase-map/07-final-report.md").read_text(), "# Previous report\n")
 
 
+class CustomStoreTests(unittest.TestCase):
+    STORE = ".app/codebase-map"
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix="map-mcp-store-")
+        self.addCleanup(self.temporary.cleanup)
+        self.project = Path(self.temporary.name).resolve()
+        self.source = self.project / "src"
+        self.source.mkdir()
+        self.module = self.source / "module.py"
+        self.module.write_text("LIMIT = 7\n\ndef selected():\n    return LIMIT\n", encoding="utf-8")
+        self.service = mcp_service.MapService(self.project, self.STORE)
+
+    @property
+    def store(self):
+        return self.project / self.STORE
+
+    @property
+    def run_dir(self):
+        return self.store / "runs/example"
+
+    def deliver(self, *phases):
+        for name in ("knowledge/navigation.md", "knowledge/documentation-leads.md",
+                     *(snapshot.PHASE_FILES[phase - 1] for phase in phases)):
+            path = self.run_dir / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# Read and cited evidence\n", encoding="utf-8", newline="")
+
+    def test_custom_store_runs_the_canonical_lifecycle_without_the_default_root(self):
+        self.assertEqual(self.service.runs(), {"runs": [], "registry": None})
+        self.assertFalse(self.store.exists())
+        self.service.create_run("src", "example")
+        self.assertEqual(json.loads((self.store / snapshot.STORE_MARKER).read_text()),
+                         {"schema": snapshot.STORE_SCHEMA, "store": self.STORE})
+        self.assertEqual(self.service.status("example")["state"]["delivery"]["binding"]["project"],
+                         self.project.as_posix())
+        self.deliver(1, 2, 3, 4, 5, 6, 7)
+        self.assertTrue(self.service.publish("example")["published"])
+        self.assertTrue((self.store / "07-final-report.md").is_file())
+        self.assertEqual(self.service.runs()["registry"]["latest_completed"], "example")
+        self.assertFalse((self.project / ".codebase-map").exists())
+        reopened = mcp_service.MapService(self.project, self.STORE)
+        self.assertEqual(reopened.status("example")["state"]["status"], "complete")
+        self.assertEqual(mcp_service.MapService(self.project).runs(), {"runs": [], "registry": None})
+
+    def test_standalone_cli_binds_the_custom_store_through_its_marker(self):
+        self.service.create_run("src", "example")
+        self.deliver(1)
+        proc = subprocess.run([sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "check",
+                               str(self.run_dir), "--json"], capture_output=True, text=True,
+                              cwd=SCRIPTS)
+        self.assertEqual(json.loads(proc.stdout)["mode"], "classic", proc.stderr)
+        _, root, _ = snapshot._run_context(self.run_dir)
+        self.assertEqual(snapshot.store_project(root), self.project)
+
+    def test_store_inside_an_occupied_dot_directory_and_bom_marker_bind_the_project(self):
+        (self.project / ".app").mkdir()
+        (self.project / ".app/settings.json").write_text("{}")
+        self.service.create_run("src", "example")
+        marker = self.store / snapshot.STORE_MARKER
+        marker.write_text(marker.read_text(encoding="utf-8"), encoding="utf-8-sig")
+        _, root, _ = snapshot._run_context(self.run_dir)
+        self.assertEqual(snapshot.store_project(root), self.project)
+        self.deliver(1, 2, 3, 4, 5, 6, 7)
+        proc = subprocess.run([sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "publish",
+                               str(self.run_dir)], capture_output=True, text=True, cwd=SCRIPTS)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertTrue((self.store / "07-final-report.md").is_file())
+        self.assertTrue((self.project / ".app/settings.json").is_file())
+
+    def test_unmarked_or_foreign_marked_store_is_refused(self):
+        self.service.create_run("src", "example")
+        marker = self.store / snapshot.STORE_MARKER
+        marker.write_text(json.dumps({"schema": snapshot.STORE_SCHEMA, "store": ".other/codebase-map"}))
+        with self.assertRaises(ValueError):
+            snapshot._run_context(self.run_dir)
+        with self.assertRaisesRegex(ValueError, "another store"):
+            self.service.status("example")
+        marker.unlink()
+        with self.assertRaises(ValueError):
+            snapshot._run_context(self.run_dir)
+        with self.assertRaisesRegex(ValueError, "without its marker"):
+            self.service.status("example")
+        occupied = self.project / ".occupied"
+        occupied.mkdir()
+        (occupied / "notes.txt").write_text("someone else's directory")
+        with self.assertRaisesRegex(ValueError, "without its marker"):
+            mcp_service.MapService(self.project, ".occupied").create_run("src", "example")
+        self.assertEqual(sorted(path.name for path in occupied.iterdir()), ["notes.txt"])
+
+    def test_invalid_store_paths_are_refused_at_binding(self):
+        for store in ("", ".", "..", "../outside", "app/map", "/abs", "C:/map", ".app\\map",
+                      ".app/../map", ".app//map", ".codebase-map", ".CODEBASE-XRAY/map",
+                      ".git/map", ".app/con", ".app/map.", ".app/ map", ".app/CONIN$",
+                      ".app/com\u00b9", ".app/m?p", ".app/m\x01p", 7):
+            with self.subTest(store=store), self.assertRaises(ValueError):
+                mcp_service.MapService(self.project, store)
+
+    def test_store_cannot_be_a_source_target_and_skips_legacy_migration(self):
+        legacy = self.project / ".codebase-xray"
+        legacy.mkdir()
+        (legacy / "runs.json").write_text('{"schema":2,"active":[],"latest_completed":null}')
+        self.service.create_run("src", "example")
+        for target in (".app", ".APP/codebase-map", ".app/codebase-map/runs/example"):
+            with self.subTest(target=target), self.assertRaisesRegex(ValueError, "analysis output"):
+                self.service.scope(target)
+        self.assertTrue((legacy / "runs.json").is_file())
+        self.assertFalse((self.project / ".codebase-map").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
