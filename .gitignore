@@ -43,3 +43,16 @@ plugins/**/*.zip
 # clone, and a local run would otherwise leave these behind.
 node_modules/
 package-lock.json
+.tritech/local/
+
+# Project-local run records and generated coordination metadata
+/.daodan*/
+/.source-reading-publish/
+/.source-reading-tmp/
+/xray-step2-verification/
+/.moe/
+/exports/*/plugins/.*.lock
+/.tritech/codebase-xray/
+/.tritech/codebase-map/
+/.tritech/daodan/
+/.tritech/team-review/

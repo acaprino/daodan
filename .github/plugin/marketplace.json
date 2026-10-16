@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "34.2.0"
+    "version": "34.3.2"
   },
   "name": "daodan",
   "owner": {
@@ -361,6 +361,22 @@
       ],
       "source": "./exports/copilot/plugins/messaging",
       "version": "2.1.3"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "peer-review"
+      ],
+      "description": "Ultra Nerd: bounded multi-model problem solving with independent proposals, reciprocal challenges and evidence-backed synthesis. Explicit opt-in for difficult tasks with increased token consumption.",
+      "license": "MIT",
+      "name": "moe",
+      "skills": [
+        "./skills/multi-model-deliberation"
+      ],
+      "source": "./exports/copilot/plugins/moe",
+      "version": "1.1.1"
     },
     {
       "author": {

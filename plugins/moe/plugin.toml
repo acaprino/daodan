@@ -1,0 +1,23 @@
+schema = "daodan/v1"
+name = "moe"
+version = "1.1.1"
+description = "Ultra Nerd: bounded multi-model problem solving with independent proposals, reciprocal challenges and evidence-backed synthesis. Explicit opt-in for difficult tasks with increased token consumption."
+license = "MIT"
+
+[capabilities]
+required = ["repository.read", "repository.write", "mcp.servers"]
+optional = []
+
+[dependencies]
+required = ["peer-review"]
+
+[components]
+skills = ["multi-model-deliberation"]
+roles = []
+workflows = ["ultra-nerd"]
+policies = []
+
+[[mcp.servers]]
+name = "moe"
+command = "uv"
+args = ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/multi-model-deliberation/scripts/server.py"]

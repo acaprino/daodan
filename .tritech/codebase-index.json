@@ -1,0 +1,28 @@
+{
+  "exclude": [
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/build-*/**",
+    "**/build_*/**",
+    "**/*-build/**",
+    "**/*_build/**",
+    "**/*-build-*/**",
+    "**/*-build_*/**",
+    "**/*_build-*/**",
+    "**/*_build_*/**",
+    "**/*.min.js",
+    "**/*.bundle.js",
+    "**/vendor/**",
+    "**/__pycache__/**",
+    "**/target/**",
+    "**/coverage/**",
+    "**/.next/**",
+    "**/.nuxt/**",
+    "**/.tritech/**",
+    "**/.*",
+    "**/.*/**",
+    "exports/codex/**"
+  ]
+}

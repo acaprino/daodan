@@ -1,0 +1,27 @@
+name = "ultra-nerd"
+entrypoint = "ultra-nerd.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:brief"]
+
+[[phases]]
+id = "deliberate"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:brief"]
+produces = ["artifact:exchange"]
+
+[[phases]]
+id = "synthesize"
+needs = ["deliberate"]
+isolation = "shared"
+consumes = ["artifact:exchange"]
+produces = ["artifact:answer"]
+
+[contract]
+inputs = ["problem", "approved-model-profiles", "limits"]
+outcomes = ["answer-delivered"]
+artifacts = ["brief", "exchange", "answer"]
+schemas = []

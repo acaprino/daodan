@@ -486,6 +486,28 @@
       "version": "2.1.3"
     },
     {
+      "description": "Coordinates bounded independent proposals and reciprocal critique. TRIGGER WHEN: explicitly requesting Ultra Nerd, moe, or a multi-model expert debate for a difficult problem. DO NOT TRIGGER WHEN: challenging an existing plan only (use peer-review:cross-model-peer-review).",
+      "dimensions": [
+        "correctness"
+      ],
+      "file": "skills/multi-model-deliberation/SKILL.md",
+      "frameworks": [],
+      "id": "moe:multi-model-deliberation",
+      "kind": "knowledge",
+      "languages": [],
+      "metadata_sha256": "622ef45a2dcbe851650d2513339ddb8c017c3e72e8d5660f0fd76f26369d4f0e",
+      "name": "multi-model-deliberation",
+      "operations": [
+        "reason",
+        "solve"
+      ],
+      "provider": "moe",
+      "topics": [
+        "multi-model-deliberation"
+      ],
+      "version": "1.1.1"
+    },
+    {
       "description": "Report every automated-review violation with its file location and fix. TRIGGER WHEN: preparing an Obsidian plugin for submission or before pushing code.",
       "dimensions": [],
       "file": "skills/obsidian-check/SKILL.md",

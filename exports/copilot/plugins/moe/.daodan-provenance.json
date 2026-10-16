@@ -1,0 +1,11 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:e4ce53d80dfbf1a1e0a2fecd776040bbd7d0890492f1fe14756c782d3d0330d3",
+  "harnessStrategies": {
+    "ultra-nerd": "parallel-subagents"
+  },
+  "host": "copilot",
+  "overrides": [],
+  "plugin": "moe",
+  "version": "1.1.1"
+}
