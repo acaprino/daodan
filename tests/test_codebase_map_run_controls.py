@@ -444,6 +444,9 @@ class RunControlsTests(unittest.TestCase):
         self.write("08-interconnect-map.md", "Previous map\n", run=self.root)
         self.write("state.json", '{"run_id":"old"}\n', run=self.root)
         self.write("runs.json", '{"schema":2,"active":[],"latest_completed":"old"}\n', run=self.root)
+        # The coordination lock persists independently of mirror publication.
+        lock = snapshot._acquire_registry_lock(self.root)
+        lock.unlink()
         before = {path.name: path.read_bytes() for path in self.root.iterdir() if path.is_file()}
         replace = snapshot.os.replace
 
