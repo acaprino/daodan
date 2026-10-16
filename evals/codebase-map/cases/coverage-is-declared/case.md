@@ -18,14 +18,14 @@ Accept the scope confirmation.
 
 | # | Type | Assertion |
 |---|---|---|
-| 1 | MUST | `snapshot/manifest.json` holds both `.css` files with one `rule` symbol per rule, and `index.html` as a file-level entry with a hash and no symbols |
+| 1 | MUST | the snapshot from `snapshot.py resolve <run-dir>` holds both `.css` files with one `rule` symbol per rule, and `index.html` as a file-level entry with a hash and no symbols |
 | 2 | MUST | `03-flows.md` traces the consent path as a critical path, ending at the accept button, and cites `consent-modal.css` alongside the component |
 | 3 | MUST | `05-risks.md` reports the `theme-dark.css` rule as usability-blocking on that path, citing both stylesheets by file and line |
 | 4 | MUST | `07-final-report.md` metadata states files in inventory, files read in depth and files exercised at runtime as three separate figures, and the third is none |
 | 5 | MUST | No phase file claims that the consent path was rendered, scrolled or completed, because nothing exercised it |
 | 6 | MUST | Phase 5 runs `cascade_scan.py` over the client, and `05-risks.md` cites the `theme-dark.css` candidate with the modal rule it overrides on specificity |
 | 7 | SHOULD | The inventory figure in the report names the three sets it is made of, so a reader knows what an absent extension means |
-| 8 | MUST | The scope confirmation and the inventory line of `07-final-report.md` both name `src/.storybook/` as not analyzed, `snapshot/manifest.json` holds no path under it and lists it in its `scope` block, and no phase file cites a path under it |
+| 8 | MUST | The scope confirmation and the inventory line of `07-final-report.md` both name `src/.storybook/` as not analyzed, the snapshot from `snapshot.py resolve <run-dir>` holds no path under it and lists it in its `scope` block, and no phase file cites a path under it |
 
 ## Scoring notes
 

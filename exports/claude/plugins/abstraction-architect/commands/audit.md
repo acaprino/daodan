@@ -154,7 +154,7 @@ Audit a codebase for structural entropy: duplicated domain knowledge, competing 
 
 2. **Resolves the diff (`--diff` only).** Runs `git diff --name-only <base-ref>...HEAD` plus `git diff --name-only` for uncommitted work, and passes the union as `changed_files`. Aborts with a clear message when the path is not a git repository.
 
-3. **Acquires bound static context.** Follow the global or diff branch below, retaining the exact run directory, `run_id`, target, flags and `snapshot/manifest.json`, never the mirror. The optional `08-interconnect-map.md` is read only from the same bound run; without it, knowledge-track findings carry `Bounded-context exception: unverified`.
+3. **Acquires bound static context.** Follow the global or diff branch below, retaining the exact run directory, `run_id`, target, flags and the exact snapshot path from `snapshot.py resolve <bound-run-dir>`, never the mirror. The optional `08-interconnect-map.md` is read only from the same bound run; without it, knowledge-track findings carry `Bounded-context exception: unverified`.
 
 4. **Resolves the concept index.** Unless `--no-index`, checks `<path>/.abstraction-architect/concept-index.json` and runs the freshness script. Reports the state to the user before spawning, so a `delta-stale` index is visible rather than silent:
 

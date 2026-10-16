@@ -12,11 +12,23 @@ Every analysis is an isolated run under `.codebase-map/runs/<run-id>/` with its 
 
 Only an eligible completed run is **published**: the coordinator requires `complete` and `may_publish` from the delivery gate and every requested view before replacing the whole known phase-file mirror and `state.json` at `.codebase-map/`. The mirror contains the files declared for that mode, including `08-interconnect-map.md` only when a team run produces it; older files outside that set are removed. Partial, stopped, docs-only and single-phase runs stay in their own directory. Downstream workflows consuming a specific invocation retain that run directory and snapshot; the mutable root mirror serves latest-state consumers.
 
-Every run also records the tree it analyzed as `snapshot/manifest.json`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry is `/codebase-map:analyze` only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. `/codebase-map:team-analyze` updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
+Every run also records the tree it analyzed as `snapshot/manifest.sqlite`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry is `/codebase-map:analyze` only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. `/codebase-map:team-analyze` updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
 
 ## Reading source from a snapshot
 
-`snapshot/manifest.json` is the single structural index for a bound run.
+New runs default to SQLite. `--format json` (CLI or workflow) and MCP
+`format="json"` select the upstream compatibility format explicitly.
+`state.json -> snapshot` binds format/path/storage version; `snapshot.py resolve
+<run-dir>` returns the exact path and small metadata. Parent runs keep their
+original bytes and format, including legacy JSON without the binding. Formats
+may differ across a parent/child pair; ambiguous or mismatched files fail.
+Indexed semantic facts and graph diagnostics remain static, source-bound evidence.
+Workflow per-file analysis uses `analyze_file.py --snapshot <resolved-path>`;
+bounded packets retain full counts, explicit truncation and coverage. Binary
+storage is local: the model receives targeted text, never database/base64 bytes.
+No percentage of token savings is inferred from disk size.
+
+The resolved snapshot is the single structural index for a bound run.
 `snapshot.py write <target> --out <new-manifest> --reuse <previous-manifest>`
 checks current file hashes and root/target plus helper/runtime and effective
 parser identity before reusing unchanged parsed structure. It still walks the
@@ -159,7 +171,7 @@ Phase 0 reads the project's own instruction files and indexes and records where 
 /codebase-map:analyze src/ --run-name core --resume-from
 ```
 
-**Output:** `.codebase-map/runs/<run-id>/` holds the selected phases, Phase 0's `knowledge/` directory and a current `snapshot/manifest.json`. A full run produces `01-structure.md` through `06-documentation.md` and `07-final-report.md`. Lite selects 0, 1, 2, 5 and a condensed 7, omitting 03, 04 and 06. Single-phase and docs-only runs produce no final report and never publish. A classic run never writes `08-interconnect-map.md`. Only eligible complete full or lite delivery replaces the root mirror; snapshots, and an update's `changes.json` and `changes.md`, stay in the run directory.
+**Output:** `.codebase-map/runs/<run-id>/` holds the selected phases, Phase 0's `knowledge/` directory and a current `snapshot/manifest.sqlite`. A full run produces `01-structure.md` through `06-documentation.md` and `07-final-report.md`. Lite selects 0, 1, 2, 5 and a condensed 7, omitting 03, 04 and 06. Single-phase and docs-only runs produce no final report and never publish. A classic run never writes `08-interconnect-map.md`. Only eligible complete full or lite delivery replaces the root mirror; snapshots, and an update's `changes.json` and `changes.md`, stay in the run directory.
 
 `--stop-after N` accepts 1 through 6 and stops that invocation while retaining the selected mode's later obligations as pending. It cannot combine with single-phase or docs-only controls. Resume uses `--resume-from [N] --run-name <exact-id>` on the same interrupted run, with unchanged mode, flags, target and verified source binding. N accepts 1 through 7; omitting it selects the first incomplete produced phase. Resume drops the invocation's stop, preserves confirmed earlier and inherited artifacts, and re-executes declared produced work from the selected phase onward.
 
@@ -269,7 +281,7 @@ for startup, tool schemas, event cursors and the Tri-Tech Code integration bound
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `6.7.0`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
+**Version:** `7.0.0`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
 
 ### Required dependencies
 
@@ -315,7 +327,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 
 #### `codebase-map:analyze`
 
-**Arguments:** <code>&lt;target path&gt; [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite&#124;full] [--run-name &lt;name&gt;] [--update] [--no-update] [--resume-from [N]] [--stop-after N]</code>
+**Arguments:** <code>&lt;target path&gt; [--format sqlite&#124;json] [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite&#124;full] [--run-name &lt;name&gt;] [--update] [--no-update] [--resume-from [N]] [--stop-after N]</code>
 
 | Contract | Value |
 |---|---|
@@ -336,7 +348,7 @@ flags, safety gates and execution. Declared `invoke` execution is unsupported.
 
 #### `codebase-map:team-analyze`
 
-**Arguments:** <code>&lt;target&gt; [--critical] [--comments] [--depth=lite&#124;full] [--partition &lt;path&gt;] [--partition-name &lt;name&gt;] [--skip-interconnect] [--skip-synthesis] [--run-name &lt;name&gt;] [--yes] [--update] [--no-update]</code>
+**Arguments:** <code>&lt;target&gt; [--format sqlite&#124;json] [--critical] [--comments] [--depth=lite&#124;full] [--partition &lt;path&gt;] [--partition-name &lt;name&gt;] [--skip-interconnect] [--skip-synthesis] [--run-name &lt;name&gt;] [--yes] [--update] [--no-update]</code>
 
 | Contract | Value |
 |---|---|

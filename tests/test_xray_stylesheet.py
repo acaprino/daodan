@@ -613,7 +613,7 @@ class StylesheetIncrementalRunTests(unittest.TestCase):
         write(self.parent, "state.json", '{"status": "complete"}')
 
     def snapshot_parent(self):
-        code, out = xray("write", self.tree, "--out", self.parent / "snapshot" / "manifest.json")
+        code, out = xray("write", self.tree, "--format", "json", "--out", self.parent / "snapshot" / "manifest.json")
         self.assertEqual(code, 0, out)
 
     def test_the_publication_gate_accepts_a_quoted_stylesheet_citation(self):

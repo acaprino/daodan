@@ -55,8 +55,10 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(result["state"]["mode"], "classic")
         self.assertEqual(result["state"]["delivery"]["run_phases"], list(range(8)))
         self.assertFalse(result["check"]["complete"])
-        manifest = json.loads((self.run_dir / "snapshot/manifest.json").read_text())
-        self.assertEqual(len(manifest["files"]), 1)
+        from snapshot_store import open_snapshot, resolve_run_snapshot
+        self.assertEqual(result["state"]["snapshot"]["format"], "sqlite")
+        with open_snapshot(resolve_run_snapshot(self.run_dir, result["state"])) as manifest:
+            self.assertEqual(manifest.file_count, 1)
         registry = json.loads((self.project / ".codebase-map/runs.json").read_text())
         self.assertEqual(registry["active"][0]["run_id"], "example")
         self.assertFalse((self.run_dir / "01-structure.md").exists())
@@ -498,7 +500,8 @@ class MapServiceTests(unittest.TestCase):
                 self.assertTrue(snapshot.is_forbidden(name))
 
     def test_foreign_manifest_and_state_bindings_are_refused_even_for_outline(self):
-        self.create()
+        # Explicit JSON compatibility remains an upstream-only supported format.
+        self.create(format="json")
         path = self.run_dir / "snapshot/manifest.json"
         original = path.read_text()
         manifest = json.loads(original)

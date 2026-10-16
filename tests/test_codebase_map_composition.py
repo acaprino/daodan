@@ -75,7 +75,7 @@ class CodebaseMapCompositionTests(unittest.TestCase):
     def test_audit_binds_runs_and_bounds_both_acquisition_branches(self):
         text = self.body("abstraction-architect/workflows/audit.md")
         self.assertIn("newest", text)
-        self.assertIn("snapshot/manifest.json", text)
+        self.assertIn("snapshot.py resolve", text)
         self.assertIn("run_id", text)
         self.assertIn("never the mirror", text)
         self.assertIn("snapshot.py", text)
@@ -98,7 +98,7 @@ class CodebaseMapCompositionTests(unittest.TestCase):
     def test_auditor_uses_bound_context_and_reports_every_out_of_diff_change(self):
         text = self.body("abstraction-architect/roles/abstraction-architect-agent.md")
         self.assertIn(".codebase-map/runs/<run-id>/", text)
-        self.assertIn("snapshot/manifest.json", text)
+        self.assertIn("snapshot.py resolve", text)
         self.assertIn("map_outside_diff_changed_files", text)
         self.assertIn("every path", text)
         self.assertIn("never launches", text)

@@ -3,7 +3,7 @@ description: >
   Multi-agent Codebase Map for monorepos and multi-workspace projects: analyzes partitions in parallel and publishes consolidated results to .codebase-map/.
   TRIGGER WHEN: running Codebase Map analysis on a monorepo or generating a cross-partition interconnection map.
   DO NOT TRIGGER WHEN: single small directory or documentation-only audit (use /codebase-map:analyze).
-argument-hint: "<target> [--critical] [--comments] [--depth=lite|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]"
+argument-hint: "<target> [--format sqlite|json] [--critical] [--comments] [--depth=lite|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]"
 ---
 
 <!-- Codebase Map shared instruction wrapper. -->

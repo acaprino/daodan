@@ -1,11 +1,11 @@
 ---
 name: analyze
 description: 'Run a Codebase Map: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support. TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide) or a shallow overview.'
-argument-hint: '<target path> [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite|full] [--run-name <name>] [--update] [--no-update] [--resume-from [N]] [--stop-after N]'
+argument-hint: '<target path> [--format sqlite|json] [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite|full] [--run-name <name>] [--update] [--no-update] [--resume-from [N]] [--stop-after N]'
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
-> Arguments: `<target path> [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite|full] [--run-name <name>] [--update] [--no-update] [--resume-from [N]] [--stop-after N]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> Arguments: `<target path> [--format sqlite|json] [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite|full] [--run-name <name>] [--update] [--no-update] [--resume-from [N]] [--stop-after N]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 > This plugin declares an MCP server, `codebase-map`, started with `uv run --no-config --no-project --script ${PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py`. This host does not start a plugin-declared MCP server on its own. Before calling this server's tools, register that command under that name in the host's MCP configuration and verify the connection.
 
 <daodan_host_binding host="copilot">

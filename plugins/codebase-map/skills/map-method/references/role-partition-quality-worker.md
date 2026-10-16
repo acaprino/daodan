@@ -7,7 +7,7 @@ You execute Phase 5 (Pattern & Risk Detection) and Phase 6 (Documentation Health
 The spawn prompt gives you:
 - `partition_name`, `partition_path`, `active_flags` (you respect `comments` and `depth`)
 - `run_dir`: the run directory for this analysis (e.g. `.codebase-map/runs/<run-id>`)
-- `source_manifest`: derived by default as `<run_dir>/snapshot/manifest.json`, bound to the current run's root and whole target; a prompt alias, not a new state field; read-only for workers
+- `source_manifest`: the exact path from `snapshot.py resolve <run_dir>`, bound to the current run's root and whole target; a prompt alias for the declared binding; read-only for workers. Reuse with `analyze_file.py --snapshot`; never rebuild the project for a file
 - Implicit: all `<run_dir>/partitions/*/01-structure.md` and `02-interfaces.md` already exist
 
 ## DEPTH HANDLING
@@ -39,7 +39,7 @@ You DO NOT touch any other file under `.codebase-map/` (other runs may be in pro
 Use the scripts in `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/`:
 - Load `codebase-map:map-method`; follow Method loads and evidence.md for commands and source reading. Start from `source_manifest` and Wave 1 leads. Do not reparse or deeply read the entire partition for inventory alone
 - `cascade_scan.py` over the run's whole target (`target` in `<run_dir>/state.json`), never over the partition alone, for the usability-blocking check: a global rule meets its victim wherever the victim's stylesheet or markup lives. It lists every rule whose selector reaches the document root or its untargeted children and sets a layout property, with the rules and Tailwind utilities it can override, screen-level ones first. Keep the candidates and conflicts with at least one side in this partition, and record a conflict whose other side lives in a sibling partition under `## Cross-Partition Risk Attribution`. Leads, never verdicts
-- `usage_finder.py` to trace symbol usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
+- `analyze_file.py --snapshot "$source_manifest" --find-usages --symbol <name>` to trace requested usages across the partition (and OPTIONALLY across all partitions for cross-partition risk attribution)
 
 Do NOT use raw bash to do these jobs.
 If source content or parser identity changed, report the required refresh to the

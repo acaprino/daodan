@@ -251,10 +251,18 @@ def compute_fan_in(
     Paths are relative to the manifest root. A supplied manifest avoids a second
     inventory; parse_results binds already-read source to its existing parse.
     """
-    from snapshot import build_manifest, module_targets
+    from snapshot import module_targets
+    from snapshot_store import SnapshotStore
+    from contextlib import ExitStack
+    from store_consumers import temporary_snapshot, consumer_reader, fan_in as store_fan_in
 
-    if manifest is None:
-        manifest = build_manifest(Path(target_dir), parse_results=parse_results)
+    if manifest is None or isinstance(manifest, SnapshotStore):
+        with ExitStack() as stack:
+            fresh = manifest is None
+            if fresh:
+                manifest = stack.enter_context(temporary_snapshot(Path(target_dir), parse_results=parse_results))
+            db = stack.enter_context(consumer_reader(manifest, fresh=fresh))
+            return store_fan_in(manifest, db, perimeter)
     root = Path(manifest["root"])
     allowed = {
         rel for rel in manifest["files"]
@@ -273,16 +281,18 @@ def compute_fan_in(
 
 def classify_directory(target_dir: Path, perimeter=None) -> dict[str, ClassificationResult]:
     """Classify source files using one shared internal dependency graph."""
-    from snapshot import build_manifest
+    from store_consumers import temporary_snapshot, consumer_reader, fan_in as store_fan_in
+    from types import SimpleNamespace
 
-    manifest = build_manifest(Path(target_dir))
-    counts = compute_fan_in(target_dir, perimeter, manifest=manifest)
-    root = Path(manifest["root"])
-    return {
-        rel: classify_file(root / rel, imported_by_count=counts[rel])
-        for rel, entry in manifest["files"].items()
-        if rel in counts and entry.get("language") is not None
-    }
+    with temporary_snapshot(Path(target_dir)) as manifest, consumer_reader(manifest, fresh=True) as db:
+        counts = store_fan_in(manifest, db, perimeter)
+        root = Path(manifest["root"])
+        results = {}
+        for rel, entry in manifest.iter_files(semantic=False):
+            if rel in counts and entry.get("language") is not None:
+                results[rel] = classify_file(root / rel, imported_by_count=counts[rel],
+                                            parse_result=SimpleNamespace(imports=entry.get("imports", [])))
+        return results
 
 
 HIGH_FAN_IN_THRESHOLD: int = 8

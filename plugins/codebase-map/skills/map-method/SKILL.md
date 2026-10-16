@@ -80,14 +80,14 @@ Conditional reads: methodology, patterns, comments; migration for legacy roots, 
 Scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/` (Python >= 3.10; multi-language targets).
 
 - `ast_parser.py`: structural extraction dispatcher.
-- `analyze_file.py`: per-file CLI for classification, structure and usages.
+- `analyze_file.py`: per-file classification/structure/usages; workflow calls reuse `--snapshot`.
 - `classifier.py`: language-aware criticality classification.
 - `usage_finder.py`: cross-file symbol usages across supported extensions.
 - `comment_rewriter.py`: multi-language comment analysis engine.
 - `rewrite_comments.py`: comment quality CLI: scan/analyze/rewrite/report.
 - `doc_review.py`: documentation maintenance (Phase 6).
 - `migrate_root.py`: project-bound legacy migration and historical path resolution.
-- `snapshot.py`: scope counts, structural snapshots and incremental change sets.
+- `snapshot.py`: scope, SQLite snapshots (JSON explicit), run resolution and incremental changes.
 - `source_reader.py`: manifest graphs, outlines and validated source blocks.
 - `tree_scope.py`: shared Git, dot-directory and dependency/build perimeter.
 - `cascade_scan.py`: global stylesheet layout risks, cascade override candidates and screen rules (Phase 5).

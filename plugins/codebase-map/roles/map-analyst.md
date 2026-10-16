@@ -21,7 +21,7 @@ The coordinator owns completion, requested views and the shared mirror.
 ## Inputs and method loads
 
 Require the project root, normalized target, run id/directory, prepared
-`state.json` delivery, current `snapshot/manifest.json`, accepted flags, optional
+`state.json` delivery, current snapshot path from `snapshot.py resolve <run-dir>`, accepted flags, optional
 parent/changes/carry bindings and `run_phases`. Reject a missing or inconsistent
 binding as a delivery gap. `phase-N` means N is in the prepared `run_phases`.
 Load each selected section when reaching its phase, not all phase units up front.

@@ -15,6 +15,7 @@ import argparse
 import json
 import logging
 import sys
+from contextlib import ExitStack
 from pathlib import Path
 from typing import Any
 
@@ -31,46 +32,18 @@ from usage_finder import (
 __all__ = ["analyze_single_file", "format_as_markdown", "format_as_summary"]
 
 
-def _semantic_view(index: dict, relative_path: str, manifest: dict) -> dict:
-    """Expose source-bound call facts without operation-local source caches."""
-    declarations = [item for item in index["declarations"].values()
-                    if item["file"] == relative_path and item["kind"] in {"function", "class"}]
-    own_ids = {item["id"] for item in declarations}
-    calls = [item for item in index["references"] if item["kind"] == "call"]
-    outgoing = [item for item in calls if item["file"] == relative_path]
-    incoming = [item for item in calls
-                if item["file"] != relative_path and item["target_id"] in own_ids]
-    coverage_counts = {}
-    for entry in index["coverage"].values():
-        status = entry["status"]
-        coverage_counts[status] = coverage_counts.get(status, 0) + 1
-    return {
-        "coverage": index["coverage"].get(relative_path, {"status": "unavailable"}),
-        "project_coverage": coverage_counts,
-        "raw_hash": manifest["files"].get(relative_path, {}).get("raw_hash"),
-        "parser_fingerprint": manifest.get("parser_fingerprint"),
-        "declarations": declarations,
-        "callsites": outgoing,
-        "incoming_calls": incoming,
-        "counts": {
-            "callsites": len(outgoing),
-            "resolved_callsites": sum(item["resolution"] == "resolved" for item in outgoing),
-            "unresolved_callsites": sum(item["resolution"] != "resolved" for item in outgoing),
-            "incoming_calls": len(incoming),
-            "project_unresolved_calls": sum(item["resolution"] != "resolved" for item in calls),
-        },
-        "notes": ["Static bindings only; unknown receivers and ambiguous bindings have no asserted target.",
-                  "An empty incoming list does not establish that a declaration is unused.",
-                  "Application runtime coverage: none."],
-    }
-
-
 def analyze_single_file(
     file_path: Path,
     find_usages: bool = False,
     project_root: Path | None = None,
     symbol: str | None = None,
+    *, snapshot_path: Path | None = None,
 ) -> dict[str, Any]:
+    with ExitStack() as stack:
+        return _analyze_single_file(file_path, find_usages, project_root, symbol, snapshot_path, stack)
+
+
+def _analyze_single_file(file_path, find_usages, project_root, symbol, snapshot_path, stack):
     """
     Perform complete analysis of a single source file.
 
@@ -96,6 +69,25 @@ def analyze_single_file(
             )
         }
 
+    from snapshot_store import open_snapshot
+    from source_reader import _binding, _source_path
+    manifest = None
+    if snapshot_path is not None:
+        manifest = stack.enter_context(open_snapshot(snapshot_path))
+        bound_root, bound_target, perimeter = _binding(manifest)
+        try:
+            rel = file_path.resolve().relative_to(bound_root).as_posix()
+        except ValueError as error:
+            raise ValueError("source is outside the snapshot root") from error
+        if not manifest.has_file(rel):
+            raise ValueError("source is not inventoried in the snapshot")
+        _source_path(rel, bound_root, bound_target, perimeter)
+    else:
+        import snapshot
+        from tree_scope import Perimeter
+        graph_target, _ = _resolve_project_root_and_paths(file_path, project_root)
+        if snapshot.is_forbidden(file_path.name) or not Perimeter(graph_target).covers(file_path.resolve()):
+            raise ValueError("source is outside the current perimeter")
     content = file_path.read_bytes().decode("utf-8")
 
     # Step 2: Parse structure
@@ -108,40 +100,26 @@ def analyze_single_file(
             "classification": classification.classification.value,
         }
 
-    from snapshot import build_manifest, resolved_imports
-    from dependency_graph import dependency_graph_metrics, transitive_importers
-    from semantic_index import build_semantic_index
+    from store_consumers import temporary_snapshot, consumer_reader, file_analysis, find_usages as store_usages
 
     graph_target, _ = _resolve_project_root_and_paths(file_path, project_root)
-    source_observations = {}
-    manifest = build_manifest(
-        graph_target, parse_results={file_path.resolve(): (content, structure)},
-        source_observations=source_observations,
-    )
-    import_bindings = resolved_imports(manifest, include_self=True)
-    graph = {
-        importer: sorted({target for targets in modules.values() for target in targets})
-        for importer, modules in import_bindings.items()
-    }
-    counts = compute_fan_in(graph_target, manifest=manifest, graph=graph)
+    if snapshot_path is None:
+        manifest = stack.enter_context(temporary_snapshot(
+            graph_target, parse_results={file_path.resolve(): (content, structure)}))
     graph_root = Path(manifest["root"])
     try:
         relative_path = file_path.resolve().relative_to(graph_root).as_posix()
     except ValueError:
-        relative_path = ""
-    imported_by_count = counts.get(relative_path, 0)
-    resolved_modules = {
-        module: [target for target in targets if target != relative_path]
-        for module, targets in import_bindings.get(relative_path, {}).items()
-    }
-    semantic_index = build_semantic_index(
-        manifest, import_graph=import_bindings, source_observations=source_observations,
-    )
-    graph_metrics = dependency_graph_metrics(graph)
-    reverse_graph = {}
-    for importer, targets in graph.items():
-        for target in targets:
-            reverse_graph.setdefault(target, []).append(importer)
+        return {"error": "Source file is outside the snapshot root"}
+    if not manifest.has_file(relative_path):
+        return {"error": "Source file is not inventoried in the snapshot"}
+    source_observations = {relative_path: content.encode("utf-8")}
+    semantic_db = stack.enter_context(consumer_reader(
+        manifest, fresh=snapshot_path is None, observations=source_observations))
+    imported_by_count = semantic_db.execute(
+        "SELECT count(DISTINCT source) FROM sem_edges WHERE target=? AND source<>?",
+        (relative_path, relative_path)).fetchone()[0]
+    semantic_analysis, graph_metrics, resolved_modules = file_analysis(manifest, semantic_db, relative_path)
     classification = classify_from_content(
         content, str(file_path), imported_by_count=imported_by_count, parse_result=structure,
     )
@@ -173,19 +151,24 @@ def analyze_single_file(
                 # search refuses; one refusal must not end the whole analysis.
                 usages[target] = {"error": str(err)}
 
-        batch_results = find_all_usages_batch(
-            valid_targets, file_path, graph_target, manifest=manifest,
-            source_observations=source_observations, semantic_index=semantic_index,
-        )
+        batch_results = store_usages(
+            manifest, semantic_db, valid_targets, file_path, graph_target,
+            limit=5, observations=source_observations,
+        ) if valid_targets else {}
         for target in valid_targets:
             usage_result = batch_results[target]
             usages[target] = {
-                "count": len(usage_result.usages),
+                "count": usage_result.total_count,
+                "limit": usage_result.limit,
+                "truncated": usage_result.truncated,
                 "resolved_count": usage_result.resolved_count,
                 "ast_candidate_count": usage_result.ast_candidate_count,
                 "lexical_candidate_count": usage_result.lexical_candidate_count,
                 "precision": usage_result.precision,
-                "importing_modules": usage_result.importing_modules,
+                "importing_modules": usage_result.importing_modules[:5],
+                "importing_modules_total": len(usage_result.importing_modules),
+                "truncated_sections": (["usages"] if usage_result.truncated else [])
+                                      + (["importing_modules"] if len(usage_result.importing_modules) > 5 else []),
                 "sample_usages": [
                     {
                         "file": u.file_path,
@@ -207,17 +190,8 @@ def analyze_single_file(
         "language": structure.language,
         "parser_notes": structure.notes,
         "imported_by_count": imported_by_count,
-        "semantic_analysis": _semantic_view(semantic_index, relative_path, manifest),
-        "dependency_graph": {
-            "nodes": len(graph_metrics["nodes"]),
-            "edges": len(graph_metrics["edges"]),
-            "import_cycles": [cycle for cycle in graph_metrics["import_cycles"] if relative_path in cycle],
-            "project_cycle_count": len(graph_metrics["import_cycles"]),
-            "transitive_importers": transitive_importers(reverse_graph, [relative_path]),
-            "pagerank": graph_metrics["pagerank"].get(relative_path, 0.0),
-            **{key: value for key, value in graph_metrics.items() if key.startswith("pagerank_")},
-            "interpretation": "Static import reachability and centrality; no runtime propagation or criticality claim.",
-        },
+        "semantic_analysis": semantic_analysis,
+        "dependency_graph": graph_metrics,
         "classification": {
             "level": classification.classification.value,
             "lines_of_code": classification.lines_of_code,
@@ -332,8 +306,8 @@ def format_as_markdown(analysis: dict[str, Any]) -> str:
     graph = analysis.get("dependency_graph")
     if graph:
         lines += ["## Import graph diagnostics", "",
-                  f"Cycles containing this file: {len(graph['import_cycles'])}. "
-                  f"Transitive importing files: {len(graph['transitive_importers'])}.",
+                  f"Cycles containing this file: {graph.get('totals', {}).get('import_cycles', len(graph['import_cycles']))}. "
+                  f"Transitive importing files: {graph.get('totals', {}).get('transitive_importers', len(graph['transitive_importers']))}.",
                   "Reachability describes static imports. It does not change the one-hop update recommendation.", ""]
 
     # Structure - Classes (and class-like: interface, enum, type-alias, package, table...)
@@ -518,6 +492,7 @@ def main():
         help="Project root directory",
     )
 
+    parser.add_argument("--snapshot", type=Path, help="Reuse the run's bound SQLite or explicit JSON snapshot")
     args = parser.parse_args()
 
     if not args.file:
@@ -534,11 +509,12 @@ def main():
         find_usages=args.find_usages or args.symbol is not None,
         project_root=args.project_root,
         symbol=args.symbol,
+        snapshot_path=args.snapshot,
     )
 
     # Format output
     if args.output_format == "json":
-        print(json.dumps(result, indent=2, default=str))
+        print(json.dumps(result, separators=(",", ":"), default=str))
     elif args.output_format == "markdown":
         print(format_as_markdown(result))
     else:  # summary

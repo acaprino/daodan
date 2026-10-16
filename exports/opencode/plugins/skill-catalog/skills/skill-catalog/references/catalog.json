@@ -21,7 +21,7 @@
         "abstraction",
         "architecture"
       ],
-      "version": "4.1.1"
+      "version": "4.1.2"
     },
     {
       "description": "Run the Claude Agent SDK (formerly Claude Code SDK) loop inside your own program, not the `anthropic` client SDK for chat completions. TRIGGER WHEN: code references claude-agent-sdk, user says \"agent sdk\", \"build an agent\", \"programmatic claude\", \"claude code sdk\", \"sidecar\", \"run claude programmatically\"; or asks about tool integration, subagent orchestration, prompt caching or model migration inside that loop.",
@@ -163,7 +163,7 @@
       "operations": [],
       "provider": "codebase-map",
       "topics": [],
-      "version": "6.7.0"
+      "version": "7.0.0"
     },
     {
       "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; loaded by /dependency-audit:deps-audit. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:code-review or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",
@@ -691,7 +691,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.3.5"
+      "version": "1.3.6"
     },
     {
       "description": "Prepare, audit and maintain durable project documentation with a file/audience plan. Load when writing guides, reconciling document drift or coordinating knowledge work.",
@@ -706,7 +706,7 @@
       "operations": [],
       "provider": "project-knowledge",
       "topics": [],
-      "version": "1.3.5"
+      "version": "1.3.6"
     },
     {
       "description": "Create or audit README.md from verified project facts, retaining author voice and proportional information architecture. TRIGGER WHEN: creating, auditing or updating README.md.",
@@ -727,7 +727,7 @@
       "topics": [
         "readme"
       ],
-      "version": "1.3.5"
+      "version": "1.3.6"
     },
     {
       "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",

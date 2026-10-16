@@ -20,7 +20,7 @@ Nothing mechanical would have caught it, because every copy was internally
 plausible and no two were compared.
 
 This linter compares them. Each anchor names a fact, the file that owns it, and a
-regex whose first group captures the value. Every file in the repository is scanned
+regex whose first group captures the value. Every tracked or nonignored new repository source is scanned
 for that regex; if two files report different values, the anchor fails and both are
 named. It also checks explicitly required independent copies: a missing statement
 is a coverage failure. Value comparison remains narrow, comparing statements of
@@ -41,7 +41,9 @@ Adding an anchor is cheap and is the right response to correcting a fact twice.
 Pick a phrasing stable enough to survive an edit, capture the value in group 1, and
 prefer a number or a short verbatim quote over a sentence.
 """
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -267,8 +269,18 @@ failures = []
 
 
 def scan_files():
-    """Every text file that could state an anchored fact."""
-    for path in sorted(Path(".").rglob("*")):
+    """Scan current repository sources, never private caches or historical run data.
+
+    Git includes tracked files even when an ignore rule matches them, and new
+    untracked sources remain visible. Required copies are still checked below;
+    a missing required source fails rather than silently reducing coverage.
+    """
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    paths = {Path(os.fsdecode(value)) for value in result.stdout.split(b"\0") if value}
+    for path in sorted(paths):
         if not path.is_file() or path.suffix not in SCANNED_SUFFIXES:
             continue
         parts = set(path.parts)

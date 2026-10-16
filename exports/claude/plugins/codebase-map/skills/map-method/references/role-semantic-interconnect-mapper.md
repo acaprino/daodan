@@ -102,10 +102,10 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 4. **Independent claims** (optional, provided by the invoking command as a file path): a set of claims derived independently of your primary context source. When the path is provided, compare it against your own derivation. Every contradiction becomes a `disputed` row citing both sides. Do not resolve the contradiction, and do not prefer your own derivation by default.
 
 5. **Current source manifest**: derive `source_manifest` from the identified
-   Codebase Map run as `<run_dir>/snapshot/manifest.json`, or use the exact current path
+   Codebase Map run through `snapshot.py resolve <run_dir>`, or use the exact current path
    supplied by the caller/context brief. It is a prompt alias, not a new state
    field or separately persisted index. Resolve an explicitly requested latest
-   mirror to its identified run before using that run's `snapshot/manifest.json`;
+   mirror to its identified run before using that run's resolved snapshot path;
    the mirror has no snapshot of its own. Bind the manifest's exact root, target
    and run to the requested scope. If it is missing or stale, report the input
    gap so the caller can supply a current owned snapshot. Do not alter a parent

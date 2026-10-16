@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 6.7.0; source-sha256: 334a4d104e072c4092eaebb7220fafe091d92c7e1bc1ad97482d3c19222c250b. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 7.0.0; source-sha256: 7dd4f790fb961e788388f82a4e14a0ac3662863148dc76d0f173f678bf6cefc3. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-map`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-map-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-map`. The owning plugin's declared logical skill identities are `codebase-map:map-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -88,7 +88,7 @@ The coordinator owns completion, requested views and the shared mirror.
 ## Inputs and method loads
 
 Require the project root, normalized target, run id/directory, prepared
-`state.json` delivery, current `snapshot/manifest.json`, accepted flags, optional
+`state.json` delivery, current snapshot path from `snapshot.py resolve <run-dir>`, accepted flags, optional
 parent/changes/carry bindings and `run_phases`. Reject a missing or inconsistent
 binding as a delivery gap. `phase-N` means N is in the prepared `run_phases`.
 Load each selected section when reaching its phase, not all phase units up front.

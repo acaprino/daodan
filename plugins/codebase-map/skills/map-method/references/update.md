@@ -3,7 +3,7 @@
 ## Incremental Updates
 
 `scripts/snapshot.py` mechanically prepares snapshot, change-set, carry and gate
-inputs. `snapshot/manifest.json` records file size/mtime/content hashes, symbol
+inputs. Snapshots record file size/mtime/content hashes, symbol
 spans/body hashes and git metadata. A method edit also changes its enclosing
 class hash. Phase 1 in `references/phases-1-2.md` owns inventory categories,
 file-level formats and exclusions.

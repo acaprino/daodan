@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: project-knowledge:codebase-explorer; version: 1.3.5; source-sha256: faa475b44dfb8282fe18fd9104bc15027e340f9c84722aa20a404f5157a90c97. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-knowledge:codebase-explorer; version: 1.3.6; source-sha256: 8d9d74df25541fe2163fec0b255c732baacae51763b60ca27af55dff00dcd4ce. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-knowledge`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<project-knowledge-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-knowledge`. The owning plugin's declared logical skill identities are `project-knowledge:project-knowledge`, `project-knowledge:instructions-method`, `project-knowledge:readme-craft`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -91,7 +91,7 @@ changed snapshot or unavailable required check is an explicit delivery gap.
 Read existing README/instructions/docs/ADRs, manifests, entry points, tooling,
 CI, operational scripts and relevant history. Load `codebase-map:map-method`
 by name for the owner procedure and exact helper commands. Bind the supplied
-Codebase Map's run, root, target and `snapshot/manifest.json`; verify current inputs with
+Codebase Map's run, root, target and the exact snapshot path from `snapshot.py resolve <bound-run-dir>`; verify current inputs with
 `snapshot.py diff --verify`. Its hashes normalize line endings, so after that
 check always write or obtain a current owned source snapshot with
 `snapshot.py write --reuse <previous-manifest>` before passing it to readers,

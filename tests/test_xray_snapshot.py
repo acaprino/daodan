@@ -133,7 +133,7 @@ class ManifestTests(unittest.TestCase):
 
     def manifest(self):
         out = self.tmp / "manifest.json"
-        code, _, err = run_script("write", self.src, "--out", out)
+        code, _, err = run_script("write", self.src, "--format", "json", "--out", out)
         self.assertEqual(code, 0, err)
         return json.loads(out.read_text(encoding="utf-8"))
 
@@ -176,8 +176,8 @@ class ManifestTests(unittest.TestCase):
     def test_the_manifest_is_deterministic(self):
         first = self.tmp / "a.json"
         second = self.tmp / "b.json"
-        run_script("write", self.src, "--out", first)
-        run_script("write", self.src, "--out", second)
+        run_script("write", self.src, "--format", "json", "--out", first)
+        run_script("write", self.src, "--format", "json", "--out", second)
         a = json.loads(first.read_text(encoding="utf-8"))
         b = json.loads(second.read_text(encoding="utf-8"))
         a.pop("created_at")
@@ -500,7 +500,7 @@ class PerimeterTests(unittest.TestCase):
 
     def manifest(self, target=None):
         out = self.tmp / "manifest.json"
-        code, _, err = run_script("write", target or self.project, "--out", out, env=self.env)
+        code, _, err = run_script("write", target or self.project, "--format", "json", "--out", out, env=self.env)
         self.assertEqual(code, 0, err)
         return json.loads(out.read_text(encoding="utf-8"))
 

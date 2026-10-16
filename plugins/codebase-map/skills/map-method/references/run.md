@@ -5,13 +5,13 @@ Require exit 0. Workers only resolve bindings; legacy roots/bindings activate mi
 
 ## Concurrent Runs Model
 
-Every analysis is an isolated run; targets, sessions and re-analyses may overlap.
+Runs are isolated; targets and sessions may overlap.
 
 Within `.codebase-map/`:
 - `runs.json`: active-run registry and latest completed run.
 - `runs/<run-id>/`: isolated analysis directory containing:
   - `state.json`: phase tracking, flags and lineage.
-  - `snapshot/manifest.json`: analyzed files, symbols and hashes.
+  - `snapshot/manifest.sqlite`: default inventory; JSON: `snapshot/manifest.json`. `snapshot.py resolve` selects the state's format/path.
   - `changes.json`, `changes.md`: incremental change set and claim consequences.
   - `knowledge/navigation.md`, `knowledge/documentation-leads.md`: Phase 0.
   - `01-structure.md` through `07-final-report.md`.
@@ -24,7 +24,7 @@ Within `.codebase-map/`:
 4. **Publish.** Only the entry publishes after `snapshot.py check` reports `complete` and `may_publish` and every requested view is delivered. Its `publish` helper replaces the whole mirror of known phase files and `state.json`, then sets `latest_completed`, with locked rollback-protected replacement. Lite removes older `03`, `04`, `06`; classic removes an older team's `08-interconnect-map.md`. Partial, docs-only, single-phase and stopped runs never publish. Concurrent publishers preserve both archives; the last successful publisher owns the mirror.
 5. **Resume.** `--resume-from [N] --run-name <exact-id>` selects the interrupted directory without collision suffixes. Keep mode and flags; a different mode requires a new run. The gate confirms earlier artifacts with same-run provenance, selects the first incomplete produced phase when N is omitted, and drops the invocation's stop. Interrupted/stopped runs retain recoverable state and never alter `latest_completed`. Root `state.json` with `current_phase` but no `runs.json` is pre-runs layout: offer migration into `runs/legacy-<date>/`.
 6. **Consumers.** A workflow consuming a specific invocation must retain and propagate its immutable `.codebase-map/runs/<run-id>/`, never the mutable `.codebase-map/` mirror. The mirror serves latest-state consumers, including one-shot requests for the most recent published analysis.
-7. **Lineage.** Every run writes `snapshot/manifest.json` of its analyzed tree, making it a possible parent. Incremental runs record the parent in `state.json -> parent_run` and their `runs.json` entry; this chain alone is the analysis history. `snapshot/`, `changes.json` and `changes.md` stay run-local and never publish to the root.
+7. **Lineage.** Each run's declared snapshot makes it a possible parent. Incremental runs record the parent in `state.json -> parent_run` and their `runs.json` entry; this chain alone is the analysis history. `snapshot/`, `changes.json` and `changes.md` stay run-local and never publish to the root.
 
 ## Perimeter
 

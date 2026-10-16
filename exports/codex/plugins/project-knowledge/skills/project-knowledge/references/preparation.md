@@ -104,7 +104,7 @@ dependent operation; preserve archives and run IDs.
    readers, including `none` or LF/CRLF-only differences. Supported parent claims
    do not establish current source bytes. Preserve the parent snapshot and its
    evidence lineage, and pass the exact current
-   `snapshot/manifest.json` to workers. Select symbols from its outline, read
+   the exact snapshot path from `snapshot.py resolve <bound-run-dir>` to workers. Select symbols from its outline, read
    validated blocks, and expand to callers, callees, invariants, configuration
    and CSS/markup pertinent to each claim. An outline is discovery metadata;
    retained file/class context is not proof that omitted bodies are irrelevant.

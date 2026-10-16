@@ -33,6 +33,7 @@ Standard library only. Parsing reuses the adapters in ./languages/.
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack
 from concurrent.futures import ThreadPoolExecutor
 import copy
 import fnmatch
@@ -55,6 +56,8 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from languages import SUPPORTED_EXTENSIONS, detect_language, get_adapter  # noqa: E402
 from tree_scope import Perimeter, git_executable  # noqa: E402
+from snapshot_store import (SnapshotStore, artifact_digest, file_headers, header_metadata,
+                            open_snapshot, resolve_run_snapshot)  # noqa: E402
 
 __all__ = [
     "DOC_EXTENSIONS",
@@ -199,7 +202,8 @@ def parser_fingerprint() -> str:
     digest = hashlib.sha256()
     helpers = [SCRIPT_DIR / name for name in
                ("snapshot.py", "ast_parser.py", "tree_scope.py", "source_reader.py",
-                "semantic_index.py", "dependency_graph.py")]
+                "semantic_index.py", "dependency_graph.py", "snapshot_store.py", "json_snapshot.py",
+                "semantic_store.py", "store_graph.py", "store_graph_metrics.py", "store_consumers.py")]
     helpers += sorted((SCRIPT_DIR / "languages").rglob("*.py"))
     for helper in helpers:
         if helper.is_file():
@@ -560,6 +564,119 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
     }
 
 
+def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=None,
+                   parse_results: dict | None = None, extra_metadata: dict | None = None,
+                   progress=None) -> dict:
+    """Write bounded records; optional progress observes work and may cancel it.
+
+    Host metadata joins the immutable header before semantic binding. Reserved
+    snapshot fields cannot be overridden by an embedding application's header.
+    """
+    from datetime import datetime, timezone
+    from snapshot_store import SnapshotWriter, validate_format, _plain
+
+    validate_format(format)
+    reserved = {"schema", "target", "root", "created_at", "git", "scope", "parser_fingerprint",
+                "metrics", "files", "file_count", "format"}
+    if extra_metadata is not None and (not isinstance(extra_metadata, dict)
+            or any(not isinstance(key, str) or key in reserved for key in extra_metadata)):
+        raise ValueError("invalid additional snapshot metadata")
+    extra_metadata = dict(extra_metadata or {})
+    target = Path(target).resolve()
+    out = Path(out)
+    _plain(out)
+    if not (target.is_dir() or target.is_file()):
+        raise ValueError(f"snapshot target does not exist: {target}")
+    root = repo_root(target).resolve()
+    target_key = relative_to_root(target, root) or "."
+    fingerprint = parser_fingerprint()
+    reusable = (previous is not None and previous.metadata.get("schema") == SCHEMA
+                and previous.metadata.get("root") == root.as_posix()
+                and previous.metadata.get("target") == target_key
+                and previous.metadata.get("parser_fingerprint") == fingerprint)
+    metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
+    perimeter = Perimeter(target)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, name = tempfile.mkstemp(prefix=f".{out.name}.", dir=out.parent)
+    os.close(descriptor)
+    temporary = Path(name)
+    temporary.unlink()
+    count = 0
+    supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
+    try:
+        with SnapshotWriter(temporary, format) as writer:
+            if format == "sqlite":
+                writer.connection.execute("CREATE TABLE observed_coverage(file TEXT PRIMARY KEY,payload BLOB)")
+            for path in iter_files(target, perimeter):
+                try:
+                    st = path.stat()
+                    observed = supplied.get(path.resolve())
+                    if observed is None and st.st_size > MAX_FILE_BYTES:
+                        continue
+                    if observed is None:
+                        data, parsed = path.read_bytes(), None
+                        metrics["files_read"] += 1
+                        metrics["source_bytes_read"] += len(data)
+                    else:
+                        content, parsed = observed
+                        data = content.encode("utf-8")
+                except OSError:
+                    continue
+                if len(data) > MAX_FILE_BYTES:
+                    continue
+                if progress is not None:
+                    progress("reading", count + 1)
+                rel = relative_to_root(path, root)
+                mtime = round(st.st_mtime, 3)
+                old = previous.get_file(rel) if reusable else None
+                if (old is not None and old.get("raw_hash") == hashlib.sha256(data).hexdigest()
+                        and old.get("parser_profile") == parser_profile(path, old.get("language"))
+                        and old.get("status") in {"parsed", "file-level", "parse-skipped"}):
+                    old["size"], old["mtime"] = len(data), mtime
+                    entry = old
+                    metrics["cache_hits"] += 1
+                else:
+                    del old
+                    entry = file_entry(path, data, mtime, parse_result=parsed)
+                    if entry["status"] in {"parsed", "parse-error"} and parsed is None:
+                        metrics["parsed_files"] += 1
+                writer.put_file(rel, entry)
+                if format == "sqlite":
+                    from semantic_store import observed_coverage
+                    from snapshot_store import _pack
+                    writer.connection.execute("INSERT INTO observed_coverage VALUES(?,?)",
+                                              (rel, _pack(observed_coverage(entry, data))))
+                del entry, data
+                count += 1
+                if progress is not None:
+                    progress("parsing", count)
+            if progress is not None:
+                progress("validating", count)
+            metadata_record = {
+                **extra_metadata,
+                "schema": SCHEMA, "target": target_key, "root": root.as_posix(),
+                "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "git": git_info(root), "scope": scope_record(perimeter, root),
+                "parser_fingerprint": fingerprint, "metrics": metrics,
+            }
+            if format == "sqlite":
+                from semantic_store import build_semantic_store
+                with writer.reader() as current:
+                    current.metadata.update(metadata_record)
+                    build_semantic_store(current, writer=writer)
+            writer.finish(metadata_record)
+        _plain(out)
+        # A caller reusing the same pathname transfers its reader to publication.
+        # Windows cannot replace the file while that connection is open.
+        if previous is not None and previous.path.resolve() == out.resolve():
+            previous.close()
+        os.replace(temporary, out)
+        return {**metadata_record, "file_count": count, "format": format}
+    finally:
+        temporary.unlink(missing_ok=True)
+        Path(str(temporary) + "-journal").unlink(missing_ok=True)
+
+
 def compare_files(manifest: dict, target: Path, verify: bool = False,
                   raw_hashes: dict | None = None) -> dict:
     """
@@ -579,7 +696,7 @@ def compare_files(manifest: dict, target: Path, verify: bool = False,
         if isinstance(recorded_root, str) and recorded_root
         else repo_root(target).resolve()
     )
-    old = manifest.get("files", {})
+    old = file_headers(manifest)
     structural_refresh = manifest.get("parser_fingerprint") != parser_fingerprint()
     current: dict[str, Path] = {}
     for path in iter_files(target):
@@ -639,7 +756,7 @@ def compare_symbols(manifest: dict, comparison: dict) -> dict:
     `fresh` carries the re-parsed structure of those files so the caller does
     not parse them a second time.
     """
-    old_files = manifest.get("files", {})
+    old_files = file_headers(manifest)
     added, removed, changed = [], [], []
     renumber: dict[str, list[dict]] = {}
     fresh: dict[str, dict] = {}
@@ -1032,6 +1149,11 @@ def _python_module_candidates(module: str, home: Path, target: Path) -> list[str
 
 def resolved_imports(manifest: dict, config: dict | None = None, *,
                      include_self: bool = False) -> dict[str, dict[str, list[str]]]:
+    return dict(iter_resolved_imports(manifest, config, include_self=include_self))
+
+
+def iter_resolved_imports(manifest: dict, config: dict | None = None, *,
+                     include_self: bool = False) -> dict[str, dict[str, list[str]]]:
     """Resolve each manifest specifier once, keeping its binding provenance.
 
     JS/TS paths match only explicit relative, configured or workspace targets.
@@ -1041,7 +1163,7 @@ def resolved_imports(manifest: dict, config: dict | None = None, *,
     root = Path(manifest.get("root") or ".").resolve()
     target = (root / (manifest.get("target") or ".")).resolve()
     config = ts_path_config(target) if config is None else config
-    files = manifest.get("files", {})
+    files = file_headers(manifest)
     perimeter = Perimeter(target)
     by_absolute = {(root / rel).resolve(): rel for rel in files
                    if ((root / rel).resolve().is_relative_to(target) or (root / rel).resolve() == target)
@@ -1055,10 +1177,9 @@ def resolved_imports(manifest: dict, config: dict | None = None, *,
                 return match
         return None
 
-    graph = {}
     for importer, entry in files.items():
         if (root / importer).resolve() not in by_absolute:
-            graph[importer] = {}
+            yield importer, {}
             continue
         imports = entry.get("imports", [])
         bindings = entry.get("import_bindings", [])
@@ -1105,8 +1226,7 @@ def resolved_imports(manifest: dict, config: dict | None = None, *,
                                     resolved.add(hit)
                                     break
             modules[module] = sorted(resolved)
-        graph[importer] = modules
-    return graph
+        yield importer, modules
 
 
 def module_targets(manifest: dict, config: dict | None = None, *,
@@ -1166,7 +1286,7 @@ def build_import_index(manifest: dict, comparison: dict, symbols: dict) -> dict[
     tree plus every removed file's last-known path, while the set actually
     walked for outgoing edges stays the current tree only.
     """
-    old_files = manifest.get("files", {})
+    old_files = file_headers(manifest)
     fresh = symbols.get("fresh", {})
     current_imports: dict[str, list[str]] = {}
     for rel in comparison["unchanged"]:
@@ -1175,7 +1295,7 @@ def build_import_index(manifest: dict, comparison: dict, symbols: dict) -> dict[
         current_imports[rel] = list(entry.get("imports", []))
 
     resolvable = list(current_imports) + [rel for rel in comparison["removed"] if rel not in current_imports]
-    graph_manifest = {**manifest, "root": comparison.get("root") or manifest.get("root"),
+    graph_manifest = {**header_metadata(manifest), "root": comparison.get("root") or manifest.get("root"),
                       "target": comparison.get("target") or manifest.get("target") or ".", "files": {
         rel: {**old_files.get(rel, {}), **fresh.get(rel, {}), "imports": current_imports.get(rel, [])}
         for rel in resolvable
@@ -1475,112 +1595,114 @@ def _changes_markdown(changes: dict) -> str:
 
 
 def cmd_diff(args: argparse.Namespace) -> int:
-    parent_dir = Path(args.parent_run)
-    target = Path(args.target)
-    out_dir = Path(args.out)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    with ExitStack() as stack:
+        parent_dir = Path(args.parent_run)
+        target = Path(args.target)
+        out_dir = Path(args.out)
+        out_dir.mkdir(parents=True, exist_ok=True)
 
-    reasons: list[str] = []
-    manifest = _read_json(parent_dir / "snapshot" / "manifest.json")
-    parent_state = _read_json(parent_dir / "state.json") or {}
-    if manifest is None:
-        reasons.append("parent run has no snapshot manifest")
-        manifest = {"files": {}, "target": None, "created_at": None}
-    if parent_state.get("status") not in (None, "complete"):
-        reasons.append(f"parent run status is {parent_state.get('status')}")
-    if manifest.get("parser_fingerprint") != parser_fingerprint():
-        reasons.append("parser identity changed or is missing; refresh the structural snapshot")
-    target_resolved = target.resolve()
-    root = repo_root(target_resolved).resolve()
-    if manifest.get("root") != root.as_posix() or manifest.get("target") != relative_to_root(target_resolved, root):
-        reasons.append("snapshot root or target differs from this run")
-    if args.flags:
-        try:
-            requested = json.loads(args.flags)
-        except ValueError:
-            requested = {}
-        parent_flags = parent_state.get("flags") or {}
-        differing = sorted(k for k, v in requested.items() if parent_flags.get(k) != v)
-        if differing:
-            reasons.append("flags differ from the parent run: " + ", ".join(differing))
+        reasons: list[str] = []
+        parent_state = _read_json(parent_dir / "state.json") or {}
+        present = any((parent_dir / f"snapshot/manifest.{format}").exists() for format in ("sqlite", "json"))
+        manifest = stack.enter_context(open_snapshot(resolve_run_snapshot(parent_dir, parent_state))) if present else None
+        if manifest is None:
+            reasons.append("parent run has no snapshot manifest")
+            manifest = {"files": {}, "target": None, "created_at": None}
+        if parent_state.get("status") not in (None, "complete"):
+            reasons.append(f"parent run status is {parent_state.get('status')}")
+        if manifest.get("parser_fingerprint") != parser_fingerprint():
+            reasons.append("parser identity changed or is missing; refresh the structural snapshot")
+        target_resolved = target.resolve()
+        root = repo_root(target_resolved).resolve()
+        if manifest.get("root") != root.as_posix() or manifest.get("target") != relative_to_root(target_resolved, root):
+            reasons.append("snapshot root or target differs from this run")
+        if args.flags:
+            try:
+                requested = json.loads(args.flags)
+            except ValueError:
+                requested = {}
+            parent_flags = parent_state.get("flags") or {}
+            differing = sorted(k for k, v in requested.items() if parent_flags.get(k) != v)
+            if differing:
+                reasons.append("flags differ from the parent run: " + ", ".join(differing))
 
-    comparison = compare_files(manifest, target, verify=args.verify)
-    symbols = compare_symbols(manifest, comparison)
-    index = build_import_index(manifest, comparison, symbols)
-    importers = blast_radius(index, comparison, symbols)
-    from dependency_graph import dependency_graph_metrics, transitive_importers
+        comparison = compare_files(manifest, target, verify=args.verify)
+        symbols = compare_symbols(manifest, comparison)
+        index = build_import_index(manifest, comparison, symbols)
+        importers = blast_radius(index, comparison, symbols)
+        from dependency_graph import dependency_graph_metrics, transitive_importers
 
-    diagnostic_graph = {rel: [] for rel in comparison["current"]}
-    for dependency, importing_files in index.items():
-        diagnostic_graph.setdefault(dependency, [])
-        for importer in importing_files:
-            diagnostic_graph.setdefault(importer, []).append(dependency)
-    graph_metrics = dependency_graph_metrics(diagnostic_graph)
-    diagnostic_seeds = sorted(set(comparison["added"]) | set(comparison["removed"]) | set(comparison["modified"]))
-    reachable_importers = transitive_importers(index, diagnostic_seeds)
-    claims = scan_claims(parent_dir, comparison, symbols, importers) if manifest.get("files") else []
+        diagnostic_graph = {rel: [] for rel in comparison["current"]}
+        for dependency, importing_files in index.items():
+            diagnostic_graph.setdefault(dependency, [])
+            for importer in importing_files:
+                diagnostic_graph.setdefault(importer, []).append(dependency)
+        graph_metrics = dependency_graph_metrics(diagnostic_graph)
+        diagnostic_seeds = sorted(set(comparison["added"]) | set(comparison["removed"]) | set(comparison["modified"]))
+        reachable_importers = transitive_importers(index, diagnostic_seeds)
+        claims = scan_claims(parent_dir, comparison, symbols, importers) if file_headers(manifest) else []
 
-    affected_files = sorted(
-        set(comparison["added"]) | set(comparison["removed"]) | set(comparison["modified"])
-        | {entry["file"] for entry in importers}
-    )
-    # With no parent manifest, this falls back to the current worktree's file
-    # count: the same fallback the ratio's denominator uses just below, so the
-    # two always agree. A consumer that recomputes the ratio from the stored
-    # totals must never divide by a files_in_snapshot of 0.
-    total = len(manifest.get("files") or {}) or len(comparison["current"]) or 1
-    ratio = len(affected_files) / total
-    recommendation = recommend(ratio, args.threshold, len(affected_files), reasons)
+        affected_files = sorted(
+            set(comparison["added"]) | set(comparison["removed"]) | set(comparison["modified"])
+            | {entry["file"] for entry in importers}
+        )
+        # With no parent manifest, this falls back to the current worktree's file
+        # count: the same fallback the ratio's denominator uses just below, so the
+        # two always agree. A consumer that recomputes the ratio from the stored
+        # totals must never divide by a files_in_snapshot of 0.
+        total = len(file_headers(manifest) or {}) or len(comparison["current"]) or 1
+        ratio = len(affected_files) / total
+        recommendation = recommend(ratio, args.threshold, len(affected_files), reasons)
 
-    from datetime import datetime, timezone
-    changes = {
-        "schema": SCHEMA,
-        "parent_run": parent_state.get("run_id") or parent_dir.name,
-        "base_snapshot_created_at": manifest.get("created_at"),
-        "computed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "git": git_info(repo_root(target.resolve()).resolve()),
-        "files": {
-            "added": comparison["added"],
-            "removed": comparison["removed"],
-            "modified": comparison["modified"],
-        },
-        "symbols": {
-            "added": symbols["added"],
-            "removed": symbols["removed"],
-            "changed": symbols["changed"],
-        },
-        "renumber": symbols["renumber"],
-        "importers": importers,
-        "import_cycles": graph_metrics["import_cycles"],
-        "transitive_importers": reachable_importers,
-        "transitive_seeds": diagnostic_seeds,
-        "dependency_graph": {
-            "nodes": len(graph_metrics["nodes"]),
-            "edges": len(graph_metrics["edges"]),
-            "pagerank": graph_metrics["pagerank"],
-            **{key: value for key, value in graph_metrics.items() if key.startswith("pagerank_")},
-            "interpretation": "Static import reachability and centrality; the one-hop recommendation is unchanged.",
-        },
-        "affected_files": affected_files,
-        "claims": claims,
-        "totals": {
-            "files_in_snapshot": total,
-            "affected_files": len(affected_files),
-            "ratio": round(ratio, 4),
-            "claims_affected": len(claims),
-        },
-        "recommendation": recommendation,
-        "reasons": reasons,
-    }
-    (out_dir / "changes.json").write_text(
-        json.dumps(changes, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    (out_dir / "changes.md").write_text(_changes_markdown(changes), encoding="utf-8")
-    print(
-        f"change set: {recommendation}; {len(affected_files)} affected files of {total}, "
-        f"{len(claims)} affected claims -> {out_dir / 'changes.json'}"
-    )
-    return 0
+        from datetime import datetime, timezone
+        changes = {
+            "schema": SCHEMA,
+            "parent_run": parent_state.get("run_id") or parent_dir.name,
+            "base_snapshot_created_at": manifest.get("created_at"),
+            "computed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "git": git_info(repo_root(target.resolve()).resolve()),
+            "files": {
+                "added": comparison["added"],
+                "removed": comparison["removed"],
+                "modified": comparison["modified"],
+            },
+            "symbols": {
+                "added": symbols["added"],
+                "removed": symbols["removed"],
+                "changed": symbols["changed"],
+            },
+            "renumber": symbols["renumber"],
+            "importers": importers,
+            "import_cycles": graph_metrics["import_cycles"],
+            "transitive_importers": reachable_importers,
+            "transitive_seeds": diagnostic_seeds,
+            "dependency_graph": {
+                "nodes": len(graph_metrics["nodes"]),
+                "edges": len(graph_metrics["edges"]),
+                "pagerank": graph_metrics["pagerank"],
+                **{key: value for key, value in graph_metrics.items() if key.startswith("pagerank_")},
+                "interpretation": "Static import reachability and centrality; the one-hop recommendation is unchanged.",
+            },
+            "affected_files": affected_files,
+            "claims": claims,
+            "totals": {
+                "files_in_snapshot": total,
+                "affected_files": len(affected_files),
+                "ratio": round(ratio, 4),
+                "claims_affected": len(claims),
+            },
+            "recommendation": recommendation,
+            "reasons": reasons,
+        }
+        (out_dir / "changes.json").write_text(
+            json.dumps(changes, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        (out_dir / "changes.md").write_text(_changes_markdown(changes), encoding="utf-8")
+        print(
+            f"change set: {recommendation}; {len(affected_files)} affected files of {total}, "
+            f"{len(claims)} affected claims -> {out_dir / 'changes.json'}"
+        )
+        return 0
 
 
 MARKER_PREFIX = "<!-- xray:stale"
@@ -1682,8 +1804,8 @@ def cmd_carry(args: argparse.Namespace) -> int:
     record = {
         "schema": 1, "parent_run": parent_state.get("run_id") or parent_dir.name,
         "parent_path": parent_dir.resolve().as_posix(), "artifacts": carried,
-        "parent_manifest_sha256": hashlib.sha256((parent_dir / "snapshot/manifest.json").read_bytes()).hexdigest()
-        if (parent_dir / "snapshot/manifest.json").is_file() else None,
+        "parent_manifest_sha256": artifact_digest(resolve_run_snapshot(parent_dir, _read_json(parent_dir / "state.json") or {}))
+        if any((parent_dir / f"snapshot/manifest.{format}").is_file() for format in ("sqlite", "json")) else None,
     }
     (run_dir / "carry.json").write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -1892,54 +2014,53 @@ def _artifact_hash(run_dir: Path, name: str) -> str:
 
 
 def _bound_manifest(run_dir: Path, root: Path, state: dict, fresh: bool = False) -> dict:
-    path = run_dir / "snapshot/manifest.json"
-    _reject_links(path)
-    manifest = _read_json(path)
-    if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), dict):
-        raise RunControlError("run requires snapshot/manifest.json")
-    validate_reuse_manifest(manifest)
-    project = store_project(root)
-    target = Path(state["target"])
-    if not target.is_absolute():
-        target = project / target
-    target = target.resolve()
     try:
-        target.relative_to(project)
-    except ValueError as exc:
-        raise RunControlError("target is outside this run's project") from exc
-    if not isinstance(manifest.get("root"), str) or not isinstance(manifest.get("target"), str):
-        raise RunControlError("snapshot requires root and target binding")
-    if (Path(manifest["root"]) / manifest["target"]).resolve() != target:
-        raise RunControlError("snapshot and state target bindings differ")
-    if Path(manifest["root"]).resolve() != repo_root(target).resolve():
-        raise RunControlError("snapshot root differs from the target's repository binding")
-    for name in manifest["files"]:
-        relative = Path(name)
-        source = (Path(manifest["root"]) / relative).resolve()
-        if relative.is_absolute() or ".." in relative.parts:
-            raise RunControlError("snapshot file paths must be confined relative paths")
-        try:
-            source.relative_to(project)
-            if target.is_file():
-                if source != target:
-                    raise ValueError("file target differs")
-            else:
-                source.relative_to(target)
-        except ValueError as exc:
-            raise RunControlError("snapshot file is outside this run's target") from exc
-    if fresh:
-        if manifest.get("parser_fingerprint") != parser_fingerprint():
-            raise RunControlError("snapshot parser identity changed; start a new run")
-        comparison = compare_files(manifest, target, verify=True)
-        if comparison["added"] or comparison["removed"] or comparison["modified"]:
-            raise RunControlError("worktree changed since the run snapshot; start a new run or update")
-        for name, entry in manifest["files"].items():
-            source = Path(manifest["root"]) / name
-            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != entry.get("raw_hash"):
-                raise RunControlError("worktree bytes changed since the run snapshot; start a new run or update")
-            if entry.get("parser_profile") != parser_profile(source, entry.get("language")):
-                raise RunControlError("effective parser changed since the run snapshot; start a new run")
-    return manifest
+        with open_snapshot(resolve_run_snapshot(run_dir, state)) as manifest:
+            validate_reuse_manifest(manifest)
+            project = store_project(root)
+            target = Path(state["target"])
+            if not target.is_absolute():
+                target = project / target
+            target = target.resolve()
+            try:
+                target.relative_to(project)
+            except ValueError as exc:
+                raise RunControlError("target is outside this run's project") from exc
+            if not isinstance(manifest.get("root"), str) or not isinstance(manifest.get("target"), str):
+                raise RunControlError("snapshot requires root and target binding")
+            if (Path(manifest["root"]) / manifest["target"]).resolve() != target:
+                raise RunControlError("snapshot and state target bindings differ")
+            if Path(manifest["root"]).resolve() != repo_root(target).resolve():
+                raise RunControlError("snapshot root differs from the target's repository binding")
+            for name in file_headers(manifest):
+                relative = Path(name)
+                source = (Path(manifest["root"]) / relative).resolve()
+                if relative.is_absolute() or ".." in relative.parts:
+                    raise RunControlError("snapshot file paths must be confined relative paths")
+                try:
+                    source.relative_to(project)
+                    if target.is_file():
+                        if source != target:
+                            raise ValueError("file target differs")
+                    else:
+                        source.relative_to(target)
+                except ValueError as exc:
+                    raise RunControlError("snapshot file is outside this run's target") from exc
+            if fresh:
+                if manifest.get("parser_fingerprint") != parser_fingerprint():
+                    raise RunControlError("snapshot parser identity changed; start a new run")
+                comparison = compare_files(manifest, target, verify=True)
+                if comparison["added"] or comparison["removed"] or comparison["modified"]:
+                    raise RunControlError("worktree changed since the run snapshot; start a new run or update")
+                for name, entry in file_headers(manifest).items():
+                    source = Path(manifest["root"]) / name
+                    if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != entry.get("raw_hash"):
+                        raise RunControlError("worktree bytes changed since the run snapshot; start a new run or update")
+                    if entry.get("parser_profile") != parser_profile(source, entry.get("language")):
+                        raise RunControlError("effective parser changed since the run snapshot; start a new run")
+            return dict(manifest.metadata)
+    except ValueError as error:
+        raise RunControlError(str(error)) from error
 
 
 def _write_json_atomic(path: Path, value: dict) -> None:
@@ -2057,7 +2178,7 @@ def _valid_inheritance(run_dir: Path, root: Path, state: dict, name: str, artifa
     if not isinstance(provenance, dict) or provenance.get("sha256") != _artifact_hash(run_dir, name):
         return False
     if provenance.get("kind") == "resume":
-        return (provenance.get("run_id") == state["run_id"] and provenance.get("manifest_sha256") == hashlib.sha256((run_dir / "snapshot/manifest.json").read_bytes()).hexdigest())
+        return (provenance.get("run_id") == state["run_id"] and provenance.get("manifest_sha256") == artifact_digest(resolve_run_snapshot(run_dir, state)))
     if provenance.get("kind") != "carry" or provenance.get("run_id") != state.get("parent_run"):
         return False
     record_path = run_dir / "carry.json"
@@ -2078,7 +2199,7 @@ def _valid_inheritance(run_dir: Path, root: Path, state: dict, name: str, artifa
     if any(parent_flags[key] != _effective_flags(state["flags"])[key] for key in ("depth", "critical", "comments")):
         return False
     _bound_manifest(parent, root, parent_state)
-    parent_manifest = hashlib.sha256((parent / "snapshot/manifest.json").read_bytes()).hexdigest()
+    parent_manifest = artifact_digest(resolve_run_snapshot(parent, parent_state))
     if provenance.get("parent_manifest_sha256") != parent_manifest or record.get("parent_manifest_sha256") != parent_manifest:
         return False
     if not _artifact_bytes(parent, name):
@@ -2214,7 +2335,7 @@ def cmd_prepare(args: argparse.Namespace) -> int:
             if any(name in invalid or name in checked["not_yet_produced"] for name in earlier):
                 print(json.dumps({"error": "earlier required artifacts are incomplete", "check": checked}))
                 return 1
-            manifest_hash = hashlib.sha256((run_dir / "snapshot/manifest.json").read_bytes()).hexdigest()
+            manifest_hash = artifact_digest(resolve_run_snapshot(run_dir, state))
             delivery = copy.deepcopy(delivery)
             for name, item in delivery["artifacts"].items():
                 if item["status"] == "skipped":
@@ -2465,14 +2586,19 @@ def cmd_scope(args: argparse.Namespace) -> int:
 
 def validate_reuse_manifest(manifest: object) -> None:
     """Reject malformed stored structure before it can replace a valid output."""
+    if isinstance(manifest, SnapshotStore):
+        validate_reuse_manifest({**manifest.metadata, "files": {}})
+        for rel, entry in manifest.iter_files(semantic=False):
+            validate_reuse_manifest({**manifest.metadata, "files": {rel: entry}})
+        return
     if (not isinstance(manifest, dict) or type(manifest.get("schema")) is not int or manifest["schema"] != SCHEMA
-            or not isinstance(manifest.get("files"), dict)
+            or not isinstance(file_headers(manifest), dict)
             or not isinstance(manifest.get("root"), str)
             or not isinstance(manifest.get("target"), str)):
         raise ValueError("expected a snapshot object with schema, root, target and files")
     if "parser_fingerprint" in manifest and not isinstance(manifest["parser_fingerprint"], str):
         raise ValueError("invalid cached parser fingerprint")
-    for rel, entry in manifest["files"].items():
+    for rel, entry in file_headers(manifest).items():
         if (not isinstance(rel, str) or not isinstance(entry, dict)
                 or type(entry.get("size")) is not int or entry["size"] < 0
                 or type(entry.get("mtime")) not in (int, float)
@@ -2506,35 +2632,33 @@ def validate_reuse_manifest(manifest: object) -> None:
             raise ValueError(f"invalid cached parser status: {rel}")
 
 
-def cmd_write(args: argparse.Namespace) -> int:
-    previous = None
-    if args.reuse:
-        try:
-            previous = json.loads(Path(args.reuse).read_text(encoding="utf-8"))
-            if not isinstance(previous, dict):
-                raise ValueError("reuse manifest must be a JSON object")
-        except (OSError, ValueError) as exc:
-            print(f"snapshot: cannot reuse manifest: {exc}", file=sys.stderr)
-            return 2
+def cmd_resolve(args: argparse.Namespace) -> int:
+    """Resolve a run's authoritative format/path and small header for shell clients."""
     try:
-        manifest = build_manifest(Path(args.target), previous)
-    except (OSError, ValueError) as exc:
-        print(f"snapshot: cannot build manifest: {exc}", file=sys.stderr)
+        run_dir, root, state = _run_context(Path(args.run_dir))
+        metadata = _bound_manifest(run_dir, root, state)
+        path = resolve_run_snapshot(run_dir, state)
+        with open_snapshot(path) as store:
+            result = {"path": path.as_posix(), "format": store.format, "storage_version": 1,
+                      "metadata": metadata, "file_count": store.file_count}
+        print(json.dumps(result, separators=(",", ":")))
+        return 0
+    except (RunControlError, OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
         return 2
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    temporary = None
+
+
+def cmd_write(args: argparse.Namespace) -> int:
     try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
-                                         dir=out.parent, prefix=f".{out.name}.", delete=False) as handle:
-            temporary = Path(handle.name)
-            handle.write(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
-        os.replace(temporary, out)
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
-    print(f"snapshot: {len(manifest['files'])} files -> {out}")
-    return 0
+        with ExitStack() as stack:
+            previous = stack.enter_context(open_snapshot(Path(args.reuse))) if args.reuse else None
+            result = write_snapshot(Path(args.target), Path(args.out),
+                                    format=getattr(args, "format", "sqlite"), previous=previous)
+        print(f"snapshot: {result['file_count']} files -> {args.out}")
+        return 0
+    except (OSError, ValueError) as error:
+        print(f"snapshot: cannot write manifest: {error}", file=sys.stderr)
+        return 2
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -2548,8 +2672,13 @@ def main(argv: list[str] | None = None) -> int:
     write_parser = sub.add_parser("write", help="write a manifest for a target tree")
     write_parser.add_argument("target")
     write_parser.add_argument("--out", required=True)
+    write_parser.add_argument("--format", choices=("sqlite", "json"), default="sqlite")
     write_parser.add_argument("--reuse", help="prior manifest; verify every file before reusing its parse")
     write_parser.set_defaults(func=cmd_write)
+
+    resolve_parser = sub.add_parser("resolve", help="resolve the declared snapshot path and small header of a bound run")
+    resolve_parser.add_argument("run_dir")
+    resolve_parser.set_defaults(func=cmd_resolve)
 
     diff_parser = sub.add_parser("diff", help="diff a parent run's snapshot against the worktree")
     diff_parser.add_argument("parent_run")

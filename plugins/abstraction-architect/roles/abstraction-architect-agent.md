@@ -43,7 +43,7 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 - `codebase_path`: the codebase root.
 - `mode` (optional, default `global`): `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
 - `xray_path`: immutable `.codebase-map/runs/<run-id>/` directory. Required for `global`, optional for `diff`. Retain this compatibility input name; never read the mirror's phase files as a supplied run.
-- `map_run_id`, `map_snapshot_path` (optional): exact run identity and its `snapshot/manifest.json`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
+- `map_run_id`, `map_snapshot_path` (optional): exact run identity and its the exact snapshot path from `snapshot.py resolve <bound-run-dir>`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
 - `map_changes_path` (optional): coordinator's verified snapshot diff against the current worktree.
 - `map_outside_diff_changed_files` (optional): every path changed since the bound snapshot outside `changed_files`; preserve the complete list in Gaps.
 - `concept_index_path` (optional): path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.

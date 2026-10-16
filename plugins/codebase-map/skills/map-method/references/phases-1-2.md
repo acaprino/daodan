@@ -17,6 +17,7 @@ AST coverage gaps and truncation; supplement with usage search only where needed
 
 A minified stylesheet has any line over 10,000 characters. Configuration/documentation entries have no symbols; presentation formats include HTML, HTM, Vue, Svelte and indented Sass. Forbidden files never enter the manifest, even as hashes.
 
+Reuse inventory; never rebuild per file.
 For each inventoried file, report recorded metadata and read source only for
 additional claims required by the phase:
 - Module/file name and path

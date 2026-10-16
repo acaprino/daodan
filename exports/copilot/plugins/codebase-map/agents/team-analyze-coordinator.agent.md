@@ -6,7 +6,7 @@ agents: ['partition-behavior-worker', 'partition-quality-worker', 'partition-str
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
-> Arguments: `<target> [--critical] [--comments] [--depth=lite|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> Arguments: `<target> [--format sqlite|json] [--critical] [--comments] [--depth=lite|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 > This plugin declares an MCP server, `codebase-map`, started with `uv run --no-config --no-project --script ${PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py`. This host does not start a plugin-declared MCP server on its own. Before calling this server's tools, register that command under that name in the host's MCP configuration and verify the connection.
 
 <daodan_host_binding host="copilot">

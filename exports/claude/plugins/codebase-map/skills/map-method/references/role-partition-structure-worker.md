@@ -71,7 +71,7 @@ The spawn prompt gives you:
 - `partition_name`: kebab-case identifier (e.g. `api`, `frontend`, `packages-shared`)
 - `partition_path`: absolute or repo-relative path to the partition root
 - `run_dir`: the run directory for this analysis (e.g. `.codebase-map/runs/<run-id>`). All your output paths are relative to it.
-- `source_manifest`: derived by default as `<run_dir>/snapshot/manifest.json`, bound to the current run's root and whole target; a prompt alias, not a new state field; read-only for workers
+- `source_manifest`: the exact path from `snapshot.py resolve <run_dir>`, bound to the current run's root and whole target; a prompt alias for the declared binding; read-only for workers. Reuse with `analyze_file.py --snapshot`; never rebuild the project for a file
 - `active_flags`: object with `critical`, `comments`, `depth` (you only use `depth` -- if `lite`, your output is identical to full because Phase 1+2 always run)
 
 ## OWNERSHIP CONTRACT
@@ -105,7 +105,7 @@ Load `codebase-map:map-method` and follow `references/evidence.md`. First query
 `source_reader.py graph` on `source_manifest`, seeding exact inventoried files
 below `partition_path`, never directories. Keep the whole-run manifest for
 inbound/cross-partition edges. Read question-relevant candidate requests through `source_reader.py read`.
-Use manifest metadata/outline for exact definitions: anchored patterns select a
+Use manifest metadata/outline for exact definitions: literal patterns or exact paths select a
 partition; `--path` selects one file. Narrow truncated queries.
 
 Read source to establish entry points, exports and interface claims. Expand to

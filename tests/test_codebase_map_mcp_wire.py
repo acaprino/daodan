@@ -136,6 +136,16 @@ class CodebaseMapWireTests(unittest.TestCase):
             self.assertNotIn("ctx", properties)
             self.assertNotIn("project_root", properties)
         self.assertIn("run_id", by_name["codebase_map_status"]["inputSchema"]["required"])
+        format = by_name["codebase_map_create_run"]["inputSchema"]["properties"]["format"]
+        self.assertEqual(format["default"], "sqlite")
+        self.assertEqual(set(format["enum"]), {"sqlite", "json"})
+
+    def test_json_requires_explicit_format_and_invalid_format_is_a_tool_error(self):
+        run = self.data(self.call("codebase_map_create_run",
+                                 {"target": "src", "run_id": "explicit-json", "format": "json"}))
+        self.assertEqual(run["state"]["snapshot"]["format"], "json")
+        self.assertTrue(self.call("codebase_map_create_run",
+                                 {"target": "src", "run_id": "invalid", "format": "pickle"}).get("isError"))
 
     def test_scope_streams_monotonic_request_progress_and_structured_result(self):
         result = self.data(self.call("codebase_map_scope", {"target": "src"}, token="scope-1"))

@@ -68,7 +68,7 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 | Tool | Inputs and behavior |
 |---|---|
 | `codebase_map_scope` | `target="."`: inventory counts, languages and declared exclusions; starts no analysis |
-| `codebase_map_create_run` | `target`, exact `run_id`, optional `depth="full"` or `"lite"`, `critical`, `comments`, `docs_only`, `phase`, `stop_after`: snapshot and prepared classic run |
+| `codebase_map_create_run` | `target`, exact `run_id`, optional `depth="full"` or `"lite"`, `critical`, `comments`, `docs_only`, `phase`, `stop_after`, `format="sqlite"` (or explicit `"json"`): snapshot and prepared classic run |
 | `codebase_map_runs` | canonical runs and active registry in this project; an unreadable run is listed with `readable: false` and its `error` |
 | `codebase_map_status` | `run_id`: current `state` and canonical delivery `check`; missing-source diagnostics keep history observable |
 | `codebase_map_outline` | `run_id`, optional `path`, `pattern` (literal case-insensitive substrings separated by `\|`, never a regular expression), `limit=100`: bound symbol metadata |
@@ -98,6 +98,12 @@ For example, source requests use the source reader's existing selection shape:
 checks and whole-file fallbacks remain those in `references/evidence.md`.
 Outline metadata and emitted source bytes are distinct from a model's actual
 deep-reading ledger. Runtime coverage remains none unless supplied by the user.
+
+Creation defaults to SQLite, separate from analysis flags. State declares
+`snapshot.format`, `snapshot.path` and `snapshot.storage_version`. Existing and
+parent runs retain that exact binding; legacy runs without it are JSON only.
+Ambiguous/mismatched files fail. Readers close after each operation. JSON
+compatibility remains in Daodan; integrations may restrict reads to SQLite.
 
 Creation supports classic full, lite, docs-only and single-phase runs, with the
 existing combinations and stop limits. It creates a full new snapshot rather

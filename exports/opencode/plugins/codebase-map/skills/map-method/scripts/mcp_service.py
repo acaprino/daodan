@@ -7,10 +7,13 @@ record service operations, while state and delivery checks remain authoritative.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
+import tempfile
 from pathlib import Path
 import re
 import shutil
@@ -20,6 +23,9 @@ import sys
 import migrate_root
 import snapshot
 import source_reader
+from snapshot_store import file_headers, open_snapshot, resolve_run_snapshot, validate_format
+
+_SNAPSHOTS = ContextVar("map_operation_snapshots", default=None)
 
 
 __all__ = ["MapService"]
@@ -92,18 +98,23 @@ class MapService:
 
     @contextmanager
     def _operation(self, *, write=False):
-        # Share the existing OS project lock with migration. Calling its locked
-        # implementation avoids reacquiring a POSIX lock on another descriptor.
-        migrate_root._reject_link_chain(self.project_root)
-        with migrate_root._migration_lock(self.project_root):
-            if self.store is None:
-                migration = migrate_root._migrate_locked(self.project_root, check=not write)
-                if migration["status"] in {"migration_required", "recovery_required"}:
-                    raise ValueError("analysis-root migration is required; run migrate_root.py --project for this bound project before querying")
-            migrate_root._reject_link_chain(self.root)
-            if self.store is not None:
-                self._bind_store(write=write)
-            yield
+        with ExitStack() as snapshots:
+            token = _SNAPSHOTS.set(snapshots)
+            try:
+                # Share the existing OS project lock with migration. Calling its locked
+                # implementation avoids reacquiring a POSIX lock on another descriptor.
+                migrate_root._reject_link_chain(self.project_root)
+                with migrate_root._migration_lock(self.project_root):
+                    if self.store is None:
+                        migration = migrate_root._migrate_locked(self.project_root, check=not write)
+                        if migration["status"] in {"migration_required", "recovery_required"}:
+                            raise ValueError("analysis-root migration is required; run migrate_root.py --project for this bound project before querying")
+                    migrate_root._reject_link_chain(self.root)
+                    if self.store is not None:
+                        self._bind_store(write=write)
+                    yield
+            finally:
+                _SNAPSHOTS.reset(token)
 
     def _bind_store(self, *, write):
         # A custom store names itself, so standalone CLI commands bind the
@@ -165,7 +176,7 @@ class MapService:
         migrate_root._reject_link_chain(root)
         if (root / relative_target).resolve() != target:
             raise ValueError("snapshot and state target bindings differ")
-        for relative in manifest["files"]:
+        for relative in file_headers(manifest):
             source = root / _relative(relative)
             migrate_root._reject_link_chain(source)
             if not source.resolve().is_relative_to(self.project_root):
@@ -178,7 +189,7 @@ class MapService:
         # A deleted standalone target changes repo_root()'s answer. History is
         # still readable when the recorded root is its standalone base or the
         # repository of its nearest existing ancestor. Execution stays blocked.
-        file_target = relative_target in manifest["files"]
+        file_target = relative_target in file_headers(manifest)
         base = target.parent if file_target else target
         ancestor = base
         while not ancestor.exists():
@@ -214,7 +225,12 @@ class MapService:
             self._run_path(state["parent_run"])
         for name in ("changes.json", "carry.json", EVENT_FILE):
             migrate_root._reject_link_chain(run / name)
-        manifest = _json(run / "snapshot/manifest.json")
+        manifest = open_snapshot(resolve_run_snapshot(run, state))
+        snapshots = _SNAPSHOTS.get()
+        if snapshots is None:
+            manifest.close()
+            raise ValueError("bound run requires an operation context")
+        snapshots.enter_context(manifest)
         self._manifest_binding(run, state, manifest, target)
         self._validate_artifact_paths(run, state)
         if state.get("delivery") is not None:
@@ -315,48 +331,59 @@ class MapService:
             return dict(self._command("scope", bound), project_root=self.project_root.as_posix())
 
     def create_run(self, target, run_id, depth="full", critical=False, comments=False,
-                   docs_only=False, phase=None, stop_after=None):
+                   docs_only=False, phase=None, stop_after=None, format="sqlite"):
         _run_id(run_id)
+        validate_format(format)
         flags = {"depth": depth, "critical": critical, "comments": comments,
                  "docs_only": docs_only, "phase": phase}
         snapshot._effective_flags(flags)
         if stop_after is not None and (type(stop_after) is not int or stop_after not in range(1, 7)
                                        or phase is not None or docs_only):
             raise ValueError("stop_after accepts 1 through 6 without phase or docs_only")
-        # Validate before migration or creating any output directory. The
-        # snapshot is built before taking the project lock: it only reads, and
-        # prepare re-verifies its freshness under the lock.
         bound = self._target(target)
         self._source_paths(bound)
-        manifest = snapshot.build_manifest(bound)
         with self._operation(write=True):
-            if self._target(target) != bound:
-                raise ValueError("target binding changed while building the snapshot")
             run = self._run_path(run_id)
             if run.exists():
                 raise ValueError("run already exists; resume the exact run or choose another run_id")
-            state = {"run_id": run_id, "target": bound.relative_to(self.project_root).as_posix(),
-                     "mode": "classic", "status": "in_progress", "flags": flags,
-                     "started_at": _now(), "updated_at": _now(), "parent_run": None,
-                     "incremental": None, "current_phase": 0, "completed_phases": [],
-                     "files_created": [], "git": manifest.get("git")}
-            run.mkdir(parents=True)
-            try:
-                (run / "snapshot").mkdir()
-                _write(run / "snapshot/manifest.json", manifest)
-                _write(run / "state.json", state)
-                arguments = [run]
-                if stop_after is not None:
-                    arguments.extend(["--stop-after", stop_after])
-                self._command("prepare", *arguments)
-                snapshot.update_registration(run, active=True)
-            except BaseException:
-                # Nothing else knows this run yet; leave no half-prepared
-                # directory that blocks the same run_id.
-                shutil.rmtree(run, ignore_errors=True)
-                raise
-            self._event(run, "run_created")
-            return self._status(run_id)
+            self.root.mkdir(parents=True, exist_ok=True)
+            migrate_root._reject_link_chain(self.root)
+            descriptor, name = tempfile.mkstemp(prefix=f".{run_id}-snapshot-", dir=self.root)
+            os.close(descriptor)
+            temporary = Path(name)
+            temporary.unlink()
+        try:
+            metadata = snapshot.write_snapshot(bound, temporary, format=format)
+            with self._operation(write=True):
+                if self._target(target) != bound:
+                    raise ValueError("target binding changed while building the snapshot")
+                run = self._run_path(run_id)
+                if run.exists():
+                    raise ValueError("run already exists; resume the exact run or choose another run_id")
+                state = {"run_id": run_id, "target": bound.relative_to(self.project_root).as_posix(),
+                         "mode": "classic", "status": "in_progress", "flags": flags,
+                         "started_at": _now(), "updated_at": _now(), "parent_run": None,
+                         "incremental": None, "current_phase": 0, "completed_phases": [],
+                         "files_created": [], "git": metadata.get("git"),
+                         "snapshot": {"format": format, "path": f"snapshot/manifest.{format}",
+                                      "storage_version": 1}}
+                run.mkdir(parents=True)
+                try:
+                    (run / "snapshot").mkdir()
+                    os.replace(temporary, run / state["snapshot"]["path"])
+                    _write(run / "state.json", state)
+                    arguments = [run]
+                    if stop_after is not None:
+                        arguments.extend(["--stop-after", stop_after])
+                    self._command("prepare", *arguments)
+                    snapshot.update_registration(run, active=True)
+                except BaseException:
+                    shutil.rmtree(run, ignore_errors=True)
+                    raise
+                self._event(run, "run_created")
+                return self._status(run_id)
+        finally:
+            temporary.unlink(missing_ok=True)
 
     def status(self, run_id):
         with self._operation():
@@ -422,14 +449,14 @@ class MapService:
                 self._source_paths(target)
                 comparison = snapshot.compare_files(manifest, target, verify=True, raw_hashes=raw_hashes)
             else:
-                comparison = {"added": [], "removed": sorted(manifest["files"]),
+                comparison = {"added": [], "removed": sorted(file_headers(manifest)),
                               "modified": [], "unchanged": [], "current": {}}
             symbols = snapshot.compare_symbols(manifest, comparison)
             files = {key: comparison[key] for key in ("added", "removed", "modified")}
             # Normalized hashes intentionally ignore CRLF. Byte freshness still
             # matters to verified readers and resume, so expose it separately.
             raw_changed = sorted(name for name in comparison["unchanged"]
-                                 if raw_hashes.get(name) != manifest["files"][name].get("raw_hash"))
+                                 if raw_hashes.get(name) != file_headers(manifest)[name].get("raw_hash"))
             parser_changed = manifest.get("parser_fingerprint") != snapshot.parser_fingerprint()
             return {"run_id": run_id, "files": files,
                     "symbols": {key: symbols[key] for key in ("added", "removed", "changed")},

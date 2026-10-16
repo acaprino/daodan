@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.1.1; source-sha256: fe36b7e57d0f2a061632cfef44dc0159b399056ab726d5ac19f1a63fb09980ee. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: abstraction-architect:abstraction-architect-agent; version: 4.1.2; source-sha256: 437e8d0bae861d26ddbbc72fb667a8864f31968001e3773baeb87a7e18fcb6d9. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `abstraction-architect`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<abstraction-architect-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `abstraction-architect`. The owning plugin's declared logical skill identities are `abstraction-architect:abstraction-architect`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -109,7 +109,7 @@ Load the skill `abstraction-architect:abstraction-architect`. Read `references/d
 - `codebase_path`: the codebase root.
 - `mode` (optional, default `global`): `global` audits the whole codebase. `diff` audits what just changed. Separate PROCESS sections below.
 - `xray_path`: immutable `.codebase-map/runs/<run-id>/` directory. Required for `global`, optional for `diff`. Retain this compatibility input name; never read the mirror's phase files as a supplied run.
-- `map_run_id`, `map_snapshot_path` (optional): exact run identity and its `snapshot/manifest.json`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
+- `map_run_id`, `map_snapshot_path` (optional): exact run identity and its the exact snapshot path from `snapshot.py resolve <bound-run-dir>`; otherwise derive them from the bound run's own state and directory. Validate the manifest's root/target against `codebase_path` and the run's identity before using its context.
 - `map_changes_path` (optional): coordinator's verified snapshot diff against the current worktree.
 - `map_outside_diff_changed_files` (optional): every path changed since the bound snapshot outside `changed_files`; preserve the complete list in Gaps.
 - `concept_index_path` (optional): path to `concept-index.json`. Defaults to `<codebase_path>/.abstraction-architect/concept-index.json`. Absent or unusable is a supported condition, not an error. The literal value `none` disables both reading and writing the index.

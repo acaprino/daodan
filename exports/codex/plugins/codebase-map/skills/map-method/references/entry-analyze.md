@@ -100,7 +100,7 @@ The analyst has its own load contract; do not load its phase units here.
 
 Run the project-bound migration in `references/run.md` before root lookup.
 Parse target and existing flags (`critical`, `comments`, `docs_only`, `phase`,
-`depth`), `--run-name`, `--update` and `--no-update`. Additional controls:
+`depth`), `--format sqlite|json` (default SQLite for a new run), `--run-name`, `--update` and `--no-update`. Additional controls:
 
 - `--phase N`, N from 1 to 6: Phase 0 plus N only. Refuse `--phase 7`; a final
   report needs the phase files it summarizes. Never publish a single-phase run.
@@ -120,7 +120,8 @@ state or silently choose another active run. Show other active runs and start
 alongside when the user requested a new run. Offer legacy-layout migration when
 the run reference identifies it. Cancel leaves the shared mirror untouched.
 
-For a fresh run initialize `state.json` with run id, normalized target,
+Storage is separate from analysis flags. Resume retains its recorded format;
+refuse a conflicting explicit selection. For a fresh run initialize `state.json` with run id, normalized target,
 `mode: "classic"`, `status: "in_progress"`, effective flags, timestamps,
 `current_phase: 0`, empty completed phases/files, and real parent/incremental
 fields (null for a full run). Do not put stop or resume in immutable mode flags.
@@ -176,7 +177,9 @@ because the workflow has a scope checkpoint.
 ### Prepare the binding
 
 After scope is settled, write the initial current snapshot and copy its own `git`
-field to this run's state, following `references/snapshot.md`. Reuse the verified
+field to this run's state, following `references/snapshot.md`. Record the
+snapshot format/path/version, invoke `snapshot.py resolve $RUN_DIR` and retain
+its returned path as `source_manifest`. Reuse the verified
 same-target parent manifest even for a selected full analysis; preserve the
 parent. On an accepted update record actual parent id, base snapshot time and
 incremental counts, then run `carry` before `prepare`. This lets the helper

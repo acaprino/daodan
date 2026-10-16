@@ -134,7 +134,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
    - Set `RUN_DIR = .codebase-map/runs/<run-id>`
    - Read `.codebase-map/runs.json`: list active runs; offer to resume a matching in-progress team run or start this new run alongside. A root `state.json` with `current_phase` and no `runs.json` is a pre-runs legacy layout: offer to migrate it into `.codebase-map/runs/legacy-<date>/` first
    - Register through `snapshot.py register $RUN_DIR` after initializing state below; never write `runs.json` directly
-4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and `.codebase-map/runs/<id>/snapshot/manifest.json` exists. With a candidate, run the change set once over the whole target:
+4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and its snapshot resolves through `snapshot.py resolve <parent-run-dir>`. With a candidate, run the change set once over the whole target:
 
    ```bash
    python "<plugin-root>/skills/map-method/scripts/snapshot.py" diff \
@@ -282,17 +282,22 @@ If the user cancels, set state to `cancelled`, invoke `snapshot.py unregister $R
 
 Finalize `partitions` array in `state.json` with `{name, path, language_primary, file_count, loc_estimate, status: "pending"}` for each. Mark `phase_0_detection: "complete"`.
 
+Parse `--format sqlite|json`: new runs default to SQLite; JSON is explicit.
+Set `snapshot_format` and `source_manifest` to the chosen canonical binding;
+record `state.json -> snapshot` as specified in `references/snapshot.md`.
+Keep storage separate from flags; resume preserves the recorded selection.
+
 Immediately after the scope is settled, either by existing authorization or by an answer, write this run's snapshot over the whole target, before any worker is dispatched:
 
 ```bash
 python "<plugin-root>/skills/map-method/scripts/snapshot.py" write \
-  <target> --out $RUN_DIR/snapshot/manifest.json
+  <target> --format "$snapshot_format" --out "$source_manifest"
 ```
 
-It is global, like Phase 0: no partition owns it, and no worker writes to it. Copy the manifest's own `git` field into `$RUN_DIR/state.json`'s `git` field right after: it is the only `state.json` field this step fills, since `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created. When the accepted option is a partition-level update, apply `### Partition-level update` now, before Phase 1 begins.
+It is global, like Phase 0: no partition owns it, and no worker writes to it. Invoke `snapshot.py resolve $RUN_DIR`, retain its path and copy its metadata's `git` field into state. Storage is separate from lineage: `parent_run`, `base_snapshot_created_at` and `incremental` were already written with their real values when `state.json` was created. When the accepted option is a partition-level update, apply `### Partition-level update` now, before Phase 1 begins.
 
 When a same-target candidate parent exists, add
-`--reuse .codebase-map/runs/<parent-id>/snapshot/manifest.json` to the write,
+`--reuse "$parent_manifest"` after resolving the parent to the write,
 including when full analysis was selected. Bytes and parser identity are checked
 before retaining structure; the inventory is still scanned and hashed.
 Do not skip this current write after a verified diff because the recommendation
@@ -309,9 +314,8 @@ including depth skips, synthesis/interconnect skips and requested comment health
 `08-interconnect-map.md` remains the team-only artifact when selected. Do not
 change declarations to turn a failed worker or missing map into a skipped phase.
 
-Every source reader derives `source_manifest` as `$RUN_DIR/snapshot/manifest.json`.
-It is a prompt alias for this existing run artifact, not a new state field or a
-second index. Pass that exact current path to both worker waves and the mapper.
+Every source reader receives `source_manifest` from `snapshot.py resolve $RUN_DIR`.
+This alias names the declared snapshot; it is never a second index. Pass that exact current path to both worker waves and the mapper.
 Before structure/call/flow mapping, workers query `source_reader.py graph` with
 exact-file seeds, never partition directories, and read question-relevant candidate requests with
 `source_reader.py read`. Outline supplies exact recorded definitions. Preserve
@@ -338,7 +342,7 @@ You are partition-structure-worker on partition "<P_i.name>".
 
 Identity: P<i>.A
 Run directory: <RUN_DIR>
-Current source manifest: <RUN_DIR>/snapshot/manifest.json (read-only)
+Current source manifest: <resolved source_manifest> (read-only)
 Owned files:
   - <RUN_DIR>/partitions/<P_i.name>/01-structure.md
   - <RUN_DIR>/partitions/<P_i.name>/02-interfaces.md
@@ -351,7 +355,7 @@ Sibling partitions (for cross-partition citation lookup if needed):
   <list each P_j.name -> P_j.path>
 
 Required reads before writing:
-  - <RUN_DIR>/snapshot/manifest.json: inventory/import metadata for <P_i.path>
+  - <resolved source_manifest>: inventory/import metadata for <P_i.path>
   - Follow the assigned role's Method loads; never load every method unit.
 First query source_reader.py graph on the current source manifest, with exact
 inventoried file seeds below the partition, never a directory. Read question-relevant candidate requests
@@ -386,7 +390,7 @@ You are partition-behavior-worker on partition "<P_i.name>".
 
 Identity: P<i>.B
 Run directory: <RUN_DIR>
-Current source manifest: <RUN_DIR>/snapshot/manifest.json (read-only)
+Current source manifest: <resolved source_manifest> (read-only)
 Owned files:
   - <RUN_DIR>/partitions/<P_i.name>/03-flows.md
   - <RUN_DIR>/partitions/<P_i.name>/04-semantics.md
@@ -399,7 +403,7 @@ Sibling partitions: <list>
 
 Required reads before writing:
   - Follow the assigned role's Method loads; never load every method unit.
-  - <RUN_DIR>/snapshot/manifest.json: current source index
+  - <resolved source_manifest>: current source index
   - <RUN_DIR>/partitions/*/01-structure.md (ALL partitions, already written by Wave 1)
   - <RUN_DIR>/partitions/*/02-interfaces.md (ALL partitions)
 
@@ -475,7 +479,7 @@ Dispatch one `semantic-interconnect-mapper`:
 Build the interconnect map for this codebase using the team Codebase Map consolidated output as primary context.
 
 Primary context source: `<RUN_DIR>/01-07.md` (consolidated from partition outputs by the synthesizer).
-Current source manifest: `<RUN_DIR>/snapshot/manifest.json` (read-only).
+Current source manifest: `<resolved source_manifest>` (read-only).
 Scope: the cross-partition surface only. Read `<RUN_DIR>/02-interfaces.md ## Cross-Partition Exports`,
 `<RUN_DIR>/03-flows.md ## Cross-Partition Flows`, `<RUN_DIR>/04-semantics.md ## Hidden Contracts (cross-partition)`
 and `<RUN_DIR>/05-risks.md ## Cross-Partition Risk Attribution` (whichever exist at this depth), then the

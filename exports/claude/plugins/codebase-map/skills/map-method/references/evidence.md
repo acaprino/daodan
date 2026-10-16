@@ -65,7 +65,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## CRITICAL PRINCIPLE: EVIDENCE-ANCHORED OUTPUT
 
-Every file this skill produces is a set of claims about the code, each anchored to the code and each carrying a status. None of it is unquestionable. `/senior-review:team-review` re-derives its premises without reading the Codebase Map and refutes a Codebase Map claim whenever the code disagrees; that is the design working, not failing. What makes the output worth consuming is that every claim says where it came from and how sure it is.
+Each output claim cites its code and status. Independent review re-derives
+premises and refutes claims contradicted by source.
 
 ### Mandatory Rules (VIOLATION = FAILURE)
 
@@ -83,7 +84,8 @@ Every file this skill produces is a set of claims about the code, each anchored 
 
 As **evidence**, a document is an unverified claim requiring validation. Rules 2 and 7 govern that role and are not negotiable: a document never establishes a technical fact.
 
-As a **discovery lead**, a document is a first-class input that must be collected early. A project's own index telling you that a concept named X exists and lives in module Y is not a claim about behaviour; it is a pointer telling you where to look and what to look for. Refusing to read it does not make the analysis more rigorous, it makes it blind to intent and to code paths the structure alone does not reveal.
+As a **discovery lead**, a document must be collected early: concept names,
+module pointers and intent guide source discovery without proving behavior.
 
 Phase 0 collects leads. Phase 6 audits documents as evidence. Never let the second role suppress the first.
 
@@ -131,8 +133,8 @@ requests without saving. Never write into a parent or another worker's run.
 The `xray/source-graph/v1` packet binds its manifest/query, declarations,
 callsite spans, target identities, resolution/reasons, imports, coverage and
 diagnostics. Record seeds/hops, manifest binding, unavailable AST coverage,
-parser fallback, section totals and `truncated`. Narrow clipped queries or raise
-their limit; retain remaining gaps. AST metadata is not deep reading, and static
+parser fallback, section totals and `truncated`. Narrow or split clipped queries before raising
+their limit; retain gaps. AST metadata is not deep reading, and static
 resolution does not cover dynamic dispatch or arbitrary receiver types. Cycles,
 transitive importers and PageRank guide reading, not criticality or incremental
 invalidation. Usage search/Grep supplements dynamic, uncovered or ambiguous
@@ -143,35 +145,23 @@ cases; it never replaces a successful graph query.
 ```bash
 # Python
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
+  --snapshot "$source_manifest" --project-root "<bound-project-root>" \
   --file src/utils/circuit_breaker.py \
   --output-format markdown
 
-# Java
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
-  --file src/main/java/com/example/UserService.java
-
-# TypeScript
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
-  --file src/services/auth.ts
-
-# Rust
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
-  --file src/lib.rs
-
-# SQL / PL-SQL
-python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
-  --file migrations/0042_users.sql
 ```
 
 **Parameters:**
 - `--file` / `-f`: Relative or absolute path to file - **REQUIRED**. Any supported extension (see the Language Support table in `SKILL.md`).
 - `--output-format` / `-o`: Output format (json, markdown, summary) - default: summary
+- `--snapshot`: exact current run snapshot; workflow analysis reuses extraction and semantic bindings. Missing/stale evidence needs the owner's refresh.
 - `--find-usages` / `-u`: Find all usages of exported symbols - default: false
 
 ### 2. Find Usages of One Symbol
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/analyze_file.py" \
+  --snapshot "$source_manifest" --project-root "<bound-project-root>" \
   --file src/utils/circuit_breaker.py --find-usages --symbol CircuitBreaker
 ```
 
@@ -191,7 +181,7 @@ Scripts support the languages in `SKILL.md`. Throughout Phases 1-6, recorded
 structure comes from the current manifest; source evidence uses `source_reader.py`.
 
 - **Phase 1-2 (Structure):** Query `source_reader.py graph` first; use manifest metadata/outline for exact definitions and `read` for public contracts. `ast_parser.py` supplies only required missing details, such as signatures/export annotations, or single-file diagnosis. Use `classifier.py` for additional triage metrics; never reparse recorded structure
-- **Phase 5 (Risks):** Use `usage_finder.py` to trace symbol usages across the codebase. Multi-language: matches Python `from/import`, Java `import`, JS/TS `import`/`require`, Rust `use`, etc.
+- **Phase 5 (Risks):** Use the bound graph and `analyze_file.py --snapshot "$source_manifest" --find-usages --symbol <name>` for requested symbol usages without a new project extraction. Multi-language: matches Python `from/import`, Java `import`, JS/TS `import`/`require`, Rust `use`, etc.
 - **Phase 6 (Docs):** Use `doc_review.py` for link validation and marker checks, and `rewrite_comments.py` for multi-language comment quality analysis (Python `#`/docstrings, Java/JS/TS `//` / `/* */` / Javadoc / JSDoc, SQL/PL-SQL `--` / `/* */`, Rust `//` / rustdoc).
 
 Inventoried file-level formats use whole-file fallback; uninventoried extensions
@@ -205,7 +195,8 @@ Do NOT use raw bash commands (cat, grep, find) to extract structure when a dedic
 
 Other plugins load `codebase-map:map-method` by name; helpers belong to its installed
 package. Preserve the identified analysis run's evidence lineage and the exact
-current owned `snapshot/manifest.json` path downstream. A latest mirror identifies
+current owned snapshot path downstream, resolved with `snapshot.py resolve`.
+SQLite is the default; explicit JSON and legacy parents retain their actual path. A latest mirror identifies
 no snapshot. After every verified diff, obtain the current source manifest with
 `snapshot.py write --reuse` before graph queries or block reads, including `none`
 and LF/CRLF-only differences. Normalized parent claims do not establish current
@@ -230,17 +221,17 @@ this same current `source_manifest` prerequisite.
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" outline \
-  <run-dir>/snapshot/manifest.json --path src/service.py --pattern 'Service|validate' --limit 40
+  "$source_manifest" --path src/service.py --pattern 'Service|validate' --limit 40
 
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
-  <run-dir>/snapshot/manifest.json --path src/service.py \
+  "$source_manifest" --path src/service.py \
   --symbol Service.validate --symbol load_config --lines 1:20
 
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
-  <run-dir>/snapshot/manifest.json --path src/service.py --full
+  "$source_manifest" --path src/service.py --full
 
 python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/source_reader.py" read \
-  <run-dir>/snapshot/manifest.json --requests <run-dir>/source-requests.json
+  "$source_manifest" --requests <run-dir>/source-requests.json
 ```
 
 `--symbol` and `--lines` are repeatable. Use qualified names exactly as returned
@@ -260,9 +251,12 @@ hash-checked in full. It promises no measured model-time saving.
 
 ### Source reading in every code phase
 
-Derive `source_manifest = $RUN_DIR/snapshot/manifest.json`; this prompt alias adds
-no `state.json` field or index. Graph discovery precedes mapping; bounded
-exact-path/pattern outlines locate definitions. Narrow truncated output. Read
+Resolve `source_manifest` with `snapshot.py resolve $RUN_DIR` from the declared
+binding. Never infer an extension, load the database as text or dump the manifest
+into model context. Graph discovery precedes mapping; bounded
+exact-path/pattern outlines locate definitions. Keep `totals`, `truncated`, coverage and identity. Narrow or split truncated
+requests before raising the limit. Binary bytes/base64 never go to the model;
+targeted textual packets reduce context, while SQLite reduces local materialization. Read
 selected symbols/ranges and expand the evidence as above. Preserve whole-target
 cascade scans and mandatory entry-gating paths.
 
@@ -360,7 +354,7 @@ REQUIRED:
 
 ## Verification Requirements
 
-Use the current run's bound `snapshot/manifest.json` and the source-reading
+Use the current run's resolved `source_manifest` and the source-reading
 procedure in the Source Reading from the Bound Snapshot section above. Structure already recorded comes from
 manifest metadata/outline; semantic verification comes from validated source
 blocks expanded to the definitions and implicit context required by the claim.

@@ -19,6 +19,7 @@ import hashlib
 import json
 import stat
 import sys
+from contextlib import ExitStack
 from collections import Counter, deque
 from pathlib import Path
 
@@ -27,6 +28,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import snapshot  # noqa: E402
+from snapshot_store import SnapshotStore, file_headers, open_snapshot  # noqa: E402
 from tree_scope import Perimeter  # noqa: E402
 
 __all__ = ["outline_manifest", "read_packet", "graph_packet"]
@@ -35,6 +37,8 @@ SCHEMA = "xray/source-reading/v1"
 
 
 def _files(manifest: dict) -> dict:
+    if isinstance(manifest, SnapshotStore):
+        return file_headers(manifest)
     if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), dict):
         raise ValueError("manifest must contain a files inventory")
     if manifest.get("schema") != snapshot.SCHEMA:
@@ -355,6 +359,9 @@ def graph_packet(manifest: dict, paths: list[str] | None = None,
     Imports and centrality remain separate discovery metadata. Sources are
     verified once through the existing index; this never parses or writes them.
     """
+    if isinstance(manifest, SnapshotStore):
+        from semantic_store import query_graph
+        return query_graph(manifest, paths, hops, limit)
     from dependency_graph import dependency_graph_metrics, transitive_importers
     from semantic_index import build_semantic_index
 
@@ -580,26 +587,27 @@ def main(argv: list[str] | None = None) -> int:
     read.add_argument("--full", action="store_true")
     args = parser.parse_args(argv)
     try:
-        manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-        if args.command == "outline":
-            packet = outline_manifest(manifest, args.path, args.pattern, args.limit)
-        elif args.command == "graph":
-            packet = graph_packet(manifest, args.path, args.hops, args.limit)
-        else:
-            if args.requests:
-                if args.symbol or args.lines or args.full:
-                    raise ValueError("batch requests cannot be combined with selection options")
-                requests = json.loads(args.requests.read_text(encoding="utf-8"))
-                if isinstance(requests, dict):
-                    requests = requests.get("requests")
+        with ExitStack() as stack:
+            manifest = stack.enter_context(open_snapshot(args.manifest))
+            if args.command == "outline":
+                packet = outline_manifest(manifest, args.path, args.pattern, args.limit)
+            elif args.command == "graph":
+                packet = graph_packet(manifest, args.path, args.hops, args.limit)
             else:
-                requests = [{"path": args.path, "symbols": args.symbol,
-                             "ranges": args.lines, "full_file": args.full}]
-            packet = read_packet(manifest, requests)
+                if args.requests:
+                    if args.symbol or args.lines or args.full:
+                        raise ValueError("batch requests cannot be combined with selection options")
+                    requests = json.loads(args.requests.read_text(encoding="utf-8"))
+                    if isinstance(requests, dict):
+                        requests = requests.get("requests")
+                else:
+                    requests = [{"path": args.path, "symbols": args.symbol,
+                                 "ranges": args.lines, "full_file": args.full}]
+                packet = read_packet(manifest, requests)
     except (ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 2
-    print(json.dumps(packet, indent=2, ensure_ascii=False))
+    print(json.dumps(packet, ensure_ascii=False, separators=(",", ":")))
     return 0
 
 

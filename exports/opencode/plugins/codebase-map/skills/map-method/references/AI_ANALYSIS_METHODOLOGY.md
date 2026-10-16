@@ -495,12 +495,12 @@ The mechanical scripts support AI analysis:
 | `source_reader.py read` | Validated source blocks and shared file/class context | Contracts, invariants and behavior supported by those blocks |
 | `classifier.py` | Complexity metrics | Semantic complexity assessment |
 | `ast_parser.py` | Extra structural details absent from the manifest or single-file diagnosis | Interpretation checked against source |
-| `usage_finder.py` | Where symbols are used | Why they're used there |
+| `analyze_file.py --snapshot "$source_manifest" --find-usages` | Where symbols are used | Why they're used there |
 | `doc_review.py` | Documentation health | Documentation accuracy |
 
 **Workflow:**
 1. Follow Method loads and bind the exact current run's
-   `snapshot/manifest.json`. After every verified diff, the coordinator always
+   snapshot path from `snapshot.py resolve`. After every verified diff, the coordinator always
    writes or obtains this current owned manifest with `snapshot.py write --reuse`
    before block reading, even for `none` or LF/CRLF-only differences. Diff's
    normalized claims and the reader's exact source bytes have separate identity

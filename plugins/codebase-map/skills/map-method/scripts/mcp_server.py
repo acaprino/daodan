@@ -63,11 +63,12 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         depth: Literal["full", "lite"] = "full", critical: bool = False,
         comments: bool = False, docs_only: bool = False,
         phase: int | None = None, stop_after: int | None = None,
+        format: Literal["sqlite", "json"] = "sqlite",
     ) -> dict:
         """Prepare a classic run and snapshot. The host must dispatch its analysis workers."""
         return await _invoke(ctx, service.create_run, target, run_id, depth=depth,
                              critical=critical, comments=comments, docs_only=docs_only,
-                             phase=phase, stop_after=stop_after)
+                             phase=phase, stop_after=stop_after, format=format)
 
     @server.tool(annotations=read_only)
     async def codebase_map_runs(ctx: Context) -> dict:

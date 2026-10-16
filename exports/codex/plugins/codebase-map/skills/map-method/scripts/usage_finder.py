@@ -142,6 +142,9 @@ class UsageResult:
     precision: str = "lexical"
     coverage: dict = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
+    total_count: int = 0
+    truncated: bool = False
+    limit: int | None = None
 
 
 def _classify_usage(line: str, symbol: str) -> str:
@@ -510,7 +513,7 @@ def find_all_usages_batch(
     source_file: Path,
     project_root: Path | None = None,
     *, manifest: dict | None = None, source_observations: dict | None = None,
-    semantic_index: dict | None = None,
+    semantic_index: dict | None = None, limit: int | None = None,
 ) -> dict[str, UsageResult]:
     """
     Inspect every AST reference, including renamed calls absent from text search.
@@ -518,6 +521,8 @@ def find_all_usages_batch(
     reads. Static bindings, unresolved AST candidates and lexical matches have
     separate counts. None of these claims runtime execution.
     """
+    if limit is not None and (type(limit) is not int or limit < 1):
+        raise ValueError("limit must be a positive integer or None")
     valid_symbols: list[str] = []
     seen_sym: set[str] = set()
     for sym in symbols:
@@ -533,11 +538,18 @@ def find_all_usages_batch(
         return {}
 
     project_root, _ = _resolve_project_root_and_paths(source_file, project_root)
+    from contextlib import ExitStack
+    from snapshot_store import SnapshotStore
+    from store_consumers import temporary_snapshot, consumer_reader, find_usages
+    if manifest is None or isinstance(manifest, SnapshotStore):
+        with ExitStack() as stack:
+            fresh = manifest is None
+            if fresh:
+                manifest = stack.enter_context(temporary_snapshot(project_root))
+            db = stack.enter_context(consumer_reader(manifest, fresh=fresh, observations=source_observations))
+            return find_usages(manifest, db, valid_symbols, source_file, project_root,
+                               limit=limit, observations=source_observations)
     graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
-    if manifest is None:
-        from snapshot import build_manifest
-        source_observations = {} if source_observations is None else source_observations
-        manifest = build_manifest(project_root, source_observations=source_observations)
     from semantic_index import _index_reusable, build_semantic_index
 
     # A prebuilt index is reusable within the same observed-source operation.
@@ -636,7 +648,7 @@ def find_all_usages_batch(
     lexical_files = len(searched) - ast_files
     precision = "ast-and-lexical" if ast_files and lexical_files else "ast" if ast_files else "lexical"
 
-    return {
+    results = {
         sym: UsageResult(
             symbol=sym,
             source_file=str(source_file),
@@ -651,6 +663,13 @@ def find_all_usages_batch(
         )
         for sym in valid_symbols
     }
+    for result in results.values():
+        result.total_count = len(result.usages)
+        result.limit = limit
+        result.truncated = limit is not None and result.total_count > limit
+        if limit is not None:
+            result.usages = result.usages[:limit]
+    return results
 
 
 if __name__ == "__main__":
@@ -664,12 +683,14 @@ if __name__ == "__main__":
     symbol = sys.argv[1]
     source_file = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(".")
     project_root = Path(".")
-    result = find_all_usages(symbol, source_file, project_root)
+    result = find_all_usages_batch([symbol], source_file, project_root, limit=20)[validate_symbol(symbol)]
 
     output = {
         "symbol": result.symbol,
         "source_file": result.source_file,
-        "usage_count": len(result.usages),
+        "usage_count": result.total_count,
+        "limit": result.limit,
+        "truncated": result.truncated,
         "usage_count_meaning": "Total includes candidates; see the separate precision counts.",
         "precision": result.precision,
         "resolved_count": result.resolved_count,
@@ -689,9 +710,12 @@ if __name__ == "__main__":
             }
             for u in result.usages[:20]
         ],
-        "importing_modules": result.importing_modules,
+        "importing_modules": result.importing_modules[:20],
+        "importing_modules_total": len(result.importing_modules),
+        "truncated_sections": (["usages"] if result.truncated else [])
+                              + (["importing_modules"] if len(result.importing_modules) > 20 else []),
         "coverage": {status: sum(item["status"] == status for item in result.coverage.values())
                      for status in sorted({item["status"] for item in result.coverage.values()})},
         "notes": result.notes,
     }
-    print(json.dumps(output, indent=2))
+    print(json.dumps(output, separators=(",", ":")))
