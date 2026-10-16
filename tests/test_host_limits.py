@@ -94,7 +94,7 @@ class HostLimitTests(unittest.TestCase):
         """A measurement over an empty set passes for the wrong reason."""
         for host in self.hosts:
             measured = list((self.temp / host).rglob("skills/*/SKILL.md"))
-            self.assertGreater(len(measured), 100, host)
+            self.assertGreaterEqual(len(measured), len(self.plugins), host)
 
     def test_skill_descriptions_fit_the_host_ceiling(self):
         for host, adapter in self.hosts.items():

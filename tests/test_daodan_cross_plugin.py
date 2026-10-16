@@ -286,7 +286,29 @@ class CrossPluginContractsTests(unittest.TestCase):
         workflow = dataclasses.replace(self.consumer.workflows[0], dispatch=DispatchSpec(inline_workers=True))
         consumer = dataclasses.replace(self.consumer, workflows=(workflow,))
         self.assertIn("undeclared-dependency", self.codes(consumer))
-        protocol = load_plugin(REPO_ROOT / "plugins/project-protocol")
+        protocol_root = REPO_ROOT / "plugins/project-protocol"
+        if not protocol_root.is_dir():
+            protocol_root = self.temp / "project-protocol"
+            (protocol_root / "roles").mkdir(parents=True)
+            (protocol_root / "skills/project-protocol").mkdir(parents=True)
+            (protocol_root / "plugin.toml").write_text(
+                'schema = "daodan/v1"\nname = "project-protocol"\nversion = "1.0.0"\n'
+                'description = "Protocol fixture"\nlicense = "MIT"\n'
+                '[capabilities]\nrequired = ["repository.read"]\noptional = []\n'
+                '[dependencies]\nrequired = []\n'
+                '[components]\nskills = ["project-protocol"]\nroles = ["isolated-worker"]\n'
+                'workflows = []\npolicies = []\n',
+                encoding="utf-8",
+            )
+            (protocol_root / "roles/isolated-worker.md").write_text(
+                "---\nname: isolated-worker\ndescription: Isolated worker fixture\n---\nExecute task.\n",
+                encoding="utf-8",
+            )
+            (protocol_root / "skills/project-protocol/SKILL.md").write_text(
+                "---\nname: project-protocol\ndescription: Protocol fixture\n---\nProtocol.\n",
+                encoding="utf-8",
+            )
+        protocol = load_plugin(protocol_root)
         consumer = dataclasses.replace(consumer, required_dependencies=("provider", "project-protocol"))
         registry = {**self.registry, "consumer": consumer, "project-protocol": protocol}
         self.assertEqual(validate_plugins(list(registry.values()), CAPABILITY_REGISTRY), [])

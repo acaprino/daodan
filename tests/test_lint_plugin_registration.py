@@ -33,14 +33,21 @@ class OpenCodeRegistrationTests(unittest.TestCase):
 
     def test_dangling_manifest_entry_fails(self):
         document = json.loads(self.manifest.read_text(encoding="utf-8"))
-        document["daodan"]["plugins"]["senior-review"]["agents"][0]["file"] = "agents/gone.md"
+        target = next(
+            name for name, entry in document["daodan"]["plugins"].items() if entry.get("agents")
+        )
+        document["daodan"]["plugins"][target]["agents"][0]["file"] = "agents/gone.md"
         self.manifest.write_text(json.dumps(document), encoding="utf-8")
         result = self.lint()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("agents/gone.md", result.stdout)
 
     def test_unregistered_component_fails(self):
-        extra = self.root / "exports/opencode/plugins/senior-review/commands/stray.md"
+        document = json.loads(self.manifest.read_text(encoding="utf-8"))
+        target = next(
+            name for name, entry in document["daodan"]["plugins"].items() if entry.get("commands")
+        )
+        extra = self.root / f"exports/opencode/plugins/{target}/commands/stray.md"
         extra.write_text("---\ndescription: x\n---\nx\n", encoding="utf-8")
         result = self.lint()
         self.assertNotEqual(result.returncode, 0)

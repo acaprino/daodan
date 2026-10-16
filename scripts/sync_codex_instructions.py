@@ -23,7 +23,7 @@ REPLACEMENTS = (
     ("claude plugin", "codex plugin"),
     ("hosts that are not Claude Code", "hosts that are not Codex"),
 )
-CLAUDE_DISTRIBUTION_COMMAND = "claude plugin marketplace add acaprino/daodan"
+CLAUDE_DISTRIBUTION_COMMAND = "claude plugin marketplace add "
 CLAUDE_DISTRIBUTION_SENTINEL = "__DAODAN_CLAUDE_DISTRIBUTION_COMMAND__"
 
 
@@ -41,21 +41,21 @@ def adapt_claude_instructions_for_codex(text: str) -> str:
     )
 
 
-def instruction_pairs() -> tuple[tuple[Path, Path], ...]:
+def instruction_pairs(root: Path = ROOT) -> tuple[tuple[Path, Path], ...]:
     skills = tuple(
         (
-            ROOT / ".claude" / "skills" / name / "SKILL.md",
-            ROOT / ".agents" / "skills" / name / "SKILL.md",
+            root / ".claude" / "skills" / name / "SKILL.md",
+            root / ".agents" / "skills" / name / "SKILL.md",
         )
         for name in WORKFLOW_SKILLS
     )
-    return ((ROOT / "CLAUDE.md", ROOT / "AGENTS.md"), *skills)
+    return ((root / "CLAUDE.md", root / "AGENTS.md"), *skills)
 
 
-def sync(*, check: bool) -> list[Path]:
+def sync(*, check: bool, root: Path = ROOT) -> list[Path]:
     """Write or report Codex instruction files that differ from their source."""
     drift: list[Path] = []
-    for source, target in instruction_pairs():
+    for source, target in instruction_pairs(root):
         expected = adapt_claude_instructions_for_codex(
             source.read_text(encoding="utf-8")
         )
@@ -72,10 +72,12 @@ def sync(*, check: bool) -> list[Path]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
-    drift = sync(check=args.check)
+    root = Path(args.root).resolve()
+    drift = sync(check=args.check, root=root)
     for path in drift:
-        print(path.relative_to(ROOT).as_posix())
+        print(path.relative_to(root).as_posix())
     return 1 if args.check and drift else 0
 
 

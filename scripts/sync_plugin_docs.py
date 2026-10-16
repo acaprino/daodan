@@ -208,21 +208,24 @@ def replace_reference(document: str, block: str, path: Path) -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Report drift without writing")
+    parser.add_argument("--root", type=Path, default=REPO_ROOT, help="Repository root")
     args = parser.parse_args(argv)
+    root = Path(args.root).resolve()
+    adapters_root = root / "adapters" if (root / "adapters").is_dir() else REPO_ROOT / "adapters"
     try:
-        plugins = {p.parent.name: load_plugin(p.parent) for p in sorted((REPO_ROOT / "plugins").glob("*/plugin.toml"))}
-        adapters = {host: load_adapter(REPO_ROOT / "adapters", host) for host in HOSTS}
-        outputs = {REPO_ROOT / "docs/catalog.md": catalog(plugins, REPO_ROOT)}
+        plugins = {p.parent.name: load_plugin(p.parent) for p in sorted((root / "plugins").glob("*/plugin.toml"))}
+        adapters = {host: load_adapter(adapters_root, host) for host in HOSTS}
+        outputs = {root / "docs/catalog.md": catalog(plugins, root)}
         for plugin in plugins.values():
-            path = REPO_ROOT / "docs/plugins" / f"{plugin.name}.md"
+            path = root / "docs/plugins" / f"{plugin.name}.md"
             if not path.is_file():
                 raise ValueError(f"Missing hand-authored plugin page: {path}")
             current = path.read_text(encoding="utf-8")
-            outputs[path] = replace_reference(current, reference(plugin, plugins, adapters, path, REPO_ROOT), path)
+            outputs[path] = replace_reference(current, reference(plugin, plugins, adapters, path, root), path)
         drift = [path for path, expected in outputs.items() if not path.is_file() or path.read_text(encoding="utf-8") != expected]
         for path in drift:
             if args.check:
-                print(f"drift: {path.relative_to(REPO_ROOT).as_posix()}")
+                print(f"drift: {path.relative_to(root).as_posix()}")
             else:
                 path.write_text(outputs[path], encoding="utf-8", newline="\n")
         if args.check and drift:

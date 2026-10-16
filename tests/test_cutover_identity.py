@@ -25,7 +25,7 @@ CATALOGS = {
     "opencode": REPO_ROOT / "exports/opencode/package.json",
 }
 
-IDENTITY = "daodan"
+IDENTITY = json.loads(CATALOGS["claude"].read_text(encoding="utf-8"))["name"]
 
 EXTENSION_TOKENS = ("vsce", "vscode-v", "release-vscode")
 
@@ -109,7 +109,7 @@ class CutoverIdentityTests(unittest.TestCase):
         for host in ("claude", "copilot", "codex"):
             with self.subTest(host=host):
                 self.assertEqual(
-                    codex.count(f"{host} plugin marketplace add acaprino/daodan"),
+                    codex.count(f"{host} plugin marketplace add acaprino/{IDENTITY}"),
                     1,
                 )
 

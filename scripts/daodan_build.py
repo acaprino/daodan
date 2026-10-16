@@ -29,6 +29,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.adapter import HOSTS, AdapterError, load_adapter, resolve_support  # noqa: E402
 from scripts.daodan.catalogs import (  # noqa: E402
+    CATALOG_DESCRIPTION,
+    CATALOG_NAME,
     assert_cross_host_identity,
     catalog_document,
     merge_into_legacy,
@@ -60,20 +62,31 @@ def discover_plugins(root: Path) -> list[PluginSpec]:
     return [load_plugin(kernel.parent) for kernel in kernels]
 
 
+def marketplace_metadata(root: Path) -> tuple[str, str, str]:
+    """Read marketplace name, description and version from the Claude catalog."""
+    catalog = Path(root) / LEGACY_CLAUDE_CATALOG
+    confined_source(Path(root), catalog, allow_missing=True)
+    if catalog.is_file():
+        document = json.loads(catalog.read_text(encoding="utf-8"))
+        name = document.get("name")
+        meta = document.get("metadata", {})
+        description = meta.get("description")
+        version = meta.get("version")
+        return (
+            name if isinstance(name, str) and name else CATALOG_NAME,
+            description if isinstance(description, str) and description else CATALOG_DESCRIPTION,
+            version if isinstance(version, str) else "0.0.0",
+        )
+    return CATALOG_NAME, CATALOG_DESCRIPTION, "0.0.0"
+
+
 def marketplace_version(root: Path) -> str:
     """The single marketplace version every host catalog carries.
 
     It stays where it has always lived, `metadata.version` in the Claude
     catalog, so the existing bump workflow keeps working through the migration.
     """
-    catalog = Path(root) / LEGACY_CLAUDE_CATALOG
-    confined_source(Path(root), catalog, allow_missing=True)
-    if catalog.is_file():
-        document = json.loads(catalog.read_text(encoding="utf-8"))
-        version = document.get("metadata", {}).get("version")
-        if isinstance(version, str):
-            return version
-    return "0.0.0"
+    return marketplace_metadata(root)[2]
 
 
 def _overrides_for(root: Path, host: str, plugin: PluginSpec):
@@ -146,7 +159,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
     plugin_registry = {plugin.name: plugin for plugin in plugins}
 
     catalogs = {}
-    version = marketplace_version(root)
+    catalog_name, catalog_description, version = marketplace_metadata(root)
     prepared = []
     retired = []
     for host in hosts:
@@ -160,7 +173,9 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
             plugin.name: root / adapter.layout["root"] / "plugins" / plugin.name
             for plugin in plugins
         }
-        catalogs[host] = catalog_document(host, plugins, version, packages)
+        catalogs[host] = catalog_document(
+            host, plugins, version, packages, name=catalog_name, description=catalog_description
+        )
         for plugin in plugins:
             overrides = _overrides_for(root, host, plugin)
             declared = frozenset(plugin.capabilities.required) | frozenset(
@@ -226,7 +241,8 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
             catalog_path = root / adapter.layout["marketplace"]
             removed = {path.name for path in retired if path.parent == root / adapter.layout["root"] / "plugins"}
             rendered = _render_host_catalog(root, adapter, host, plugins, version, catalog_path,
-                                            packages, removed)
+                                            packages, removed,
+                                            name=catalog_name, description=catalog_description)
             files.append((catalog_path, rendered))
             files.extend(_package_files(root, adapter))
         if check:
@@ -337,7 +353,8 @@ def _package_files(root: Path, adapter) -> list[tuple[Path, bytes]]:
 
 
 def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Path,
-                         packages=None, retired=frozenset()) -> bytes:
+                         packages=None, retired=frozenset(), *,
+                         name: str = CATALOG_NAME, description: str = CATALOG_DESCRIPTION) -> bytes:
     """Serialize one host catalog, folding into a legacy one while migration runs.
 
     Until every plugin is a neutral kernel, the live Claude catalog still carries
@@ -361,7 +378,9 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
         if legacy:
             document = merge_into_legacy(existing, plugins, host, packages)
             return (json.dumps(document, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-    return render_catalog(host, plugins, version, packages, layout=adapter.layout)
+    return render_catalog(
+        host, plugins, version, packages, layout=adapter.layout, name=name, description=description
+    )
 
 
 def _package_drifted(plugin, adapter, live: Path, overrides, root: Path, plugin_registry=None) -> bool:

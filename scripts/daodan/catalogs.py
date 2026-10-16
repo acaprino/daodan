@@ -82,6 +82,9 @@ def catalog_document(
     plugins: Sequence[PluginSpec],
     version: str,
     packages: Mapping[str, Path] | None = None,
+    *,
+    name: str = CATALOG_NAME,
+    description: str = CATALOG_DESCRIPTION,
 ) -> Mapping[str, object]:
     if host not in HOSTS:
         raise CatalogError(f"unknown host {host!r}")
@@ -109,8 +112,8 @@ def catalog_document(
         entries.append(entry)
 
     document: dict[str, object] = {
-        "name": CATALOG_NAME,
-        "metadata": {"description": CATALOG_DESCRIPTION, "version": version},
+        "name": name,
+        "metadata": {"description": description, "version": version},
         "owner": OWNER,
         "plugins": entries,
     }
@@ -149,10 +152,10 @@ def _pi_manifest(document):
     """
     tree = _source("pi", "*")
     manifest = {
-        "name": PI_PACKAGE,
+        "name": document.get("name", PI_PACKAGE),
         "version": document["metadata"]["version"],
         "private": True,
-        "description": CATALOG_DESCRIPTION,
+        "description": document["metadata"].get("description", CATALOG_DESCRIPTION),
         "keywords": ["pi-package"],
         "pi": {"prompts": [f"{tree}/prompts"], "skills": [f"{tree}/skills"]},
     }
@@ -258,10 +261,10 @@ def _opencode_manifest(
         layout = load_adapter(Path(__file__).resolve().parents[2] / "adapters", "opencode").layout
     ordered = sorted(plugins, key=lambda plugin: plugin.name)
     manifest = {
-        "name": OPENCODE_PACKAGE,
+        "name": document.get("name", OPENCODE_PACKAGE),
         "version": document["metadata"]["version"],
         "private": True,
-        "description": CATALOG_DESCRIPTION,
+        "description": document["metadata"].get("description", CATALOG_DESCRIPTION),
         "license": "MIT",
         "type": "module",
         "main": "index.js",
@@ -286,13 +289,17 @@ def render_catalog(
     packages: Mapping[str, Path] | None = None,
     *,
     layout: Mapping[str, str] | None = None,
+    name: str = CATALOG_NAME,
+    description: str = CATALOG_DESCRIPTION,
 ) -> bytes:
     """Serialize one host catalog deterministically.
 
     Every host gets the same neutral document, which is what the identity gate
     compares. Only the serialization differs.
     """
-    document = catalog_document(host, plugins, version, packages)
+    document = catalog_document(
+        host, plugins, version, packages, name=name, description=description
+    )
     if host == "pi":
         return _pi_manifest(document)
     if host == "opencode":
