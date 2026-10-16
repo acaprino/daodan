@@ -104,6 +104,7 @@ NEVER read or include contents from:
 - `*.pem`, `*.key`, `*.p12`, `*.pfx` — certificates and private keys
 - `id_rsa*`, `id_ed25519*` — SSH keys
 - `.npmrc`, `.pypirc`, `.netrc` — auth tokens
+- `*service-account*.json`, `*kubeconfig*`, `*.tfstate`, `*.tfstate.*`, `*.keystore`, `*.jks` — cloud credentials, infrastructure state and keystores
 - Any file that appears to contain API keys, passwords, or tokens
 
 If encountered: note file existence only (`".env present — contains environment config"`). NEVER quote contents.

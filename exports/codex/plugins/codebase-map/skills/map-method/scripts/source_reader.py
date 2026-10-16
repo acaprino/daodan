@@ -17,7 +17,6 @@ import argparse
 import copy
 import hashlib
 import json
-import re
 import stat
 import sys
 from collections import Counter, deque
@@ -66,10 +65,22 @@ def outline_manifest(manifest: dict, path: str | None = None,
         raise ValueError(f"path is not inventoried: {path}")
     if type(limit) is not int or limit < 1:
         raise ValueError("limit must be a positive integer")
-    try:
-        matcher = re.compile(pattern) if pattern is not None else None
-    except re.error as exc:
-        raise ValueError(f"invalid pattern: {exc}") from exc
+    if pattern is not None and not isinstance(pattern, str):
+        raise ValueError("pattern must be text")
+    alternatives = [part.casefold() for part in pattern.split("|") if part] if pattern else []
+    if pattern is not None and not alternatives:
+        raise ValueError("pattern must name at least one literal substring")
+
+    # Literal substrings separated by `|`, case-insensitive. A regular
+    # expression from an MCP client could backtrack for minutes on every
+    # inventoried name while holding the project lock.
+    class _Literal:
+        @staticmethod
+        def search(text: str) -> bool:
+            folded = text.casefold()
+            return any(part in folded for part in alternatives)
+
+    matcher = _Literal if pattern is not None else None
     items = []
     matched = 0
     for rel in sorted(files):

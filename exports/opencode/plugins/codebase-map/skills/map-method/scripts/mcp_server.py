@@ -32,6 +32,10 @@ async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
         result = await anyio.to_thread.run_sync(partial(operation, *args, **kwargs))
     except (ValueError, OSError, TypeError, KeyError) as error:
         raise ToolError(str(error)) from error
+    except Exception as error:
+        # Any other failure is still a tool result the client can read, never
+        # a protocol fault that ends the session.
+        raise ToolError(f"internal error in {operation.__name__}: {type(error).__name__}: {error}") from error
     await ctx.report_progress(1, message=f"Finished {operation.__name__}")
     return result
 

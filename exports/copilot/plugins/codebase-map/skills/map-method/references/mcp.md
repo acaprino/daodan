@@ -80,8 +80,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 The declared `codebase-map` server runs over stdio:
 
 ```text
-uv run --script <installed-plugin-root>/skills/map-method/scripts/mcp_server.py --project <project-root>
+uv run --no-config --no-project --script <installed-plugin-root>/skills/map-method/scripts/mcp_server.py --project <project-root>
 ```
+
+`--no-config --no-project` keep `uv` from reading the analyzed project's
+`uv.toml`, `pyproject.toml` or `.python-version`: a repository under analysis
+must never choose the package index or interpreter of its own analyzer. Keep
+both flags in any custom registration.
 
 `uv` provisions the official MCP Python SDK 2.x in its own runtime environment.
 The server requires Python 3.11 or later. Existing parser dependencies stay
@@ -90,6 +95,9 @@ and the reusable `mcp_service.py` module remain standard-library-only.
 
 The project is fixed at startup. Omitting `--project` binds the startup working
 directory; a consumer that controls subprocess launch should pass it explicitly.
+`scope` and `status` (and so `runs`) return the bound `project_root`; verify it
+before creating a run. Helper subprocesses run from the helper directory and
+resolve `git` from absolute `PATH` entries only, never from the project.
 Every target is relative to that project, and every run ID selects the exact
 `.codebase-map/runs/<run-id>/`. Foreign paths, traversal, symlinks and Windows
 junctions are rejected. Clients cannot supply an executable, output root or
@@ -108,18 +116,18 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 |---|---|
 | `codebase_map_scope` | `target="."`: inventory counts, languages and declared exclusions; starts no analysis |
 | `codebase_map_create_run` | `target`, exact `run_id`, optional `depth="full"` or `"lite"`, `critical`, `comments`, `docs_only`, `phase`, `stop_after`: snapshot and prepared classic run |
-| `codebase_map_runs` | canonical runs and active registry in this project |
+| `codebase_map_runs` | canonical runs and active registry in this project; an unreadable run is listed with `readable: false` and its `error` |
 | `codebase_map_status` | `run_id`: current `state` and canonical delivery `check`; missing-source diagnostics keep history observable |
-| `codebase_map_outline` | `run_id`, optional `path`, `pattern`, `limit=100`: bound symbol metadata |
+| `codebase_map_outline` | `run_id`, optional `path`, `pattern` (literal case-insensitive substrings separated by `\|`, never a regular expression), `limit=100`: bound symbol metadata |
 | `codebase_map_graph` | `run_id`, optional `paths`, `hops=2`, `limit=100`: verified static graph and diagnostics |
-| `codebase_map_read` | `run_id`, `requests`: verified source blocks |
+| `codebase_map_read` | `run_id`, `requests`: verified source blocks; a result above 4,000,000 characters is refused, so split the request |
 | `codebase_map_diff` | `run_id`: read-only source and parser comparison; preserves the snapshot |
-| `codebase_map_artifact` | `run_id`, `name`: one declared artifact's content and digest |
+| `codebase_map_artifact` | `run_id`, `name`: one declared artifact's content, `bytes` and digest of the whole file; content stops at 2,000,000 bytes with `truncated: true` |
 | `codebase_map_checkpoint` | `run_id`, `phase`, `event`, optional `message`: persist a host phase hook |
 | `codebase_map_events` | `run_id`, optional `after=0`, `limit=100`: persistent events and replay cursor |
 | `codebase_map_resume` | `run_id`, optional `phase`: prepare continuation of the unchanged exact run |
 | `codebase_map_stop` | `run_id`, `reason`: record partial state and unregister after workers have stopped |
-| `codebase_map_publish` | `run_id`: canonical freshness, delivery and whole-mirror publication |
+| `codebase_map_publish` | `run_id`: canonical freshness, delivery and whole-mirror publication; only an `in_progress` run publishes, so resume a stopped run first |
 
 For example, source requests use the source reader's existing selection shape:
 
@@ -169,6 +177,11 @@ that a requested UI artifact was delivered.
 To interrupt, first stop the host's workers, then call `stop`. This records a
 recoverable partial run; it sends no signal to agents. Resume checks source and
 parser freshness and prepares the next work, while the host restarts workers.
+A published (`complete`) run is never resumed; create a new run. Resume counts
+phases whose artifacts it binds as inherited proof as completed. `checkpoint`
+never moves `current_phase` backwards. Service state writes re-read
+`state.json` and change only the keys they own, so concurrent worker fields
+survive.
 Cancelling an MCP request does not cancel an analysis; an in-flight synchronous
 mutation may finish and remain visible through `status` and `events`.
 
@@ -183,7 +196,9 @@ Run history is persisted in `mcp-events.json` inside the run. `events` returns
 `events`, `next_cursor` and `has_more`. Each event has `cursor`, `timestamp`,
 `run_id` and `event`, with phase/message details when applicable. A native UI
 stores the last cursor, requests `after` that value, and drains pages while
-`has_more` is true. Restarting the server preserves history.
+`has_more` is true. Restarting the server preserves history. A journal holds at
+most 10,000 events; past that, transitions still apply but the event is refused
+with an error, and canonical state stays authoritative.
 
 Events record successful service-controlled transitions and explicit host hooks.
 Direct CLI or worker writes do not automatically emit events. `status` reads the
@@ -199,7 +214,9 @@ delivery checks rather than treating the last notification as proof of success.
 contains no SDK imports. A native backend can call it directly while its agents
 use MCP; both share the same run store and checks. Service mutations serialize
 through the existing project migration lock, and registry/publication retain
-their own canonical lock. Concurrent calls may receive the existing bounded project-lock retry error
+their own canonical lock, an OS lock that a crashed holder releases. Run
+creation builds its snapshot before taking the project lock and removes its own
+run directory if preparation fails. Concurrent calls may receive the existing bounded project-lock retry error
 while another operation owns that project. Other agent tools remain subject to
 their host's permissions and ownership rules.
 

@@ -267,7 +267,7 @@ class MapServiceTests(unittest.TestCase):
         self.service.stop("example", "Workers stopped again")
         resumed = self.service.resume("example", phase=2)
         self.assertEqual(resumed["state"]["current_phase"], 2)
-        self.assertEqual(resumed["state"]["completed_phases"], [1])
+        self.assertEqual(resumed["state"]["completed_phases"], [0, 1])
         self.assertEqual(resumed["state"]["delivery"]["artifacts"]["01-structure.md"]["status"], "inherited")
         self.assertEqual((self.run_dir / "01-structure.md").read_bytes(), before)
         self.assertEqual(resumed["state"]["flags"], initial_flags)
@@ -394,6 +394,108 @@ class MapServiceTests(unittest.TestCase):
         for name in ("../src/module.py", "foreign.txt", "snapshot/manifest.json", "knowledge/", "state.json"):
             with self.subTest(name=name), self.assertRaises(ValueError):
                 self.service.artifact("example", name)
+
+    def test_artifact_content_is_capped_with_whole_file_digest(self):
+        self.create()
+        self.deliver(1)
+        body = "x" * (mcp_service.MAX_ARTIFACT_BYTES + 10)
+        self.write("01-structure.md", body)
+        packet = self.service.artifact("example", "01-structure.md")
+        self.assertTrue(packet["truncated"])
+        self.assertEqual(packet["bytes"], len(body))
+        self.assertEqual(len(packet["content"]), mcp_service.MAX_ARTIFACT_BYTES)
+        self.assertEqual(packet["sha256"], __import__("hashlib").sha256(body.encode()).hexdigest())
+
+    def test_outline_pattern_is_literal_not_a_regular_expression(self):
+        self.create()
+        self.assertTrue(self.service.outline("example", pattern="SELECTED|absent")["items"])
+        self.assertFalse(self.service.outline("example", pattern="sel.cted")["items"])
+        self.assertFalse(self.service.outline("example", pattern="(a+)+$")["items"])
+
+    def test_runs_lists_a_damaged_run_without_hiding_the_others(self):
+        self.create()
+        damaged = self.project / ".codebase-map/runs/damaged"
+        damaged.mkdir()
+        (damaged / "state.json").write_text("{not json", encoding="utf-8")
+        listed = {item["run_id"]: item for item in self.service.runs()["runs"]}
+        self.assertTrue(listed["example"]["readable"])
+        self.assertFalse(listed["damaged"]["readable"])
+        self.assertIn("error", listed["damaged"])
+
+    def test_service_state_writes_keep_concurrent_worker_fields(self):
+        self.create()
+        self.deliver(1)
+        original = mcp_service._json
+
+        def worker_writes_first(path):
+            value = original(path)
+            if path.name == "state.json" and not getattr(worker_writes_first, "done", False):
+                worker_writes_first.done = True
+                fresh = original(path)
+                fresh["files_created"] = ["worker-note.md"]
+                mcp_service._write(path, fresh)
+            return value
+
+        with mock.patch.object(mcp_service, "_json", worker_writes_first):
+            self.service.checkpoint("example", 1, "phase_completed")
+        state = json.loads((self.run_dir / "state.json").read_text())
+        self.assertEqual(state["files_created"], ["worker-note.md"])
+        self.assertIn(1, state["completed_phases"])
+
+    def test_checkpoint_never_moves_progress_backwards(self):
+        self.create()
+        self.service.checkpoint("example", 3, "phase_started")
+        result = self.service.checkpoint("example", 1, "phase_started")
+        self.assertEqual(result["state"]["current_phase"], 3)
+
+    def test_published_run_is_not_resumed_and_partial_run_is_not_published(self):
+        self.create()
+        self.deliver(1, 2, 3, 4, 5, 6, 7)
+        self.service.stop("example", "Workers stopped")
+        with self.assertRaisesRegex(ValueError, "in-progress"):
+            self.service.publish("example")
+        self.service.resume("example", phase=7)
+        self.assertTrue(self.service.publish("example")["published"])
+        with self.assertRaisesRegex(ValueError, "published run"):
+            self.service.resume("example")
+
+    def test_failed_preparation_leaves_no_run_directory(self):
+        with mock.patch.object(mcp_service.snapshot, "update_registration", side_effect=OSError("disk full")):
+            with self.assertRaises(OSError):
+                self.create()
+        self.assertFalse(self.run_dir.exists())
+        self.assertEqual(self.create()["state"]["run_id"], "example")
+
+    def test_event_journal_is_bounded(self):
+        self.create()
+        with mock.patch.object(mcp_service, "MAX_EVENTS", 1):
+            with self.assertRaisesRegex(ValueError, "event journal"):
+                self.service.checkpoint("example", 1, "phase_started")
+
+    def test_scope_and_status_report_the_bound_project(self):
+        self.assertEqual(self.service.scope("src")["project_root"], self.project.as_posix())
+        self.create()
+        self.assertEqual(self.service.status("example")["project_root"], self.project.as_posix())
+
+    def test_helpers_never_run_a_git_from_the_project_or_a_relative_path(self):
+        import tree_scope
+        fake = self.project / ("git.exe" if os.name == "nt" else "git")
+        fake.write_text("planted", encoding="utf-8")
+        with mock.patch.dict(os.environ, {"PATH": os.pathsep.join([".", str(self.project.name)])}):
+            self.assertIsNone(tree_scope.git_executable())
+        self.assertEqual(mcp_service.SCRIPT_DIR, SCRIPTS.resolve())
+
+    def test_registry_lock_left_by_a_crashed_holder_does_not_block(self):
+        self.create()
+        (self.project / ".codebase-map/.registry.lock").write_text("stale", encoding="utf-8")
+        self.service.stop("example", "Workers stopped")
+        self.assertEqual(self.service.runs()["registry"]["active"], [])
+
+    def test_new_credential_files_are_forbidden(self):
+        for name in ("prod-service-account.json", "kubeconfig", "main.tfstate", "main.tfstate.backup",
+                     "release.keystore", "app.jks"):
+            with self.subTest(name=name):
+                self.assertTrue(snapshot.is_forbidden(name))
 
     def test_foreign_manifest_and_state_bindings_are_refused_even_for_outline(self):
         self.create()

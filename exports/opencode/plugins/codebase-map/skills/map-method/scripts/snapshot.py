@@ -54,7 +54,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from languages import SUPPORTED_EXTENSIONS, detect_language, get_adapter  # noqa: E402
-from tree_scope import Perimeter  # noqa: E402
+from tree_scope import Perimeter, git_executable  # noqa: E402
 
 __all__ = [
     "DOC_EXTENSIONS",
@@ -120,6 +120,7 @@ FORBIDDEN_GLOBS = (
     ".env", ".env.*", "credentials.*", "secrets.*", "*secret*", "*credential*",
     "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*",
     ".npmrc", ".pypirc", ".netrc",
+    "*service-account*.json", "*kubeconfig*", "*.tfstate", "*.tfstate.*", "*.keystore", "*.jks",
 )
 
 
@@ -173,9 +174,12 @@ def repo_root(target: Path) -> Path:
     target is inside a repository, otherwise the target itself.
     """
     base = target.parent if target.is_file() else target
+    git = git_executable()
+    if git is None:
+        return base
     try:
         proc = subprocess.run(
-            ["git", "-C", str(base), "rev-parse", "--show-toplevel"],
+            [git, "-C", str(base), "rev-parse", "--show-toplevel"],
             capture_output=True, text=True, timeout=10,
         )
     except (OSError, subprocess.SubprocessError):
@@ -210,7 +214,10 @@ def parser_fingerprint() -> str:
             versions[package] = metadata.version(package)
         except metadata.PackageNotFoundError:
             versions[package] = None
-    digest.update(json.dumps({"python": list(sys.version_info[:3]), "packages": versions},
+    # Only the stdlib `ast` grammar varies with Python, and only by minor
+    # version. A patch release or a separate runtime environment of the same
+    # minor (the MCP server's) parses identically.
+    digest.update(json.dumps({"python": list(sys.version_info[:2]), "packages": versions},
                              sort_keys=True).encode("utf-8"))
     return digest.hexdigest()
 
@@ -238,10 +245,14 @@ def parser_profile(path: Path, language: str | None = None) -> dict:
 
 def git_info(root: Path) -> dict | None:
     """Commit, branch and dirtiness, as metadata. Nothing in the diff depends on it."""
+    git = git_executable()
+    if git is None:
+        return None
+
     def run(*args: str) -> str | None:
         try:
             proc = subprocess.run(
-                ["git", "-C", str(root), *args], capture_output=True, text=True, timeout=10
+                [git, "-C", str(root), *args], capture_output=True, text=True, timeout=10
             )
         except (OSError, subprocess.SubprocessError):
             return None
@@ -549,7 +560,8 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
     }
 
 
-def compare_files(manifest: dict, target: Path, verify: bool = False) -> dict:
+def compare_files(manifest: dict, target: Path, verify: bool = False,
+                  raw_hashes: dict | None = None) -> dict:
     """
     Classify every path as added, removed, modified or unchanged.
 
@@ -596,7 +608,11 @@ def compare_files(manifest: dict, target: Path, verify: bool = False) -> dict:
             unchanged.append(rel)
             continue
         try:
-            same = hash_text(read_text(path)) == entry.get("hash")
+            data = path.read_bytes()
+            text = data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
+            same = hash_text(text) == entry.get("hash")
+            if raw_hashes is not None:
+                raw_hashes[rel] = hashlib.sha256(data).hexdigest()
         except OSError:
             same = False
         (unchanged if same else modified).append(rel)
@@ -2180,20 +2196,56 @@ def cmd_check(args: argparse.Namespace) -> int:
         return 2
 
 
-def _acquire_registry_lock(root: Path) -> Path:
-    lock = root / ".registry.lock"
-    deadline = time.monotonic() + 10
-    while True:
-        _reject_links(lock)
+class _RegistryLock:
+    """
+    An OS byte-range lock on a persistent lock file. The OS releases it when
+    its holder exits, so a crashed coordinator leaves no stale lock behind.
+    """
+
+    def __init__(self, path: Path, descriptor: int) -> None:
+        self.path = path
+        self.descriptor = descriptor
+
+    def unlink(self) -> None:
+        # Kept under its historical name: release, never delete, so a second
+        # holder cannot lock a different inode of the same path.
         try:
-            descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        except FileExistsError as exc:
-            if time.monotonic() >= deadline:
-                raise RunControlError("another coordinator holds the registry lock; retry after it finishes") from exc
-            time.sleep(0.05)
+            if os.name == "nt":
+                import msvcrt
+                os.lseek(self.descriptor, 0, os.SEEK_SET)
+                msvcrt.locking(self.descriptor, msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(self.descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(self.descriptor)
+
+
+def _try_lock(descriptor: int) -> bool:
+    try:
+        if os.name == "nt":
+            import msvcrt
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
         else:
+            import fcntl
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def _acquire_registry_lock(root: Path) -> _RegistryLock:
+    lock = root / ".registry.lock"
+    _reject_links(lock)
+    descriptor = os.open(lock, os.O_CREAT | os.O_RDWR, 0o600)
+    deadline = time.monotonic() + 10
+    while not _try_lock(descriptor):
+        if time.monotonic() >= deadline:
             os.close(descriptor)
-            return lock
+            raise RunControlError("another coordinator holds the registry lock; retry after it finishes")
+        time.sleep(0.05)
+    return _RegistryLock(lock, descriptor)
 
 
 def _read_registry(root: Path) -> dict:
@@ -2242,6 +2294,8 @@ def publish_run(run_dir: Path) -> dict:
     run_dir, root, state = _run_context(run_dir)
     lock = _acquire_registry_lock(root)
     try:
+        if state.get("status") != "in_progress":
+            raise RunControlError(f"only an in-progress run can publish; status is {state.get('status')!r}; resume it first")
         checked = check_delivery(run_dir)
         if not checked["may_publish"]:
             return {"published": False, "check": checked}

@@ -30,7 +30,25 @@ import subprocess
 from pathlib import Path
 from typing import Iterator
 
-__all__ = ["DEPENDENCY_DIRS", "Perimeter"]
+__all__ = ["DEPENDENCY_DIRS", "Perimeter", "git_executable"]
+
+
+def git_executable() -> str | None:
+    """
+    Absolute git from absolute PATH entries only. Windows process creation
+    searches the working directory before PATH, and a server's working
+    directory is the analyzed project, so a bare `git` could run its git.exe.
+    """
+    names = ["git.exe", "git.cmd", "git.bat"] if os.name == "nt" else ["git"]
+    for entry in os.environ.get("PATH", "").split(os.pathsep):
+        entry = entry.strip('"')
+        if not entry or not os.path.isabs(entry):
+            continue
+        for name in names:
+            candidate = os.path.join(entry, name)
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                return candidate
+    return None
 
 # Dependency and build output. Git usually ignores these too. They are named
 # here because a project with no repository has no ignore rule to consult.
@@ -81,9 +99,12 @@ class Perimeter:
         answer, whatever pattern it matches, because Git does not ignore what
         it tracks.
         """
+        git = git_executable()
+        if git is None:
+            return frozenset(), frozenset(), "unavailable"
         try:
             proc = subprocess.run(
-                ["git", "-C", str(self.base), "ls-files", "-z", "--others", "--ignored",
+                [git, "-C", str(self.base), "ls-files", "-z", "--others", "--ignored",
                  "--exclude-standard", "--directory"],
                 capture_output=True, timeout=GIT_TIMEOUT_SECONDS,
             )

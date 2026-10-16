@@ -13,6 +13,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 
@@ -25,6 +26,11 @@ __all__ = ["MapService"]
 EVENT_FILE = "mcp-events.json"
 MAX_LIMIT = 1000
 MAX_MESSAGE = 10000
+MAX_EVENTS = 10000
+MAX_ARTIFACT_BYTES = 2_000_000
+MAX_READ_CHARS = 4_000_000
+COMMAND_TIMEOUT_SECONDS = 600
+SCRIPT_DIR = Path(__file__).resolve().parent
 RUN_ID = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 RESERVED = {"con", "prn", "aux", "nul", *(f"com{i}" for i in range(1, 10)),
             *(f"lpt{i}" for i in range(1, 10))}
@@ -106,7 +112,7 @@ class MapService:
             raise ValueError("target must be an existing project-relative file or directory")
         if not resolved.is_relative_to(self.project_root):
             raise ValueError("target is outside the bound project")
-        if target.is_file() and snapshot.is_forbidden(target.name):
+        if target.is_file() and (snapshot.is_forbidden(target.name) or snapshot.is_forbidden(resolved.name)):
             raise ValueError("forbidden source target")
         return resolved
 
@@ -211,11 +217,24 @@ class MapService:
 
     def _status(self, run_id):
         run, state, _, target = self._bound_run(run_id)
+        project = self.project_root.as_posix()
         if not target.exists():
-            return {"run_id": run_id, "state": state, "check": None, "source_available": False,
+            return {"run_id": run_id, "project_root": project, "state": state, "check": None,
+                    "source_available": False,
                     "check_unavailable": "source target is missing; canonical delivery/freshness check is unavailable"}
         checked = snapshot.check_delivery(run) if state.get("delivery") is not None else None
-        return {"run_id": run_id, "state": state, "check": checked, "source_available": True}
+        return {"run_id": run_id, "project_root": project, "state": state, "check": checked,
+                "source_available": True}
+
+    def _update_state(self, run, updates, *, remove=()):
+        # Workers write state.json outside the service lock. Re-read just
+        # before writing and change only the keys this operation owns.
+        state = _json(run / "state.json")
+        state.update(updates)
+        for key in remove:
+            state.pop(key, None)
+        _write(run / "state.json", state)
+        return state
 
     def _journal(self, run):
         path = run / EVENT_FILE
@@ -234,6 +253,8 @@ class MapService:
 
     def _event(self, run, event, *, phase=None, message=""):
         events = self._journal(run)
+        if len(events) >= MAX_EVENTS:
+            raise ValueError(f"event journal reached {MAX_EVENTS} events; canonical state remains authoritative")
         item = {"cursor": len(events) + 1, "run_id": run.name, "timestamp": _now(),
                 "event": event, "message": message}
         if phase is not None:
@@ -245,10 +266,12 @@ class MapService:
     def _command(self, command, *args):
         # Existing CLI commands own mode selection and resume provenance. A
         # child process captures their output without redirecting global stdout.
+        # Its working directory is the helper directory, never the analyzed
+        # project, whose own executables Windows would otherwise search first.
         try:
             result = subprocess.run(
                 [sys.executable, "-B", str(Path(snapshot.__file__)), command, *map(str, args)],
-                cwd=self.project_root, capture_output=True, text=True, timeout=120,
+                cwd=SCRIPT_DIR, capture_output=True, text=True, timeout=COMMAND_TIMEOUT_SECONDS,
             )
         except subprocess.SubprocessError as exc:
             raise ValueError(f"canonical {command} command did not finish: {exc}") from exc
@@ -264,7 +287,7 @@ class MapService:
         with self._operation():
             bound = self._target(target)
             self._source_paths(bound)
-            return self._command("scope", bound)
+            return dict(self._command("scope", bound), project_root=self.project_root.as_posix())
 
     def create_run(self, target, run_id, depth="full", critical=False, comments=False,
                    docs_only=False, phase=None, stop_after=None):
@@ -275,29 +298,38 @@ class MapService:
         if stop_after is not None and (type(stop_after) is not int or stop_after not in range(1, 7)
                                        or phase is not None or docs_only):
             raise ValueError("stop_after accepts 1 through 6 without phase or docs_only")
-        # Validate before migration or creating any output directory.
-        self._target(target)
+        # Validate before migration or creating any output directory. The
+        # snapshot is built before taking the project lock: it only reads, and
+        # prepare re-verifies its freshness under the lock.
+        bound = self._target(target)
+        self._source_paths(bound)
+        manifest = snapshot.build_manifest(bound)
         with self._operation(write=True):
-            bound = self._target(target)
+            if self._target(target) != bound:
+                raise ValueError("target binding changed while building the snapshot")
             run = self._run_path(run_id)
             if run.exists():
                 raise ValueError("run already exists; resume the exact run or choose another run_id")
-            self._source_paths(bound)
-            manifest = snapshot.build_manifest(bound)
             state = {"run_id": run_id, "target": bound.relative_to(self.project_root).as_posix(),
                      "mode": "classic", "status": "in_progress", "flags": flags,
                      "started_at": _now(), "updated_at": _now(), "parent_run": None,
                      "incremental": None, "current_phase": 0, "completed_phases": [],
                      "files_created": [], "git": manifest.get("git")}
             run.mkdir(parents=True)
-            (run / "snapshot").mkdir()
-            _write(run / "snapshot/manifest.json", manifest)
-            _write(run / "state.json", state)
-            arguments = [run]
-            if stop_after is not None:
-                arguments.extend(["--stop-after", stop_after])
-            self._command("prepare", *arguments)
-            snapshot.update_registration(run, active=True)
+            try:
+                (run / "snapshot").mkdir()
+                _write(run / "snapshot/manifest.json", manifest)
+                _write(run / "state.json", state)
+                arguments = [run]
+                if stop_after is not None:
+                    arguments.extend(["--stop-after", stop_after])
+                self._command("prepare", *arguments)
+                snapshot.update_registration(run, active=True)
+            except BaseException:
+                # Nothing else knows this run yet; leave no half-prepared
+                # directory that blocks the same run_id.
+                shutil.rmtree(run, ignore_errors=True)
+                raise
             self._event(run, "run_created")
             return self._status(run_id)
 
@@ -314,9 +346,13 @@ class MapService:
                 if not directory.is_dir():
                     raise ValueError("analysis runs root must be a directory")
                 for path in sorted(directory.iterdir()):
-                    migrate_root._reject_link_chain(path)
-                    if path.is_dir():
-                        values.append(self._status(path.name))
+                    try:
+                        migrate_root._reject_link_chain(path)
+                        if path.is_dir():
+                            values.append(dict(self._status(path.name), readable=True))
+                    except (ValueError, OSError, TypeError, KeyError) as exc:
+                        # One damaged or foreign run must not hide the others.
+                        values.append({"run_id": path.name, "readable": False, "error": str(exc)})
             registry = self.root / "runs.json"
             migrate_root._reject_link_chain(registry)
             return {"runs": values, "registry": snapshot._read_registry(self.root) if registry.exists() else None}
@@ -347,15 +383,19 @@ class MapService:
             raise ValueError(f"requests must be a list containing 1 through {MAX_LIMIT} selections")
         with self._operation():
             _, _, manifest, _ = self._bound_run(run_id)
-            return dict(source_reader.read_packet(manifest, requests), run_id=run_id)
+            packet = dict(source_reader.read_packet(manifest, requests), run_id=run_id)
+        if len(json.dumps(packet)) > MAX_READ_CHARS:
+            raise ValueError(f"read result exceeds {MAX_READ_CHARS} characters; request fewer files, symbols or ranges")
+        return packet
 
     def diff(self, run_id):
         with self._operation():
             _, _, manifest, target = self._bound_run(run_id)
             available = target.exists()
+            raw_hashes = {}
             if available:
                 self._source_paths(target)
-                comparison = snapshot.compare_files(manifest, target, verify=True)
+                comparison = snapshot.compare_files(manifest, target, verify=True, raw_hashes=raw_hashes)
             else:
                 comparison = {"added": [], "removed": sorted(manifest["files"]),
                               "modified": [], "unchanged": [], "current": {}}
@@ -364,8 +404,7 @@ class MapService:
             # Normalized hashes intentionally ignore CRLF. Byte freshness still
             # matters to verified readers and resume, so expose it separately.
             raw_changed = sorted(name for name in comparison["unchanged"]
-                                 if hashlib.sha256(comparison["current"][name].read_bytes()).hexdigest()
-                                 != manifest["files"][name].get("raw_hash"))
+                                 if raw_hashes.get(name) != manifest["files"][name].get("raw_hash"))
             parser_changed = manifest.get("parser_fingerprint") != snapshot.parser_fingerprint()
             return {"run_id": run_id, "files": files,
                     "symbols": {key: symbols[key] for key in ("added", "removed", "changed")},
@@ -388,9 +427,19 @@ class MapService:
             migrate_root._reject_link_chain(path)
             if not path.is_file():
                 raise ValueError("declared artifact has not been delivered")
-            data = path.read_bytes()
-            return {"run_id": run_id, "name": name, "content": data.decode("utf-8-sig"),
-                    "sha256": hashlib.sha256(data).hexdigest()}
+            digest = hashlib.sha256()
+            size = 0
+            head = b""
+            with path.open("rb") as stream:
+                for chunk in iter(lambda: stream.read(1 << 20), b""):
+                    digest.update(chunk)
+                    if size < MAX_ARTIFACT_BYTES:
+                        head += chunk[:MAX_ARTIFACT_BYTES - size]
+                    size += len(chunk)
+            truncated = size > MAX_ARTIFACT_BYTES
+            content = head.decode("utf-8-sig", errors="replace" if truncated else "strict")
+            return {"run_id": run_id, "name": name, "content": content, "bytes": size,
+                    "truncated": truncated, "sha256": digest.hexdigest()}
 
     def checkpoint(self, run_id, phase, event, message=""):
         if type(phase) is not int or phase not in range(9):
@@ -416,17 +465,19 @@ class MapService:
                 if (not names or names & bad or names & set(checked["not_yet_produced"])
                         or (checked["undocumented_added"] and phase in range(1, 7))):
                     raise ValueError("phase has missing, empty, stale or otherwise invalid declared outputs")
-                completed = state.get("completed_phases", [])
+            current = _json(run / "state.json")
+            updates = {"updated_at": _now()}
+            if event == "phase_completed":
+                completed = current.get("completed_phases", [])
                 if not isinstance(completed, list) or any(type(value) is not int for value in completed):
                     raise ValueError("invalid completed_phases state")
-                state["completed_phases"] = sorted(set(completed) | {phase})
-            state["current_phase"] = phase
-            state["updated_at"] = _now()
+                updates["completed_phases"] = sorted(set(completed) | {phase})
+            # Progress only advances; resume is what moves it back.
+            recorded = current.get("current_phase")
+            updates["current_phase"] = max(phase, recorded) if type(recorded) is int else phase
             if event == "blocked":
-                state["blocker"] = message
-            else:
-                state.pop("blocker", None)
-            _write(run / "state.json", state)
+                updates["blocker"] = message
+            self._update_state(run, updates, remove=() if event == "blocked" else ("blocker",))
             self._event(run, event, phase=phase, message=message)
             return self._status(run_id)
 
@@ -451,6 +502,8 @@ class MapService:
             run, state, _, target = self._bound_run(run_id)
             if not target.exists():
                 raise ValueError("source target is missing; restore it before resuming")
+            if state.get("status") == "complete":
+                raise ValueError("published run cannot be resumed; create a new run")
             completed = state.get("completed_phases", [])
             if (not isinstance(completed, list)
                     or any(type(value) is not int or value not in range(9) for value in completed)):
@@ -461,12 +514,15 @@ class MapService:
                 args.append(phase)
             args.extend(["--run-name", run_id])
             delivery = self._command("prepare", *args)
-            state = _json(run / "state.json")
             start = delivery["resume_from"]
-            state.update(current_phase=start, updated_at=_now(),
-                         completed_phases=sorted({value for value in completed if value < start}))
-            state.pop("blocker", None)
-            _write(run / "state.json", state)
+            # Phases whose outputs prepare just bound as inherited proof are
+            # completed, whether or not a host recorded a checkpoint for them.
+            inherited = {item["phase"] for item in delivery["artifacts"].values()
+                         if item.get("status") == "inherited" and type(item.get("phase")) is int}
+            self._update_state(run, {
+                "current_phase": start, "updated_at": _now(),
+                "completed_phases": sorted({value for value in completed if value < start} | inherited),
+            }, remove=("blocker",))
             snapshot.update_registration(run, active=True)
             self._event(run, "run_resumed", phase=start)
             return self._status(run_id)
@@ -479,8 +535,7 @@ class MapService:
             run, state, _, _ = self._bound_run(run_id)
             if state.get("status") == "complete":
                 raise ValueError("published run cannot be stopped")
-            state.update(status="partial", blocker=reason, updated_at=_now())
-            _write(run / "state.json", state)
+            self._update_state(run, {"status": "partial", "blocker": reason, "updated_at": _now()})
             snapshot.update_registration(run, active=False)
             self._event(run, "run_stopped", message=reason)
             return self._status(run_id)

@@ -143,7 +143,7 @@ class CodebaseMapMcpRenderingTests(unittest.TestCase):
         self.assertIn("mcp.servers", self.plugin.capabilities.required)
         self.assertEqual(
             [(server.name, server.command, server.args) for server in self.plugin.mcp_servers],
-            [("codebase-map", "uv", ("run", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER))],
+            [("codebase-map", "uv", ("run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER))],
         )
 
     def test_server_service_and_local_helpers_ship_unchanged_on_every_host(self):
@@ -162,12 +162,12 @@ class CodebaseMapMcpRenderingTests(unittest.TestCase):
         manifest = json.loads((self.packages["claude"] / ".mcp.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest, {"mcpServers": {"codebase-map": {
             "command": "uv",
-            "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER],
+            "args": ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER],
         }}})
         self.assertEqual(self.catalog("claude")["plugins"][0]["mcpServers"], "./.mcp.json")
         self.assertEqual(self.catalog("opencode")["daodan"]["plugins"]["codebase-map"]["mcp"], [{
             "name": "codebase-map",
-            "command": ["uv", "run", "--script", "<plugin-root>/" + MAP_SERVER],
+            "command": ["uv", "run", "--no-config", "--no-project", "--script", "<plugin-root>/" + MAP_SERVER],
         }])
         for host in ("claude", "opencode"):
             for workflow in self.plugin.components.workflows:
@@ -194,7 +194,7 @@ class CodebaseMapMcpRenderingTests(unittest.TestCase):
                         text = path.read_text(encoding="utf-8")
                         self.assertIn("`codebase-map`", text)
                         self.assertIn("register that command", text)
-                        self.assertIn(f"uv run --script {roots[host]}/{MAP_SERVER}", text)
+                        self.assertIn(f"uv run --no-config --no-project --script {roots[host]}/{MAP_SERVER}", text)
                         self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
                         if host == "pi":
                             self.assertIn("pi-mcp-adapter", text)
