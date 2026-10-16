@@ -463,9 +463,9 @@ def _mcp_registration_notes(plugin: PluginSpec, adapter: HostAdapter) -> tuple[s
         command = " ".join([server.command, *_host_arguments(server.args, adapter)])
         note = (
             f"This plugin declares an MCP server, `{server.name}`, started with `{command}`. "
-            "This host does not start a plugin-declared MCP server on its own: register that "
-            "command under that name in the host's MCP configuration before running this "
-            "workflow, because its calls to that server fail until it is connected."
+            "This host does not start a plugin-declared MCP server on its own. "
+            "Before calling this server's tools, register that command under that name "
+            "in the host's MCP configuration and verify the connection."
         )
         if hint:
             note = f"{note} {hint}"

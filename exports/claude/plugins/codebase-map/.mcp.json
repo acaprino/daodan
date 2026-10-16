@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "codebase-map": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/mcp_server.py"
+      ]
+    }
+  }
+}

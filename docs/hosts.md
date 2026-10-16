@@ -250,9 +250,13 @@ workers retain their declared isolated contexts and delivery gates.
 ## MCP and helper runtimes
 
 A plugin-declared MCP server lives under a skill, requires `mcp.servers`, and is
-declared through `[[mcp.servers]]` in the kernel. Peer-review declares its server
-with `uv run --script .../server.py`; users need that executable and the server's
-own documented requirements.
+declared through `[[mcp.servers]]` in the kernel. Peer-review and Codebase Map
+declare stdio servers launched with `uv run --script`; users need that executable
+and each server's documented requirements. Codebase Map's project-bound local
+service exposes snapshots, verified source queries, run controls and persistent
+events; its [MCP contract](../plugins/codebase-map/skills/map-method/references/mcp.md)
+keeps worker execution and native UI in the host. Existing shell analysis entries
+remain usable without connecting the server.
 
 | Host | Generated MCP mechanism |
 |---|---|

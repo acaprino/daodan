@@ -5,7 +5,7 @@ description: 'Runs the deliberation protocol end to end: consent gate, external 
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 > Arguments: `[<path-to-plan-or-spec> | <topic>] [--challenger=<profile>] [--rounds=N] [--dry-run] [--apply]`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
-> This plugin declares an MCP server, `peer-review`, started with `uv run --script <plugin-root>/skills/cross-model-peer-review/scripts/server.py`. This host does not start a plugin-declared MCP server on its own: register that command under that name in the host's MCP configuration before running this workflow, because its calls to that server fail until it is connected.
+> This plugin declares an MCP server, `peer-review`, started with `uv run --script <plugin-root>/skills/cross-model-peer-review/scripts/server.py`. This host does not start a plugin-declared MCP server on its own. Before calling this server's tools, register that command under that name in the host's MCP configuration and verify the connection.
 
 <daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
