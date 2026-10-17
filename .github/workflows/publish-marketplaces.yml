@@ -97,18 +97,18 @@ jobs:
           Marketplace version `__DAODAN_VERSION__`, identical across every host.
 
           ```bash
-          claude plugin marketplace add acaprino/daodan
-          copilot plugin marketplace add acaprino/daodan
-          codex plugin marketplace add acaprino/daodan
+          claude plugin marketplace add acaprino/shinatama
+          copilot plugin marketplace add acaprino/shinatama
+          codex plugin marketplace add acaprino/shinatama
           ```
 
-          Then install what you need, for example `claude plugin install senior-review@daodan`.
+          Then install what you need, for example `claude plugin install research@shinatama`.
 
           Pi and OpenCode have no marketplace, so they pin this tag directly:
 
           ```bash
-          pi install git:github.com/acaprino/daodan@v__DAODAN_VERSION__
-          opencode plugin add 'github:acaprino/daodan#v__DAODAN_VERSION__::path:exports/opencode'
+          pi install git:github.com/acaprino/shinatama@v__DAODAN_VERSION__
+          opencode plugin add 'github:acaprino/shinatama#v__DAODAN_VERSION__::path:exports/opencode'
           ```
 
           This tag records the commit a version was published from, for anyone pinning a
@@ -118,7 +118,7 @@ jobs:
           sed -i "s/__DAODAN_VERSION__/${version}/g" "${RUNNER_TEMP}/release-notes.md"
           gh release create "$tag" \
             --target "$(git rev-parse HEAD)" \
-            --title "Daodan ${version}" \
+            --title "Shinatama ${version}" \
             --notes-file "${RUNNER_TEMP}/release-notes.md" \
             --generate-notes \
             --latest

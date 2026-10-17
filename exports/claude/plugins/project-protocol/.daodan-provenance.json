@@ -1,9 +1,0 @@
-{
-  "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ec96db9bac1b7bdc75e6ba40eced561eaab6cbc5dfacd881e2f0c3e23e9b21eb",
-  "harnessStrategies": {},
-  "host": "claude",
-  "overrides": [],
-  "plugin": "project-protocol",
-  "version": "1.1.1"
-}

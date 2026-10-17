@@ -1,7 +1,0 @@
-schema = "daodan/record/v1"
-name = "knowledge-usage"
-required = ["id", "worker", "scope_id", "selection_sha256", "sha256", "status", "references", "application"]
-
-[fields.status]
-type = "enum"
-values = ["loaded", "failed"]

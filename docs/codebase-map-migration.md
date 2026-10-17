@@ -19,27 +19,6 @@ consumers migrate before their first output-root lookup and resolve the project'
 root independently of an analysis subtarget. The old `xray_path` input key and
 existing report names and run-state fields remain accepted as data contracts.
 
-## Snapshot format since Map 7.0.0
-
-Marketplace 35.0.0 defaults new snapshots to SQLite at
-`snapshot/manifest.sqlite`. `--format json` or MCP `format="json"` explicitly
-selects `snapshot/manifest.json`; an output filename does not select the format.
-New run state binds format, relative snapshot path and storage version `1`.
-`snapshot.py resolve <run-dir>` returns that binding and a small header for callers.
-
-Upstream retains legacy JSON readers, including runs without the new state
-binding. Parent and child formats may differ; parent evidence is never rewritten.
-Two competing manifests or a binding that disagrees with the bytes are refused.
-Storage compatibility does not make an old parser fingerprint current: live
-source queries, reuse and resume retain their provenance requirements. Create a
-fresh snapshot when structure must be rebuilt.
-
-This format change is separate from the analysis-root migration below. It does
-not convert old archives or turn a root relocation into a new analysis. Embedding
-applications own their import and format policy; Tri-Tech Code's SQLite-only
-binding is separate from Daodan's public JSON compatibility. See the
-[format and query guide](plugins/codebase-map.md#reading-source-from-a-snapshot).
-
 ## Inspect or migrate a repository
 
 Locate the installed `codebase-map:map-method` skill through the active host's

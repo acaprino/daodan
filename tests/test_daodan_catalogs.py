@@ -224,24 +224,24 @@ class OpenCodeManifestTests(unittest.TestCase):
     """The published manifest is what the loader reads, so it is read as the loader would."""
 
     def test_ids_carry_the_plugin_prefix(self):
-        entry = live_opencode_manifest()["daodan"]["plugins"]["senior-review"]
-        self.assertIn("senior-review:code-auditor", [a["id"] for a in entry["agents"]])
-        self.assertIn("senior-review:code-review", [c["name"] for c in entry["commands"]])
+        entry = live_opencode_manifest()["daodan"]["plugins"]["peer-review"]
+        self.assertIn("peer-review:respondent", [a["id"] for a in entry["agents"]])
+        self.assertIn("peer-review:review", [c["name"] for c in entry["commands"]])
         self.assertIn(
-            "senior-review:review-quality-gates", [s["id"] for s in entry["skills"]]
+            "peer-review:cross-model-peer-review", [s["id"] for s in entry["skills"]]
         )
 
     def test_dependencies_are_local_only(self):
         plugins = live_opencode_manifest()["daodan"]["plugins"]
-        self.assertIn("codebase-map", plugins["senior-review"]["dependencies"])
+        self.assertIn("peer-review", plugins["moe"]["dependencies"])
         for name, entry in plugins.items():
             for dependency in entry.get("dependencies", []):
                 self.assertNotIn("@", dependency, name)
                 self.assertIn(dependency, plugins, name)
 
     def test_agents_carry_their_permission_list(self):
-        entry = live_opencode_manifest()["daodan"]["plugins"]["senior-review"]
-        agent = next(a for a in entry["agents"] if a["id"] == "senior-review:code-auditor")
+        entry = live_opencode_manifest()["daodan"]["plugins"]["research"]
+        agent = next(a for a in entry["agents"] if a["id"] == "research:quick-searcher")
         self.assertEqual(agent["permissions"][0], {"action": "*", "resource": "*", "effect": "deny"})
         self.assertEqual(agent["permissions"][-1]["resource"], "<package-root>/**")
 

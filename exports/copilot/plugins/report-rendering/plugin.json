@@ -1,9 +1,0 @@
-{
-  "author": {
-    "name": "Alfio Caprino"
-  },
-  "description": "Render authoritative Markdown reports as local interactive HTML views with reusable presentation assets",
-  "license": "MIT",
-  "name": "report-rendering",
-  "version": "1.0.2"
-}

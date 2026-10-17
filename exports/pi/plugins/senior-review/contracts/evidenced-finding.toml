@@ -1,3 +1,0 @@
-schema = "daodan/record/v1"
-name = "evidenced-finding"
-required = ["file", "line", "evidence", "severity", "confidence", "premise", "premise_provenance"]

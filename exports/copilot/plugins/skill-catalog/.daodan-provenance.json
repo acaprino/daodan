@@ -1,9 +1,0 @@
-{
-  "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:b20aec40eedbb554b6df25c864df0e631491e64ac0a7dacfac28861a557f92e9",
-  "harnessStrategies": {},
-  "host": "copilot",
-  "overrides": [],
-  "plugin": "skill-catalog",
-  "version": "1.0.14"
-}

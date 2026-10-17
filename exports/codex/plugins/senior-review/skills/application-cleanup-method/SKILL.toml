@@ -1,7 +1,0 @@
-schema = "daodan/skill-metadata/v1"
-kind = "method"
-operations = []
-languages = []
-frameworks = []
-topics = []
-dimensions = []

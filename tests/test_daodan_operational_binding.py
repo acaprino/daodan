@@ -57,15 +57,15 @@ class OperationalBindingTests(unittest.TestCase):
 
     def test_single_isolated_phase_role_receives_harness_on_every_host(self):
         paths = {
-            "claude": "commands/review-react.md",
-            "copilot": "agents/review-react-coordinator.agent.md",
-            "codex": "skills/review-react-workflow/SKILL.md",
-            "pi": "prompts/react-development-review-react.md",
-            "opencode": "commands/review-react.md",
+            "claude": "commands/audit-webhooks.md",
+            "copilot": "agents/audit-webhooks-coordinator.agent.md",
+            "codex": "skills/audit-webhooks-workflow/SKILL.md",
+            "pi": "prompts/stripe-audit-webhooks.md",
+            "opencode": "commands/audit-webhooks.md",
         }
         for host in HOSTS:
             with self.subTest(host=host):
-                rendered = self.render_in_memory("react-development", host)
+                rendered = self.render_in_memory("stripe", host)
                 text = rendered[paths[host]]
                 self.assertIn("## Execution harness", text)
                 self.assertIn("Coordinator completion ownership", text)
@@ -74,18 +74,18 @@ class OperationalBindingTests(unittest.TestCase):
                 self.assertIn("ledger schema", text)
                 self.assertIn("never converted into a successful delivery", text)
                 self.assertIn("**required**", text)
-                self.assertIn("one `react-performance-optimizer` in an isolated context", text)
-                self.assertIn("artifact:review-react-report", text)
+                self.assertIn("one `stripe-webhooks-auditor` in an isolated context", text)
+                self.assertIn("artifact:audit-webhooks-report", text)
                 self.assertIn("delivered", text)
                 self.assertIn("failed", text)
                 if host in ("claude", "copilot", "opencode"):
-                    self.assertIn("react-development:react-performance-optimizer", text)
+                    self.assertIn("stripe:stripe-webhooks-auditor", text)
                 else:
                     self.assertIn("complete body verbatim", text)
 
     def test_copilot_dispatched_prompt_hands_off_once_to_the_coordinator(self):
-        for plugin, workflow in (("react-development", "review-react"),
-                                 ("codebase-map", "team-analyze"),
+        for plugin, workflow in (("stripe", "audit-webhooks"),
+                                 ("digital-marketing", "content-strategy"),
                                  ("peer-review", "review")):
             with self.subTest(plugin=plugin):
                 rendered = self.render_in_memory(plugin, "copilot")
@@ -126,17 +126,6 @@ class OperationalBindingTests(unittest.TestCase):
                     self.assertIn("Declared role operation allowlist", text)
                     self.assertIn("execute shell commands", text)
                     self.assertNotIn("create or overwrite files;", text)
-        for host in ("codex", "pi"):
-            with self.subTest(host=host, resource=True):
-                rendered = self.render_in_memory("senior-review", host)
-                resources = {name: text for name, text in rendered.items()
-                             if name.startswith("contracts/dispatch/")}
-                self.assertTrue(resources)
-                for name, text in resources.items():
-                    self.assertNotRegex(text, r"(?m)^model:", name)
-                    self.assertNotRegex(text, r"(?m)^tools:", name)
-                    self.assertIn("Declared role operation allowlist", text, name)
-                    self.assertIn("source-sha256", text, name)
 
     def test_inline_scope_omitted_empty_unknown_and_restricted_are_distinct(self):
         self.assertIn("no additional tool restriction", _inline_role_scope({}))
@@ -156,19 +145,17 @@ class OperationalBindingTests(unittest.TestCase):
             return replace(plugin, workflows=(replace(workflow, phases=phases),))
         for host in HOSTS:
             with self.subTest(host=host), self.assertRaisesRegex(RenderError, "undeclared role provider"):
-                self.render_in_memory("react-development", host, undeclared)
+                self.render_in_memory("stripe", host, undeclared)
 
     def test_all_markdown_receives_binding_including_references_and_dispatch_resources(self):
         for host in HOSTS:
             with self.subTest(host=host):
-                rendered = self.render_in_memory("senior-review", host)
+                rendered = self.render_in_memory("digital-marketing", host)
                 markdown = {name: text for name, text in rendered.items() if name.endswith(".md")}
                 self.assertTrue(any("/references/" in name for name in markdown))
                 self.assertTrue(any("SKILL.md" in name for name in markdown))
-                self.assertTrue(any("agents/" in name or "roles/" in name or "-auditor/" in name
+                self.assertTrue(any("agents/" in name or "roles/" in name or "-marketer" in name
                                     for name in markdown))
-                if host in ("codex", "pi"):
-                    self.assertTrue(any(name.startswith("contracts/dispatch/") for name in markdown))
                 for name, text in markdown.items():
                     self.assertEqual(text.count(MARKER), 1, name)
                     self.assertIn(f'{MARKER}{host}">', text, name)
@@ -181,14 +168,6 @@ class OperationalBindingTests(unittest.TestCase):
                     self.assertIn("Stop only for a documented real impediment", text, name)
                     self.assertIn("concrete prerequisite for continuation", text, name)
                     self.assertIn("Shell execution alone does not establish interactive stdin", text, name)
-
-    def test_generated_inventory_reference_also_has_execution_binding(self):
-        for host in HOSTS:
-            with self.subTest(host=host):
-                text = self.render_in_memory("skill-catalog", host)["skills/skill-catalog/references/host-inventory.md"]
-                self.assertEqual(text.count(MARKER), 1)
-                self.assertIn("actual", text)
-                self.assertIn("inventory", text)
 
     def test_host_subject_and_domain_examples_are_preserved(self):
         examples = (
@@ -239,23 +218,13 @@ class OperationalBindingTests(unittest.TestCase):
         self.assertIn("'peer-review/*'", meta["tools"])
         self.assertNotIn("'*'", meta["tools"])
         self.assertNotIn("unrelated-server", meta["tools"])
-        plain = self.render_in_memory("react-development", "copilot")
-        meta, _ = _frontmatter(plain["agents/review-react-coordinator.agent.md"])
+        plain = self.render_in_memory("stripe", "copilot")
+        meta, _ = _frontmatter(plain["agents/audit-webhooks-coordinator.agent.md"])
         self.assertNotIn("/*", meta["tools"])
         binding = _operational_binding(load_adapter(ADAPTERS, "copilot"), ADAPTERS)
         self.assertIn("agent allowlist alias", binding)
         self.assertIn("task", binding)
         self.assertIn("actually registered", binding)
-
-    def test_pi_dispatch_skill_bindings_distinguish_logical_and_registry_identity(self):
-        rendered = self.render_in_memory("senior-review", "pi")
-        text = rendered["contracts/dispatch/testing/test-suite-auditor.md"]
-        self.assertIn("`testing:test-hygiene` -> compiled registry name `test-hygiene`", text)
-        self.assertIn("at `skills/test-hygiene/SKILL.md` inside the owner's package", text)
-        self.assertIn("declared logical skill identities", text)
-        self.assertIn("provider paths in the active inventory", text)
-        self.assertNotIn("registered skills are `testing:", text)
-        self.assertNotIn("qualify it with that owner's namespace", text)
 
     def test_explicit_copilot_tools_are_mapped_or_rejected_without_fallback(self):
         self.assertEqual(_copilot_tools("Read, Edit, Bash, Agent, Read"),

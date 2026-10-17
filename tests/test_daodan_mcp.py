@@ -31,10 +31,9 @@ DECLARATION = (
     '\n[[mcp.servers]]\nname = "example-tools"\ncommand = "uv"\n'
     'args = ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/server.py"]\n'
 )
-MAP_ROOT = REPO_ROOT / "plugins/codebase-map"
-MAP_SCRIPTS = Path("skills/map-method/scripts")
-MAP_SERVER = (MAP_SCRIPTS / "mcp_server.py").as_posix()
-MAP_SERVICE = (MAP_SCRIPTS / "mcp_service.py").as_posix()
+PEER_ROOT = REPO_ROOT / "plugins/peer-review"
+PEER_SCRIPTS = Path("skills/cross-model-peer-review/scripts")
+PEER_SERVER = (PEER_SCRIPTS / "server.py").as_posix()
 
 
 class McpRenderingTests(unittest.TestCase):
@@ -122,12 +121,12 @@ class McpRenderingTests(unittest.TestCase):
                     self.assertNotIn("before running this workflow", note)
 
 
-class CodebaseMapMcpRenderingTests(unittest.TestCase):
+class PeerReviewMcpRenderingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp = Path(tempfile.mkdtemp())
         cls.addClassCleanup(shutil.rmtree, cls.temp, True)
-        cls.plugin = load_plugin(MAP_ROOT)
+        cls.plugin = load_plugin(PEER_ROOT)
         cls.packages = {}
         for host in HOSTS:
             live = cls.temp / host / cls.plugin.name
@@ -143,31 +142,30 @@ class CodebaseMapMcpRenderingTests(unittest.TestCase):
         self.assertIn("mcp.servers", self.plugin.capabilities.required)
         self.assertEqual(
             [(server.name, server.command, server.args) for server in self.plugin.mcp_servers],
-            [("codebase-map", "uv", ("run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER))],
+            [("peer-review", "uv", ("run", "--script", "${CLAUDE_PLUGIN_ROOT}/" + PEER_SERVER))],
         )
 
-    def test_server_service_and_local_helpers_ship_unchanged_on_every_host(self):
-        for required in (MAP_SERVER, MAP_SERVICE):
-            self.assertTrue((MAP_ROOT / required).is_file(), required)
-        helpers = sorted((MAP_ROOT / MAP_SCRIPTS).rglob("*.py"))
+    def test_server_and_local_helpers_ship_unchanged_on_every_host(self):
+        self.assertTrue((PEER_ROOT / PEER_SERVER).is_file(), PEER_SERVER)
+        helpers = sorted((PEER_ROOT / PEER_SCRIPTS).rglob("*.py"))
         for host, package in self.packages.items():
             for source in helpers:
-                relative = source.relative_to(MAP_ROOT)
+                relative = source.relative_to(PEER_ROOT)
                 with self.subTest(host=host, helper=relative.as_posix()):
                     rendered = package / relative
                     self.assertTrue(rendered.is_file(), str(rendered))
                     self.assertEqual(rendered.read_text(encoding="utf-8"), source.read_text(encoding="utf-8"))
 
-    def test_manifest_hosts_expose_the_actual_codebase_map_command(self):
+    def test_manifest_hosts_expose_the_actual_peer_review_command(self):
         manifest = json.loads((self.packages["claude"] / ".mcp.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest, {"mcpServers": {"codebase-map": {
+        self.assertEqual(manifest, {"mcpServers": {"peer-review": {
             "command": "uv",
-            "args": ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER],
+            "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/" + PEER_SERVER],
         }}})
         self.assertEqual(self.catalog("claude")["plugins"][0]["mcpServers"], "./.mcp.json")
-        self.assertEqual(self.catalog("opencode")["daodan"]["plugins"]["codebase-map"]["mcp"], [{
-            "name": "codebase-map",
-            "command": ["uv", "run", "--no-config", "--no-project", "--script", "<plugin-root>/" + MAP_SERVER],
+        self.assertEqual(self.catalog("opencode")["daodan"]["plugins"]["peer-review"]["mcp"], [{
+            "name": "peer-review",
+            "command": ["uv", "run", "--script", "<plugin-root>/" + PEER_SERVER],
         }])
         for host in ("claude", "opencode"):
             for workflow in self.plugin.components.workflows:
@@ -179,7 +177,7 @@ class CodebaseMapMcpRenderingTests(unittest.TestCase):
         entries = {
             "codex": "skills/{workflow}-workflow/SKILL.md",
             "copilot": "prompts/{workflow}.prompt.md",
-            "pi": "prompts/codebase-map-{workflow}.md",
+            "pi": "prompts/peer-review-{workflow}.md",
         }
         roots = {"codex": "<plugin-root>", "copilot": "${PLUGIN_ROOT}", "pi": "<plugin-root>"}
         for host, entry in entries.items():
@@ -192,9 +190,9 @@ class CodebaseMapMcpRenderingTests(unittest.TestCase):
                 for path in paths:
                     with self.subTest(host=host, workflow=workflow, entry=path.name):
                         text = path.read_text(encoding="utf-8")
-                        self.assertIn("`codebase-map`", text)
+                        self.assertIn("`peer-review`", text)
                         self.assertIn("register that command", text)
-                        self.assertIn(f"uv run --no-config --no-project --script {roots[host]}/{MAP_SERVER}", text)
+                        self.assertIn(f"uv run --script {roots[host]}/{PEER_SERVER}", text)
                         self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
                         if host == "pi":
                             self.assertIn("pi-mcp-adapter", text)

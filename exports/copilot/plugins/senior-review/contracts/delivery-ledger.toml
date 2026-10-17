@@ -1,6 +1,0 @@
-schema = "daodan/record/v1"
-name = "delivery-ledger"
-required = ["expected", "delivered", "failed", "barrier_satisfied"]
-
-[fields.barrier_satisfied]
-type = "boolean"
