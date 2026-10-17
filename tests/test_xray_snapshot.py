@@ -536,14 +536,54 @@ class PerimeterTests(unittest.TestCase):
         git(self.project, "add", "-f", "src/schema.gen.py")
         self.assertIn("src/schema.gen.py", self.manifest()["files"])
 
+    def commit(self):
+        """A first commit, so that a repository has an identity to misreport."""
+        git(self.project, "add", "-A")
+        git(self.project, "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid",
+            "-c", "commit.gpgsign=false", "commit", "-q", "-m", "fixture")
+
     @unittest.skipUnless(HAVE_GIT, "git is not installed")
-    def test_a_named_target_git_ignores_is_analyzed(self):
+    def test_a_named_target_git_ignores_is_analyzed_as_its_own_root(self):
         git(self.project, "init", "-q")
         write(self.project, ".gitignore", "generated/\n")
+        self.commit()
         write(self.project, "generated/client.py", "def call():\n    return 1\n")
         write(self.project, "generated/models/order.py", "class Order:\n    pass\n")
-        files = self.manifest(self.project / "generated")["files"]
-        self.assertEqual(sorted(files), ["generated/client.py", "generated/models/order.py"])
+        manifest = self.manifest(self.project / "generated")
+        self.assertEqual(sorted(manifest["files"]), ["client.py", "models/order.py"])
+        self.assertEqual(manifest["root"], (self.project / "generated").as_posix())
+        self.assertIsNone(manifest["git"])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_a_project_under_a_directory_its_enclosing_repository_ignores_is_whole_and_its_own(self):
+        """
+        A tool repository that keeps its runs under an ignored directory
+        neither tracks a project placed there nor describes it. Its paths,
+        commit, branch and dirty flag are not the project's.
+        """
+        git(self.project, "init", "-q")
+        write(self.project, ".gitignore", "sidecar/\n")
+        self.commit()
+        inner = self.project / "sidecar/runs/r1/app"
+        write(inner, "main.py", "from lib import run\nrun()\n")
+        write(inner, "lib.py", "def run():\n    return 1\n")
+        write(inner, "web/app.css", ".modal {\n  position: fixed;\n}\n")
+        manifest = self.manifest(inner)
+        self.assertEqual(sorted(manifest["files"]), ["lib.py", "main.py", "web/app.css"])
+        self.assertEqual(manifest["root"], inner.as_posix())
+        self.assertEqual(manifest["target"], ".")
+        self.assertIsNone(manifest["git"])
+        self.assertEqual(manifest["scope"]["git_ignore"], "unavailable")
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_a_subdirectory_the_repository_does_not_ignore_keeps_the_repository_root(self):
+        git(self.project, "init", "-q")
+        self.commit()
+        manifest = self.manifest(self.project / "src")
+        self.assertEqual(sorted(manifest["files"]), ["src/app.py"])
+        self.assertEqual(manifest["root"], self.project.as_posix())
+        self.assertIsNotNone(manifest["git"])
+        self.assertEqual(manifest["scope"]["git_ignore"], "applied")
 
     def test_the_manifest_names_the_dot_directories_it_skipped(self):
         write(self.project, ".github/workflows/ci.yml", "on: push\n")

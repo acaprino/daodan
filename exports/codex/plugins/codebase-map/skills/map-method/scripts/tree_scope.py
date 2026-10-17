@@ -4,13 +4,16 @@ The perimeter of a Codebase Map: what no script descends into.
 
 One rule, owned here, for every script that walks a tree:
 
-- what Git ignores, when the target is inside a work tree and git answers;
+- what Git ignores, when the target is inside a work tree that does not
+  ignore it and git answers;
 - every directory whose name starts with a dot;
 - dependency and build directories, by name.
 
 All three apply below the target. The target itself is analyzed as given, so
 naming a dot directory is how its content gets a Codebase Map of its own. A dot file
-beside analyzed source is not a directory, and stays.
+beside analyzed source is not a directory, and stays. A target that its work
+tree ignores, itself or through a directory above it, is not that work tree's:
+it is analyzed whole, as its own root.
 
 The rule exists because tools write beside the code they work on. A lifecycle
 campaign left its run records under `.daodan/` and its review under
@@ -30,7 +33,7 @@ import subprocess
 from pathlib import Path
 from typing import Iterator
 
-__all__ = ["DEPENDENCY_DIRS", "Perimeter", "git_executable"]
+__all__ = ["DEPENDENCY_DIRS", "Perimeter", "git_executable", "work_tree"]
 
 
 def git_executable() -> str | None:
@@ -68,6 +71,45 @@ def _key(relative: str) -> str:
     return os.path.normcase(relative.replace("\\", "/").rstrip("/"))
 
 
+def _held(git: str, base: Path) -> bool:
+    """
+    True when the base is inside a work tree that does not ignore it.
+    `check-ignore` matches the directory and every directory above it up to
+    the top level: it exits 0 when a rule applies, 1 when none does, and 128
+    outside every work tree.
+    """
+    try:
+        proc = subprocess.run(
+            [git, "-C", str(base), "check-ignore", "-q", "."],
+            capture_output=True, timeout=GIT_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return proc.returncode == 1
+
+
+def work_tree(base: Path) -> Path | None:
+    """
+    The top level of the work tree that holds a directory, or None: outside
+    every work tree, when git does not answer, and when the work tree ignores
+    the directory. A repository that ignores a directory neither tracks nor
+    describes it: a project placed under a tool's ignored run directory once
+    took that tool's paths, commit and dirty flag.
+    """
+    git = git_executable()
+    if git is None or not _held(git, base):
+        return None
+    try:
+        proc = subprocess.run(
+            [git, "-C", str(base), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=GIT_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    top = proc.stdout.strip()
+    return Path(top) if proc.returncode == 0 and top else None
+
+
 class Perimeter:
     """
     The part of one target a script may read.
@@ -97,10 +139,10 @@ class Perimeter:
         Git is asked, never imitated: nested ignore files, negations and the
         user's own excludes are its to resolve. A tracked file is never in the
         answer, whatever pattern it matches, because Git does not ignore what
-        it tracks.
+        it tracks. A work tree that ignores the base applies no rule below it.
         """
         git = git_executable()
-        if git is None:
+        if git is None or not _held(git, self.base):
             return frozenset(), frozenset(), "unavailable"
         try:
             proc = subprocess.run(
@@ -116,9 +158,7 @@ class Perimeter:
         dirs: set[str] = set()
         for raw in proc.stdout.split(b"\0"):
             entry = raw.decode("utf-8", errors="surrogateescape")
-            # A base that is itself ignored comes back as `./`. The target is
-            # analyzed as given, so that entry prunes nothing.
-            if entry in ("", "./"):
+            if not entry:
                 continue
             (dirs if entry.endswith("/") else files).add(_key(entry))
         return frozenset(files), frozenset(dirs), "applied"

@@ -55,7 +55,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from languages import SUPPORTED_EXTENSIONS, detect_language, get_adapter  # noqa: E402
-from tree_scope import Perimeter, git_executable  # noqa: E402
+from tree_scope import Perimeter, git_executable, work_tree  # noqa: E402
 from snapshot_store import (SnapshotStore, artifact_digest, file_headers, header_metadata,
                             open_snapshot, resolve_run_snapshot)  # noqa: E402
 
@@ -173,23 +173,12 @@ def hash_text(text: str) -> str:
 
 def repo_root(target: Path) -> Path:
     """
-    The base every manifest path is relative to: the git top level when the
-    target is inside a repository, otherwise the target itself.
+    The base every manifest path is relative to: the top level of the work
+    tree that holds the target, otherwise the target itself. A work tree that
+    ignores the target does not hold it.
     """
     base = target.parent if target.is_file() else target
-    git = git_executable()
-    if git is None:
-        return base
-    try:
-        proc = subprocess.run(
-            [git, "-C", str(base), "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, timeout=10,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return base
-    if proc.returncode != 0 or not proc.stdout.strip():
-        return base
-    return Path(proc.stdout.strip())
+    return work_tree(base) or base
 
 
 def parser_fingerprint() -> str:
@@ -248,9 +237,12 @@ def parser_profile(path: Path, language: str | None = None) -> dict:
 
 
 def git_info(root: Path) -> dict | None:
-    """Commit, branch and dirtiness, as metadata. Nothing in the diff depends on it."""
+    """
+    Commit, branch and dirtiness, as metadata, of the work tree that holds the
+    root: none for a root no work tree holds. Nothing in the diff depends on it.
+    """
     git = git_executable()
-    if git is None:
+    if git is None or work_tree(root) is None:
         return None
 
     def run(*args: str) -> str | None:
@@ -438,8 +430,8 @@ def relative_to_root(path: Path, root: Path) -> str:
 def scope_record(perimeter: Perimeter, root: Path) -> dict:
     """
     What a perimeter left out, in the one shape the manifest and the scope
-    command share. `git_ignore` is `unavailable` when the target is in no work
-    tree or git did not answer: no ignore rule was applied then, and a reader
+    command share. `git_ignore` is `unavailable` when no work tree holds the
+    target or git did not answer: no ignore rule was applied then, and a reader
     must be able to tell.
     """
     return {

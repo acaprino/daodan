@@ -91,9 +91,9 @@ Within `.codebase-map/`:
 
 ## Perimeter
 
-Below its target, exclude what Git ignores, every directory whose name starts with a dot, and dependency/build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). `scripts/tree_scope.py` owns this general rule; every tree-walking script applies it: snapshot, cascade scan, usage search, comment scan and documentation review. Manual reading follows it too. A path the snapshot left out is not opened, globbed or cited in a phase file.
+Below its target, exclude what Git ignores, every directory whose name starts with a dot, and dependency/build output (`node_modules/`, `dist/`, `build/`, `target/`, `vendor/`, `venv/`, `__pycache__/`). `scripts/tree_scope.py` owns this rule; every tree-walking script applies it: snapshot, cascade scan, usage search, comment scan and documentation review. Manual reading follows it. A path the snapshot left out is not opened, globbed or cited in a phase file.
 
-Analyze the target as given, including dot or Git-ignored directories. Dot files beside analyzed source (`.eslintrc.json`) remain, subject to the forbidden list in `evidence.md`. Git-tracked files are never ignored, regardless of patterns.
+Analyze the target as given, including dot directories; a Git-ignored target is its own root. Dot files beside analyzed source (`.eslintrc.json`) remain, subject to the forbidden list in `evidence.md`. Git-tracked files are never ignored, regardless of patterns.
 
 On the first update of a parent recorded before this rule, report newly excluded paths as removed and retire claims citing them, even if they remain on disk.
 
