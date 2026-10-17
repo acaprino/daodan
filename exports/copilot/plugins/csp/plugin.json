@@ -1,9 +1,0 @@
-{
-  "author": {
-    "name": "Alfio Caprino"
-  },
-  "description": "Constraint Satisfaction Problems and combinatorial optimization with Google OR-Tools CP-SAT solver",
-  "license": "MIT",
-  "name": "csp",
-  "version": "1.4.2"
-}

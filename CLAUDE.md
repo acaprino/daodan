@@ -1,6 +1,6 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts. Domain specialists remain independent tools alongside the coherent project lifecycle. It ships to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows, web research and multi-model deliberation live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
 

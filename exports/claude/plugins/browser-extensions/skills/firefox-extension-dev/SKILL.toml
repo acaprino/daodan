@@ -1,7 +1,0 @@
-schema = "daodan/skill-metadata/v1"
-kind = "knowledge"
-operations = ["review", "develop", "test"]
-languages = ["javascript", "typescript"]
-frameworks = ["webextensions", "firefox"]
-topics = []
-dimensions = ["correctness", "security"]

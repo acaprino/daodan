@@ -59,29 +59,6 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 )
                 self.assertNotIn(final, worker.produces)
 
-    def test_content_focus_selection_is_bound_to_isolated_workers_and_a_delivery_barrier(self):
-        workflow = self.workflow("digital-marketing", "content-strategy")
-        phases = {phase.id: phase for phase in workflow.phases}
-        audit = phases["audit"]
-        self.assertIn(audit.fanout_from, phases["scope"].produces)
-        self.assertEqual(audit.role, "content-marketer")
-        self.assertIn("digital-marketing/content-marketer", workflow.dispatch.roles)
-        self.assertEqual(audit.isolation, "required")
-        self.assertEqual(audit.join, "all-delivered")
-        self.assertEqual(audit.concurrency, "preferred")
-        self.assertIn(audit.id, phases["synthesis"].needs)
-        self.assertIn("approval", phases["apply"].needs)
-        self.assertIn("apply", phases["report"].needs)
-        self.assertEqual(
-            [phase.id for phase in workflow.phases
-             if "artifact:content-strategy-report" in phase.produces],
-            ["report"],
-        )
-        body = (self.registry["digital-marketing"].root / workflow.entrypoint).read_text(encoding="utf-8")
-        self.assertIn("report only", body)
-        self.assertIn("zero applied changes", body)
-        self.assertIn("delivered or failed", body)
-
     def test_nested_review_methods_use_a_declared_isolated_worker_for_inline_tasks(self):
         for name in ("code-review", "team-review", "pr-review"):
             with self.subTest(name=name):
@@ -110,7 +87,7 @@ class MethodDispatchContractsTests(unittest.TestCase):
         for plugin, name in (
             ("react-development", "review-react"),
             ("typescript-development", "review-typescript"),
-            ("digital-marketing", "content-strategy"),
+            ("clean-code", "clean-code"),
         ):
             with self.subTest(plugin=plugin):
                 body = (self.registry[plugin].root / self.workflow(plugin, name).entrypoint).read_text(encoding="utf-8")
@@ -120,7 +97,7 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertNotIn("model: sonnet", body)
 
     def test_changed_graphs_keep_their_provider_edges_and_exported_contracts(self):
-        for name in ("react-development", "typescript-development", "digital-marketing", "senior-review"):
+        for name in ("react-development", "typescript-development", "clean-code", "senior-review"):
             with self.subTest(plugin=name):
                 plugin = self.registry[name]
                 self.assertEqual(validate_workflow_graph(plugin), [])

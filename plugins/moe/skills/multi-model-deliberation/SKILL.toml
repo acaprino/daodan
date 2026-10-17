@@ -1,7 +1,0 @@
-schema = "daodan/skill-metadata/v1"
-kind = "knowledge"
-operations = ["reason", "solve"]
-languages = []
-frameworks = []
-topics = ["multi-model-deliberation"]
-dimensions = ["correctness"]

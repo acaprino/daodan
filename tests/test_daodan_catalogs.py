@@ -261,9 +261,9 @@ class OpenCodeManifestTests(unittest.TestCase):
                 for item in entry.get(kind, []):
                     self.assertTrue(item["description"].strip(), f"{name}: {item}")
 
-    def test_peer_review_declares_its_server(self):
-        mcp = live_opencode_manifest()["daodan"]["plugins"]["peer-review"]["mcp"]
-        self.assertEqual(mcp[0]["name"], "peer-review")
+    def test_codebase_map_declares_its_server(self):
+        mcp = live_opencode_manifest()["daodan"]["plugins"]["codebase-map"]["mcp"]
+        self.assertEqual(mcp[0]["name"], "codebase-map")
         self.assertTrue(any("<plugin-root>" in part for part in mcp[0]["command"]))
         self.assertFalse(any("CLAUDE_PLUGIN_ROOT" in part for part in mcp[0]["command"]))
 

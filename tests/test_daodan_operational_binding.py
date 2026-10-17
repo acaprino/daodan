@@ -86,7 +86,7 @@ class OperationalBindingTests(unittest.TestCase):
     def test_copilot_dispatched_prompt_hands_off_once_to_the_coordinator(self):
         for plugin, workflow in (("react-development", "review-react"),
                                  ("codebase-map", "team-analyze"),
-                                 ("peer-review", "review")):
+                                 ("senior-review", "code-review")):
             with self.subTest(plugin=plugin):
                 rendered = self.render_in_memory(plugin, "copilot")
                 prompt = rendered[f"prompts/{workflow}.prompt.md"]
@@ -112,11 +112,11 @@ class OperationalBindingTests(unittest.TestCase):
     def test_nonclaude_roles_inherit_model_and_keep_declared_operation_scope(self):
         for host in ("copilot", "codex", "pi", "opencode"):
             with self.subTest(host=host):
-                rendered = self.render_in_memory("research", host)
+                rendered = self.render_in_memory("senior-review", host)
                 adapter = load_adapter(ADAPTERS, host)
                 from scripts.daodan.templates import render_path
                 relative = render_path(adapter.layout["roles"],
-                                       {"plugin": "research", "role": "quick-searcher"})
+                                       {"plugin": "senior-review", "role": "api-contract-auditor"})
                 text = rendered[relative.as_posix()]
                 meta, _ = _frontmatter(text)
                 self.assertNotIn("model", meta)
@@ -192,8 +192,8 @@ class OperationalBindingTests(unittest.TestCase):
 
     def test_host_subject_and_domain_examples_are_preserved(self):
         examples = (
-            ("marketplace-ops", "skills/kernel-marketplace/SKILL.md"),
-            ("ai-tooling", "skills/agent-sdk-builder/SKILL.md"),
+            ("project-knowledge", "skills/instructions-method/SKILL.md"),
+            ("codebase-map", "skills/map-method/SKILL.md"),
         )
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
@@ -225,18 +225,28 @@ class OperationalBindingTests(unittest.TestCase):
                     self.assertNotIn("claude plugin install", text)
 
     def test_omitted_copilot_tools_preserve_host_defaults(self):
-        for plugin, role in (("peer-review", "respondent"), ("app-analyzer", "app-analyzer")):
-            with self.subTest(plugin=plugin):
-                text = self.render_in_memory(plugin, "copilot")[f"agents/{role}.agent.md"]
-                meta, _ = _frontmatter(text)
-                self.assertNotIn("tools", meta)
-                self.assertNotIn("tools: ['search']", text)
+        plugin = load_plugin(REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example")
+        adapter = load_adapter(ADAPTERS, "copilot")
+        captured = {}
+        destination = REPO_ROOT / ".daodan-in-memory-render"
+        with (
+            patch("scripts.daodan.render._write_text",
+                  side_effect=lambda p, c: captured.__setitem__(Path(p).relative_to(destination).as_posix(), c)),
+            patch("scripts.daodan.render._copy"),
+            patch("scripts.daodan.render.write_provenance"),
+            patch("pathlib.Path.mkdir"),
+        ):
+            render_plugin(plugin, adapter, destination, adapters_root=ADAPTERS)
+        text = captured["agents/inspector.agent.md"]
+        meta, _ = _frontmatter(text)
+        self.assertNotIn("tools", meta)
+        self.assertNotIn("tools: ['search']", text)
         self.assertIsNone(_copilot_tools(None))
 
     def test_copilot_coordinator_allowlist_retains_declared_mcp_servers(self):
-        rendered = self.render_in_memory("peer-review", "copilot")
-        meta, _ = _frontmatter(rendered["agents/review-coordinator.agent.md"])
-        self.assertIn("'peer-review/*'", meta["tools"])
+        rendered = self.render_in_memory("codebase-map", "copilot")
+        meta, _ = _frontmatter(rendered["agents/team-analyze-coordinator.agent.md"])
+        self.assertIn("'codebase-map/*'", meta["tools"])
         self.assertNotIn("'*'", meta["tools"])
         self.assertNotIn("unrelated-server", meta["tools"])
         plain = self.render_in_memory("react-development", "copilot")
@@ -266,10 +276,14 @@ class OperationalBindingTests(unittest.TestCase):
             _copilot_tools("InventedTool")
         with self.assertRaisesRegex(RenderError, "unbound role tool"):
             _copilot_tools("Read, InventedTool")
-        text = self.render_in_memory("research", "copilot")["agents/deep-researcher.agent.md"]
+        text = self.render_in_memory("senior-review", "copilot")["agents/code-auditor.agent.md"]
         meta, _ = _frontmatter(text)
         self.assertIn("'runCommands'", meta["tools"])
-        self.assertNotIn("'edit'", meta["tools"])
+        self.assertIn("'edit'", meta["tools"])
+        readonly = self.render_in_memory("senior-review", "copilot")["agents/api-contract-auditor.agent.md"]
+        readonly_meta, _ = _frontmatter(readonly)
+        self.assertIn("'runCommands'", readonly_meta["tools"])
+        self.assertNotIn("'edit'", readonly_meta["tools"])
 
 
 if __name__ == "__main__":

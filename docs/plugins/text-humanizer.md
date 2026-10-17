@@ -77,7 +77,7 @@ Consumers across the marketplace:
 
 ---
 
-**Related:** [digital-marketing](digital-marketing.md) (SEO and content workflows) | [project-knowledge](project-knowledge.md) (documentation generation) | [clean-code](clean-code.md) (source code readability)
+**Related:** [project-knowledge](project-knowledge.md) (documentation generation) | [clean-code](clean-code.md) (source code readability)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference
