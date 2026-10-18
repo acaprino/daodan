@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 7.0.1; source-sha256: 7dd4f790fb961e788388f82a4e14a0ac3662863148dc76d0f173f678bf6cefc3. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 7.1.0; source-sha256: 7dd4f790fb961e788388f82a4e14a0ac3662863148dc76d0f173f678bf6cefc3. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-map`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-map-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-map`. The owning plugin's declared logical skill identities are `codebase-map:map-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

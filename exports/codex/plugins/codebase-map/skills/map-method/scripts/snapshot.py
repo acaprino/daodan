@@ -595,6 +595,16 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
     temporary.unlink()
     count = 0
     supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
+    sqlite_fast_reuse = (
+        reusable
+        and format == "sqlite"
+        and getattr(previous, "format", None) == "sqlite"
+        and hasattr(previous, "verified_reusable_headers")
+        and previous._has_json_cache()
+    )
+    verified_headers = previous.verified_reusable_headers() if sqlite_fast_reuse else {}
+    exact_reused_paths: list[str] = []
+    touched_reused_headers: dict[str, dict] = {}
     try:
         with SnapshotWriter(temporary, format) as writer:
             if format == "sqlite":
@@ -620,8 +630,26 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                     progress("reading", count + 1)
                 rel = relative_to_root(path, root)
                 mtime = round(st.st_mtime, 3)
+                raw_digest = hashlib.sha256(data).hexdigest()
+                if sqlite_fast_reuse and rel in verified_headers:
+                    old_h = verified_headers[rel]
+                    if (old_h.get("raw_hash") == raw_digest
+                            and old_h.get("parser_profile") == parser_profile(path, old_h.get("language"))
+                            and old_h.get("status") in {"parsed", "file-level", "parse-skipped"}):
+                        metrics["cache_hits"] += 1
+                        if old_h.get("size") == len(data) and old_h.get("mtime") == mtime:
+                            exact_reused_paths.append(rel)
+                        else:
+                            updated_h = dict(old_h)
+                            updated_h["size"], updated_h["mtime"] = len(data), mtime
+                            touched_reused_headers[rel] = updated_h
+                        del data
+                        count += 1
+                        if progress is not None:
+                            progress("parsing", count)
+                        continue
                 old = previous.get_file(rel) if reusable else None
-                if (old is not None and old.get("raw_hash") == hashlib.sha256(data).hexdigest()
+                if (old is not None and old.get("raw_hash") == raw_digest
                         and old.get("parser_profile") == parser_profile(path, old.get("language"))
                         and old.get("status") in {"parsed", "file-level", "parse-skipped"}):
                     old["size"], old["mtime"] = len(data), mtime
@@ -642,6 +670,8 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
                 count += 1
                 if progress is not None:
                     progress("parsing", count)
+            if exact_reused_paths or touched_reused_headers:
+                writer.bulk_copy_from_sqlite(previous, exact_reused_paths, touched_reused_headers)
             if progress is not None:
                 progress("validating", count)
             metadata_record = {
@@ -653,9 +683,16 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
             }
             if format == "sqlite":
                 from semantic_store import build_semantic_store
+                reused_set = set(exact_reused_paths) | set(touched_reused_headers)
                 with writer.reader() as current:
                     current.metadata.update(metadata_record)
-                    build_semantic_store(current, writer=writer)
+                    build_semantic_store(
+                        current,
+                        writer=writer,
+                        previous=previous if sqlite_fast_reuse else None,
+                        reused_files=reused_set if sqlite_fast_reuse else None,
+                        perimeter=perimeter,
+                    )
             writer.finish(metadata_record)
         _plain(out)
         # A caller reusing the same pathname transfers its reader to publication.
@@ -1145,7 +1182,9 @@ def resolved_imports(manifest: dict, config: dict | None = None, *,
 
 
 def iter_resolved_imports(manifest: dict, config: dict | None = None, *,
-                     include_self: bool = False) -> dict[str, dict[str, list[str]]]:
+                     include_self: bool = False,
+                     only_importers: set[str] | None = None,
+                     perimeter: Perimeter | None = None) -> dict[str, dict[str, list[str]]]:
     """Resolve each manifest specifier once, keeping its binding provenance.
 
     JS/TS paths match only explicit relative, configured or workspace targets.
@@ -1156,21 +1195,45 @@ def iter_resolved_imports(manifest: dict, config: dict | None = None, *,
     target = (root / (manifest.get("target") or ".")).resolve()
     config = ts_path_config(target) if config is None else config
     files = file_headers(manifest)
-    perimeter = Perimeter(target)
-    by_absolute = {(root / rel).resolve(): rel for rel in files
-                   if ((root / rel).resolve().is_relative_to(target) or (root / rel).resolve() == target)
-                   and perimeter.covers(root / rel) and not is_forbidden(Path(rel).name)}
+    if perimeter is None:
+        perimeter = Perimeter(target)
+    by_absolute: dict[Path, str] = {}
+    by_norm: dict[str, str] = {}
+    allowed_importers: set[str] = set()
+    for rel in files:
+        if is_forbidden(Path(rel).name):
+            continue
+        full_path = root / rel
+        resolved_rel = full_path.resolve()
+        if (resolved_rel.is_relative_to(target) or resolved_rel == target) and perimeter.covers(resolved_rel):
+            by_absolute[resolved_rel] = rel
+            allowed_importers.add(rel)
+            norm_rel = os.path.normcase(os.path.abspath(str(full_path)))
+            if os.path.normcase(str(resolved_rel)) == norm_rel:
+                by_norm[norm_rel] = rel
     known = _by_basename(by_absolute.values())
 
     def lookup(candidate: str, importer: str) -> str | None:
         for path in _module_candidates(candidate, importer):
-            match = by_absolute.get(Path(path).resolve())
-            if match:
-                return match
+            norm_path = os.path.normcase(os.path.abspath(path))
+            hit = by_norm.get(norm_path)
+            if hit is not None and not os.path.islink(path):
+                return hit
+            if os.path.exists(path):
+                match = by_absolute.get(Path(path).resolve())
+                if match:
+                    return match
         return None
 
-    for importer, entry in files.items():
-        if (root / importer).resolve() not in by_absolute:
+    header_iter = (
+        manifest.iter_file_headers_only()
+        if hasattr(manifest, "iter_file_headers_only")
+        else files.items()
+    )
+    for importer, entry in header_iter:
+        if only_importers is not None and importer not in only_importers:
+            continue
+        if importer not in allowed_importers:
             yield importer, {}
             continue
         imports = entry.get("imports", [])
@@ -2653,6 +2716,41 @@ def cmd_write(args: argparse.Namespace) -> int:
         return 2
 
 
+def cmd_meta_query(args: argparse.Namespace) -> int:
+    try:
+        from semantic_store import query_meta_code
+        with open_snapshot(Path(args.manifest)) as store:
+            result = query_meta_code(
+                store,
+                paths=args.path or None,
+                symbol=args.symbol,
+                freshness=args.freshness,
+                include_history=not args.no_history,
+                limit=args.limit,
+            )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
+def cmd_meta_upsert(args: argparse.Namespace) -> int:
+    try:
+        from semantic_store import upsert_meta_cards
+        cards = json.loads(Path(args.input).read_text(encoding="utf-8"))
+        if isinstance(cards, dict) and "cards" in cards:
+            cards = cards["cards"]
+        if not isinstance(cards, list):
+            raise ValueError("cards payload must be a JSON array or {'cards': [...]}")
+        result = upsert_meta_cards(Path(args.manifest), cards)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Codebase Map structural snapshots and change sets.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -2709,6 +2807,20 @@ def main(argv: list[str] | None = None) -> int:
         registry_parser = sub.add_parser(command, help="update this run's active registry entry")
         registry_parser.add_argument("run_dir")
         registry_parser.set_defaults(func=cmd_registry)
+
+    meta_query_parser = sub.add_parser("meta-query", help="query triple-hash Meta-Code symbols, cards, and bounded changesets")
+    meta_query_parser.add_argument("manifest")
+    meta_query_parser.add_argument("--path", action="append", default=[])
+    meta_query_parser.add_argument("--symbol")
+    meta_query_parser.add_argument("--freshness")
+    meta_query_parser.add_argument("--no-history", action="store_true")
+    meta_query_parser.add_argument("--limit", type=int, default=100)
+    meta_query_parser.set_defaults(func=cmd_meta_query)
+
+    meta_upsert_parser = sub.add_parser("meta-upsert", help="insert or patch persistent Meta-Code cards in a SQLite snapshot")
+    meta_upsert_parser.add_argument("manifest")
+    meta_upsert_parser.add_argument("--input", required=True)
+    meta_upsert_parser.set_defaults(func=cmd_meta_upsert)
 
     args = parser.parse_args(argv)
     return args.func(args)

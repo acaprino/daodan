@@ -258,6 +258,112 @@ class SnapshotStorageTests(unittest.TestCase):
             snapshot.write_snapshot(self.root, self.out("invalid"), format="pickle")
         self.assertFalse(self.out("invalid").exists())
 
+    def test_meta_code_triple_hash_cards_and_bounded_changesets(self):
+        storage = self.api()
+        import semantic_store
+        (self.root / "pkg").mkdir(exist_ok=True)
+        (self.root / "pkg/__init__.py").write_text("", encoding="utf-8")
+        (self.root / "pkg/b.py").write_text(
+            "def helper(value):\n    return value + 1\n\ndef extra():\n    return 10\n",
+            encoding="utf-8",
+        )
+        (self.root / "pkg/a.py").write_text(
+            "from .b import helper, extra\n\ndef run(x):\n    return helper(x)\n",
+            encoding="utf-8",
+        )
+        snap_path = self.out()
+        snapshot.write_snapshot(self.root, snap_path)
+
+        # Upsert Meta-Code cards for both pkg/a.py::run and pkg/b.py::helper
+        upsert_res = semantic_store.upsert_meta_cards(
+            snap_path,
+            [
+                {
+                    "file": "pkg/a.py",
+                    "symbol": "run",
+                    "purpose": "Delegates x computation to helper",
+                    "preconditions": ["x is numeric"],
+                    "postconditions": ["returns helper(x)"],
+                },
+                {
+                    "file": "pkg/b.py",
+                    "symbol": "helper",
+                    "purpose": "Increments numeric value",
+                    "invariants": ["pure function"],
+                },
+            ],
+        )
+        self.assertEqual(upsert_res["upserted"], 2)
+        self.assertEqual(upsert_res["missing_symbols"], [])
+
+        # Refresh 1: body-only edit in pkg/b.py::helper (signature unchanged, effects unchanged)
+        (self.root / "pkg/b.py").write_text(
+            "def helper(value):\n    step = 2\n    return value + step\n\ndef extra():\n    return 10\n",
+            encoding="utf-8",
+        )
+        with storage.open_snapshot(snap_path) as prev:
+            snapshot.write_snapshot(self.root, snap_path, previous=prev)
+
+        with storage.open_snapshot(snap_path) as store:
+            meta1 = semantic_store.query_meta_code(store)
+        self.assertEqual(meta1["summary"]["changesets"], 1)
+        cs1 = meta1["changesets"][0]
+        self.assertEqual(cs1["bodies_only_changed"], 1)
+        self.assertEqual(cs1["interfaces_changed"], 0)
+        self.assertEqual(cs1["deltas"][0]["symbol_id"], "pkg/b.py::helper")
+        self.assertEqual(cs1["deltas"][0]["change_kind"], "body_only")
+
+        by_id1 = {s["symbol_id"]: s for s in meta1["symbols"]}
+        # Crucial invariant: pkg/b.py::helper is stale_body, while caller pkg/a.py::run stays fresh!
+        self.assertEqual(by_id1["pkg/b.py::helper"]["freshness"], "stale_body")
+        self.assertEqual(by_id1["pkg/b.py::helper"]["stale_reason"], "symbol-body-changed")
+        self.assertEqual(by_id1["pkg/a.py::run"]["freshness"], "fresh")
+        self.assertIsNone(by_id1["pkg/a.py::run"]["stale_reason"])
+
+        # Refresh 2: effects-changed edit in pkg/b.py::helper (calls extra(), signature still unchanged)
+        (self.root / "pkg/b.py").write_text(
+            "def helper(value):\n    return value + extra()\n\ndef extra():\n    return 10\n",
+            encoding="utf-8",
+        )
+        with storage.open_snapshot(snap_path) as prev:
+            snapshot.write_snapshot(self.root, snap_path, previous=prev)
+        with storage.open_snapshot(snap_path) as store:
+            meta2 = semantic_store.query_meta_code(store)
+        self.assertEqual(meta2["summary"]["changesets"], 2)
+        self.assertEqual(meta2["changesets"][0]["deltas"][0]["change_kind"], "effects_changed")
+        by_id2 = {s["symbol_id"]: s for s in meta2["symbols"]}
+        # Caller pkg/a.py::run STILL stays fresh because helper's interface_hash did not change!
+        self.assertEqual(by_id2["pkg/a.py::run"]["freshness"], "fresh")
+
+        # Refresh 3: interface change in pkg/b.py::helper (parameter added)
+        (self.root / "pkg/b.py").write_text(
+            "def helper(value, offset=1):\n    return value + offset\n\ndef extra():\n    return 10\n",
+            encoding="utf-8",
+        )
+        with storage.open_snapshot(snap_path) as prev:
+            snapshot.write_snapshot(self.root, snap_path, previous=prev)
+        with storage.open_snapshot(snap_path) as store:
+            meta3 = semantic_store.query_meta_code(store)
+        self.assertEqual(meta3["summary"]["changesets"], 3)
+        self.assertEqual(meta3["changesets"][0]["deltas"][0]["change_kind"], "interface_changed")
+        by_id3 = {s["symbol_id"]: s for s in meta3["symbols"]}
+        self.assertEqual(by_id3["pkg/b.py::helper"]["freshness"], "stale_interface")
+        self.assertEqual(by_id3["pkg/a.py::run"]["freshness"], "stale_callee")
+        self.assertEqual(by_id3["pkg/a.py::run"]["stale_reason"], "callee-interface-changed")
+
+        # Refresh 4..22: verify ring buffer caps changesets at MAX_META_CHANGESETS (16)
+        for idx in range(20):
+            (self.root / "pkg/b.py").write_text(
+                f"def helper(value, offset=1):\n    return value + offset + {idx}\n\ndef extra():\n    return 10\n",
+                encoding="utf-8",
+            )
+            with storage.open_snapshot(snap_path) as prev:
+                snapshot.write_snapshot(self.root, snap_path, previous=prev)
+        with storage.open_snapshot(snap_path) as store:
+            meta_capped = semantic_store.query_meta_code(store)
+        self.assertEqual(meta_capped["summary"]["changesets"], semantic_store.MAX_META_CHANGESETS)
+        self.assertEqual(len(meta_capped["changesets"]), semantic_store.MAX_META_CHANGESETS)
+
 
 if __name__ == "__main__":
     unittest.main()

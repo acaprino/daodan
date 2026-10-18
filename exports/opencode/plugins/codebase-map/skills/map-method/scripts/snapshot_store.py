@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import hashlib
+import itertools
 import json
 from pathlib import Path
 import sqlite3
@@ -69,6 +70,56 @@ def _settings(connection, *, readonly=False):
         connection.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, MAX_RECORD_BYTES + 1)
     if readonly:
         connection.execute("PRAGMA query_only=ON")
+
+
+def _pack_bytes(data: bytes) -> bytes:
+    if len(data) > MAX_RECORD_BYTES:
+        raise ValueError("snapshot record exceeds storage limit")
+    compressed = zlib.compress(data, 3)
+    return b"z" + compressed if len(compressed) < len(data) else b"j" + data
+
+
+def _unpack_bytes(data: bytes) -> bytes:
+    if not isinstance(data, bytes) or not data:
+        raise ValueError("invalid snapshot record codec")
+    if data[:1] == b"z":
+        inflater = zlib.decompressobj()
+        try:
+            payload = inflater.decompress(data[1:], MAX_RECORD_BYTES + 1)
+        except zlib.error as error:
+            raise ValueError("invalid compressed snapshot record") from error
+        if len(payload) > MAX_RECORD_BYTES or not inflater.eof or inflater.unused_data:
+            raise ValueError("invalid or oversized compressed snapshot record")
+        return payload
+    if data[:1] == b"j":
+        payload = data[1:]
+        if len(payload) > MAX_RECORD_BYTES:
+            raise ValueError("snapshot record exceeds storage limit")
+        return payload
+    raise ValueError("unsupported snapshot record codec")
+
+
+_TAMPER_TRIGGERS = (
+    "trg_files_tamper_i",
+    "trg_files_tamper_u",
+    "trg_files_tamper_d",
+    "trg_symbols_tamper_i",
+    "trg_symbols_tamper_u",
+    "trg_symbols_tamper_d",
+    "trg_facts_tamper_i",
+    "trg_facts_tamper_u",
+    "trg_facts_tamper_d",
+)
+
+
+def _header_sig(header_blob: bytes, semantic_header_blob: bytes | None) -> bytes:
+    digest = hashlib.sha256()
+    digest.update(b"H:")
+    digest.update(header_blob)
+    if semantic_header_blob is not None:
+        digest.update(b"S:")
+        digest.update(semantic_header_blob)
+    return digest.digest()
 
 
 def _plain(path: Path):
@@ -160,6 +211,69 @@ class SnapshotStore:
         for (path,) in self.connection.execute("SELECT path FROM files ORDER BY path"):
             yield path, self.get_file(path, semantic=semantic)
 
+    def get_file_header(self, path: str) -> dict | None:
+        self._open()
+        if self._json:
+            return self._json.get_file(path, semantic=False)
+        row = self.connection.execute("SELECT header FROM files WHERE path=?", (path,)).fetchone()
+        if row is None:
+            return None
+        value = _unpack(row[0])
+        if not isinstance(value, dict):
+            raise ValueError("invalid snapshot file header")
+        return value
+
+    def iter_file_headers_only(self) -> Iterator[tuple[str, dict]]:
+        self._open()
+        if self._json:
+            yield from self._json.iter_files(semantic=False)
+            return
+        for path, raw_header in self.connection.execute("SELECT path, header FROM files ORDER BY path"):
+            value = _unpack(raw_header)
+            if not isinstance(value, dict):
+                raise ValueError("invalid snapshot file header")
+            yield path, value
+
+    def _has_json_cache(self) -> bool:
+        self._open()
+        if self._json or self.connection is None:
+            return False
+        has_table = (
+            self.connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='file_json_cache'"
+            ).fetchone()
+            is not None
+        )
+        if not has_table:
+            return False
+        trig_count = self.connection.execute(
+            "SELECT count(*) FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_%_tamper_%'"
+        ).fetchone()[0]
+        return trig_count == len(_TAMPER_TRIGGERS)
+
+    def verified_reusable_headers(self) -> dict[str, dict] | None:
+        """Return headers for SQLite rows whose trigger-guarded file_json_cache is intact."""
+        self._open()
+        if not self._has_json_cache():
+            return None
+        conn = self.connection
+        verified = {}
+        for path, header_blob, sem_blob, expected_sig in conn.execute(
+            """
+            SELECT f.path, f.header, f.semantic_header, c.row_sig
+            FROM files f
+            LEFT JOIN file_json_cache c ON c.path = f.path
+            ORDER BY f.path
+            """
+        ):
+            if expected_sig is None or _header_sig(header_blob, sem_blob) != expected_sig:
+                return None
+            header = _unpack(header_blob)
+            if not isinstance(header, dict):
+                return None
+            verified[path] = header
+        return verified
+
     def iter_symbols(self, *, path: str | None = None, pattern: str | None = None) -> Iterator[dict]:
         self._open()
         folded = pattern.casefold() if pattern else None
@@ -230,6 +344,7 @@ class SnapshotWriter:
             self.connection = sqlite3.connect(self.path)
             _settings(self.connection)
             self.connection.executescript("""
+                PRAGMA auto_vacuum=INCREMENTAL;
                 PRAGMA journal_mode=DELETE;
                 PRAGMA application_id=1145913680;
                 PRAGMA user_version=1;
@@ -242,6 +357,40 @@ class SnapshotWriter:
                     PRIMARY KEY(file,kind,ordinal));
                 CREATE TABLE index_records(kind TEXT NOT NULL,ordinal INTEGER NOT NULL,payload BLOB NOT NULL,
                     PRIMARY KEY(kind,ordinal));
+                CREATE TABLE file_json_cache(
+                    path TEXT PRIMARY KEY,
+                    row_sig BLOB NOT NULL,
+                    is_ascii INTEGER NOT NULL,
+                    payload_utf8 BLOB NOT NULL,
+                    payload_ascii BLOB
+                );
+                CREATE TRIGGER trg_files_tamper_i AFTER INSERT ON files BEGIN
+                    DELETE FROM file_json_cache WHERE path = NEW.path;
+                END;
+                CREATE TRIGGER trg_files_tamper_u AFTER UPDATE ON files BEGIN
+                    DELETE FROM file_json_cache WHERE path = OLD.path OR path = NEW.path;
+                END;
+                CREATE TRIGGER trg_files_tamper_d AFTER DELETE ON files BEGIN
+                    DELETE FROM file_json_cache WHERE path = OLD.path;
+                END;
+                CREATE TRIGGER trg_symbols_tamper_i AFTER INSERT ON symbols BEGIN
+                    DELETE FROM file_json_cache WHERE path = NEW.file;
+                END;
+                CREATE TRIGGER trg_symbols_tamper_u AFTER UPDATE ON symbols BEGIN
+                    DELETE FROM file_json_cache WHERE path = OLD.file OR path = NEW.file;
+                END;
+                CREATE TRIGGER trg_symbols_tamper_d AFTER DELETE ON symbols BEGIN
+                    DELETE FROM file_json_cache WHERE path = OLD.file;
+                END;
+                CREATE TRIGGER trg_facts_tamper_i AFTER INSERT ON facts BEGIN
+                    DELETE FROM file_json_cache WHERE path = NEW.file;
+                END;
+                CREATE TRIGGER trg_facts_tamper_u AFTER UPDATE ON facts BEGIN
+                    DELETE FROM file_json_cache WHERE path = OLD.file OR path = NEW.file;
+                END;
+                CREATE TRIGGER trg_facts_tamper_d AFTER DELETE ON facts BEGIN
+                    DELETE FROM file_json_cache WHERE path = OLD.file;
+                END;
             """)
 
     def _open(self):
@@ -268,16 +417,142 @@ class SnapshotWriter:
             stored = [kind for kind in FACT_KINDS if isinstance(semantic.get(kind), list)]
             semantic_header = _pack({"header": {key: value for key, value in semantic.items() if key not in stored},
                                      "lists": stored})
-        self.connection.execute("INSERT INTO files VALUES(?,?,?)", (path, _pack(header), semantic_header))
-        self.connection.executemany("INSERT INTO symbols VALUES(?,?,?,?)",
-            ((path, name, number, _pack(payload)) for number, (name, payload) in enumerate(entry["symbols"].items())))
+        header_blob = _pack(header)
+        sym_rows = [
+            (name, number, _pack(payload))
+            for number, (name, payload) in enumerate(entry["symbols"].items())
+        ]
+        fact_rows = []
         if semantic_header is not None:
-            for kind in stored:
-                self.connection.executemany("INSERT INTO facts VALUES(?,?,?,?)",
-                    ((path, kind, number, _pack(payload)) for number, payload in enumerate(semantic[kind])))
+            for kind in sorted(stored):
+                for number, payload in enumerate(semantic[kind]):
+                    fact_rows.append((kind, number, _pack(payload)))
+        self.connection.execute("INSERT INTO files VALUES(?,?,?)", (path, header_blob, semantic_header))
+        self.connection.executemany(
+            "INSERT INTO symbols VALUES(?,?,?,?)",
+            ((path, name, number, payload) for name, number, payload in sym_rows),
+        )
+        if fact_rows:
+            self.connection.executemany(
+                "INSERT INTO facts VALUES(?,?,?,?)",
+                ((path, kind, number, payload) for kind, number, payload in fact_rows),
+            )
+        row_sig = _header_sig(header_blob, semantic_header)
+        utf8_bytes = json.dumps(
+            entry, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+        is_ascii = 1 if utf8_bytes.isascii() else 0
+        ascii_blob = (
+            None
+            if is_ascii
+            else _pack_bytes(
+                json.dumps(
+                    entry, sort_keys=True, ensure_ascii=True, separators=(",", ":"), allow_nan=False
+                ).encode("utf-8")
+            )
+        )
+        self.connection.execute(
+            "INSERT OR REPLACE INTO file_json_cache VALUES(?,?,?,?,?)",
+            (path, row_sig, is_ascii, _pack_bytes(utf8_bytes), ascii_blob),
+        )
 
     def copy_file(self, previous: SnapshotStore, path: str) -> None:
         self.put_file(path, previous.get_file(path))
+
+    def bulk_copy_from_sqlite(
+        self,
+        previous: SnapshotStore,
+        exact_paths: Iterable[str],
+        touched_headers: dict[str, dict] | None = None,
+    ) -> None:
+        self._open()
+        if self.format != "sqlite" or previous.format != "sqlite":
+            raise ValueError("bulk SQLite copy requires sqlite format")
+        exact_list = sorted(set(exact_paths))
+        touched = dict(touched_headers or {})
+        if not exact_list and not touched:
+            return
+        conn = self.connection
+        conn.commit()
+        attached = False
+        try:
+            conn.execute("ATTACH DATABASE ? AS prev_snap", (str(previous.path.resolve()),))
+            attached = True
+            conn.execute("CREATE TEMP TABLE _reused_paths(path TEXT PRIMARY KEY, exact INTEGER NOT NULL)")
+            if exact_list:
+                conn.executemany("INSERT INTO _reused_paths VALUES(?,1)", ((p,) for p in exact_list))
+            if touched:
+                conn.executemany("INSERT INTO _reused_paths VALUES(?,0)", ((p,) for p in sorted(touched)))
+            conn.execute("""
+                INSERT INTO main.files(path, header, semantic_header)
+                SELECT f.path, f.header, f.semantic_header
+                FROM prev_snap.files f
+                JOIN _reused_paths r ON f.path = r.path
+                WHERE r.exact = 1
+            """)
+            if touched:
+                for rel, new_header in sorted(touched.items()):
+                    row = conn.execute(
+                        "SELECT semantic_header FROM prev_snap.files WHERE path=?", (rel,)
+                    ).fetchone()
+                    sem_blob = row[0] if row is not None else None
+                    conn.execute(
+                        "INSERT INTO main.files(path, header, semantic_header) VALUES(?,?,?)",
+                        (rel, _pack(new_header), sem_blob),
+                    )
+            conn.execute("""
+                INSERT INTO main.symbols(file, name, ordinal, payload)
+                SELECT s.file, s.name, s.ordinal, s.payload
+                FROM prev_snap.symbols s
+                JOIN _reused_paths r ON s.file = r.path
+            """)
+            conn.execute("""
+                INSERT INTO main.facts(file, kind, ordinal, payload)
+                SELECT fa.file, fa.kind, fa.ordinal, fa.payload
+                FROM prev_snap.facts fa
+                JOIN _reused_paths r ON fa.file = r.path
+            """)
+            conn.execute("""
+                INSERT INTO main.file_json_cache(path, row_sig, is_ascii, payload_utf8, payload_ascii)
+                SELECT c.path, c.row_sig, c.is_ascii, c.payload_utf8, c.payload_ascii
+                FROM prev_snap.file_json_cache c
+                JOIN _reused_paths r ON c.path = r.path
+                WHERE r.exact = 1
+            """)
+            if touched:
+                reader = self.reader()
+                for rel in sorted(touched):
+                    entry = reader.get_file(rel)
+                    h_row = conn.execute(
+                        "SELECT header, semantic_header FROM main.files WHERE path=?", (rel,)
+                    ).fetchone()
+                    row_sig = _header_sig(h_row[0], h_row[1])
+                    utf8_bytes = json.dumps(
+                        entry, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False
+                    ).encode("utf-8")
+                    is_ascii = 1 if utf8_bytes.isascii() else 0
+                    ascii_blob = (
+                        None
+                        if is_ascii
+                        else _pack_bytes(
+                            json.dumps(
+                                entry, sort_keys=True, ensure_ascii=True, separators=(",", ":"), allow_nan=False
+                            ).encode("utf-8")
+                        )
+                    )
+                    conn.execute(
+                        "INSERT OR REPLACE INTO main.file_json_cache VALUES(?,?,?,?,?)",
+                        (rel, row_sig, is_ascii, _pack_bytes(utf8_bytes), ascii_blob),
+                    )
+            conn.execute("DROP TABLE _reused_paths")
+            conn.commit()
+        finally:
+            if attached:
+                try:
+                    conn.commit()
+                except sqlite3.Error:
+                    pass
+                conn.execute("DETACH DATABASE prev_snap")
 
     def put_index_records(self, kind: str, records: Iterable[dict]) -> None:
         self._open()
@@ -362,6 +637,34 @@ def open_snapshot(path: Path, *, expected_format: str | None = None) -> Snapshot
         raise ValueError(f"invalid SQLite snapshot: {error}") from error
 
 
+def _iter_verified_file_json_bytes(store: SnapshotStore, *, ensure_ascii: bool) -> Iterator[tuple[str, bytes]]:
+    if not store._has_json_cache():
+        for path, entry in store.iter_files():
+            yield path, json.dumps(
+                entry, sort_keys=True, ensure_ascii=ensure_ascii, separators=(",", ":"), allow_nan=False
+            ).encode("utf-8")
+        return
+    conn = store.connection
+    for path, header_blob, sem_blob, expected_sig, is_ascii, payload_utf8, payload_ascii in conn.execute(
+        """
+        SELECT f.path, f.header, f.semantic_header, c.row_sig, c.is_ascii, c.payload_utf8, c.payload_ascii
+        FROM files f
+        LEFT JOIN file_json_cache c ON c.path = f.path
+        ORDER BY f.path
+        """
+    ):
+        if expected_sig is not None and _header_sig(header_blob, sem_blob) == expected_sig:
+            if not ensure_ascii or is_ascii:
+                yield path, _unpack_bytes(payload_utf8)
+            else:
+                yield path, _unpack_bytes(payload_ascii)
+            continue
+        entry = store.get_file(path)
+        yield path, json.dumps(
+            entry, sort_keys=True, ensure_ascii=ensure_ascii, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+
+
 def logical_chunks(store: SnapshotStore, *, ensure_ascii=True, keys=None):
     metadata = store.metadata
     selected = sorted(set(metadata) | {"files"}) if keys is None else sorted(keys)
@@ -372,12 +675,11 @@ def logical_chunks(store: SnapshotStore, *, ensure_ascii=True, keys=None):
         yield json.dumps(key, ensure_ascii=ensure_ascii).encode("utf-8") + b":"
         if key == "files":
             yield b"{"
-            for ordinal, (path, entry) in enumerate(store.iter_files()):
+            for ordinal, (path, entry_bytes) in enumerate(_iter_verified_file_json_bytes(store, ensure_ascii=ensure_ascii)):
                 if ordinal:
                     yield b","
                 yield json.dumps(path, ensure_ascii=ensure_ascii).encode("utf-8") + b":"
-                yield json.dumps(entry, sort_keys=True, ensure_ascii=ensure_ascii,
-                                 separators=(",", ":"), allow_nan=False).encode("utf-8")
+                yield entry_bytes
             yield b"}"
         else:
             yield json.dumps(metadata.get(key), sort_keys=True, ensure_ascii=ensure_ascii,
