@@ -8,12 +8,36 @@ Daodan is a development harness for projects built with AI. It augments your cod
 agent with a coherent way to understand a project, make changes, verify their
 consequences and preserve what was learned.
 
+Understanding comes first, and it comes from the Codebase Map. `codebase-map`
+analyzes the source statically and records the project as Meta-Code: an inventory
+of files and symbols, their interfaces, effects and interconnections, persistent
+semantic cards that stay fresh as the code changes, and evidence-backed leads on
+risks. Review, design diagnosis, documentation, handover and the Senior Maintainer
+campaign read that map instead of rediscovering the project on their own:
+`senior-review`, `abstraction-architect`, `project-knowledge` and
+`project-lifecycle` declare it as a mandatory dependency.
+
+The map supplies evidence and leads, never verdicts. Correctness belongs to
+senior-review, documentation to project-knowledge and tests to testing, and each
+owner confirms a lead by reading source before acting on it. The map stays
+static: runtime behavior counts only when the project's own tests or the user
+supply it.
+
 Its job is to keep behavior, code, tests, instructions, documentation and artifacts
 in agreement. It helps recover fragmented projects and avoid adding another layer
 of duplication, dead code, misleading tests or forgotten experimental output.
 
 One hand-authored source ships to Claude Code, GitHub Copilot, Codex, Pi and
 OpenCode V2. Useful language, framework and domain specialists remain independent.
+
+Daodan is complete on its own and reaches full strength alongside
+[Shinatama](https://github.com/acaprino/shinatama), its companion marketplace of
+domain verticals, office workflows, web research and multi-model deliberation.
+Install both on the same host: `skill-catalog` discovers Shinatama's knowledge
+sidecars automatically and selects the ones each run's evidenced stack and domain
+call for, so a review, a handover or a maintenance campaign brings that domain
+knowledge to the map. Shinatama is a recommended companion, not a dependency: no
+Daodan plugin declares it, and every Daodan workflow runs without it.
 
 ## Start with the project outcome
 
@@ -156,13 +180,13 @@ commands, paths, installation requirements and runtime limits on each host.
 
 | Plugin | Responsibility |
 |---|---|
+| [codebase-map](docs/plugins/codebase-map.md) | The core: the static Meta-Code map of structure, behavior and interconnections that the other owners read |
 | [project-lifecycle](docs/plugins/project-lifecycle.md) | Complete project work and coordination |
 | [project-protocol](docs/plugins/project-protocol.md) | Run identity, snapshots, state, verification and recovery |
 | [project-knowledge](docs/plugins/project-knowledge.md) | Durable instructions, guides, documentation and README |
 | [senior-review](docs/plugins/senior-review.md) | Unified correctness review, automatic stack specialists and application subtraction |
 | [testing](docs/plugins/testing.md) | Meaningful test authoring, suite diagnosis and protection-preserving remediation |
 | [abstraction-architect](docs/plugins/abstraction-architect.md) | Concept ownership, duplication and design diagnosis |
-| [codebase-map](docs/plugins/codebase-map.md) | Static structure, behavior and interconnection evidence |
 | [repo-hygiene](docs/plugins/repo-hygiene.md) | Filesystem/Git hygiene and reversible workspace operations |
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
 | [text-humanizer](docs/plugins/text-humanizer.md) | Voice and clarity of written content |

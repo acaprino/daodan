@@ -1,8 +1,19 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows, web research and multi-model deliberation live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows, web research and multi-model deliberation live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength; Shinatama stays a recommended companion and never a declared dependency. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
+
+codebase-map is the core of the harness. Its static analysis records a project as
+Meta-Code: file and symbol inventory, body, interface and effects digests,
+interconnections and persistent semantic cards with surgical freshness.
+senior-review, abstraction-architect, project-knowledge and project-lifecycle
+require it and build their understanding on its evidence rather than
+rediscovering the project. The map supplies evidence and leads, never verdicts:
+correctness, documentation, tests and cleanup stay with their owners, who confirm
+a lead by reading source. Leaf and specialist plugins such as project-protocol,
+skill-catalog, repo-hygiene, testing, clean-code and the language plugins do not
+depend on it.
 
 project-lifecycle owns assess, repair, change, verify and consolidate. Its handover
 entry prepares a consultant dossier inside an assess run; maintain coordinates the
