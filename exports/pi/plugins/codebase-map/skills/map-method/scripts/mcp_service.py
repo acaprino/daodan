@@ -20,7 +20,9 @@ import shutil
 import subprocess
 import sys
 
+import card_store
 import migrate_root
+import semantic_store
 import snapshot
 import source_reader
 from snapshot_store import file_headers, open_snapshot, resolve_run_snapshot, validate_format
@@ -439,6 +441,36 @@ class MapService:
         if len(json.dumps(packet)) > MAX_READ_CHARS:
             raise ValueError(f"read result exceeds {MAX_READ_CHARS} characters; request fewer files, symbols or ranges")
         return packet
+
+    def edit_impact(self, run_id, targets, neighbors=20, history=5, include_source=True):
+        if type(include_source) is not bool:
+            raise ValueError("include_source must be a boolean")
+        with self._operation():
+            _, _, manifest, _ = self._bound_run(run_id)
+            packet = dict(semantic_store.build_edit_impact(
+                manifest, targets, cards_path=self.root / card_store.CARD_STORE_NAME,
+                neighbors=neighbors, history=history, include_source=include_source), run_id=run_id)
+        if len(json.dumps(packet)) > MAX_READ_CHARS:
+            raise ValueError(f"edit impact exceeds {MAX_READ_CHARS} characters; request fewer targets or neighbors")
+        return packet
+
+    def meta_query(self, run_id, paths=None, symbol=None, freshness=None, include_history=True, limit=100):
+        _limit(limit)
+        if paths is not None:
+            if not isinstance(paths, list) or not paths:
+                raise ValueError("paths must be a nonempty list or null")
+            for path in paths:
+                _relative(path)
+        if symbol is not None and (not isinstance(symbol, str) or len(symbol) > 1000):
+            raise ValueError("symbol must be text of at most 1000 characters")
+        if freshness is not None and not isinstance(freshness, str):
+            raise ValueError("freshness must be text")
+        with self._operation():
+            _, _, manifest, _ = self._bound_run(run_id)
+            return dict(semantic_store.query_meta_code(
+                manifest, cards_path=self.root / card_store.CARD_STORE_NAME,
+                paths=paths, symbol=symbol, freshness=freshness,
+                include_history=bool(include_history), limit=limit), run_id=run_id)
 
     def diff(self, run_id):
         with self._operation():

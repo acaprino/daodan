@@ -6,7 +6,7 @@ protocol. Each adapter provides structural extraction (classes, functions,
 imports, external calls) and comment syntax info.
 
 Supported languages:
-    Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust,
+    Python, Java, JavaScript, TypeScript (incl. TSX/JSX), SQL, PL/SQL, Rust, Go,
     CSS (incl. SCSS and LESS).
 
 Tree-sitter is used when available via the optional `tree-sitter-language-pack`
@@ -56,6 +56,7 @@ class Language:
     SQL = "sql"
     PLSQL = "plsql"
     RUST = "rust"
+    GO = "go"
     CSS = "css"
 
 
@@ -67,6 +68,7 @@ SUPPORTED_LANGUAGES: tuple[str, ...] = (
     Language.SQL,
     Language.PLSQL,
     Language.RUST,
+    Language.GO,
     Language.CSS,
 )
 
@@ -99,6 +101,8 @@ SUPPORTED_EXTENSIONS: dict[str, str] = {
     ".trg": Language.PLSQL,  # Trigger
     # Rust.
     ".rs": Language.RUST,
+    # Go.
+    ".go": Language.GO,
     # Stylesheets. Indented Sass (.sass) has no braces to tokenize and stays a
     # file-level entry in the snapshot manifest.
     ".css": Language.CSS,
@@ -183,6 +187,9 @@ def get_adapter(language: str) -> LanguageAdapter:
         return _mod.adapter
     if language == Language.RUST:
         from . import rust as _mod
+        return _mod.adapter
+    if language == Language.GO:
+        from . import go as _mod
         return _mod.adapter
     if language == Language.CSS:
         from . import stylesheet as _mod

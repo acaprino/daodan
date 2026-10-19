@@ -474,6 +474,38 @@ class PresentationInventoryTests(unittest.TestCase):
         result = self.snapshot.compare_files(self.manifest, self.src)
         self.assertEqual(result["modified"], [self.key("styles/theme.css")])
 
+    def test_contracts_build_files_infrastructure_and_templates_are_file_level_entries(self):
+        files = {
+            "api/service.proto": 'syntax = "proto3";\nmessage Ping {}\n',
+            "api/schema.graphql": "type Query { ping: String }\n",
+            "db/schema.prisma": "model User { id Int @id }\n",
+            "infra/main.tf": 'resource "null_resource" "x" {}\n',
+            "service/build.gradle": "plugins { id 'java' }\n",
+            "app/App.csproj": "<Project />\n",
+            "web/page.jsp": "<%@ page %>\n",
+            "web/view.cshtml": "@model Foo\n",
+            "web/layout.twig": "{% block body %}{% endblock %}\n",
+        }
+        for relative, content in files.items():
+            write(self.src, relative, content)
+        manifest = self.snapshot.build_manifest(self.src)
+
+        for relative in files:
+            with self.subTest(relative=relative):
+                entry = manifest["files"][next(k for k in manifest["files"] if k.endswith(relative))]
+                self.assertIsNone(entry["language"])
+                self.assertEqual(entry["symbols"], {})
+                self.assertEqual(entry["status"], "file-level")
+
+    def test_files_that_usually_hold_passwords_stay_out_of_the_inventory(self):
+        for relative in ("application.properties", "prod.tfvars", "web.config", "secrets.tf"):
+            write(self.src, relative, "password=hunter2\n")
+        manifest = self.snapshot.build_manifest(self.src)
+
+        names = {Path(key).name for key in manifest["files"]}
+        for excluded in ("application.properties", "prod.tfvars", "web.config", "secrets.tf"):
+            self.assertNotIn(excluded, names)
+
 
 class PerimeterTests(unittest.TestCase):
     """

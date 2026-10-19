@@ -100,10 +100,19 @@ MAX_FILE_BYTES = 20_000_000
 # them all. It stays a file-level entry.
 MAX_STYLESHEET_LINE = 10_000
 
-# Non-source files a phase file legitimately cites.
+# Non-source files a phase file legitimately cites. API contracts (protobuf,
+# GraphQL, Prisma, XML schemas and WSDL), build files (Gradle, CMake, make,
+# .NET project files) and infrastructure as code (Terraform) are inventoried
+# as file-level entries: a claim can cite them and a diff notices their edits,
+# with no symbols invented for them. `.properties`, `.config` and `.tfvars` stay
+# out on purpose: they routinely hold passwords, and the forbidden list below
+# filters by name, never by content.
 DOC_EXTENSIONS = frozenset({
-    ".cfg", ".ini", ".json", ".md", ".ps1", ".rst", ".sh", ".toml", ".txt",
-    ".xml", ".yaml", ".yml",
+    ".bat", ".cfg", ".cmake", ".cmd", ".csproj", ".fsproj", ".gql", ".gradle",
+    ".graphql", ".hcl", ".ini", ".json", ".json5", ".jsonc", ".md", ".mk",
+    ".plist", ".props", ".proto", ".prisma", ".ps1", ".rst", ".sh", ".sln",
+    ".targets", ".tf", ".toml", ".txt", ".vbproj", ".wsdl", ".xml", ".xsd",
+    ".xsl", ".xslt", ".yaml", ".yml",
 })
 
 # Presentation files no adapter parses: markup, single-file components and
@@ -115,7 +124,9 @@ DOC_EXTENSIONS = frozenset({
 # and locking users out. CSS, SCSS and LESS left it for their own adapter,
 # which records every rule as a symbol.
 PRESENTATION_EXTENSIONS = frozenset({
-    ".htm", ".html", ".sass", ".svelte", ".vue",
+    ".astro", ".cshtml", ".ejs", ".ftl", ".hbs", ".htm", ".html", ".jsp",
+    ".jspx", ".liquid", ".mustache", ".pug", ".razor", ".sass", ".svelte",
+    ".twig", ".vm", ".vue", ".xhtml",
 })
 
 # The Codebase Map's forbidden list. These never enter the manifest, not even as a hash.
@@ -218,7 +229,7 @@ def parser_fingerprint() -> str:
 def parser_profile(path: Path, language: str | None = None) -> dict:
     """Effective backend for this file, without reading its source bytes."""
     language = language or SUPPORTED_EXTENSIONS.get(path.suffix.lower())
-    if language in {"java", "javascript", "typescript", "rust"}:
+    if language in {"java", "javascript", "typescript", "rust", "go"}:
         from languages._treesitter import get_parser
         grammar = "tsx" if path.suffix.lower() == ".tsx" else language
         loaded = get_parser(grammar)
@@ -2716,17 +2727,39 @@ def cmd_write(args: argparse.Namespace) -> int:
         return 2
 
 
+def _cards_path(args: argparse.Namespace) -> Path:
+    """`--cards`, or the card store of the analysis the snapshot belongs to."""
+    from card_store import default_cards_path
+    return Path(args.cards) if args.cards else default_cards_path(args.manifest)
+
+
 def cmd_meta_query(args: argparse.Namespace) -> int:
     try:
         from semantic_store import query_meta_code
         with open_snapshot(Path(args.manifest)) as store:
             result = query_meta_code(
                 store,
+                cards_path=_cards_path(args),
                 paths=args.path or None,
                 symbol=args.symbol,
                 freshness=args.freshness,
                 include_history=not args.no_history,
                 limit=args.limit,
+            )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
+def cmd_edit_impact(args: argparse.Namespace) -> int:
+    try:
+        from semantic_store import build_edit_impact
+        with open_snapshot(Path(args.manifest)) as store:
+            result = build_edit_impact(
+                store, args.target, cards_path=_cards_path(args), neighbors=args.neighbors,
+                history=args.history, include_source=not args.no_source,
             )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
@@ -2743,7 +2776,8 @@ def cmd_meta_upsert(args: argparse.Namespace) -> int:
             cards = cards["cards"]
         if not isinstance(cards, list):
             raise ValueError("cards payload must be a JSON array or {'cards': [...]}")
-        result = upsert_meta_cards(Path(args.manifest), cards)
+        with open_snapshot(Path(args.manifest)) as store:
+            result = upsert_meta_cards(store, _cards_path(args), cards)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (OSError, ValueError, KeyError) as error:
@@ -2808,18 +2842,29 @@ def main(argv: list[str] | None = None) -> int:
         registry_parser.add_argument("run_dir")
         registry_parser.set_defaults(func=cmd_registry)
 
-    meta_query_parser = sub.add_parser("meta-query", help="query triple-hash Meta-Code symbols, cards, and bounded changesets")
+    meta_query_parser = sub.add_parser("meta-query", help="query Meta-Code symbols, their cards with freshness against this snapshot, and bounded changesets")
     meta_query_parser.add_argument("manifest")
     meta_query_parser.add_argument("--path", action="append", default=[])
     meta_query_parser.add_argument("--symbol")
     meta_query_parser.add_argument("--freshness")
     meta_query_parser.add_argument("--no-history", action="store_true")
     meta_query_parser.add_argument("--limit", type=int, default=100)
+    meta_query_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     meta_query_parser.set_defaults(func=cmd_meta_query)
 
-    meta_upsert_parser = sub.add_parser("meta-upsert", help="insert or patch persistent Meta-Code cards in a SQLite snapshot")
+    edit_impact_parser = sub.add_parser("edit-impact", help="what to know before editing symbols: digests, cards, one-hop callers and callees, blind spots, verified source")
+    edit_impact_parser.add_argument("manifest")
+    edit_impact_parser.add_argument("--target", action="append", required=True, help="symbol id (path::Name) or file path; repeatable")
+    edit_impact_parser.add_argument("--neighbors", type=int, default=20)
+    edit_impact_parser.add_argument("--history", type=int, default=5)
+    edit_impact_parser.add_argument("--no-source", action="store_true")
+    edit_impact_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
+    edit_impact_parser.set_defaults(func=cmd_edit_impact)
+
+    meta_upsert_parser = sub.add_parser("meta-upsert", help="write Meta-Code cards, bound to the digests of this snapshot, to the card store")
     meta_upsert_parser.add_argument("manifest")
     meta_upsert_parser.add_argument("--input", required=True)
+    meta_upsert_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     meta_upsert_parser.set_defaults(func=cmd_meta_upsert)
 
     args = parser.parse_args(argv)

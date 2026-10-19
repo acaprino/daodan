@@ -102,6 +102,24 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         return await _invoke(ctx, service.read, run_id, requests)
 
     @server.tool(annotations=read_only)
+    async def codebase_map_edit_impact(
+        ctx: Context, run_id: str, targets: list[str], neighbors: int = 20,
+        history: int = 5, include_source: bool = True,
+    ) -> dict:
+        """Before editing symbols: digests, cards, one-hop callers and callees, unresolved references and verified source."""
+        return await _invoke(ctx, service.edit_impact, run_id, targets, neighbors=neighbors,
+                             history=history, include_source=include_source)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_meta_query(
+        ctx: Context, run_id: str, paths: list[str] | None = None, symbol: str | None = None,
+        freshness: str | None = None, include_history: bool = True, limit: int = 100,
+    ) -> dict:
+        """Query Meta-Code symbols, their card freshness and the bounded changeset history."""
+        return await _invoke(ctx, service.meta_query, run_id, paths=paths, symbol=symbol,
+                             freshness=freshness, include_history=include_history, limit=limit)
+
+    @server.tool(annotations=read_only)
     async def codebase_map_diff(ctx: Context, run_id: str) -> dict:
         """Compare the bound snapshot to current source without changing the run."""
         return await _invoke(ctx, service.diff, run_id)

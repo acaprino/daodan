@@ -452,7 +452,7 @@
         "root": "plugins/codebase-map",
         "skills": [
           {
-            "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+            "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
             "file": "skills/map-method/SKILL.md",
             "id": "codebase-map:map-method",
             "name": "map-method"
@@ -2504,5 +2504,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "36.1.0"
+  "version": "36.2.0"
 }

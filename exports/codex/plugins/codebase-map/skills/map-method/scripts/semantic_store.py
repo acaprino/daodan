@@ -14,6 +14,7 @@ import tempfile
 import snapshot
 from snapshot_store import SnapshotStore, SnapshotWriter, _pack, _unpack, _settings, logical_digest
 from tree_scope import Perimeter
+import card_store
 import semantic_index
 
 RESOLVER_VERSION = 1
@@ -138,21 +139,6 @@ def _schema(database):
             PRIMARY KEY(seq, symbol_id)
         );
         CREATE INDEX meta_changeset_deltas_symbol ON meta_changeset_deltas(symbol_id, seq);
-        CREATE TABLE meta_cards(
-            symbol_id TEXT PRIMARY KEY,
-            file TEXT NOT NULL,
-            symbol TEXT NOT NULL,
-            kind TEXT NOT NULL,
-            body_hash TEXT NOT NULL,
-            interface_hash TEXT NOT NULL,
-            effects_hash TEXT NOT NULL,
-            callee_interface_digest TEXT NOT NULL,
-            freshness TEXT NOT NULL,
-            stale_reason TEXT,
-            updated_at TEXT NOT NULL,
-            payload BLOB NOT NULL
-        );
-        CREATE INDEX meta_cards_file ON meta_cards(file, freshness);
     """)
 
 
@@ -386,7 +372,15 @@ def _compute_file_meta_symbols(
     scope_rows: list[tuple],
     export_rows: list[tuple],
     ref_rows: list[tuple],
+    target_key,
 ) -> list[tuple]:
+    """Meta-symbol rows of one file.
+
+    `target_key` maps a reference target to a key that survives an edit elsewhere.
+    The ids in sem_references are positional (`function@4:0`), so hashing them
+    would change the effects of an untouched caller whenever a callee below an
+    edit moved down a line.
+    """
     if not sym_rows:
         return []
     unpacked_syms = [(name, _unpack(blob)) for name, blob in sym_rows]
@@ -477,7 +471,7 @@ def _compute_file_meta_symbols(
             if in_decl or in_span:
                 if target_id and target_id in decl_line and start <= decl_line[target_id] <= end:
                     continue
-                effects.add((r_kind, target_id or "", last_name or "", resolution))
+                effects.add((r_kind, target_key(target_id), last_name or "", resolution))
         effects_sig = ";".join(f"{rk}:{tid}:{ln}:{res}" for rk, tid, ln, res in sorted(effects))
         effects_hash = hashlib.sha256(effects_sig.encode("utf-8")).hexdigest()[:16]
         out_rows.append((
@@ -525,6 +519,17 @@ def _build_meta_symbols(db: sqlite3.Connection, recompute_files: set[str] | None
     exp_by_file = _group_map(exp_cur)
     ref_by_file = _group_map(ref_cur)
 
+    stable: dict[str, str] = {}
+
+    def target_key(target_id):
+        if not target_id:
+            return ""
+        if target_id not in stable:
+            row = db.execute("SELECT file,name,payload FROM sem_declarations WHERE id=?", (target_id,)).fetchone()
+            stable[target_id] = (f"{row[0]}::{_unpack(row[2]).get('qualified_name') or row[1]}"
+                                 if row else target_id)
+        return stable[target_id]
+
     batch: list[tuple] = []
     for rel in target_files:
         s_rows = sym_by_file.get(rel)
@@ -537,6 +542,7 @@ def _build_meta_symbols(db: sqlite3.Connection, recompute_files: set[str] | None
             scope_by_file.get(rel, []),
             exp_by_file.get(rel, []),
             ref_by_file.get(rel, []),
+            target_key,
         ))
     if batch:
         db.executemany("INSERT INTO meta_symbols VALUES(?,?,?,?,?,?,?,?,?,?)", batch)
@@ -578,7 +584,7 @@ def _callee_interface_digests(db: sqlite3.Connection, files_filter: set[str] | N
     return result
 
 
-def _record_meta_changeset_and_carry_cards(
+def _record_meta_changeset(
     db: sqlite3.Connection,
     store: SnapshotStore,
     prev_attached: bool,
@@ -663,54 +669,6 @@ def _record_meta_changeset_and_carry_cards(
             placeholders = ",".join("?" for _ in prune_seqs)
             db.execute(f"DELETE FROM meta_changeset_deltas WHERE seq IN ({placeholders})", prune_seqs)
             db.execute(f"DELETE FROM meta_changesets WHERE seq IN ({placeholders})", prune_seqs)
-
-    # Carry forward meta_cards and update freshness surgically
-    if db.execute("SELECT 1 FROM prev_snap.sqlite_master WHERE type='table' AND name='meta_cards'").fetchone():
-        prev_cards = db.execute("""
-            SELECT c.symbol_id, c.file, c.symbol, c.kind,
-                   c.body_hash, c.interface_hash, c.effects_hash,
-                   c.callee_interface_digest, c.freshness, c.stale_reason,
-                   c.updated_at, c.payload,
-                   m.body_hash, m.interface_hash, m.effects_hash
-            FROM prev_snap.meta_cards c
-            LEFT JOIN main.meta_symbols m ON m.id = c.symbol_id
-        """).fetchall()
-        if prev_cards:
-            card_files = {row[1] for row in prev_cards if row[12] is not None}
-            callee_digests = _callee_interface_digests(db, card_files)
-            carried: list[tuple] = []
-            for (
-                sym_id, c_file, c_sym, c_kind,
-                c_bhash, c_ihash, c_ehash, c_cdigest,
-                c_fresh, c_reason, c_updated, c_payload,
-                m_bhash, m_ihash, m_ehash,
-            ) in prev_cards:
-                if m_bhash is None:
-                    freshness = "orphan"
-                    reason = "symbol-removed"
-                elif c_ihash != m_ihash:
-                    freshness = "stale_interface"
-                    reason = "symbol-interface-changed"
-                elif c_ehash != m_ehash:
-                    freshness = "stale_body"
-                    reason = "symbol-effects-changed"
-                elif c_bhash != m_bhash:
-                    freshness = "stale_body"
-                    reason = "symbol-body-changed"
-                else:
-                    curr_cdigest = callee_digests.get(sym_id, "")
-                    if c_cdigest != curr_cdigest:
-                        freshness = "stale_callee"
-                        reason = "callee-interface-changed"
-                    else:
-                        freshness = c_fresh if c_fresh != "orphan" else "fresh"
-                        reason = c_reason if freshness != "fresh" else None
-                carried.append((
-                    sym_id, c_file, c_sym, c_kind,
-                    c_bhash, c_ihash, c_ehash, c_cdigest,
-                    freshness, reason, c_updated, c_payload,
-                ))
-            db.executemany("INSERT INTO main.meta_cards VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", carried)
 
 
 def build_semantic_store(
@@ -916,7 +874,7 @@ def build_semantic_store(
         if store.format == "sqlite":
             recompute_meta = (curr_all_paths - ref_reused_set) if ref_reused_set else None
             _build_meta_symbols(db, recompute_meta, prev_attached)
-            _record_meta_changeset_and_carry_cards(db, store, prev_attached)
+            _record_meta_changeset(db, store, prev_attached)
 
         db.execute("DROP TABLE IF EXISTS _sem_ref_reused")
         db.execute("DROP TABLE IF EXISTS _sem_reused")
@@ -968,79 +926,138 @@ def query_references(store, declaration_id):
             yield _unpack(payload)
 
 
-def upsert_meta_cards(snapshot_path: Path | str, cards: list[dict]) -> dict:
-    """Insert or patch persistent Meta-Code cards bound to current symbol triple-hashes."""
-    path = Path(snapshot_path)
-    db = sqlite3.connect(path)
-    _settings(db)
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    upserted = 0
+CARD_FRESHNESS = ("fresh", "stale_body", "stale_interface", "stale_callee", "orphan")
+MAX_CARD_BATCH = 500
+
+
+class _Cards:
+    """The cards of one root, judged against the snapshot being read.
+
+    A card keeps the digests of the symbol it was written against. Here they are
+    compared with this snapshot's symbols, so one card can be fresh in a snapshot
+    and stale in the next without anything having to carry it forward.
+    """
+
+    def __init__(self, db, cards_path, root):
+        self.path, self.root = cards_path, root
+        rows = card_store.digests(cards_path, root) if cards_path is not None else []
+        self.rows = {row[0]: row for row in rows}
+        self.states = self._judge(db) if self.rows else {}
+        self._payloads: dict[str, dict] = {}
+
+    def _judge(self, db):
+        symbols = {row[0]: row for row in db.execute(
+            "SELECT id,body_hash,interface_hash,effects_hash FROM meta_symbols") if row[0] in self.rows}
+        states, pending = {}, {}
+        for symbol_id, (_id, file, _name, body, interface, effects, _callee, _at) in self.rows.items():
+            current = symbols.get(symbol_id)
+            if current is None:
+                states[symbol_id] = ("orphan", "symbol-removed")
+            elif interface != current[2]:
+                states[symbol_id] = ("stale_interface", "symbol-interface-changed")
+            elif effects != current[3]:
+                states[symbol_id] = ("stale_body", "symbol-effects-changed")
+            elif body != current[1]:
+                states[symbol_id] = ("stale_body", "symbol-body-changed")
+            else:
+                pending[symbol_id] = file
+        if pending:
+            callee = _callee_interface_digests(db, set(pending.values()))
+            for symbol_id in pending:
+                same = callee.get(symbol_id, "") == self.rows[symbol_id][6]
+                states[symbol_id] = ("fresh", None) if same else ("stale_callee", "callee-interface-changed")
+        return states
+
+    def counts(self) -> dict[str, int]:
+        found: dict[str, int] = {}
+        for freshness, _reason in self.states.values():
+            found[freshness] = found.get(freshness, 0) + 1
+        return found
+
+    def prefetch(self, symbol_ids):
+        wanted = [i for i in symbol_ids if i in self.states and i not in self._payloads]
+        if wanted:
+            self._payloads.update(card_store.read_cards(self.path, self.root, wanted))
+
+    def get(self, symbol_id):
+        """Freshness, reason, timestamp and stored fields of a card, or None."""
+        if symbol_id not in self.states:
+            return None
+        self.prefetch([symbol_id])
+        freshness, reason = self.states[symbol_id]
+        return {"freshness": freshness, "stale_reason": reason, **self._payloads.get(symbol_id, {})}
+
+
+def upsert_meta_cards(store: SnapshotStore, cards_path: Path | str, cards: list[dict]) -> dict:
+    """Write cards to the project's card store, bound to the digests of `store`.
+
+    The snapshot is only read: a run's snapshot is immutable evidence, so the cards
+    live in their own file and are judged against whichever snapshot is queried.
+    A card names its symbol by `symbol_id`, or by `file` and `symbol`. A symbol the
+    snapshot does not hold is reported in `missing_symbols` and not written.
+    """
+    if store.format != "sqlite":
+        raise ValueError("Meta-Code requires a SQLite snapshot")
+    if not isinstance(cards, list) or not 1 <= len(cards) <= MAX_CARD_BATCH:
+        raise ValueError(f"cards must be a list of 1 to {MAX_CARD_BATCH} cards")
+    prepared: list[tuple[str, dict]] = []
+    for item in cards:
+        payload = card_store.validate_card(item)
+        symbol_id = item.get("symbol_id")
+        if symbol_id is None:
+            file, symbol = item.get("file"), item.get("symbol")
+            if not isinstance(file, str) or not isinstance(symbol, str) or not file or not symbol:
+                raise ValueError("a card needs symbol_id, or both file and symbol")
+            symbol_id = f"{file}::{symbol}"
+        if not isinstance(symbol_id, str) or not symbol_id or len(symbol_id) > 1000:
+            raise ValueError("symbol_id must be text of at most 1000 characters")
+        prepared.append((symbol_id, payload))
+
+    root = store.metadata.get("root")
+    rows: list[dict] = []
     missing: list[str] = []
-    try:
-        target_files: set[str] = set()
-        resolved_targets: list[tuple[tuple, dict]] = []
-        for item in cards:
-            sym_id = item.get("symbol_id") or f"{item.get('file', '')}::{item.get('symbol', '')}"
+    found: dict[str, tuple] = {}
+    with semantic_reader(store) as db:
+        for symbol_id, _payload in prepared:
             row = db.execute(
-                "SELECT id, file, name, kind, body_hash, interface_hash, effects_hash FROM meta_symbols WHERE id=?",
-                (sym_id,),
-            ).fetchone()
+                "SELECT id,file,name,kind,body_hash,interface_hash,effects_hash FROM meta_symbols WHERE id=?",
+                (symbol_id,)).fetchone()
             if row is None:
-                missing.append(sym_id)
-                continue
-            target_files.add(row[1])
-            resolved_targets.append((row, item))
-        callee_digests = _callee_interface_digests(db, target_files) if target_files else {}
-        with db:
-            for (sym_id, file, name, kind, b_hash, i_hash, e_hash), item in resolved_targets:
-                payload = {
-                    k: item[k]
-                    for k in (
-                        "purpose",
-                        "preconditions",
-                        "postconditions",
-                        "invariants",
-                        "side_effects",
-                        "failure_modes",
-                        "notes",
-                        "confidence",
-                    )
-                    if k in item
-                }
-                c_digest = callee_digests.get(sym_id, "")
-                db.execute(
-                    "INSERT OR REPLACE INTO meta_cards VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (
-                        sym_id,
-                        file,
-                        name,
-                        kind,
-                        b_hash,
-                        i_hash,
-                        e_hash,
-                        c_digest,
-                        "fresh",
-                        None,
-                        item.get("updated_at") or now,
-                        _pack(payload),
-                    ),
-                )
-                upserted += 1
-    finally:
-        db.close()
-    return {"upserted": upserted, "missing_symbols": missing}
+                missing.append(symbol_id)
+            else:
+                found[symbol_id] = row
+        callee = _callee_interface_digests(db, {row[1] for row in found.values()}) if found else {}
+    for symbol_id, payload in prepared:
+        row = found.get(symbol_id)
+        if row is not None:
+            rows.append({"symbol_id": symbol_id, "file": row[1], "symbol": row[2], "kind": row[3],
+                         "body_hash": row[4], "interface_hash": row[5], "effects_hash": row[6],
+                         "callee_digest": callee.get(symbol_id, ""), "payload": payload})
+    if rows:
+        card_store.write_cards(cards_path, root, rows)
+    return {"upserted": len(rows), "missing_symbols": missing, "store": str(cards_path)}
 
 
 def query_meta_code(
     store: SnapshotStore,
     *,
+    cards_path: Path | str | None = None,
     paths: list[str] | None = None,
     symbol: str | None = None,
     freshness: str | None = None,
     include_history: bool = True,
     limit: int = 100,
 ) -> dict:
-    """Query the triple-hash Meta-Code index, cards, freshness state, and bounded N-changeset history."""
+    """Query the Meta-Code index, its cards with their freshness, and the bounded changeset history.
+
+    `freshness` filters to one of `fresh`, `stale_body`, `stale_interface`,
+    `stale_callee`, `uncovered` (a symbol with no card) or `orphan` (a card whose
+    symbol the snapshot no longer holds, listed under `orphans`).
+    """
+    if store.format != "sqlite":
+        raise ValueError("Meta-Code requires a SQLite snapshot")
+    if freshness is not None and freshness not in (*CARD_FRESHNESS, "uncovered"):
+        raise ValueError("freshness must be one of: " + ", ".join((*CARD_FRESHNESS, "uncovered")))
     with semantic_reader(store) as db:
         has_meta = db.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='meta_symbols'"
@@ -1049,12 +1066,14 @@ def query_meta_code(
             return {
                 "summary": {"total_symbols": 0, "cards": {}, "changesets": 0, "history_bytes": 0},
                 "symbols": [],
+                "orphans": [],
                 "changesets": [],
             }
+        cards = _Cards(db, cards_path, store.metadata.get("root"))
         total_symbols = db.execute("SELECT COUNT(*) FROM meta_symbols").fetchone()[0]
-        card_counts = dict(
-            db.execute("SELECT freshness, COUNT(*) FROM meta_cards GROUP BY freshness").fetchall()
-        )
+        card_counts = cards.counts()
+        card_counts["uncovered"] = total_symbols - sum(
+            count for name, count in card_counts.items() if name != "orphan")
         cs_meta = db.execute(
             "SELECT COUNT(*), COALESCE(SUM(byte_size), 0) FROM meta_changesets"
         ).fetchone()
@@ -1068,32 +1087,27 @@ def query_meta_code(
         if symbol:
             clauses.append("(m.name = ? OR m.id = ? OR m.name LIKE ?)")
             params.extend([symbol, symbol, f"%.{symbol}"])
-        if freshness == "uncovered":
-            clauses.append("c.symbol_id IS NULL")
-        elif freshness:
-            clauses.append("c.freshness = ?")
-            params.append(freshness)
         where_sql = ("WHERE " + " AND ".join(clauses)) if clauses else ""
-        rows = db.execute(
-            f"""
-            SELECT m.id, m.file, m.name, m.kind, m.start, m.end,
-                   m.body_hash, m.interface_hash, m.effects_hash, m.exported,
-                   c.freshness, c.stale_reason, c.updated_at, c.payload
-            FROM meta_symbols m
-            LEFT JOIN meta_cards c ON c.symbol_id = m.id
-            {where_sql}
-            ORDER BY m.file, m.start, m.name
-            LIMIT ?
-            """,
-            [*params, max(1, int(limit))],
-        ).fetchall()
+        limit = max(1, int(limit))
+        selected = []
+        if freshness != "orphan":
+            for row in db.execute(
+                f"""
+                SELECT m.id, m.file, m.name, m.kind, m.start, m.end,
+                       m.body_hash, m.interface_hash, m.effects_hash, m.exported
+                FROM meta_symbols m {where_sql}
+                ORDER BY m.file, m.start, m.name
+                """, params):
+                state = cards.states.get(row[0], ("uncovered", None))[0]
+                if freshness is None or state == freshness:
+                    selected.append(row)
+                    if len(selected) == limit:
+                        break
+        cards.prefetch([row[0] for row in selected])
         symbols_out = []
-        for (
-            sym_id, file, name, kind, start, end,
-            b_hash, i_hash, e_hash, exported,
-            c_fresh, c_reason, c_updated, c_payload,
-        ) in rows:
-            entry = {
+        for sym_id, file, name, kind, start, end, b_hash, i_hash, e_hash, exported in selected:
+            card = cards.get(sym_id)
+            symbols_out.append({
                 "symbol_id": sym_id,
                 "file": file,
                 "name": name,
@@ -1104,12 +1118,18 @@ def query_meta_code(
                 "interface_hash": i_hash,
                 "effects_hash": e_hash,
                 "exported": bool(exported),
-                "freshness": c_fresh or "uncovered",
-                "stale_reason": c_reason,
-                "card": _unpack(c_payload) if c_payload is not None else None,
-                "card_updated_at": c_updated,
-            }
-            symbols_out.append(entry)
+                "freshness": card["freshness"] if card else "uncovered",
+                "stale_reason": card["stale_reason"] if card else None,
+                "card": ({k: v for k, v in card.items() if k not in ("freshness", "stale_reason", "updated_at")}
+                         if card else None),
+                "card_updated_at": card.get("updated_at") if card else None,
+            })
+        orphans = []
+        if freshness == "orphan":
+            for symbol_id, file, name, *_digests, updated_at in cards.rows.values():
+                if cards.states[symbol_id][0] == "orphan" and (not paths or file in paths):
+                    orphans.append({"symbol_id": symbol_id, "file": file, "symbol": name, "card_updated_at": updated_at})
+            orphans = orphans[:limit]
 
         changesets_out = []
         if include_history:
@@ -1177,5 +1197,213 @@ def query_meta_code(
                 "history_bytes": cs_meta[1],
             },
             "symbols": symbols_out,
+            "orphans": orphans,
             "changesets": changesets_out,
         }
+
+
+EDIT_IMPACT_SCHEMA = "daodan/edit-impact/v1"
+MAX_IMPACT_TARGETS = 25
+# A name no scope binds is a builtin or an undeclared global: counted, not listed.
+_NOT_A_BLIND_SPOT = frozenset({"unbound-name"})
+_SYMBOL_COLUMNS = "id,file,name,kind,start,end,body_hash,interface_hash,effects_hash,exported"
+
+
+class _ImpactIndex:
+    """Per-file lookups over the Meta-Code index, read once per file."""
+
+    def __init__(self, db):
+        self.db = db
+        self._symbols: dict[str, list] = {}
+        self._declarations: dict[str, list] = {}
+
+    def symbols(self, file):
+        if file not in self._symbols:
+            self._symbols[file] = self.db.execute(
+                f"SELECT {_SYMBOL_COLUMNS} FROM meta_symbols WHERE file=? ORDER BY start,end", (file,)
+            ).fetchall()
+        return self._symbols[file]
+
+    def declarations(self, file):
+        if file not in self._declarations:
+            rows = self.db.execute(
+                "SELECT id,name,l0,payload FROM sem_declarations WHERE file=? AND kind IN ('function','class')",
+                (file,),
+            ).fetchall()
+            self._declarations[file] = [
+                (ident, _unpack(payload).get("qualified_name") or name, name, line)
+                for ident, name, line, payload in rows
+            ]
+        return self._declarations[file]
+
+    def declaration_ids(self, symbol):
+        """Declarations a manifest symbol stands for, by qualified name, then by position."""
+        _, file, name, _kind, start, end = symbol[:6]
+        short = name.split(".")[-1]
+        found = [ident for ident, qualified, _n, _l in self.declarations(file) if qualified == name]
+        return found or [ident for ident, _q, n, line in self.declarations(file)
+                         if n == short and start <= line <= end]
+
+    def enclosing(self, file, line):
+        inside = [s for s in self.symbols(file) if s[4] <= line <= s[5]]
+        return min(inside, key=lambda s: s[5] - s[4]) if inside else None
+
+    def symbol_for_declaration(self, ident):
+        row = self.db.execute(
+            "SELECT file,name,l0,payload FROM sem_declarations WHERE id=?", (ident,)
+        ).fetchone()
+        if row is None:
+            return None
+        file, name, line, payload = row
+        qualified = _unpack(payload).get("qualified_name") or name
+        for symbol in self.symbols(file):
+            if symbol[2] == qualified:
+                return symbol
+        return self.enclosing(file, line)
+
+
+def _symbol_fields(row):
+    sym_id, file, name, kind, start, end, body, interface, effects, _exported = row
+    return {"symbol_id": sym_id, "file": file, "name": name, "kind": kind, "start": start,
+            "end": end, "body_hash": body, "interface_hash": interface, "effects_hash": effects}
+
+
+def _neighbors(cards, found, limit):
+    """Rank neighbours by how often they are referenced; cap, and report the total."""
+    ranked = sorted(found.values(), key=lambda item: (-item[1], item[0][0]))
+    cards.prefetch([symbol[0] for symbol, _count in ranked[:limit]])
+    listed = []
+    for symbol, count in ranked[:limit]:
+        entry = _symbol_fields(symbol)
+        entry["references"] = count
+        entry["card"] = cards.get(symbol[0])
+        listed.append(entry)
+    return {"total": len(ranked), "listed": listed}
+
+
+def _impact_of(db, index, cards, symbol, limit, history):
+    sym_id, file, _name, _kind, start, end = symbol[:6]
+
+    def inside_target(other):
+        return other[1] == file and start <= other[4] and other[5] <= end
+
+    callers: dict = {}
+    declaration_ids = index.declaration_ids(symbol)
+    if declaration_ids:
+        marks = ",".join("?" for _ in declaration_ids)
+        for ref_file, line in db.execute(
+            f"SELECT file,l0 FROM sem_references WHERE resolution='resolved' AND target_id IN ({marks})",
+            declaration_ids,
+        ):
+            caller = index.enclosing(ref_file, line)
+            if caller is None or caller[0] == sym_id or inside_target(caller):
+                continue
+            callers.setdefault(caller[0], [caller, 0])[1] += 1
+
+    callees: dict = {}
+    for (target_id,) in db.execute(
+        "SELECT target_id FROM sem_references WHERE file=? AND resolution='resolved' "
+        "AND target_id IS NOT NULL AND l0 BETWEEN ? AND ?", (file, start, end),
+    ):
+        callee = index.symbol_for_declaration(target_id)
+        if callee is None or callee[0] == sym_id or inside_target(callee):
+            continue
+        callees.setdefault(callee[0], [callee, 0])[1] += 1
+
+    blind: dict = {}
+    unbound = 0
+    for (payload,) in db.execute(
+        "SELECT payload FROM sem_references WHERE file=? AND resolution!='resolved' "
+        "AND known_unrelated=0 AND l0 BETWEEN ? AND ?", (file, start, end),
+    ):
+        reference = _unpack(payload)
+        reason = reference.get("reason") or "unresolved"
+        if reason in _NOT_A_BLIND_SPOT:
+            unbound += 1
+            continue
+        name = ".".join(reference.get("parts") or []) or reference.get("kind") or "reference"
+        blind[(name, reason)] = blind.get((name, reason), 0) + 1
+    blind_spots = [{"name": name, "reason": reason, "count": count}
+                   for (name, reason), count in sorted(blind.items(), key=lambda item: (-item[1], item[0]))]
+
+    recent = [{"changeset": seq, "created_at": created, "change_kind": kind}
+              for seq, created, kind in db.execute(
+                  "SELECT d.seq,c.created_at,d.change_kind FROM meta_changeset_deltas d "
+                  "JOIN meta_changesets c ON c.seq=d.seq WHERE d.symbol_id=? ORDER BY d.seq DESC LIMIT ?",
+                  (sym_id, history))]
+
+    return {
+        **_symbol_fields(symbol),
+        "card": cards.get(sym_id),
+        "callers": _neighbors(cards, callers, limit),
+        "callees": _neighbors(cards, callees, limit),
+        "blind_spots": {"total": len(blind_spots), "listed": blind_spots[:limit], "unbound_names": unbound},
+        "recent_changes": recent,
+    }
+
+
+def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=5,
+                      include_source=True) -> dict:
+    """What to know before editing a symbol, in one bounded packet.
+
+    Read-only over the snapshot's Meta-Code index and the card store: the three
+    digests and the card (with its freshness against this snapshot) of each target,
+    its resolved one-hop callers and callees with their cards,
+    the references the static analysis could not resolve (dynamic calls,
+    ambiguous receivers), and the target's last changes. The target's source is
+    read through source_reader, so it is verified against the recorded hashes.
+    This is evidence and leads; whether an edit is correct stays with the reader.
+    """
+    if store.format != "sqlite":
+        raise ValueError("edit impact requires a SQLite snapshot")
+    if (not isinstance(targets, list) or not targets
+            or any(not isinstance(target, str) or not target for target in targets)):
+        raise ValueError("targets must be a nonempty list of symbol ids or file paths")
+    for name, value in (("neighbors", neighbors), ("history", history)):
+        if type(value) is not int or not 1 <= value <= 200:
+            raise ValueError(f"{name} must be an integer from 1 to 200")
+
+    with semantic_reader(store) as db:
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='meta_symbols'").fetchone() is None:
+            raise ValueError("snapshot has no Meta-Code index; refresh the snapshot")
+        index = _ImpactIndex(db)
+        cards = _Cards(db, cards_path, store.metadata.get("root"))
+        resolved: list = []
+        unknown: list = []
+        for target in targets:
+            row = db.execute(f"SELECT {_SYMBOL_COLUMNS} FROM meta_symbols WHERE id=?", (target,)).fetchone()
+            rows = [row] if row else db.execute(
+                f"SELECT {_SYMBOL_COLUMNS} FROM meta_symbols WHERE file=? ORDER BY start,end", (target,)
+            ).fetchall()
+            if rows:
+                resolved.extend(rows)
+            else:
+                unknown.append(target)
+        unique = list({row[0]: row for row in resolved}.values())
+        selected = unique[:MAX_IMPACT_TARGETS]
+        packet = {
+            "schema": EDIT_IMPACT_SCHEMA,
+            "root": store.metadata.get("root"),
+            "target": store.metadata.get("target"),
+            "targets": [_impact_of(db, index, cards, row, neighbors, history) for row in selected],
+            "unknown_targets": unknown,
+            "truncated_targets": max(0, len(unique) - len(selected)),
+        }
+
+    if include_source and selected:
+        import source_reader
+
+        try:
+            read = source_reader.read_packet(
+                store, [{"path": row[1], "symbols": [row[2]]} for row in selected])
+            packet["source"] = {
+                "files": [{key: item.get(key) for key in ("path", "status", "notes", "blocks")}
+                          for item in read["files"]],
+                "metrics": read["metrics"],
+            }
+        except ValueError as error:
+            # Stale or unreadable source is reported, never hidden: the rest of
+            # the packet is metadata and stays usable.
+            packet["source"] = {"error": str(error)}
+    packet["bytes"] = len(json.dumps(packet, separators=(",", ":")))
+    return packet

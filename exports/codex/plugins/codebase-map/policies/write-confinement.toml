@@ -1,6 +1,6 @@
 schema = "daodan/policy/v1"
 name = "write-confinement"
-description = "Every Codebase Map writer may only create files under its own run directory. The published root mirror is the stable downstream contract, so nothing outside it is a legitimate target for an analysis run."
+description = "Every Codebase Map writer may only create files under its own run directory, plus the project's card store. The published root mirror is the stable downstream contract, so nothing outside it is a legitimate target for an analysis run."
 
 [roots]
 xray = ".codebase-map"
@@ -8,6 +8,9 @@ xray = ".codebase-map"
 [confinement]
 run_directory = ".codebase-map/runs/${run}"
 published_mirror = ".codebase-map"
+# Cards outlive every run: a run's snapshot is immutable evidence, so a model's
+# reading of a symbol is kept in one file beside the runs, never in a snapshot.
+card_store = ".codebase-map/cards.sqlite"
 forbid_writes_outside_roots = true
 
 # Where this policy is enforced, decided on 2026-09-03 after the cross-host

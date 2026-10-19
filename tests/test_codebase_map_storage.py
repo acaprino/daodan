@@ -258,6 +258,43 @@ class SnapshotStorageTests(unittest.TestCase):
             snapshot.write_snapshot(self.root, self.out("invalid"), format="pickle")
         self.assertFalse(self.out("invalid").exists())
 
+    def test_meta_code_says_so_when_the_snapshot_is_json(self):
+        storage = self.api()
+        import semantic_store
+        legacy = self.out("legacy.json")
+        snapshot.write_snapshot(self.root, legacy, format="json")
+
+        with storage.open_snapshot(legacy) as store:
+            with self.assertRaisesRegex(ValueError, "SQLite"):
+                semantic_store.query_meta_code(store)
+            with self.assertRaisesRegex(ValueError, "SQLite"):
+                semantic_store.upsert_meta_cards(
+                    store, self.out("cards.sqlite"), [{"file": "one.py", "symbol": "answer", "purpose": "x"}])
+        self.assertFalse(self.out("cards.sqlite").exists())
+
+    def test_writing_cards_never_touches_a_run_snapshot(self):
+        storage = self.api()
+        import card_store
+        import semantic_store
+        from snapshot_store import artifact_digest
+        store_root = self.root / ".codebase-map"
+        run = store_root / "runs" / "example"
+        (run / "snapshot").mkdir(parents=True)
+        (run / "state.json").write_text("{}", encoding="utf-8")
+        bound = run / "snapshot" / "manifest.sqlite"
+        snapshot.write_snapshot(self.root, bound)
+        before = artifact_digest(bound)
+
+        self.assertEqual(card_store.default_cards_path(bound), (store_root / "cards.sqlite").resolve())
+        with storage.open_snapshot(bound) as store:
+            result = semantic_store.upsert_meta_cards(
+                store, card_store.default_cards_path(bound),
+                [{"file": "one.py", "symbol": "answer", "purpose": "returns the answer"}])
+
+        self.assertEqual(result["upserted"], 1)
+        self.assertEqual(artifact_digest(bound), before, "inherited artifacts are bound to this digest")
+        self.assertTrue((store_root / "cards.sqlite").is_file())
+
     def test_meta_code_triple_hash_cards_and_bounded_changesets(self):
         storage = self.api()
         import semantic_store
@@ -272,12 +309,12 @@ class SnapshotStorageTests(unittest.TestCase):
             encoding="utf-8",
         )
         snap_path = self.out()
+        cards_path = self.out("cards.sqlite")
         snapshot.write_snapshot(self.root, snap_path)
 
         # Upsert Meta-Code cards for both pkg/a.py::run and pkg/b.py::helper
-        upsert_res = semantic_store.upsert_meta_cards(
-            snap_path,
-            [
+        with storage.open_snapshot(snap_path) as store:
+            upsert_res = semantic_store.upsert_meta_cards(store, cards_path, [
                 {
                     "file": "pkg/a.py",
                     "symbol": "run",
@@ -291,8 +328,7 @@ class SnapshotStorageTests(unittest.TestCase):
                     "purpose": "Increments numeric value",
                     "invariants": ["pure function"],
                 },
-            ],
-        )
+            ])
         self.assertEqual(upsert_res["upserted"], 2)
         self.assertEqual(upsert_res["missing_symbols"], [])
 
@@ -305,7 +341,7 @@ class SnapshotStorageTests(unittest.TestCase):
             snapshot.write_snapshot(self.root, snap_path, previous=prev)
 
         with storage.open_snapshot(snap_path) as store:
-            meta1 = semantic_store.query_meta_code(store)
+            meta1 = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta1["summary"]["changesets"], 1)
         cs1 = meta1["changesets"][0]
         self.assertEqual(cs1["bodies_only_changed"], 1)
@@ -328,7 +364,7 @@ class SnapshotStorageTests(unittest.TestCase):
         with storage.open_snapshot(snap_path) as prev:
             snapshot.write_snapshot(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
-            meta2 = semantic_store.query_meta_code(store)
+            meta2 = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta2["summary"]["changesets"], 2)
         self.assertEqual(meta2["changesets"][0]["deltas"][0]["change_kind"], "effects_changed")
         by_id2 = {s["symbol_id"]: s for s in meta2["symbols"]}
@@ -343,7 +379,7 @@ class SnapshotStorageTests(unittest.TestCase):
         with storage.open_snapshot(snap_path) as prev:
             snapshot.write_snapshot(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
-            meta3 = semantic_store.query_meta_code(store)
+            meta3 = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta3["summary"]["changesets"], 3)
         self.assertEqual(meta3["changesets"][0]["deltas"][0]["change_kind"], "interface_changed")
         by_id3 = {s["symbol_id"]: s for s in meta3["symbols"]}
@@ -360,7 +396,7 @@ class SnapshotStorageTests(unittest.TestCase):
             with storage.open_snapshot(snap_path) as prev:
                 snapshot.write_snapshot(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
-            meta_capped = semantic_store.query_meta_code(store)
+            meta_capped = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta_capped["summary"]["changesets"], semantic_store.MAX_META_CHANGESETS)
         self.assertEqual(len(meta_capped["changesets"]), semantic_store.MAX_META_CHANGESETS)
 

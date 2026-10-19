@@ -376,6 +376,8 @@ def _run_formatter(file_path: Path, language: str) -> None:
         candidates = [["sqlfluff", "fix", "--dialect", "ansi" if language == "sql" else "oracle", str(file_path)]]
     elif language == "rust":
         candidates = [["rustfmt", str(file_path)]]
+    elif language == "go":
+        candidates = [["gofmt", "-w", str(file_path)]]
 
     for cmd in candidates:
         executable = shutil.which(cmd[0])
@@ -883,6 +885,7 @@ def _line_marker_for(language: str) -> str:
         "sql": "--",
         "plsql": "--",
         "rust": "//",
+        "go": "//",
     }.get(language, "#")
 
 

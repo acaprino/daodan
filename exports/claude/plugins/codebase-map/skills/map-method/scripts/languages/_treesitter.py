@@ -312,6 +312,7 @@ _CALL_QUERIES = {
     "tsx": "[(call_expression) (new_expression)] @call",
     "java": "[(method_invocation) (object_creation_expression) (explicit_constructor_invocation)] @call",
     "rust": "[(call_expression) (macro_invocation)] @call",
+    "go": "(call_expression) @call",
 }
 
 

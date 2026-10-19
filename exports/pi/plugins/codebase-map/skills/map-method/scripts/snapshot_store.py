@@ -344,7 +344,6 @@ class SnapshotWriter:
             self.connection = sqlite3.connect(self.path)
             _settings(self.connection)
             self.connection.executescript("""
-                PRAGMA auto_vacuum=INCREMENTAL;
                 PRAGMA journal_mode=DELETE;
                 PRAGMA application_id=1145913680;
                 PRAGMA user_version=1;

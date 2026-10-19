@@ -34,6 +34,9 @@ from tree_scope import Perimeter  # noqa: E402
 __all__ = ["outline_manifest", "read_packet", "graph_packet"]
 
 SCHEMA = "xray/source-reading/v1"
+# Languages whose callables end on a closing brace that may share a line with
+# other declarations: their boundary lines are kept as context.
+_BRACED_LANGUAGES = frozenset({"java", "javascript", "typescript", "rust", "go"})
 
 
 def _files(manifest: dict) -> dict:
@@ -207,7 +210,7 @@ def _context(symbols: dict, total: int, language: str | None = None) -> list[tup
         cursor = end + 1
     if cursor <= total:
         context.append((cursor, total))
-    if language in {"java", "javascript", "typescript", "rust"}:
+    if language in _BRACED_LANGUAGES:
         # Line spans lack columns. A boundary can also declare a global or field,
         # so retain it even when the neighbouring callable is not selected.
         context.extend((line, line) for span in callables for line in span)
@@ -222,7 +225,7 @@ def _shared_lines(symbols: dict, lines: list[str], language: str | None) -> bool
                        for spec in symbols.values() if spec.get("kind") in ("function", "method"))
     if any(left[1] >= right[0] for left, right in zip(callables, callables[1:])):
         return True
-    if language in {"java", "javascript", "typescript", "rust"}:
+    if language in _BRACED_LANGUAGES:
         if any(start == end for start, end in callables):
             return True
     containers = [_interval(spec.get("start"), spec.get("end"), len(lines))

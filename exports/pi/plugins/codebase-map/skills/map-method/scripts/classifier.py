@@ -209,6 +209,15 @@ COMPLEXITY_PATTERNS_PER_LANG: dict[str, list[str]] = {
         r"\bPin<",
         r"\bSend\s*\+\s*Sync\b",
     ],
+    "go": [
+        r"\bgo\s+(?:func\b|\w+\()",
+        r"\bchan\b",
+        r"\bselect\s*\{",
+        r"\bsync\.(?:Mutex|RWMutex|WaitGroup|Once|Pool|Map)\b",
+        r"\bsync/atomic\b",
+        r"\bcontext\.With(?:Cancel|Timeout|Deadline)\b",
+        r"\berrgroup\.",
+    ],
 }
 
 
