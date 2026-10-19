@@ -21,6 +21,9 @@ override. Load installed skills by qualified ID; named roles use their owning
 plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
 Required foreign providers use Claude's marketplace/install commands:
 claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A provider that is installed but disabled is enabled with
+claude plugin enable <provider>@<marketplace>; check `claude plugin list --json`
+before the first phase, and stop with that command when a required one is off.
 A declared package MCP server is configured through the generated MCP manifest;
 still check its tools are actually available in the active session.
 

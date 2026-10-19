@@ -6,21 +6,23 @@
    the entities the request names and their one-hop callers and callees; read
    the current source of each through the map's source reader. A card is a
    lead; the source is the fact.
-2. Load `project-knowledge:adr-method` and run `resolve` with the scope's
-   paths, modules, domains and symbols. The one to three active records it
-   returns are the constraints the task inherits.
+2. Load `project-knowledge:adr-method` and run `resolve` on the scope. The
+   one to three active records it returns are the constraints the task
+   inherits.
 3. Read the base-commit instructions (`AGENTS.md`, `CLAUDE.md`, nested files)
    through `git show <base_sha>:<path>`.
-4. Record the grounding (run, cards, records, instructions) in the run's `adr`
-   section as `active` and in the brief that every later worker receives.
+4. Record the grounding in the run's `adr` section as `active` and in every
+   later worker's brief.
 
 ## One question per turn
 
 Ask one question at a time, anchored to a file and line, with the current
-behavior and the proposed behavior written as concrete input and output
-taken from the code or its tests. Prefer a question that closes a branch of
-the design over one that gathers color. Offer the recommended answer and what
-the alternatives cost.
+and the proposed behavior as concrete input and output from the code or its
+tests. Prefer a question that closes a branch of the design. Offer the
+recommended answer and what the alternatives cost. Ask through the host's
+question tool; when the session has none, write every pending question to
+the run's `questions` section, end the turn listing them, and resume on the
+same run with the answers.
 
 Stop asking when all of these are fixed:
 
@@ -32,8 +34,8 @@ Stop asking when all of these are fixed:
 - whether an active record is respected or must be superseded, and by what;
 - the authorization: edit, commit, both, or plan only.
 
-Do not infer a missing answer. A decision the user did not make stays open in
-the record as a question for the plan review to raise again.
+Never infer a missing answer: a decision the user did not make stays open in
+the record for the plan review to raise again.
 
 ## The record
 
@@ -50,8 +52,7 @@ with `target-kind=spec` on the record and shape `light`. The preparation
 selects the premise lens against the current source, the logic lens for
 invariants and missing examples, the abstraction lens against the concept
 index, and the stack lenses the scope activates. A `disputed` premise or a
-blocking finding reopens the interview on that point; nothing proceeds to the
-plan with a refuted premise.
+blocking finding reopens the interview on that point.
 
 On `--peer-review`, dispatch `peer-review:packet-builder` and
 `peer-review:respondent` through `peer-review:cross-model-peer-review` on the

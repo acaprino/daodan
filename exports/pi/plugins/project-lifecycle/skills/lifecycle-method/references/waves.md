@@ -91,11 +91,10 @@ until it passes, then write it into the run's `waves` section.
 
 Run `senior-review:review-method` with `target-kind=plan` and shape `light`
 on the plan. The preparation selects the premise lens (every cited path,
-symbol and caller exists in the current tree), the test lens (every oracle
-fails for the right reason and cannot pass trivially), the initialization
-lens (ordering, hidden shared files, migrations), the abstraction lens (no
-second owner for an existing concept) and the stack lenses of the named
-files. Up to three planner-and-lenses rounds, then the user. Present the
+symbol and caller exists), the test lens (every oracle fails for the right
+reason), the initialization lens (ordering, shared files, migrations), the
+abstraction lens (no second owner for a concept) and the stack lenses of the
+named files. Up to three planner-and-lenses rounds, then the user. Present the
 approved plan with its expected cost and stop for approval, unless the
 authorization already covers execution.
 
@@ -117,7 +116,9 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
    record did not make; returns `OK` with the changed paths.
 3. On `OK`, confirm that the changed paths are a subset of `write_set`, run
    the verification again in this context, and commit atomically when
-   authorized (otherwise record the candidate snapshot). On any other code,
+   authorized (otherwise record the candidate snapshot). The message is
+   `<type>(<area>): <task title>` with the trailer
+   `Daodan-Task: <run id> wave <n>/<m>`, so `git log` shows progress. On any other code,
    restore the task's `write_set` from the pre-step bytes, remove files the
    task created, leave everything else untouched, and record the attempt.
    `NEEDS_REPLAN` returns to the plan with the missing file; `ORACLE_INVALID`
@@ -133,5 +134,5 @@ stack lenses the diff activates. A blocking finding reopens the task; the
 wave is `sealed` only with every task committed and the review delivered.
 Then the next wave.
 
-`clean-code:readability-method` may run once per wave on the wave's files,
-after the review and with the oracles green, when the user asked for it.
+`clean-code:readability-method` may run once per wave, after the review
+with the oracles green, when the user asked.

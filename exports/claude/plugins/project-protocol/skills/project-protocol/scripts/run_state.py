@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from contextlib import contextmanager
 import copy
+import platform
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -66,21 +67,45 @@ def no_links(path, boundary):
             break
 
 
+def checkout_home(project):
+    """The main checkout of the repository that holds the project.
+
+    Run records and the agenda live there, so a linked worktree's records survive
+    its removal and every worktree and session sees one agenda. Outside Git, or
+    when the common directory is not a plain `.git`, the project is its own home.
+    """
+    common = git_value(project, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    if not common:
+        return project
+    ignored = subprocess.run(["git", "-C", str(project), "check-ignore", "-q", "."],
+                             capture_output=True, check=False)
+    if ignored.returncode == 0:
+        # The enclosing repository ignores this directory, so the project is not
+        # that repository's: a project kept under a tool's run directory keeps
+        # its own records, as the Codebase Map keeps its own root.
+        return project
+    common_path = Path(common).resolve()
+    if common_path.name != ".git" or not common_path.parent.is_dir():
+        return project
+    return common_path.parent
+
+
 def roots(project, output):
     project = Path(project).resolve()
     if not project.is_dir():
         raise ProtocolError("Project root must be a directory")
+    home = project if output else checkout_home(project)
     selected = Path(output) if output else Path(".daodan")
     if ".." in selected.parts:
         raise ProtocolError("Output root contains traversal")
-    raw = selected if selected.is_absolute() else project / selected
-    no_links(raw, project)
+    raw = selected if selected.is_absolute() else home / selected
+    no_links(raw, home)
     root = raw.resolve()
-    if root == project or not root.is_relative_to(project):
+    if root == home or not root.is_relative_to(home):
         raise ProtocolError("Output root must be strictly inside the project")
     if root.exists() and not (root / ".daodan-root").is_file() and any(root.iterdir()):
         raise ProtocolError("Output root must be dedicated and carry .daodan-root")
-    no_links(root / ".daodan-root", project)
+    no_links(root / ".daodan-root", home)
     return project, root
 
 
@@ -88,7 +113,7 @@ def run_paths(project, root, run_id):
     if not isinstance(run_id, str) or not RUN_ID.fullmatch(run_id):
         raise ProtocolError("Invalid exact run ID")
     directory = root / "runs" / run_id
-    no_links(directory, project)
+    no_links(directory, root)
     return directory, directory / "work.json"
 
 
@@ -378,6 +403,39 @@ def review_role(name):
     return text
 
 
+def validate_questions(section, rules):
+    if not isinstance(section, list):
+        raise ProtocolError("questions must be a list")
+    seen = set()
+    for question in section:
+        if not isinstance(question, dict):
+            raise ProtocolError("Each question must be an object")
+        for key in rules["required"]:
+            if not isinstance(question.get(key), str) or not question[key].strip():
+                raise ProtocolError(f"A question needs a nonempty {key}")
+        if question["id"] in seen:
+            raise ProtocolError(f"Question id repeated: {question['id']}")
+        seen.add(question["id"])
+        if "answer" in question and (not isinstance(question["answer"], str) or not question["answer"].strip()):
+            raise ProtocolError(f"Question {question['id']} has an empty answer; omit the field until it is answered")
+
+
+def validate_environment(section, rules):
+    if not isinstance(section, dict):
+        raise ProtocolError("environment must be an object")
+    for key in rules["required"]:
+        if not isinstance(section.get(key), str) or not section[key].strip():
+            raise ProtocolError(f"environment.{key} is required")
+    commands = section.get("commands", {})
+    if not isinstance(commands, dict):
+        raise ProtocolError("environment.commands must be an object")
+    for name, command in commands.items():
+        if name not in rules["commands"]:
+            raise ProtocolError(f"environment.commands.{name} is not one of {', '.join(rules['commands'])}")
+        if not isinstance(command, str) or not command.strip():
+            raise ProtocolError(f"environment.commands.{name} must be a nonempty command")
+
+
 def validate_review(review, rules, deliveries):
     """The recorded roster bounds every review delivery of the run."""
     if not isinstance(review, dict):
@@ -421,6 +479,10 @@ def validate_loop(record):
         validate_rulings(present["rulings"], rules["rulings"])
     if "review" in present:
         validate_review(present["review"], rules["review"], record.get("deliveries", {}))
+    if "questions" in present:
+        validate_questions(present["questions"], rules["questions"])
+    if "environment" in present:
+        validate_environment(present["environment"], rules["environment"])
 
 
 def validate_loop_transitions(old, new):
@@ -478,7 +540,7 @@ def validate_record(record, project=None, root=None, current=False):
                     raise ProtocolError("A coordinator record or lock is not a worker report")
                 if project is not None and item["status"] == "delivered":
                     report = root / "runs" / record["run_id"] / output
-                    no_links(report, project)
+                    no_links(report, root)
                     if not report.is_file():
                         raise ProtocolError(f"Delivered report is missing: {identity}")
                     directory = root / "runs" / record["run_id"]
@@ -583,10 +645,75 @@ def merge(base, patch):
     return result
 
 
+AGENDA_SCHEMA = "daodan/agenda/v1"
+
+
+def agenda_row(record, project, holder):
+    """One line per task: where it is, who holds it, what it waits for."""
+    waves = record.get("waves") or []
+    phases = record.get("phases", {})
+    phase = next((k for k, p in phases.items() if p.get("status") == "in_progress"), None)
+    if phase is None:
+        phase = next((k for k, p in reversed(list(phases.items())) if p.get("status") == "complete"), None)
+    workspace = record.get("workspace") or {}
+    return {
+        "run_id": record["run_id"], "operation": record["operation"], "objective": record["objective"],
+        "status": record["status"], "loop": "workspace" in record,
+        "branch": workspace.get("branch") or git_value(project, "rev-parse", "--abbrev-ref", "HEAD"),
+        "worktree": record["project"].get("worktree"), "head": git_value(project, "rev-parse", "HEAD"),
+        "phase": phase,
+        "waves": {"sealed": sum(1 for w in waves if w.get("status") == "sealed"), "total": len(waves)},
+        "adr": (record.get("adr") or {}).get("proposed"),
+        "review": (record.get("review") or {}).get("tier"),
+        "questions": sum(1 for q in record.get("questions") or [] if not q.get("answer")),
+        "holder": holder, "updated_at": timestamp(),
+    }
+
+
+def plan_agenda(root, project, record, session, take_over):
+    """Return the agenda with this run's row refreshed, refusing a held or shared task.
+
+    The lock is the row: a task held by another session is refused until the user
+    confirms that session is closed (`--take-over`). A branch belongs to one open
+    loop task at a time. A completed run releases its row.
+    """
+    path = root / "agenda.json"
+    agenda = read_json(path) if path.is_file() else {"schema": AGENDA_SCHEMA, "tasks": {}}
+    if agenda.get("schema") != AGENDA_SCHEMA or not isinstance(agenda.get("tasks"), dict):
+        raise ProtocolError("agenda.json is not a daodan/agenda/v1 document")
+    tasks = agenda["tasks"]
+    previous = tasks.get(record["run_id"], {})
+    holder = previous.get("holder")
+    if record["status"] == "complete":
+        holder = None
+    elif session:
+        if holder and holder.get("session") != session and not take_over:
+            raise ProtocolError(
+                f"Task {record['run_id']} is held by session {holder['session']} on {holder.get('host')} "
+                f"since {holder.get('since')}; pass --take-over once the user confirms that session is closed")
+        if not holder or holder.get("session") != session:
+            holder = {"session": session, "host": platform.node(), "since": timestamp()}
+    row = agenda_row(record, project, holder)
+    if row["loop"] and row["status"] != "complete" and row["branch"]:
+        for other_id, other in tasks.items():
+            if (other_id != row["run_id"] and other.get("loop") and other.get("status") != "complete"
+                    and other.get("branch") == row["branch"]):
+                raise ProtocolError(f"Branch {row['branch']} already holds open task {other_id}; finish or resume it")
+    tasks[row["run_id"]] = row
+    return agenda
+
+
+def write_agenda(root, agenda):
+    path = root / "agenda.json"
+    temporary = path.with_suffix(".json.tmp")
+    temporary.write_text(json.dumps(agenda, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+
+
 @contextmanager
-def writer_lock(directory, project):
+def writer_lock(directory, boundary):
     path = directory / ".write-lock"
-    no_links(path, project)
+    no_links(path, boundary)
     if path.exists() and path.stat().st_nlink > 1:
         raise ProtocolError("Run lock has external hardlinks; refuse to write")
     handle = path.open("a+b")
@@ -618,10 +745,10 @@ def writer_lock(directory, project):
         handle.close()
 
 
-def atomic_write(path, record, project):
-    no_links(path, project)
+def atomic_write(path, record, boundary):
+    no_links(path, boundary)
     temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
-    no_links(temporary, project)
+    no_links(temporary, boundary)
     try:
         with temporary.open("x", encoding="utf-8", newline="\n") as handle:
             json.dump(record, handle, indent=2, sort_keys=True)
@@ -635,9 +762,12 @@ def atomic_write(path, record, project):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check"))
+    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check", "agenda"))
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--run-id")
+    parser.add_argument("--session", help="identity of the session doing the work; recorded as the task's holder")
+    parser.add_argument("--take-over", action="store_true", help="take a task held by another session, after the user confirmed it is closed")
+    parser.add_argument("--branch", help="agenda: only the task bound to this branch")
     parser.add_argument("--out")
     parser.add_argument("--payload", type=Path)
     parser.add_argument("--expected-revision", type=int)
@@ -650,11 +780,17 @@ def main(argv=None):
         if args.command == "plan-check":
             # A draft plan is checked against the loop rules before it is written
             # into a run, so a planner receives the exact refusal, not a failed update.
-            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "review") if key in payload})
+            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "review", "questions", "environment") if key in payload})
             waves = payload.get("waves", [])
             output = {"valid": True, "waves": len(waves), "tasks": sum(len(w.get("tasks", [])) for w in waves)}
         elif args.command == "snapshot":
             output = project_binding(project, payload.get("scope", {}), root)
+        elif args.command == "agenda":
+            path = root / "agenda.json"
+            agenda = read_json(path) if path.is_file() else {"schema": AGENDA_SCHEMA, "tasks": {}}
+            rows = [row for row in agenda.get("tasks", {}).values() if not args.branch or row.get("branch") == args.branch]
+            rows.sort(key=lambda row: row.get("updated_at") or "", reverse=True)
+            output = {"schema": AGENDA_SCHEMA, "root": str(root), "tasks": rows}
         elif args.command == "init":
             for required in ("operation", "objective", "scope", "authorizations", "budget"):
                 if required not in payload:
@@ -673,12 +809,14 @@ def main(argv=None):
                 raise ProtocolError("Run already exists; choose another exact ID or resume")
             root.mkdir(parents=True, exist_ok=True)
             (root / ".daodan-root").touch(exist_ok=True)
+            agenda = plan_agenda(root, project, record, args.session, args.take_over)
             directory.mkdir(parents=True, exist_ok=False)
-            atomic_write(path, record, project)
+            atomic_write(path, record, root)
+            write_agenda(root, agenda)
             output = record
         else:
             directory, path = run_paths(project, root, args.run_id)
-            no_links(path, project)
+            no_links(path, root)
             record = validate_record(read_json(path), project, root)
             if record["run_id"] != args.run_id:
                 raise ProtocolError("Record does not match the exact run ID")
@@ -698,15 +836,17 @@ def main(argv=None):
                     raise ProtocolError("Resume scope changed; reassess in a new run")
                 if project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
                     raise ProtocolError("Resume candidate snapshot or workspace identity changed")
+                write_agenda(root, plan_agenda(root, project, record, args.session, args.take_over))
                 output = {**record,
                           "pending_phases": [k for k, p in record["phases"].items() if p["status"] not in {"complete", "skipped"}],
-                          "pending_deliveries": [k for k, d in record["deliveries"].items() if d["status"] != "delivered"]}
+                          "pending_deliveries": [k for k, d in record["deliveries"].items() if d["status"] != "delivered"],
+                          "pending_questions": [q for q in record.get("questions", []) if not q.get("answer")]}
             else:
                 if args.expected_revision is None:
                     raise ProtocolError("Update requires --expected-revision")
                 if set(payload) & IMMUTABLE:
                     raise ProtocolError("Patch cannot replace identity, scope, authorization or baseline")
-                with writer_lock(directory, project):
+                with writer_lock(directory, root):
                     before = validate_record(read_json(path), project, root)
                     if before["revision"] != args.expected_revision:
                         raise ProtocolError("Record revision changed; read the current record")
@@ -718,7 +858,9 @@ def main(argv=None):
                     updated["candidate"] = project_binding(project, before["scope"], root)
                     validate_record(updated, project, root, current=True)
                     validate_transitions(before, updated)
-                    atomic_write(path, updated, project)
+                    agenda = plan_agenda(root, project, updated, args.session, args.take_over)
+                    atomic_write(path, updated, root)
+                    write_agenda(root, agenda)
                     output = updated
         print(json.dumps(output, indent=2, sort_keys=True))
         return 0

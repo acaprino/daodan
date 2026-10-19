@@ -40,7 +40,7 @@ remote_requires_committed_candidate = true
 # Optional sections a lifecycle run may carry. Absent sections are not validated;
 # a present section must satisfy its rules. The required fields above are untouched.
 [loop]
-sections = ["workspace", "preflight", "adr", "waves", "rulings", "review"]
+sections = ["workspace", "preflight", "adr", "waves", "rulings", "review", "questions", "environment"]
 
 [loop.workspace]
 required = ["mode", "branch", "base_sha"]
@@ -80,3 +80,14 @@ schema = "daodan/review-roster/v1"
 shapes = ["light", "branch"]
 tiers = ["light", "small", "medium", "large"]
 required = ["schema", "shape", "tier", "roster", "reasons", "verification"]
+
+[loop.questions]
+# Questions the coordinator could not ask because the host offers no question
+# tool. Each waits for an answer supplied on resume; nothing is inferred.
+required = ["id", "phase", "text"]
+
+[loop.environment]
+# The project's own interpreter and runners, found by the preflight and used by
+# every later command. Installing outside the project is a separate authorization.
+required = ["interpreter"]
+commands = ["test", "lint", "types", "build", "migrations"]

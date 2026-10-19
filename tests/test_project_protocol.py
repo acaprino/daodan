@@ -539,6 +539,89 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("review.roster must be a nonempty list",
                       self.plan_check({"review": {**roster, "roster": []}}, ok=False).stderr)
 
+    def git(self, *arguments):
+        return subprocess.run(["git", "-C", str(self.project), *arguments], capture_output=True,
+                              text=True, encoding="utf-8", check=True).stdout.strip()
+
+    def make_repo(self):
+        self.git("init", "-q", "-b", "main")
+        self.git("-c", "user.email=t@example.com", "-c", "user.name=t", "add", "app.py")
+        self.git("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m", "base")
+
+    def test_the_agenda_binds_a_task_to_its_branch_and_session(self):
+        self.make_repo()
+        self.payload["workspace"] = {"mode": "BRANCH", "branch": "task/one", "base_sha": self.git("rev-parse", "HEAD")}
+        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
+        self.invoke("init", self.payload, ["--session", "s1"])
+        agenda = self.invoke("agenda", extra=["--branch", "task/one"])
+        row = agenda["tasks"][0]
+        self.assertEqual((row["run_id"], row["branch"], row["holder"]["session"], row["questions"], row["loop"]),
+                         ("test-run", "task/one", "s1", 1, True))
+        self.assertTrue((self.project / ".daodan/agenda.json").is_file())
+        held = self.invoke("update", {"phases": {"audit": {"status": "in_progress"}}},
+                           ["--expected-revision", "0", "--session", "s2"], ok=False)
+        self.assertIn("held by session s1", held.stderr)
+        taken = self.invoke("update", {"phases": {"audit": {"status": "in_progress"}}},
+                            ["--expected-revision", "0", "--session", "s2", "--take-over"])
+        self.assertEqual(taken["revision"], 1)
+        row = self.invoke("agenda")["tasks"][0]
+        self.assertEqual((row["holder"]["session"], row["phase"]), ("s2", "audit"))
+        answered = self.invoke("update", {"questions": [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?", "answer": "yes"}]},
+                               ["--expected-revision", "1", "--session", "s2"])
+        self.assertEqual(self.invoke("agenda")["tasks"][0]["questions"], 0)
+        self.assertEqual(answered["questions"][0]["answer"], "yes")
+
+    def test_a_branch_holds_one_open_loop_task_and_a_completed_run_releases_it(self):
+        self.make_repo()
+        self.payload["workspace"] = {"mode": "BRANCH", "branch": "task/one", "base_sha": self.git("rev-parse", "HEAD")}
+        self.invoke("init", self.payload, ["--session", "s1"])
+        second = {**self.payload, "objective": "another"}
+        path = self.temp / "second.json"; path.write_text(json.dumps(second), encoding="utf-8")
+        args = ["init", "--project", str(self.project), "--run-id", "second-run", "--payload", str(path), "--session", "s1"]
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = self.runtime["main"](args)
+        self.assertEqual(code, 1)
+        self.assertIn("already holds open task test-run", stderr.getvalue())
+        self.assertFalse((self.project / ".daodan/runs/second-run").exists())
+        self.invoke("update", {"phases": {"audit": {"status": "complete"}},
+                               "deliveries": {"audit": {"status": "delivered", "output": self.report()}},
+                               "status": "complete"}, ["--expected-revision", "0", "--session", "s1"])
+        row = self.invoke("agenda")["tasks"][0]
+        self.assertEqual((row["status"], row["holder"]), ("complete", None))
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(self.runtime["main"](args), 0)
+
+    def test_run_state_of_a_linked_worktree_lives_in_the_main_checkout(self):
+        self.make_repo()
+        worktree = self.temp / "wt"
+        self.git("worktree", "add", "-q", "-b", "task/wt", str(worktree))
+        payload = {**self.payload, "workspace": {"mode": "WORKTREE", "branch": "task/wt", "base_sha": self.git("rev-parse", "HEAD"),
+                                               "worktree_path": str(worktree)}}
+        path = self.temp / "wt.json"; path.write_text(json.dumps(payload), encoding="utf-8")
+        args = ["init", "--project", str(worktree), "--run-id", "wt-run", "--payload", str(path), "--session", "s1"]
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(self.runtime["main"](args), 0)
+        record = json.loads(stdout.getvalue())
+        self.assertEqual(Path(record["output_root"]), (self.project / ".daodan").resolve())
+        self.assertTrue((self.project / ".daodan/runs/wt-run/work.json").is_file())
+        self.assertFalse((worktree / ".daodan").exists())
+        self.assertEqual(Path(record["project"]["worktree"]), worktree.resolve())
+        rows = self.invoke("agenda", extra=["--branch", "task/wt"])["tasks"]
+        self.assertEqual([r["run_id"] for r in rows], ["wt-run"])
+        self.git("worktree", "remove", "--force", str(worktree))
+        self.assertTrue((self.project / ".daodan/runs/wt-run/work.json").is_file())
+
+    def test_environment_and_questions_are_validated(self):
+        good = {"interpreter": ".venv/Scripts/python.exe", "commands": {"test": "pytest -q", "lint": "ruff check ."}}
+        self.assertTrue(self.plan_check({"environment": good})["valid"])
+        self.assertIn("is not one of", self.plan_check({"environment": {**good, "commands": {"deploy": "x"}}}, ok=False).stderr)
+        self.assertIn("environment.interpreter is required", self.plan_check({"environment": {"commands": {}}}, ok=False).stderr)
+        self.assertIn("repeated", self.plan_check({"questions": [{"id": "Q1", "phase": "p", "text": "a"},
+                                                                  {"id": "Q1", "phase": "p", "text": "b"}]}, ok=False).stderr)
+        self.assertIn("empty answer", self.plan_check({"questions": [{"id": "Q1", "phase": "p", "text": "a", "answer": " "}]}, ok=False).stderr)
+
     def test_loop_sections_are_validated_inside_the_record_too(self):
         self.payload["waves"] = [self.wave("w1", self.task("a", "src/common.py"), self.task("b", "src/common.py"))]
         refusal = self.invoke("init", self.payload, ok=False)

@@ -23,6 +23,9 @@ override. Load installed skills by qualified ID; named roles use their owning
 plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
 Required foreign providers use Claude's marketplace/install commands:
 claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
+A provider that is installed but disabled is enabled with
+claude plugin enable <provider>@<marketplace>; check `claude plugin list --json`
+before the first phase, and stop with that command when a required one is off.
 A declared package MCP server is configured through the generated MCP manifest;
 still check its tools are actually available in the active session.
 
@@ -98,17 +101,17 @@ Read one unit per step, in this skill, when the step starts.
 Inputs: operation, project root, objective and its source; optional target,
 focus, depth, run and plan identities, output root, prior evidence. Initialize
 through the protocol helper with operation, objective, scope, authorizations,
-budget, phases, plan, deliveries and required gates; the loop sections
-(`workspace`, `preflight`, `adr`, `waves`, `rulings`) are added as the phases
-produce them, and a draft plan passes `plan-check` before it enters the run.
-Resume only an exact run with current authorizations; the latest report of
-another session is never a resume target. Preview is the default; `--fix`
+budget, phases, plan, deliveries and required gates; the loop sections are
+added as the phases produce them, and a draft plan passes `plan-check` before
+it enters the run. Resume the branch's task from the agenda with current
+authorizations and this session's id; a task another session holds is taken
+over only after the user confirms it is closed. Preview is the default; `--fix`
 authorizes in-scope edits, `--commit` adds commits, neither authorizes a push
 or a permanent deletion.
 
 ## Canonical methods
 
-Load only what the step needs, by name, never by path into another plugin.
+Load only what the step needs, by name, never by path.
 
 | Need | Load or dispatch |
 |---|---|

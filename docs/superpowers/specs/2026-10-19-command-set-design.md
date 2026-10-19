@@ -231,6 +231,10 @@ Claude Code, e i verbi li evitano.
 1. **Motore.** Script del roster e sua applicazione nel protocollo; agenda nella
    sede comune; task legato al branch; domande registrate; ambiente del progetto;
    controllo dei plugin all'avvio; file solo nel run.
+   Consegnato: roster e suo rispetto (37.1.0); agenda nel checkout principale
+   con lock come riga, sezioni `questions` ed `environment`, trailer nei
+   commit, sonda dei provider e dell'ambiente nel preflight, scratch solo nel
+   run (37.2.0).
 2. **Metodi nuovi.** `brainstorm-idea`, `investigate-problem`, la review leggera, `finish-task`, `sync-upstream`, la mappa
    per area, i router di `write-docs`, `tidy-repo` e `get-second-opinion`.
 3. **Ingresso.** Il plugin `daodan`; i workflow tolti dagli altri plugin.

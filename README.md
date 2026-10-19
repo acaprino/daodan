@@ -83,7 +83,8 @@ Choose a focus (knowledge, structure, tests, artifacts or all) and a depth
 (quick, standard or deep). Assessment starts with one scoped pass. Development work
 uses checks proportional to its risk, rather than launching every auditor each time.
 
-Run records live in .daodan/runs/<id>/ inside the project. Resume by exact run ID.
+Run records live in .daodan/runs/<id>/ of the main checkout, with an agenda of open
+tasks beside them. A task resumes from its branch, from any session.
 The record identifies intent, scope, file snapshots, authorization, plan, deliveries
 and checks. A missing worker or an unexecuted gate remains visible.
 
