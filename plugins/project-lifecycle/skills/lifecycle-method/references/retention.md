@@ -1,46 +1,8 @@
-# Consolidate (phase 7, and the standalone realignment)
+# Retention of a run's output
 
-Consolidate closes a task: it integrates the candidate when the user merges
-through the cycle, promotes the decision record, realigns the knowledge that
-describes the project, and disposes of the run's own output. Run alone after
-a merge made outside the cycle, it performs the same realignment on the
-current head.
-
-## Integration
-
-1. Confirm the candidate's stage D result validates against the current
-   project (`validate --current`). A changed candidate returns to verify.
-2. With merge authorization: merge the task branch into the base branch with
-   a merge commit, or fast-forward when the user asked for it; remove the
-   worktree created in phase 1 and its branch only after the merge is
-   recorded. Without authorization: leave the branch, record the exact merge
-   command, and stop before the steps below until the merge exists.
-3. Record the merged commit as `merged_sha`.
-
-## Realignment, in this order
-
-1. **Record.** Load `project-knowledge:adr-method` and run `promote` for the
-   run's proposed record with `merged_sha`. Superseded records are marked by
-   the helper in the same transaction. A task that produced no record skips
-   this step and says so.
-2. **Map.** Load `codebase-map:map-method` and run the incremental update of
-   the bound run against `merged_sha`: changed files and symbols are
-   re-derived, unaffected claims carried, the impact packet of the task's
-   symbols refreshed. Then the concept index of `abstraction-architect`,
-   through its skill, for the task's scope.
-3. **Documentation.** Run `project-knowledge:project-knowledge` drift audit on
-   the documents that cite the changed paths and symbols, and apply the
-   authorized corrections; `project-knowledge:readme-craft` when the README
-   cites them.
-4. **Instructions.** Run `project-knowledge:instructions-method` to regenerate
-   the loop block from the run record and the record index: commands, active
-   records, workspace convention. Nothing outside the markers changes.
-5. **Head.** Record `last_synced` as `merged_sha` in the run, and compare it
-   with `HEAD`: a difference means another commit landed meanwhile, and the
-   map update runs once more for that delta before the run closes.
-
-A step that cannot run (a missing runner, an unauthorized edit) stays open
-with its reason; the run does not close on it silently.
+A concluded run's own output is reduced to verified knowledge and then
+quarantined, on request and only through the helper below. Nothing here
+touches project files that the run did not create.
 
 ## Evidence
 

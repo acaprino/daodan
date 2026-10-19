@@ -1,29 +1,28 @@
-> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 
-<daodan_host_binding host="opencode">
+<daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
 tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
-shell execution uses shell, network tools are webfetch/websearch, and clarification
-uses the registered question tool. shell takes command, optional workdir, timeout
-in milliseconds and background. It does not provide interactive stdin. Persistent
-capture uses background: true and an explicit noninteractive stop signal.
-Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
-subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
-continues that child, and background: true requests asynchronous completion.
-Use only roles allowed by the current harness and permissions. A child cannot
-dispatch nested workers when its permissions or the configured depth deny it.
-Workflow entries are /<plugin>:<workflow>, registered by the package loader.
-Inherit the session model; an override requires its authorized, actually available
-provider/model identity, not another host's short model alias.
-The loader includes required local providers and registers plugin-declared MCP
-servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
-through this host, never a Claude marketplace command. Check the active registry:
-registration metadata alone does not prove a connected server or usable tool.
+Codex binding: the adapter binds repository read to read_file, writes to
+apply_patch and shell execution to shell; use the equivalent registered tools of
+the active Codex runtime and their actual fields. In particular, a shell example's
+command, timeout and background fields are not automatically another runtime's
+cmd, yield_time_ms or session controls.
+Start the runtime's available isolated subagent mechanism with the complete
+rendered role body in its task prompt. Role Markdown and generated dispatch bodies
+are resources, not registered skills or a native role/subagent_type parameter.
+Use only declared role bindings and report an unavailable isolation mechanism.
+Load installed skills by their advertised exact IDs; workflow skills carry the
+<workflow>-workflow suffix. Named-agent examples do not override inline delivery.
+Required foreign providers use Codex's marketplace/install commands:
+codex plugin marketplace add <source>, then codex plugin add <provider>@<marketplace>.
+Register plugin-declared MCP servers through the active host's MCP configuration
+using the generated server command. Do not assume registration makes every tool
+available to a restricted worker.
 Inherit the active session's model and default variant. A source model alias such
 as sonnet is not a portable override; request a different model only through an
 explicit adapter mapping to a valid host identity and user authorization.
@@ -71,49 +70,11 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-# Consolidate (phase 7, and the standalone realignment)
+# Retention of a run's output
 
-Consolidate closes a task: it integrates the candidate when the user merges
-through the cycle, promotes the decision record, realigns the knowledge that
-describes the project, and disposes of the run's own output. Run alone after
-a merge made outside the cycle, it performs the same realignment on the
-current head.
-
-## Integration
-
-1. Confirm the candidate's stage D result validates against the current
-   project (`validate --current`). A changed candidate returns to verify.
-2. With merge authorization: merge the task branch into the base branch with
-   a merge commit, or fast-forward when the user asked for it; remove the
-   worktree created in phase 1 and its branch only after the merge is
-   recorded. Without authorization: leave the branch, record the exact merge
-   command, and stop before the steps below until the merge exists.
-3. Record the merged commit as `merged_sha`.
-
-## Realignment, in this order
-
-1. **Record.** Load `project-knowledge:adr-method` and run `promote` for the
-   run's proposed record with `merged_sha`. Superseded records are marked by
-   the helper in the same transaction. A task that produced no record skips
-   this step and says so.
-2. **Map.** Load `codebase-map:map-method` and run the incremental update of
-   the bound run against `merged_sha`: changed files and symbols are
-   re-derived, unaffected claims carried, the impact packet of the task's
-   symbols refreshed. Then the concept index of `abstraction-architect`,
-   through its skill, for the task's scope.
-3. **Documentation.** Run `project-knowledge:project-knowledge` drift audit on
-   the documents that cite the changed paths and symbols, and apply the
-   authorized corrections; `project-knowledge:readme-craft` when the README
-   cites them.
-4. **Instructions.** Run `project-knowledge:instructions-method` to regenerate
-   the loop block from the run record and the record index: commands, active
-   records, workspace convention. Nothing outside the markers changes.
-5. **Head.** Record `last_synced` as `merged_sha` in the run, and compare it
-   with `HEAD`: a difference means another commit landed meanwhile, and the
-   map update runs once more for that delta before the run closes.
-
-A step that cannot run (a missing runner, an unauthorized edit) stays open
-with its reason; the run does not close on it silently.
+A concluded run's own output is reduced to verified knowledge and then
+quarantined, on request and only through the helper below. Nothing here
+touches project files that the run did not create.
 
 ## Evidence
 

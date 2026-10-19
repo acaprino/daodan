@@ -520,24 +520,34 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("append-only", dropped.stderr)
         self.assertIn("cites evidence", self.plan_check({"rulings": [{**ruling, "evidence": []}]}, ok=False).stderr)
 
-    def test_a_review_delivery_outside_the_computed_roster_is_refused(self):
-        roster = {"schema": "daodan/review-roster/v1", "shape": "branch", "tier": "small",
-                  "roster": ["senior-review:code-auditor", "testing:test-suite-auditor"],
-                  "reasons": ["no raising signal"], "verification": "high-and-above"}
-        self.payload["review"] = roster
-        self.payload["deliveries"] = {"review-1-code-auditor": {"status": "pending", "role": "senior-review:code-auditor"}}
+    def test_each_review_bounds_only_the_deliveries_bound_to_it(self):
+        light = {"id": "R1", "stage": "wave-1", "schema": "daodan/review-roster/v1", "shape": "light",
+                 "kind": "changeset", "tier": "light", "roster": ["senior-review:code-auditor"],
+                 "support": ["senior-review:premise-auditor", "project-protocol:isolated-worker"],
+                 "reasons": ["no raising signal"], "verification": "critical-high"}
+        self.payload["reviews"] = [light]
+        self.payload["deliveries"] = {
+            "R1-code-auditor": {"status": "pending", "role": "senior-review:code-auditor", "review": "R1"},
+            "w1-t1": {"status": "pending", "role": "python-development:python-engineer"},
+        }
         record = self.init()
-        self.assertEqual(record["review"]["tier"], "small")
-        widened = {"deliveries": {"review-2-security": {"status": "pending", "role": "senior-review:security-auditor"}}}
+        self.assertEqual(record["reviews"][0]["tier"], "light")
+        widened = {"deliveries": {"R1-security": {"status": "pending", "role": "senior-review:security-auditor", "review": "R1"}}}
         refusal = self.invoke("update", widened, ["--expected-revision", "0"], ok=False)
-        self.assertIn("computed review roster does not contain", refusal.stderr)
+        self.assertIn("computed roster of review R1 does not contain", refusal.stderr)
         self.assertIn("senior-review:security-auditor", refusal.stderr)
-        inside = {"deliveries": {"review-2-tests": {"status": "pending", "role": "testing:test-suite-auditor"}}}
-        self.assertIn("review-2-tests", self.invoke("update", inside, ["--expected-revision", "0"])["deliveries"])
-        bad_tier = {**roster, "tier": "enormous"}
-        self.assertIn("review.tier must be one of", self.plan_check({"review": bad_tier}, ok=False).stderr)
-        self.assertIn("review.roster must be a nonempty list",
-                      self.plan_check({"review": {**roster, "roster": []}}, ok=False).stderr)
+        lens = {"deliveries": {"R1-lens-0": {"status": "pending", "role": "senior-review:premise-auditor", "review": "R1"}}}
+        self.assertIn("R1-lens-0", self.invoke("update", lens, ["--expected-revision", "0"])["deliveries"])
+        unknown = {"deliveries": {"R9-x": {"status": "pending", "role": "senior-review:code-auditor", "review": "R9"}}}
+        self.assertIn("names review R9", self.invoke("update", unknown, ["--expected-revision", "1"], ok=False).stderr)
+        rewritten = {"reviews": [{**light, "roster": light["roster"] + ["senior-review:security-auditor"]}]}
+        self.assertIn("append-only", self.invoke("update", rewritten, ["--expected-revision", "1"], ok=False).stderr)
+        deeper = {**light, "id": "R2", "shape": "branch", "tier": "small", "stage": "candidate"}
+        self.assertEqual(len(self.invoke("update", {"reviews": [light, deeper]}, ["--expected-revision", "1"])["reviews"]), 2)
+        self.assertIn("tier must be one of", self.plan_check({"reviews": [{**light, "tier": "enormous"}]}, ok=False).stderr)
+        self.assertIn("kind must be one of", self.plan_check({"reviews": [{**light, "kind": "poem"}]}, ok=False).stderr)
+        self.assertIn("roster must be a nonempty list",
+                      self.plan_check({"reviews": [{**light, "roster": []}]}, ok=False).stderr)
 
     def git(self, *arguments):
         return subprocess.run(["git", "-C", str(self.project), *arguments], capture_output=True,

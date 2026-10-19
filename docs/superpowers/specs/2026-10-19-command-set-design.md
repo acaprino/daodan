@@ -115,9 +115,10 @@ cambiato.
 ## 6. Due livelli di review
 
 **`review-changes`.** Prima gli strumenti del progetto: test, lint, tipi, dipendenze se
-cambia un manifesto. Poi un revisore generalista e al massimo due specialisti
-scelti dai segnali del codice. Verifica avversariale solo su Critical e High. Se i
-segnali sono forti, consiglia `review-branch` invece di allargarsi.
+cambia un manifesto. Poi un solo revisore: il generalista sul codice, il controllo
+delle affermazioni del premise auditor su ADR, piani e documenti. Verifica
+avversariale solo su Critical e High. Se i segnali sono forti, consiglia
+`review-branch` invece di allargarsi.
 
 **`review-branch`.** Tutte le prospettive che i segnali del branch attivano, con
 mappa, derivazione cieca delle premesse e pannello di verifica. Le prospettive le
@@ -237,6 +238,12 @@ Claude Code, e i verbi li evitano.
    run (37.2.0).
 2. **Metodi nuovi.** `brainstorm-idea`, `investigate-problem`, la review leggera, `finish-task`, `sync-upstream`, la mappa
    per area, i router di `write-docs`, `tidy-repo` e `get-second-opinion`.
+   Consegnato in 37.3.0: la review leggera come unità propria, con un roster per
+   tipo di bersaglio e una voce per review nella lista `reviews` del run;
+   `investigation-method`; `brainstorm.md`, `finish.md`, `sync.md`,
+   `realign.md`, `retention.md` al posto di `consolidate.md`; l'approfondimento
+   per area che scrive le schede della mappa. I router nascono con i workflow
+   della fase 3, perché sono il corpo stesso di quei comandi.
 3. **Ingresso.** Il plugin `daodan`; i workflow tolti dagli altri plugin.
 4. **Test e documentazione** sui cinque host. Marketplace 38.0.0.
 5. **Prova.** Stesso progetto e stesso bug della prima prova, da `init-project` a

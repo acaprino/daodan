@@ -100,6 +100,31 @@ class RosterComputationTests(unittest.TestCase):
         self.assertTrue(advice and "review-branch" in advice[0])
         self.assertEqual(review_roster.compute("light", PROBE_DIFF, None, None, False)["advice"], [])
 
+    def test_a_record_a_plan_or_a_document_gets_the_claim_check_when_light(self):
+        spec = "diff --git a/docs/adr/0004-x.md b/docs/adr/0004-x.md\n+++ b/docs/adr/0004-x.md\n+Tokens expire after authentication.\n"
+        for kind in ("plan", "spec", "doc"):
+            with self.subTest(kind=kind):
+                roster = review_roster.compute("light", spec, None, None, False, kind)
+                self.assertEqual(roster["roster"], ["senior-review:premise-auditor"])
+                self.assertEqual(roster["kind"], kind)
+        branch = review_roster.compute("branch", spec, None, None, False, "spec")
+        self.assertEqual(branch["roster"][:4], review_roster.KIND_ROSTER["spec"])
+        self.assertIn("senior-review:security-auditor", branch["roster"])
+        code = review_roster.compute("branch", PROBE_DIFF.replace("negative = False", "token = None"), None, None, False)
+        self.assertNotIn("senior-review:security-auditor", code["roster"])
+        deeper = review_roster.compute("branch", spec, None, None, True, "spec")
+        self.assertEqual(deeper["roster"], branch["roster"])
+        self.assertIn("fixed set", deeper["advice"][0])
+        with self.assertRaises(ValueError):
+            review_roster.compute("light", spec, None, None, False, "poem")
+
+    def test_support_roles_are_the_verification_lenses_and_the_maps_at_large(self):
+        small = review_roster.compute("branch", PROBE_DIFF, None, None, False)
+        self.assertEqual(small["support"], review_roster.SUPPORT)
+        large = review_roster.compute("branch", INTERFACE_DIFF, None, None, False)
+        self.assertIn("codebase-map:semantic-interconnect-mapper", large["support"])
+        self.assertIn("review-branch", review_roster.compute("light", PROBE_DIFF, None, None, True)["advice"][0])
+
     def test_public_interface_sensitive_path_and_manifest_force_large(self):
         for diff, reason in ((INTERFACE_DIFF, "public interface changed: validate_order"),
                              (SENSITIVE_DIFF, "sensitive paths: app/auth/session.py"),
@@ -140,7 +165,7 @@ class RosterComputationTests(unittest.TestCase):
 class RosterCheckTests(unittest.TestCase):
     def test_a_dispatch_outside_the_roster_is_refused(self):
         roster = review_roster.compute("branch", PROBE_DIFF, None, None, False)
-        ok = {"roles": roster["roster"][:2], "blind_derivation": False, "critic": False}
+        ok = {"roles": roster["roster"][:2] + ["project-protocol:isolated-worker"], "blind_derivation": False, "critic": False}
         self.assertEqual(review_roster.check(roster, ok), [])
         wide = {"roles": roster["roster"] + ["senior-review:security-auditor"], "blind_derivation": True, "critic": True}
         problems = review_roster.check(roster, wide)
@@ -152,13 +177,14 @@ class RosterCheckTests(unittest.TestCase):
             root = Path(temp)
             (root / "diff.patch").write_text(PROBE_DIFF, encoding="utf-8")
             compute = subprocess.run(
-                [sys.executable, "-I", str(HELPER), "compute", "--shape", "branch",
-                 "--diff", str(root / "diff.patch"), "--out", str(root / "roster.json")],
+                [sys.executable, "-I", str(HELPER), "compute", "--shape", "branch", "--id", "R4",
+                 "--stage", "candidate", "--diff", str(root / "diff.patch"), "--out", str(root / "roster.json")],
                 capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(compute.returncode, 0, compute.stderr)
             self.assertEqual(json.loads(compute.stdout)["tier"], "small")
             roster = json.loads((root / "roster.json").read_text(encoding="utf-8"))
             self.assertEqual(roster["schema"], review_roster.SCHEMA)
+            self.assertEqual((roster["id"], roster["stage"], roster["kind"]), ("R4", "candidate", "changeset"))
             (root / "dispatch.json").write_text(json.dumps({"roles": ["senior-review:security-auditor"]}), encoding="utf-8")
             check = subprocess.run(
                 [sys.executable, "-I", str(HELPER), "check", "--roster", str(root / "roster.json"),

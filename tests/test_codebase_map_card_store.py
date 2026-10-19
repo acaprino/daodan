@@ -326,6 +326,14 @@ class CardEntryPointTests(unittest.TestCase):
         refused = self.cli("meta-upsert", manifest, "--input", payload, "--cards", self.project)
         self.assertEqual(refused.returncode, 2)
 
+        piped = subprocess.run(
+            [sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "meta-upsert", str(manifest), "--input", "-"],
+            input=json.dumps([{"file": "pkg/b.py", "symbol": "helper", "purpose": "adds one, piped"}]),
+            capture_output=True, text=True)
+        self.assertEqual(piped.returncode, 0, piped.stderr)
+        read = self.cli("meta-query", manifest, "--symbol", "pkg/b.py::helper", "--no-history")
+        self.assertEqual(json.loads(read.stdout)["symbols"][0]["card"]["purpose"], "adds one, piped")
+
         invalid = self.cli("meta-query", manifest, "--freshness", "mostly-fresh")
         self.assertEqual(invalid.returncode, 2)
         self.assertIn("freshness", invalid.stderr)

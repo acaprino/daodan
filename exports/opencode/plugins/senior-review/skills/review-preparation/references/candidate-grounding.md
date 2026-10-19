@@ -155,35 +155,40 @@ tools cannot see. Pack results enter findings as class `tool-reported`.
 The caller names a shape; a helper computes the roster. The reviewer never
 chooses its own rigor.
 
-- `light`: before a commit, on one wave's diff. Project tools first (tests,
-  lint, types, the dependency audit when a manifest changed), then one
-  generalist. Verification on Critical and High only.
-- `branch`: before a merge, on the whole candidate from `base_sha`. Tier
-  `small`, `medium` or `large`; `large` is the complete team pipeline with
-  blind derivation, interconnect map, panel and critic.
+- `light`: before a commit, and on a record or a plan inside the cycle. It has
+  its own unit, `references/light.md` of `senior-review:review-method`, and
+  never reaches this preparation.
+- `branch`: before a merge, on the whole candidate from `base_sha`. A
+  changeset gets tier `small`, `medium` or `large`; `large` is the complete
+  team pipeline with blind derivation, interconnect map, panel and critic. A
+  plan, a specification or a document gets its kind's fixed set.
 
 Before any dispatch:
 
 ```text
-python "${PROTOCOL_ROOT}/skills/project-protocol/scripts/review_roster.py" compute   --shape light|branch --diff DIFF.patch [--impact IMPACT.json] [--deeper] --out ROSTER.json
+python "${PROTOCOL_ROOT}/skills/project-protocol/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
-`PROTOCOL_ROOT` is the installed `project-protocol` package. Record the roster
-in the run's `review` section; the protocol refuses a delivery outside it. The
-tier rises on measured signals only: a changed public interface, a sensitive
-path, a changed manifest or contract, or many callers force `large`; several
-modules or files, or a changed effects digest, give `medium`. `--deeper` is the
-caller's one step up; nothing lowers a tier. A red baseline is reported with
-the roster. A missing map is a recorded gap, never a reason to widen.
+`PROTOCOL_ROOT` is the installed `project-protocol` package. Append the output
+to the run's `reviews` and bind every delivery to its `id`; the protocol
+refuses a delivery whose role is outside that roster and its `support`. The
+tier rises on measured signals only: a changed public interface,
+a sensitive path, a changed manifest or contract, or many callers force
+`large`; several modules or files, or a changed effects digest, give `medium`.
+`--deeper` is the caller's one step up and appends a new entry; nothing lowers
+a tier. A red baseline is reported with the roster. A missing map is a
+recorded gap, never a reason to widen.
 
-## 6. Roster by kind
+## 6. What each kind's set looks for
 
-| Kind | Always | Added by signal |
-|---|---|---|
-| `changeset` | The team variant's always-on set | Every conditional and stack dimension of Phase 0b, including `python` and `dependencies` |
-| `plan` | `premise-auditor` (grounding of every cited path, symbol and caller), `testing:test-suite-auditor` (every task has an oracle that fails for the right reason and cannot pass trivially), `chicken-egg-detector` (initialization order and wave dependencies), `abstraction-architect-agent` (a second owner for a concept the codebase already owns) | The stack dimensions of the files the plan names; `data-integrity-auditor` for migrations; `api-contract-auditor` for contract files; `dependencies` for manifests |
-| `spec` | `premise-auditor` (every claim about the existing code against the source), `logic-integrity-auditor` (state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared as superseded), `abstraction-architect-agent` (concept and ownership alignment), `testing:test-suite-auditor` (acceptance criteria that can be tested) | `security-auditor`, `data-integrity-auditor`, `api-contract-auditor`, `distributed-flow-auditor` when the specification touches trust boundaries, persistence, contracts or cross-service flows |
-| `doc` | `premise-auditor` (every statement about the code against the source and the map) | The instructions auditor of `project-knowledge` when the caller is a knowledge workflow; this review reports the drift and leaves the rewrite to that owner |
+The helper holds the sets; this is what each role checks there.
+
+| Kind | Roles and their question |
+|---|---|
+| `changeset` | The tier's set, then the stack and content signals of Phase 0b, `python` and `dependencies` included |
+| `plan` | `premise-auditor`, claim check: every cited path, symbol and caller exists; `testing:test-suite-auditor`: every oracle fails for the right reason and cannot pass trivially; `chicken-egg-detector`: initialization order and wave dependencies; `abstraction-architect-agent`: a second owner for a concept the codebase already owns |
+| `spec` | `premise-auditor`, claim check: every statement about existing code; `logic-integrity-auditor`: state machines, invariants, missing boundary and rejection examples, conflicts with active records not declared superseded; `abstraction-architect-agent`: concept and ownership alignment; `testing:test-suite-auditor`: acceptance criteria that can be tested. Trust boundaries, persistence, contracts and cross-service flows in the text add their auditors |
+| `doc` | `premise-auditor`, claim check: every statement about the code against the source and the map. This review reports drift and leaves the rewrite to `project-knowledge` |
 
 Selected dimensions, skip reasons and gaps are shown in one plan before
 dispatch, as the team variant does for a changeset.

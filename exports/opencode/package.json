@@ -1981,7 +1981,7 @@
             ]
           },
           {
-            "description": "Derives independent code claims (Mode 1, blind to shared maps) and challenges load-bearing finding premises (Mode 2, Lens 0). TRIGGER WHEN: /senior-review:team-review Phase 1c runs, or the verification panel spawns Lens 0 for a finding premise. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+            "description": "Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3). TRIGGER WHEN: /senior-review:team-review Phase 1c runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
             "file": "agents/premise-auditor.md",
             "id": "senior-review:premise-auditor",
             "permissions": [
@@ -2284,6 +2284,12 @@
             "file": "skills/application-cleanup-method/SKILL.md",
             "id": "senior-review:application-cleanup-method",
             "name": "application-cleanup-method"
+          },
+          {
+            "description": "Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection. TRIGGER WHEN: a coordinator investigates a problem, or a bug fix starts without a known cause. DO NOT TRIGGER WHEN: reviewing a change for defects (use review-method), or the cause is already demonstrated by a failing test.",
+            "file": "skills/investigation-method/SKILL.md",
+            "id": "senior-review:investigation-method",
+            "name": "investigation-method"
           }
         ]
       },
@@ -2624,5 +2630,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "37.2.0"
+  "version": "37.3.0"
 }

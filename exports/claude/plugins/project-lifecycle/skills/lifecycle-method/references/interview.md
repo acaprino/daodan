@@ -68,10 +68,10 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Grounding, before the first question
 
-1. Load `codebase-map:map-method`. From the bound run, take the symbol cards of
-   the entities the request names and their one-hop callers and callees; read
-   the current source of each through the map's source reader. A card is a
-   lead; the source is the fact.
+1. Load `codebase-map:map-method` and deepen the request's area as its
+   `references/deepen.md` directs, then take the cards of the entities the
+   request names and their one-hop neighbours from `edit-impact`, with their
+   current source. A card is a lead; the source is the fact.
 2. Load `project-knowledge:adr-method` and run `resolve` on the scope. The
    one to three active records it returns are the constraints the task
    inherits.
@@ -113,11 +113,9 @@ section as `proposed`. The record stays `Proposed` until integration.
 
 ## Review of the record (stage A)
 
-Run `senior-review:review-method` through `senior-review:review-preparation`
-with `target-kind=spec` on the record and shape `light`. The preparation
-selects the premise lens against the current source, the logic lens for
-invariants and missing examples, the abstraction lens against the concept
-index, and the stack lenses the scope activates. A `disputed` premise or a
+Run `senior-review:review-method` with shape `light`, kind `spec` and stage
+`record` on the record: the premise auditor checks every claim it makes about
+the code, and its missing boundary or rejection examples. A false claim or a
 blocking finding reopens the interview on that point.
 
 On `--peer-review`, dispatch `peer-review:packet-builder` and

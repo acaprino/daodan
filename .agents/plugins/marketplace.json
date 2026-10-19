@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "37.2.0"
+    "version": "37.3.0"
   },
   "name": "daodan",
   "owner": {
@@ -62,7 +62,7 @@
         "./skills/team-analyze-workflow"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "7.2.0"
+      "version": "7.3.0"
     },
     {
       "author": {
@@ -221,7 +221,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.6.0"
+      "version": "1.7.0"
     },
     {
       "author": {
@@ -235,7 +235,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/codex/plugins/project-protocol",
-      "version": "1.4.0"
+      "version": "1.5.0"
     },
     {
       "author": {
@@ -334,6 +334,7 @@
         "./skills/application-cleanup-method",
         "./skills/code-review-workflow",
         "./skills/defect-taxonomy",
+        "./skills/investigation-method",
         "./skills/pr-review-workflow",
         "./skills/review-consolidation",
         "./skills/review-method",
@@ -342,7 +343,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "15.4.0"
+      "version": "15.5.0"
     },
     {
       "author": {

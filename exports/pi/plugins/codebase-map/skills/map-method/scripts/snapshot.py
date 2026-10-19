@@ -2771,7 +2771,8 @@ def cmd_edit_impact(args: argparse.Namespace) -> int:
 def cmd_meta_upsert(args: argparse.Namespace) -> int:
     try:
         from semantic_store import upsert_meta_cards
-        cards = json.loads(Path(args.input).read_text(encoding="utf-8"))
+        text = sys.stdin.read() if args.input == "-" else Path(args.input).read_text(encoding="utf-8")
+        cards = json.loads(text)
         if isinstance(cards, dict) and "cards" in cards:
             cards = cards["cards"]
         if not isinstance(cards, list):
@@ -2863,7 +2864,7 @@ def main(argv: list[str] | None = None) -> int:
 
     meta_upsert_parser = sub.add_parser("meta-upsert", help="write Meta-Code cards, bound to the digests of this snapshot, to the card store")
     meta_upsert_parser.add_argument("manifest")
-    meta_upsert_parser.add_argument("--input", required=True)
+    meta_upsert_parser.add_argument("--input", required=True, help="cards JSON file, or - for standard input")
     meta_upsert_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     meta_upsert_parser.set_defaults(func=cmd_meta_upsert)
 

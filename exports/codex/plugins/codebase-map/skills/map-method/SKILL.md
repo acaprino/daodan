@@ -80,10 +80,6 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Codebase Map Analysis Skill
 
-## Overview
-
-Map structure, purpose, integrations, consequences.
-
 ## Language Support
 
 | Language | Extensions | Structural extraction | Comment syntax |
@@ -115,6 +111,7 @@ Loading `codebase-map:map-method` starts no analysis or run.
 | `references/run.md` | concurrent runs model, perimeter, classic or team | whoever owns the run |
 | `references/snapshot.md` | snapshot write, scope count, diff, carry, check commands and owner prerequisites | whoever owns the run's snapshot |
 | `references/update.md` | incremental re-derivation | analyst on accepted updates |
+| `references/deepen.md` | cards an area lacks | area deepening; analyst in `cards` mode |
 | `references/evidence.md` | evidence-anchored output, forbidden files, script commands, source reading, file classification; maintained-document verification is separate | every phase worker and every consumer that reads source |
 | `references/reading.md` | how to read a finished analysis | every consumer of a bound analysis |
 | `references/phase-0.md` | Phase 0, project knowledge discovery | analyst and team entry |
@@ -132,10 +129,6 @@ Loading `codebase-map:map-method` starts no analysis or run.
 ## Team bindings
 
 Use canonical skeletons in owned output. Put partition identity below titles, never in headings. Workers and synthesizers do not update classic state.
-
-## References
-
-The phase units own the canonical skeletons.
 
 ## Method loads
 

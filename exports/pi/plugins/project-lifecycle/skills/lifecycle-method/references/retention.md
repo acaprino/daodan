@@ -1,36 +1,32 @@
-> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 
-<daodan_host_binding host="copilot">
+<daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
 tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Copilot binding: repository reads use search, writes use edit, shell execution uses
-runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
-agent dispatch uses the agent allowlist alias; the current CLI documents a task
-dispatch tool. Call the mechanism actually registered in this session, not an
-allowlist alias assumed to be a callable tool.
-Use each registered tool's input fields; Claude's subagent_type, role and
-run_in_background fields are not a portable dispatch schema. Dispatch only the
-custom agent named by the generated owner-qualified binding and agents allowlist.
-An omitted tools restriction retains host defaults; an explicit list constrains
-the worker and does not grant omitted shell, write or MCP tools.
-Skills use their exact installed registry identity; workflows are prompt entries.
-A dispatched workflow also has its generated <workflow>-coordinator custom agent.
-Required foreign providers use Copilot's marketplace/install commands:
-copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
-Register plugin-declared MCP server commands in this host's MCP configuration as
-the generated note directs. Registration and a dependency declaration alone do
-not demonstrate that browser/server tools are callable by the selected worker.
+Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
+execution uses bash or the registered powershell alternative. Use their actual
+command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
+pi install npm:pi-subagents. Use that extension's registered subagent schema and
+pass the full rendered role body inline. Role skills named <plugin>-<role> are
+body resources with automatic invocation disabled, not a built-in named agent.
+Workflow prompt entries use /<plugin>-<workflow>; ordinary skills use their exact
+registered names. If isolation is mandatory and unavailable, stop the phase.
+MCP requires pi-mcp-adapter: pi install npm:pi-mcp-adapter, then register the
+generated server command in its supported MCP configuration.
+Keep the selected package's full local dependency closure. Provision qualified
+foreign providers as skills/resources this runtime can load; Pi does not install
+another host's marketplace plugin from a Claude install command.
 Inherit the active session's model and default variant. A source model alias such
 as sonnet is not a portable override; request a different model only through an
 explicit adapter mapping to a valid host identity and user authorization.
-Coordinator MCP allowances use <declared-server>/* for only the package's named
-servers. This requires actual server registration and tool discovery; it grants
-no undeclared server and does not prove MCP is callable in an installed run.
-Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+Kernel <owner>:<skill> references identify the logical provider. Ordinary Pi
+skills retain their source frontmatter name, so resolve the actual registered name
+and provider path from the active inventory; do not invent a prefixed native ID.
 
 The executing agent and its coordinator own continuation, recovery, verification
 and delivery. Skills supply knowledge and method instructions; they are not
@@ -75,49 +71,11 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-# Consolidate (phase 7, and the standalone realignment)
+# Retention of a run's output
 
-Consolidate closes a task: it integrates the candidate when the user merges
-through the cycle, promotes the decision record, realigns the knowledge that
-describes the project, and disposes of the run's own output. Run alone after
-a merge made outside the cycle, it performs the same realignment on the
-current head.
-
-## Integration
-
-1. Confirm the candidate's stage D result validates against the current
-   project (`validate --current`). A changed candidate returns to verify.
-2. With merge authorization: merge the task branch into the base branch with
-   a merge commit, or fast-forward when the user asked for it; remove the
-   worktree created in phase 1 and its branch only after the merge is
-   recorded. Without authorization: leave the branch, record the exact merge
-   command, and stop before the steps below until the merge exists.
-3. Record the merged commit as `merged_sha`.
-
-## Realignment, in this order
-
-1. **Record.** Load `project-knowledge:adr-method` and run `promote` for the
-   run's proposed record with `merged_sha`. Superseded records are marked by
-   the helper in the same transaction. A task that produced no record skips
-   this step and says so.
-2. **Map.** Load `codebase-map:map-method` and run the incremental update of
-   the bound run against `merged_sha`: changed files and symbols are
-   re-derived, unaffected claims carried, the impact packet of the task's
-   symbols refreshed. Then the concept index of `abstraction-architect`,
-   through its skill, for the task's scope.
-3. **Documentation.** Run `project-knowledge:project-knowledge` drift audit on
-   the documents that cite the changed paths and symbols, and apply the
-   authorized corrections; `project-knowledge:readme-craft` when the README
-   cites them.
-4. **Instructions.** Run `project-knowledge:instructions-method` to regenerate
-   the loop block from the run record and the record index: commands, active
-   records, workspace convention. Nothing outside the markers changes.
-5. **Head.** Record `last_synced` as `merged_sha` in the run, and compare it
-   with `HEAD`: a difference means another commit landed meanwhile, and the
-   map update runs once more for that delta before the run closes.
-
-A step that cannot run (a missing runner, an unauthorized edit) stays open
-with its reason; the run does not close on it silently.
+A concluded run's own output is reduced to verified knowledge and then
+quarantined, on request and only through the helper below. Nothing here
+touches project files that the run did not create.
 
 ## Evidence
 
@@ -146,12 +104,12 @@ writing a verified flag is not the verification. Keep a nonempty evidence subset
 Outstanding evidence blocks retention until explicitly resolved and retained.
 
 Run the installed helper:
-python "${PLUGIN_ROOT}/skills/lifecycle-method/scripts/artifacts.py" plan --run RUN --manifest artifacts.json --report summary.json
+python "<plugin-root>/skills/lifecycle-method/scripts/artifacts.py" plan --run RUN --manifest artifacts.json --report summary.json
 This writes retention-plan.json. Show every proposed path/reason and potential
 byte total; default planning makes no removal.
 
 After authorization, apply quarantine with:
-python "${PLUGIN_ROOT}/skills/lifecycle-method/scripts/artifacts.py" apply --run RUN --plan retention-plan.json
+python "<plugin-root>/skills/lifecycle-method/scripts/artifacts.py" apply --run RUN --plan retention-plan.json
 This moves data within the run and reports zero bytes deleted.
 
 Permanent deletion is a separate explicit --purge grant, not implied by --fix.

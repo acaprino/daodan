@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 7.2.0; source-sha256: 7dd4f790fb961e788388f82a4e14a0ac3662863148dc76d0f173f678bf6cefc3. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: codebase-map:map-analyst; version: 7.3.0; source-sha256: 7e4f551303453cc8fa7e2e9e86e474a8bb00124d3db720e74d843171b135b8e2. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `codebase-map`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<codebase-map-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `codebase-map`. The owning plugin's declared logical skill identities are `codebase-map:map-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -112,8 +112,13 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 | `<codebase-map-plugin-root>/skills/map-method/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and phase-6 and not-lite |
 | `<codebase-map-plugin-root>/skills/map-method/references/phase-7.md` | before: Team mode | phase-7 |
 | `<codebase-map-plugin-root>/skills/map-method/references/update.md` | all | update |
+| `<codebase-map-plugin-root>/skills/map-method/references/deepen.md` | section: Analyst in cards mode | cards |
 
 ## Execute the prepared brief
+
+A brief with mode `cards` binds an existing run's manifest and a symbol list
+instead of `run_phases`: write their cards as `references/deepen.md` directs
+and deliver the upsert result; the steps below are for analysis runs.
 
 1. Read state and snapshot binding. The coordinator wrote the initial manifest;
    do not repeat it. Become this run's snapshot owner. On changed bytes or parser

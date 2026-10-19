@@ -88,12 +88,10 @@ until it passes, then write it into the run's `waves` section.
 
 ## Review of the plan (stage B)
 
-Run `senior-review:review-method` with `target-kind=plan` and shape `light`
-on the plan. The preparation selects the premise lens (every cited path,
-symbol and caller exists), the test lens (every oracle fails for the right
-reason), the initialization lens (ordering, shared files, migrations), the
-abstraction lens (no second owner for a concept) and the stack lenses of the
-named files. Up to three planner-and-lenses rounds, then the user. Present the
+Run `senior-review:review-method` with shape `light`, kind `plan` and stage
+`plan`: `plan-check` has settled the structure, and the premise auditor checks
+every cited path, symbol and caller and that each oracle can fail for its
+stated reason. Three planner-and-review rounds at most, then the user. Present the
 approved plan with its expected cost and stop for approval, unless the
 authorization already covers execution.
 
@@ -107,8 +105,8 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
    `python-development:python-engineer` for Python,
    `typescript-development:typescript-engineer` for TypeScript and
    JavaScript, `testing:test-writer` for a task that writes tests only, the
-   isolated worker with the knowledge `skill-catalog:skill-catalog` selected
-   for any other stack. The writer runs the oracle first and stops with
+   isolated worker for any other stack, with the knowledge selected when you
+   load the `skill-catalog:skill-catalog` skill. The writer runs the oracle first and stops with
    `ORACLE_INVALID` when it passes or fails for another reason; writes only
    inside `write_set` and stops with `NEEDS_REPLAN` when another file must
    change; runs the verification; records a ruling for any local decision the
@@ -119,17 +117,16 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
    `<type>(<area>): <task title>` with the trailer
    `Daodan-Task: <run id> wave <n>/<m>`, so `git log` shows progress. On any other code,
    restore the task's `write_set` from the pre-step bytes, remove files the
-   task created, leave everything else untouched, and record the attempt.
+   task created, touch nothing else, and record the attempt.
    `NEEDS_REPLAN` returns to the plan with the missing file; `ORACLE_INVALID`
    returns to the record or the test.
 
 ## Review of the wave (stage C)
 
-When every task of the wave is committed or its candidate is recorded, run
-`senior-review:review-method` with shape `light` on the wave's diff. The
-preparation selects the logic lens for conformance to `EX-*` and `INV-*`, the
-test lens for the new oracles, the premise lens on every new ruling, and the
-stack lenses the diff activates. A blocking finding reopens the task; the
+With every task committed or its candidate recorded, run
+`senior-review:review-method` with shape `light` and stage `wave-<n>` on the
+wave's diff: the project's tools, then the generalist, with the record's
+`EX-*` and `INV-*` and the wave's rulings as its intent. A `BLOCK` reopens the task; the
 wave is `sealed` only with every task committed and the review delivered.
 Then the next wave.
 

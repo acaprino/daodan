@@ -20,10 +20,11 @@ PLUGIN = REPO_ROOT / "plugins" / "codebase-map"
 METHOD = PLUGIN / "skills" / "map-method"
 
 UNIT_BUDGETS = {
-    "SKILL.md": 835,
+    "SKILL.md": 834,
     "references/run.md": 811,
     "references/snapshot.md": 938,
     "references/update.md": 597,
+    "references/deepen.md": 380,
     "references/evidence.md": 2_436,
     "references/reading.md": 132,
     "references/phase-0.md": 355,
@@ -56,7 +57,7 @@ OPTIONAL_ALLOWANCES = {
     "migration": 209,
 }
 READ_CONDITIONS = {
-    "always", "full", "lite", "update", "documentation", "not-lite",
+    "always", "full", "lite", "update", "cards", "documentation", "not-lite",
     "comments and not-lite", "documentation and not-lite", *OPTIONAL_ALLOWANCES,
     *(f"phase-{phase}" for phase in range(8)),
     "comments and phase-6",
@@ -151,12 +152,12 @@ def _selected(text: str, selector: str) -> set[int]:
 
 def load(body: str, *, mode="full", documentation=False, options=frozenset(), phases=None) -> tuple[int, set[str]]:
     """Follow declared loads in selected text, counting each source line once."""
-    if mode not in ("full", "lite", "update"):
+    if mode not in ("full", "lite", "update", "cards"):
         raise ValueError(f"Unknown read mode: {mode}")
     if unknown := set(options) - OPTIONAL_ALLOWANCES.keys():
         raise ValueError(f"Unknown read options: {sorted(unknown)}")
     if phases is None:
-        phases = {0, 1, 2, 5, 7} if mode == "lite" else set(range(8))
+        phases = {0, 1, 2, 5, 7} if mode == "lite" else set() if mode == "cards" else set(range(8))
     if any(type(phase) is not int or phase not in range(8) for phase in phases):
         raise ValueError("Unknown analysis phase")
     selected, texts, resource_lines = {}, {}, {}
@@ -173,7 +174,7 @@ def load(body: str, *, mode="full", documentation=False, options=frozenset(), ph
             if any(
                 (condition == "documentation" and not documentation)
                 or (condition == "not-lite" and mode == "lite")
-                or (condition in ("update", "full", "lite") and mode != condition)
+                or (condition in ("update", "full", "lite", "cards") and mode != condition)
                 or (condition in OPTIONAL_ALLOWANCES and condition not in options)
                 or (condition.startswith("phase-") and int(condition[6:]) not in phases)
                 for condition in when.split(" and ")
@@ -239,6 +240,12 @@ class XrayLoadBudgetTests(unittest.TestCase):
                 words, files = load(body, phases=phases)
                 self.assertEqual(files, common | resources)
                 self.assertLessEqual(words + len(body.split()), BUDGETS["roles/map-analyst.md"])
+
+    def test_analyst_cards_mode_reads_only_the_deepening_section(self) -> None:
+        body = (PLUGIN / "roles/map-analyst.md").read_text(encoding="utf-8")
+        words, files = load(body, mode="cards")
+        self.assertEqual(files, {"SKILL.md", "references/evidence.md", "references/snapshot.md", "references/deepen.md"})
+        self.assertLessEqual(words + len(body.split()), BUDGETS["roles/map-analyst.md"])
 
     def test_classic_coordinator_closure_excludes_analysis_units(self) -> None:
         body = (PLUGIN / "workflows/analyze.md").read_text(encoding="utf-8")

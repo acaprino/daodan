@@ -22,6 +22,7 @@ UNITS = (
     "run",
     "snapshot",
     "update",
+    "deepen",
     "evidence",
     "reading",
     "phase-0",

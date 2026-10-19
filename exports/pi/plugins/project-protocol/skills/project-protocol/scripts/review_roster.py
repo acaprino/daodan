@@ -8,12 +8,19 @@ data: it reads a diff and, when available, the Codebase Map's impact packet,
 decides the tier and the roster, and writes them so the protocol can refuse a
 dispatch the roster does not contain.
 
-Two shapes:
+Two shapes, four kinds:
 
-- ``light``: the review before each commit. Project tools, then one generalist.
-- ``branch``: the review before a merge. The tier is ``small``, ``medium`` or
-  ``large``; ``large`` is forced by a changed public interface, a sensitive path or
-  a changed manifest, and ``medium`` by several modules or many callers.
+- ``light``: the review before each commit, and of a decision record or a plan
+  inside the cycle. Project tools, then one reviewer: the generalist for code,
+  the premise auditor's claim check for a plan, a specification or a document.
+- ``branch``: the review before a merge. A changeset gets a tier, ``small``,
+  ``medium`` or ``large``; ``large`` is forced by a changed public interface, a
+  sensitive path or a changed manifest, and ``medium`` by several modules or many
+  callers. A plan, a specification or a document gets its kind's fixed set.
+
+Beside the roster, ``support`` names the roles the procedure itself dispatches:
+the verification lenses, and at ``large`` the map analyst and the interconnect
+mapper. The protocol accepts a delivery bound to a review only from the two.
 
 Signals come from three sources, all mechanical: ``git diff --numstat`` and the
 unified diff of the candidate, the impact packet of ``snapshot.py edit-impact``
@@ -25,8 +32,9 @@ on probes; every change to them is recorded with the probe that motivated it.
 
 Usage:
 
-    python review_roster.py compute --shape light|branch --diff DIFF.patch
-        [--numstat NUMSTAT.txt] [--impact IMPACT.json] [--deeper] --out ROSTER.json
+    python review_roster.py compute --shape light|branch [--kind changeset|plan|spec|doc]
+        --diff DIFF.patch [--numstat NUMSTAT.txt] [--impact IMPACT.json] [--deeper]
+        [--id REVIEW_ID --stage STAGE] --out ROSTER.json
     python review_roster.py check --roster ROSTER.json --dispatch DISPATCH.json
 """
 
@@ -75,8 +83,11 @@ LANGUAGE_BY_SUFFIX = {
     ".css": "stylesheet", ".scss": "stylesheet", ".less": "stylesheet",
 }
 
+KINDS = ("changeset", "plan", "spec", "doc")
+
 # Roles by tier. The light shape has one reviewer by decision of 2026-10-19.
-LIGHT_ROSTER = ["senior-review:code-auditor"]
+LIGHT_ROSTER = {"changeset": ["senior-review:code-auditor"]}
+LIGHT_ROSTER.update({kind: ["senior-review:premise-auditor"] for kind in ("plan", "spec", "doc")})
 SMALL_ROSTER = ["senior-review:code-auditor", "testing:test-suite-auditor"]
 MEDIUM_ROSTER = SMALL_ROSTER + [
     "senior-review:logic-integrity-auditor",
@@ -89,6 +100,19 @@ LARGE_ROSTER = MEDIUM_ROSTER + [
     "senior-review:cleanup-auditor",
     "repo-hygiene:workspace-auditor",
 ]
+# The fixed set of a plan, a specification or a document under a branch review.
+KIND_ROSTER = {
+    "plan": ["senior-review:premise-auditor", "testing:test-suite-auditor",
+             "senior-review:chicken-egg-detector", "abstraction-architect:abstraction-architect-agent"],
+    "spec": ["senior-review:premise-auditor", "senior-review:logic-integrity-auditor",
+             "abstraction-architect:abstraction-architect-agent", "testing:test-suite-auditor"],
+    "doc": ["senior-review:premise-auditor"],
+}
+# Roles the procedure dispatches beside the reviewers: verification lenses always
+# (lens 0 is the premise auditor, the other lenses and the critic isolated workers),
+# the map and the interconnect map at the large tier.
+SUPPORT = ["senior-review:premise-auditor", "project-protocol:isolated-worker"]
+LARGE_SUPPORT = SUPPORT + ["codebase-map:map-analyst", "codebase-map:semantic-interconnect-mapper"]
 # Signal-activated specialists, added at any branch tier when the signal is present.
 LANGUAGE_ROLE = {
     "python": "project-protocol:isolated-worker#python",
@@ -104,7 +128,12 @@ SIGNAL_ROLE = {
     "distributed": "senior-review:distributed-flow-auditor",
     "contract": "senior-review:api-contract-auditor",
     "manifest": "project-protocol:isolated-worker#dependencies",
+    "persistence": "senior-review:data-integrity-auditor",
+    "trust": "senior-review:security-auditor",
 }
+# A trust word in prose is a specification touching a boundary; in code it is
+# everywhere, and code reaches the security auditor through sensitive paths.
+PROSE_ONLY_SIGNALS = {"trust"}
 VERIFICATION = {"light": "critical-high", "small": "high-and-above", "medium": "all-above-floor", "large": "all-above-floor"}
 
 ADDED_LINE = re.compile(r"^\+(?!\+\+)")
@@ -118,6 +147,10 @@ SIGNAL_PATTERNS = {
     "startup": re.compile(r"\b(__main__|bootstrap|on_startup|lifespan|init_app|configure\(|register\()"),
     "distributed": re.compile(r"\b(requests\.|httpx\.|fetch\(|grpc|kafka|rabbit|celery|sqs|pubsub|publish\(|consume\()"),
     "react": re.compile(r"\b(from ['\"]react['\"]|useState|useEffect|React\.)"),
+    "persistence": re.compile(r"\b(SELECT|INSERT INTO|DELETE FROM|CREATE TABLE|ALTER TABLE|transaction|"
+                              r"rollback|bulk_create|session\.add|migrations?)\b"),
+    "trust": re.compile(r"\b(authentication|authorization|credentials?|passwords?|tokens?|permissions?|"
+                        r"encrypt\w*|trust boundary)\b", re.IGNORECASE),
 }
 
 
@@ -229,7 +262,25 @@ def impact_signals(impact: dict | None) -> dict:
     }
 
 
-def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | None, deeper: bool) -> dict:
+def signal_roles(signals: dict, kind: str, roster: list[str]) -> list[str]:
+    added = []
+    for language in signals["languages"] if kind == "changeset" else ():
+        role = LANGUAGE_ROLE.get(language)
+        if role and role not in roster + added:
+            added.append(role)
+    for name, present in signals["content"].items():
+        if present and (kind != "changeset" or name not in PROSE_ONLY_SIGNALS) and SIGNAL_ROLE[name] not in roster + added:
+            added.append(SIGNAL_ROLE[name])
+    for name in ("contract", "manifest"):
+        if signals[name] and SIGNAL_ROLE[name] not in roster + added:
+            added.append(SIGNAL_ROLE[name])
+    return added
+
+
+def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | None, deeper: bool,
+            kind: str = "changeset", review_id: str | None = None, stage: str | None = None) -> dict:
+    if kind not in KINDS:
+        raise ValueError(f"kind must be one of {', '.join(KINDS)}")
     rows = numstat if numstat else numstat_from_diff(diff)
     kinds = {row["path"]: classify_path(row["path"]) for row in rows}
     production = [p for p, k in kinds.items() if k == "production"]
@@ -257,12 +308,21 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     gaps = [] if map_signals["available"] else ["no Codebase Map impact packet: callers and digest changes unknown"]
 
     reasons: list[str] = []
+    advice: list[str] = []
     if shape == "light":
         tier = "light"
-        roster = list(LIGHT_ROSTER)
-        advice = []
+        roster = list(LIGHT_ROSTER[kind])
         if signals["interface_changed"] or signals["sensitive_paths"] or signals["manifest"] or signals["contract"]:
             advice.append("strong signals: run review-branch before merging")
+        if deeper:
+            advice.append("a deeper review is review-branch; the light review has one reviewer")
+    elif kind != "changeset":
+        tier = "small"
+        reasons.append(f"fixed set of a {kind}")
+        roster = list(KIND_ROSTER[kind])
+        roster += signal_roles(signals, kind, roster)
+        if deeper:
+            advice.append(f"a {kind} has one fixed set and no deeper tier")
     else:
         tier = "small"
         if signals["interface_changed"]:
@@ -286,26 +346,19 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
             tier = {"small": "medium", "medium": "large"}[tier]
             reasons.append("caller asked for a deeper review")
         roster = list({"small": SMALL_ROSTER, "medium": MEDIUM_ROSTER, "large": LARGE_ROSTER}[tier])
-        for language in languages:
-            role = LANGUAGE_ROLE.get(language)
-            if role and role not in roster:
-                roster.append(role)
-        for name, present in signals["content"].items():
-            if present and SIGNAL_ROLE[name] not in roster:
-                roster.append(SIGNAL_ROLE[name])
-        if signals["contract"] and SIGNAL_ROLE["contract"] not in roster:
-            roster.append(SIGNAL_ROLE["contract"])
-        if signals["manifest"] and SIGNAL_ROLE["manifest"] not in roster:
-            roster.append(SIGNAL_ROLE["manifest"])
-        advice = []
+        roster += signal_roles(signals, kind, roster)
     if not reasons:
         reasons.append("no raising signal")
+    review = {} if review_id is None else {"id": review_id, "stage": stage or shape}
     return {
+        **review,
         "schema": SCHEMA,
         "shape": shape,
+        "kind": kind,
         "tier": tier,
         "reasons": reasons,
         "roster": roster,
+        "support": list(LARGE_SUPPORT if tier == "large" and kind == "changeset" else SUPPORT),
         "verification": VERIFICATION[tier],
         "blind_derivation": tier in ("medium", "large"),
         "critic": tier == "large",
@@ -318,7 +371,7 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
 def check(roster: dict, dispatch: dict) -> list[str]:
     """Return the reasons a dispatch exceeds the roster; empty when it conforms."""
     problems = []
-    allowed = set(roster.get("roster", []))
+    allowed = set(roster.get("roster", [])) | set(roster.get("support", []))
     requested = dispatch.get("roles", [])
     extra = sorted(set(requested) - allowed)
     if extra:
@@ -337,6 +390,9 @@ def main(argv=None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     compute_parser = sub.add_parser("compute")
     compute_parser.add_argument("--shape", choices=("light", "branch"), required=True)
+    compute_parser.add_argument("--kind", choices=KINDS, default="changeset")
+    compute_parser.add_argument("--id", dest="review_id", help="the review's id in the run's reviews list")
+    compute_parser.add_argument("--stage", help="record, plan, wave-<n>, candidate or standalone")
     compute_parser.add_argument("--diff", required=True, help="unified diff of the candidate")
     compute_parser.add_argument("--numstat", help="git diff --numstat output; derived from the diff when absent")
     compute_parser.add_argument("--impact", help="snapshot.py edit-impact JSON for the changed symbols")
@@ -351,7 +407,7 @@ def main(argv=None) -> int:
         diff = Path(args.diff).read_text(encoding="utf-8", errors="replace")
         numstat = read_numstat(Path(args.numstat).read_text(encoding="utf-8")) if args.numstat else None
         impact = json.loads(Path(args.impact).read_text(encoding="utf-8")) if args.impact else None
-        result = compute(args.shape, diff, numstat, impact, args.deeper)
+        result = compute(args.shape, diff, numstat, impact, args.deeper, args.kind, args.review_id, args.stage)
         Path(args.out).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({"tier": result["tier"], "roster": result["roster"], "reasons": result["reasons"], "gaps": result["gaps"]}))
         return 0

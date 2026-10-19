@@ -184,8 +184,8 @@ reason and phase at once.
 
 ## Loop sections
 
-A lifecycle run may carry six optional sections, declared under `[loop]` in
-the work contract and validated whenever present.
+A lifecycle run may carry the optional sections of the work contract's
+`[loop]`, each validated whenever present.
 
 | Section | Holds | The helper refuses |
 |---|---|---|
@@ -196,13 +196,12 @@ the work contract and validated whenever present.
 | `rulings` | the worker's recorded local decisions | an update that alters or drops one |
 | `questions` | questions the host could not ask: `id`, `phase`, `text`, later `answer` | an empty answer or a repeated id |
 | `environment` | the project's `interpreter` and `commands` (test, lint, types, build, migrations) | an unknown command name |
-| `review` | the roster computed by `review_roster.py compute --shape light\|branch --diff DIFF --out ROSTER.json`: tier, roles, verification depth, blind derivation, critic | a delivery whose `role` is outside the roster |
+| `reviews` | one entry per review (record, plan, each wave, candidate) as `review_roster.py compute` wrote it: id, stage, shape, kind, tier, roster, support, verification | a delivery naming a review whose roster and support lack its `role`; altering or dropping an entry |
 
 Check a draft plan with `plan-check --project ROOT --payload PLAN.json`
-before it enters a run; the refusal names the rule. Record the roster before
-dispatching reviewers; `review_roster.py check` refuses a dispatch plan.
-`--deeper` raises the tier one step; nothing lowers it. Thresholds change
-only with a recorded probe.
+before it enters a run; the refusal names the rule. Append a review's roster
+before dispatch; `--deeper` appends one a tier up, nothing lowers one,
+thresholds change only with a recorded probe.
 
 ## State and completion
 

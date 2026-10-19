@@ -1,25 +1,32 @@
-<daodan_host_binding host="claude">
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
+
+<daodan_host_binding host="opencode">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
 tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
-command field, and use its registered timeout/background schema. Worker dispatch
-uses the available native Agent mechanism and its registered agent-selection and
-prompt fields. Do not turn a prose role label into an invented role argument.
-Inherit the session model unless the declared workflow and active schema permit an
-override. Load installed skills by qualified ID; named roles use their owning
-plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
-Required foreign providers use Claude's marketplace/install commands:
-claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
-A provider that is installed but disabled is enabled with
-claude plugin enable <provider>@<marketplace>; check `claude plugin list --json`
-before the first phase, and stop with that command when a required one is off.
-A declared package MCP server is configured through the generated MCP manifest;
-still check its tools are actually available in the active session.
+OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
+shell execution uses shell, network tools are webfetch/websearch, and clarification
+uses the registered question tool. shell takes command, optional workdir, timeout
+in milliseconds and background. It does not provide interactive stdin. Persistent
+capture uses background: true and an explicit noninteractive stop signal.
+Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
+subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
+continues that child, and background: true requests asynchronous completion.
+Use only roles allowed by the current harness and permissions. A child cannot
+dispatch nested workers when its permissions or the configured depth deny it.
+Workflow entries are /<plugin>:<workflow>, registered by the package loader.
+Inherit the session model; an override requires its authorized, actually available
+provider/model identity, not another host's short model alias.
+The loader includes required local providers and registers plugin-declared MCP
+servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
+through this host, never a Claude marketplace command. Check the active registry:
+registration metadata alone does not prove a connected server or usable tool.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
 
 The executing agent and its coordinator own continuation, recovery, verification
 and delivery. Skills supply knowledge and method instructions; they are not
@@ -64,49 +71,11 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-# Consolidate (phase 7, and the standalone realignment)
+# Retention of a run's output
 
-Consolidate closes a task: it integrates the candidate when the user merges
-through the cycle, promotes the decision record, realigns the knowledge that
-describes the project, and disposes of the run's own output. Run alone after
-a merge made outside the cycle, it performs the same realignment on the
-current head.
-
-## Integration
-
-1. Confirm the candidate's stage D result validates against the current
-   project (`validate --current`). A changed candidate returns to verify.
-2. With merge authorization: merge the task branch into the base branch with
-   a merge commit, or fast-forward when the user asked for it; remove the
-   worktree created in phase 1 and its branch only after the merge is
-   recorded. Without authorization: leave the branch, record the exact merge
-   command, and stop before the steps below until the merge exists.
-3. Record the merged commit as `merged_sha`.
-
-## Realignment, in this order
-
-1. **Record.** Load `project-knowledge:adr-method` and run `promote` for the
-   run's proposed record with `merged_sha`. Superseded records are marked by
-   the helper in the same transaction. A task that produced no record skips
-   this step and says so.
-2. **Map.** Load `codebase-map:map-method` and run the incremental update of
-   the bound run against `merged_sha`: changed files and symbols are
-   re-derived, unaffected claims carried, the impact packet of the task's
-   symbols refreshed. Then the concept index of `abstraction-architect`,
-   through its skill, for the task's scope.
-3. **Documentation.** Run `project-knowledge:project-knowledge` drift audit on
-   the documents that cite the changed paths and symbols, and apply the
-   authorized corrections; `project-knowledge:readme-craft` when the README
-   cites them.
-4. **Instructions.** Run `project-knowledge:instructions-method` to regenerate
-   the loop block from the run record and the record index: commands, active
-   records, workspace convention. Nothing outside the markers changes.
-5. **Head.** Record `last_synced` as `merged_sha` in the run, and compare it
-   with `HEAD`: a difference means another commit landed meanwhile, and the
-   map update runs once more for that delta before the run closes.
-
-A step that cannot run (a missing runner, an unauthorized edit) stays open
-with its reason; the run does not close on it silently.
+A concluded run's own output is reduced to verified knowledge and then
+quarantined, on request and only through the helper below. Nothing here
+touches project files that the run did not create.
 
 ## Evidence
 
@@ -135,12 +104,12 @@ writing a verified flag is not the verification. Keep a nonempty evidence subset
 Outstanding evidence blocks retention until explicitly resolved and retained.
 
 Run the installed helper:
-python "${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/scripts/artifacts.py" plan --run RUN --manifest artifacts.json --report summary.json
+python "<plugin-root>/skills/lifecycle-method/scripts/artifacts.py" plan --run RUN --manifest artifacts.json --report summary.json
 This writes retention-plan.json. Show every proposed path/reason and potential
 byte total; default planning makes no removal.
 
 After authorization, apply quarantine with:
-python "${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/scripts/artifacts.py" apply --run RUN --plan retention-plan.json
+python "<plugin-root>/skills/lifecycle-method/scripts/artifacts.py" apply --run RUN --plan retention-plan.json
 This moves data within the run and reports zero bytes deleted.
 
 Permanent deletion is a separate explicit --purge grant, not implied by --fix.

@@ -118,8 +118,13 @@ On demand follow the router's conditional loads; pointers alone are not reads.
 | `<plugin-root>/skills/map-method/references/phases-5-6.md` | section: Comment Quality Commands (Antirez Standards); section: Comment Type Classification; section: Comment quality analysis | comments and phase-6 and not-lite |
 | `<plugin-root>/skills/map-method/references/phase-7.md` | before: Team mode | phase-7 |
 | `<plugin-root>/skills/map-method/references/update.md` | all | update |
+| `<plugin-root>/skills/map-method/references/deepen.md` | section: Analyst in cards mode | cards |
 
 ## Execute the prepared brief
+
+A brief with mode `cards` binds an existing run's manifest and a symbol list
+instead of `run_phases`: write their cards as `references/deepen.md` directs
+and deliver the upsert result; the steps below are for analysis runs.
 
 1. Read state and snapshot binding. The coordinator wrote the initial manifest;
    do not repeat it. Become this run's snapshot owner. On changed bytes or parser

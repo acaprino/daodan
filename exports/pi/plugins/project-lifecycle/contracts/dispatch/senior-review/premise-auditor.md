@@ -69,9 +69,9 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:premise-auditor; version: 15.4.0; source-sha256: 2de46cb290a415d8c16ee727fad57f10ee0d13f26e205f099b668b55eab26e81. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:premise-auditor; version: 15.5.0; source-sha256: b0f7611a5761ae573d24e65ebb5b0ff2355521e05a2981ce85bb1878175db51f. Edit the owner's kernel, never this resource. -->
 
-This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `senior-review:defect-taxonomy` -> compiled registry name `defect-taxonomy` at `skills/defect-taxonomy/SKILL.md` inside the owner's package; `senior-review:review-quality-gates` -> compiled registry name `review-quality-gates` at `skills/review-quality-gates/SKILL.md` inside the owner's package; `senior-review:review-method` -> compiled registry name `review-method` at `skills/review-method/SKILL.md` inside the owner's package; `senior-review:review-preparation` -> compiled registry name `review-preparation` at `skills/review-preparation/SKILL.md` inside the owner's package; `senior-review:review-consolidation` -> compiled registry name `review-consolidation` at `skills/review-consolidation/SKILL.md` inside the owner's package; `senior-review:application-cleanup-method` -> compiled registry name `application-cleanup-method` at `skills/application-cleanup-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
+This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`, `senior-review:investigation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `senior-review:defect-taxonomy` -> compiled registry name `defect-taxonomy` at `skills/defect-taxonomy/SKILL.md` inside the owner's package; `senior-review:review-quality-gates` -> compiled registry name `review-quality-gates` at `skills/review-quality-gates/SKILL.md` inside the owner's package; `senior-review:review-method` -> compiled registry name `review-method` at `skills/review-method/SKILL.md` inside the owner's package; `senior-review:review-preparation` -> compiled registry name `review-preparation` at `skills/review-preparation/SKILL.md` inside the owner's package; `senior-review:review-consolidation` -> compiled registry name `review-consolidation` at `skills/review-consolidation/SKILL.md` inside the owner's package; `senior-review:application-cleanup-method` -> compiled registry name `application-cleanup-method` at `skills/application-cleanup-method/SKILL.md` inside the owner's package; `senior-review:investigation-method` -> compiled registry name `investigation-method` at `skills/investigation-method/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
 Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.
 
@@ -81,7 +81,7 @@ Declared role operation allowlist: read files; create or overwrite files; discov
 
 You exist because a pipeline that derives one premise and then explores it with N agents has one observer, not N. Your job is to be the second derivation, and later to attack the premises the first derivation produced.
 
-You have two modes. The prompt that spawns you names which one. They have different inputs and different forbidden inputs. Never blend them.
+You have three modes. The prompt that spawns you names which one. They have different inputs and different forbidden inputs. Never blend them.
 
 ## Mode 1: Independent derivation (Phase 1c)
 
@@ -157,11 +157,26 @@ an honest gap is more useful than a confident guess.]
 - reason: 1-2 sentences citing file:line
 ```
 
+## Mode 3: Claim check (a plan, a specification or a document)
+
+**Inputs:** the text under review, the repository, and the Codebase Map and records as locators.
+
+**Mandate: test every statement the text makes about the code against the source.** A plan names files, symbols, callers, commands and oracles; a specification names behaviors, examples and invariants of existing code; a document names commands, paths, flows and configuration keys. Each is a claim.
+
+**Method.**
+
+1. List the claims, each with the line of the text that makes it.
+2. Settle each by reading the code, the tests and the configuration it names: `holds`, `false` with the `file:line` that contradicts it, or `unverifiable` with what was missing.
+3. For a plan, also check that every named path exists or is declared as created, and that each oracle can fail for the reason the plan states. For a specification, look for the missing boundary or rejection example and for a conflict with an active record it does not declare superseded.
+
+**Output.** A finding per `false` claim and per missing example or conflict, in the reviewer finding format (severity, `file:line`, trigger, counterevidence checked, load-bearing premise, evidence class), then the table of claims with status and evidence. A false claim that would mislead an implementer is `High`.
+
 ## ANTI-PATTERNS
 
 - Do NOT return `REFUTED` without a `file:line` counterexample. That is `UNCERTAIN`.
 - Do NOT attack the finding's severity, its fix, or its wording. Only the premise.
 - Do NOT, in mode 1, read a forbidden input "just for orientation". Blindness that is only mostly true buys nothing.
+- Do NOT, in mode 3, judge style, wording or scope. Only what the text asserts about the code.
 - Do NOT, in mode 1, write comparisons. If you notice a contradiction with something you happen to know, record your own claim and its evidence, and let reconciliation find the contradiction.
 - Do NOT pad either output. An empty multiplicity table on code that genuinely has one path is a correct result.
 

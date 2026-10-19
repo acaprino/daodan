@@ -80,7 +80,12 @@ Input: variant, target/flags, output root; optional same-snapshot `prepared` bun
 optional `shape` (`light` for one wave's diff, `branch` for the whole candidate) and
 `target-kind` (`changeset`, `plan`, `spec`, `doc`), both resolved by preparation
 when absent.
-Output: native report and the project-result envelope. Do not delegate execution
+Output: native report and the project-result envelope.
+
+**Shape `light`:** read `references/light.md` in this skill and nothing else
+of this method; the steps below are the branch review and the named variants.
+
+Do not delegate execution
 to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
 the coordinator executes the canonical `codebase-map:analyze` entry's preflight,
 answerable checkpoints, delivery check and publication decision. Its
@@ -97,15 +102,13 @@ hygiene or minimal-fix brief in the references uses the canonical
 exact binding rather than a generic host role name. Keep scope, authorization,
 budget, expected report path and delivered or failed outcome for every brief.
 
-1. Load the `senior-review:review-preparation` skill, unless a same-snapshot prepared bundle
-   was supplied. Validate its target, run identity and snapshot before reusing it.
-   Complete missing stack selection through review-preparation before dispatch;
-   Validate the prepared knowledge selection's schema, candidate/run/snapshot,
-   content and metadata fingerprints, scope and assigned delivery IDs as well.
-   A missing or stale knowledge binding requires preparation against this exact
-   candidate before dispatch, not reuse of an older-schema or another-run bundle.
-   a reused bundle needs activation evidence or a skip/gap reason for all three
-   stack dimensions. Do not prepare another run or dispatch a reviewer twice.
+1. Load the `senior-review:review-preparation` skill, unless a same-snapshot prepared
+   bundle was supplied. Before reusing one, validate its target, run identity,
+   snapshot and knowledge selection (schema, candidate, fingerprints, scope,
+   assigned delivery IDs), and require activation evidence or a skip or gap
+   reason for all three stack dimensions; anything missing or stale is prepared
+   again against this exact candidate. Do not prepare another run or dispatch a
+   reviewer twice.
 2. Read `references/<variant>.md` in this skill. Dispatch the full prepared selection,
    including applicable React, TypeScript and platform reviewers, in the same batch.
    Core role inputs and prompts remain canonical in `senior-review:review-quality-gates`;

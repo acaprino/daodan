@@ -395,14 +395,6 @@ def validate_rulings(section, rules):
             raise ProtocolError(f"Ruling {ruling['id']} cites evidence")
 
 
-def review_role(name):
-    """A delivery named `<role>` or `<role>#<suffix>` or `review-<n>-<role>` belongs to that role."""
-    text = str(name)
-    if text.startswith("review-"):
-        text = text.split("-", 2)[-1] if text.count("-") >= 2 else text
-    return text
-
-
 def validate_questions(section, rules):
     if not isinstance(section, list):
         raise ProtocolError("questions must be a list")
@@ -436,29 +428,35 @@ def validate_environment(section, rules):
             raise ProtocolError(f"environment.commands.{name} must be a nonempty command")
 
 
-def validate_review(review, rules, deliveries):
-    """The recorded roster bounds every review delivery of the run."""
-    if not isinstance(review, dict):
-        raise ProtocolError("review must be an object")
-    for key in rules["required"]:
-        if key not in review:
-            raise ProtocolError(f"review.{key} is required")
-    if review["schema"] != rules["schema"]:
-        raise ProtocolError(f"review.schema must be {rules['schema']}")
-    if review["shape"] not in rules["shapes"]:
-        raise ProtocolError(f"review.shape must be one of {', '.join(rules['shapes'])}")
-    if review["tier"] not in rules["tiers"]:
-        raise ProtocolError(f"review.tier must be one of {', '.join(rules['tiers'])}")
-    roster = review["roster"]
-    if not isinstance(roster, list) or not roster or not all(isinstance(r, str) and r for r in roster):
-        raise ProtocolError("review.roster must be a nonempty list of role identities")
-    allowed = set(roster)
-    for name, delivery in deliveries.items():
-        role = delivery.get("role") if isinstance(delivery, dict) else None
-        if role is None:
+def validate_reviews(section, rules, deliveries):
+    """Each review records the roster its helper computed and bounds the deliveries bound to it."""
+    if not isinstance(section, list):
+        raise ProtocolError("reviews must be an array")
+    allowed = {}
+    for review in section:
+        if not isinstance(review, dict) or set(rules["required"]) - set(review):
+            raise ProtocolError("Each review records " + ", ".join(rules["required"]))
+        name = review["id"]
+        if name in allowed:
+            raise ProtocolError(f"Review id repeated: {name}")
+        for key, values in (("schema", [rules["schema"]]), ("shape", rules["shapes"]),
+                            ("kind", rules["kinds"]), ("tier", rules["tiers"])):
+            if review[key] not in values:
+                raise ProtocolError(f"Review {name}: {key} must be one of {', '.join(values)}")
+        roles = [review["roster"], review.get("support", [])]
+        if not roles[0] or not all(isinstance(group, list) and all(isinstance(r, str) and r for r in group)
+                                   for group in roles):
+            raise ProtocolError(f"Review {name}: roster must be a nonempty list of role identities")
+        allowed[name] = set(roles[0]) | set(roles[1])
+    for key, delivery in deliveries.items():
+        if not isinstance(delivery, dict) or "review" not in delivery:
             continue
-        if role not in allowed:
-            raise ProtocolError(f"Delivery {name} dispatches {role}, which the computed review roster does not contain")
+        bound = delivery["review"]
+        if bound not in allowed:
+            raise ProtocolError(f"Delivery {key} names review {bound}, which the run does not record")
+        if delivery.get("role") not in allowed[bound]:
+            raise ProtocolError(f"Delivery {key} dispatches {delivery.get('role')}, "
+                                f"which the computed roster of review {bound} does not contain")
 
 
 def validate_loop(record):
@@ -477,8 +475,7 @@ def validate_loop(record):
         validate_waves(present["waves"], rules["waves"], present.get("workspace"))
     if "rulings" in present:
         validate_rulings(present["rulings"], rules["rulings"])
-    if "review" in present:
-        validate_review(present["review"], rules["review"], record.get("deliveries", {}))
+    validate_reviews(record.get("reviews", []), rules["reviews"], record.get("deliveries", {}))
     if "questions" in present:
         validate_questions(present["questions"], rules["questions"])
     if "environment" in present:
@@ -487,12 +484,12 @@ def validate_loop(record):
 
 def validate_loop_transitions(old, new):
     rules = contract().get("loop")
-    if rules is None or not rules["rulings"].get("append_only"):
+    if rules is None:
         return
-    before = old.get("rulings", [])
-    after = new.get("rulings", [])
-    if after[:len(before)] != before:
-        raise ProtocolError("Rulings are append-only; a recorded decision cannot be altered or removed")
+    for section, entry in (("rulings", "a recorded decision"), ("reviews", "a computed roster")):
+        before = old.get(section, [])
+        if rules[section].get("append_only") and new.get(section, [])[:len(before)] != before:
+            raise ProtocolError(f"{section.capitalize()} are append-only; {entry} cannot be altered or removed")
 
 
 def validate_record(record, project=None, root=None, current=False):
@@ -664,7 +661,7 @@ def agenda_row(record, project, holder):
         "phase": phase,
         "waves": {"sealed": sum(1 for w in waves if w.get("status") == "sealed"), "total": len(waves)},
         "adr": (record.get("adr") or {}).get("proposed"),
-        "review": (record.get("review") or {}).get("tier"),
+        "review": next((f"{r['stage']} {r['tier']}" for r in reversed(record.get("reviews") or [])), None),
         "questions": sum(1 for q in record.get("questions") or [] if not q.get("answer")),
         "holder": holder, "updated_at": timestamp(),
     }
@@ -780,7 +777,7 @@ def main(argv=None):
         if args.command == "plan-check":
             # A draft plan is checked against the loop rules before it is written
             # into a run, so a planner receives the exact refusal, not a failed update.
-            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "review", "questions", "environment") if key in payload})
+            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment", "deliveries") if key in payload})
             waves = payload.get("waves", [])
             output = {"valid": True, "waves": len(waves), "tasks": sum(len(w.get("tasks", [])) for w in waves)}
         elif args.command == "snapshot":

@@ -85,9 +85,11 @@ Run the change cycle with phases 2 to 4 shortened:
 3. One wave: `testing:test-writer` writes the reproduction test (`RED`),
    the stack's specialist writes the fix inside its `write_set`, the oracle
    turns `GREEN`, the direct callers' tests run.
-4. Stage C on the wave; stage D with shape `branch` when the diff touches
-   security, persistence, concurrency, resources or a public contract,
-   otherwise `light`; then `references/consolidate.md`.
+4. Stage C on the wave; then `references/finish.md`, whose stage D tier the
+   roster computes.
+
+Without a known cause, `senior-review:investigation-method` runs first, and
+its reproduction test is the oracle.
 
 ## A plan produced by assess
 

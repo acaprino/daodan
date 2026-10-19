@@ -89,10 +89,13 @@ Read one unit per step, in this skill, when the step starts.
 | change, phase 1 | `references/preflight.md` |
 | change, phases 2 and 3 | `references/interview.md` |
 | change, phases 4 and 5 | `references/waves.md`, then `references/worker-brief.md` before each dispatch |
-| change, overview of all seven phases | `references/change.md` |
+| change, overview | `references/change.md` |
 | repair | `references/repair.md`, then preflight and waves as it directs |
 | verify | `references/verify.md` |
-| consolidate | `references/consolidate.md` |
+| brainstorm | `references/brainstorm.md` |
+| finish, phase 7 | `references/finish.md`, then `references/realign.md` |
+| sync | `references/sync.md`, then `references/realign.md` |
+| consolidate | `references/realign.md`; a run's output, `references/retention.md` |
 | converting a native report | `references/native-reports.md` |
 | a requested HTML view | `references/human-view.md` |
 
@@ -117,11 +120,10 @@ Load only what the step needs, by name, never by path.
 |---|---|
 | Static context, impact packets, exact run binding | `codebase-map:map-method`; dispatch `codebase-map:map-analyst` in an isolated context for an analysis |
 | Decisions governing a scope, a proposed record, promotion at merge | `project-knowledge:adr-method` |
-| Candidate review at any stage, any target kind, shape `light` or `branch` | `senior-review:review-method`, through `senior-review:review-preparation` |
+| Review at any stage and of any kind, shape `light` or `branch` | `senior-review:review-method`; shape `branch` through `senior-review:review-preparation` |
 | Application subtraction | `senior-review:application-cleanup-method` |
 | Suite preparation and remediation | `testing:test-preparation`, `testing:test-remediation-method` |
 | Test authoring | dispatch `testing:test-writer` |
-| Writing Python or TypeScript in a wave | dispatch `python-development:python-engineer` or `typescript-development:typescript-engineer`; other stacks use the isolated worker with the knowledge `skill-catalog:skill-catalog` selects |
 | Readability with behavior preserved | `clean-code:readability-method` |
 | Structural diagnosis | `abstraction-architect:abstraction-architect` and its auditor |
 | Durable instructions, guides, README | `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft` |

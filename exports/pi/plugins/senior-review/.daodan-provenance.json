@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:89d4a54de7e6fa75a8dcf611891fb2d205443bac0dfd024d8251ed18b75ca038",
+  "coreDigest": "sha256:488565a7f4c0ef1ad3da8a183f4f53d9c037004689a61d2d2ec624a4e080c1c1",
   "harnessStrategies": {
     "code-review": "parallel-subagents",
     "pr-review": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "pi",
   "overrides": [],
   "plugin": "senior-review",
-  "version": "15.4.0"
+  "version": "15.5.0"
 }
