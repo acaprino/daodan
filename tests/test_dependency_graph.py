@@ -25,7 +25,7 @@ class DependencyGraphTests(unittest.TestCase):
         self.patch.start()
         self.addCleanup(self.patch.stop)
 
-    def kernel(self, name, *, dependencies=(), optional=(), roles=(), exports=()):
+    def kernel(self, name, *, dependencies=(), optional=(), roles=(), exports=(), skills=None):
         root = self.plugins / name
         root.mkdir()
         (root / "plugin.toml").write_text(
@@ -35,9 +35,13 @@ class DependencyGraphTests(unittest.TestCase):
             f'optional = {json.dumps(list(optional))}\n'
             '[components]\n'
             f'roles = {json.dumps(list(roles))}\n'
+            f'skills = {json.dumps(sorted(skills or {}))}\n'
             '[contracts]\n'
             f'exports = {json.dumps(list(exports))}\n',
             encoding="utf-8")
+        for skill, kind in (skills or {}).items():
+            (root / "skills" / skill).mkdir(parents=True)
+            (root / "skills" / skill / "SKILL.toml").write_text(f'kind = "{kind}"\n', encoding="utf-8")
         return root
 
     def sidecar(self, owner, content):
@@ -178,6 +182,23 @@ shared_schemas = ["reviewer/contracts/absent.toml"]
         self.assertTrue(any("role 'reviewer/absent' is not declared" in p for p in problems), problems)
         self.assertTrue(any("shared schema 'reviewer/contracts/absent.toml' is not exported" in p
                             for p in problems), problems)
+
+    def test_a_knowledge_only_dependency_is_used_through_the_catalog(self):
+        self.kernel("skill-catalog", skills={"skill-catalog": "method"})
+        self.kernel("kotlin", skills={"kotlin-specialist": "knowledge"})
+        self.kernel("entry", dependencies=["skill-catalog", "kotlin"])
+        self.kernel("no-catalog", dependencies=["kotlin"])
+        self.kernel("methods", skills={"refactor-method": "method"})
+        self.kernel("with-role", roles=["engineer"], skills={"notes": "knowledge"})
+        self.kernel("other", dependencies=["skill-catalog", "methods", "with-role"])
+        plugins, refs = self.references()
+        problems = graph.check_deps_are_used(plugins, refs)
+        self.assertFalse(any(problem.startswith("entry: declares 'kotlin'") for problem in problems))
+        # Without the catalog nothing reads the knowledge; a method skill or a
+        # plugin with a role is loaded or dispatched by name, so it needs a reference.
+        self.assertTrue(any(problem.startswith("no-catalog: declares 'kotlin'") for problem in problems))
+        self.assertTrue(any(problem.startswith("other: declares 'methods'") for problem in problems))
+        self.assertTrue(any(problem.startswith("other: declares 'with-role'") for problem in problems))
 
     def test_prose_suggestions_and_artifact_selections_do_not_back_dependencies(self):
         self.kernel("coordinator", dependencies=["reviewer"])

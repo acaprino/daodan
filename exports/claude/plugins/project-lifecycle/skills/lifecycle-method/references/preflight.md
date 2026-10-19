@@ -17,7 +17,8 @@ Required foreign providers use Claude's marketplace/install commands:
 claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
 A provider that is installed but disabled is enabled with
 claude plugin enable <provider>@<marketplace>; check `claude plugin list --json`
-before the first phase, and stop with that command when a required one is off.
+before the first phase, and stop with that command when any plugin of this
+package's dependency closure, direct or transitive, is off.
 A declared package MCP server is configured through the generated MCP manifest;
 still check its tools are actually available in the active session.
 
@@ -67,14 +68,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 # Phase 1: preflight and workspace
 
 Probe before asking. Every fact below is recorded in the run's `workspace`
-and `preflight` sections through the protocol helper; nothing here edits
-project files.
+and `preflight` sections; nothing here edits project files.
 
 ## Probes
 
 | Probe | Command | Records |
 |---|---|---|
-| Providers | the host's plugin inventory | every required provider active; a missing one stops here with the host's enable or install command |
+| Providers | the host's plugin inventory | every plugin the `daodan` entry requires, transitively, active; a missing one stops here with the host's enable or install command |
 | Environment | `.venv`, `uv`, `npm`, the loop block's commands | `environment`: the interpreter and runners every command uses; installing outside the project needs explicit authorization |
 | Repository and head | `git rev-parse --show-toplevel`, `git rev-parse HEAD` | `base_sha` candidate |
 | Working tree | `git status --porcelain=v2 --branch` | staged, unstaged and untracked paths; conflict markers (`u` rows); current branch |

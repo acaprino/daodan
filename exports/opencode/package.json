@@ -550,6 +550,9 @@
           "abstraction-architect",
           "clean-code",
           "codebase-map",
+          "dependency-audit",
+          "docker",
+          "kotlin-development",
           "moe",
           "peer-review",
           "platform-engineering",
@@ -2584,5 +2587,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "38.0.0"
+  "version": "38.1.0"
 }

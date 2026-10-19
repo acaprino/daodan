@@ -46,7 +46,11 @@ passes, each independently reported. Exits non-zero if any fails.
                     ARTIFACT_DEPENDENCIES naming the artifact that carries the
                     contract. A declaration nothing uses is a prose pointer with
                     an install cost. This is also the only check that notices a
-                    dependency silently reintroduced by a concurrent writer
+                    dependency silently reintroduced by a concurrent writer. A
+                    plugin made only of knowledge skills is used through
+                    skill-catalog, so a consumer that requires skill-catalog
+                    may require it: that is how a stack's knowledge is
+                    guaranteed present instead of becoming a recorded gap
 
 What counts as a runtime reference:
 
@@ -139,7 +143,17 @@ def load_plugins():
             raise ValueError(f"{path.as_posix()}: name must match its kernel directory")
         dependencies = data.get("dependencies", {})
         components = data.get("components", {})
+        skills = components.get("skills", [])
+        kinds = []
+        for skill in skills:
+            metadata = path.parent / "skills" / skill / "SKILL.toml"
+            kinds.append(tomllib.loads(metadata.read_text(encoding="utf-8")).get("kind")
+                         if metadata.is_file() else None)
         plugins[name] = {
+            # Only knowledge skills, no role and no workflow: nothing in it is
+            # dispatched or loaded by name; skill-catalog selects it per run.
+            "knowledge_only": bool(skills) and set(kinds) == {"knowledge"}
+                              and not components.get("roles") and not components.get("workflows"),
             "dependencies": dependencies.get("required", []),
             "optionalDependencies": dependencies.get("optional", []),
             "roles": set(components.get("roles", [])),
@@ -517,6 +531,12 @@ def check_deps_are_used(plugins, refs):
     expressed by reading files another plugin produces, rather than by spawning
     it. Those are legitimate and must be declared, so name them here with the
     artifact that carries the contract.
+
+    A plugin made only of knowledge skills is read through skill-catalog's
+    per-run selection, never by name. A consumer that requires skill-catalog may
+    require it, and that requirement is what keeps the knowledge installed and
+    enabled: on 2026-10-19 a Kotlin task ran without kotlin-development, which
+    was disabled, and the only trace was a coverage gap in the run.
     """
     used = {(reference.owner, reference.namespace) for reference in refs}
     problems = []
@@ -526,6 +546,8 @@ def check_deps_are_used(plugins, refs):
                 continue  # cross-marketplace; pass 1 owns those
             if (name, dep) in used or (name, dep) in ARTIFACT_DEPENDENCIES:
                 continue
+            if plugins[dep].get("knowledge_only") and "skill-catalog" in meta["dependencies"]:
+                continue  # consumed through the catalog's knowledge binding
             problems.append(
                 f"{name}: declares '{dep}' but never dispatches a role, loads a skill "
                 f"or imports a shared schema from it, or declares an artifact contract. A prose "

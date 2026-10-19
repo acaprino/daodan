@@ -458,7 +458,7 @@ specialist edges optional.
 | dependency-audit | none |
 | peer-review | none |
 | moe | peer-review |
-| daodan | every plugin a command loads or dispatches from: abstraction-architect, clean-code, codebase-map, moe, peer-review, platform-engineering, project-knowledge, project-lifecycle, project-protocol, python-development, react-development, repo-hygiene, senior-review, skill-catalog, testing, text-humanizer, typescript-development |
+| daodan | every other plugin of the marketplace, directly or through its providers: what a command loads or dispatches, and every knowledge-only plugin (docker, kotlin-development, dependency-audit, moe) |
 
 
 Resolved knowledge is a distinct per-run input contract. The required skill-catalog
@@ -472,6 +472,15 @@ Literal method/role loads and produced runtime artifacts still require static
 dependencies. A generated metadata declaration does not prove installation.
 The dependency linter preserves those static edges; catalog contracts and helper
 tests enforce resolved knowledge identity, read confinement and delivery accounting.
+
+The entry plugin requires every knowledge-only plugin of this marketplace (only
+knowledge skills, no role, no workflow), by decision of 2026-10-19: knowledge
+the catalog cannot find is a recorded gap, not a stop, so a Kotlin task with
+kotlin-development disabled ran on a generic worker without Kotlin knowledge.
+Required, it is installed with `daodan` and the preflight's provider probe stops
+on it when disabled. The dependency linter accepts such an edge when the consumer
+also requires skill-catalog, the channel that reads it. Shinatama's knowledge
+stays a companion, never a dependency.
 
 The manifests are the control plane; this table records the architectural boundary.
 The dependency linter fails unresolved, undeclared and unused runtime edges.

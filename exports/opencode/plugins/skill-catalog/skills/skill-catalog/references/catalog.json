@@ -271,7 +271,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: the user wants to brainstorm or explore an idea before building, initialize or set up a project, diagnose project health or technical debt, build a feature, fix a bug, refactor code, check task status, continue an open task, finish and merge a task, sync upstream, or run a daodan lifecycle command. DO NOT TRIGGER WHEN: the user requests code explanation without investigation or changes, wants an isolated specialist audit (use senior-review, codebase-map or testing directly), or only needs a problem investigated without fixing it (use senior-review:investigation-method).",
@@ -286,7 +286,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use lifecycle-method).",
@@ -301,7 +301,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before briefing workers, recording, resuming or closing a project intervention.",

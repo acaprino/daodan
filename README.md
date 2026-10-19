@@ -117,8 +117,9 @@ copilot plugin marketplace add acaprino/daodan
 codex plugin marketplace add acaprino/daodan
 ```
 
-Install `daodan@daodan`: it brings every specialist it uses as a mandatory local
-dependency. External dependencies must also be available on the host.
+Install `daodan@daodan`: it brings every plugin of this marketplace as a mandatory
+local dependency, language and stack knowledge included, and stops a command when
+one of them is disabled. External dependencies must also be available on the host.
 
 The lifecycle owns its task cycle and declares no upstream development method:
 its interview, plan and execution are shaped by the Codebase Map, the decision
