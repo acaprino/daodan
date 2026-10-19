@@ -499,6 +499,109 @@
           }
         ]
       },
+      "moe": {
+        "commands": [
+          {
+            "description": "Solves difficult problems through independent models, reciprocal critique and verified synthesis. TRIGGER WHEN: the user explicitly enables Ultra Nerd or requests moe deliberation.",
+            "file": "commands/ultra-nerd.md",
+            "name": "moe:ultra-nerd"
+          }
+        ],
+        "dependencies": [
+          "peer-review"
+        ],
+        "mcp": [
+          {
+            "command": [
+              "uv",
+              "run",
+              "--no-config",
+              "--no-project",
+              "--script",
+              "<plugin-root>/skills/multi-model-deliberation/scripts/server.py"
+            ],
+            "name": "moe"
+          }
+        ],
+        "root": "plugins/moe",
+        "skills": [
+          {
+            "description": "Coordinates bounded independent proposals and reciprocal critique. TRIGGER WHEN: explicitly requesting Ultra Nerd, moe, or a multi-model expert debate for a difficult problem. DO NOT TRIGGER WHEN: challenging an existing plan only (use peer-review:cross-model-peer-review).",
+            "file": "skills/multi-model-deliberation/SKILL.md",
+            "id": "moe:multi-model-deliberation",
+            "name": "multi-model-deliberation"
+          }
+        ]
+      },
+      "peer-review": {
+        "agents": [
+          {
+            "description": "Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).",
+            "file": "agents/brief-builder.md",
+            "id": "peer-review:brief-builder",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1.",
+            "file": "agents/packet-builder.md",
+            "id": "peer-review:packet-builder",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).",
+            "file": "agents/respondent.md",
+            "id": "peer-review:respondent",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "description": "Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the sessions context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the sessions own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session.",
+            "file": "commands/review.md",
+            "name": "peer-review:review"
+          }
+        ],
+        "mcp": [
+          {
+            "command": [
+              "uv",
+              "run",
+              "--no-config",
+              "--no-project",
+              "--script",
+              "<plugin-root>/skills/cross-model-peer-review/scripts/server.py"
+            ],
+            "name": "peer-review"
+          }
+        ],
+        "root": "plugins/peer-review",
+        "skills": [
+          {
+            "description": "Doctrine for challenging a plan, spec or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).",
+            "file": "skills/cross-model-peer-review/SKILL.md",
+            "id": "peer-review:cross-model-peer-review",
+            "name": "cross-model-peer-review"
+          }
+        ]
+      },
       "platform-engineering": {
         "agents": [
           {
@@ -1059,6 +1162,11 @@
             "description": "Audit, create or maintain README.md without losing facts or author voice. TRIGGER WHEN: the user asks to audit, write or update README.md.",
             "file": "commands/readme.md",
             "name": "project-knowledge:readme"
+          },
+          {
+            "description": "Create, resolve, validate or promote architecture decision records in docs/adr/. TRIGGER WHEN: the user asks which decisions govern a scope, wants a decision recorded after an interview, or merged a change that implements a Proposed record. DO NOT TRIGGER WHEN: the user wants a decision challenged (use /senior-review:code-review on the record, or /peer-review:review).",
+            "file": "commands/adr.md",
+            "name": "project-knowledge:adr"
           }
         ],
         "dependencies": [
@@ -1087,6 +1195,12 @@
             "file": "skills/readme-craft/SKILL.md",
             "id": "project-knowledge:readme-craft",
             "name": "readme-craft"
+          },
+          {
+            "description": "Create, resolve, validate and promote canonical architecture decision records in docs/adr/. TRIGGER WHEN: an interview settles a design, contract or domain decision; a task needs the decisions governing its scope; a merged change promotes a Proposed record. DO NOT TRIGGER WHEN: the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
+            "file": "skills/adr-method/SKILL.md",
+            "id": "project-knowledge:adr-method",
+            "name": "adr-method"
           }
         ]
       },
@@ -1141,6 +1255,10 @@
           "react-development",
           "typescript-development",
           "platform-engineering",
+          "python-development",
+          "skill-catalog",
+          "peer-review",
+          "moe",
           "report-rendering"
         ],
         "root": "plugins/project-lifecycle",
@@ -2124,6 +2242,8 @@
           "react-development",
           "typescript-development",
           "platform-engineering",
+          "python-development",
+          "dependency-audit",
           "skill-catalog",
           "report-rendering"
         ],
@@ -2504,5 +2624,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "36.2.0"
+  "version": "37.0.0"
 }

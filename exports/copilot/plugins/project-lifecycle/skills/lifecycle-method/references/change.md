@@ -75,67 +75,34 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Change
 
-Own the complete requested development outcome: bootstrap, feature, bugfix, refactor
-or migration. Discover code, tests, decisions, instructions and constraints first.
-Look for a useful implementation before adding another representation.
+A change is one task carried through seven phases, each closing before the
+next opens. The run record is the source of truth at every boundary; this
+unit is the overview, and each phase has its own unit.
 
-For a requested project-wide architectural refactor or deep rationalization, first
-obtain full static context through codebase-map:analyze. Reuse an existing run only
-after validating its source snapshot, requested scope, depth and completion; bind
-that exact run in the ledger. An ordinary scoped change uses the context it needs.
-Inventory, deep reading and runtime exercise remain separate coverage facts.
-Prioritize evidenced severe defects and broken product entry paths before cosmetic
-cleanup; preserve the approved contract and regression protection while fixing them.
+| Phase | Outcome | Unit |
+|---|---|---|
+| 1. Preflight and workspace | Git state probed, baseline classified, map fresh, workspace mode chosen with the user | `references/preflight.md` |
+| 2. Interview | Scope, examples, rejected alternatives and invariants fixed from real code | `references/interview.md` |
+| 3. Record | A `Proposed` decision record written and reviewed as a `spec` | `references/interview.md` |
+| 4. Plan | Waves of micro-tasks compiled, checked by the helper, reviewed as a `plan` | `references/waves.md` |
+| 5. Execution | Each wave written by the stack's specialist, verified, reviewed with budget `delta`, sealed | `references/waves.md`, `references/worker-brief.md` |
+| 6. Candidate | The whole candidate reviewed with budget `full`; blocking findings repaired in a bounded wave | `references/verify.md` |
+| 7. Integration | Merge, record promotion, map and knowledge realigned, workspace closed | `references/consolidate.md` |
 
-Use superpowers:brainstorming and superpowers:writing-plans when design or impact
-requires them. Keep planning proportional; direct authorized small changes do not
-need a ceremonial project audit. Reuse upstream execution via
-superpowers:executing-plans or superpowers:subagent-driven-development. Its own
-ledger is referenced from the run rather than copied into a second live state store.
+`--plan-only` stops after phase 4 with the record `Proposed` and the plan
+approved; `--resume RUN` continues an approved plan from its first unsealed
+wave. A bugfix with a reproduction test follows `references/repair.md`, which
+shortens phases 2 to 4 and keeps the rest.
 
-Define intended behavior and source of authority. Conflicting requirements become
-concrete alternatives; do not promote the current code into the requirement.
-Bootstrap includes a minimal structure and project-knowledge instructions, chosen
-build/test commands and a short explanation of the project. Do not scaffold every
-framework or document template.
+Rules that hold across phases:
 
-The base developer context implements the plan. Specialist extras remain available
-as independent commands/results; automatic extra dispatch requires a consumer's
-declared mandatory dependency. Do not invent a dynamic optional-plugin registry.
-
-Delegate meaningful test authoring to testing:test-writer with explicit behavior,
-oracle/source, existing test inventory, runner and layer. Search before writing.
-When suite rationalization is requested, use testing:test-preparation and the
-testing:test-suite-auditor across the declared suite in bounded batches, accounting
-for every selected layer and uncovered portion. Use testing:test-remediation-method
-for accepted repairs or consolidation. Preserve independent failure modes and
-verified replacement protection in the same candidate; a green count is no oracle.
-Use clean-code:readability-method only for readability with behavior preserved. Structural
-refactors use abstraction diagnosis and concept/owner criteria; application
-subtraction uses its separate canonical method when authorized.
-
-Use project-protocol baseline and candidate checks. Preserve preexisting edits and
-work belonging to other sessions. Implement incrementally, run meaningful local or
-revision-correlated remote checks, then review the full consequence set: stale
-documents/instructions, retired exports/config, tests that lost purpose and outputs
-produced during work.
-
-Use project-knowledge:instructions-method for instruction consequences when changing
-architecture, test policy, commands, setup or instruction loading. Review applicable
-root and nested instructions, canonical owners and generated copies using that
-method's loading evidence and project-derived test policy. Apply accepted corrections
-to the canonical source, regenerate derivatives and verify parity. Preserve decisions
-and record unknown loading or required session reloads in the run, outside durable
-instructions. Guide and README consequences use project-knowledge's own methods.
-
-Review the candidate through senior-review:review-method using the code-review
-variant and this run's output root, following the verify reference. Applicable
-stack specialists join the same review selection, ledger and report; do not ask
-the user to select another review plugin.
-
-Integrate durable findings through project-knowledge and consolidate owned
-experimental outputs through the consolidate reference. Update result.json with
-delivered behavior, protection preserved, changed paths, exact checks and limits.
-Account for suite audit coverage, instruction synchronization and loading evidence
-when selected. A required runtime or loading check that could not run remains a gap.
-A plan or generated diff without verification is not completed development.
+- Discover existing code, tests, decisions and instructions before adding a
+  representation. Prefer an implementation that exists.
+- Conflicting requirements become concrete alternatives for the user; the
+  current code is never promoted into the requirement.
+- Preserve preexisting edits and other sessions' work. Recovery restores the
+  owned pre-phase state, never `HEAD~1`.
+- Bootstrap of a new project is phase 0 of `references/assess.md`, then this
+  cycle for its first task.
+- Severe evidenced defects and broken entry paths come before cosmetic work.
+- A plan or a diff without verification is not completed development.

@@ -45,7 +45,7 @@ def role_path(host, plugin, role):
 def working_paragraphs(case, text):
     """Select each operative paragraph, so unrelated mentions cannot satisfy it."""
     found = {}
-    for label in ("assumptions", "simplicity", "scope", "verification"):
+    for label in ("assumptions", "simplicity", "scope", "verification", "redesign"):
         paragraphs = re.findall(rf"(?m)^Working {label}: ([^\n]+)$", text)
         case.assertEqual(len(paragraphs), 1, f"One working {label} rule is required")
         found[label] = paragraphs[0]
@@ -81,6 +81,12 @@ def assert_working_discipline(case, text):
             r"(?i)unavailable checks",
             r"(?i)missing required checks or deliveries keep the task open",
             r"(?i)finish when the criteria are met",
+        ),
+        "redesign": (
+            r"(?i)fix the cause, never the symptom",
+            r"(?i)redesign that unit from the ground up",
+            r"(?i)instead of patching the case at hand",
+            r"(?i)debt, not a fix",
         ),
     }
     for label, patterns in requirements.items():
@@ -193,7 +199,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
         self.assertEqual(set(HOSTS), {"claude", "copilot", "codex", "pi", "opencode"})
         source_protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
-        expected_rules = dict(re.findall(r"(?m)^Working (assumptions|simplicity|scope|verification): ([^\n]+)$", source_protocol))
+        expected_rules = dict(re.findall(r"(?m)^Working (assumptions|simplicity|scope|verification|redesign): ([^\n]+)$", source_protocol))
         brief = re.search(r"(?ms)^## Isolated worker briefs\n(.*?)(?=^## |\Z)", source_protocol)
         expected_brief = " ".join(brief.group(1).split()) if brief else ""
         source_worker = (ROOT / "plugins/project-protocol/roles/isolated-worker.md").read_text(encoding="utf-8")

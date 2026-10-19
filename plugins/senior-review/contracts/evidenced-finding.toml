@@ -1,3 +1,32 @@
 schema = "daodan/record/v1"
 name = "evidenced-finding"
 required = ["file", "line", "evidence", "severity", "confidence", "premise", "premise_provenance"]
+
+# A finding is a hypothesis the verification panel tries to falsify. The three
+# fields below are requested from every reviewer through the shared instructions
+# and consumed by the panel; a reviewer that omits them is asked once to complete
+# the finding, and a verifier derives them when they are still missing.
+
+[fields.premise_provenance]
+type = "enum"
+values = ["independent", "shared-context", "mixed"]
+
+[fields.trigger]
+# The concrete condition (input, state, timing) under which the defect manifests.
+type = "string"
+
+[fields.counterevidence_checked]
+# What the reviewer looked for that would have refuted the finding, and did not find.
+type = "array"
+items = "string"
+
+[fields.introduced_by_candidate]
+# True when the candidate change causes the defect. False marks a pre-existing
+# issue, reported in its own section and excluded from the verdict.
+type = "boolean"
+
+[fields.evidence_class]
+# How the decisive evidence was obtained, strongest first. A derived number
+# alone never justifies Critical severity.
+type = "enum"
+values = ["reproduced", "tool-reported", "measured", "derived"]

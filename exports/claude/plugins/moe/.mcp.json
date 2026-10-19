@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "moe": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-config",
+        "--no-project",
+        "--script",
+        "${CLAUDE_PLUGIN_ROOT}/skills/multi-model-deliberation/scripts/server.py"
+      ]
+    }
+  }
+}

@@ -123,7 +123,7 @@ Pull out findings with `[PRE-EXISTING]` prefix into a separate list. These are r
 
 ## Step 4b: Adversarial Verification Panel
 
-Skip this step if `--fast` was passed. Otherwise verify findings with the 4-lens panel defined in the `senior-review:review-quality-gates` skill, section `## Adversarial Verification Panel`. This replaces the former single-validator step: four independent lenses (premise veto, reachability/correctness, false-positive causes, severity) catch more failure modes than one judge, and the scope widens from Critical/High only to every finding above the confidence floor.
+Skip this step if `--fast` was passed. Otherwise verify findings with the 4-lens panel defined in the `senior-review:review-quality-gates` skill, file `references/verification-panel.md` (resolve it inside that skill's installed directory), section `## Adversarial Verification Panel`. This replaces the former single-validator step: four independent lenses (premise veto, reachability/correctness, false-positive causes, severity) catch more failure modes than one judge, and the scope widens from Critical/High only to every finding above the confidence floor.
 
 ### Selection
 
@@ -151,7 +151,7 @@ Medium and Low findings are no longer skipped by default: they enter the panel l
 
 ## Step 4c: Completeness Critic
 
-Skip this step if `--fast` was passed. Otherwise run the critic defined in the `senior-review:review-quality-gates` skill, section `## Completeness Critic`.
+Skip this step if `--fast` was passed. Otherwise run the critic defined in the `senior-review:review-quality-gates` skill, file `references/verification-panel.md`, section `## Completeness Critic`.
 
 1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings, the changed-file scope, the agents that ran, and the Codebase Map context paths if `.codebase-map/` exists (else "none").
 2. If the critic names a single high-risk uncovered area under `## Recommended follow-up` AND the cost guard did not fire: spawn ONE targeted reviewer (the most specialized agent for that area) scoped to the files named, then route its findings back through Step 4 (dedup) and Step 4b (panel). At most one round.

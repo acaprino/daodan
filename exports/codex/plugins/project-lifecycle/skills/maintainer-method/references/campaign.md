@@ -444,12 +444,14 @@ Roadmap
   approval, with the exact items it covers, in the assessment run before completing
   it, and carry it into the runs that act on it.
 Second opinions, offered and never run unasked
-- If peer-review is installed with a configured challenger, offer to challenge the
-  roadmap's open design decisions with a second model family. It sends project
-  content to an external service.
-- Offer an installed standalone specialist whose evidence this campaign lacks, for
-  example dependency-audit for tool-verified dependency facts. Name a specialist
-  that is not installed as an option and never imitate it.
+- Offer to challenge the roadmap's open design decisions with a second model family
+  through peer-review: dispatch `peer-review:packet-builder` and
+  `peer-review:respondent`. It needs a challenger endpoint the user configured; an
+  unconfigured endpoint is a reported gap, never a substitute self-review. It sends
+  project content to an external service.
+- Dependency facts come from the review's dependencies dimension when manifests are
+  in scope. When the roadmap touches dependencies the review did not cover, offer the
+  standalone /dependency-audit:deps-audit run instead of imitating its tools.
 - Offer a closing senior-review team-review of the final candidate, before Stage 5:
   the verify review has fewer lenses than the baseline review.
 With authorization --dry-run the campaign ends here.

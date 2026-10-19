@@ -1,19 +1,57 @@
-# Consolidate
+# Consolidate (phase 7, and the standalone realignment)
 
-Reduce experiments and run output into verified knowledge before disposing of data.
-This is local evidence curation, distinct from the web research pipeline.
+Consolidate closes a task: it integrates the candidate when the user merges
+through the cycle, promotes the decision record, realigns the knowledge that
+describes the project, and disposes of the run's own output. Run alone after
+a merge made outside the cycle, it performs the same realignment on the
+current head.
 
-For each attempt preserve goal, source snapshot, environment/conditions, exact
-command or procedure, inputs, outcome, errors, relevant measurements, decision,
-limits and reproduction instructions. Compare the proposed summary with original
-evidence, including failed attempts. Contradictory results remain visible.
-Past results do not replace executable regression tests.
+## Integration
 
-Keep sufficient evidence inside the run, or copy a minimal verified subset from an
-external evidence source with provenance. Reference external heavy data; do not
-claim ownership of it. Durable conclusions go through project-knowledge's authority
-and documentation methods. Temporary status, attempts and pending work remain in
-the run rather than AGENTS.md/CLAUDE.md.
+1. Confirm the candidate's stage D result validates against the current
+   project (`validate --current`). A changed candidate returns to verify.
+2. With merge authorization: merge the task branch into the base branch with
+   a merge commit, or fast-forward when the user asked for it; remove the
+   worktree created in phase 1 and its branch only after the merge is
+   recorded. Without authorization: leave the branch, record the exact merge
+   command, and stop before the steps below until the merge exists.
+3. Record the merged commit as `merged_sha`.
+
+## Realignment, in this order
+
+1. **Record.** Load `project-knowledge:adr-method` and run `promote` for the
+   run's proposed record with `merged_sha`. Superseded records are marked by
+   the helper in the same transaction. A task that produced no record skips
+   this step and says so.
+2. **Map.** Load `codebase-map:map-method` and run the incremental update of
+   the bound run against `merged_sha`: changed files and symbols are
+   re-derived, unaffected claims carried, the impact packet of the task's
+   symbols refreshed. Then the concept index of `abstraction-architect`,
+   through its skill, for the task's scope.
+3. **Documentation.** Run `project-knowledge:project-knowledge` drift audit on
+   the documents that cite the changed paths and symbols, and apply the
+   authorized corrections; `project-knowledge:readme-craft` when the README
+   cites them.
+4. **Instructions.** Run `project-knowledge:instructions-method` to regenerate
+   the loop block from the run record and the record index: commands, active
+   records, workspace convention. Nothing outside the markers changes.
+5. **Head.** Record `last_synced` as `merged_sha` in the run, and compare it
+   with `HEAD`: a difference means another commit landed meanwhile, and the
+   map update runs once more for that delta before the run closes.
+
+A step that cannot run (a missing runner, an unauthorized edit) stays open
+with its reason; the run does not close on it silently.
+
+## Evidence
+
+Reduce experiments and run output into verified knowledge before disposing
+of data. For each attempt preserve goal, source snapshot, conditions, exact
+command, inputs, outcome, errors, measurements, decision, limits and
+reproduction instructions. Compare the proposed summary with the original
+evidence, failed attempts included; contradictory results remain visible.
+Past results do not replace executable regression tests. Durable conclusions
+go through project-knowledge; temporary status stays in the run, never in
+`AGENTS.md` or `CLAUDE.md`.
 
 ## Retention records
 

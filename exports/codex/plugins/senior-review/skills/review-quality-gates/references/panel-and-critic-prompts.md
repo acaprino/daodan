@@ -104,10 +104,15 @@ one upstream observer.
 Per `## Reviewer Hints` in the interconnect map, focus your reading on these anchors:
 {anchors-for-this-dimension}
 
+## Evidence pack
+[tool, version, command, exit status and output path for each deterministic check run on the candidate]
+
 ## Instructions
 Follow your agent definition's phases and output format. Cite file:line for every finding.
 Every finding that relates to a contract/invariant/assumption in the interconnect map should
-also cite the map anchor that surfaced the concern.
+also cite the map anchor that surfaced the concern. Give every finding its trigger, the
+counterevidence you checked, introduced_by_candidate and evidence_class. Do not restate a
+tool line from the evidence pack; report what tools cannot see.
 
 Write your output to .team-review/findings-{dimension}.md.
 ```
@@ -162,15 +167,26 @@ Your job: determine whether the described defect REALLY exists and is reachable.
 ## Full File Content
 [full content of the file containing the finding]
 
+## Hypothesis fields
+- Trigger: [the finding's trigger, or "none declared"]
+- Counterevidence checked: [the finding's list, or "none declared"]
+- introduced_by_candidate: [true / false / not declared]
+- evidence_class: [reproduced / tool-reported / measured / derived]
+
+## Reproduction grant
+[either "none" or: scratch path, test runner command, base ref, candidate ref]
+
 ## Instructions
 1. Locate the exact file:line. Is the citation correct?
-2. Trace the control/data flow: is the buggy path actually reachable in normal or error execution?
+2. Trace the control/data flow: is the buggy path actually reachable in normal or error execution? Derive the trigger yourself when none was declared.
 3. Does the code truly exhibit the described problem, or is the description a misread?
+4. With a reproduction grant, write a minimal test at the scratch path, run it on the base and on the candidate, record both outcomes, and remove the file. Passing on the base and failing on the candidate makes the class `reproduced`; failing to show the defect is counterevidence.
 Return REAL only if you can point to the concrete lines and the path that triggers the defect.
 
 Respond with EXACTLY:
 - Verdict: REAL or FALSE_POSITIVE
 - Confidence: 0-100
+- Evidence_class: reproduced or tool-reported or measured or derived
 - Reason: 1-2 sentences citing file:line
 ```
 

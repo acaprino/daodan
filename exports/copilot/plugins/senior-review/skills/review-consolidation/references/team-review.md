@@ -91,7 +91,7 @@ Write `.team-review/99-consolidated.md`. Mark `phase_3_consolidation` complete.
 
 ## Phase 4b: Adversarial Verification
 
-Skip this phase if `--fast` was passed (mark `phase_4b_verification` as `skipped`). Otherwise drive the panel exactly per the `senior-review:review-quality-gates` skill, section `## Adversarial Verification Panel`.
+Skip this phase if `--fast` was passed (mark `phase_4b_verification` as `skipped`). Otherwise drive the panel exactly per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md` (resolve it inside that skill's installed directory), section `## Adversarial Verification Panel`.
 
 1. Apply the confidence floor: select consolidated findings with confidence `>= 50%`. team-review reviewers emit confidence in their findings; if a finding lacks a score, treat it as 60% (in-band) so it is not silently skipped.
 2. Apply the selection rule from the skill:
@@ -106,7 +106,7 @@ Skip this phase if `--fast` was passed (mark `phase_4b_verification` as `skipped
 
 ## Phase 4c: Completeness Critic
 
-Skip this phase if `--fast` was passed (mark `phase_4c_critic` as `skipped`). Otherwise drive the critic exactly per the `senior-review:review-quality-gates` skill, section `## Completeness Critic`.
+Skip this phase if `--fast` was passed (mark `phase_4c_critic` as `skipped`). Otherwise drive the critic exactly per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md`, section `## Completeness Critic`.
 
 1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings (post-4b), `.team-review/00-scope.md`, the dimensions that ran, and the context paths (`$XRAY_RUN_DIR` and `.team-review/02-interconnect.md`, or "none" under `--no-context`).
 2. Write the critic output to `.team-review/97-coverage-gaps.md`.

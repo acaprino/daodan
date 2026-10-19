@@ -36,3 +36,38 @@ gates = ["passed"]
 requires_current_snapshot = true
 requires_gate_evidence = true
 remote_requires_committed_candidate = true
+
+# Optional sections a lifecycle run may carry. Absent sections are not validated;
+# a present section must satisfy its rules. The required fields above are untouched.
+[loop]
+sections = ["workspace", "preflight", "adr", "waves", "rulings"]
+
+[loop.workspace]
+required = ["mode", "branch", "base_sha"]
+modes = ["WORKTREE", "BRANCH", "IN_PLACE"]
+# Environment bindings name what a worktree needs (an env file, a schema, fixtures)
+# and never carry a secret value: a binding marked secret has no value field.
+binding_required = ["path", "kind", "secret"]
+
+[loop.preflight]
+baseline = ["GREEN", "KNOWN_RED", "UNKNOWN_RED"]
+migrations = ["ALIGNED", "PENDING", "DIVERGED", "UNKNOWN", "NOT_APPLICABLE"]
+
+[loop.adr]
+statuses = ["Proposed", "Accepted", "Superseded"]
+id_pattern = "^ADR-[0-9]{4}$"
+
+[loop.waves]
+states = ["pending", "in_progress", "verified", "sealed", "rolled_back"]
+task_states = ["pending", "running", "green", "committed", "needs_replan", "oracle_invalid", "failed"]
+task_required = ["id", "status", "write_set", "oracle", "verification"]
+# Micro-task granularity budget: a worker edits few files, proves a failing oracle
+# first and verifies with a command. Six files need a recorded granularity_exception.
+max_write_files = 4
+max_write_files_with_exception = 6
+# A sealed wave is one whose every task committed and whose delta review passed.
+sealed_requires_task_state = "committed"
+
+[loop.rulings]
+required = ["id", "task", "sha", "decision", "reason", "cost_if_wrong", "evidence"]
+append_only = true

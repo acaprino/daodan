@@ -96,24 +96,22 @@ shared a context is not the artifact this workflow claims to produce.
 
 # Team Review (Pipeline)
 
-Orchestrate a multi-dimensional code review as a **6-phase pipeline**:
+| Phase | Work | Output |
+|---|---|---|
+| 0 | Resolve the target (0), detect dimensions (0b), discover the evidence this review needs without reading any Codebase Map output (0c) | `.team-review/00-scope.md`, `01a-review-knowledge-leads.md` |
+| 1 | Codebase Map analysis (1a) and blind premise derivation (1c) in parallel, joined (1d), then the interconnect map (1b) | `01b-independent-claims.md`, `01-knowledge-provenance.md`, `02-interconnect.md` |
+| 2 | One isolated reviewer per selected dimension; every finding declares its load-bearing premise and its provenance | `findings-<dim>.md` |
+| 3 | Delivery barrier: every reviewer delivers findings or an explicit no-findings report | ledger |
+| 4 | Consolidation weighted by provenance, verification panel (4b), completeness critic (4c) | `99-consolidated.md` |
+| 5 | Report and cleanup | final report |
 
-0. **Phase 0 -- Scope and Discovery**: resolve the target (0), detect which dimensions the change warrants (0b), and discover independently what evidence this review needs (0c), reading no Codebase Map output at all.
-1. **Phase 1 -- Context Building**: Codebase Map analysis (1a) runs in parallel with a blind second derivation of the same premises (1c); the two are joined into `01-knowledge-provenance.md` (1d); an interconnect map is built last (1b), covering contracts, invariants, assumptions, domain rules and integration hot-spots. Output goes to `.team-review/`.
-2. **Phase 2 -- Adversarial Review (parallel)**: specialized reviewers read the context files and hunt for violations within their dimension. Every finding declares the load-bearing premise it stands on and where that premise came from. Each reviewer writes structured findings to `.team-review/findings-<dim>.md`.
-3. **Phase 3 -- Monitor and Collect**: every spawned reviewer delivers findings or an explicit no-findings report before consolidation starts.
-4. **Phase 4 (Consolidation)**: findings are deduplicated and organized by severity, with agreement weighted by premise provenance; then the verification panel runs (4b, Lens 0's premise veto first) and the completeness critic asks what the review missed (4c).
-5. **Phase 5 -- Report & Cleanup**.
-
-The pipeline lets reviewers find problems that are invisible from local-only inspection: broken implicit contracts, invariant drift, bypass paths to business rules, non-idempotent retry paths, terminal state mutations. Two derivations run side by side in Phase 1 so that the review has a second observer, rather than one observer consulted N times.
-
-**Raw mode**: pass `--no-context` to run the old parallel-only behavior (no Phase 0c, no context phase, no `logic-integrity-auditor`, no `premise-auditor` in either mode).
+**Raw mode**: `--no-context` runs reviewers on the target and diff only: no Phase 0c, no Phase 1, no `logic-integrity-auditor`, no `premise-auditor` in either mode.
 
 ## Skills to Load
 
 Before starting, invoke these skills to inform the review process:
-- `senior-review:review-quality-gates` -- context-sharing pattern, adversarial verification panel, completeness critic
-- `senior-review:defect-taxonomy` -- 140+ defect subcategories with CWE/OWASP mappings (includes `logic-integrity.md`)
+- `senior-review:review-quality-gates`: provenance rule and reviewer conventions in its core; its `references/context-sharing.md` for anchor routing before dispatch
+- `senior-review:defect-taxonomy`: 140+ defect subcategories with CWE/OWASP mappings (includes `logic-integrity.md`)
 
 ## Pre-flight Checks
 
@@ -173,10 +171,11 @@ Before starting, invoke these skills to inform the review process:
 
 ## Phase 0: Target Resolution
 
-1. Determine target type:
+1. Determine target type, after `references/candidate-grounding.md` has fixed the target kind:
    - **File/Directory**: use as-is for review scope
    - **Git diff range**: `git diff {range} --name-only` to get changed files
    - **PR number**: `gh pr diff {number} --name-only` to get changed files
+   - **Plan, specification or document**: the paths, symbols and contracts it names, resolved against the current tree, are the review scope; the file itself is the artifact under review
 2. Collect the full diff content for later distribution to reviewers.
 3. Collect the list of changed file paths and extensions for Phase 0b.
 4. Write `.team-review/00-scope.md` with target, files, flags. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
@@ -280,11 +279,7 @@ Mark `phase_0b_detection` complete in `state.json`.
 
 ## Phase 0c: Review Evidence Discovery
 
-Runs inline in the orchestrating context, on every invocation **except** raw mode (`--no-context`). That flag means "give me the raw mode", and a normally-on phase does not override it: `01a-review-knowledge-leads.md` distributed to N reviewers is itself shared context, so keeping this phase alive under the flag would make findings legitimately `shared-context`, let Lens 0 fire, and stop the mode reproducing the pre-pipeline behaviour it exists to provide.
-
-This phase owns discovery of **what evidence is relevant to this review**. Codebase Map owns discovery of how the repository documents itself. The two are different jobs and the division is deliberate.
-
-**This phase MUST NOT read `.codebase-map/` in any form**, including the mirror and the output of previous runs. A previous Codebase Map run is still a Codebase Map derivation, and admitting one would contaminate the single artifact that has to be demonstrably independent of Codebase Map. Codebase Map's leads enter at the Phase 1d join and nowhere earlier.
+Runs inline in the orchestrating context on every invocation except raw mode. It discovers what evidence is relevant to this review; how the repository documents itself is the Codebase Map's discovery. **It never reads `.codebase-map/` in any form**, the mirror and earlier runs included: the Codebase Map's leads enter at the Phase 1d join and nowhere earlier.
 
 1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior Codebase Map run.
 2. Extract the concepts, domains and symbols the diff touches. Names of changed functions, classes, modules and config keys are the starting set; add the domain nouns that appear in the diff's own strings and comments.
@@ -327,7 +322,7 @@ Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `ph
 
 ### Phase 1a: Codebase Map Analysis
 
-> **`codebase-map:analyze` is the canonical workflow entry of `codebase-map`, not an agent or executor.** The host lists it as `analyze` (hosts that render workflows as skills suffix it `-workflow`). The review coordinator executes the entry's preflight, answerable checkpoints, delivery check and publication decision. Dispatch `codebase-map:map-analyst` through the consuming workflow's declared host harness in one isolated context for the phases. Loading a method or role body alone executes no analysis. Review preparation runs once and consolidation retains sole final review report ownership. Phase 1c, Phase 1b and all selected reviewers still require their declared isolated worker contexts.
+The review coordinator executes the `codebase-map:analyze` entry's preflight, checkpoints, delivery check and publication decision, and dispatches `codebase-map:map-analyst` in one isolated context for the phases. Loading a method or role body runs nothing. Phase 1c, Phase 1b and every reviewer keep their own isolated contexts.
 
 1. Execute the `codebase-map:analyze` preflight and coordinator-owned delivery/publication steps against the target. Dispatch `codebase-map:map-analyst` in an isolated context for its requested phases, preserving the canonical scope checkpoints, run binding, output and completion gates:
    - Default mode: `--depth=lite` (structure + interfaces + risks only)
@@ -337,11 +332,11 @@ Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `ph
 3. Verify on completion that at minimum `01-structure.md`, `02-interfaces.md`, and `05-risks.md` exist.
 4. Mark `phase_1a_xray` complete.
 
-If the workflow fails or produces no output, halt the pipeline and report the error: `codebase-map` is a hard dependency, so a workflow that cannot be loaded is a broken install. Do **not** fall back to spawning a `general-purpose` agent to fake the Codebase Map output -- the file naming and section anchors that Phase 1b/Phase 2 depend on come from the workflow itself, and a freelance fallback breaks the contract for `logic-integrity-auditor`.
+If the analysis fails or produces no output, halt the pipeline and report a broken installation. Never substitute another worker for the analyst: Phase 1b and Phase 2 depend on the file names and section anchors the analysis itself produces.
 
 ### Phase 1c: Independent Premise Derivation (parallel with 1a)
 
-Spawn immediately when Phase 1a starts. Do not wait for Codebase Map. The whole point of this phase is that it derives without seeing what Codebase Map derived.
+Dispatch when Phase 1a starts, without waiting for it: this derivation must not see what the Codebase Map derived.
 
 1. Dispatch the `senior-review:premise-auditor` agent in its own isolated context.
 2. Prompt:
@@ -368,7 +363,7 @@ Under raw mode (`--no-context`) this phase does not run, because there is no sha
 
 ### Phase 1d: Knowledge Reconciliation (join)
 
-Runs inline once both 1a and 1c have completed. The premise auditor never compares its own derivation: comparison is done by others, downstream, which is what makes its blindness verifiable rather than merely asserted.
+Runs inline once both 1a and 1c have completed. The premise auditor never compares its own derivation; this join does.
 
 Read `.team-review/01a-review-knowledge-leads.md`, `$XRAY_RUN_DIR/knowledge/documentation-leads.md` and `.team-review/01b-independent-claims.md`. Write:
 
@@ -399,18 +394,14 @@ Read `.team-review/01a-review-knowledge-leads.md`, `$XRAY_RUN_DIR/knowledge/docu
 | [claim] | [X at file:line] | [Y at file:line] |
 ```
 
-**Missing and Disputed are different states and must never collapse into one section.** Absence of evidence is not contradictory evidence.
+**Missing and Disputed never collapse into one section.**
 
 | Section | Maps to in the interconnect map | Never |
 |---|---|---|
-| `Missing` | a coverage gap, and `unverified` on any related row | never `disputed`: nobody finding documentation is not two sources disagreeing |
-| `Disputed` | `disputed`, both `file:line` sides cited | never silently resolved in favour of either derivation |
+| `Missing` | a coverage gap, and `unverified` on any related row | `disputed`: nobody finding documentation is not two sources disagreeing |
+| `Disputed` | `disputed`, both `file:line` sides cited | silently resolved in favour of either derivation |
 
-Collapsing them would drain `disputed` of the precise meaning the rest of this work depends on, which is that two derivations reached incompatible conclusions and a reviewer must settle it.
-
-**The duty of autonomous rediscovery.** Codebase Map's documentation leads are an input, never a completeness guarantee. Any concept `01a` carried that Codebase Map's leads missed stays under `Independently discovered by Senior Review`; a concept neither branch found goes to `Missing`. Neither is downgraded because the other branch was silent. Without this duty, the completeness of Codebase Map's discovery becomes the next shared premise, which is the failure this pipeline exists to prevent.
-
-Two asymmetries here are diagnostics worth reading, not noise. A row present in `Independently discovered by Senior Review` and absent from `Inherited from Codebase Map` means Codebase Map's discovery had a gap. The reverse means Phase 0c had one. Both are recorded and neither is silently reconciled. Neither is reportable when Codebase Map produced no leads file at all: the degradation rule above governs that case.
+A concept `01a` carried and the Codebase Map's leads missed stays under `Independently discovered by Senior Review`; a concept neither found goes to `Missing`; neither is downgraded because the other branch was silent. Record both asymmetries as diagnostics: a row only in the independent section is a Codebase Map discovery gap, a row only in the inherited section is a Phase 0c gap. Neither is reported when the Codebase Map produced no leads file.
 
 Mark `phase_1d_reconciliation` complete.
 

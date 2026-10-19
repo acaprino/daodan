@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+from itertools import combinations
 from pathlib import Path
 import re
 import stat
@@ -227,6 +228,176 @@ def project_binding(project, scope, output_root):
             "snapshot": {"digest": hashlib.sha256(canonical).hexdigest(), "files": entries}}
 
 
+
+def relative_file(value, label):
+    if not isinstance(value, str) or not value.strip():
+        raise ProtocolError(f"{label} must be a nonempty project-relative path")
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts:
+        raise ProtocolError(f"{label} must stay inside the project: {value}")
+    return path.as_posix()
+
+
+def validate_workspace(section, rules):
+    missing = sorted(set(rules["required"]) - set(section))
+    if missing:
+        raise ProtocolError("Workspace section is missing: " + ", ".join(missing))
+    if section["mode"] not in rules["modes"]:
+        raise ProtocolError(f"Unknown workspace mode: {section['mode']}")
+    for key in ("branch", "base_sha"):
+        if not isinstance(section[key], str) or not section[key].strip():
+            raise ProtocolError(f"Workspace {key} must be a nonempty string")
+    if section["mode"] == "WORKTREE" and not isinstance(section.get("worktree_path"), str):
+        raise ProtocolError("A WORKTREE workspace records its worktree_path")
+    for binding in section.get("environment_bindings", []):
+        if not isinstance(binding, dict) or set(rules["binding_required"]) - set(binding):
+            raise ProtocolError("Each environment binding names path, kind and secret")
+        if not isinstance(binding["secret"], bool):
+            raise ProtocolError("Environment binding secret must be a boolean")
+        if binding["secret"] and "value" in binding:
+            raise ProtocolError("A secret environment binding never records its value")
+
+
+def validate_preflight(section, rules):
+    baseline = section.get("baseline")
+    if baseline not in rules["baseline"]:
+        raise ProtocolError(f"Unknown preflight baseline: {baseline}")
+    if baseline == "KNOWN_RED" and not isinstance(section.get("failing_fingerprint"), str):
+        raise ProtocolError("A KNOWN_RED baseline records the fingerprint of its accepted failures")
+    if section.get("migrations", "NOT_APPLICABLE") not in rules["migrations"]:
+        raise ProtocolError(f"Unknown migration state: {section.get('migrations')}")
+
+
+def validate_adr(section, rules):
+    pattern = re.compile(rules["id_pattern"])
+    active = section.get("active", [])
+    if not isinstance(active, list) or any(not isinstance(i, str) or not pattern.fullmatch(i) for i in active):
+        raise ProtocolError("adr.active must list ADR identifiers")
+    proposed = section.get("proposed")
+    if proposed is not None and (not isinstance(proposed, str) or not pattern.fullmatch(proposed)):
+        raise ProtocolError("adr.proposed must be an ADR identifier or null")
+
+
+def validate_task(task, rules):
+    if not isinstance(task, dict):
+        raise ProtocolError("A wave task must be an object")
+    missing = sorted(set(rules["task_required"]) - set(task))
+    if missing:
+        raise ProtocolError(f"Task is missing: {', '.join(missing)}")
+    if not isinstance(task["id"], str) or not task["id"].strip():
+        raise ProtocolError("Task id must be a nonempty string")
+    if task["status"] not in rules["task_states"]:
+        raise ProtocolError(f"Unknown task status: {task['status']}")
+    writes = task["write_set"]
+    if not isinstance(writes, list) or not writes:
+        raise ProtocolError(f"Task {task['id']} needs a nonempty write_set")
+    paths = {relative_file(item, f"Task {task['id']} write_set entry") for item in writes}
+    if len(paths) != len(writes):
+        raise ProtocolError(f"Task {task['id']} repeats a write_set entry")
+    limit = rules["max_write_files"]
+    exception = task.get("granularity_exception")
+    if exception is not None:
+        if not isinstance(exception, dict) or not isinstance(exception.get("reason"), str) or not exception["reason"].strip():
+            raise ProtocolError(f"Task {task['id']} granularity_exception needs a reason")
+        limit = rules["max_write_files_with_exception"]
+    if len(paths) > limit:
+        raise ProtocolError(f"Task {task['id']} edits {len(paths)} files; the budget is {limit}")
+    for key, field in (("oracle", "command"), ("verification", "command")):
+        block = task[key]
+        if not isinstance(block, dict) or not isinstance(block.get(field), str) or not block[field].strip():
+            raise ProtocolError(f"Task {task['id']} {key} needs a command")
+    if not isinstance(task["oracle"].get("expected_failure"), str) or not task["oracle"]["expected_failure"].strip():
+        raise ProtocolError(f"Task {task['id']} oracle names the failure it must produce before the change")
+    for key in ("resource_locks", "produces", "consumes"):
+        value = task.get(key, [])
+        if not isinstance(value, list) or any(not isinstance(i, str) or not i for i in value):
+            raise ProtocolError(f"Task {task['id']} {key} must list identifiers")
+    return paths
+
+
+def validate_waves(section, rules, workspace):
+    if not isinstance(section, list):
+        raise ProtocolError("waves must be an array")
+    seen_waves, seen_tasks = set(), set()
+    for wave in section:
+        if not isinstance(wave, dict) or not isinstance(wave.get("id"), str) or not wave["id"]:
+            raise ProtocolError("Each wave needs an id")
+        if wave["id"] in seen_waves:
+            raise ProtocolError(f"Wave id repeated: {wave['id']}")
+        seen_waves.add(wave["id"])
+        if wave.get("status") not in rules["states"]:
+            raise ProtocolError(f"Unknown wave status: {wave.get('status')}")
+        tasks = wave.get("tasks")
+        if not isinstance(tasks, list) or not tasks:
+            raise ProtocolError(f"Wave {wave['id']} needs at least one task")
+        parallel = wave.get("parallel", False)
+        if not isinstance(parallel, bool):
+            raise ProtocolError(f"Wave {wave['id']} parallel must be a boolean")
+        if parallel and len(tasks) > 1 and (workspace is None or workspace.get("mode") != "WORKTREE"):
+            raise ProtocolError(f"Wave {wave['id']} runs tasks in parallel, which needs a WORKTREE workspace")
+        details = []
+        for task in tasks:
+            if task.get("id") in seen_tasks:
+                raise ProtocolError(f"Task id repeated: {task.get('id')}")
+            seen_tasks.add(task.get("id"))
+            details.append((task, validate_task(task, rules)))
+        for (first, first_paths), (second, second_paths) in combinations(details, 2):
+            shared = first_paths & second_paths
+            if shared:
+                raise ProtocolError(f"Tasks {first['id']} and {second['id']} share write_set files in wave {wave['id']}: {', '.join(sorted(shared))}")
+            locks = set(first.get("resource_locks", [])) & set(second.get("resource_locks", []))
+            if locks:
+                raise ProtocolError(f"Tasks {first['id']} and {second['id']} share resource locks in wave {wave['id']}: {', '.join(sorted(locks))}")
+            for producer, consumer in ((first, second), (second, first)):
+                crossing = set(producer.get("produces", [])) & set(consumer.get("consumes", []))
+                if crossing:
+                    raise ProtocolError(f"Task {consumer['id']} consumes what {producer['id']} produces inside wave {wave['id']}: {', '.join(sorted(crossing))}")
+        if wave["status"] == "sealed" and any(task["status"] != rules["sealed_requires_task_state"] for task in tasks):
+            raise ProtocolError(f"Wave {wave['id']} cannot be sealed while a task is not committed")
+
+
+def validate_rulings(section, rules):
+    if not isinstance(section, list):
+        raise ProtocolError("rulings must be an array")
+    seen = set()
+    for ruling in section:
+        if not isinstance(ruling, dict) or set(rules["required"]) - set(ruling):
+            raise ProtocolError("Each ruling records " + ", ".join(rules["required"]))
+        if ruling["id"] in seen:
+            raise ProtocolError(f"Ruling id repeated: {ruling['id']}")
+        seen.add(ruling["id"])
+        if not isinstance(ruling["evidence"], list) or not ruling["evidence"]:
+            raise ProtocolError(f"Ruling {ruling['id']} cites evidence")
+
+
+def validate_loop(record):
+    """Validate the optional loop sections a lifecycle run carries."""
+    rules = contract().get("loop")
+    if rules is None:
+        return
+    present = {name: record[name] for name in rules["sections"] if name in record}
+    if "workspace" in present:
+        validate_workspace(present["workspace"], rules["workspace"])
+    if "preflight" in present:
+        validate_preflight(present["preflight"], rules["preflight"])
+    if "adr" in present:
+        validate_adr(present["adr"], rules["adr"])
+    if "waves" in present:
+        validate_waves(present["waves"], rules["waves"], present.get("workspace"))
+    if "rulings" in present:
+        validate_rulings(present["rulings"], rules["rulings"])
+
+
+def validate_loop_transitions(old, new):
+    rules = contract().get("loop")
+    if rules is None or not rules["rulings"].get("append_only"):
+        return
+    before = old.get("rulings", [])
+    after = new.get("rulings", [])
+    if after[:len(before)] != before:
+        raise ProtocolError("Rulings are append-only; a recorded decision cannot be altered or removed")
+
+
 def validate_record(record, project=None, root=None, current=False):
     rules = contract()
     missing = sorted(set(rules["required"]) - set(record))
@@ -279,6 +450,7 @@ def validate_record(record, project=None, root=None, current=False):
                     if any(reserved.exists() and report.samefile(reserved)
                            for reserved in (directory / name for name in ("work.json", "result.json", ".write-lock"))):
                         raise ProtocolError("A coordinator record or lock is not a worker report")
+    validate_loop(record)
     if project is not None:
         if record["project"].get("root") != str(project):
             raise ProtocolError("Project identity does not match this invocation")
@@ -317,6 +489,7 @@ def validate_transitions(old, new):
         raise ProtocolError("A complete run cannot be reopened")
     if new["required_gates"][:len(old["required_gates"])] != old["required_gates"]:
         raise ProtocolError("Required gates are append-only; a check cannot be removed or weakened")
+    validate_loop_transitions(old, new)
     for key in ("phases", "deliveries"):
         for identity, before in old[key].items():
             after = new[key].get(identity)
@@ -427,7 +600,7 @@ def atomic_write(path, record, project):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot"))
+    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check"))
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--run-id")
     parser.add_argument("--out")
@@ -439,7 +612,13 @@ def main(argv=None):
     try:
         project, root = roots(args.project, args.out)
         payload = read_json(args.payload) if args.payload else {}
-        if args.command == "snapshot":
+        if args.command == "plan-check":
+            # A draft plan is checked against the loop rules before it is written
+            # into a run, so a planner receives the exact refusal, not a failed update.
+            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings") if key in payload})
+            waves = payload.get("waves", [])
+            output = {"valid": True, "waves": len(waves), "tasks": sum(len(w.get("tasks", [])) for w in waves)}
+        elif args.command == "snapshot":
             output = project_binding(project, payload.get("scope", {}), root)
         elif args.command == "init":
             for required in ("operation", "objective", "scope", "authorizations", "budget"):

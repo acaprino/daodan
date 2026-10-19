@@ -99,6 +99,14 @@ target with a branch comparison or the previous commit. Missing baseline content
 is a declared comparison gap, not permission to invent a before-state; preserve
 the actual candidate and leave any gate needing that comparison unavailable.
 
+## Load map
+
+| Step | Read inside this skill |
+|---|---|
+| Always, before the variant | `references/candidate-grounding.md`: target kind, policy from the base commit, ground-truth gate, evidence pack, budget and roster by kind |
+| Then | `references/<variant>.md` |
+| Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
+
 Read `references/<variant>.md` inside this skill and execute its preparation stages
 once. Existing reviewer inputs remain unchanged. For team review Phase 1a, the
 coordinator executes the canonical `codebase-map:analyze` entry's preflight,

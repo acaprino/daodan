@@ -97,7 +97,8 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertNotIn("model: sonnet", body)
 
     def test_changed_graphs_keep_their_provider_edges_and_exported_contracts(self):
-        for name in ("react-development", "typescript-development", "clean-code", "senior-review"):
+        for name in ("react-development", "typescript-development", "clean-code", "senior-review",
+                     "peer-review", "moe", "project-lifecycle", "project-knowledge"):
             with self.subTest(plugin=name):
                 plugin = self.registry[name]
                 self.assertEqual(validate_workflow_graph(plugin), [])

@@ -31,6 +31,7 @@ from host_binding_assertions import canonical_markdown, without_host_binding, lo
 ADAPTERS = REPO_ROOT / "adapters"
 MAP = REPO_ROOT / "plugins/codebase-map"
 REVIEW = REPO_ROOT / "plugins/senior-review"
+LOOP = tuple(REPO_ROOT / "plugins" / name for name in ("peer-review", "moe", "project-lifecycle"))
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
 
@@ -57,7 +58,7 @@ class HostRenderingTests(unittest.TestCase):
         cls.packages = {}
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
-            for plugin_root in (MAP, REVIEW):
+            for plugin_root in (MAP, REVIEW, *LOOP):
                 plugin = load_plugin(plugin_root)
                 staging = cls.temp / host / plugin.name
                 render_plugin(plugin, adapter, staging, adapters_root=ADAPTERS)
@@ -403,7 +404,7 @@ class HostRenderingTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_opencode_command_bodies_use_no_shell_template_syntax(self):
-        for plugin in ("codebase-map", "senior-review"):
+        for plugin in ("codebase-map", "senior-review", "peer-review", "moe", "project-lifecycle"):
             for path in self.package("opencode", plugin).glob("commands/*.md"):
                 self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
 

@@ -32,7 +32,7 @@ OpenCode V2. Useful language, framework and domain specialists remain independen
 
 Daodan is complete on its own and reaches full strength alongside
 [Shinatama](https://github.com/acaprino/shinatama), its companion marketplace of
-domain verticals, office workflows, web research and multi-model deliberation.
+domain verticals, office workflows and web research.
 Install both on the same host: `skill-catalog` discovers Shinatama's knowledge
 sidecars automatically and selects the ones each run's evidenced stack and domain
 call for, so a review, a handover or a maintenance campaign brings that domain
@@ -117,9 +117,9 @@ separate authorization.
 
 Guided pace waits at the campaign brief and at the findings/roadmap. Autonomous pace
 removes those two waits while retaining every decision and gate owned by a method.
-Second opinions such as peer-review or dependency-audit are offered when available
-and never run unasked. A handover result supplies evidence; it grants no permission
-to change the project.
+Second opinions from another model (peer-review, moe) are offered and never run
+unasked; dependency facts come from the review when manifests are in scope. A
+handover result supplies evidence; it grants no permission to change the project.
 
 Every brief names the exact runs and the next entry. Resume those IDs after validating
 scope, candidate and authorization; an unrelated latest report is never a resume
@@ -143,8 +143,9 @@ Install project-lifecycle@daodan for the complete project paths, or individual
 specialists for a narrower task. Required local dependencies form the mandatory
 closure; external dependencies must also be available on the host.
 
-The lifecycle uses upstream development methods from
-superpowers@claude-plugins-official. Testing uses
+The lifecycle owns its task cycle and declares no upstream development method:
+its interview, plan and execution are shaped by the Codebase Map, the decision
+records under `docs/adr/` and the protocol's wave rules. Testing uses
 mattpocock-skills@mattpocock and developer-essentials@claude-code-workflows.
 The [dependency catalog](.claude-plugin/marketplace.json) records the exact declarations.
 No upstream method is copied into a second local implementation.
@@ -212,9 +213,10 @@ It does not grant arbitrary repository deletion.
 | UI and stack | [react-development](docs/plugins/react-development.md), [platform-engineering](docs/plugins/platform-engineering.md) |
 | Infrastructure and dependencies | [docker](docs/plugins/docker.md), [dependency-audit](docs/plugins/dependency-audit.md) |
 | Shared capabilities | [skill-catalog](docs/plugins/skill-catalog.md), [report-rendering](docs/plugins/report-rendering.md) |
+| Cross-model deliberation | [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md) |
 
-Domain verticals, office workflows (`office`), research (`research`), multi-model
-deliberation (`peer-review`, `moe`), web scraping (`grabber-development`),
+Domain verticals, office workflows (`office`), research (`research`),
+web scraping (`grabber-development`),
 marketing, business and specialized framework toolkits live in the companion
 [**Shinatama**](https://github.com/acaprino/shinatama) marketplace (`acaprino/shinatama`).
 When installed on the same host, their `SKILL.toml` knowledge sidecars are

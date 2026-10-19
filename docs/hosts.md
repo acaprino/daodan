@@ -93,7 +93,7 @@ An omitted selection loads every local plugin. OpenCode Desktop uses the same
 V2 plugin package as its CLI service; there is no separate Desktop export.
 
 Pi and OpenCode package all local kernels but do not install plugins from foreign
-marketplaces. Qualified dependencies such as `superpowers@claude-plugins-official`
+marketplaces. Qualified dependencies such as `mattpocock-skills@mattpocock`
 still have to be supplied in a form the host can load. Packaging the entire local
 marketplace is not proof that every workflow's external inputs are available.
 
@@ -216,9 +216,10 @@ workers retain their declared isolated contexts and delivery gates.
 ## MCP and helper runtimes
 
 A plugin-declared MCP server lives under a skill, requires `mcp.servers`, and is
-declared through `[[mcp.servers]]` in the kernel. Peer-review and Codebase Map
-declare stdio servers launched with `uv run --script`; users need that executable
-and each server's documented requirements. Codebase Map's project-bound local
+declared through `[[mcp.servers]]` in the kernel. Codebase Map, peer-review and
+moe declare stdio servers launched with `uv run --no-config --no-project --script`,
+so the project under work cannot choose a server's package index or interpreter;
+users need that executable and each server's documented requirements. Codebase Map's project-bound local
 service exposes snapshots, verified source queries, run controls and persistent
 events; its [MCP contract](../plugins/codebase-map/skills/map-method/references/mcp.md)
 keeps worker execution and native UI in the host. Existing shell analysis entries

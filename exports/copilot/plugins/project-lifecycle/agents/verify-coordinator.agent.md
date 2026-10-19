@@ -2,7 +2,7 @@
 name: verify-coordinator
 description: 'Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a single test-suite or code review suffices (use /testing:test-audit or /senior-review:code-review).'
 tools: ['agent', 'edit', 'runCommands', 'search']
-agents: ['abstraction-architect:abstraction-architect-agent', 'codebase-map:map-analyst', 'platform-engineering:platform-reviewer', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'react-development:react-performance-optimizer', 'senior-review:code-auditor', 'senior-review:data-integrity-auditor', 'senior-review:premise-auditor', 'senior-review:resource-lifecycle-auditor', 'senior-review:security-auditor', 'senior-review:temporal-resilience-auditor', 'senior-review:ui-race-auditor', 'testing:test-suite-auditor', 'typescript-development:type-safety-auditor']
+agents: ['abstraction-architect:abstraction-architect-agent', 'codebase-map:map-analyst', 'codebase-map:semantic-interconnect-mapper', 'platform-engineering:platform-reviewer', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'react-development:react-performance-optimizer', 'repo-hygiene:workspace-auditor', 'senior-review:api-contract-auditor', 'senior-review:chicken-egg-detector', 'senior-review:cleanup-auditor', 'senior-review:code-auditor', 'senior-review:data-integrity-auditor', 'senior-review:distributed-flow-auditor', 'senior-review:logic-integrity-auditor', 'senior-review:premise-auditor', 'senior-review:resource-lifecycle-auditor', 'senior-review:security-auditor', 'senior-review:temporal-resilience-auditor', 'senior-review:ui-race-auditor', 'testing:test-suite-auditor', 'typescript-development:type-safety-auditor']
 ---
 
 > Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
@@ -111,7 +111,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so this coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `platform-engineering:platform-reviewer`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `platform-engineering:platform-reviewer`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `senior-review:api-contract-auditor`, `senior-review:chicken-egg-detector`, `senior-review:cleanup-auditor`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -125,14 +125,21 @@ Role bindings:
 
 - `abstraction-architect:abstraction-architect-agent`: dispatch the installed `abstraction-architect:abstraction-architect-agent` agent by its qualified identity.
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
+- `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
 - `platform-engineering:platform-reviewer`: dispatch the installed `platform-engineering:platform-reviewer` agent by its qualified identity.
 - `project-knowledge:documentation-engineer`: dispatch the installed `project-knowledge:documentation-engineer` agent by its qualified identity.
 - `project-knowledge:guide-reviewer`: dispatch the installed `project-knowledge:guide-reviewer` agent by its qualified identity.
 - `project-knowledge:instructions-auditor`: dispatch the installed `project-knowledge:instructions-auditor` agent by its qualified identity.
 - `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
 - `react-development:react-performance-optimizer`: dispatch the installed `react-development:react-performance-optimizer` agent by its qualified identity.
+- `repo-hygiene:workspace-auditor`: dispatch the installed `repo-hygiene:workspace-auditor` agent by its qualified identity.
+- `senior-review:api-contract-auditor`: dispatch the installed `senior-review:api-contract-auditor` agent by its qualified identity.
+- `senior-review:chicken-egg-detector`: dispatch the installed `senior-review:chicken-egg-detector` agent by its qualified identity.
+- `senior-review:cleanup-auditor`: dispatch the installed `senior-review:cleanup-auditor` agent by its qualified identity.
 - `senior-review:code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
 - `senior-review:data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
+- `senior-review:distributed-flow-auditor`: dispatch the installed `senior-review:distributed-flow-auditor` agent by its qualified identity.
+- `senior-review:logic-integrity-auditor`: dispatch the installed `senior-review:logic-integrity-auditor` agent by its qualified identity.
 - `senior-review:premise-auditor`: dispatch the installed `senior-review:premise-auditor` agent by its qualified identity.
 - `senior-review:resource-lifecycle-auditor`: dispatch the installed `senior-review:resource-lifecycle-auditor` agent by its qualified identity.
 - `senior-review:security-auditor`: dispatch the installed `senior-review:security-auditor` agent by its qualified identity.

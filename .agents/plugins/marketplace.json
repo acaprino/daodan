@@ -1,12 +1,11 @@
 {
   "allowCrossMarketplaceDependenciesOn": [
     "claude-code-workflows",
-    "claude-plugins-official",
     "mattpocock"
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "36.2.0"
+    "version": "37.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -112,6 +111,38 @@
       "author": {
         "name": "Alfio Caprino"
       },
+      "dependencies": [
+        "peer-review"
+      ],
+      "description": "Ultra Nerd: bounded multi-model problem solving with independent proposals, reciprocal challenges and evidence-backed synthesis. Explicit opt-in for difficult tasks with increased token consumption.",
+      "license": "MIT",
+      "name": "moe",
+      "skills": [
+        "./skills/multi-model-deliberation",
+        "./skills/ultra-nerd-workflow"
+      ],
+      "source": "./exports/codex/plugins/moe",
+      "version": "1.2.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [],
+      "description": "Cross-model peer review of plans, specs, and the decisions a session has just made: a harness-agnostic deliberation protocol (challenge packet with GIVEN-tagged context, challenger findings that each carry their own falsifier, evidence-backed responses at a stable locator, a verbatim ledger, a certification pass the challenger owns, and a verdict computed from the ledger) plus a transport-only MCP server for any OpenAI-compatible endpoint. Point it at a document, or run it with no path to materialize the session's context, settled decisions and open questions into a frozen brief and put that on trial. The challenger attacks the artifact, the local session refutes with evidence, and unresolved disagreements terminate as precise standoffs for the user to settle",
+      "license": "MIT",
+      "name": "peer-review",
+      "skills": [
+        "./skills/cross-model-peer-review",
+        "./skills/review-workflow"
+      ],
+      "source": "./exports/codex/plugins/peer-review",
+      "version": "2.5.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
       "dependencies": [],
       "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; includes /platform-engineering:platform-review standalone command",
       "license": "MIT",
@@ -138,6 +169,8 @@
       "license": "MIT",
       "name": "project-knowledge",
       "skills": [
+        "./skills/adr-method",
+        "./skills/adr-workflow",
         "./skills/guide-workflow",
         "./skills/instructions-method",
         "./skills/instructions-workflow",
@@ -147,7 +180,7 @@
         "./skills/readme-workflow"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "1.3.6"
+      "version": "1.4.0"
     },
     {
       "author": {
@@ -166,7 +199,10 @@
         "react-development",
         "typescript-development",
         "platform-engineering",
-        "superpowers@claude-plugins-official",
+        "python-development",
+        "skill-catalog",
+        "peer-review",
+        "moe",
         "report-rendering"
       ],
       "description": "Complete AI development lifecycle: consultant handover, a guided Senior Maintainer campaign, coherence assessment, evidenced repair, implementation, verification and consolidation. Uses canonical specialist methods, exact run identities and honest coverage.",
@@ -185,7 +221,7 @@
         "./skills/verify-workflow"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.4.1"
+      "version": "1.5.0"
     },
     {
       "author": {
@@ -199,7 +235,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/codex/plugins/project-protocol",
-      "version": "1.1.1"
+      "version": "1.2.0"
     },
     {
       "author": {
@@ -286,6 +322,8 @@
         "react-development",
         "typescript-development",
         "platform-engineering",
+        "python-development",
+        "dependency-audit",
         "skill-catalog",
         "report-rendering"
       ],
@@ -304,7 +342,7 @@
         "./skills/team-review-workflow"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "15.2.1"
+      "version": "15.3.0"
     },
     {
       "author": {

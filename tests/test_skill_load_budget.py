@@ -1,0 +1,135 @@
+"""Load budgets for the loop and review methods a coordinator reads.
+
+A coordinator holding several thousand words of normative prose as simultaneous
+constraints is where an economical model fails. These tests make density a
+number the CI controls: each unit has a word cap, each step of the loop has a cap
+on the union of units it loads, and the micro-task worker receives a template
+small enough to hold whole. A cap only goes down. When a unit is lightened, lower
+its cap in the same change; never raise one to make an edit pass.
+
+Words are whitespace-separated tokens of the body, front matter excluded, the
+same measure tests/test_xray_load_budget.py applies to the Codebase Map.
+"""
+
+import re
+import unittest
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle/skills/lifecycle-method"
+PROTOCOL = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md"
+ADR = REPO_ROOT / "plugins/project-knowledge/skills/adr-method"
+REVIEW = REPO_ROOT / "plugins/senior-review/skills"
+
+UNIT_CAPS = {
+    LIFECYCLE / "SKILL.md": 630,
+    LIFECYCLE / "references/change.md": 330,
+    LIFECYCLE / "references/preflight.md": 580,
+    LIFECYCLE / "references/interview.md": 460,
+    LIFECYCLE / "references/waves.md": 545,
+    LIFECYCLE / "references/worker-brief.md": 300,
+    LIFECYCLE / "references/verify.md": 380,
+    LIFECYCLE / "references/consolidate.md": 730,
+    LIFECYCLE / "references/repair.md": 335,
+    LIFECYCLE / "references/assess.md": 745,
+    PROTOCOL: 1_700,
+    ADR / "SKILL.md": 435,
+    ADR / "references/adr-template.md": 375,
+    REVIEW / "review-method/SKILL.md": 575,
+    REVIEW / "review-preparation/SKILL.md": 530,
+    REVIEW / "review-preparation/references/candidate-grounding.md": 1_215,
+    REVIEW / "review-preparation/references/stack-dimensions.md": 650,
+    REVIEW / "review-preparation/references/knowledge-bindings.md": 465,
+    REVIEW / "review-quality-gates/SKILL.md": 895,
+    REVIEW / "review-quality-gates/references/context-sharing.md": 560,
+    REVIEW / "review-quality-gates/references/verification-panel.md": 535,
+    REVIEW / "review-preparation/references/team-review.md": 3_130,
+    REVIEW / "review-consolidation/SKILL.md": 595,
+}
+
+# What one coordinator context holds at each step, beside the always-loaded
+# project instructions. The protocol skill is loaded once per run and counted
+# in every step, because it stays in the context.
+STEPS = {
+    "change: preflight": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/preflight.md"),
+    "change: interview and record": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/interview.md",
+                                     ADR / "SKILL.md", ADR / "references/adr-template.md"),
+    "change: plan and execution": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/waves.md",
+                                   LIFECYCLE / "references/worker-brief.md"),
+    "verify": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/verify.md"),
+    "consolidate": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/consolidate.md", ADR / "SKILL.md"),
+    "review preparation, before the variant": (
+        REVIEW / "review-method/SKILL.md", REVIEW / "review-preparation/SKILL.md",
+        REVIEW / "review-preparation/references/candidate-grounding.md",
+        REVIEW / "review-preparation/references/stack-dimensions.md",
+        REVIEW / "review-preparation/references/knowledge-bindings.md"),
+    "team review: preparation and dispatch": (
+        REVIEW / "review-method/SKILL.md", REVIEW / "review-preparation/SKILL.md",
+        REVIEW / "review-preparation/references/candidate-grounding.md",
+        REVIEW / "review-preparation/references/team-review.md",
+        REVIEW / "review-preparation/references/stack-dimensions.md",
+        REVIEW / "review-preparation/references/knowledge-bindings.md",
+        REVIEW / "review-quality-gates/SKILL.md",
+        REVIEW / "review-quality-gates/references/context-sharing.md"),
+    "review consolidation": (
+        REVIEW / "review-consolidation/SKILL.md", REVIEW / "review-quality-gates/SKILL.md",
+        REVIEW / "review-quality-gates/references/verification-panel.md"),
+}
+STEP_CAPS = {
+    "change: preflight": 2_920,
+    "change: interview and record": 3_580,
+    "change: plan and execution": 3_160,
+    "verify": 2_700,
+    "consolidate": 3_480,
+    "review preparation, before the variant": 3_420,
+    # Before the split, this step loaded the whole quality-gates skill (1,800 words)
+    # and the unlightened team preparation (3,562): 9,647 words.
+    "team review: preparation and dispatch": 7_990,
+    "review consolidation": 2_020,
+}
+
+
+def words(path):
+    text = path.read_text(encoding="utf-8")
+    if text.startswith("---\n"):
+        text = text.split("\n---\n", 1)[1]
+    return len(re.findall(r"\S+", text))
+
+
+class SkillLoadBudgetTests(unittest.TestCase):
+    def test_every_unit_stays_under_its_cap(self):
+        for path, cap in UNIT_CAPS.items():
+            with self.subTest(unit=path.relative_to(REPO_ROOT).as_posix()):
+                self.assertTrue(path.is_file())
+                self.assertLessEqual(words(path), cap)
+
+    def test_every_loop_step_holds_a_bounded_context(self):
+        self.assertEqual(set(STEPS), set(STEP_CAPS))
+        for step, units in STEPS.items():
+            with self.subTest(step=step):
+                self.assertLessEqual(sum(words(path) for path in units), STEP_CAPS[step])
+
+    def test_the_lifecycle_load_map_names_only_shipped_units(self):
+        method = (LIFECYCLE / "SKILL.md").read_text(encoding="utf-8")
+        load_map = method.split("## Load map", 1)[1].split("\n## ", 1)[0]
+        named = set(re.findall(r"`(references/[\w.-]+\.md)`", load_map))
+        self.assertTrue(named)
+        for relative in sorted(named):
+            with self.subTest(reference=relative):
+                self.assertTrue((LIFECYCLE / relative).is_file())
+        shipped = {f"references/{path.name}" for path in (LIFECYCLE / "references").glob("*.md")}
+        self.assertEqual(shipped - named, set(), "every reference is reachable from the load map")
+
+    def test_the_worker_receives_a_closed_template_not_the_methods(self):
+        brief = (LIFECYCLE / "references/worker-brief.md").read_text(encoding="utf-8")
+        for field in ("write_set:", "expected failure before the change:", "verification after the change:",
+                      "examples to make pass:", "invariants to keep:", "## Prior rulings in this run"):
+            self.assertIn(field, brief)
+        for code in ("- OK,", "- NEEDS_REPLAN,", "- ORACLE_INVALID,"):
+            self.assertIn(code, brief)
+        for method in ("review-quality-gates", "lifecycle-method", "review-method"):
+            self.assertNotIn(method, brief, "a worker never loads a coordinator method")
+
+
+if __name__ == "__main__":
+    unittest.main()

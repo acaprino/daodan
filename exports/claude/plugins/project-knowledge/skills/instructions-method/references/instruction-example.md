@@ -286,6 +286,12 @@ Working verification: Define observable success criteria from approved requireme
 - Verify with real evidence: run the code, read the output
 - Stop when the criteria are met; don't gold-plate
 
+### 6. Redesign Instead of Patching
+Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
+- A fix that only special-cases the failing input leaves the next input to fail the same way
+- When a unit needs a second patch for the same class of defect, redesign the unit
+- Keep the redesign within the task's authorization and verify it against the original failure
+
 ### 5. Centralize Shared Logic
 Give each shared concept an explicit owner within its domain. Before adding an external call or cross-cutting concern, find and extend the existing client or method when it represents the same concept. Keep unrelated domains separate; similar syntax alone does not justify a common abstraction.
 

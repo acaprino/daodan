@@ -261,11 +261,20 @@ class OpenCodeManifestTests(unittest.TestCase):
                 for item in entry.get(kind, []):
                     self.assertTrue(item["description"].strip(), f"{name}: {item}")
 
-    def test_codebase_map_declares_its_server(self):
-        mcp = live_opencode_manifest()["daodan"]["plugins"]["codebase-map"]["mcp"]
-        self.assertEqual(mcp[0]["name"], "codebase-map")
-        self.assertTrue(any("<plugin-root>" in part for part in mcp[0]["command"]))
-        self.assertFalse(any("CLAUDE_PLUGIN_ROOT" in part for part in mcp[0]["command"]))
+    def test_every_published_server_is_portable_and_isolated_from_the_project(self):
+        servers = {
+            name: entry["mcp"]
+            for name, entry in live_opencode_manifest()["daodan"]["plugins"].items()
+            if entry.get("mcp")
+        }
+        self.assertEqual(set(servers), {"codebase-map", "peer-review", "moe"})
+        for name, mcp in servers.items():
+            with self.subTest(plugin=name):
+                self.assertEqual(mcp[0]["name"], name)
+                command = mcp[0]["command"]
+                self.assertTrue(any("<plugin-root>" in part for part in command))
+                self.assertFalse(any("CLAUDE_PLUGIN_ROOT" in part for part in command))
+                self.assertEqual(command[:5], ["uv", "run", "--no-config", "--no-project", "--script"])
 
     def test_loader_is_the_adapter_template_byte_for_byte(self):
         self.assertEqual(

@@ -63,41 +63,47 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Repair
 
-Require an exact run/plan ID, then validate project identity, authorizations and
-the recorded input snapshot through project-protocol. Changed inputs invalidate
-the affected action/delivery; reassess them without silently applying an old plan.
-Load the common preflight, gate and recovery procedure before any mutation.
+Two uses, one discipline.
 
-Default is a concrete preview. --fix applies in-scope compatible edits; --commit
-also enables the commit-only subtraction method. Prior human authorization is
-reused. Do not request approval again merely because ownership changes to a skill.
+## A defect with a reproduction
 
-Execute dependency-ready actions with their canonical owners. Use knowledge methods
-for instructions/docs, testing:test-remediation-method for test corrections,
-configuration/new tests/quarantine/consolidation, the repo-hygiene method for its
-native reversible operations, and senior-review:application-cleanup-method for
-application removal. clean-code is readability only. Semantic design repair with
-known intent follows the change reference in this context, then abstraction audit.
-No other method guesses whether a symbol is dead.
+Run the change cycle with phases 2 to 4 shortened:
 
-Before each phase record an exclusive workspace, pre-phase SHA, clean baseline
-or preserved existing edits, candidate scope and required gate. Commit-only cleanup
-requires its existing severity acceptance and clean-tree prerequisites. A failure
-before commit restores the captured pre-phase state, never HEAD~1 by assumption.
-Published commits are reverted with publication authorization; do not rewrite
-shared history. Never discard another session's paths or stage the whole tree.
+1. Phase 1 as `references/preflight.md`; an `UNKNOWN_RED` baseline that is
+   the defect itself becomes the oracle.
+2. The interview fixes the observed behavior, the expected behavior and the
+   trigger as one `EX-*`, plus the invariant the fix must keep. A decision
+   record is written only when the fix changes a contract or a rule; a pure
+   defect records its examples in the plan.
+3. One wave: `testing:test-writer` writes the reproduction test (`RED`),
+   the stack's specialist writes the fix inside its `write_set`, the oracle
+   turns `GREEN`, the direct callers' tests run.
+4. Stage C on the wave; stage D with budget `full` when the diff touches
+   security, persistence, concurrency, resources or a public contract,
+   otherwise `delta`; then `references/consolidate.md`.
 
-Tests first distinguish product defect, wrong oracle, environment/configuration,
-flaky or unknown. Correct a real bug and retain its test. Verify independent
-protection before consolidation. Coverage, test count and structural age are
-signals, not equivalence proofs. An uncertain failing test is not automatically
-eligible for quarantine.
+## A plan produced by assess
 
-After each action update the plan status, owned paths, evidence and exact gate.
-Finish only when required actions/gates and deliveries are accounted for. Leave
-incompatible commit-only actions, unavailable gates and unresolved design decisions
-visible. Re-check documents/instructions outside the diff affected by the repair.
+Require the exact run and plan identity, then validate project identity,
+authorizations and the recorded input snapshot through the protocol. Changed
+inputs invalidate the affected action; reassess it rather than applying an
+old plan. Each action runs through its canonical owner: knowledge methods for
+instructions and documents, `testing:test-remediation-method` for tests,
+`repo-hygiene:repo-hygiene` for reversible workspace operations,
+`senior-review:application-cleanup-method` for application removal (commit
+authorization and clean-tree prerequisites included), the change cycle for
+semantic refactors with a known intent, followed by the abstraction audit.
+`clean-code` is readability only; no other method guesses whether a symbol is
+dead.
 
-For repaired candidates, use senior-review:review-method's code-review variant
-with this run's exact snapshot and output root, following the verify reference.
-Include applicable stack specialists in the same review and candidate gate.
+## Shared rules
+
+Before each mutating phase record the exclusive workspace, `pre_phase_sha`,
+the pre-step bytes, the candidate scope and the required gate. A failure
+before commit restores the captured pre-phase state, never `HEAD~1`; published
+commits are reverted with publication authorization. Tests first distinguish
+product defect, wrong oracle, environment, flaky or unknown; an uncertain
+failing test is not eligible for quarantine. Finish only when required actions,
+gates and deliveries are accounted for, leaving incompatible commit-only
+actions, unavailable gates and open design decisions visible. Re-check
+documents and instructions outside the diff that the repair made stale.

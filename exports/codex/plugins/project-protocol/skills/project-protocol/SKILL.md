@@ -115,6 +115,8 @@ Working scope: Limit edits to the task and owned files, match existing style and
 
 Working verification: Define observable success criteria from approved requirements. Run meaningful checks on the actual candidate and preserve independent protection. Report unavailable checks; missing required checks or deliveries keep the task open. Finish when the criteria are met.
 
+Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
+
 Existing task authorization covers removal necessary to the approved change;
 preserve owner-required acceptance and test-retirement rules. This discipline
 grants no additional mutation or runtime authority. For a read-only worker,
@@ -185,6 +187,26 @@ equal the recorded scope. It verifies project/worktree/HEAD and current candidat
 snapshot, returns the record plus pending phases and deliveries, and changes no
 file. New input or a broader authorization requires a new run, never rebinding a
 completed report. Record interruption reason and phase immediately when possible.
+
+## Loop sections
+
+A lifecycle run may carry five optional sections, declared under `[loop]` in
+the work contract and validated whenever present: `workspace` (mode
+`WORKTREE`, `BRANCH` or `IN_PLACE`, branch, `base_sha`, environment bindings
+that never hold a secret value), `preflight` (test baseline `GREEN`,
+`KNOWN_RED` with its fingerprint, or `UNKNOWN_RED`; migration state), `adr`
+(active record identities and the proposed one), `waves` and `rulings`.
+
+A wave task names its `write_set`, `oracle` (command plus the failure it must
+produce before the change), `verification` command, and optional
+`resource_locks`, `produces` and `consumes`. The helper refuses more than four
+files in a `write_set` without a reasoned `granularity_exception` (six at
+most), two tasks of one wave that share a file, a lock or a produced-consumed
+contract, a parallel wave outside a `WORKTREE` workspace, and a `sealed` wave
+with an uncommitted task. Rulings are the worker's recorded local decisions;
+an update that alters or drops one is refused. Check a draft plan before it
+enters a run with `plan-check --project ROOT --payload PLAN.json`; the refusal
+names the exact rule, so the planner corrects the plan rather than the record.
 
 ## State and completion
 

@@ -96,7 +96,7 @@ You are a thorough code reviewer. Your job is to review code changes (uncommitte
 3. **Check CLAUDE.md compliance.** If the project has a CLAUDE.md, verify changes follow its conventions.
 4. **Never enter plan mode.** Execute immediately.
 5. **Run agents in parallel.** Fire all review agents in a single response.
-6. **Skip documentation files.** Ignore `.md`, `.txt`, `.rst`, `README*`, `CHANGELOG*`, `LICENSE*`. Focus only on code.
+6. **Review the target as given, whatever its kind.** Resolve the target kind through `references/candidate-grounding.md` before Step 1. A document, a plan or a specification is reviewed for what it claims about the code and for what it would make the code do; nothing is skipped for its extension.
 
 ## Step 0: Pre-Review Skip Check (PR only)
 
@@ -181,12 +181,16 @@ git diff ${BASE}...${CURRENT}
 
 If the branch is main/master with no diff, fall back to last commit (`HEAD~1..HEAD`).
 
-### Filter code files
+### Partition the target by kind
 
-Exclude: `.md`, `.txt`, `.rst`, `.json` (config-only), `.yaml`/`.yml` (config-only), images, lock files.
-Include: source code files (`.py`, `.js`, `.ts`, `.tsx`, `.jsx`, `.rs`, `.go`, `.java`, `.rb`, `.css`, `.scss`, `.html`, etc.)
+Apply section 1 of `references/candidate-grounding.md` to every file in the
+target. Source files, stylesheets, markup and contract files are the
+`changeset`; manifests and lockfiles activate the `dependencies` dimension;
+Markdown, text and reStructuredText files are a `plan`, a `spec` or a `doc`
+and get their own scope and roster; images and generated files are listed and
+not reviewed. Prepare each kind present, with one brief and one ledger.
 
-If no code files remain, say so and stop.
+If no file falls in any kind, say so and stop.
 
 ## Step 1b: Intent Discovery
 

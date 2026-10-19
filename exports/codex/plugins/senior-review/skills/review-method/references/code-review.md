@@ -109,6 +109,22 @@ Every finding carries two extra fields:
   shared context and part on evidence you derived yourself. Declare `independent`
   only when you re-derived the whole premise from code, tests or documents you
   read yourself.
+
+## Hypothesis fields (required on every finding)
+
+A finding is a hypothesis the verification panel will try to falsify. Give it:
+
+- **Trigger:** the concrete input, state or timing under which the defect
+  manifests. "Could fail" without a trigger is not a finding.
+- **Counterevidence checked:** what you looked for that would have refuted the
+  finding (guards, validations, callers, tests, configuration) and did not find.
+- **introduced_by_candidate:** true only when the candidate change causes the
+  defect; otherwise mark `[PRE-EXISTING]` as above.
+- **evidence_class:** `reproduced` (a test or run showed it), `tool-reported`
+  (a tool in the evidence pack reported it), `measured` or `derived`.
+
+The evidence pack is attached to this brief. Do not restate a tool line and do
+not spend reading on what a tool already settled; report what tools cannot see.
 ```
 
 Run all selected agents **in parallel** in a single response; conditional agents run only when their dispatch condition matches:

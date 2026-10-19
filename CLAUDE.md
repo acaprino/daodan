@@ -1,6 +1,6 @@
 # Daodan
 
-The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows, web research and multi-model deliberation live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength; Shinatama stays a recommended companion and never a declared dependency. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
+The Daodan is the symbiote that augments its host. This repository is the Daodan of coding agents: a development harness, built on the static Meta-Code map of `codebase-map`, that coordinates project intent, code, meaningful tests, durable knowledge and experimental artifacts, alongside core language and stack specialists. Domain verticals, office workflows and web research live in the companion marketplace [`acaprino/shinatama`](https://github.com/acaprino/shinatama). Installed together on one host, skill-catalog discovers Shinatama's knowledge sidecars and selects them per run, which is how the pair reaches full strength; Shinatama stays a recommended companion and never a declared dependency. Both ship to five hosts from one source. Remote: `acaprino/daodan` on GitHub.
 
 ## Development harness
 
@@ -17,7 +17,18 @@ depend on it.
 
 project-lifecycle owns assess, repair, change, verify and consolidate. Its handover
 entry prepares a consultant dossier inside an assess run; maintain coordinates the
-Senior Maintainer campaign with separate stage runs and explicit handoffs. Handover
+Senior Maintainer campaign with separate stage runs and explicit handoffs. Since the
+closed-loop redesign of 2026-10-18 (see `docs/superpowers/specs/2026-10-18-closed-loop-harness-design.md`),
+change is the task cycle: a probed preflight with the workspace mode chosen by the
+user (worktree, branch or in place), an interview grounded in the map and in the
+active decision records, a `Proposed` record under `docs/adr/`, waves of micro-tasks
+checked mechanically by the protocol helper and written by the stack's specialist,
+a review of the record, of the plan, of each wave and of the whole candidate through
+senior-review, then integration that promotes the record and realigns map,
+documentation and the instruction loop block. assess `--init` bootstraps a project
+into that cycle; consolidate alone realigns after a merge made elsewhere.
+peer-review challenges a record or a plan with another model on request; moe gives a
+second opinion on request; neither runs by default. Handover
 supplies evidence without granting edits or automatically starting maintenance.
 It prepares inputs and composes canonical specialist methods rather than duplicating detection
 prompts. project-protocol is the shared leaf for run records, snapshots, delivery
@@ -59,6 +70,8 @@ Working scope: Limit edits to the task and owned files, match existing style and
 
 Working verification: Define observable success criteria from approved requirements. Run meaningful checks on the actual candidate and preserve independent protection. Report unavailable checks; missing required checks or deliveries keep the task open. Finish when the criteria are met.
 
+Working redesign: Fix the cause, never the symptom. When a defect shows that a script, skill, contract or workflow is shaped wrong for its problem, redesign that unit from the ground up so it solves the whole problem, instead of patching the case at hand. A patch that leaves the design wrong is debt, not a fix; record the redesign decision and its reason.
+
 ## Context and output economy
 
 Keep always-loaded instructions focused on durable obligations. Link detailed
@@ -82,7 +95,7 @@ Markdown. Domain owners retain their reports, scoring and verdicts. See
 
 ## Project structure
 
-`plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow with a note giving the exact command to register. `peer-review` and `codebase-map` declare their servers under their owning skills. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
+`plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow with a note giving the exact command to register. `codebase-map`, `peer-review` and `moe` declare their servers under their owning skills, launched with `uv run --no-config --no-project --script` so the project under work never chooses a server's package index or interpreter. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
 
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 
@@ -418,11 +431,14 @@ decision, and do not make required specialist edges optional.
 | repo-hygiene | none |
 | abstraction-architect | codebase-map |
 | testing | project-protocol |
-| senior-review | project-protocol, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, skill-catalog |
+| senior-review | project-protocol, repo-hygiene, codebase-map, abstraction-architect, testing, react-development, typescript-development, platform-engineering, python-development, dependency-audit, skill-catalog |
 | project-knowledge | project-protocol, codebase-map, senior-review, text-humanizer |
-| project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, text-humanizer, react-development, typescript-development, platform-engineering |
+| project-lifecycle | project-protocol, project-knowledge, senior-review, testing, abstraction-architect, codebase-map, repo-hygiene, clean-code, text-humanizer, react-development, typescript-development, platform-engineering, python-development, skill-catalog, peer-review, moe |
 | clean-code | project-protocol |
 | python-development | testing, project-protocol |
+| dependency-audit | none |
+| peer-review | none |
+| moe | peer-review |
 
 
 Resolved knowledge is a distinct per-run input contract. The required skill-catalog
@@ -477,8 +493,13 @@ the host's native configuration. Preserve concrete install instructions in the
 consumer. Grabber's separately scoped Patchright technique remains local.
 
 testing delegates TDD to mattpocock-skills@mattpocock and browser E2E mechanics to
-developer-essentials@claude-code-workflows. project-lifecycle, ai-tooling and
-peer-review delegate development methods to superpowers@claude-plugins-official.
-Do not vendor those upstream methods, revive the retired generic worktree plugin
-or restore the flawed codebase-cleanup trio. Dependency audit is a separately
+developer-essentials@claude-code-workflows. project-lifecycle owns its task cycle
+and declares no upstream development method since 2026-10-18: its interview, plan
+and execution are shaped by the map, the decision records and the protocol's wave
+rules, which the delegated planning skills did not have, so running both would
+mean two methods for one step. peer-review carries its own review-reception
+doctrine in its respondent role. Neither change reimports a retired skill; the
+worktree procedure of the cycle's preflight is a few lines the cycle owns. Do not
+vendor upstream methods, revive the retired generic worktree plugin or restore the
+flawed codebase-cleanup trio. Dependency audit is a separately
 maintained tool-first capability, not forced package remediation.

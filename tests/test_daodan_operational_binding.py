@@ -244,11 +244,13 @@ class OperationalBindingTests(unittest.TestCase):
         self.assertIsNone(_copilot_tools(None))
 
     def test_copilot_coordinator_allowlist_retains_declared_mcp_servers(self):
-        rendered = self.render_in_memory("codebase-map", "copilot")
-        meta, _ = _frontmatter(rendered["agents/team-analyze-coordinator.agent.md"])
-        self.assertIn("'codebase-map/*'", meta["tools"])
-        self.assertNotIn("'*'", meta["tools"])
-        self.assertNotIn("unrelated-server", meta["tools"])
+        for plugin, workflow in (("codebase-map", "team-analyze"), ("peer-review", "review")):
+            with self.subTest(plugin=plugin):
+                rendered = self.render_in_memory(plugin, "copilot")
+                meta, _ = _frontmatter(rendered[f"agents/{workflow}-coordinator.agent.md"])
+                self.assertIn(f"'{plugin}/*'", meta["tools"])
+                self.assertNotIn("'*'", meta["tools"])
+                self.assertNotIn("unrelated-server", meta["tools"])
         plain = self.render_in_memory("react-development", "copilot")
         meta, _ = _frontmatter(plain["agents/review-react-coordinator.agent.md"])
         self.assertNotIn("/*", meta["tools"])

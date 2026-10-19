@@ -112,7 +112,7 @@ Harness obligations, none of them optional:
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A worker reports delivered or failed in its final message; there is no shared task
   list, so the coordinator keeps that record itself.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `platform-engineering:platform-reviewer`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `platform-engineering:platform-reviewer`, `project-knowledge:documentation-engineer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `senior-review:api-contract-auditor`, `senior-review:chicken-egg-detector`, `senior-review:cleanup-auditor`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `typescript-development:type-safety-auditor`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -126,14 +126,21 @@ Role body bindings (load the complete body only for the selected worker):
 
 - `abstraction-architect:abstraction-architect-agent`: read `contracts/dispatch/abstraction-architect/abstraction-architect-agent.md` inside this package and pass its complete role body verbatim.
 - `codebase-map:map-analyst`: read `contracts/dispatch/codebase-map/map-analyst.md` inside this package and pass its complete role body verbatim.
+- `codebase-map:semantic-interconnect-mapper`: read `contracts/dispatch/codebase-map/semantic-interconnect-mapper.md` inside this package and pass its complete role body verbatim.
 - `platform-engineering:platform-reviewer`: read `contracts/dispatch/platform-engineering/platform-reviewer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:documentation-engineer`: read `contracts/dispatch/project-knowledge/documentation-engineer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:guide-reviewer`: read `contracts/dispatch/project-knowledge/guide-reviewer.md` inside this package and pass its complete role body verbatim.
 - `project-knowledge:instructions-auditor`: read `contracts/dispatch/project-knowledge/instructions-auditor.md` inside this package and pass its complete role body verbatim.
 - `project-protocol:isolated-worker`: read `contracts/dispatch/project-protocol/isolated-worker.md` inside this package and pass its complete role body verbatim.
 - `react-development:react-performance-optimizer`: read `contracts/dispatch/react-development/react-performance-optimizer.md` inside this package and pass its complete role body verbatim.
+- `repo-hygiene:workspace-auditor`: read `contracts/dispatch/repo-hygiene/workspace-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:api-contract-auditor`: read `contracts/dispatch/senior-review/api-contract-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:chicken-egg-detector`: read `contracts/dispatch/senior-review/chicken-egg-detector.md` inside this package and pass its complete role body verbatim.
+- `senior-review:cleanup-auditor`: read `contracts/dispatch/senior-review/cleanup-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:code-auditor`: read `contracts/dispatch/senior-review/code-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:data-integrity-auditor`: read `contracts/dispatch/senior-review/data-integrity-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:distributed-flow-auditor`: read `contracts/dispatch/senior-review/distributed-flow-auditor.md` inside this package and pass its complete role body verbatim.
+- `senior-review:logic-integrity-auditor`: read `contracts/dispatch/senior-review/logic-integrity-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:premise-auditor`: read `contracts/dispatch/senior-review/premise-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:resource-lifecycle-auditor`: read `contracts/dispatch/senior-review/resource-lifecycle-auditor.md` inside this package and pass its complete role body verbatim.
 - `senior-review:security-auditor`: read `contracts/dispatch/senior-review/security-auditor.md` inside this package and pass its complete role body verbatim.

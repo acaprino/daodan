@@ -18,7 +18,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/scripts/run_state.py"
 
 
-class ProjectProtocolTests(unittest.TestCase):
+class ProtocolCase(unittest.TestCase):
+    """Fixture and helpers shared by the record and loop suites."""
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp())
         self.addCleanup(self.remove_temp)
@@ -93,6 +94,8 @@ class ProjectProtocolTests(unittest.TestCase):
                                       "head": candidate["head"], "evidence": {"job": "ci-job", "attempt": "1",
                                       "source_revision": candidate["head"]}}}}
 
+
+class ProjectProtocolTests(ProtocolCase):
     def test_init_materializes_snapshot_and_sentinel_without_touching_source(self):
         record = self.init()
         self.assertEqual(record["revision"], 0)
@@ -428,6 +431,99 @@ class ProjectProtocolTests(unittest.TestCase):
         self.invoke("update", {"interruption": {"reason": "test"}},
                     ("--expected-revision", "0"), ok=False)
         self.assertEqual(foreign.read_text(), "must survive")
+
+
+class LoopRecordTests(ProtocolCase):
+    """The loop sections: workspace, preflight, adr, waves and rulings."""
+
+    def task(self, identity, *writes, **extra):
+        return {"id": identity, "status": "pending", "write_set": list(writes),
+                "oracle": {"command": f"pytest tests/test_{identity}.py", "expected_failure": "AssertionError"},
+                "verification": {"command": "pytest -q"}, **extra}
+
+    def wave(self, identity, *tasks, **extra):
+        return {"id": identity, "status": "pending", "tasks": list(tasks), **extra}
+
+    def plan_check(self, payload, ok=True):
+        return self.invoke("plan-check", payload, ok=ok)
+
+    def test_plan_check_accepts_a_disjoint_bounded_wave(self):
+        result = self.plan_check({"waves": [self.wave("w1", self.task("a", "src/a.py", "tests/test_a.py"),
+                                                       self.task("b", "src/b.py", "tests/test_b.py"))]})
+        self.assertEqual((result["valid"], result["waves"], result["tasks"]), (True, 1, 2))
+
+    def test_micro_task_budget_is_mechanical(self):
+        five = self.task("a", *(f"src/{index}.py" for index in range(5)))
+        refusal = self.plan_check({"waves": [self.wave("w1", five)]}, ok=False)
+        self.assertIn("budget is 4", refusal.stderr)
+        five["granularity_exception"] = {"reason": "generated client and its four bindings change together"}
+        self.assertTrue(self.plan_check({"waves": [self.wave("w1", five)]})["valid"])
+        seven = self.task("a", *(f"src/{index}.py" for index in range(7)), granularity_exception={"reason": "x"})
+        self.assertIn("budget is 6", self.plan_check({"waves": [self.wave("w1", seven)]}, ok=False).stderr)
+        no_oracle = self.task("a", "src/a.py")
+        no_oracle["oracle"] = {"command": "pytest"}
+        self.assertIn("failure it must produce", self.plan_check({"waves": [self.wave("w1", no_oracle)]}, ok=False).stderr)
+
+    def test_tasks_in_one_wave_share_neither_files_nor_locks_nor_contracts(self):
+        shared = self.wave("w1", self.task("a", "src/common.py"), self.task("b", "src/common.py"))
+        self.assertIn("share write_set files", self.plan_check({"waves": [shared]}, ok=False).stderr)
+        locked = self.wave("w1", self.task("a", "src/a.py", resource_locks=["db:migrations"]),
+                           self.task("b", "src/b.py", resource_locks=["db:migrations"]))
+        self.assertIn("share resource locks", self.plan_check({"waves": [locked]}, ok=False).stderr)
+        chained = self.wave("w1", self.task("a", "src/a.py", produces=["OrderDraft"]),
+                            self.task("b", "src/b.py", consumes=["OrderDraft"]))
+        self.assertIn("consumes what a produces", self.plan_check({"waves": [chained]}, ok=False).stderr)
+        split = [self.wave("w1", self.task("a", "src/a.py", produces=["OrderDraft"])),
+                 self.wave("w2", self.task("b", "src/b.py", consumes=["OrderDraft"]))]
+        self.assertTrue(self.plan_check({"waves": split})["valid"])
+
+    def test_parallel_waves_need_a_worktree(self):
+        waves = [self.wave("w1", self.task("a", "src/a.py"), self.task("b", "src/b.py"), parallel=True)]
+        self.assertIn("needs a WORKTREE", self.plan_check({"waves": waves}, ok=False).stderr)
+        in_place = {"mode": "IN_PLACE", "branch": "master", "base_sha": "abc"}
+        self.assertIn("needs a WORKTREE", self.plan_check({"workspace": in_place, "waves": waves}, ok=False).stderr)
+        worktree = {"mode": "WORKTREE", "branch": "task/a", "base_sha": "abc", "worktree_path": ".worktrees/a"}
+        self.assertTrue(self.plan_check({"workspace": worktree, "waves": waves})["valid"])
+        self.assertIn("worktree_path", self.plan_check({"workspace": {"mode": "WORKTREE", "branch": "t", "base_sha": "a"}}, ok=False).stderr)
+
+    def test_secret_bindings_never_carry_a_value_and_red_baselines_carry_a_fingerprint(self):
+        workspace = {"mode": "BRANCH", "branch": "task/a", "base_sha": "abc",
+                     "environment_bindings": [{"path": ".env.local", "kind": "env-file", "secret": True, "value": "x"}]}
+        self.assertIn("never records its value", self.plan_check({"workspace": workspace}, ok=False).stderr)
+        del workspace["environment_bindings"][0]["value"]
+        self.assertTrue(self.plan_check({"workspace": workspace})["valid"])
+        self.assertIn("fingerprint", self.plan_check({"preflight": {"baseline": "KNOWN_RED"}}, ok=False).stderr)
+        self.assertTrue(self.plan_check({"preflight": {"baseline": "KNOWN_RED", "failing_fingerprint": "sha256:0"}})["valid"])
+        self.assertIn("ADR identifiers", self.plan_check({"adr": {"active": ["adr-1"]}}, ok=False).stderr)
+        self.assertTrue(self.plan_check({"adr": {"active": ["ADR-0014"], "proposed": "ADR-0015"}})["valid"])
+
+    def test_sealed_wave_requires_committed_tasks(self):
+        pending = self.wave("w1", self.task("a", "src/a.py"), status="sealed")
+        self.assertIn("cannot be sealed", self.plan_check({"waves": [pending]}, ok=False).stderr)
+        committed = self.task("a", "src/a.py")
+        committed["status"] = "committed"
+        self.assertTrue(self.plan_check({"waves": [self.wave("w1", committed, status="sealed")]})["valid"])
+
+    def test_rulings_are_append_only_inside_a_run(self):
+        ruling = {"id": "RUL-001", "task": "a", "sha": "abc", "decision": "keep sync API",
+                  "reason": "callers are sync", "cost_if_wrong": "one adapter", "evidence": ["src/a.py:12"]}
+        self.payload["rulings"] = [ruling]
+        record = self.init()
+        self.assertEqual(record["rulings"], [ruling])
+        second = {**ruling, "id": "RUL-002", "decision": "retry once"}
+        updated = self.invoke("update", {"rulings": [ruling, second]}, ["--expected-revision", "0"])
+        self.assertEqual([r["id"] for r in updated["rulings"]], ["RUL-001", "RUL-002"])
+        altered = {**ruling, "decision": "changed after the fact"}
+        refusal = self.invoke("update", {"rulings": [altered, second]}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("append-only", refusal.stderr)
+        dropped = self.invoke("update", {"rulings": [second]}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("append-only", dropped.stderr)
+        self.assertIn("cites evidence", self.plan_check({"rulings": [{**ruling, "evidence": []}]}, ok=False).stderr)
+
+    def test_loop_sections_are_validated_inside_the_record_too(self):
+        self.payload["waves"] = [self.wave("w1", self.task("a", "src/common.py"), self.task("b", "src/common.py"))]
+        refusal = self.invoke("init", self.payload, ok=False)
+        self.assertIn("share write_set files", refusal.stderr)
 
 
 if __name__ == "__main__":

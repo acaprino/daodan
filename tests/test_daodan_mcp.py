@@ -31,10 +31,23 @@ DECLARATION = (
     '\n[[mcp.servers]]\nname = "example-tools"\ncommand = "uv"\n'
     'args = ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/server.py"]\n'
 )
-MAP_ROOT = REPO_ROOT / "plugins/codebase-map"
-MAP_SCRIPTS = Path("skills/map-method/scripts")
-MAP_SERVER = (MAP_SCRIPTS / "mcp_server.py").as_posix()
-MAP_SERVICE = (MAP_SCRIPTS / "mcp_service.py").as_posix()
+# Every kernel of this marketplace that ships an MCP server, with the server file
+# and any module it needs beside it. A kernel that declares a server and is missing
+# here fails `test_every_declared_server_is_pinned_here`.
+SERVERS = {
+    "codebase-map": ("skills/map-method/scripts", "mcp_server.py", ("mcp_service.py",)),
+    "peer-review": ("skills/cross-model-peer-review/scripts", "server.py", ()),
+    "moe": ("skills/multi-model-deliberation/scripts", "server.py", ()),
+}
+# Each server starts inside the user's project. Without these flags `uv` reads that
+# project's uv.toml, pyproject.toml and .python-version, so the project would choose
+# the index and interpreter of a server that may hold an API key.
+ISOLATED_RUN = ("run", "--no-config", "--no-project", "--script")
+
+
+def server_path(name: str) -> str:
+    scripts, server, _ = SERVERS[name]
+    return f"{scripts}/{server}"
 
 
 class McpRenderingTests(unittest.TestCase):
@@ -122,85 +135,102 @@ class McpRenderingTests(unittest.TestCase):
                     self.assertNotIn("before running this workflow", note)
 
 
-class CodebaseMapMcpRenderingTests(unittest.TestCase):
+class KernelMcpRenderingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp = Path(tempfile.mkdtemp())
         cls.addClassCleanup(shutil.rmtree, cls.temp, True)
-        cls.plugin = load_plugin(MAP_ROOT)
+        cls.plugins = {name: load_plugin(REPO_ROOT / "plugins" / name) for name in SERVERS}
         cls.packages = {}
-        for host in HOSTS:
-            live = cls.temp / host / cls.plugin.name
-            publish_plugin(cls.plugin, load_adapter(ADAPTERS, host), live, adapters_root=ADAPTERS)
-            cls.packages[host] = live
+        for name, plugin in cls.plugins.items():
+            for host in HOSTS:
+                live = cls.temp / host / name
+                publish_plugin(plugin, load_adapter(ADAPTERS, host), live, adapters_root=ADAPTERS)
+                cls.packages[(host, name)] = live
+        cls.plugin = cls.plugins["codebase-map"]
 
-    def catalog(self, host):
+    def catalog(self, host, name):
         return json.loads(render_catalog(
-            host, [self.plugin], "1.0.0", {self.plugin.name: self.packages[host]},
+            host, [self.plugins[name]], "1.0.0", {name: self.packages[(host, name)]},
         ))
 
-    def test_real_kernel_declares_the_shipped_server_as_a_required_capability(self):
-        self.assertIn("mcp.servers", self.plugin.capabilities.required)
-        self.assertEqual(
-            [(server.name, server.command, server.args) for server in self.plugin.mcp_servers],
-            [("codebase-map", "uv", ("run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER))],
-        )
+    def test_every_declared_server_is_pinned_here(self):
+        declared = {
+            manifest.parent.name
+            for manifest in (REPO_ROOT / "plugins").glob("*/plugin.toml")
+            if load_plugin(manifest.parent).mcp_servers
+        }
+        self.assertEqual(declared, set(SERVERS))
 
-    def test_server_service_and_local_helpers_ship_unchanged_on_every_host(self):
-        for required in (MAP_SERVER, MAP_SERVICE):
-            self.assertTrue((MAP_ROOT / required).is_file(), required)
-        helpers = sorted((MAP_ROOT / MAP_SCRIPTS).rglob("*.py"))
-        for host, package in self.packages.items():
-            for source in helpers:
-                relative = source.relative_to(MAP_ROOT)
-                with self.subTest(host=host, helper=relative.as_posix()):
-                    rendered = package / relative
-                    self.assertTrue(rendered.is_file(), str(rendered))
-                    self.assertEqual(rendered.read_text(encoding="utf-8"), source.read_text(encoding="utf-8"))
+    def test_each_kernel_requires_the_capability_and_starts_its_server_isolated(self):
+        for name, plugin in self.plugins.items():
+            with self.subTest(plugin=name):
+                self.assertIn("mcp.servers", plugin.capabilities.required)
+                self.assertEqual(
+                    [(server.name, server.command, server.args) for server in plugin.mcp_servers],
+                    [(name, "uv", ISOLATED_RUN + ("${CLAUDE_PLUGIN_ROOT}/" + server_path(name),))],
+                )
 
-    def test_manifest_hosts_expose_the_actual_codebase_map_command(self):
-        manifest = json.loads((self.packages["claude"] / ".mcp.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest, {"mcpServers": {"codebase-map": {
-            "command": "uv",
-            "args": ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/" + MAP_SERVER],
-        }}})
-        self.assertEqual(self.catalog("claude")["plugins"][0]["mcpServers"], "./.mcp.json")
-        self.assertEqual(self.catalog("opencode")["daodan"]["plugins"]["codebase-map"]["mcp"], [{
-            "name": "codebase-map",
-            "command": ["uv", "run", "--no-config", "--no-project", "--script", "<plugin-root>/" + MAP_SERVER],
-        }])
-        for host in ("claude", "opencode"):
-            for workflow in self.plugin.components.workflows:
-                with self.subTest(host=host, workflow=workflow):
-                    path = self.packages[host] / f"commands/{workflow}.md"
-                    self.assertNotIn("register that command", path.read_text(encoding="utf-8"))
+    def test_server_modules_and_local_helpers_ship_unchanged_on_every_host(self):
+        for name, (scripts, server, companions) in SERVERS.items():
+            root = REPO_ROOT / "plugins" / name
+            for required in (server, *companions):
+                self.assertTrue((root / scripts / required).is_file(), f"{name}: {required}")
+            for source in sorted((root / scripts).rglob("*.py")):
+                relative = source.relative_to(root)
+                for host in HOSTS:
+                    with self.subTest(plugin=name, host=host, helper=relative.as_posix()):
+                        rendered = self.packages[(host, name)] / relative
+                        self.assertTrue(rendered.is_file(), str(rendered))
+                        self.assertEqual(rendered.read_text(encoding="utf-8"), source.read_text(encoding="utf-8"))
+
+    def test_manifest_hosts_expose_the_actual_command(self):
+        for name, plugin in self.plugins.items():
+            with self.subTest(plugin=name):
+                manifest = json.loads((self.packages[("claude", name)] / ".mcp.json").read_text(encoding="utf-8"))
+                self.assertEqual(manifest, {"mcpServers": {name: {
+                    "command": "uv",
+                    "args": [*ISOLATED_RUN, "${CLAUDE_PLUGIN_ROOT}/" + server_path(name)],
+                }}})
+                self.assertEqual(self.catalog("claude", name)["plugins"][0]["mcpServers"], "./.mcp.json")
+                self.assertEqual(self.catalog("opencode", name)["daodan"]["plugins"][name]["mcp"], [{
+                    "name": name,
+                    "command": ["uv", *ISOLATED_RUN, "<plugin-root>/" + server_path(name)],
+                }])
+                for host in ("claude", "opencode"):
+                    for workflow in plugin.components.workflows:
+                        path = self.packages[(host, name)] / f"commands/{workflow}.md"
+                        self.assertNotIn("register that command", path.read_text(encoding="utf-8"))
 
     def test_registration_hosts_bind_every_workflow_to_the_real_server_command(self):
         entries = {
             "codex": "skills/{workflow}-workflow/SKILL.md",
             "copilot": "prompts/{workflow}.prompt.md",
-            "pi": "prompts/codebase-map-{workflow}.md",
+            "pi": "prompts/{plugin}-{workflow}.md",
         }
         roots = {"codex": "<plugin-root>", "copilot": "${PLUGIN_ROOT}", "pi": "<plugin-root>"}
-        for host, entry in entries.items():
-            package = self.packages[host]
-            self.assertFalse((package / ".mcp.json").exists(), host)
-            for workflow in self.plugin.components.workflows:
-                paths = [package / entry.format(workflow=workflow)]
-                if host == "copilot":
-                    paths.append(package / f"agents/{workflow}-coordinator.agent.md")
-                for path in paths:
-                    with self.subTest(host=host, workflow=workflow, entry=path.name):
-                        text = path.read_text(encoding="utf-8")
-                        self.assertIn("`codebase-map`", text)
-                        self.assertIn("register that command", text)
-                        self.assertIn(f"uv run --no-config --no-project --script {roots[host]}/{MAP_SERVER}", text)
-                        self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
-                        if host == "pi":
-                            self.assertIn("pi-mcp-adapter", text)
-                            self.assertIn("mcpServers", text)
-            if host != "pi":
-                self.assertNotIn("mcpServers", self.catalog(host)["plugins"][0])
+        launch = " ".join(("uv", *ISOLATED_RUN))
+        for name, plugin in self.plugins.items():
+            for host, entry in entries.items():
+                package = self.packages[(host, name)]
+                self.assertFalse((package / ".mcp.json").exists(), f"{name} on {host}")
+                for workflow in plugin.components.workflows:
+                    paths = [package / entry.format(plugin=name, workflow=workflow)]
+                    coordinator = package / f"agents/{workflow}-coordinator.agent.md"
+                    if host == "copilot" and coordinator.exists():
+                        paths.append(coordinator)
+                    for path in paths:
+                        with self.subTest(plugin=name, host=host, entry=path.name):
+                            text = path.read_text(encoding="utf-8")
+                            self.assertIn(f"`{name}`", text)
+                            self.assertIn("register that command", text)
+                            self.assertIn(f"{launch} {roots[host]}/{server_path(name)}", text)
+                            self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
+                            if host == "pi":
+                                self.assertIn("pi-mcp-adapter", text)
+                                self.assertIn("mcpServers", text)
+                if host != "pi":
+                    self.assertNotIn("mcpServers", self.catalog(host, name)["plugins"][0])
 
     def test_missing_or_unsupported_mcp_binding_blocks_publication_on_every_host(self):
         for host in HOSTS:

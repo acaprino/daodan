@@ -8,123 +8,81 @@ description: >
 
 # Project lifecycle
 
-Own the requested outcome and its consequences. Keep the work proportional to risk,
-scope and authorization. Load the project-protocol:project-protocol skill first; it owns run
-records, snapshots, verification and recovery. This skill owns decisions and dispatch,
-not a second set of specialist detection prompts.
+Own the requested outcome and its consequences, in proportion to risk, scope
+and authorization. Load `project-protocol:project-protocol` first: it owns run
+records, snapshots, verification and recovery. This skill owns decisions and
+dispatch, never detection prompts.
 
-## Entry and state
+## Load map
 
-Inputs: operation, project root, objective and intention source; optional target,
-focus, depth, run ID, plan ID, output root and prior evidence. Detect existing material
-before proposing new files. Read project instructions and distinguish approved intent
-from implemented behavior. Code alone cannot settle contradictory requirements.
+Read one unit per step, in this skill, when the step starts.
 
-Use the installed project-protocol run_state.py helper through that skill. Its CLI:
-init --project ROOT --payload INPUT.json [--run-id ID] [--out INTERNAL_ROOT];
-show or validate --project ROOT --run-id ID [--out INTERNAL_ROOT];
-update --project ROOT --run-id ID --expected-revision N --payload PATCH.json;
-resume --project ROOT --run-id ID --payload CONTEXT.json [--out INTERNAL_ROOT].
-Payload files are run-owned inputs. Never guess a cache path to another plugin.
+| Operation or step | Read |
+|---|---|
+| assess, including `--init` | `references/assess.md` |
+| change, phase 1 | `references/preflight.md` |
+| change, phases 2 and 3 | `references/interview.md` |
+| change, phases 4 and 5 | `references/waves.md`, then `references/worker-brief.md` before each dispatch |
+| change, overview of all seven phases | `references/change.md` |
+| repair | `references/repair.md`, then preflight and waves as it directs |
+| verify | `references/verify.md` |
+| consolidate | `references/consolidate.md` |
+| converting a native report | `references/native-reports.md` |
+| a requested HTML view | `references/human-view.md` |
 
-Initialization payload: operation, objective, scope {paths, focus}, authorizations,
-budget, phases, plan, deliveries and required_gates. Preserve the helper's exact
-project identity and snapshot. Save the authoritative work.json inside the run.
-On resume, supply current authorizations and validate the exact run, workspace,
-scope and snapshot. The latest completed Codebase Map or another session's report is not a
-resume target.
+## Run record
 
-Preview is the default for assess/repair/retention. --fix authorizes in-scope edits;
---commit additionally authorizes commits. Neither authorizes a push or permanent
-artifact deletion by itself. Existing human authorization persists in its scope.
-State missing permissions and actual design ambiguities against a concrete plan.
-
-Default assessment depth is quick, one initial audit round, at most five selected workers
-in total, including documentary workers from reused methods. Selection is a
-budgeted coverage plan; a broad focus does not bypass that cap. Declare unexamined
-dimensions and offer a larger explicitly selected depth when needed.
-Before dispatch, show scope, selected dimensions, likely expensive steps and gaps.
---depth standard broadens evidence, --depth deep requests comprehensive work.
-Prompt budgets are instructions; do not claim the host enforces tokens. Unknown
-consumption is unknown. Reuse a delivery only when role version, input fingerprints,
-scope and dependencies remain valid.
+Inputs: operation, project root, objective and its source; optional target,
+focus, depth, run and plan identities, output root, prior evidence. Initialize
+through the protocol helper with operation, objective, scope, authorizations,
+budget, phases, plan, deliveries and required gates; the loop sections
+(`workspace`, `preflight`, `adr`, `waves`, `rulings`) are added as the phases
+produce them, and a draft plan passes `plan-check` before it enters the run.
+Resume only an exact run with current authorizations; the latest report of
+another session is never a resume target. Preview is the default; `--fix`
+authorizes in-scope edits, `--commit` adds commits, neither authorizes a push
+or a permanent deletion.
 
 ## Canonical methods
 
-Load the selected skills before their operation: project-knowledge:project-knowledge,
-project-knowledge:instructions-method and project-knowledge:readme-craft for knowledge;
-senior-review:review-preparation and senior-review:review-consolidation for assessment
-evidence; senior-review:review-method for candidate correctness review;
-testing:test-preparation and testing:test-remediation-method for suite operations;
-abstraction-architect:abstraction-architect for structural diagnosis;
-Load the codebase-map:map-method skill for static context.
-Load the repo-hygiene:repo-hygiene skill for workspace operations.
-Load the clean-code:readability-method skill for readability. Load only methods required
-by the requested scope, never a second detector prompt.
+Load only what the step needs, by name, never by path into another plugin.
 
 | Need | Load or dispatch |
 |---|---|
-| Static context and exact Codebase Map run binding | codebase-map:analyze preflight and delivery; codebase-map:map-analyst in an isolated context |
-| Candidate correctness, including applicable stack specialists | senior-review:review-method |
-| Assessment provenance consolidation | senior-review:review-preparation and senior-review:review-consolidation |
-| Application subtraction | senior-review:application-cleanup-method |
-| Suite preparation and remediation | testing:test-preparation and testing:test-remediation-method |
-| Test authoring | testing:test-writer |
-| Structural diagnosis | abstraction-architect:abstraction-architect and its auditor |
-| Durable instructions | project-knowledge:instructions-method |
-| Guide/documentation preparation, audit and apply | project-knowledge:project-knowledge |
-| README | project-knowledge:readme-craft |
-| Workspace detection and reversible application | repo-hygiene:repo-hygiene |
-| Readability | clean-code:readability-method |
-| General development planning/execution | superpowers:brainstorming, superpowers:writing-plans, superpowers:executing-plans or superpowers:subagent-driven-development |
+| Static context, impact packets, exact run binding | `codebase-map:map-method`; dispatch `codebase-map:map-analyst` in an isolated context for an analysis |
+| Decisions governing a scope, a proposed record, promotion at merge | `project-knowledge:adr-method` |
+| Candidate review at any stage, any target kind, budget `delta` or `full` | `senior-review:review-method`, through `senior-review:review-preparation` |
+| Application subtraction | `senior-review:application-cleanup-method` |
+| Suite preparation and remediation | `testing:test-preparation`, `testing:test-remediation-method` |
+| Test authoring | dispatch `testing:test-writer` |
+| Writing Python or TypeScript in a wave | dispatch `python-development:python-engineer` or `typescript-development:typescript-engineer`; other stacks use the isolated worker with the knowledge `skill-catalog:skill-catalog` selects |
+| Readability with behavior preserved | `clean-code:readability-method` |
+| Structural diagnosis | `abstraction-architect:abstraction-architect` and its auditor |
+| Durable instructions, guides, README | `project-knowledge:instructions-method`, `project-knowledge:project-knowledge`, `project-knowledge:readme-craft` |
+| Workspace detection and reversible operations | `repo-hygiene:repo-hygiene` |
+| Challenge of a proposed record or plan by another model, on request | dispatch `peer-review:packet-builder` and `peer-review:respondent` through `peer-review:cross-model-peer-review` |
+| Second opinion on a decision, on request | load the `moe:multi-model-deliberation` skill |
 
-For Codebase Map, execute the canonical analyze entry's preflight, answerable
-checkpoints, delivery check and publication decision here. Dispatch
-`codebase-map:map-analyst` through the consuming workflow's declared host harness
-in one isolated context for the phases. Bind the returned run and snapshot;
-loading the role as a skill executes no analysis. Do not recursively launch
-lifecycle workflows or pretend TOML invoke executes a workflow. Load the
-operation reference below; perform its coordinating methods in this context.
-
-## Operation references
-
-- assess: read ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/assess.md.
-- repair: read ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/repair.md.
-- change: read ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/change.md.
-- verify: read ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/verify.md.
-- consolidate: read ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/consolidate.md.
-- Native report conversion: read ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-method/references/native-reports.md.
+For a Codebase Map, execute the analyze entry's preflight, checkpoints,
+delivery check and publication decision here and dispatch the analyst for the
+phases; loading a role as a skill runs nothing. Never launch a lifecycle
+workflow from inside a lifecycle operation.
 
 ## Delivery and closure
 
-Keep raw specialist payloads, role/version/input/output hashes, scope, status,
-evidence and declared gaps. Schema-valid means structurally valid. Missing evidence
-does not become an empty no-findings result. Missing delivery remains missing.
-Use native_reports.py to wrap payload provenance; it does not validate their meaning.
+Keep every specialist's native report, hashes, scope, status, evidence and
+declared gaps. A missing delivery stays missing; a failed worker is not an
+empty result. Deduplicate findings by behavior or concept, keep contradictions,
+and treat two reviewers with one inherited premise as one observation.
 
-Each plan action identifies finding IDs, disposition (retain, correct, merge, retire
-or clarify), owner, canonical method, prerequisites, authorization, target paths and
-gate. Native seven-way workspace dispositions remain present. Deduplicate by
-behavior/concept, retain contradictions, and distinguish corroboration from shared
-premise echo. Two reviewers with one inherited premise are not two confirmations.
+For a requested HTML view, or a final report that benefits from navigation
+or comparison, the coordinator reads `references/human-view.md` before
+closing the run; workers keep their native deliveries.
 
-result.json follows project-protocol's project-result envelope. Reference each
-specialist's native report, declared limitations, outstanding actions and evidence
-of checks. Account for every expected delivery and required gate before marking the
-run complete. Preserve a failed or interrupted state when requirements remain unmet.
-
-For requested HTML or a final report that benefits from navigation or comparison,
-the coordinator reads `references/human-view.md` before closing the run. Workers
-keep their native deliveries; short results need no additional view.
-
-Validate the final result with run_state.py validate --project ROOT --run-id ID
---result RESULT_PATH. Its record correspondence check is distinct from reading and
-verifying the specialist evidence. Add newly discovered mandatory gates to the
-append-only required_gates list before executing them; never remove a failed gate.
-
-Reports include requested/read/runtime-exercised coverage separately, checks with
-their exact candidate snapshot, decisions, changes, remaining limits and next
-actions. Consolidation adds bytes moved and bytes deleted. Never claim runtime
-coverage from source inspection, correctness from passing self-generated tests, or
-disk recovery from a quarantine move.
-
+`result.json` follows the protocol's envelope and references each native
+report. Validate it with the helper before claiming completion; a validated
+record is not read evidence. Reports state inventory, read and runtime
+coverage separately, the exact candidate of every check, decisions, changes,
+remaining limits and next actions. Never claim runtime coverage from source
+inspection, correctness from self-generated tests, or disk recovery from a
+quarantine move.

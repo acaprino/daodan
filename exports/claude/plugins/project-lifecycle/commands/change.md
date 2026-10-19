@@ -93,7 +93,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `clean-code:clean-code-agent`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `platform-engineering:platform-reviewer`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `react-development:react-performance-optimizer`, `senior-review:cleanup-auditor`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `testing:test-writer`, `text-humanizer:text-humanizer`, `typescript-development:type-safety-auditor`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `abstraction-architect:abstraction-architect-agent`, `clean-code:clean-code-agent`, `codebase-map:map-analyst`, `codebase-map:semantic-interconnect-mapper`, `peer-review:brief-builder`, `peer-review:packet-builder`, `peer-review:respondent`, `platform-engineering:platform-reviewer`, `project-knowledge:codebase-explorer`, `project-knowledge:doc-humanizer`, `project-knowledge:documentation-engineer`, `project-knowledge:flow-writer`, `project-knowledge:guide-reviewer`, `project-knowledge:instructions-auditor`, `project-knowledge:onboarding-writer`, `project-knowledge:ops-writer`, `project-knowledge:overview-writer`, `project-knowledge:tech-writer`, `project-protocol:isolated-worker`, `python-development:python-engineer`, `python-development:python-refactor-agent`, `react-development:react-performance-optimizer`, `repo-hygiene:workspace-auditor`, `senior-review:api-contract-auditor`, `senior-review:chicken-egg-detector`, `senior-review:cleanup-auditor`, `senior-review:code-auditor`, `senior-review:data-integrity-auditor`, `senior-review:distributed-flow-auditor`, `senior-review:logic-integrity-auditor`, `senior-review:premise-auditor`, `senior-review:resource-lifecycle-auditor`, `senior-review:security-auditor`, `senior-review:temporal-resilience-auditor`, `senior-review:ui-race-auditor`, `testing:test-suite-auditor`, `testing:test-writer`, `text-humanizer:text-humanizer`, `typescript-development:type-safety-auditor`, `typescript-development:typescript-engineer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -109,6 +109,9 @@ Role bindings:
 - `clean-code:clean-code-agent`: dispatch the installed `clean-code:clean-code-agent` agent by its qualified identity.
 - `codebase-map:map-analyst`: dispatch the installed `codebase-map:map-analyst` agent by its qualified identity.
 - `codebase-map:semantic-interconnect-mapper`: dispatch the installed `codebase-map:semantic-interconnect-mapper` agent by its qualified identity.
+- `peer-review:brief-builder`: dispatch the installed `peer-review:brief-builder` agent by its qualified identity.
+- `peer-review:packet-builder`: dispatch the installed `peer-review:packet-builder` agent by its qualified identity.
+- `peer-review:respondent`: dispatch the installed `peer-review:respondent` agent by its qualified identity.
 - `platform-engineering:platform-reviewer`: dispatch the installed `platform-engineering:platform-reviewer` agent by its qualified identity.
 - `project-knowledge:codebase-explorer`: dispatch the installed `project-knowledge:codebase-explorer` agent by its qualified identity.
 - `project-knowledge:doc-humanizer`: dispatch the installed `project-knowledge:doc-humanizer` agent by its qualified identity.
@@ -121,10 +124,17 @@ Role bindings:
 - `project-knowledge:overview-writer`: dispatch the installed `project-knowledge:overview-writer` agent by its qualified identity.
 - `project-knowledge:tech-writer`: dispatch the installed `project-knowledge:tech-writer` agent by its qualified identity.
 - `project-protocol:isolated-worker`: dispatch the installed `project-protocol:isolated-worker` agent by its qualified identity.
+- `python-development:python-engineer`: dispatch the installed `python-development:python-engineer` agent by its qualified identity.
+- `python-development:python-refactor-agent`: dispatch the installed `python-development:python-refactor-agent` agent by its qualified identity.
 - `react-development:react-performance-optimizer`: dispatch the installed `react-development:react-performance-optimizer` agent by its qualified identity.
+- `repo-hygiene:workspace-auditor`: dispatch the installed `repo-hygiene:workspace-auditor` agent by its qualified identity.
+- `senior-review:api-contract-auditor`: dispatch the installed `senior-review:api-contract-auditor` agent by its qualified identity.
+- `senior-review:chicken-egg-detector`: dispatch the installed `senior-review:chicken-egg-detector` agent by its qualified identity.
 - `senior-review:cleanup-auditor`: dispatch the installed `senior-review:cleanup-auditor` agent by its qualified identity.
 - `senior-review:code-auditor`: dispatch the installed `senior-review:code-auditor` agent by its qualified identity.
 - `senior-review:data-integrity-auditor`: dispatch the installed `senior-review:data-integrity-auditor` agent by its qualified identity.
+- `senior-review:distributed-flow-auditor`: dispatch the installed `senior-review:distributed-flow-auditor` agent by its qualified identity.
+- `senior-review:logic-integrity-auditor`: dispatch the installed `senior-review:logic-integrity-auditor` agent by its qualified identity.
 - `senior-review:premise-auditor`: dispatch the installed `senior-review:premise-auditor` agent by its qualified identity.
 - `senior-review:resource-lifecycle-auditor`: dispatch the installed `senior-review:resource-lifecycle-auditor` agent by its qualified identity.
 - `senior-review:security-auditor`: dispatch the installed `senior-review:security-auditor` agent by its qualified identity.
@@ -134,6 +144,7 @@ Role bindings:
 - `testing:test-writer`: dispatch the installed `testing:test-writer` agent by its qualified identity.
 - `text-humanizer:text-humanizer`: dispatch the installed `text-humanizer:text-humanizer` agent by its qualified identity.
 - `typescript-development:type-safety-auditor`: dispatch the installed `typescript-development:type-safety-auditor` agent by its qualified identity.
+- `typescript-development:typescript-engineer`: dispatch the installed `typescript-development:typescript-engineer` agent by its qualified identity.
 - Method-owned inline workers use only `project-protocol:isolated-worker`. Give each the full task, owned scope, authorization and budget, plus its expected report path. This permission exposes no other registry role.
 
 The phase graph, the isolation and join policies and the record schemas are in

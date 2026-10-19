@@ -306,8 +306,15 @@ A kernel that ships an MCP server declares it in `plugin.toml`, with the server 
 [[mcp.servers]]
 name = "peer-review"
 command = "uv"
-args = ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py"]
+args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py"]
 ```
+
+A `uv` server always starts with `run --no-config --no-project --script`. The server
+starts inside the user's project, and without those flags `uv` reads that project's
+`uv.toml`, `pyproject.toml` and `.python-version`, so the project under work would
+choose the package index and interpreter of a server that may hold an API key. `tests/test_daodan_mcp.py` holds a table of every kernel that ships a server and
+fails when a kernel declares one the table does not pin, so a new server is checked
+for this launch from its first build.
 
 The validator refuses a server without the capability, the capability without a server, and an argument that names a file outside `skills/` (the compiler copies nothing else, so the server would exist in the checkout only). What the binding decides per host:
 
@@ -317,7 +324,7 @@ The validator refuses a server without the capability, the capability without a 
 | `mcp-registration` | codex, copilot, pi | the server file, and one note per server at the top of every workflow giving the exact command (with the host's own plugin-root reference) to register under that name in the host's MCP configuration |
 | `mcp-manifest` (adapted) | opencode | the same `.mcp.json`, plus the server in the manifest's `daodan` key, which the loader registers through the V2 MCP transform. The host reads neither file itself, so the binding is `adapted`, and a server name the user already configured is left alone |
 
-The `mcp-registration` bindings are `adapted`, not `native`, because no probe has shown Codex, Copilot or Pi starting a server declared by an installed plugin. Promote one to `mcp-manifest` only after such a probe, and record it in the evidence table. OpenCode's `mcp-manifest` binding is `adapted` for a different reason: the server is started because the loader registers it, not because the host read a file. `tests/test_daodan_mcp.py` pins the rendering on the `valid-mcp` fixture.
+The `mcp-registration` bindings are `adapted`, not `native`, because no probe has shown Codex, Copilot or Pi starting a server declared by an installed plugin. Promote one to `mcp-manifest` only after such a probe, and record it in the evidence table. OpenCode's `mcp-manifest` binding is `adapted` for a different reason: the server is started because the loader registers it, not because the host read a file. `tests/test_daodan_mcp.py` pins the rendering on the `valid-mcp` fixture and on every real kernel that ships a server.
 
 ## Policies: what is enforced where
 

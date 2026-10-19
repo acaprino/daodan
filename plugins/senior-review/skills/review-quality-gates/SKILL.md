@@ -16,16 +16,26 @@ dependent operation; preserve archives and run IDs.
 
 # Review Quality Gates
 
-Gates and consolidation rules shared by `/senior-review:team-review` and `/senior-review:code-review`.
+Gates and consolidation rules shared by every review variant. This core holds
+what every consumer needs; the two procedures that only one step uses are units
+loaded by that step.
 
-## Reference router
+## Load map
 
-| Need | Reference |
+| Step | Read inside this skill |
 |---|---|
-| Verbatim prompts for context-aware reviewers, Verification Panel Lenses 0-3, and the Completeness Critic | `references/panel-and-critic-prompts.md` |
+| Any review, any role | this file: provenance rule, reviewer conventions, evidence classes, delivery gate |
+| Preparing or dispatching reviewers with shared context | `references/context-sharing.md`: context artifacts, anchor routing per dimension, metrics, raw mode |
+| Consolidation | `references/verification-panel.md`: the four lenses, their gating, the cost guard and the completeness critic |
+| Writing a lens, critic or reviewer brief | `references/panel-and-critic-prompts.md` |
 | `/code-review` agent dispatch templates and Codebase Map context injection | `references/code-review-agents.md` |
-| `/code-review` native output and optional HTML view rendering | `references/code-review-output.md` |
+| `/code-review` native output and optional HTML view | `references/code-review-output.md` |
 | `/code-review --fix` and `--commit` remediation loop | `references/code-review-fix-loop.md` |
+
+Lens 0 uses the declared `senior-review:premise-auditor` binding. Lenses 1 to 3,
+the critic and any inline brief use only the declared
+`project-protocol:isolated-worker` binding through the consuming workflow's host
+harness, inheriting the session model.
 
 ## Shared-Context Provenance Rule
 
@@ -36,102 +46,27 @@ Three consequences bind every gate below:
 2. Concordance between reviewers who share a premise is an **echo**. It raises no confidence and no severity. Consolidation reports it as such.
 3. No metric may reward agreement with a shared artifact. Utilization of the map is an operational number, never a quality signal.
 
-## Context Sharing Pattern
-
-When `/team-review` runs in pipeline mode (no `--no-context`), reviewers receive three context artifacts produced in Phase 1:
-
-1. **Codebase Map output** (from `codebase-map`) at `$XRAY_RUN_DIR` when the command started the run itself (`/team-review` Phase 1a), or the `.codebase-map/` mirror when consuming an existing analysis (`/code-review` Step 2). A command that started a run never reads the mirror. Files: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and optionally `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
-2. **Interconnect map** at `.team-review/02-interconnect.md` (from `codebase-map:semantic-interconnect-mapper`): contracts (formal / structural / implicit), invariants, domain rules, assumptions (verified / documented / unverified), integration hot-spots, change impact radius.
-3. **Knowledge provenance** at `.team-review/01-knowledge-provenance.md` (from `/team-review` Phase 1d): which concepts each discovery branch found, which neither found, and which they disagree about.
-
-A fourth artifact, `.team-review/01b-independent-claims.md`, is derived in Phase 1c by `senior-review:premise-auditor` while blind to both of the above, and joined into `01-knowledge-provenance.md` in Phase 1d (contradictions become `disputed` rows).
-
-### Default anchor routing
-
-Reviewers Grep or read only the anchors relevant to their dimension from `.team-review/02-interconnect.md` (see `references/panel-and-critic-prompts.md` for the context-aware spawn template):
-
-| Reviewer dimension | Primary anchors in interconnect map |
-|---|---|
-| security | `## Integration Hot-Spots` (inbound), `## Assumptions` (unverified), `## Contracts` (implicit, input validation) |
-| architecture (code-auditor) | `## Invariants`, `## Contracts` (structural + implicit), `## Call Graph` |
-| logic-integrity | `## Contracts` (implicit, unverified), `## Invariants`, `## Assumptions` (unverified), `## Domain Rules` |
-| distributed-flows | `## Integration Hot-Spots` (HTTP / queue / IPC), `## Call Graph` (cross-service) |
-| chicken-egg | `## Assumptions` (initialization order), `## Integration Hot-Spots` (Env / config), `## Invariants` (cross-component) |
-| ui-races | `## Invariants` (temporal), `## Integration Hot-Spots` (UI state) |
-| temporal-resilience | `## Invariants` (temporal, liveness), `## Assumptions` (unverified, timing/retry), `## Integration Hot-Spots` (queues, timers, network loops) |
-| data-integrity | `## Invariants` (uniqueness, state exclusivity, balances), `## Contracts` (structural, persistence shapes), `## Assumptions` (unverified, isolation/consistency) |
-| resource-lifecycle | `## Assumptions` (pool bounds, connection reuse), `## Integration Hot-Spots` (connections, subprocesses, long-lived handles) |
-| api-contracts | `## Contracts` (formal) -> `senior-review:api-contract-auditor` |
-| structural entropy (diff mode) | none (reads `$XRAY_RUN_DIR/01-structure.md` + `02-interfaces.md` + concept index) |
-
-### Metrics
-
-**Map utilization rate** (operational, not a quality signal): fraction of findings citing an interconnect anchor. Do not set a target for it.
-
-Quality signals:
-- **Independent premise reconstruction rate**: fraction of findings whose load-bearing premise was obtained without exposure to that premise (Phase 1c Premise Auditor or independent reviewer re-derivation; **Lens 0 does not count** because Mode 2 is primed).
-- **Premise challenge rate**: fraction of eligible premises (`shared-context`, `mixed`, or universal/negative quantifier) attacked by Lens 0.
-- **Map challenge rate**: fraction of consumed map rows explicitly tested rather than assumed.
-- **Map gap rate**: `[MAP-GAP]` findings over total findings.
-- **Cross-source corroboration rate**: diagnostic over findings corroborated across code, tests, and docs.
-
-### Fallback: raw mode (`--no-context`)
-
-When `--no-context` is set, reviewers receive only target + diff: `logic-integrity-auditor`, `premise-auditor`, Phase 0c, and Lens 0 do not run; all findings are `independent` by construction; no `.codebase-map/`, `$XRAY_RUN_DIR`, or `.team-review/02-interconnect.md` references appear in reviewer prompts.
-
 ## Reviewer Pipeline Conventions
 
 Every Phase 2 reviewer carries four rules in its system prompt:
 - **Scope budget**: stop after ~15 file reads without a finding and return a "scope-off-topic" report.
 - **No-findings protocol**: "examined X, Y, Z: no issues" is a valid Phase 3 input, not a failure.
 - **Cross-Reviewer Notes**: observations belonging to other dimensions go in `## Cross-Reviewer Notes` for Phase 3 routing.
-- **Interconnect anchor citation**: reviewers cite map anchors when applicable. Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal. See `### Metrics` for the quality signals that actually matter.
+- **Interconnect anchor citation**: reviewers cite map anchors when applicable. Findings that cite map anchors feed the map utilization rate, an operational measure of map consumption, not a quality signal. The quality signals that matter are in `references/context-sharing.md`, section `### Metrics`.
 
-## Evidence Classes for Quantitative Claims
+## Evidence Classes
 
-Any finding quantifying damage (N times/day, GB transferred, $/month, req/s) must label the number:
-- **`measured`**: obtained from a harness, simulation, reproduction, or real logs/metrics (state method in one line; build any harness outside the work tree and delete afterwards).
-- **`derived`**: computed by reading code (a hypothesis, not a fact; unlabeled quantitative claims default to `derived`).
+Every finding labels how its decisive evidence was obtained, strongest first:
+- **`reproduced`**: a test or run showed the defect, passing on the base and failing on the candidate, or the reverse for a fix (state the command and the scratch path).
+- **`tool-reported`**: a tool in the evidence pack reported it verbatim (`references/candidate-grounding.md` in `senior-review:review-preparation`).
+- **`measured`**: obtained from a harness, simulation or real logs/metrics (state method in one line; build any harness outside the work tree and delete afterwards).
+- **`derived`**: computed by reading code (a hypothesis, not a fact; an unlabeled finding defaults to `derived`).
 
 Consequences:
 1. A `derived` number alone cannot justify **Critical** severity (measure it or cap at High).
 2. A finding cannot be closed as acceptable ("bounded", "low traffic") on a `derived` number alone, nor without answering **what the user or operator sees, and when** ("None (silent)" is a severity escalator, never a mitigation).
 3. Lens 2 actively checks whether claimed rates/costs survive actual control flow (deduplication, caps, phase transitions).
-
-## Adversarial Verification Panel
-
-Each deduplicated finding selected for verification is judged by up to 4 verifiers (`references/panel-and-critic-prompts.md` Section 2). Dispatch one isolated worker per lens per finding through the consuming workflow's host harness. Lens 0 uses the declared `senior-review:premise-auditor` binding; lenses 1-3 use only the declared `project-protocol:isolated-worker` binding with the lens-specific briefs in `references/panel-and-critic-prompts.md`. Every brief carries the owned scope, authorization, budget, declared inputs and expected report path. Record each delivered or failed outcome in the same delivery ledger. Independent lenses receive no peer findings before their delivery. All lenses inherit the session model by default; apply a supported model override only when explicitly requested by the user and bound by the host harness, never by choosing a host-specific alias here.
-
-### Lens gating and Lens 0 resolution
-
-1. **Lens 0 (Premise Challenge, Mode 2 of `senior-review:premise-auditor`) runs first**, gated on `premise_provenance` (`shared-context` or `mixed`, or missing when pipeline ran) **or** any declared premise containing a universal/negative quantifier (`no`, `never`, `cannot`, `always`, `only`).
-   - `REFUTED` (`PREMISE`), or `REFUTED` (`SUPPORT` + `shared-context`): finding discarded (`filtered: premise-refuted`), lenses 1-2 not spawned.
-   - `REFUTED` (`SUPPORT` + `mixed`): strike the shared leg, restate from independent evidence, run lenses 1-2.
-   - `UNCERTAIN` (including Lens 0 errors or `REFUTED` without `file:line`): proceeds to lenses 1-2 tagged `premise-contested`.
-   - `HOLDS`: proceeds to lenses 1-2 unchanged.
-   - `premise_form: non-compliant` is recorded in the verification file regardless of verdict.
-2. **Lenses 1 (Reachability) and 2 (False-Positive Causes)** run independently on findings surviving Lens 0:
-   - **>= 2 REAL**: finding survives.
-   - **>= 2 FALSE_POSITIVE**: finding discarded (`filtered`, count reported).
-   - **Tie (1 REAL / 1 FALSE_POSITIVE) or < 2 valid verdicts**: finding survives marked `contested` (fail-open).
-3. **Lens 3 (Severity Calibration)** is gated and runs only on findings that survive Lenses 1-2. Final severity is Lens 3's `severity_vote` when confirmed real, else the original reviewer severity.
-
-### Selection and Cost Guard
-
-- **Normal (default-on):** every deduplicated finding with confidence `>= 50%`.
-- **Under cost guard (> 25 surviving findings and `--rigorous` not set):** verify all Critical/High findings plus Medium/Low in the 50-75% confidence band or with conflicting reviewer severities; pass the rest through tagged `unverified (cost-guard)` and declare the narrowing (the threshold of 25 surviving findings is a finding-count proxy for token spend).
-- **`--rigorous`:** verify all findings above the floor. **`--fast`:** skip panel and critic.
-
-## Completeness Critic
-
-After verification, one isolated `project-protocol:isolated-worker` critic uses the consuming workflow's host binding and the prompt in `references/panel-and-critic-prompts.md` (Section 3) to emit `## Coverage Gaps` across five categories:
-1. **Dimensions not run** warranted by scope
-2. **Files in scope cited by no reviewer**
-3. **Unverified assumptions** in the interconnect map unaddressed by findings
-4. **High-risk hot-spots** (`05-risks.md` or Integration Hot-Spots) with zero findings
-5. **Findings closed on metrics alone** without stating user-visible consequences or with `derived`-only numbers
-
-If the critic identifies a high-risk uncovered area (and cost guard / `--fast` is not active), spawn **one** targeted reviewer for a **single** follow-up round; its findings pass through deduplication and the verification panel.
+4. Lens 1 may reproduce. When the brief grants a disposable workspace owned by the run and names a test runner, the lens writes a minimal test at the scratch path the brief names, runs it on the base and on the candidate, records both outcomes, and removes the file unless the caller adopts it as regression protection. A reproduction that fails to show the defect is counterevidence, recorded as such. Without that grant, the lens reads and reasons, and the class stays as the reviewer declared it.
 
 ## Delivery Gate
 

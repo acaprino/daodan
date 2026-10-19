@@ -6,7 +6,10 @@ description: >
 
 # Unified review method
 
-Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle.
+Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle;
+optional `budget` (`delta` for one wave's diff, `full` for the whole candidate) and
+`target-kind` (`changeset`, `plan`, `spec`, `doc`), both resolved by preparation
+when absent.
 Output: native report and the project-result envelope. Do not delegate execution
 to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
 the coordinator executes the canonical `codebase-map:analyze` entry's preflight,
