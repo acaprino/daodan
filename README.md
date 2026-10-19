@@ -45,11 +45,38 @@ Daodan plugin declares it, and every Daodan workflow runs without it.
 |---|---|---|
 | /project-lifecycle:handover | Take responsibility for an unfamiliar project | A consultant dossier with verified facts, readiness, risks and open questions |
 | /project-lifecycle:maintain | Lead a complete rationalization | A staged Senior Maintainer campaign with an approved roadmap and verified outcomes |
-| /project-lifecycle:assess | Understand incoherence and accumulated debt | Evidence, coverage and an actionable plan with owners and dependencies |
+| /project-lifecycle:assess | Understand incoherence and accumulated debt; with `--init`, bring a project into the task cycle | Evidence, coverage and an actionable plan; with `--init`, a Codebase Map, a decision index, the instruction loop block and a test baseline |
 | /project-lifecycle:repair | Apply an identified plan | Scoped remedies, verified phases and visible open decisions |
-| /project-lifecycle:change | Bootstrap, feature, bugfix, refactor or migration | Working behavior and coherent code, tests and knowledge |
+| /project-lifecycle:change | One task through the cycle: feature, bugfix, refactor or migration | A reviewed, merged candidate with its decision record, tests, map and documentation realigned |
 | /project-lifecycle:verify | Check a candidate revision and its consequences | Snapshot-bound checks, review and honest limitations |
-| /project-lifecycle:consolidate | Close experiments and reduce residual output | Verified conclusions, retained evidence and artifact disposition |
+| /project-lifecycle:consolidate | Integrate a task, realign after an outside merge, close experiments | Promoted record, map and documentation in line with the merged head, retained evidence |
+
+## Work task by task
+
+The cycle is three steps, repeated:
+
+1. **Once per project:** `/project-lifecycle:assess --init` maps the project,
+   creates the decision index under `docs/adr/`, writes the loop block of
+   `AGENTS.md` or `CLAUDE.md` with the verified commands, and records the test
+   baseline.
+2. **Per task:** `/project-lifecycle:change <request>` asks whether to work in a
+   worktree, a branch or in place, then interviews you with real examples from
+   your code, one question at a time, until scope, examples, rejected
+   alternatives and invariants are fixed. It writes a proposed decision record,
+   plans waves of micro-tasks of at most four files, has the stack's specialist
+   write each one test first, and reviews the record, the plan, every wave and
+   the whole candidate with the multi-perspective review.
+3. **Merge:** with your authorization the cycle merges, promotes the record and
+   brings the Codebase Map, the documentation and the loop block in line with
+   the merged head. After a merge made elsewhere, `/project-lifecycle:consolidate`
+   does the same realignment.
+
+`--plan-only` stops after the plan for your approval, and `--run-id <id>`
+continues it. Every phase is also a command of its own:
+`/project-knowledge:adr` for decision records,
+`/senior-review:code-review` or `team-review` for a review of a changeset, a plan,
+a specification or a document, and each specialist's command. The cycle is
+described phase by phase in [project-lifecycle](docs/plugins/project-lifecycle.md#the-task-cycle).
 
 These entries use the same specialist methods as their standalone commands.
 Choose a focus (knowledge, structure, tests, artifacts or all) and a depth
@@ -192,7 +219,7 @@ commands, paths, installation requirements and runtime limits on each host.
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
 | [text-humanizer](docs/plugins/text-humanizer.md) | Voice and clarity of written content |
 
-Knowledge offers instructions, guide, maintain and readme. It distinguishes
+Knowledge offers instructions, guide, maintain, readme and adr. It distinguishes
 approved intent from observed implementation and updates existing documents first.
 Operational state never belongs in AGENTS.md or CLAUDE.md.
 

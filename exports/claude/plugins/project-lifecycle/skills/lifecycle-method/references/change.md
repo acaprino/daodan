@@ -78,8 +78,8 @@ unit is the overview, and each phase has its own unit.
 | 7. Integration | Merge, record promotion, map and knowledge realigned, workspace closed | `references/consolidate.md` |
 
 `--plan-only` stops after phase 4 with the record `Proposed` and the plan
-approved; `--resume RUN` continues an approved plan from its first unsealed
-wave. A bugfix with a reproduction test follows `references/repair.md`, which
+approved; `--run-id RUN` on that run continues the approved plan from its
+first unsealed wave. A bugfix with a reproduction test follows `references/repair.md`, which
 shortens phases 2 to 4 and keeps the rest.
 
 Rules that hold across phases:

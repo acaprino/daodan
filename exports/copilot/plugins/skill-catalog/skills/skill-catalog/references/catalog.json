@@ -271,7 +271,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.5.0"
+      "version": "1.5.1"
     },
     {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit suffices (use senior-review, codebase-map or testing directly).",
@@ -286,7 +286,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.5.0"
+      "version": "1.5.1"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.",
@@ -301,7 +301,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "1.5.0"
+      "version": "1.5.1"
     },
     {
       "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before briefing workers, recording, resuming or closing a project intervention.",

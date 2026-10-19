@@ -1,10 +1,10 @@
 ---
 name: assess
 description: 'Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a single-domain audit suffices (use /senior-review:code-review, /codebase-map:analyze, or /testing:test-audit).'
-argument-hint: '[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]'
+argument-hint: '[target] [--init] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]'
 ---
 
-> Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> Arguments: `[target] [--init] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes

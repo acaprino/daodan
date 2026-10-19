@@ -5,7 +5,7 @@ tools: ['agent', 'edit', 'runCommands', 'search']
 agents: ['abstraction-architect:abstraction-architect-agent', 'codebase-map:map-analyst', 'project-knowledge:documentation-engineer', 'project-knowledge:guide-reviewer', 'project-knowledge:instructions-auditor', 'project-protocol:isolated-worker', 'repo-hygiene:workspace-auditor', 'senior-review:cleanup-auditor', 'testing:test-suite-auditor']
 ---
 
-> Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> Arguments: `[target] [--init] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes

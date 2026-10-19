@@ -1,10 +1,10 @@
 ---
 name: change
 description: 'Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task covers the outcome (use clean-code, testing or project-knowledge directly).'
-argument-hint: '[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]'
+argument-hint: '[request] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--plan-only] [--peer-review] [--second-opinion] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]'
 ---
 
-> Arguments: `[target] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
+> Arguments: `[request] [--focus=all|knowledge|structure|tests|artifacts] [--depth=quick|standard|deep] [--plan-only] [--peer-review] [--second-opinion] [--run-id ID] [--out INTERNAL_ROOT] [--dry-run|--fix|--commit]`. Wherever `<arguments>` appears below, substitute the text the user typed after the prompt name.
 
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes

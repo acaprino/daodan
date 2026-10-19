@@ -127,7 +127,7 @@ stesso compito. I verbi restano quelli esistenti, con significato chiarito:
 | Verbo | Nel ciclo | Da solo |
 |---|---|---|
 | `assess` | Fase 0: inizializzazione o diagnosi (`--init` quando mappa, registro ADR o istruzioni mancano) | Diagnosi di salute in sola lettura |
-| `change` | Fasi 1-7: preparazione, intervista, ADR, piano a ondate, esecuzione, review del candidato, integrazione e riallineamento | `--plan-only` si ferma dopo il piano approvato; `--resume` esegue un piano già approvato |
+| `change` | Fasi 1-7: preparazione, intervista, ADR, piano a ondate, esecuzione, review del candidato, integrazione e riallineamento | `--plan-only` si ferma dopo il piano approvato; `--run-id` sullo stesso run riprende un piano già approvato (il flag `--resume` previsto qui è stato unificato con `--run-id` il 19 ottobre, perché il protocollo riprende già un run per identità) |
 | `repair` | Variante breve di `change` per un difetto con test di riproduzione | Correzione mirata senza intervista estesa |
 | `verify` | Fase 6 su un candidato | Gate completo su codice scritto a mano o su un branch |
 | `consolidate` | Fase 7: promozione ADR, aggiornamento mappa, docs, istruzioni, pulizia | Riallineamento dopo una merge fatta fuori da Daodan |
