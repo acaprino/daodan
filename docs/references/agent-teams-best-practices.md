@@ -146,8 +146,9 @@ roles. This development reference explains their purpose:
 
 ## Verification panel + completeness critic (review pipelines)
 
-Unified review (`/senior-review:team-review`, `/senior-review:code-review`,
-`/senior-review:pr-review`), including applicable stack specialists, uses the canonical
+Unified review (the team-review, code-review and pr-review variants of
+`senior-review:review-method`, run by `/daodan:review-branch` and by the lifecycle's
+candidate reviews), including applicable stack specialists, uses the canonical
 [`senior-review:review-quality-gates`](../../plugins/senior-review/skills/review-quality-gates/SKILL.md)
 through `review-consolidation`. The canonical panel and completeness critic are
 loaded methods, rather than copied detection prompts:
@@ -187,7 +188,7 @@ the roles its loaded methods can use independently of phase scheduling.
 7. Install `TaskCompleted` hooks for lint / type / test gating before close.
 8. Require an explicit delivered/failed result and the expected output file in every worker brief. Keep native task-status instructions in the host adapter.
 9. Default to **subagents** (single-session) and escalate to a team only when teammates need to talk to each other.
-10. For pipelines like `/team-review`, give each reviewer an explicit output file path and require writing to disk. Returning report text only forces a fragile fallback.
+10. For pipelines like the branch review (`/daodan:review-branch`), give each reviewer an explicit output file path and require writing to disk. Returning report text only forces a fragile fallback.
 
 ### DON'T
 
@@ -228,8 +229,8 @@ the roles its loaded methods can use independently of phase scheduling.
 Use this reference's design guidance alongside the current kernel contracts and
 adapter bindings when changing:
 
-- `plugins/codebase-map/` — partition worker and synthesizer agents that participate in `/team-analyze`.
-- `plugins/senior-review/` — every reviewer agent that participates in `/team-review` Phase 2.
+- `plugins/codebase-map/` — partition worker and synthesizer agents that participate in the team entry of `codebase-map:map-method`.
+- `plugins/senior-review/` — every reviewer agent that participates in the branch review's Phase 2.
 - `plugins/project-lifecycle/` and `plugins/project-protocol/`: specialist dispatch, generic isolated tasks, delivery accounting and candidate gates.
 - `plugins/project-knowledge/`: assigned writers in the file/audience guide plan.
 - `plugins/research/` — `/research:team-research` is the lead; `deep-researcher` investigates one sub-question per parallel wave; `quick-searcher` handles single-fact lookups and verifier duty.

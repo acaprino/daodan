@@ -1,0 +1,31 @@
+name = "brainstorm-idea"
+entrypoint = "brainstorm-idea.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work"]
+
+[[phases]]
+id = "execute"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:work"]
+produces = ["artifact:result"]
+
+[dispatch]
+roles = ["codebase-map/map-analyst"]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = [
+  "project",
+  "objective",
+  "scope",
+  "authorization",
+]
+outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

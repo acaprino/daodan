@@ -2,8 +2,8 @@
 name: dependency-audit
 description: >
   Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog.
-  TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; loaded by /dependency-audit:deps-audit.
-  DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:code-review or typescript-development:knip), or code-level security review (use senior-review:security-auditor).
+  TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; the audit method in references/audit.md is run by /daodan:check-health and by the dependency perspective of /daodan:review-changes and /daodan:review-branch.
+  DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:application-cleanup-method or typescript-development:knip), or code-level security review (use senior-review:security-auditor).
 ---
 
 <daodan_host_binding host="pi">
@@ -79,7 +79,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Dependency Audit Knowledge Base
 
-Method for auditing third-party dependencies without inventing facts. The `/dependency-audit:deps-audit` command orchestrates; this skill holds the depth, split into references loaded on demand.
+Method for auditing third-party dependencies without inventing facts. `references/audit.md` orchestrates the audit; the other references hold the depth, loaded on demand.
 
 ## Core principles
 
@@ -93,6 +93,7 @@ Method for auditing third-party dependencies without inventing facts. The `/depe
 
 | File | Load when |
 |---|---|
+| `references/audit.md` | Running the audit for a caller: target forms, ecosystem, depth and license decisions, the update authorization, the workflow steps and the report format |
 | `references/ecosystems.md` | Selecting or running audit / outdated / license tooling for any ecosystem, or parsing its output |
 | `references/license-analysis.md` | Writing any license finding, classifying an SPDX identifier, or answering a copyleft question |
 | `references/supply-chain.md` | Evaluating supply-chain risk signals or reviewing a dependency diff for tampering |

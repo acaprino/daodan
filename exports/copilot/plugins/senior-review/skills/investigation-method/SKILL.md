@@ -2,8 +2,8 @@
 name: investigation-method
 description: >
   Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection.
-  TRIGGER WHEN: a coordinator investigates a problem, or a bug fix starts without a known cause.
-  DO NOT TRIGGER WHEN: reviewing a change for defects (use review-method), or the cause is already demonstrated by a failing test.
+  TRIGGER WHEN: the user reports an error, regression or strange behavior whose cause is unknown and wants it investigated, a coordinator investigates a problem, or a bug fix starts without a known cause.
+  DO NOT TRIGGER WHEN: assessing a change or artifact for defects (use review-method), or the root cause is already established with evidence.
 ---
 
 <daodan_host_binding host="copilot">

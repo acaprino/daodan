@@ -9,7 +9,7 @@ A scratch pnpm workspace with two packages, `packages/api` (TypeScript, 8 to 12 
 ## Run
 
 ```
-/codebase-map:team-analyze . --depth=lite --yes
+/daodan:map-code . with the team entry at lite depth, proceeding with the recommended scope
 ```
 
 Keep the full transcript.

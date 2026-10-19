@@ -1,7 +1,7 @@
 ---
 name: application-cleanup-method
 description: >
-  Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /senior-review:code-review Step 7c or lifecycle cleanup.
+  Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /daodan:tidy-repo, code-review Step 7c or lifecycle cleanup.
 ---
 
 <daodan_host_binding host="pi">
@@ -88,5 +88,5 @@ Read `references/application-cleanup.md` inside this skill. Its subtraction meth
 is promoted from Step 7c without adding a new auditor or a semantic refactor engine.
 Inputs can come from a review or an identified lifecycle plan. When targeted fixes
 were unnecessary, record 7b as not applicable; otherwise its accepted changes must
-be delivered and committed before subtraction. Plain `--fix` leaves
+be delivered and committed before subtraction. A `fix` grant without `commit` leaves
 this commit-only action open and explains the missing capability before execution.

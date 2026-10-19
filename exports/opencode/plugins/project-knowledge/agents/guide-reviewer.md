@@ -1,5 +1,5 @@
 ---
-description: 'Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer. TRIGGER WHEN: spawned by /project-knowledge:guide to verify authored guide files.'
+description: 'Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to verify authored guide files.'
 mode: subagent
 permissions:
   - action: "*"

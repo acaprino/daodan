@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "react-development"
-version = "1.11.5"
+version = "2.0.0"
 description = "React performance optimization, React 19 API adoption, state management audit, bundle analysis, re-render detection, and Vercel best practices checklist"
 license = "MIT"
 
@@ -14,5 +14,5 @@ required = []
 [components]
 skills = ["react-best-practices"]
 roles = ["react-performance-optimizer"]
-workflows = ["review-react"]
+workflows = []
 policies = []

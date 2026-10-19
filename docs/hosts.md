@@ -120,8 +120,9 @@ project-protocol.
 senior-review has one review engine across code, team and PR entries. Its React,
 TypeScript and platform providers are mandatory installation dependencies; target
 signals decide which workers run. The lifecycle's candidate reviews use that same
-engine and expose those provider bindings on every host. Independently callable
-specialist commands remain in their domain plugins.
+engine and expose those provider bindings on every host. Every command lives in
+the `daodan` entry plugin; specialist methods remain in their domain plugins,
+where those entries load them by name.
 
 ## Component and entry mapping
 
@@ -138,9 +139,10 @@ it as a skill file.
 | Pi | root `package.json` | `prompts/<plugin>-<workflow>.md`, `/<plugin>-<workflow>` | `skills/<plugin>-<role>/SKILL.md`, hidden from automatic model invocation and passed inline | `skills/<skill>/SKILL.md` |
 | OpenCode V2 | `exports/opencode/package.json` | `commands/<workflow>.md`, registered as `/<plugin>:<workflow>` | `agents/<role>.md`, registered as `<plugin>:<role>` | `skills/<skill>/SKILL.md`, registered as `<plugin>:<skill>` |
 
-For `project-lifecycle:assess`, that means `/project-lifecycle:assess` on Claude
-and OpenCode, `assess-workflow` on Codex, and `/project-lifecycle-assess` on Pi.
-Copilot exposes the `assess` prompt and generated `assess-coordinator` agent.
+Every workflow belongs to the `daodan` entry plugin. For `check-health`, that
+means `/daodan:check-health` on Claude and OpenCode, `check-health-workflow` on
+Codex, and `/daodan-check-health` on Pi. Copilot exposes the `check-health`
+prompt and generated `check-health-coordinator` agent.
 The prompt loads the method; the coordinator agent carries the execution harness
 and worker allowlist. Select that coordinator for the isolated dispatch contract.
 
@@ -206,8 +208,8 @@ There is no second hand-authored operational schema under each consumer skill.
 The coordinator loads canonical specialist methods and prepares their inputs.
 The compiler supplies worker bindings; it is not a general workflow executor.
 Nonempty `invoke` is rejected. In senior-review team-review Phase 1a, the review
-coordinator reads the canonical `codebase-map:analyze` entry and its
-`codebase-map:map-method`, then directly executes their phases in order in the
+coordinator reads the canonical analyze entry of `codebase-map:map-method`
+(`references/entry-analyze.md`), then directly executes their phases in order in the
 same context. Loading those bodies alone runs nothing. This direct composition
 introduces no declarative executor or nested lifecycle scheduler. Review
 preparation runs once, consolidation owns the final review report, and required
@@ -235,7 +237,7 @@ change the public upstream compatibility contract.
 | Host | Generated MCP mechanism |
 |---|---|
 | Claude | Plugin-root `.mcp.json` and a catalog `mcpServers` pointer |
-| Copilot, Codex | Shipped server and workflow note with the exact registration command |
+| Copilot, Codex | Shipped server and a note with the exact registration command on every workflow and skill entry of the declaring plugin |
 | Pi | Shipped server and registration note; `pi-mcp-adapter` reads the configured `mcpServers` entry |
 | OpenCode V2 | Loader registers declared servers from the package manifest through its MCP transform; existing user entries are preserved |
 

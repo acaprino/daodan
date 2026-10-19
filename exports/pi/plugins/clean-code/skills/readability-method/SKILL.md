@@ -1,7 +1,7 @@
 ---
 name: readability-method
 description: >
-  Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /clean-code:clean-code or lifecycle readability phases.
+  Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /daodan:refactor-code for readability or lifecycle readability phases.
 ---
 
 <daodan_host_binding host="pi">
@@ -89,14 +89,14 @@ Use the `clean-code-agent` to rewrite source code for readability without changi
 ## Rules
 
 1. **Validate before and after.** Establish a baseline with type checker + tests + linter, then verify no regressions.
-2. **If `--dry-run`, preview only.** Show proposed changes without modifying files.
+2. **Preview first.** Show proposed changes without modifying files; without an apply authorization, stop there.
 3. **Revert on failure.** If any validation fails after a change, restore the exact saved pre-edit content through the common protocol; preserve preexisting edits and stop on a foreign-writer conflict.
-4. **Reuse explicit scope authorization.** Show the reviewable preview; ask only for choices not already covered by the caller's accepted plan or `--yes`.
-5. **Block without validation tools.** If no tests AND no type checker exist, require `--force` to proceed.
+4. **Reuse explicit scope authorization.** Show the reviewable preview; ask only for choices not already covered by the caller's accepted plan or a `fix` grant the run records.
+5. **Block without validation tools.** If no tests AND no type checker exist, proceed only on the user's explicit answer to that gate.
 
 ## Step 1: Identify Target
 
-From `$ARGUMENTS`, determine files to clean:
+From the caller's target, determine files to clean:
 - If a file path: clean that file
 - If a directory: clean all source files in it
 - Filter out test files (unless they reference renamed symbols)
@@ -130,15 +130,14 @@ Run all detected tools and capture both stdout and stderr. Record the baseline.
 No tests or type checker found. Cannot validate that changes are safe.
 
 1. Cancel: set up tests or type checking first (recommended)
-2. Proceed with --force: I'll be careful but regressions may go undetected
+2. Proceed anyway: I'll be careful but regressions may go undetected
 ```
 
-`--yes` alone does NOT bypass this gate. Only `--force` does.
+An apply authorization alone does NOT bypass this gate. Only an answer of 2 to this question does; record it in the run as a `fix` grant that names the missing validation.
 
-## Step 3: Preview Changes (always for --dry-run, ask otherwise)
+## Step 3: Preview Changes
 
-If `--dry-run` flag is set, or if the target is a directory with >3 files, show a preview first.
-If `--yes` flag is provided, apply all changes after showing the preview without asking.
+Always show the preview first. When the run already records a `fix` grant covering these files, apply all changes after showing it without asking; otherwise ask once with the options below and record the answer as a grant.
 
 For each file, analyze and propose:
 - Variable/function renames (vague -> domain-meaningful)
@@ -168,7 +167,7 @@ Total changes: [count] across [file count] files
 3. Cancel
 ```
 
-If `--dry-run`, stop after the preview.
+When the user asked for a preview only, or chose Cancel, stop after the preview.
 
 ## Step 4: Apply Changes
 
@@ -180,7 +179,7 @@ Improve the readability of this code. Zero behavior changes.
 Owned files: [list of files]
 Approved changes: [from the preview]
 Baseline: [tools detected in Step 2, their commands and results]
-Authorization: [--force when given; the caller commits, the worker never does]
+Authorization: [the `fix` grant, and the go-ahead without validation tools when given; the caller commits, the worker never does]
 Report path: [assigned report path]
 ```
 
@@ -217,7 +216,7 @@ Stale references found in non-code files:
 Review the changes with: git diff
 ```
 
-If `--strict` flag is set, also flag any remaining readability concerns that weren't auto-fixable.
+When the caller asks for a strict pass, also flag any remaining readability concerns that weren't auto-fixable.
 
 ## What It Does / Does NOT Do
 
@@ -226,7 +225,3 @@ If `--strict` flag is set, also flag any remaining readability concerns that wer
 **Does not:** reorder code, extract functions, change APIs, remove error handling/validations/imports, modify test files, over-simplify. See the agent's safety rules for the full list.
 
 Return deeper structural changes to the caller's development plan; this method applies readability only.
-
-Clean the following:
-
-$ARGUMENTS

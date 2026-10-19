@@ -1,0 +1,19 @@
+name = "show-status"
+entrypoint = "show-status.md"
+
+[[phases]]
+id = "execute"
+isolation = "shared"
+produces = ["artifact:result"]
+
+[contract]
+inputs = [
+  "project",
+  "objective",
+  "scope",
+  "authorization",
+]
+outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

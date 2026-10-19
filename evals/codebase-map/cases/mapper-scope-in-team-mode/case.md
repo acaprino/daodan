@@ -9,7 +9,7 @@ The two-package workspace from `team-mode-partition-ownership`, with `web` impor
 ## Run
 
 ```
-/codebase-map:team-analyze . --yes
+/daodan:map-code . with the team entry at full depth, proceeding with the recommended scope
 ```
 
 Full depth, so the mapper runs. Keep the transcript.

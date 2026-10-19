@@ -2,7 +2,7 @@
 name: onboarding-writer
 description: >
   Write verified reader-specific onboarding and real open questions.
-  TRIGGER WHEN: spawned by /project-knowledge:guide to author onboarding documentation.
+  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author onboarding documentation.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

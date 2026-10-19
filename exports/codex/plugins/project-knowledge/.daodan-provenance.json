@@ -1,15 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ab666e79159d15633e2bd4645a99465226f9132cbd191b0496d6b35630291f8b",
-  "harnessStrategies": {
-    "adr": "parallel-subagents",
-    "guide": "parallel-subagents",
-    "instructions": "parallel-subagents",
-    "maintain": "parallel-subagents",
-    "readme": "parallel-subagents"
-  },
+  "coreDigest": "sha256:3ebfc8d13902d1fd08f08d25a8fb0164c0ba28b73245a08fb90592887e2d21b5",
+  "harnessStrategies": {},
   "host": "codex",
   "overrides": [],
   "plugin": "project-knowledge",
-  "version": "1.4.0"
+  "version": "2.0.0"
 }

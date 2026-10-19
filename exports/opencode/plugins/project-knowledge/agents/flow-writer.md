@@ -1,5 +1,5 @@
 ---
-description: 'Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: spawned by /project-knowledge:guide to author user and data flow documentation.'
+description: 'Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author user and data flow documentation.'
 mode: subagent
 permissions:
   - action: "*"

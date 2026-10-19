@@ -75,9 +75,9 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Code-review output templates (Steps 5, 5b, 6)
 
-Full output structure for `/senior-review:code-review`: the final review template,
+Full output structure for the code-review variant: the final review template,
 the CLAUDE.md alignment check, and the PR auto-comment flow. Loaded on demand by
-the command when it reaches Step 5.
+the method when it reaches Step 5.
 
 ## Step 5: Final Review Output
 

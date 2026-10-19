@@ -10,11 +10,11 @@ dependent operation; preserve archives and run IDs.
 
 # Code-review agent prompts (Agents A-N)
 
-Full spawn prompts for `/senior-review:code-review` Step 3. The command's dispatch
+Full spawn prompts for code-review Step 3. The variant's dispatch
 table names each agent, its `role`, and its run condition; this file holds
 the complete isolated worker brief (with the shared Intent and
-Diff Scope instructions substituted in). Loaded on demand by the command; not used
-by `/senior-review:team-review`, whose reviewers carry their prompts in their agent
+Diff Scope instructions substituted in). Loaded on demand by the variant; not used
+by team-review, whose reviewers carry their prompts in their agent
 definitions.
 
 ### Agent A: Code Audit (Architecture + Failure Flow + Pattern Consistency + Scoring)
@@ -119,7 +119,7 @@ definition, two perimeters, no drift.
 Both halves are diff-scoped. The **full** passes belong elsewhere and this agent
 never reaches for them: orphan assets, dependency and barrel-file hygiene and
 stale documentation to `senior-review:cleanup-auditor` in
-`/senior-review:team-review`, and whole-tree workspace hygiene to
+the team-review variant, and whole-tree workspace hygiene to
 `repo-hygiene:workspace-auditor`. The lite profile exists precisely so this
 agent cannot widen: its checks C4 through C7 are repository-historical and are
 not available at this perimeter, because a stale ignore rule or an old stash
@@ -233,9 +233,9 @@ Isolated worker brief:
     ```
 
     Report each hit as a finding. Never delete anything here. Removal of what
-    this half finds belongs to `/repo-hygiene:tidy`, not to Step 7c, which no
-    longer owns the `garbage` or `gitignore` phases. Name the owning command
-    alongside the phase so the finding routes without being re-derived.
+    this half finds belongs to the tidy entry of `repo-hygiene:repo-hygiene`,
+    not to Step 7c, which no longer owns the `garbage` or `gitignore` phases.
+    Name the owning method alongside the phase so the finding routes without being re-derived.
 
     ## Phase 3: Manual Diff Analysis
 
@@ -280,11 +280,12 @@ Isolated worker brief:
       on the Codebase Map output or interconnect map, not citation of it)
     - What is unused or misplaced, and why
     - Recommended action (remove, prefix with _, verify dynamic usage, add to
-      __all__, or `/repo-hygiene:tidy` for anything the filesystem and git decide)
-    - Fix phase, owner-qualified: `/senior-review:code-review --commit` phase
-      `exports` for dead code, `/repo-hygiene:tidy` phase `garbage` or
-      `gitignore` for VCS findings. A bare phase name is ambiguous now that two
-      commands own disjoint phase sets, so always name the command
+      __all__, or the `repo-hygiene:repo-hygiene` tidy for anything the
+      filesystem and git decide)
+    - Fix phase, owner-qualified: `senior-review:application-cleanup-method`
+      phase `exports` for dead code, `repo-hygiene:repo-hygiene` tidy phase
+      `garbage` or `gitignore` for VCS findings. A bare phase name is ambiguous
+      now that two methods own disjoint phase sets, so always name the method
 ```
 
 ### Agent C: UI Race Condition Analysis

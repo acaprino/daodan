@@ -72,19 +72,20 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Code-review fix loop (Step 7)
 
-The complete `--fix` / `--commit` workflow for `/senior-review:code-review`:
+The complete `fix` / `commit` workflow of the code-review variant:
 severity acceptance, targeted fixes (7b), and the gated five-phase cleanup
-removal (7c). Loaded on demand by the command when the fix loop is entered.
+removal (7c). Loaded on demand by the method when the fix loop is entered; the
+authorizations are the run's `fix` and `commit` grants.
 
-## Step 7: Fix Loop (if --fix, --commit, or verdict is "Ready with fixes")
+## Step 7: Fix Loop (if the run records a `fix` or `commit` grant, or verdict is "Ready with fixes")
 
 After presenting the review (Step 5/6), offer an interactive fix cycle. Skip this step if the verdict is "Ready to merge" with no findings, or if the user didn't request fixes.
 
-**The two flags are distinct contracts.** `--fix` means edit and verify: apply the fixes, run the tests, and leave the working tree modified with NO commits, so the user reviews and commits themselves. `--commit` implies `--fix` and adds the commits: one per fix or batch in 7b, one per phase in 7c. When the loop is entered via the verdict rather than a flag, ask which contract the user wants before touching anything.
+**The two grants are distinct contracts.** A `fix` grant means edit and verify: apply the fixes, run the tests, and leave the working tree modified with NO commits, so the user reviews and commits themselves. A `commit` grant implies `fix` and adds the commits: one per fix or batch in 7b, one per phase in 7c. When the loop is entered via the verdict rather than a grant, ask which contract the user wants before touching anything, and record the answer as a grant.
 
 Targeted fixes (7b) are minimal changes. Bulk application subtraction (7c) loads
 the named cleanup method with its own preconditions. Test-file consolidation is
-owned by `/testing:test-consolidate`; semantic refactors return to the development
+owned by `testing:test-remediation-method`, mode `consolidate`; semantic refactors return to the development
 plan. Load the `project-protocol:project-protocol` skill before mutation and preserve the
 caller's workspace, authorizations and pre-phase recovery point.
 
@@ -123,8 +124,8 @@ Isolated worker brief:
     - Fix ONLY the listed findings, do not refactor surrounding code
     - Run existing tests after each fix
     - If a fix would require significant refactoring, note it and skip
-    - {if --commit: Commit each fix or batch of related fixes | if --fix only:
-      Do NOT commit anything; leave the working tree modified for the user}
+    - {if a commit grant: Commit each fix or batch of related fixes | if a fix
+      grant only: Do NOT commit anything; leave the working tree modified for the user}
 ```
 
 Wait for all fixes to complete before proceeding.
@@ -134,8 +135,8 @@ Wait for all fixes to complete before proceeding.
 Load the `senior-review:application-cleanup-method` skill with the accepted severities and
 findings from 7a, targeted-fix delivery when applicable, clean owned isolated workspace, output
 root and commit authorization. The method contains the canonical five phases.
-Under plain `--fix`, leave subtraction open and report that its commit-only
-preconditions are missing. Do not duplicate its gate or recovery rules here.
+Under a `fix` grant alone, leave subtraction open and report that its
+commit-only preconditions are missing. Do not duplicate its gate or recovery rules here.
 
 ### 7d. Re-review Offer
 

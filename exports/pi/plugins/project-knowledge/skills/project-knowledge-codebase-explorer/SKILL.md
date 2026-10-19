@@ -1,6 +1,6 @@
 ---
 name: project-knowledge-codebase-explorer
-description: 'Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately. TRIGGER WHEN: spawned by project-knowledge workflows to gather repository context before writing or auditing docs.'
+description: 'Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately. TRIGGER WHEN: spawned by project-knowledge methods to gather repository context before writing or auditing docs.'
 disable-model-invocation: true
 ---
 

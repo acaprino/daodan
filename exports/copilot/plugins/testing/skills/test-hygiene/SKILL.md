@@ -113,7 +113,7 @@ Resource-dependent tests follow the isolation and reproduction checklist in
 
 When the suite has already degraded, rules alone do not repair it. Bonify in layers, opportunistically, alongside normal development. Full mechanics in `references/remediation-workflow.md`.
 
-1. **Measure first.** `/testing:test-audit` produces a versioned `TEST_AUDIT.md`: counts, runtime, skipped, failing, flaky, orphans, layer distribution, slowest tests, per-module coverage. Metrics guide investigation; they do not establish behavioral value or correctness.
+1. **Measure first.** The audit mode of `testing:test-remediation-method` produces a versioned `TEST_AUDIT.md`: counts, runtime, skipped, failing, flaky, orphans, layer distribution, slowest tests, per-module coverage. Metrics guide investigation; they do not establish behavioral value or correctness.
 2. **Classify before quarantine.** Load the `testing:test-remediation-method` skill: product defects, wrong oracles, environment failures, intermittence and unknown causes have different owners. Temporary quarantine has explicit evidence, remaining risk, return condition and owner; a green suite alone does not become trustworthy.
 3. **Consolidate per module.** Inventory protected behavior, independent failure modes and bugfix provenance before rewrite. Accepted replacements and removal share one candidate and authorized commit.
 4. **Verify.** Every protected inventory row maps to a justified surviving check. Coverage and counts support the assessment but cannot prove equivalence.

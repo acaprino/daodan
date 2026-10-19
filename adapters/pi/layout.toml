@@ -18,9 +18,9 @@ roles = "skills/${plugin}-${role}/SKILL.md"
 role_template = "role.SKILL.md.tmpl"
 
 # The filename is the command name on Pi, and prompt discovery is flat and
-# global: `code-review.md` from any installed package answers `/code-review`.
-# The plugin prefix is what keeps 57 workflows out of the user's own namespace,
-# and it mirrors Claude's `/senior-review:code-review`.
+# global: `review-changes.md` from any installed package answers `/review-changes`.
+# The plugin prefix is what keeps every workflow out of the user's own namespace,
+# and it mirrors Claude's `/daodan:review-changes`.
 workflows = "prompts/${plugin}-${workflow}.md"
 team_workflow_template = "team-prompt.md.tmpl"
 

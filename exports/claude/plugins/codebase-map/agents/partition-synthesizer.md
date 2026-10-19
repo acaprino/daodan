@@ -2,8 +2,8 @@
 name: partition-synthesizer
 description: >
   Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report.
-  TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase.
-  DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase.
+  DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.
 tools: Read, Glob, Grep, Write
 model: inherit
 color: purple

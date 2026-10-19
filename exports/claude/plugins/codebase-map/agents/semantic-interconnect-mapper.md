@@ -2,8 +2,8 @@
 name: semantic-interconnect-mapper
 description: >
   Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers.
-  TRIGGER WHEN: spawned by /codebase-map:team-analyze, /senior-review:team-review or /project-knowledge:guide, or asked to map contracts, invariants, domain rules or integration boundaries.
-  DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /codebase-map:analyze or codebase-explorer first).
+  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-review's branch review (/daodan:review-branch) or by project-knowledge's guide method (/daodan:write-docs), or asked to map contracts, invariants, domain rules or integration boundaries.
+  DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /daodan:map-code or codebase-explorer first).
 tools: Read, Write, Glob, Grep, Bash
 model: inherit
 color: cyan

@@ -28,7 +28,7 @@ All in the main scratch package unless stated otherwise. Keep the full transcrip
 **Session 1, fresh session.** Full run, before the edit:
 
 ```
-/codebase-map:analyze src/ --depth=lite --run-name first
+/daodan:map-code src/ at lite depth, as a run named first
 ```
 
 Accept the classic scope confirmation (no candidate parent exists yet).
@@ -38,7 +38,7 @@ Apply the edit described above once Session 1 has published.
 **Session 2, fresh session.** No update flag:
 
 ```
-/codebase-map:analyze src/ --depth=lite --run-name second
+/daodan:map-code src/ at lite depth, as a run named second
 ```
 
 Detection should run on its own. At the checkpoint, choose option 1, incremental update from `first`.
@@ -46,7 +46,7 @@ Detection should run on its own. At the checkpoint, choose option 1, incremental
 **Session 3, fresh session.** `--no-update`, no further edit:
 
 ```
-/codebase-map:analyze src/ --depth=lite --no-update --run-name third
+/daodan:map-code src/ at lite depth, as a run named third, skipping update detection
 ```
 
 At the checkpoint, choose Cancel.
@@ -54,7 +54,7 @@ At the checkpoint, choose Cancel.
 **Session 4, fresh session.** `--update`, still no further edit, and deliberately not `--depth=lite` so the requested flags differ from `second`'s recorded flags:
 
 ```
-/codebase-map:analyze src/ --update --run-name fourth
+/daodan:map-code src/ at full depth, as a run named fourth that requires an update base
 ```
 
 At the checkpoint, read which option is the incremental one and note its number, then choose Cancel.
@@ -62,7 +62,7 @@ At the checkpoint, read which option is the incremental one and note its number,
 **Session 5, fresh session, in the second scratch directory**, which has no prior run:
 
 ```
-/codebase-map:analyze src/ --update
+/daodan:map-code src/ as an update that requires an update base
 ```
 
 ## Assertions

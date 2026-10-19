@@ -139,3 +139,10 @@ Review-oriented rule set for hunting type-system erosion in TypeScript codebases
 ## How to Use
 
 Read individual rule files in the `rules/` directory for detailed explanations and code examples. Each rule file contains a brief explanation, an incorrect example, a correct example, and a detection hint for reviewers.
+
+## Load map
+
+| Read | When |
+|------|------|
+| `rules/<rule-id>.md` | Confirming or fixing one rule's violation |
+| `references/audit.md` | Running the type-safety audit as a procedure (the TypeScript stack audit of `/daodan:check-health`): scope detection, tsc and ESLint ground truth, the isolated `type-safety-auditor` review and the scored report under the run directory |

@@ -459,6 +459,26 @@ def validate_reviews(section, rules, deliveries):
                                 f"which the computed roster of review {bound} does not contain")
 
 
+def validate_grants(record):
+    """Authorizations asked after init: each names its kind, scope and the user's answer."""
+    rules = contract()["grants"]
+    grants = record.get("grants", [])
+    if not isinstance(grants, list):
+        raise ProtocolError("grants must be an array")
+    seen = set()
+    for grant in grants:
+        if not isinstance(grant, dict) or set(rules["required"]) - set(grant):
+            raise ProtocolError("Each grant records " + ", ".join(rules["required"]))
+        if grant["id"] in seen:
+            raise ProtocolError(f"Grant id repeated: {grant['id']}")
+        seen.add(grant["id"])
+        if grant["kind"] not in rules["kinds"]:
+            raise ProtocolError(f"Grant {grant['id']}: kind must be one of {', '.join(rules['kinds'])}")
+        source = grant["source"]
+        if not isinstance(source, dict) or source.get("kind") != "user" or not str(source.get("reference", "")).strip():
+            raise ProtocolError(f"Grant {grant['id']} names the user's answer as its source")
+
+
 def validate_loop(record):
     """Validate the optional loop sections a lifecycle run carries."""
     rules = contract().get("loop")
@@ -512,7 +532,7 @@ def validate_record(record, project=None, root=None, current=False):
         raise ProtocolError("Required gates must be distinct nonempty identifiers")
     if not isinstance(record["objective"], str) or not record["objective"].strip():
         raise ProtocolError("An objective is required")
-    if record["operation"] not in {"assess", "repair", "change", "verify", "consolidate"}:
+    if record["operation"] not in rules["fields"]["operation"]["values"]:
         raise ProtocolError("Unknown lifecycle operation")
     if record["status"] not in rules["fields"]["status"]["values"]:
         raise ProtocolError("Invalid run status")
@@ -544,6 +564,7 @@ def validate_record(record, project=None, root=None, current=False):
                     if any(reserved.exists() and report.samefile(reserved)
                            for reserved in (directory / name for name in ("work.json", "result.json", ".write-lock"))):
                         raise ProtocolError("A coordinator record or lock is not a worker report")
+    validate_grants(record)
     validate_loop(record)
     if project is not None:
         if record["project"].get("root") != str(project):
@@ -583,6 +604,8 @@ def validate_transitions(old, new):
         raise ProtocolError("A complete run cannot be reopened")
     if new["required_gates"][:len(old["required_gates"])] != old["required_gates"]:
         raise ProtocolError("Required gates are append-only; a check cannot be removed or weakened")
+    if new.get("grants", [])[:len(old.get("grants", []))] != old.get("grants", []):
+        raise ProtocolError("Grants are append-only; an authorization cannot be altered or withdrawn")
     validate_loop_transitions(old, new)
     for key in ("phases", "deliveries"):
         for identity, before in old[key].items():

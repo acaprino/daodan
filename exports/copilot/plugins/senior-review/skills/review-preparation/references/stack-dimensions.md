@@ -78,9 +78,9 @@ Compiled binding and static checks do not prove an installed host executed a run
 Use the resolved target, relevant package configuration and exact candidate
 snapshot. Inspect the affected package in a monorepo; unrelated root dependencies
 are not an activation signal. Add these bindings to the native reviewer selection
-alongside the other dimensions. There is one dispatch round and one delivery ledger.
+alongside the other dimensions: one dispatch round, one delivery ledger.
 
-| Dimension ID | Automatic activation evidence | Canonical role |
+| Dimension ID | Automatic activation evidence | Role to dispatch |
 |---|---|---|
 | react | React in the relevant package and target includes JSX/TSX or affected React runtime | `react-development:react-performance-optimizer` |
 | typescript | Relevant TypeScript configuration and target includes TS/TSX/type contracts | `typescript-development:type-safety-auditor` |

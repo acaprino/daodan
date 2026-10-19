@@ -10,7 +10,7 @@ and [host setup](../hosts.md).
 
 ### `clean-code-agent`
 
-Rewrites source code for readability and maintainability with zero behavior changes. It is the worker behind `/clean-code:clean-code`: it applies a preview the method already prepared and approved.
+Rewrites source code for readability and maintainability with zero behavior changes. It is the worker behind `clean-code:readability-method`, which `/daodan:refactor-code` loads for readability-only work: it applies a preview the method already prepared and approved.
 
 | | |
 |---|---|
@@ -18,7 +18,7 @@ Rewrites source code for readability and maintainability with zero behavior chan
 | **Tools** | `Read, Edit, Write, Glob, Grep, Bash` |
 | **Use for** | Applying an approved readability preview: naming, comments, structure |
 
-**Invocation:** run `/clean-code:clean-code`, or load `clean-code:readability-method` from a coordinator. The method dispatches the agent with a prepared brief: owned files, approved changes, baseline, authorization and report path. The agent never loads the method, asks to proceed, dispatches other workers or commits. Given an incomplete brief it makes no edit and reports what is missing.
+**Invocation:** run `/daodan:refactor-code`, or load `clean-code:readability-method` from a coordinator. The method dispatches the agent with a prepared brief: owned files, approved changes, baseline, authorization and report path. The agent never loads the method, asks to proceed, dispatches other workers or commits. Given an incomplete brief it makes no edit and reports what is missing.
 
 **What it does:**
 - Renames vague variables and parameters to domain-meaningful names
@@ -35,29 +35,16 @@ Rewrites source code for readability and maintainability with zero behavior chan
 
 ---
 
-## Commands
+## Entry and method
 
-### `/clean-code:clean-code`
+The plugin has no command of its own. `/daodan:refactor-code` runs the task cycle's refactor operation; for readability-only work the lifecycle method's `references/refactor.md` loads `clean-code:readability-method` as the writer. A coordinator that already holds a run loads the same method. The method owns preparation, preview, transformation and validation. [project-protocol](project-protocol.md) supplies execution preflight, candidate-bound gates and recovery. Before editing, it captures the owned files' exact contents, including preexisting edits and untracked files.
 
-The command loads `clean-code:readability-method`, which owns preparation, preview, transformation and validation. [project-protocol](project-protocol.md) supplies execution preflight, candidate-bound gates and recovery. Before editing, it captures the owned files' exact contents, including preexisting edits and untracked files.
-
-```
-/clean-code:clean-code src/utils.py
-/clean-code:clean-code src/ --dry-run
-/clean-code:clean-code src/ --yes --strict
-```
-
-| Flag | Effect |
-|------|--------|
-| `--dry-run` | Preview changes without modifying files, then stop |
-| `--yes` | Skip the confirmation prompts and apply after showing the preview. Never bypasses the no-validation hard gate |
-| `--strict` | Step 5 also flags remaining readability concerns that were not auto-fixable |
-| `--force` | The only way past the hard gate: proceed even without tests or a type checker |
+The method previews first. It applies only with an authorization asked at that step, once, and recorded in the run; a caller's accepted plan already covering the same changes is reused. How strict the final report is stays a decision of the caller.
 
 **Pipeline:**
 1. **Identify target:** a file, or every source file in a directory, with test files filtered out
-2. **Establish validation baseline:** detects and runs the type checker, test runner and linter. **Hard gate:** with no tests and no type checker it stops and offers cancel or `--force`
-3. **Preview:** mandatory for `--dry-run` or a directory with more than 3 files; lists the proposed changes and asks for choices not already covered by an accepted plan or `--yes`
+2. **Establish validation baseline:** detects and runs the type checker, test runner and linter. **Hard gate:** with no tests and no type checker it stops rather than editing without a way to validate
+3. **Preview:** lists the proposed changes; nothing is modified until the apply authorization is granted
 4. **Apply:** spawns one `clean-code-agent` with the owned files, the approved changes, the baseline, the authorization and the report path; the agent applies them, validates its candidate and reports without committing
 5. **Validate and report:** re-runs type checks, tests and lint against the candidate. On a regression, restores the owned files' saved pre-edit contents while preserving existing edits; a later foreign edit stops restoration and is reported. New lint errors are fixed or recovered. It also searches non-code configuration and documentation for renamed symbols and reports stale references. A required remote check must identify the same committed candidate and the actual command/configuration/job attempt
 
@@ -71,7 +58,7 @@ The command loads `clean-code:readability-method`, which owns preparation, previ
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `2.0.5`. **Source:** [plugin.toml](<../../plugins/clean-code/plugin.toml>).
+**Version:** `3.0.0`. **Source:** [plugin.toml](<../../plugins/clean-code/plugin.toml>).
 
 ### Required dependencies
 
@@ -100,34 +87,8 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `clean-code:readability-method` | Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /clean-code:clean-code or lifecycle readability phases. | [readability-method](<../../plugins/clean-code/skills/readability-method/SKILL.md>) |
-| Role | `clean-code:clean-code-agent` | Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /clean-code:clean-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /clean-code:clean-code, which prepares and approves the change), or the target is prose or text (use text-humanizer). | [clean-code-agent](<../../plugins/clean-code/roles/clean-code-agent.md>) |
-| Workflow | `clean-code:clean-code` | Readability-only rewrite of existing source. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, or make code more maintainable without changing behavior. DO NOT TRIGGER WHEN: the target is prose or text (use /text-humanizer:humanize-text), or deep architectural refactoring (return to the development plan). | [clean-code](<../../plugins/clean-code/workflows/clean-code.md>) |
-
-### Workflow contracts
-
-Contracts describe observable outputs; Markdown bodies define decisions,
-flags, safety gates and execution. Declared `invoke` execution is unsupported.
-
-#### `clean-code:clean-code`
-
-**Arguments:** <code>&lt;file or directory&gt; [--dry-run] [--strict] [--yes] [--force]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `clean-code-completed` |
-| Artifacts | `clean-code-report` |
-| Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | `clean-code/clean-code-agent` |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [clean-code.toml](<../../plugins/clean-code/workflows/clean-code.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `scope` | None | None | `shared` | None declared | `preferred` |
-| `review` | `scope` | `clean-code-agent` | `required` | None declared | `preferred` |
+| Skill | `clean-code:readability-method` | Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /daodan:refactor-code for readability or lifecycle readability phases. | [readability-method](<../../plugins/clean-code/skills/readability-method/SKILL.md>) |
+| Role | `clean-code:clean-code-agent` | Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer). | [clean-code-agent](<../../plugins/clean-code/roles/clean-code-agent.md>) |
 
 ### Host exports
 
@@ -140,10 +101,10 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 | Host | Package | Binding | Selected workflow strategy |
 |---|---|---|---|
-| claude | [exports/claude/plugins/clean-code](<../../exports/claude/plugins/clean-code>) | `native` | `clean-code: native-team` |
-| copilot | [exports/copilot/plugins/clean-code](<../../exports/copilot/plugins/clean-code>) | `native` | `clean-code: parallel-subagents` |
-| codex | [exports/codex/plugins/clean-code](<../../exports/codex/plugins/clean-code>) | `adapted` | `clean-code: parallel-subagents` |
-| pi | [exports/pi/plugins/clean-code](<../../exports/pi/plugins/clean-code>) | `adapted` | `clean-code: parallel-subagents` |
-| opencode | [exports/opencode/plugins/clean-code](<../../exports/opencode/plugins/clean-code>) | `native` | `clean-code: parallel-subagents` |
+| claude | [exports/claude/plugins/clean-code](<../../exports/claude/plugins/clean-code>) | `native` | No workflow entry points |
+| copilot | [exports/copilot/plugins/clean-code](<../../exports/copilot/plugins/clean-code>) | `native` | No workflow entry points |
+| codex | [exports/codex/plugins/clean-code](<../../exports/codex/plugins/clean-code>) | `adapted` | No workflow entry points |
+| pi | [exports/pi/plugins/clean-code](<../../exports/pi/plugins/clean-code>) | `adapted` | No workflow entry points |
+| opencode | [exports/opencode/plugins/clean-code](<../../exports/opencode/plugins/clean-code>) | `native` | No workflow entry points |
 
 <!-- daodan:reference:end -->

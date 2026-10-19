@@ -3,7 +3,7 @@ name: mastering-typescript
 description: >
   Advanced TypeScript 5.x patterns, strict tsconfig/Vite/Vitest setup, type-level programming and Zod runtime schemas.
   TRIGGER WHEN: migrating JS to TS, bootstrapping a TS project, writing generics, conditional/mapped/branded types, discriminated unions, Zod schemas, or typing React/NestJS.
-  DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:review-react), or dead code (use knip).
+  DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:react-best-practices), or dead code (use knip).
 ---
 
 <daodan_host_binding host="claude">

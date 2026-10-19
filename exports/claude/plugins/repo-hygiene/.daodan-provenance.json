@@ -1,11 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:7feb64a8c8adc7195bc0b0ae2791fc2d279fb5d54369b683bf4e74b17521ce90",
-  "harnessStrategies": {
-    "tidy": "native-team"
-  },
+  "coreDigest": "sha256:23bfcfb952e5a91be0f32cd28e37366e6f2569f93fa115cc596a6091a01e1b51",
+  "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "repo-hygiene",
-  "version": "1.3.5"
+  "version": "2.0.0"
 }

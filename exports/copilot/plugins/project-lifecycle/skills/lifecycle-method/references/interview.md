@@ -127,8 +127,8 @@ Run `senior-review:review-method` with shape `light`, kind `spec` and stage
 the code, and its missing boundary or rejection examples. A false claim or a
 blocking finding reopens the interview on that point.
 
-On `--peer-review`, dispatch `peer-review:packet-builder` and
-`peer-review:respondent` through `peer-review:cross-model-peer-review` on the
-record; standoffs return to the user as decisions. On `--second-opinion`,
-load the `moe:multi-model-deliberation` skill with the record as the brief.
-Both are opt-in.
+When the user asks another model to challenge the record, dispatch
+`peer-review:packet-builder` and `peer-review:respondent` through
+`peer-review:cross-model-peer-review`; standoffs return to the user. For a
+second opinion, load the `moe:multi-model-deliberation` skill on the record.
+Neither runs unasked.

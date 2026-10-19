@@ -224,12 +224,15 @@ class OpenCodeManifestTests(unittest.TestCase):
     """The published manifest is what the loader reads, so it is read as the loader would."""
 
     def test_ids_carry_the_plugin_prefix(self):
-        entry = live_opencode_manifest()["daodan"]["plugins"]["senior-review"]
+        plugins = live_opencode_manifest()["daodan"]["plugins"]
+        entry = plugins["senior-review"]
         self.assertIn("senior-review:code-auditor", [a["id"] for a in entry["agents"]])
-        self.assertIn("senior-review:code-review", [c["name"] for c in entry["commands"]])
         self.assertIn(
             "senior-review:review-quality-gates", [s["id"] for s in entry["skills"]]
         )
+        # Every command is the entry plugin's since 38.0.0; a specialist registers none.
+        self.assertIn("daodan:review-branch", [c["name"] for c in plugins["daodan"]["commands"]])
+        self.assertNotIn("commands", entry)
 
     def test_dependencies_are_local_only(self):
         plugins = live_opencode_manifest()["daodan"]["plugins"]

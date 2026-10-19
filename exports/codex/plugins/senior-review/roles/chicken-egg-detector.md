@@ -344,7 +344,7 @@ Find dependencies that work only because of timing coincidence.
 
 ## Pipeline Conventions
 
-When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-review` Phase 2), follow these conventions in addition to the dimension-specific rules above.
+When invoked as part of a multi-reviewer pipeline (e.g., `/daodan:review-branch` Phase 2), follow these conventions in addition to the dimension-specific rules above.
 
 **Scope budget.** If after ~15 file reads you have not surfaced a finding in your dimension, the scope is too broad or your dimension is not relevant to this target. Stop, output a "no findings -- scope appears off-topic for this dimension" report, and return. Do not invent findings to fill space.
 
@@ -356,7 +356,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/daodan:review-branch`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

@@ -34,10 +34,32 @@ UNIT_BUDGETS = {
     "references/phase-7.md": 871,
 }
 
+# Since marketplace 38.0.0 the map's coordinator is `/daodan:map-code`, which loads
+# `map-method` and runs one entry unit, then deepens the area. These bodies are what
+# that coordinator reads, so the closure is measured from the entry units themselves.
+COORDINATORS = {
+    "coordinator:classic": (
+        "## Method loads\n"
+        "\n"
+        "| Resource | Sections | When |\n"
+        "|---|---|---|\n"
+        "| `references/entry-analyze.md` | all | always |\n"
+        "| `references/deepen.md` | section: Coordinator | always |\n"
+    ),
+    "coordinator:team": (
+        "## Method loads\n"
+        "\n"
+        "| Resource | Sections | When |\n"
+        "|---|---|---|\n"
+        "| `references/entry-team-analyze.md` | all | always |\n"
+        "| `references/deepen.md` | section: Coordinator | always |\n"
+    ),
+}
+
 BUDGETS = {
-    "workflows/analyze.md": 4_339,
+    "coordinator:classic": 3_840,
     "roles/map-analyst.md": 8_840,
-    "workflows/team-analyze.md": 12_798,
+    "coordinator:team": 7_430,
     "roles/partition-structure-worker.md": 4_280,
     "roles/partition-behavior-worker.md": 4_440,
     "roles/partition-quality-worker.md": 5_218,
@@ -211,7 +233,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
         components = tomllib.loads((PLUGIN / "plugin.toml").read_text(encoding="utf-8"))["components"]
         readers = {f"{kind}/{name}.md" for kind in ("roles", "workflows")
                    for name in components[kind]}
-        self.assertEqual(set(BUDGETS) - {"consumer"}, readers,
+        self.assertEqual(set(BUDGETS) - {"consumer"} - set(COORDINATORS), readers,
                          "A registered reader must not silently escape load measurement")
 
     def test_lite_phase_six_does_not_load_analyst_comment_procedures(self) -> None:
@@ -248,8 +270,9 @@ class XrayLoadBudgetTests(unittest.TestCase):
         self.assertLessEqual(words + len(body.split()), BUDGETS["roles/map-analyst.md"])
 
     def test_classic_coordinator_closure_excludes_analysis_units(self) -> None:
-        body = (PLUGIN / "workflows/analyze.md").read_text(encoding="utf-8")
-        core = {"SKILL.md", "references/entry-analyze.md", "references/run.md", "references/snapshot.md"}
+        body = COORDINATORS["coordinator:classic"]
+        core = {"SKILL.md", "references/entry-analyze.md", "references/run.md", "references/snapshot.md",
+                "references/deepen.md"}
         for mode in ("full", "lite", "update"):
             for documentation in (False, True):
                 for options in _option_sets():
@@ -447,7 +470,7 @@ class XrayLoadBudgetTests(unittest.TestCase):
         for rel, budget in BUDGETS.items():
             if rel == "consumer":
                 continue
-            body = (PLUGIN / rel).read_text(encoding="utf-8")
+            body = COORDINATORS[rel] if rel in COORDINATORS else (PLUGIN / rel).read_text(encoding="utf-8")
             self.assertTrue(_rows(body), f"{rel} has no explicit runtime read contract")
             for mode in ("full", "lite", "update"):
                 for documentation in (False, True):

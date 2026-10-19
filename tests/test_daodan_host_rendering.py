@@ -1,7 +1,10 @@
 """What each host package must say, checked on the real kernels.
 
-These tests render `codebase-map` and `senior-review` for every host and read
-the result the way the host's agent would. They exist because the first
+These tests render `codebase-map`, `senior-review` and the `daodan` entry plugin
+for every host and read the result the way the host's agent would. Since
+marketplace 38.0.0 every command is a `daodan` workflow: the harness tests read
+those entries, and the order a method owns (the team map's waves) is read from
+the method unit the entry loads. They exist because the first
 cross-host review of `codebase-map` found four things the compiler got wrong
 for Codex and Copilot while Claude looked fine: a harness header that said
 "once each" over a workflow that fans out per partition, a Copilot coordinator
@@ -31,7 +34,9 @@ from host_binding_assertions import canonical_markdown, without_host_binding, lo
 ADAPTERS = REPO_ROOT / "adapters"
 MAP = REPO_ROOT / "plugins/codebase-map"
 REVIEW = REPO_ROOT / "plugins/senior-review"
+ENTRY = REPO_ROOT / "plugins/daodan"
 LOOP = tuple(REPO_ROOT / "plugins" / name for name in ("peer-review", "moe", "project-lifecycle"))
+FIXTURE = REPO_ROOT / "tests/fixtures/daodan/valid/plugins/example"
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
 
@@ -56,12 +61,14 @@ class HostRenderingTests(unittest.TestCase):
     def setUpClass(cls):
         cls.temp = Path(tempfile.mkdtemp())
         cls.packages = {}
+        registry = {path.parent.name: load_plugin(path.parent)
+                    for path in (REPO_ROOT / "plugins").glob("*/plugin.toml")}
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
-            for plugin_root in (MAP, REVIEW, *LOOP):
-                plugin = load_plugin(plugin_root)
+            for plugin_root in (MAP, REVIEW, ENTRY, *LOOP):
+                plugin = registry[plugin_root.name]
                 staging = cls.temp / host / plugin.name
-                render_plugin(plugin, adapter, staging, adapters_root=ADAPTERS)
+                render_plugin(plugin, adapter, staging, adapters_root=ADAPTERS, plugin_registry=registry)
                 cls.packages[(host, plugin.name)] = staging
 
     @classmethod
@@ -87,29 +94,49 @@ class HostRenderingTests(unittest.TestCase):
 
     # -- dispatch plan -----------------------------------------------------
 
-    def test_classic_entries_bind_one_isolated_analyst_before_publication_on_every_host(self):
+    def test_the_map_entry_binds_every_isolated_map_worker_on_every_host(self):
+        # The map's procedure belongs to its entry units; the command binds the
+        # workers they dispatch, in isolated contexts, behind the delivery rules.
         for host in HOSTS:
-            for plugin, role in (("codebase-map", "map-analyst"),):
-                with self.subTest(host=host, plugin=plugin):
-                    text = self.harness(host, plugin, "analyze")
-                    plan = text[text.index("Dispatch plan:"):text.index("## Method")]
-                    phases = re.findall(r"^\d+\. `([a-z-]+)`:", plan, re.MULTILINE)
+            with self.subTest(host=host):
+                text = self.harness(host, "daodan", "map-code")
+                plan = text[text.index("Dispatch plan:"):text.index("## Method")]
+                phases = re.findall(r"^\d+\. `([a-z-]+)`:", plan, re.MULTILINE)
+                self.assertEqual(phases, ["prepare", "execute"])
+                self.assertIn("required", text.split("Dispatch plan:", 1)[0])
+                for role in ("map-analyst", "partition-structure-worker", "partition-behavior-worker",
+                             "partition-quality-worker", "partition-synthesizer",
+                             "semantic-interconnect-mapper"):
+                    self.assertIn(f"codebase-map:{role}", text)
+                for unit in ("references/entry-analyze.md", "references/entry-team-analyze.md",
+                             "references/deepen.md"):
+                    self.assertIn(unit, text)
+                self.assertIn("An empty final message or", text)
+                self.assertIn("worker stop remains missing delivery", text)
 
-                    self.assertEqual(phases, ["preflight", "analysis", "publish"])
-                    self.assertIn(f"`analysis`: one `{role}` in an isolated context", plan)
-                    self.assertIn("needs `preflight`; consumes `artifact:analysis-brief`", plan)
-                    self.assertIn("`publish`: runs in the orchestrating context; needs `analysis`", plan)
-                    self.assertIn("consumes `artifact:analyze-report`", plan)
-                    self.assertIn("produces `artifact:published-map`", plan)
-                    self.assertIn("required", text.split("Dispatch plan:", 1)[0])
-                    self.assertIn("An empty final message or", text)
-                    self.assertIn("worker stop remains missing delivery", text)
+    def test_the_team_map_order_and_barriers_are_owned_by_its_entry_unit(self):
+        # Before 38.0.0 the team command's phase graph rendered this order; the
+        # entry unit that the map command loads states it on every host.
+        for host in HOSTS:
+            with self.subTest(host=host):
+                unit = _read(self.package(host, "codebase-map")
+                             / "skills/map-method/references/entry-team-analyze.md")
+                prose = " ".join(unit.split())
+                self.assertIn("every partition worker runs in its own context and owns exactly one partition directory", prose)
+                self.assertIn("Wave 2 starts only after every Wave 1 worker has been recorded delivered or failed", prose)
+                self.assertIn("synthesis runs only after every partition has been accounted for", prose)
+                self.assertIn("**Execute phases in order.**", prose)
+                headings = [line for line in unit.splitlines() if line.startswith("## Phase ")]
+                self.assertEqual([heading.split(":")[0] for heading in headings],
+                                 ["## Phase 0", "## Phase 1", "## Phase 2", "## Phase 3", "## Phase 4"])
+                self.assertIn("Interconnect", headings[3])
+                self.assertIn("Synthesis", headings[2])
 
     def test_composed_classic_analyst_binding_uses_the_canonical_owner_on_every_host(self):
         for host in HOSTS:
             with self.subTest(host=host):
-                package = self.package(host, "senior-review")
-                text = self.harness(host, "senior-review", "team-review")
+                package = self.package(host, "daodan")
+                text = self.harness(host, "daodan", "review-branch")
                 self.assertNotIn("codebase-xray:map-analyst", text)
                 resource = package / "contracts/dispatch/codebase-map/map-analyst.md"
 
@@ -138,16 +165,16 @@ class HostRenderingTests(unittest.TestCase):
             shared_only = replace(adapter, strategies=tuple(
                 replace(strategy, isolated=False) for strategy in adapter.strategies
             ))
-            for root in (MAP,):
+            for root in (ENTRY,):
                 plugin = load_plugin(root)
                 classic = replace(plugin, workflows=tuple(
-                    workflow for workflow in plugin.workflows if workflow.name == "analyze"
+                    workflow for workflow in plugin.workflows if workflow.name == "map-code"
                 ))
                 with self.subTest(host=host, plugin=plugin.name):
                     self.assertIn(resolve_support(classic, adapter).state, {"native", "adapted"})
                     unavailable = resolve_support(classic, shared_only)
                     self.assertEqual(unavailable.state, "unsupported")
-                    self.assertEqual(unavailable.workflow_strategies, (("analyze", "none"),))
+                    self.assertEqual(unavailable.workflow_strategies, (("map-code", "none"),))
                     self.assertEqual(unavailable.missing_capabilities, ())
 
                     for capability in ("contexts.isolate", "roles.dispatch"):
@@ -160,42 +187,36 @@ class HostRenderingTests(unittest.TestCase):
     def test_fanout_per_selection_is_rendered_per_item_on_every_host(self):
         for host in HOSTS:
             with self.subTest(host=host):
-                text = self.harness(host, "codebase-map", "team-analyze")
+                text = self.harness(host, "daodan", "check-health")
                 self.assertIn(
-                    "one `partition-structure-worker` per item of `selection:partitions`", text
+                    "one `senior-review:cleanup-auditor` per item of `selection:cleanup`", text
                 )
                 self.assertIn(
-                    "one `partition-behavior-worker` per item of `selection:partitions`", text
+                    "one `testing:test-suite-auditor` per item of `selection:tests`", text
                 )
-                self.assertNotIn("once each: `partition-behavior-worker`", text)
+                self.assertNotIn("once each: `testing:test-suite-auditor`", text)
 
     def test_dispatch_plan_keeps_phase_order_and_barriers(self):
-        # The synthesizer consolidates 01..07 and leaves 08 to the mapper, which reads
-        # that consolidated output: synthesis must close before interconnect starts.
+        # The plan consolidates every audit: it may start only when each audit
+        # phase has recorded all its workers delivered or failed.
+        audits = ["audit-cleanup", "audit-tests", "audit-structure", "audit-instructions", "audit-workspace"]
         for host in HOSTS:
             with self.subTest(host=host):
-                text = self.harness(host, "codebase-map", "team-analyze")
+                text = self.harness(host, "daodan", "check-health")
                 plan = text[text.index("Dispatch plan") : text.index("## Method")]
                 order = [
                     match.group(1)
                     for match in re.finditer(r"^\d+\. `([a-z-]+)`:", plan, flags=re.MULTILINE)
                 ]
-                self.assertEqual(
-                    order,
-                    ["partition-selection", "structure", "behavior", "quality", "synthesis", "interconnect"],
-                )
+                self.assertEqual(order, ["prepare", *audits, "plan"])
                 lines = {name: next(line for line in plan.splitlines() if line.split(". ", 1)[-1].startswith(f"`{name}`:"))
                          for name in order}
-                self.assertIn("`structure`: one `partition-structure-worker`", plan)
-                self.assertIn("needs `structure`", plan)
-                self.assertIn("barrier `all-delivered`", plan)
-                self.assertIn("`synthesis`: one `partition-synthesizer`", lines["synthesis"])
-                self.assertIn("needs `behavior`, `quality`;", lines["synthesis"])
-                self.assertNotIn("interconnect", lines["synthesis"])
-                self.assertIn("`interconnect`: one `semantic-interconnect-mapper`", lines["interconnect"])
-                self.assertIn("needs `synthesis`", lines["interconnect"])
-                self.assertIn("consumes `artifact:xray-report`", lines["interconnect"])
-                self.assertIn("`partition-selection`: runs in the orchestrating context", plan)
+                for audit in audits:
+                    self.assertIn("barrier `all-delivered`", lines[audit])
+                    self.assertIn("needs `prepare`", lines[audit])
+                self.assertIn("needs " + ", ".join(f"`{audit}`" for audit in audits) + ";", lines["plan"])
+                self.assertIn("`plan`: runs in the orchestrating context", lines["plan"])
+                self.assertIn("`prepare`: runs in the orchestrating context", plan)
 
     def test_graph_mapping_obligations_survive_in_loaded_roles_and_nested_methods_on_every_host(self):
         for host in HOSTS:
@@ -245,20 +266,19 @@ class HostRenderingTests(unittest.TestCase):
                     self.assertIn("## Source reading", text)
 
     def test_static_fanout_still_dispatches_once_each(self):
-        text = self.harness("claude", "senior-review", "team-review")
-        self.assertIn(
-            "`cross-examination`: `logic-integrity-auditor` and `premise-auditor`, once each",
-            text,
-        )
-        self.assertIn(
-            "`independent-review`: one worker per item of `selection:reviewers`", text
-        )
-        self.assertIn("`consolidation`: one `code-auditor`", text)
+        # No shipped kernel declares a static fan-out since the review's roster
+        # became computed; the compiler path stays pinned on the valid fixture.
+        with tempfile.TemporaryDirectory() as temporary:
+            staging = Path(temporary) / "example"
+            render_plugin(load_plugin(FIXTURE), load_adapter(ADAPTERS, "claude"), staging,
+                          adapters_root=ADAPTERS)
+            text = _read(staging / "commands/review.md")
+        self.assertIn("`inspect`: `inspector`, once each", text)
 
     # -- copilot coordinator -----------------------------------------------
 
     def test_copilot_coordinator_gets_the_tools_its_capabilities_need(self):
-        meta = _frontmatter(self.harness("copilot", "codebase-map", "team-analyze"))
+        meta = _frontmatter(self.harness("copilot", "daodan", "map-code"))
         tools = meta["tools"]
         for tool in ("'agent'", "'search'", "'edit'", "'runCommands'"):
             self.assertIn(tool, tools)
@@ -293,37 +313,37 @@ class HostRenderingTests(unittest.TestCase):
     # -- workflow frontmatter and arguments --------------------------------
 
     def test_claude_classic_workflow_preserves_kernel_method_under_execution_binding(self):
-        rendered = _read(self.package("claude", "codebase-map") / "commands/analyze.md")
-        kernel = _read(MAP / "workflows/analyze.md").replace("\r\n", "\n")
+        rendered = _read(self.package("claude", "daodan") / "commands/map-code.md")
+        kernel = _read(ENTRY / "workflows/map-code.md").replace("\r\n", "\n")
         body = without_host_binding(self, rendered, "claude")
         kernel_body = kernel.split("\n---\n", 1)[1].lstrip("\n")
         self.assertEqual(body.split("## Method\n\n", 1)[1], canonical_markdown(kernel_body))
 
     def test_codex_flat_workflow_has_skill_frontmatter(self):
-        text = _read(self.package("codex", "codebase-map") / "skills/analyze-workflow/SKILL.md")
+        text = _read(self.package("codex", "daodan") / "skills/record-decision-workflow/SKILL.md")
         meta = _frontmatter(text)
         # Codex registers skills by frontmatter name, so the name carries the
-        # directory suffix: `codebase-map` also ships a skill, and a plugin
-        # with a skill and a workflow of one name (digital-marketing's
-        # brand-naming before marketplace 29.0.0) would otherwise register two skills under it.
-        self.assertEqual(meta["name"], "analyze-workflow")
+        # directory suffix: a plugin with a skill and a workflow of one name
+        # (digital-marketing's brand-naming before marketplace 29.0.0) would
+        # otherwise register two skills under it.
+        self.assertEqual(meta["name"], "record-decision-workflow")
         self.assertIn("description", meta)
         self.assertNotIn("argument-hint", meta)
-        self.assertIn("Arguments: `<target path>", text)
+        self.assertIn("Arguments: `<decision>`", text)
 
     def test_copilot_flat_workflow_keeps_the_argument_hint(self):
-        text = _read(self.package("copilot", "codebase-map") / "prompts/analyze.prompt.md")
+        text = _read(self.package("copilot", "daodan") / "prompts/record-decision.prompt.md")
         meta = _frontmatter(text)
-        self.assertEqual(meta["name"], "analyze")
+        self.assertEqual(meta["name"], "record-decision")
         self.assertIn("argument-hint", meta)
-        self.assertIn("<target path>", meta["argument-hint"])
+        self.assertIn("<decision>", meta["argument-hint"])
 
     def test_other_hosts_never_see_the_claude_arguments_variable(self):
         for host in ("copilot", "codex"):
             with self.subTest(host=host):
-                for name, text in self.markdown(host, "codebase-map").items():
+                for name, text in self.markdown(host, "daodan").items():
                     self.assertNotRegex(text, r"\$ARGUMENTS\b", name)
-                harness = self.harness(host, "codebase-map", "team-analyze")
+                harness = self.harness(host, "daodan", "map-code")
                 self.assertIn("<arguments>", harness)
                 self.assertIn("Wherever `<arguments>` appears", harness)
 
@@ -373,9 +393,11 @@ class HostRenderingTests(unittest.TestCase):
         )
 
     def test_opencode_team_command_dispatches_with_the_subagent_tool(self):
-        text = self.harness("opencode", "senior-review", "team-review")
+        text = self.harness("opencode", "daodan", "review-branch")
         self.assertIn("`subagent` tool", text)
-        self.assertIn('agent: "senior-review:', text)
+        self.assertIn('agent: "daodan:<role>"', text)
+        self.assertIn("external roles use their owner's prefix", " ".join(text.split()))
+        self.assertIn("`senior-review:code-auditor`: dispatch the installed `senior-review:code-auditor` agent", text)
         self.assertIn("background: true", text)
         self.assertNotIn("pi install", text)
         self.assertRegex(text, r"\$ARGUMENTS\b")
@@ -404,7 +426,7 @@ class HostRenderingTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_opencode_command_bodies_use_no_shell_template_syntax(self):
-        for plugin in ("codebase-map", "senior-review", "peer-review", "moe", "project-lifecycle"):
+        for plugin in ("daodan", "codebase-map", "senior-review", "peer-review", "moe", "project-lifecycle"):
             for path in self.package("opencode", plugin).glob("commands/*.md"):
                 self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
 
@@ -544,23 +566,16 @@ class ReportRenderingHostContracts(unittest.TestCase):
                         self.assertNotRegex(text, r"(?i)report-rendering[^\n]*(?:optional dependency|fallback)")
 
     def test_xray_coordinator_owns_the_view_and_preserves_static_coverage(self):
-        entrypoints = {
-            "claude": "commands/team-analyze.md",
-            "copilot": "agents/team-analyze-coordinator.agent.md",
-            "codex": "skills/team-analyze-workflow/SKILL.md",
-            "pi": "prompts/codebase-map-team-analyze.md",
-            "opencode": "commands/team-analyze.md",
-        }
-
+        # The map command's coordinator runs the entry units of `map-method`:
+        # those units, not the command, own the view and its completion gate.
         for host in HOSTS:
             with self.subTest(host=host):
                 package = self.package(host, "codebase-map")
-                coordinator = loaded_instruction_text(self, package / entrypoints[host], host)
-                phase = _read(package / "skills/map-method/references/phase-7.md")
-                view = _read(package / "skills/map-method/references/human-view.md")
-                classic = loaded_instruction_text(
-                    self, package / entrypoints[host].replace("team-analyze", "analyze"), host
-                )
+                references = package / "skills/map-method/references"
+                coordinator = _read(references / "entry-team-analyze.md")
+                phase = _read(references / "phase-7.md")
+                view = _read(references / "human-view.md")
+                classic = _read(references / "entry-analyze.md")
                 coordinator_prose = " ".join(coordinator.split())
                 phase_prose = " ".join(phase.split())
                 classic_prose = " ".join(classic.split())

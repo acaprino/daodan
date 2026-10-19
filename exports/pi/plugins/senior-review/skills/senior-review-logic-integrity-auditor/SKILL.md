@@ -1,6 +1,6 @@
 ---
 name: senior-review-logic-integrity-auditor
-description: 'Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: /senior-review:team-review Phase 2 runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).'
+description: 'Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: Phase 2 of senior-reviews branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).'
 disable-model-invocation: true
 ---
 
@@ -97,7 +97,7 @@ Before analysis, load the logic-integrity taxonomy using the host repository-rea
 
 You also depend on the **interconnect map** produced upstream:
 
-- **Required input:** `.team-review/02-interconnect.md` -- produced by `semantic-interconnect-mapper` (Phase 1b of /team-review). Every finding you produce must cite a specific anchor in this file plus a `file:line` in the code.
+- **Required input:** `.team-review/02-interconnect.md` -- produced by `semantic-interconnect-mapper` (Phase 1b of team-review). Every finding you produce must cite a specific anchor in this file plus a `file:line` in the code.
 
 ## PRIME DIRECTIVES
 
@@ -287,7 +287,7 @@ Do NOT pad findings to reach a quota. 0 findings on a clean codebase is a valid 
 
 ## Pipeline Conventions
 
-When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-review` Phase 2), follow these conventions in addition to the dimension-specific rules above. Note: the interconnect-anchor citation rule for this reviewer is stricter than the cross-cutting pipeline rule (every finding here cites an anchor, or carries the `[MAP-GAP]` marker with its own evidence) and is already covered in the agent body above.
+When invoked as part of a multi-reviewer pipeline (e.g., `/daodan:review-branch` Phase 2), follow these conventions in addition to the dimension-specific rules above. Note: the interconnect-anchor citation rule for this reviewer is stricter than the cross-cutting pipeline rule (every finding here cites an anchor, or carries the `[MAP-GAP]` marker with its own evidence) and is already covered in the agent body above.
 
 **Scope budget.** If after ~15 file reads you have not surfaced a finding in your dimension, the scope is too broad or your dimension is not relevant to this target. Stop, output a "no findings -- scope appears off-topic for this dimension" report, and return. Do not invent findings to fill space.
 
@@ -297,7 +297,7 @@ When invoked as part of a multi-reviewer pipeline (e.g., `/senior-review:team-re
 
 ## Output Persistence
 
-When you are spawned by a pipeline command (for example `/senior-review:team-review`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
+When you are spawned by a pipeline command (for example `/daodan:review-branch`) that gives you an output file path in the prompt, write your final report to that path using the host repository-write binding tool. Do not return the report only as message text. The orchestrator relies on the file being on disk for consolidation. If no path is provided, return the report inline as usual.
 
 ## Assigned knowledge inputs
 

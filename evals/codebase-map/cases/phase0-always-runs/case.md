@@ -9,7 +9,7 @@ A scratch Python package of 8 to 12 files with a `README.md`, a `CLAUDE.md` that
 ## Run
 
 ```
-/codebase-map:analyze src/ --depth=lite
+/daodan:map-code src/ at lite depth
 ```
 
 Accept the scope confirmation.

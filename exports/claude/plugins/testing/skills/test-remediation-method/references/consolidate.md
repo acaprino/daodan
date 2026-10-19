@@ -135,7 +135,7 @@ operational JSON remains state, not report content. Include:
 - Before/after table: files, test cases, runtime, coverage.
 - Behaviors dropped, each with the user's recorded reason from Step 4.
 - Quarantine entries processed and entries remaining for other modules.
-- Suggested next module by `/testing:test-audit`'s latest remediation ranking, when a `TEST_AUDIT.md` exists.
+- Suggested next module by the latest audit's remediation ranking, when a `TEST_AUDIT.md` exists.
 
 Preserve approved behavior/failure-mode mappings, independent oracles, bugfix
 provenance, exact candidate gate results and unavailable or unknown measurements.

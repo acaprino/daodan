@@ -72,7 +72,11 @@ class XraySkeletonTests(unittest.TestCase):
                     self.assertIn("Source reading", headings(matched[0]))
 
     def test_roles_do_not_carry_secondary_phase_skeletons(self):
-        for path in [*PLUGIN.glob("roles/*.md"), *PLUGIN.glob("workflows/*.md")]:
+        # Since 38.0.0 the plugin registers no workflow: the entry units the
+        # daodan map-code command loads are the coordinator instructions checked here.
+        entries = sorted(METHOD.glob("references/entry-*.md"))
+        self.assertEqual([path.name for path in entries], ["entry-analyze.md", "entry-team-analyze.md"])
+        for path in [*PLUGIN.glob("roles/*.md"), *entries]:
             for block in blocks(source_instruction_text(path)):
                 self.assertNotRegex(block, r"^# (?:Phase [1-7]:|Partition:|Codebase Map Analysis Report)", path.name)
 
@@ -106,7 +110,8 @@ class XraySkeletonTests(unittest.TestCase):
             for row in extensions((METHOD / "references" / f"{name}.md").read_text(encoding="utf-8")):
                 if row["mode"] == "consolidated":
                     available.add((row["file"], row["heading"]))
-        for rel in ("roles/semantic-interconnect-mapper.md", "workflows/team-analyze.md"):
+        # The team coordinator's lookups live in its entry unit since 38.0.0.
+        for rel in ("roles/semantic-interconnect-mapper.md", "skills/map-method/references/entry-team-analyze.md"):
             text = source_instruction_text(PLUGIN / rel)
             found = re.findall(r"`(?:<RUN_DIR>/)?(0[1-7]-[a-z-]+\.md) ## ([^`]+)`", text)
             self.assertGreaterEqual(len(found), 4, rel)

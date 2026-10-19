@@ -2,8 +2,8 @@
 name: repo-hygiene
 description: >
   Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state.
-  TRIGGER WHEN: running /repo-hygiene:tidy or the repo-hygiene dimension of a review pipeline.
-  DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review).
+  TRIGGER WHEN: running the tidy method (references/tidy.md) behind /daodan:tidy-repo or a lifecycle plan's workspace operations, or the repo-hygiene dimension of a review pipeline.
+  DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review), or test consolidation (use testing:test-remediation-method).
 ---
 
 <daodan_host_binding host="claude">
@@ -79,6 +79,12 @@ no symbol is understood. That is the whole membership rule: a check that needs t
 what a symbol is for, or whether a reference reaches it, does not belong in this
 catalog and belongs to `senior-review:cleanup-auditor` instead.
 
+## Load map
+
+| Read | When |
+|---|---|
+| `references/tidy.md` | Running the tidy method, the whole-tree pass behind `/daodan:tidy-repo`: scope, the preview report, the single apply authorization, the four phases, quarantine and the closing report. A lite caller never reads it. |
+
 ## Two profiles over one catalog
 
 The checks are defined once. Two profiles decide the perimeter, and nothing else
@@ -88,7 +94,7 @@ chosen perimeter is skipped rather than silently widened.
 | | **full** | **lite** |
 |---|---|---|
 | Perimeter | The whole working tree | Only files the diff ADDS |
-| Callers | `/repo-hygiene:tidy`, `repo-hygiene:workspace-auditor` | The inline hygiene pass of `/senior-review:code-review` and `/senior-review:pr-review` |
+| Callers | The tidy method (`references/tidy.md`), `repo-hygiene:workspace-auditor` | The inline hygiene pass of `senior-review:review-method` in its code and pull-request reviews |
 | C1 filesystem garbage | yes | yes, restricted to added paths |
 | C2 generated artifacts tracked | yes | yes, restricted to added paths |
 | C3 `.gitignore` completeness | yes | only for the ecosystems the added paths belong to |
@@ -252,8 +258,8 @@ Every finding carries the same six fields, whatever the profile:
   phase:       garbage | gitignore | scratch | git-state
 ```
 
-`phase` names the `/repo-hygiene:tidy` phase that resolves it. It never names a
-`senior-review` phase: the two commands own disjoint sets, and a finding that crosses
+`phase` names the tidy method's phase that resolves it. It never names a
+`senior-review` phase: the two methods own disjoint sets, and a finding that crosses
 that line is misfiled rather than merely mislabelled.
 
 ## Application safety

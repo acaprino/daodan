@@ -112,9 +112,9 @@ operation and does not create an operation=maintain record. There is one active
 lifecycle operation at a time. Each stage opens its own run on the candidate the
 previous one left. Finish or interrupt one before starting the next; a run is not
 resumed once another run has changed the workspace. Inside a lifecycle operation
-never launch another lifecycle workflow.
+never start another command.
 
-The maintain harness binds the workers required by these canonical methods. Before
+The `/daodan:run-maintenance` harness binds the workers required by these canonical methods. Before
 each stage, name its owning entry and load its installed method: senior-review's
 review-method with variant team-review for the baseline review, and lifecycle-method
 with the matching operation reference for assess, change, repair, verify and
@@ -456,7 +456,7 @@ Second opinions, offered and never run unasked
   project content to an external service.
 - Dependency facts come from the review's dependencies dimension when manifests are
   in scope. When the roadmap touches dependencies the review did not cover, offer the
-  standalone /dependency-audit:deps-audit run instead of imitating its tools.
+  standalone `dependency-audit:dependency-audit` audit instead of imitating its tools.
 - Offer a closing senior-review team-review of the final candidate, before Stage 5:
   the verify review has fewer lenses than the baseline review.
 With authorization --dry-run the campaign ends here.

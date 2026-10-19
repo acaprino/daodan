@@ -2,8 +2,8 @@
 name: abstraction-architect
 description: >
   Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness.
-  TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under /abstraction-architect:audit or /senior-review:team-review.
-  DO NOT TRIGGER WHEN: formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead code (use /senior-review:code-review --commit), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor).
+  TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under the audit method (references/audit.md, run by /daodan:check-health) or the reviews of /daodan:review-changes and /daodan:review-branch.
+  DO NOT TRIGGER WHEN: formatting (use clean-code:readability-method), Python refactoring (use python-development:python-refactor-method), dead code (use senior-review:application-cleanup-method), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor).
 ---
 
 <daodan_host_binding host="copilot">
@@ -108,7 +108,7 @@ Load it when:
 - Asking who canonically owns a fact, a policy, a threshold or a piece of state
 - Auditing for duplicated knowledge, competing authorities, redundant models, or stored state that is derivable
 - Evaluating whether an existing abstraction is paying for itself
-- Running `/abstraction-architect:audit`, which spawns the auditor agent that loads this skill
+- Running the audit method in `references/audit.md` (the structure dimension of `/daodan:check-health`), which spawns the auditor agent that loads this skill
 
 Do not load it for the concerns listed in `references/scope-boundaries.md`, which names the owner of each.
 
@@ -118,6 +118,7 @@ Load on demand, not all up front.
 
 | File | Read it when |
 |---|---|
+| `references/audit.md` | Coordinating the audit for a caller (the coordinator reads it; the auditor starts at `dimensions.md`): target forms, mode, scope, focus and index decisions, Codebase Map acquisition, concept index state, auditor dispatch and output location. |
 | `references/dimensions.md` | Classifying a candidate. D1 to D7 with proof rules, lenses L1 to L4, the single-primary-classification precedence. **Start here.** |
 | `references/evidence-tracks.md` | Deciding whether a candidate has enough evidence. Tracks A and B, gates `A1` to `A5` and `K1` to `K6`. |
 | `references/concept-census.md` | Running a global audit. Seed map, concept extraction, the four search families, the Concept Evidence Index. |

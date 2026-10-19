@@ -1,12 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:9099d7db64de9e38f4ec05dd1eebf6a9d5e3201de31f9876825758b6971a765d",
-  "harnessStrategies": {
-    "test-audit": "parallel-subagents",
-    "test-consolidate": "parallel-subagents"
-  },
+  "coreDigest": "sha256:0dbe0072fa70769554b3b2247a07a4902db20bbe396cd567b8ce70d96330720f",
+  "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "testing",
-  "version": "3.1.4"
+  "version": "4.0.0"
 }

@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "moe"
-version = "1.2.0"
+version = "2.0.0"
 description = "Ultra Nerd: bounded multi-model problem solving with independent proposals, reciprocal challenges and evidence-backed synthesis. Explicit opt-in for difficult tasks with increased token consumption."
 license = "MIT"
 
@@ -14,7 +14,7 @@ required = ["peer-review"]
 [components]
 skills = ["multi-model-deliberation"]
 roles = []
-workflows = ["ultra-nerd"]
+workflows = []
 policies = []
 
 [[mcp.servers]]

@@ -11,13 +11,13 @@ A scratch package of 8 to 12 Python files.
 First, in one session:
 
 ```
-/codebase-map:analyze src/ --depth=lite --run-name first
+/daodan:map-code src/ at lite depth, as a run named first
 ```
 
 Then, in a fresh session, with the first run's output left in place:
 
 ```
-/codebase-map:analyze src/ --depth=lite --run-name second
+/daodan:map-code src/ at lite depth, as a new run named second
 ```
 
 Accept the scope confirmation both times. In the second session, when the pre-flight lists the completed first run, choose to start alongside.

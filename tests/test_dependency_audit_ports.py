@@ -1,12 +1,17 @@
 """Cross-host package parity for the first real compiled plugin.
 
-`dependency-audit` is the simple canary: one skill, one workflow, one context.
-It proves the compiler produces one installable package per host with the same
-identity and the same observable contract before anything harder is attempted.
+`dependency-audit` is the simple canary: one skill, one context. It proves the
+compiler produces one installable package per host with the same identity and
+the same observable contract before anything harder is attempted. Since
+marketplace 38.0.0 it registers no workflow: its audit is the skill's
+`references/audit.md`, and the command that reaches it on every host is
+`daodan:check-health`, whose assessment loads that unit when manifests exist.
 """
 
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -16,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.adapter import HOSTS, load_adapter  # noqa: E402
 from scripts.daodan.load import load_plugin  # noqa: E402
+from scripts.daodan.render import render_plugin  # noqa: E402
 from host_binding_assertions import canonical_markdown, without_host_binding
 
 PLUGIN = "dependency-audit"
@@ -29,38 +35,49 @@ MANIFEST = {
     "codex": ".codex-plugin/plugin.json",
 }
 
+#: The entry that reaches the audit on each host. Copilot splits it in two: the
+#: prompt hands off to a coordinator agent, which carries the harness and method.
+ENTRY = REPO_ROOT / "plugins" / "daodan"
+ENTRY_WORKFLOW = "check-health"
 WORKFLOW_ENTRYPOINT = {
-    "claude": "commands/deps-audit.md",
-    "copilot": "prompts/deps-audit.prompt.md",
-    "codex": "skills/deps-audit-workflow/SKILL.md",
-    "pi": "prompts/dependency-audit-deps-audit.md",
-    "opencode": "commands/deps-audit.md",
+    "claude": "commands/check-health.md",
+    "copilot": "prompts/check-health.prompt.md",
+    "codex": "skills/check-health-workflow/SKILL.md",
+    "pi": "prompts/daodan-check-health.md",
+    "opencode": "commands/check-health.md",
 }
+METHOD_CARRIER = {**WORKFLOW_ENTRYPOINT, "copilot": "agents/check-health-coordinator.agent.md"}
 
 PROVENANCE = ".daodan-provenance.json"
 
 #: What each host's workflow frontmatter opens with. Pi and OpenCode carry no
 #: `name`: on Pi the command is the filename, on OpenCode the loader names it.
 FRONTMATTER_PREFIX = {
-    "copilot": "---\nname: deps-audit\n",
-    "codex": "---\nname: deps-audit-workflow\n",
+    "claude": "---\ndescription:",
+    "copilot": "---\nname: check-health\n",
+    "codex": "---\nname: check-health-workflow\n",
     "pi": "---\ndescription:",
     "opencode": "---\ndescription:",
 }
 
 SKILL_RESOURCES = (
     "skills/dependency-audit/SKILL.md",
+    "skills/dependency-audit/references/audit.md",
     "skills/dependency-audit/references/ecosystems.md",
     "skills/dependency-audit/references/license-analysis.md",
     "skills/dependency-audit/references/supply-chain.md",
 )
 
-CONTRACT_OUTCOMES = (
-    "dependencies-discovered",
-    "direct-and-transitive-classified",
-    "licenses-analyzed",
-    "supply-chain-findings-evidenced",
-)
+#: Each outcome the retired `deps-audit` sidecar declared, with the sentence of
+#: the audit unit that now carries it. Since 38.0.0 the unit is the contract.
+CONTRACT_OUTCOMES = {
+    "dependencies-discovered": "List what was found and what will be audited.",
+    "direct-and-transitive-classified": "whether the package is a direct or transitive dependency",
+    "licenses-analyzed": "apply the obligations analysis in the `dependency-audit:dependency-audit` skill, "
+                         "file `references/license-analysis.md`",
+    "supply-chain-findings-evidenced": "Every supply-chain finding is a pointer requiring human verification",
+    "remediation-is-non-destructive": "**Non-destructive, always.** Never run `npm audit fix --force` or any forced fix.",
+}
 
 
 def normalized(path: Path) -> str:
@@ -73,6 +90,26 @@ def package(host: str) -> Path:
 
 
 class DependencyAuditPortTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # The entry's roles and the assessment that loads the audit belong to
+        # other plugins, so the entry renders against the whole registry.
+        cls.temp = Path(tempfile.mkdtemp())
+        cls.rendered = {}
+        registry = {path.parent.name: load_plugin(path.parent)
+                    for path in (REPO_ROOT / "plugins").glob("*/plugin.toml")}
+        for host in HOSTS:
+            adapter = load_adapter(REPO_ROOT / "adapters", host)
+            for name in ("daodan", "project-lifecycle"):
+                staging = cls.temp / host / name
+                render_plugin(registry[name], adapter, staging,
+                              adapters_root=REPO_ROOT / "adapters", plugin_registry=registry)
+                cls.rendered[(host, name)] = staging
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.temp, ignore_errors=True)
+
     def test_every_host_reports_the_same_identity(self):
         kernel = load_plugin(KERNEL)
         for host in HOSTS:
@@ -104,52 +141,62 @@ class DependencyAuditPortTests(unittest.TestCase):
                         canonical_markdown(normalized(KERNEL / resource)),
                     )
 
-    def test_every_host_exposes_one_invocable_audit_workflow(self):
-        """The kernel body reaches every host whole; only the frontmatter is the host's.
+    def test_every_host_exposes_one_invocable_entry_that_reaches_the_audit(self):
+        """The entry body reaches every host whole; only the frontmatter is the host's.
 
-        Each host gets its exact verified execution binding. Claude keeps the
-        source fields and body; Codex and Copilot get host
-        frontmatter (`name`, `description`, and on Copilot `argument-hint`)
-        above the same body, with the compiler's generated-file comment in
-        between, so the comparison strips both frontmatters and asks for the
-        body itself.
+        Since 38.0.0 the audit is invoked through `daodan:check-health`. Each
+        host gets its exact verified execution binding and its own frontmatter
+        (`name` on Codex and Copilot, `argument-hint` on Copilot); the method
+        under the harness is the kernel body with the two Claude placeholders
+        rewritten as the adapter layout says. The body loads the assessment,
+        and the assessment, rendered on the same host, names the audit unit.
         """
-        kernel = normalized(KERNEL / "workflows/deps-audit.md")
-        kernel_body = kernel[kernel.index("\n---\n", 4) + 5 :].strip()
+        kernel = normalized(ENTRY / f"workflows/{ENTRY_WORKFLOW}.md")
+        kernel_body = kernel[kernel.index("\n---\n", 4) + 5:].lstrip("\n")
+        self.assertIn("project-lifecycle:lifecycle-method", kernel_body)
+        self.assertIn("`references/assess.md`", kernel_body)
         for host, entrypoint in WORKFLOW_ENTRYPOINT.items():
             with self.subTest(host=host):
-                target = package(host) / entrypoint
+                target = self.rendered[(host, "daodan")] / entrypoint
                 self.assertTrue(target.is_file(), f"missing: {target}")
                 exported = normalized(target)
                 self.assertEqual(exported, canonical_markdown(exported), "Generated EOF must be canonical")
                 rendered = without_host_binding(self, exported, host)
-                if host == "claude":
-                    self.assertEqual(rendered, canonical_markdown(kernel))
-                    continue
-                # The two Claude placeholders are the one rewrite a body gets on
-                # another host; the adapter layout says what they become there.
+                self.assertTrue(rendered.startswith(FRONTMATTER_PREFIX[host]), rendered[:60])
                 layout = load_adapter(REPO_ROOT / "adapters", host).layout
+                if host == "copilot":
+                    self.assertIn("argument-hint", rendered.split("\n---\n", 1)[0])
+                    self.assertIn(f"`daodan:{ENTRY_WORKFLOW}-coordinator`", rendered)
+                carrier = normalized(self.rendered[(host, "daodan")] / METHOD_CARRIER[host])
+                method = without_host_binding(self, carrier, host).split("## Method\n\n", 1)[1]
                 expected = kernel_body.replace(
                     "${CLAUDE_PLUGIN_ROOT}", layout["plugin_root_reference"]
                 ).replace("$ARGUMENTS", layout["arguments_reference"])
-                self.assertTrue(
-                    rendered.startswith(FRONTMATTER_PREFIX[host]), rendered[:60]
-                )
-                body = rendered[rendered.index("\n---\n", 4) + 5:].lstrip("\n")
-                notes = ""
-                arguments_note = layout.get("arguments_note")
-                if arguments_note:
-                    hint = kernel.partition("argument-hint:")[2].partition("\n")[0].strip().strip('"')
-                    notes = f"> Arguments: `{hint}`. {arguments_note}\n\n"
-                generated = f"<!-- Generated by the Daodan compiler for {host}. Edit the kernel, never this file. -->"
-                self.assertEqual(body, notes + generated + "\n\n" + expected + "\n")
+                self.assertEqual(method, canonical_markdown(expected))
+                assess = normalized(self.rendered[(host, "project-lifecycle")]
+                                    / "skills/lifecycle-method/references/assess.md")
+                self.assertIn("`dependency-audit:dependency-audit` when manifests exist", assess)
+        self.assertIn("project-lifecycle", load_plugin(ENTRY).required_dependencies)
+        self.assertIn("dependency-audit", load_plugin(REPO_ROOT / "plugins/project-lifecycle").required_dependencies)
 
-    def test_the_kernel_declares_the_audit_contract(self):
-        workflow = load_plugin(KERNEL).workflows[0]
-        self.assertEqual(workflow.name, "deps-audit")
-        for outcome in CONTRACT_OUTCOMES:
-            self.assertIn(outcome, workflow.contract.outcomes)
-        self.assertEqual(workflow.contract.artifacts, ("dependency-audit-report",))
+    def test_the_audit_method_states_the_audit_contract(self):
+        # Until 38.0.0 the `deps-audit` sidecar declared these outcomes and the
+        # report artifact. No kernel declares that workflow any more; the audit
+        # unit the entry loads owns each obligation, and its report is the
+        # caller's, written outside the project tree.
+        plugin = load_plugin(KERNEL)
+        self.assertEqual(plugin.workflows, ())
+        self.assertEqual(plugin.components.skills, ("dependency-audit",))
+        unit = normalized(KERNEL / "skills/dependency-audit/references/audit.md")
+        prose = " ".join(unit.split())
+        for outcome, sentence in CONTRACT_OUTCOMES.items():
+            with self.subTest(outcome=outcome):
+                self.assertIn(sentence, prose)
+        steps = [line.split(":")[0] for line in unit.splitlines() if line.startswith("### Step ")]
+        self.assertEqual(steps, [f"### Step {number}" for number in range(1, 8)])
+        self.assertIn("## Output Format", unit)
+        self.assertIn("# Dependency Audit: <path>", unit)
+        self.assertIn("goes in the run directory, never in the project tree", prose)
 
     def test_the_kernel_needs_no_semantic_override(self):
         for host in MANIFEST:

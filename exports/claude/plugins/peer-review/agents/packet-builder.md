@@ -2,7 +2,7 @@
 name: packet-builder
 description: >
   Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract.
-  TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1.
+  TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 1.
 model: inherit
 color: cyan
 ---
@@ -87,7 +87,7 @@ No review, no opinion on the artifact's merits. Build the brief; do not argue it
 
 ## Inputs
 
-Read from the invoking command's prompt:
+Read from the invoking coordinator's prompt:
 
 - **artifact path**: the plan, spec, or decision brief on trial. Read it whole. Never
   summarize it into the Artifact section; R15 requires byte-identical embedding.
@@ -237,6 +237,6 @@ packet that fails its own checklist.
 ## Output Contract
 
 Write `00-packet.md` to the run directory and nothing else. Never edit the artifact,
-the protocol files, or any other run file. Report back to the command: the byte size
+the protocol files, or any other run file. Report back to the coordinator: the byte size
 of `00-packet.md` and its section list, the two facts R5 requires the operator to see
 before consent. This agent never transmits the packet; it only builds it.

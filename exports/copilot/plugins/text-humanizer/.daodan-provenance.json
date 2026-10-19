@@ -1,11 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:ed26e5c6c2b741e5917b9ce5da9124e9d4574d7f8884f5f90f06d90ce28815ac",
-  "harnessStrategies": {
-    "humanize-text": "parallel-subagents"
-  },
+  "coreDigest": "sha256:569a8420795dde006a3d12e5ceb3aaf23477b8afc53e024c584856c91e3697e0",
+  "harnessStrategies": {},
   "host": "copilot",
   "overrides": [],
   "plugin": "text-humanizer",
-  "version": "1.2.5"
+  "version": "2.0.0"
 }

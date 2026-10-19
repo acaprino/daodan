@@ -1,6 +1,6 @@
 # Runner Playbook
 
-Detection signals and measurement commands per test runner. Used by `/testing:test-audit`, `/testing:test-consolidate`, and the test-suite-auditor. Every command here is read-only with respect to the code; commands that RUN the suite are marked, and the caller decides whether running is permitted (`--no-run`).
+Detection signals and measurement commands per test runner. Used by the audit and consolidate modes of `testing:test-remediation-method`, and the test-suite-auditor. Every command here is read-only with respect to the code; commands that RUN the suite are marked, and the caller decides whether running is permitted (`--no-run`).
 
 ## Detection
 

@@ -1,6 +1,6 @@
 ---
 name: tech-writer
-description: 'Document the verified stack, architecture and data model in planned files. TRIGGER WHEN: spawned by /project-knowledge:guide to author technical architecture and data-model documentation.'
+description: 'Document the verified stack, architecture and data model in planned files. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author technical architecture and data-model documentation.'
 tools: ['search', 'edit', 'runCommands']
 ---
 

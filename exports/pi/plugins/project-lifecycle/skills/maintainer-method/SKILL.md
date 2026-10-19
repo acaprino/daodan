@@ -2,8 +2,8 @@
 name: maintainer-method
 description: >
   Coordinate the complete Senior Maintainer rationalization campaign.
-  TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome.
-  DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.
+  TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance.
+  DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use lifecycle-method).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -127,7 +127,8 @@ Also exclude .daodan/, .codebase-map/, .codebase-xray/, .team-review/, .repo-hyg
 other report root this campaign writes. Declare dependency/build exclusions that
 are outside the intended scope. Scope exclusions are concrete paths, not globs.
 
-An optional handover must identify project-lifecycle:handover in its request.json.
+An optional handover must identify /daodan:onboard-project in its request.json, or
+the former handover command for a dossier written before marketplace 38.0.0.
 Validate its exact assess run and result with --current before reusing it, compare
 scope and supplied evidence with this target, and read its limitations. Changed
 inputs require fresh evidence. Historical observations may be attributed as such;
@@ -187,8 +188,8 @@ in the campaign or replace a missing role with another worker.
 
 The lifecycle method's operation references and canonical domain methods retain
 all their gates. Perform one lifecycle operation, close or interrupt it, then
-return here before preparing another. The campaign never recursively launches
-one lifecycle workflow from inside another lifecycle operation. When entering a
+return here before preparing another. The campaign never starts a command from
+inside a lifecycle operation. When entering a
 native owner entry requires a user transition, record it and provide the exact
 entry/resume request. Do not claim the compiler's TOML invoke can execute it.
 

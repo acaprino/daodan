@@ -5,8 +5,8 @@
 """Transport-only MCP server for the peer-review plugin.
 
 Knows endpoint, auth, request, response, retry, limits. Nothing else: no knowledge of
-the deliberation protocol, no telemetry, no disk writes. The command owns the run
-directory.
+the deliberation protocol, no telemetry, no disk writes. The review method owns the
+run directory.
 
 It reads from disk in exactly one place, `_load_payload`, and only inside a
 `.peer-review/` run directory. That read is not a convenience: it is what makes R15

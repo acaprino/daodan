@@ -1,5 +1,5 @@
 ---
-description: 'Write verified reader-specific onboarding and real open questions. TRIGGER WHEN: spawned by /project-knowledge:guide to author onboarding documentation.'
+description: 'Write verified reader-specific onboarding and real open questions. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author onboarding documentation.'
 mode: subagent
 permissions:
   - action: "*"

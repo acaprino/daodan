@@ -1,0 +1,71 @@
+name = "refactor-code"
+entrypoint = "refactor-code.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work"]
+
+[[phases]]
+id = "execute"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:work"]
+produces = ["artifact:result"]
+
+[dispatch]
+roles = [
+  "abstraction-architect/abstraction-architect-agent",
+  "clean-code/clean-code-agent",
+  "codebase-map/map-analyst",
+  "codebase-map/semantic-interconnect-mapper",
+  "peer-review/brief-builder",
+  "peer-review/packet-builder",
+  "peer-review/respondent",
+  "platform-engineering/platform-reviewer",
+  "project-knowledge/codebase-explorer",
+  "project-knowledge/doc-humanizer",
+  "project-knowledge/documentation-engineer",
+  "project-knowledge/flow-writer",
+  "project-knowledge/guide-reviewer",
+  "project-knowledge/instructions-auditor",
+  "project-knowledge/onboarding-writer",
+  "project-knowledge/ops-writer",
+  "project-knowledge/overview-writer",
+  "project-knowledge/tech-writer",
+  "python-development/python-engineer",
+  "python-development/python-refactor-agent",
+  "react-development/react-performance-optimizer",
+  "repo-hygiene/workspace-auditor",
+  "senior-review/api-contract-auditor",
+  "senior-review/chicken-egg-detector",
+  "senior-review/cleanup-auditor",
+  "senior-review/code-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/distributed-flow-auditor",
+  "senior-review/logic-integrity-auditor",
+  "senior-review/premise-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/security-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/ui-race-auditor",
+  "testing/test-suite-auditor",
+  "testing/test-writer",
+  "text-humanizer/text-humanizer",
+  "typescript-development/type-safety-auditor",
+  "typescript-development/typescript-engineer",
+]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = [
+  "project",
+  "objective",
+  "scope",
+  "authorization",
+]
+outcomes = ["scope-and-candidate-identified", "deliveries-and-required-gates-accounted", "limits-and-open-actions-visible"]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

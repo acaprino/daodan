@@ -77,20 +77,19 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Ownership
 
-A workflow may declare `[dispatch]` independently of its phase graph: `roles`
-lists exact local or `provider/role` identities, `isolated` requires a separate
-context, and boolean `inline_workers` binds only this plugin's canonical
-`isolated-worker`. That binding requires a hard provider dependency and isolation.
-It accepts a concrete task and report contract without exposing other registry
-roles. Loaded methods retain their domain prompts; metadata carries no prompt.
+A workflow's `[dispatch]` names the roles its loaded methods may dispatch;
+`inline_workers` binds this plugin's `isolated-worker`, which takes a concrete
+task and report contract and exposes no other role. A coordinator sets a
+method's `--option` from the user's words or its default; an authorization
+comes only from a grant.
 
 This leaf owns operational records and their validation. Canonical contracts are
 `${CLAUDE_PLUGIN_ROOT}/contracts/work.toml` and
 `${CLAUDE_PLUGIN_ROOT}/contracts/project-result.toml`. Consumers declare those
 exports by provider/path in `contract.shared_schemas`; they never copy them.
 Review findings, severity and native dispositions remain the domain owner's
-payload. A common result references the original report, its hash, its author,
-its input snapshot and the adapter that interpreted it.
+payload. A common result references the original report, its hash, author,
+input snapshot and interpreting adapter.
 
 Operational state lives under `.daodan/` of the repository's main checkout
 (the project itself outside Git), so a worktree's records survive its removal
@@ -153,7 +152,7 @@ another session holds is refused until `--take-over`, once the user confirms
 that session is closed. A branch holds one open loop task; a completed run
 releases its row.
 
-Pass `--out` consistently once a custom root is selected. Init requires
+Keep a custom `--out` consistent. Init requires
 `operation`, `objective`, `scope` (`paths`, optional `focus` and `excluded`),
 `authorizations` and `budget`; phases, plan, deliveries and gates default to
 empty. Declare every expected worker in `deliveries` before dispatch and every
@@ -162,7 +161,10 @@ are append-only. Init, show and update emit the full record.
 
 Update merges objects and replaces arrays, refuses a revision mismatch, and
 captures the current `candidate` binding. Identity, original scope,
-authorizations, the baseline binding and a completed run are immutable.
+authorizations, the baseline binding and a completed run are immutable. An
+authorization asked later, at the step that needs it, is appended to `grants`
+(kind `fix`, `commit`, `merge`, `push`, `purge`, `send`, `publish` or
+`install`, its scope, the user's answer as `source`); grants are append-only.
 
 A gate carries its status, the candidate snapshot digest and `head`, and
 evidence naming the command or the remote job with its exact revision and
@@ -179,8 +181,8 @@ or workspace identity; `--result` checks the envelope against this revision,
 snapshot, ledger and gates. Resume needs current `authorizations` and an
 equal scope, verifies project, worktree, HEAD and candidate, returns the
 record with pending phases, deliveries and questions, and changes nothing.
-New input or a broader authorization is a new run. Record an interruption's
-reason and phase at once.
+New input or a broader scope is a new run. Record an interruption's reason and
+phase at once.
 
 ## Loop sections
 
@@ -248,10 +250,7 @@ elsewhere is a prompt obligation until an adapter has a measured mechanism.
 
 ## Compiler dispatch resources
 
-Cross-plugin role bindings resolve against the kernel registry and mandatory
-dependencies. Named-agent hosts receive the owner-qualified identity; inline
-adapters receive only the external bodies the phase graph declares, as
-generated `contracts/dispatch/<owner>/<role>.md` resources naming their
-owner, version and source hash: compiler output, not copies or new roles.
-Resolve an owner-relative helper from that owner's installed skill, not the
-coordinator's root.
+Named-agent hosts dispatch the owner-qualified identity; inline adapters read
+another plugin's role from a generated `contracts/dispatch/<owner>/<role>.md`
+naming its owner, version and source hash. Resolve an owner-relative helper
+from that owner's installed skill, not the coordinator's root.

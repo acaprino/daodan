@@ -7,7 +7,7 @@ description: >
 
 # Durable instructions method
 
-Load `project-protocol:project-protocol` for run records and gates.
+Load the skill `project-protocol:project-protocol` for run records and gates.
 Receive project root, worktree/snapshot, scope, requested instruction destinations,
 mode, existing files, evidence paths and authorizations. Reuse the caller's run.
 

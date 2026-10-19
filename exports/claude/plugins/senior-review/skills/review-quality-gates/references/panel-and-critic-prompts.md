@@ -68,7 +68,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 On-demand reference for `senior-review:review-quality-gates`.
 
-## 1. Context-Aware Reviewer Prompt Template (`/team-review`)
+## 1. Context-Aware Reviewer Prompt Template (`team-review`)
 
 ```
 You are reviewing for the {dimension} dimension.
@@ -113,7 +113,7 @@ tool line from the evidence pack; report what tools cannot see.
 Write your output to .team-review/findings-{dimension}.md.
 ```
 
-**Path substitution:** In `/team-review`, the Codebase Map line resolves to `$XRAY_RUN_DIR` (the immutable directory of the run Phase 1a started; never the `.codebase-map/` mirror). `/code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.codebase-map/` mirror when consuming a pre-existing analysis.
+**Path substitution:** In `team-review`, the Codebase Map line resolves to `$XRAY_RUN_DIR` (the immutable directory of the run Phase 1a started; never the `.codebase-map/` mirror). `code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.codebase-map/` mirror when consuming a pre-existing analysis.
 
 ---
 
@@ -146,7 +146,7 @@ Decide and state whether the counterexample falsifies the PREMISE itself or only
 a piece of shared SUPPORT.
 ```
 
-*(In `/code-review`, Codebase Map resolves to `.codebase-map/`, and interconnect/provenance lines are omitted.)*
+*(In `code-review`, Codebase Map resolves to `.codebase-map/`, and interconnect/provenance lines are omitted.)*
 
 ### Lens 1 Prompt (Reachability / Correctness)
 

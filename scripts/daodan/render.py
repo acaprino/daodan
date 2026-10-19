@@ -551,7 +551,29 @@ def _flat_workflow(
     return rendered, hint
 
 
-def _coordinator_tools(plugin: PluginSpec, adapter: HostAdapter) -> str:
+def _closure_servers(plugin: PluginSpec, plugin_registry: Mapping[str, PluginSpec] | None) -> list[str]:
+    """MCP server names of the plugin and of every required local provider it reaches.
+
+    An entry plugin declares no server of its own, yet its coordinator runs the
+    providers' methods, which call their servers: the allowance follows the
+    dependency closure, not the package that happens to render the coordinator.
+    """
+    names = {server.name for server in plugin.mcp_servers}
+    pending = list(plugin.required_dependencies)
+    seen = {plugin.name}
+    while plugin_registry is not None and pending:
+        name = pending.pop()
+        provider = plugin_registry.get(name)
+        if name in seen or provider is None:
+            continue
+        seen.add(name)
+        names.update(server.name for server in provider.mcp_servers)
+        pending.extend(provider.required_dependencies)
+    return sorted(names)
+
+
+def _coordinator_tools(plugin: PluginSpec, adapter: HostAdapter,
+                       plugin_registry: Mapping[str, PluginSpec] | None = None) -> str:
     """The host tools a coordinator needs, derived from what the plugin requires.
 
     A coordinator that writes run state, runs a detection script and publishes
@@ -566,8 +588,9 @@ def _coordinator_tools(plugin: PluginSpec, adapter: HostAdapter) -> str:
             names.add(binding.value)
     if adapter.host == "copilot":
         # An explicit tools list also filters MCP. Keep the allowance scoped to
-        # plugin-declared servers; GitHub's agent schema accepts server/*.
-        names.update(f"{server.name}/*" for server in plugin.mcp_servers)
+        # servers declared in the plugin's dependency closure; GitHub's agent
+        # schema accepts server/*.
+        names.update(f"{name}/*" for name in _closure_servers(plugin, plugin_registry))
     return ", ".join(f"'{item}'" for item in sorted(names))
 
 
@@ -702,8 +725,10 @@ def render_plugin(
         _write_text(staging_root / render_path(manifest_layout, context), manifest)
 
     # A declared MCP server becomes a package-root manifest on a host that
-    # starts it, and a note on every workflow of the plugin on a host that
-    # needs the user to register it.
+    # starts it, and a note on every entry of the plugin, each workflow and each
+    # skill's SKILL.md, on a host that needs the user to register it. Skills
+    # carry it because a consumer reaches a provider's tools through its skill:
+    # a plugin whose commands moved to another plugin still announces its server.
     mcp_notes = _mcp_rendering(plugin, adapter, staging_root)
     operational_binding = _operational_binding(adapter, adapters_root)
 
@@ -727,9 +752,10 @@ def render_plugin(
             relative = path.relative_to(source_directory)
             if _is_artifact(relative):
                 continue
-            destination = target if relative.as_posix() == "SKILL.md" else target.parent / relative
+            entry = relative.as_posix() == "SKILL.md"
+            destination = target if entry else target.parent / relative
             if path.suffix == ".md":
-                markdown(destination, _read_text(path, source_directory))
+                markdown(destination, _read_text(path, source_directory), notes=mcp_notes if entry else ())
             else:
                 _copy(path, destination, source_directory)
 
@@ -824,7 +850,8 @@ def render_plugin(
                 plugin, workflow, strategy, adapter, staging_root, plugin_registry, operational_binding
             )
             harness = _harness_context(
-                plugin, workflow, strategy, adapter, source, context, role_ids, body_bindings
+                plugin, workflow, strategy, adapter, source, context, role_ids, body_bindings,
+                plugin_registry,
             )
             hint = harness.pop("hint")
             team_template = _template(
@@ -929,6 +956,7 @@ def _harness_context(
     context: dict,
     role_ids: Mapping[str, str] | None = None,
     body_bindings: str = "",
+    plugin_registry: Mapping[str, PluginSpec] | None = None,
 ) -> dict:
     """Everything a host harness template may substitute, plus the argument hint.
 
@@ -954,7 +982,7 @@ def _harness_context(
         "join": first_worker.join or "all-delivered",
         "roles": ", ".join(f"`{item}`" for item in ordered),
         "agents": ", ".join(f"'{item}'" for item in ordered),
-        "tools": _coordinator_tools(plugin, adapter),
+        "tools": _coordinator_tools(plugin, adapter, plugin_registry),
         "dispatch_plan": _dispatch_plan(workflow, role_ids),
         "role_bindings": body_bindings,
         "companion": _isolation_companion(adapter),

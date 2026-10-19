@@ -1,7 +1,9 @@
 """Real-kernel worker ownership and nested review dispatch regressions.
 
 These checks do not render packages or start a host. They protect the control
-plane that every adapter consumes and the method briefs it must bind.
+plane that every adapter consumes and the method briefs it must bind. Since
+marketplace 38.0.0 every command is a `daodan` workflow: the control plane is
+the entry's sidecar, and the briefs are the owner units the entry loads.
 """
 
 import sys
@@ -35,41 +37,58 @@ class MethodDispatchContractsTests(unittest.TestCase):
         return next(item for item in self.registry[plugin].workflows if item.name == name)
 
     def test_standalone_reviewers_deliver_findings_before_the_coordinator_report(self):
-        for plugin, name, role in (
-            ("react-development", "review-react", "react-performance-optimizer"),
-            ("typescript-development", "review-typescript", "type-safety-auditor"),
+        # Until 38.0.0 review-react and review-typescript declared an isolated
+        # `review` phase and a shared `report` phase that alone wrote the report.
+        # Those audits are now owner units that check-health's assessment loads:
+        # the entry declares each reviewer for isolated dispatch, and the unit
+        # states that the reviewer delivers to an intermediate path before the
+        # coordinator writes the one final report.
+        entry = self.workflow("daodan", "check-health")
+        self.assertTrue(entry.dispatch.isolated)
+        assess = (self.registry["project-lifecycle"].root
+                  / "skills/lifecycle-method/references/assess.md").read_text(encoding="utf-8")
+        for plugin, skill, role, output in (
+            ("react-development", "react-best-practices", "react-performance-optimizer", "react-review"),
+            ("typescript-development", "type-safety-rules", "type-safety-auditor", "ts-review"),
         ):
             with self.subTest(plugin=plugin):
-                workflow = self.workflow(plugin, name)
-                phases = {phase.id: phase for phase in workflow.phases}
-                worker = phases["review"]
-                report = phases["report"]
-                self.assertEqual(worker.role, role)
-                self.assertEqual(worker.isolation, "required")
-                self.assertIn(f"{plugin}/{role}", workflow.dispatch.roles)
-                self.assertTrue(workflow.dispatch.isolated)
-                self.assertIn(worker.id, report.needs)
-                self.assertEqual(report.isolation, "shared")
-                self.assertIsNone(report.role)
-                self.assertTrue(set(worker.produces) <= set(report.consumes))
-                final = f"artifact:{name}-report"
-                self.assertEqual(
-                    [phase.id for phase in workflow.phases if final in phase.produces],
-                    [report.id],
-                )
-                self.assertNotIn(final, worker.produces)
+                provider = self.registry[plugin]
+                self.assertEqual(provider.workflows, ())
+                self.assertIn(role, provider.components.roles)
+                self.assertIn(f"{plugin}/{role}", entry.dispatch.roles)
+                self.assertIn(plugin, self.registry["daodan"].required_dependencies)
+                self.assertIn(plugin, self.registry["project-lifecycle"].required_dependencies)
+                self.assertIn(f"`{plugin}:{skill}`", assess)
+                body = (provider.root / "skills" / skill / "references/audit.md").read_text(encoding="utf-8")
+                prose = " ".join(body.split())
+                self.assertIn(f"Dispatch `{plugin}:{role}` in its required isolated context "
+                              "through the host harness", prose)
+                worker = prose.index(f"intermediate report path `<run>/{output}/worker-findings.md`")
+                self.assertIn("The reviewer returns its findings and a delivered or failed outcome; "
+                              "it does not write the final report. Record that outcome before the "
+                              "report phase. A failed or missing delivery leaves the review incomplete "
+                              "and must be reported.", prose)
+                report = prose.index(f"After the agent completes, create the `<run>/{output}/` "
+                                     "directory and write `report.md`.")
+                self.assertLess(worker, report)
+                self.assertIn(f"**Output file:** `<run>/{output}/report.md`", prose)
 
     def test_nested_review_methods_use_a_declared_isolated_worker_for_inline_tasks(self):
-        for name in ("code-review", "team-review", "pr-review"):
+        # code-review became review-changes; team-review and pr-review became
+        # the two variants of review-branch (38.0.0).
+        for name in ("review-changes", "review-branch"):
             with self.subTest(name=name):
-                dispatch = self.workflow("senior-review", name).dispatch
+                dispatch = self.workflow("daodan", name).dispatch
                 self.assertTrue(dispatch.inline_workers)
                 self.assertTrue(dispatch.isolated)
-        self.assertIn("project-protocol", self.registry["senior-review"].required_dependencies)
+        for owner in ("daodan", "senior-review"):
+            self.assertIn("project-protocol", self.registry[owner].required_dependencies)
         self.assertIn(
             "isolated-worker", self.registry["project-protocol"].components.roles
         )
         for relative in (
+            "review-method/SKILL.md",
+            "review-method/references/light.md",
             "review-quality-gates/SKILL.md",
             "review-quality-gates/references/code-review-agents.md",
             "review-quality-gates/references/code-review-fix-loop.md",
@@ -84,20 +103,29 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertNotIn("model: sonnet", body)
 
     def test_worker_briefs_do_not_override_host_dispatch_fields(self):
-        for plugin, name in (
-            ("react-development", "review-react"),
-            ("typescript-development", "review-typescript"),
-            ("clean-code", "clean-code"),
-        ):
-            with self.subTest(plugin=plugin):
-                body = (self.registry[plugin].root / self.workflow(plugin, name).entrypoint).read_text(encoding="utf-8")
+        # The old review-react, review-typescript and clean-code entries are the
+        # owner units their replacements load since 38.0.0; every daodan entry
+        # body is held to the same rule.
+        bodies = {
+            "react-development": "skills/react-best-practices/references/audit.md",
+            "typescript-development": "skills/type-safety-rules/references/audit.md",
+            "clean-code": "skills/readability-method/SKILL.md",
+            "project-lifecycle": "skills/lifecycle-method/references/refactor.md",
+        }
+        entry = self.registry["daodan"]
+        for workflow in entry.workflows:
+            bodies[f"daodan:{workflow.name}"] = workflow.entrypoint
+        for label, relative in bodies.items():
+            with self.subTest(body=label):
+                owner = self.registry[label.split(":", 1)[0]]
+                body = (owner.root / relative).read_text(encoding="utf-8")
                 self.assertNotRegex(body, r"(?m)^\s*Task:")
                 self.assertNotIn("subagent_type", body)
                 self.assertNotIn("run_in_background", body)
                 self.assertNotIn("model: sonnet", body)
 
     def test_changed_graphs_keep_their_provider_edges_and_exported_contracts(self):
-        for name in ("react-development", "typescript-development", "clean-code", "senior-review",
+        for name in ("daodan", "react-development", "typescript-development", "clean-code", "senior-review",
                      "peer-review", "moe", "project-lifecycle", "project-knowledge"):
             with self.subTest(plugin=name):
                 plugin = self.registry[name]

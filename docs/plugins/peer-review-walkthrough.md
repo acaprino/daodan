@@ -1,6 +1,6 @@
 # Peer Review, one run end to end
 
-[`peer-review.md`](peer-review.md) is the reference: setup, flags, output files, concepts. This
+[`peer-review.md`](peer-review.md) is the reference: setup, decisions, output files, concepts. This
 document is the narrative that goes with it. It follows a single invocation from the command line
 to the verdict, showing what each phase writes, what the two sides actually say to each other, and
 how every branch the protocol allows gets reached.
@@ -21,7 +21,7 @@ Six participants, and knowing which one is which explains most of the design.
 
 | Who | What it is | What it can see |
 |---|---|---|
-| The command | `/peer-review:review`, the orchestrator | everything: it owns the ledger and every state transition |
+| The method | `peer-review:cross-model-peer-review`, run by `/daodan:get-second-opinion`; the orchestrator | everything: it owns the ledger and every state transition |
 | `packet-builder` | Claude Code subagent | the artifact and the whole repository |
 | `brief-builder` | Claude Code subagent, brief mode only | the session's own context |
 | The challenger | an external model on another vendor's API | the packet, and nothing else unless granted |
@@ -52,24 +52,24 @@ infra/deploy.yaml            the deployment
 docs/runbooks/billing.md     named by the plan, does not exist
 ```
 
-The invocation:
+The invocation, with the request naming the `gpt` profile and three rounds (the default):
 
 ```
-/peer-review:review docs/plans/2026-08-12-webhook-retry.md --challenger=gpt --rounds=3
+/daodan:get-second-opinion docs/plans/2026-08-12-webhook-retry.md
 ```
 
 ## The run at a glance
 
 ```mermaid
 flowchart TD
-    CMD["/peer-review:review"] --> P0["Phase 0: parse flags, validate artifact,<br/>create run dir, resolve profile"]
+    CMD["/daodan:get-second-opinion"] --> P0["Phase 0: read the target, validate artifact,<br/>create run dir, resolve profile"]
     P0 -->|"no path given"| P0b["Phase 0b: brief-builder<br/>writes 00-brief.md, then freezes it"]
     P0b --> P1
     P0 -->|"path given"| P1["Phase 1: packet-builder<br/>writes 00-packet.md"]
     P1 --> DG{"three digests agree?"}
     DG -->|"no"| X1["abort, nothing sent"]
     DG -->|"yes"| P1b["Phase 1b: consent gate"]
-    P1b -->|"--dry-run"| X2["stop before the question"]
+    P1b -->|"packet only"| X2["stop before the question"]
     P1b -->|"refused"| X3["consent withheld, packet stays on disk"]
     P1b -->|"consented"| P2["Phase 2: round 1<br/>01-challenge-r1.md, ledger created"]
     P2 --> P2b["Phase 2b: context amendment<br/>01b-amendment.md"]
@@ -77,7 +77,7 @@ flowchart TD
     P3 --> P4["Phase 4: rounds 2 and 3<br/>challenge, response, saturation test"]
     P4 --> P5["Phase 5: certification<br/>09-certification.md, maybe 10-corrective.md"]
     P5 --> P6["Phase 6: verdict computed<br/>from the ledger alone"]
-    P6 --> AP["--apply: edit the artifact"]
+    P6 --> AP["Apply, if authorized: edit the artifact"]
 ```
 
 Four of those boxes talk to the network: round 1, each later round, certification, and the
@@ -88,20 +88,20 @@ payload to disk before sending it.
 
 Four things happen before anything is built, in this order, and the order matters.
 
-**Flags are parsed and the mode is decided.** The first non-flag token selects it. A token that
+**The target is read and the mode is decided.** The target the caller passes selects it. A token that
 resolves to a readable file means artifact mode. A token that looks like a path but does not exist
 (it contains a separator, or ends in `.md`) stops the run with a not-found error, deliberately: a
 mistyped path must never quietly become a brief-mode topic. Anything else is a topic hint for brief
 mode, and no token at all is brief mode covering the session as a whole.
 
-**`--rounds` is validated.** Valid values are `2` and `3`. Below `2` is rejected outright, citing
+**The round count is validated.** Valid values are `2` and `3`. Below `2` is rejected outright, citing
 R11: a run with findings may never terminate after the first challenge round, because a finding
 that has been raised and answered once has not been tested, it has merely been contradicted. Above
 `3` is clamped, because no canonical file names exist past `07-challenge-r3.md`.
 
 **The artifact is validated.** Anything that looks like a unified diff (`diff --git`, or `--- a/`
 and `+++ b/` header pairs) or any extension outside `.md` and `.markdown` is refused, with a
-pointer to `/senior-review:code-review` instead. This command reviews intent, never code changes.
+pointer to `/daodan:review-changes` instead. This method reviews intent, never code changes.
 
 **The run directory is computed, then the profile is resolved.** The directory is
 `.peer-review/2026-08-12-1432-2026-08-12-webhook-retry/`, from the local timestamp and a slug of
@@ -112,11 +112,8 @@ written into the directory and long before anything could be sent.
 
 ## Phase 0b: the brief, when there is no file
 
-Skip this phase in artifact mode. It exists for the other invocation:
-
-```
-/peer-review:review "the webhook retry design"
-```
+Skip this phase in artifact mode. It exists for a caller that passes a topic instead of a file, here
+`the webhook retry design`, or nothing at all.
 
 There is no plan on disk yet. The decisions live in the session, which is exactly the state where
 an outside opinion is worth the most and where there is nothing to send. `brief-builder`
@@ -336,7 +333,7 @@ what makes this a decision about specific bytes.
 files or 200 KB of repository material granted to a context request. That is disclosed here,
 before the question, precisely so that it cannot be a surprise later.
 
-`--dry-run` stops immediately before the question and reports the packet path. Nothing was sent,
+A packet-only request stops immediately before the question and reports the packet path. Nothing was sent,
 and the packet is there to read. Reading it once is the highest-value habit with this tool: a
 disappointing run traces back to a thin packet far more often than to a weak challenger.
 
@@ -851,24 +848,25 @@ And the artifact-origin line reads `materialized for this run by peer-review:bri
 brief mode, which a reader has to weigh: a brief drafted by the same session that made the
 decisions shares that session's blind spots.
 
-## `--apply`
+## Apply
 
 Only after the verdict exists, and artifact mode only.
 
-Without the flag, the Accepted changes list is printed and nothing is modified. With it, each entry
-is applied to the artifact with the Edit tool and a changelog section is appended:
+The Accepted changes list is printed and the method asks once whether to apply it. Without that
+authorization nothing is modified. With it, each entry is applied to the artifact and a changelog
+section is appended:
 
 ```markdown
 ## Peer review 2026-08-12
 
-Reviewed via /peer-review:review. Full run: `.peer-review/2026-08-12-1432-2026-08-12-webhook-retry/`.
+Reviewed via `peer-review:cross-model-peer-review`. Full run: `.peer-review/2026-08-12-1432-2026-08-12-webhook-retry/`.
 Accepted: 2. Refuted: 1. Standoffs: 1. See 04-verdict.md for detail.
 ```
 
 The artifact is never touched before this point (R2). A changed artifact is a new run, not a
 resumed one.
 
-In brief mode the flag is refused, and it says so rather than silently ignoring it: the artifact is
+In brief mode applying is refused, and a request to apply is told so rather than silently ignored: the artifact is
 a frozen record of what the session had decided, nothing downstream reads it, and the deliverable
 is a list of decisions to revisit rather than text to rewrite.
 
@@ -898,13 +896,13 @@ behind.
 
 | Phase | Trigger | State on disk |
 |---|---|---|
-| 0 | `--rounds` below 2, a path that does not exist, a diff or source file | nothing written |
+| 0 | a round count below 2, a path that does not exist, a diff or source file | nothing written |
 | 0 | no profiles file, unknown profile name, key variable unset | the run directory, empty |
 | 0b | the brief carries no decidable decision | `00-brief.md`, with the could-not-be-sharpened list printed |
 | 1 | `packet-builder` did not write the packet | the run directory |
 | 1 | the three digests disagree | `00-packet.md`, left for inspection. Nothing sent |
 | 1b | packet larger than 400000 bytes | `00-packet.md`. The gate is not even presented: approving a payload the transport will refuse is not a real consent decision |
-| 1b | `--dry-run` | `00-packet.md`. Stopped before the question |
+| 1b | packet only | `00-packet.md`. Stopped before the question |
 | 1b | consent withheld, or a second unclear reply | `00-packet.md` |
 | 2 | `sent_sha256` differs from the digest shown at the gate | no challenge file, no ledger |
 | 2 | transport error on the very first call | the command reports the verbatim error and asks whether to resend the same packet under the consent already given, or end the run |
@@ -914,4 +912,4 @@ The last row is the one that shows the design's temperament. An unanswered call 
 claim as a saturated one, and a verdict that quietly recorded it as a standoff would be reporting a
 substantive result that never happened.
 
-**Related:** [peer-review](peer-review.md) (setup, flags, output reference) | [senior-review](senior-review.md) (diffs and PRs, which this command refuses on purpose)
+**Related:** [peer-review](peer-review.md) (setup, decisions, output reference) | [senior-review](senior-review.md) (diffs and PRs, which this command refuses on purpose)

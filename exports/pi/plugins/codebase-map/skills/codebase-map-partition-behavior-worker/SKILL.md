@@ -1,6 +1,6 @@
 ---
 name: codebase-map-partition-behavior-worker
-description: 'Runs Flow Tracing and Semantic Understanding over one partition, reading every partitions structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its second wave.'
+description: 'Runs Flow Tracing and Semantic Understanding over one partition, reading every partitions structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.'
 disable-model-invocation: true
 ---
 

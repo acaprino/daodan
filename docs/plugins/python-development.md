@@ -67,7 +67,7 @@ Systematic 4-phase refactoring workflow that transforms complex code into clean,
 
 | | |
 |---|---|
-| **Invoke** | `/python-development:python-refactor` or skill reference |
+| **Invoke** | `/daodan:refactor-code` on Python code, or skill reference |
 | **Use for** | Legacy modernization, complexity reduction, OOP transformation |
 
 **4-Phase Workflow:**
@@ -240,18 +240,15 @@ Deep guide to Pydantic v2 (2.13+) for production Python. Covers validators, seri
 
 ---
 
-## Commands
+## Entry points and methods
 
-### `/python-development:python-scaffold`
+The plugin has no command of its own. Three `/daodan:` entries load its methods when the project is Python.
 
-Scaffold production-ready Python projects with modern tooling. Presents the plan and asks for confirmation before writing files.
+### Scaffold: `/daodan:init-project` on an empty folder
 
-```
-/python-development:python-scaffold <project-name> [--type fastapi|django|library|cli|generic]
-/python-development:python-scaffold user-service --type fastapi
-```
+`python-development:python-scaffold-method` scaffolds production-ready Python projects with modern tooling. Presents the plan and asks for confirmation before writing files: the confirmed plan is the authorization, and nothing is created before it.
 
-The project name is required. Without `--type`, the type is inferred from the request, and asked for when it is unclear.
+The project name is required: it comes from the text, otherwise from the folder name, and is asked for when neither gives one. The type is one the text names (`fastapi`, `django`, `library`, `cli`, `generic`) or is inferred from the description, and asked for when it is unclear.
 
 **Project types:** FastAPI, Django, Library, CLI, Generic
 
@@ -259,33 +256,23 @@ The project name is required. Without `--type`, the type is inferred from the re
 
 ---
 
-### `/python-development:python-refactor`
+### Refactor: `/daodan:refactor-code` on Python code
 
-Metrics-driven four-phase refactoring with a plan checkpoint and persistent native output files. `python-refactor-method` supplies Python techniques; [project-protocol](project-protocol.md) supplies execution preflight, candidate gates and owned recovery. A caller's already accepted plan satisfies the checkpoint for the same scope.
+Metrics-driven four-phase refactoring with a plan checkpoint and persistent native output files, run by `python-development:python-refactor-method` through its `references/refactor.md`. `python-refactor-method` supplies Python techniques; [project-protocol](project-protocol.md) supplies execution preflight, candidate gates and owned recovery. A caller's already accepted plan satisfies the checkpoint for the same scope.
 
-```
-/python-development:python-refactor src/legacy_module.py
-/python-development:python-refactor src/billing/ --strict-mode
-```
-
-`--strict-mode` makes the checkpoint recommend partial execution whenever the plan contains High-risk changes. Run state lives in `.python-refactor/state.json`: a run still in progress is offered for resume or a fresh start, and a completed one is offered for archiving before a fresh start.
+The target is a file or directory, the Python files a commit, PR or branch changes, or a named module, class or function resolved to its file. Strict mode is a method decision, off by default and on when the request asks for caution: it makes the checkpoint recommend partial execution whenever the plan contains High-risk changes. Executing the plan is an authorization asked at the checkpoint, and committing needs its own. Run state lives in `state.json` of the caller's run directory: a run still in progress is offered for resume or a fresh start, and a completed one is offered for archiving before a fresh start.
 
 **Phases:** Analysis -> Planning -> (Checkpoint) -> Execution -> Validation
 
-**Output:** `.python-refactor/` directory with analysis, plan, execution log and validation report. Checkpoints and reports bind to the same current snapshot. Required local checks that cannot run need an authorized same-candidate remote alternative or remain unavailable. Failure recovery restores only this phase's owned changes, preserving preexisting and foreign edits; a hard reset requires an exclusively owned clean isolated worktree and its captured pre-phase SHA.
+**Output:** the caller's run directory, with analysis, plan, execution log and validation report. Checkpoints and reports bind to the same current snapshot. Required local checks that cannot run need an authorized same-candidate remote alternative or remain unavailable. Failure recovery restores only this phase's owned changes, preserving preexisting and foreign edits; a hard reset requires an exclusively owned clean isolated worktree and its captured pre-phase SHA.
 
 ---
 
-### `/python-development:python-audit`
+### Audit: `/daodan:check-health` on a Python project
 
-Consolidated Python code-quality audit. Runs ruff (lint + format) + mypy/pyright (types) + vulture (dead code) + complexipy/radon (complexity) + pytest coverage in parallel, then aggregates findings into a prioritized fix list at `.python-audit/REPORT.md`.
+Consolidated Python code-quality audit by `python-development:python-audit-method`. Runs ruff (lint + format) + mypy/pyright (types) + vulture (dead code) + complexipy/radon (complexity) + pytest coverage in parallel, then aggregates findings into a prioritized fix list at `REPORT.md` in the caller's run directory.
 
-```
-/python-development:python-audit src/                # full audit of src/
-/python-development:python-audit . --skip-types      # skip type-check phase
-/python-development:python-audit . --skip-coverage   # skip the pytest coverage phase
-/python-development:python-audit . --strict          # exit 1 if any critical finding (CI-friendly)
-```
+What were flags are method decisions: type checking runs unless the request excludes it; coverage runs unless the project has no pytest suite or the request excludes it; strictness, which fails the audit on any critical finding, is on only when the request asks for a release gate. Applying fixes is an authorization asked when needed; without it the audit is a preview.
 
 **Framework-aware dead-code filtering:** Django admin handlers, FastAPI `@app.*` / `@router.*` routes, pytest `conftest.py` fixtures, click commands all recognized so their "unused" callables aren't falsely flagged.
 
@@ -301,7 +288,7 @@ Consolidated Python code-quality audit. Runs ruff (lint + format) + mypy/pyright
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `3.0.3`. **Source:** [plugin.toml](<../../plugins/python-development/plugin.toml>).
+**Version:** `4.0.0`. **Source:** [plugin.toml](<../../plugins/python-development/plugin.toml>).
 
 ### Required dependencies
 
@@ -336,76 +323,13 @@ The source links carry the complete instructions and accepted arguments.
 | Skill | `python-development:python-dead-code` | Find and remove unused variables, functions, classes and unreachable branches with vulture and ruff, filtering framework false positives (Django, FastAPI, pytest, click). TRIGGER WHEN: cleaning up Python codebases, enforcing import hygiene, or integrating dead code checks into CI. | [python-dead-code](<../../plugins/python-development/skills/python-dead-code/SKILL.md>) |
 | Skill | `python-development:python-packaging` | Build wheels and sdists from a pyproject.toml, then publish them. TRIGGER WHEN: packaging Python libraries, choosing a src or flat layout, setting up dynamic versioning, creating CLI entry points, or uploading to TestPyPI and PyPI. | [python-packaging](<../../plugins/python-development/skills/python-packaging/SKILL.md>) |
 | Skill | `python-development:python-performance-optimization` | Measure first with cProfile, line_profiler, memory_profiler or py-spy, then fix what the numbers show. TRIGGER WHEN: debugging slow Python code, optimizing bottlenecks, cutting memory usage, or improving application performance. | [python-performance-optimization](<../../plugins/python-development/skills/python-performance-optimization/SKILL.md>) |
-| Skill | `python-development:python-refactor-method` | Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for "readable", "maintainable" or "clean" code, a review flags comprehension issues, or the task is legacy modernization or onboarding cleanup. | [python-refactor-method](<../../plugins/python-development/skills/python-refactor-method/SKILL.md>) |
+| Skill | `python-development:python-refactor-method` | Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for "readable", "maintainable" or "clean" code, a review flags comprehension issues, the task is legacy modernization or onboarding cleanup, or `/daodan:refactor-code` runs on Python code. | [python-refactor-method](<../../plugins/python-development/skills/python-refactor-method/SKILL.md>) |
 | Skill | `python-development:pytest-patterns` | Python-specific pytest fixtures, async tests, parametrization, mocks and framework configuration. Load as technical context for testing:test-writer or Python development; universal test principles and TDD belong to testing. | [pytest-patterns](<../../plugins/python-development/skills/pytest-patterns/SKILL.md>) |
 | Skill | `python-development:uv-package-manager` | Handle virtual environments, lockfiles and interpreter version pinning. TRIGGER WHEN: setting up Python projects, managing dependencies, migrating off pip/poetry, or optimizing Python development workflows with uv. | [uv-package-manager](<../../plugins/python-development/skills/uv-package-manager/SKILL.md>) |
+| Skill | `python-development:python-audit-method` | Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: `/daodan:check-health` runs on a Python project, the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or a codebase is prepared for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use python-development:python-refactor-method), dead code alone (use senior-review:application-cleanup-method), or test writing (use testing:test-writer with pytest-patterns context). | [python-audit-method](<../../plugins/python-development/skills/python-audit-method/SKILL.md>) |
+| Skill | `python-development:python-scaffold-method` | Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs on an empty folder and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer). | [python-scaffold-method](<../../plugins/python-development/skills/python-scaffold-method/SKILL.md>) |
 | Role | `python-development:python-engineer` | Hands-on Python 3.12+ engineer. Ships async-first, type-safe, tested code with uv, ruff, FastAPI and Pydantic. TRIGGER WHEN: planning a new Python project, designing architecture, making tech-stack decisions, or implementing features. DO NOT TRIGGER WHEN: the task is writing tests (use testing:test-writer) or isolated refactoring (use python-refactor-agent). | [python-engineer](<../../plugins/python-development/roles/python-engineer.md>) |
 | Role | `python-development:python-refactor-agent` | Modernize legacy Python in place. TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings. DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use testing:test-writer). | [python-refactor-agent](<../../plugins/python-development/roles/python-refactor-agent.md>) |
-| Workflow | `python-development:python-audit` | Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use testing:test-writer with pytest-patterns context). | [python-audit](<../../plugins/python-development/workflows/python-audit.md>) |
-| Workflow | `python-development:python-refactor` | Measure, rewrite, verify against the tests, then report the delta. TRIGGER WHEN: the user asks to refactor Python code, reduce cyclomatic complexity, or restructure modules with measured before/after metrics. DO NOT TRIGGER WHEN: renaming or simplifying for readability only (use /clean-code:clean-code), or removing dead code (use /senior-review:code-review --commit). | [python-refactor](<../../plugins/python-development/workflows/python-refactor.md>) |
-| Workflow | `python-development:python-scaffold` | Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer). | [python-scaffold](<../../plugins/python-development/workflows/python-scaffold.md>) |
-
-### Workflow contracts
-
-Contracts describe observable outputs; Markdown bodies define decisions,
-flags, safety gates and execution. Declared `invoke` execution is unsupported.
-
-#### `python-development:python-audit`
-
-**Arguments:** <code>&lt;path&gt; [--strict] [--skip-types] [--skip-coverage]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `python-audit-completed` |
-| Artifacts | `python-audit-report` |
-| Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | None |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [python-audit.toml](<../../plugins/python-development/workflows/python-audit.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `run` | None | None | `shared` | None declared | `preferred` |
-
-#### `python-development:python-refactor`
-
-**Arguments:** <code>&lt;target file or directory&gt; [--strict-mode]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `python-refactor-completed` |
-| Artifacts | `python-refactor-report` |
-| Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | None |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [python-refactor.toml](<../../plugins/python-development/workflows/python-refactor.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `run` | None | None | `shared` | None declared | `preferred` |
-
-#### `python-development:python-scaffold`
-
-**Arguments:** <code>&lt;project-name&gt; [--type fastapi&#124;django&#124;library&#124;cli&#124;generic]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `python-scaffold-completed` |
-| Artifacts | `python-scaffold-report` |
-| Schemas | [project-protocol/contracts/work.toml](<../../plugins/project-protocol/contracts/work.toml>), [project-protocol/contracts/project-result.toml](<../../plugins/project-protocol/contracts/project-result.toml>) |
-| Declared workers | None |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [python-scaffold.toml](<../../plugins/python-development/workflows/python-scaffold.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `run` | None | None | `shared` | None declared | `preferred` |
 
 ### Host exports
 
@@ -418,10 +342,10 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 | Host | Package | Binding | Selected workflow strategy |
 |---|---|---|---|
-| claude | [exports/claude/plugins/python-development](<../../exports/claude/plugins/python-development>) | `native` | `python-audit: native-team`, `python-refactor: native-team`, `python-scaffold: native-team` |
-| copilot | [exports/copilot/plugins/python-development](<../../exports/copilot/plugins/python-development>) | `native` | `python-audit: parallel-subagents`, `python-refactor: parallel-subagents`, `python-scaffold: parallel-subagents` |
-| codex | [exports/codex/plugins/python-development](<../../exports/codex/plugins/python-development>) | `adapted` | `python-audit: parallel-subagents`, `python-refactor: parallel-subagents`, `python-scaffold: parallel-subagents` |
-| pi | [exports/pi/plugins/python-development](<../../exports/pi/plugins/python-development>) | `adapted` | `python-audit: parallel-subagents`, `python-refactor: parallel-subagents`, `python-scaffold: parallel-subagents` |
-| opencode | [exports/opencode/plugins/python-development](<../../exports/opencode/plugins/python-development>) | `native` | `python-audit: parallel-subagents`, `python-refactor: parallel-subagents`, `python-scaffold: parallel-subagents` |
+| claude | [exports/claude/plugins/python-development](<../../exports/claude/plugins/python-development>) | `native` | No workflow entry points |
+| copilot | [exports/copilot/plugins/python-development](<../../exports/copilot/plugins/python-development>) | `native` | No workflow entry points |
+| codex | [exports/codex/plugins/python-development](<../../exports/codex/plugins/python-development>) | `adapted` | No workflow entry points |
+| pi | [exports/pi/plugins/python-development](<../../exports/pi/plugins/python-development>) | `adapted` | No workflow entry points |
+| opencode | [exports/opencode/plugins/python-development](<../../exports/opencode/plugins/python-development>) | `native` | No workflow entry points |
 
 <!-- daodan:reference:end -->

@@ -3,7 +3,7 @@ name: map-method
 description: >
   Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS.
   TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation.
-  DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).
+  DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /daodan:write-docs), a public-facing README, or a review verdict (senior-review consumes this output instead).
 ---
 
 <daodan_host_binding host="claude">
@@ -92,8 +92,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## How This Skill Is Invoked
 
-`/codebase-map:analyze` dispatches isolated `codebase-map:map-analyst`;
-`/codebase-map:team-analyze` uses isolated partition workers. Entries own
+`references/entry-analyze.md` dispatches isolated `codebase-map:map-analyst`;
+`references/entry-team-analyze.md` uses isolated partition workers. Entries own
 `.codebase-map/` publication (`references/run.md`).
 Loading `codebase-map:map-method` starts no analysis or run.
 
@@ -118,7 +118,7 @@ Loading `codebase-map:map-method` starts no analysis or run.
 
 - Forbidden files: `references/evidence.md`.
 - Consuming a bound analysis: `references/reading.md`, plus `references/evidence.md` before Maintained documentation for source. For durable-document verification, read its Maintained documentation section. Snapshot verification/refresh uses `references/snapshot.md` before Prerequisites.
-- Run analyses through `codebase-map:analyze`; composed callers declare isolated `codebase-map/map-analyst`.
+- Run analyses through `references/entry-analyze.md`; composed callers declare isolated `codebase-map/map-analyst`.
 
 ## Team bindings
 

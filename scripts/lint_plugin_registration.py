@@ -37,6 +37,18 @@ Three passes, each independently reported. Exits non-zero if any fails.
                    agent and command under `exports/opencode/plugins/` is named
                    by one. A component the manifest omits ships and is never
                    registered.
+  5. component refs
+                   prose names components as `plugin:name` (a skill to load, a
+                   role to dispatch) and as `/plugin:workflow` (a command to
+                   run). Every such reference to a local plugin must name a
+                   component that plugin registers: a skill or a role, or a
+                   workflow when the reference is a command. Kernels, adapters,
+                   repository instructions, docs and evals are scanned; dated
+                   design records under docs/superpowers/ and the migration
+                   notes record retired names on purpose and are not. Added
+                   when marketplace 38.0.0 moved every command into `daodan`:
+                   the first run found six references that already named
+                   nothing, among them `senior-review:cleanup-dead-code`.
 
 All three content kinds are checked, because the invariant is not agent-specific:
 an undeclared skill or command fails the same way for the same reason.
@@ -50,7 +62,9 @@ across every plugin today, and an exception would mean shipping something users
 cannot load.
 """
 import json
+import re
 import sys
+import tomllib
 from pathlib import Path
 
 MARKETPLACE = Path(".claude-plugin/marketplace.json")
@@ -64,6 +78,13 @@ OPENCODE_PACKAGES = Path("exports/opencode/plugins")
 # `exports/claude/plugins/<name>` rather than at the authoring kernel. Both are
 # scanned: the source is what a user installs, and the kernel is what an author
 # edits, so a file added to one and not the other is still a registration bug.
+
+REFERENCE_SOURCES = ("plugins", "adapters", "docs", "evals", ".claude/skills")
+REFERENCE_FILES = ("CLAUDE.md", "README.md")
+HISTORY = (Path("docs/superpowers"),)
+HISTORY_NAMES = re.compile(r"^migration[-.]")
+QUALIFIED = re.compile(r"(?<![\w/.@-])(/?)([a-z][a-z0-9]*(?:-[a-z0-9]+)*):([a-z][a-z0-9]*(?:-[a-z0-9]+)*)")
+COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 
 failures: list[str] = []
 
@@ -175,11 +196,40 @@ def check_opencode() -> list[tuple[str, str, str]]:
     return violations
 
 
+def check_references() -> list[tuple[str, str, str]]:
+    """Every `plugin:name` and `/plugin:workflow` naming a local plugin resolves."""
+    components = {}
+    for manifest in PLUGINS.glob("*/plugin.toml"):
+        declared = tomllib.loads(manifest.read_text(encoding="utf-8")).get("components", {})
+        components[manifest.parent.name] = (
+            set(declared.get("skills", [])) | set(declared.get("roles", [])),
+            set(declared.get("workflows", [])),
+        )
+    files = [Path(name) for name in REFERENCE_FILES if Path(name).is_file()]
+    for source in REFERENCE_SOURCES:
+        if Path(source).is_dir():
+            files += [path for suffix in ("*.md", "*.toml", "*.tmpl") for path in Path(source).rglob(suffix)]
+    violations = []
+    for path in sorted(set(files)):
+        if any(path.is_relative_to(root) for root in HISTORY) or (
+                path.parent == Path("docs") and HISTORY_NAMES.match(path.name)):
+            continue
+        text = COMMENT.sub("", path.read_text(encoding="utf-8"))
+        for slash, plugin, name in QUALIFIED.findall(text):
+            if plugin not in components:
+                continue
+            loadable, commands = components[plugin]
+            if name in commands or (not slash and name in loadable):
+                continue
+            violations.append(("component refs", path.as_posix(), f"{slash}{plugin}:{name}"))
+    return violations
+
+
 def main():
     if not MARKETPLACE.is_file() or not PLUGINS.is_dir():
         sys.exit("run from the repository root: .claude-plugin/marketplace.json not found")
 
-    violations = sorted(set(check()) | set(check_pi()) | set(check_opencode()))
+    violations = sorted(set(check()) | set(check_pi()) | set(check_opencode()) | set(check_references()))
     data = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
     counted = sum(len(p.get(k, [])) for p in data["plugins"]
                   for k in ("agents", "skills", "commands"))
@@ -199,6 +249,12 @@ def main():
            [(p, path) for kind, p, path in violations if kind == "opencode manifest"],
            "rebuild with scripts/daodan_build.py: the manifest is generated from the "
            "rendered tree, so a mismatch means one of them was edited by hand")
+
+    report("component refs",
+           [(p, path) for kind, p, path in violations if kind == "component refs"],
+           "name a component the plugin registers: its skill or role as `plugin:name`, "
+           "a command as `/plugin:workflow`; a retired command's work now starts from a "
+           "`/daodan:` command")
 
     if failures:
         sys.exit(f"\n{len(failures)} check(s) failed: {', '.join(failures)}")

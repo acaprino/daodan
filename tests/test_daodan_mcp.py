@@ -202,7 +202,7 @@ class KernelMcpRenderingTests(unittest.TestCase):
                         path = self.packages[(host, name)] / f"commands/{workflow}.md"
                         self.assertNotIn("register that command", path.read_text(encoding="utf-8"))
 
-    def test_registration_hosts_bind_every_workflow_to_the_real_server_command(self):
+    def test_registration_hosts_bind_every_entry_to_the_real_server_command(self):
         entries = {
             "codex": "skills/{workflow}-workflow/SKILL.md",
             "copilot": "prompts/{workflow}.prompt.md",
@@ -214,21 +214,25 @@ class KernelMcpRenderingTests(unittest.TestCase):
             for host, entry in entries.items():
                 package = self.packages[(host, name)]
                 self.assertFalse((package / ".mcp.json").exists(), f"{name} on {host}")
+                # Every entry announces the server: each workflow and, because a
+                # consumer reaches a provider's tools through its skill, each skill.
+                paths = [package / f"skills/{skill}/SKILL.md" for skill in plugin.components.skills]
                 for workflow in plugin.components.workflows:
-                    paths = [package / entry.format(plugin=name, workflow=workflow)]
+                    paths.append(package / entry.format(plugin=name, workflow=workflow))
                     coordinator = package / f"agents/{workflow}-coordinator.agent.md"
                     if host == "copilot" and coordinator.exists():
                         paths.append(coordinator)
-                    for path in paths:
-                        with self.subTest(plugin=name, host=host, entry=path.name):
-                            text = path.read_text(encoding="utf-8")
-                            self.assertIn(f"`{name}`", text)
-                            self.assertIn("register that command", text)
-                            self.assertIn(f"{launch} {roots[host]}/{server_path(name)}", text)
-                            self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
-                            if host == "pi":
-                                self.assertIn("pi-mcp-adapter", text)
-                                self.assertIn("mcpServers", text)
+                self.assertTrue(paths, f"{name} on {host}: no entry to announce the server")
+                for path in paths:
+                    with self.subTest(plugin=name, host=host, entry=path.name):
+                        text = path.read_text(encoding="utf-8")
+                        self.assertIn(f"`{name}`", text)
+                        self.assertIn("register that command", text)
+                        self.assertIn(f"{launch} {roots[host]}/{server_path(name)}", text)
+                        self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
+                        if host == "pi":
+                            self.assertIn("pi-mcp-adapter", text)
+                            self.assertIn("mcpServers", text)
                 if host != "pi":
                     self.assertNotIn("mcpServers", self.catalog(host, name)["plugins"][0])
 

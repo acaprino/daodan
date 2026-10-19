@@ -14,7 +14,7 @@ A scratch Python package of 8 to 12 files plus:
 ## Run
 
 ```
-/codebase-map:analyze . --critical
+/daodan:map-code . at full depth, prioritizing the critical paths
 ```
 
 Accept the scope confirmation. Keep the full transcript.

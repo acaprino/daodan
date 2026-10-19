@@ -1,6 +1,6 @@
 ---
 name: brief-builder
-description: 'Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).'
+description: 'Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).'
 ---
 
 <daodan_host_binding host="codex">
@@ -101,7 +101,7 @@ decided and why, and what is still open. It never says whether a decision was go
 
 ## Inputs
 
-Read from the invoking command's prompt:
+Read from the invoking coordinator's prompt:
 
 - **run directory**: where `00-brief.md` is written.
 - **topic hint**: which decisions to cover, or an instruction to cover the session's
@@ -110,7 +110,7 @@ Read from the invoking command's prompt:
 
 ## The five sections
 
-Fixed order, fixed names. The command's brief-mode mandate and `packet-anatomy.md`
+Fixed order, fixed names. The method's brief-mode mandate and `packet-anatomy.md`
 both depend on this shape, so `packet-builder` can map it without interpreting it.
 
 1. **Situation.** What is being decided and why now. Name every file, path, commit,
@@ -145,7 +145,7 @@ stand on air.
 
 Anything that cannot be stated that way goes into an explicit **Could not be sharpened**
 list at the end of the brief, one line each with what was missing. Never smooth a failing
-entry into prose that reads decidable: the list is the honest signal, and the command
+entry into prose that reads decidable: the list is the honest signal, and the method
 reads it. If it is empty, say so; do not omit the heading.
 
 ## Sources are recorded, never fetched
@@ -187,7 +187,7 @@ that fails its own checklist.
 
 ## Output Contract
 
-Write `00-brief.md` to the run directory and nothing else. Report back to the command:
+Write `00-brief.md` to the run directory and nothing else. Report back to the coordinator:
 the brief's byte size, the count of taken decisions, the count of open decisions, and
-the Could-not-be-sharpened list verbatim. The command needs all four to decide whether
+the Could-not-be-sharpened list verbatim. The coordinator needs all four to decide whether
 the run is worth continuing.

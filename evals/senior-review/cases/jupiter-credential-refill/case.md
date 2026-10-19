@@ -1,6 +1,6 @@
 # Case: jupiter-credential-refill
 
-Source: production incident, 2026-08-10. A `/senior-review:team-review` run reported
+Source: production incident, 2026-08-10. A run of the former team-review command reported
 a Critical finding that was false at the system level. Ground truth is the code and
 the project's own documentation at the reviewed revision.
 

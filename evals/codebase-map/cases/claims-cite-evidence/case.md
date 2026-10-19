@@ -9,7 +9,7 @@ A scratch Python package of about 15 files with at least: one swallowed exceptio
 ## Run
 
 ```
-/codebase-map:analyze src/
+/daodan:map-code src/ at full depth
 ```
 
 Accept the scope confirmation.

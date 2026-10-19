@@ -1,11 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e76062554938d8e97b27151be5d84f790a65f6dc88850de65ebcec26de81999b",
-  "harnessStrategies": {
-    "clean-code": "parallel-subagents"
-  },
+  "coreDigest": "sha256:6f3f40202769d360d1b6afd92f0e46881fc5ea2756e91f880058ec487750be11",
+  "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "clean-code",
-  "version": "2.0.5"
+  "version": "3.0.0"
 }

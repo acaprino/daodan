@@ -9,7 +9,7 @@ A scratch Python package of about 20 files with real imports between them, two c
 ## Run
 
 ```
-/codebase-map:analyze src/
+/daodan:map-code src/ at full depth
 ```
 
 Accept the scope confirmation. Keep the full transcript.

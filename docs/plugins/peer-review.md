@@ -37,7 +37,7 @@ The declaration lives in the kernel's `plugin.toml` (`[[mcp.servers]]`). The Cla
 | 2 | `./.peer-review/profiles.json` | this project |
 | 3 | `~/.peer-review/profiles.json` | this machine |
 
-Each entry under `profiles` is a named challenger that `--challenger=<name>` selects:
+Each entry under `profiles` is a named challenger that a request naming it selects:
 
 ```json
 {
@@ -63,7 +63,7 @@ Each entry under `profiles` is a named challenger that `--challenger=<name>` sel
 | `token_param` | Optional. Which body field carries the cap: `max_tokens` (default) or `max_completion_tokens` for reasoning-model APIs that reject the old name |
 | `timeout_seconds` | Optional idle allowance per socket read, default 600 |
 | `params` | Optional JSON object merged into the request body as written: `reasoning_effort`, `top_p`, a vendor's `reasoning` object, whatever the endpoint accepts per model. It may not set `model`, `messages`, `stream`, `stream_options` or either token cap; a profile that tries is reported unavailable with the reason |
-| `default` (top level) | Profile used when `--challenger` is omitted |
+| `default` (top level) | Profile used when the request names none |
 
 `params` exists because the server otherwise sends only model, messages, stream and the output cap, and the knobs that decide how hard a model works (`reasoning_effort` above all) have no field of their own. The server does not know the names and does not filter them: a field the endpoint rejects fails the call with the endpoint's own error text rather than being dropped on the way out, so a profile never runs with less than it asked for. The shipped example's `gpt-max-effort` profile shows the shape.
 
@@ -81,12 +81,12 @@ setx OPENAI_API_KEY "..."          # PowerShell, persisted for future sessions
 
 The MCP server is a child process of Claude Code and inherits its environment at spawn time, so a variable exported in some other terminal after the session started is invisible to it. Export first, then start Claude Code, or restart the session after setting it.
 
-**Verify.** `peer_profiles` reports one line per profile with `available: true` only when a key resolves (from the named variable, or from the literal `api_key` when the variable is unset) and any `params` are accepted. Each line carries `key_source` (`env`, `literal`, `none`, or `malformed_env_name` when `api_key_env` holds something that is not a variable name, typically a pasted key) and a `warnings` list saying why a profile is unavailable. It never returns the key itself. `/peer-review:review` checks this at its Phase 0 availability gate and stops there if the profile is unusable. A `--dry-run` exercises everything up to the consent gate without sending anything.
+**Verify.** `peer_profiles` reports one line per profile with `available: true` only when a key resolves (from the named variable, or from the literal `api_key` when the variable is unset) and any `params` are accepted. Each line carries `key_source` (`env`, `literal`, `none`, or `malformed_env_name` when `api_key_env` holds something that is not a variable name, typically a pasted key) and a `warnings` list saying why a profile is unavailable. It never returns the key itself. The review method checks this at its Phase 0 availability gate and stops there if the profile is unusable. A packet-only request exercises everything up to the consent gate without sending anything.
 
 | Symptom | Cause |
 |---|---|
 | `/mcp` shows `Failed to connect` | `uv` not on PATH, or Python older than 3.11 |
-| `unknown profile 'x' (known: ...)` | `--challenger` name does not match a key under `profiles` |
+| `unknown profile 'x' (known: ...)` | The requested profile name does not match a key under `profiles` |
 | `no api key resolved (none): environment variable 'X' is not set; refusing to send` | The variable is unset in the server's inherited environment and the profile has no literal `api_key` |
 | `no api key resolved (malformed_env_name): ...` | `api_key_env` holds a key rather than a variable name. Put the variable's name there, or move the key to `api_key` |
 
@@ -97,32 +97,29 @@ A failed server degrades per-server rather than breaking the install: the comman
 ## Usage
 
 ```
-/peer-review:review [<path-to-plan-or-spec> | <topic>] [--challenger=<profile>] [--rounds=N] [--dry-run] [--apply]
+/daodan:get-second-opinion <path-to-plan-or-spec>
 ```
 
-One invocation runs the whole deliberation: packet, consent gate, round 1, an optional context amendment, up to two more challenge rounds, certification, and a ledger-computed verdict. The first non-flag argument picks one of two modes:
+The plugin has no command of its own. With a file, `/daodan:get-second-opinion` loads `peer-review:cross-model-peer-review` and follows its `references/review.md`; with a question it runs [moe](moe.md)'s deliberation instead. The task cycle loads the same method when you ask another model to challenge a decision record or a plan.
 
-- **Artifact mode**, when it resolves to an existing file. The target is a plan or a spec in markdown, never a diff and never a source file: the command inspects the path and refuses those, naming `/senior-review:code-review` as the tool for them. An argument that looks like a path (it contains `/` or `\`, or ends in `.md` or `.markdown`) but does not exist is a hard not-found error, never silently treated as a topic.
-- **Brief mode**, when there is no argument or the argument is a bare topic. Phase 0b spawns `brief-builder`, which materializes the session's context and decisions (situation, decisions taken, open decisions, constraints, named sources) into `00-brief.md`, scoped to the topic when one is given. The brief is then frozen and challenged exactly like a document: the challenger judges each taken decision's rationale and each open decision's option set, not whether the decision was taken. A brief with no taken decision and no decidable open one stops the run before anything is sent.
+One run covers the whole deliberation: packet, consent gate, round 1, an optional context amendment, up to two more challenge rounds, certification, and a ledger-computed verdict. The target the caller passes picks one of two modes:
 
-```
-/peer-review:review "cache invalidation strategy" --challenger=gpt
-/peer-review:review                                  # the session's decisions as a whole
-```
+- **Artifact mode**, when it resolves to an existing file. The target is a plan or a spec in markdown, never a diff and never a source file: the method inspects the path and refuses those, naming `/daodan:review-changes` as the tool for them. A commit, PR or branch is refused the same way. An argument that looks like a path (it contains `/` or `\`, or ends in `.md` or `.markdown`) but does not exist is a hard not-found error, never silently treated as a topic.
+- **Brief mode**, when a caller passes a bare topic or nothing. Phase 0b spawns `brief-builder`, which materializes the session's context and decisions (situation, decisions taken, open decisions, constraints, named sources) into `00-brief.md`, scoped to the topic when one is given, or covering the session's decisions as a whole when none is. The brief is then frozen and challenged exactly like a document: the challenger judges each taken decision's rationale and each open decision's option set, not whether the decision was taken. A brief with no taken decision and no decidable open one stops the run before anything is sent.
 
 ### The first run, step by step
 
-**1. Dry run first.** Nothing reaches the network:
+**1. Packet only first.** Nothing reaches the network:
 
 ```
-/peer-review:review docs/plans/my-plan.md --challenger=gpt --dry-run
+/daodan:get-second-opinion docs/plans/my-plan.md
 ```
 
-The command resolves the profile, checks the key is available, spawns the packet builder (after the brief builder, in brief mode), presents the consent gate's disclosure block, and stops before asking the question. It prints the path of the run directory it created, `.peer-review/YYYY-MM-DD-HHMM-<slug>/`.
+saying in the same request that you want the packet only, and naming the challenger profile when it is not the `default`. The method resolves the profile, checks the key is available, spawns the packet builder (after the brief builder, in brief mode), presents the consent gate's disclosure block, and stops before asking the question. It prints the path of the run directory it created, `.peer-review/YYYY-MM-DD-HHMM-<slug>/`.
 
 **2. Read `00-packet.md`.** This is the whole world the challenger gets: the artifact verbatim, the ground truth mechanically extracted from the files it names, constraints, considered-and-rejected decisions, known weaknesses, open questions, out of scope, and the response contract. A disappointing run usually traces back to a thin packet rather than to a weak challenger, and this is the moment to notice that.
 
-**3. Run it for real,** same command without `--dry-run`. The consent gate appears once, before round 1:
+**3. Run it for real,** the same command without asking for the packet only. The consent gate appears once, before round 1:
 
 ```
 About to send this packet to an external service:
@@ -144,14 +141,16 @@ Answer it in your own words. `ok`, `sì`, `send it` and every other plain yes pr
 
 For what happens between steps 3 and 4, phase by phase and file by file, read [One run end to end](peer-review-walkthrough.md).
 
-### Flags
+### Decisions
 
-| Flag | Effect |
+The entry passes no options. The method decides the rest from your request:
+
+| Decision | How it is made |
 |---|---|
-| `--challenger=<profile>` | Profile to challenge with. Omit it to use the `default` named in `profiles.json` |
-| `--rounds=N` | `2` or `3`, default `3`. A value below `2` is rejected: a run with findings can never end after round 1. A value above `3` is clamped to `3` with a printed note |
-| `--dry-run` | Build the packet, present the consent gate's disclosure block, stop before the question. Nothing is sent |
-| `--apply` | After the verdict, apply its accepted changes to the artifact with the Edit tool and append a changelog section. Without it, the edits are printed for you to make yourself. Refused in brief mode, with the reason stated: the frozen brief is a record nothing downstream reads, so its Accepted changes name decisions to revisit rather than text to rewrite |
+| Challenger profile | A configured profile your request names explicitly, else the `default` named in `profiles.json`; with no `default`, one question |
+| Round count | `3`, or `2` when your request asks for it. A value below `2` is rejected: a run with findings can never end after round 1. A value above `3` is clamped to `3` with a printed note |
+| Packet only | When your request asks for the packet without sending it: build the packet, present the consent gate's disclosure block, stop before the question. Nothing is sent |
+| Applying accepted changes | An authorization asked after the verdict: apply its accepted changes to the artifact and append a changelog section. Without it, nothing is modified and the edits stay listed in `04-verdict.md`. Refused in brief mode, with the reason stated: the frozen brief is a record nothing downstream reads, so its Accepted changes name decisions to revisit rather than text to rewrite |
 
 ### What a run leaves on disk
 
@@ -212,7 +211,7 @@ The protocol is the product; everything else here is its Claude Code implementat
 
 **Provenance is recorded on four axes**, model, runtime, context, human, per role, never collapsed into one label and deliberately never scored.
 
-**Consent is given once.** A single gate before round 1 shows the destination, the request params, the packet's byte size, its digest and its section list, then asks; the answer is read for what it means, not matched against a required word. That one approval covers everything the run may later send: rounds 2 and 3, certification, a corrective round if one runs, and up to 10 files or 200 KB of repository material granted to a Phase 2b context request, tagged GIVEN. `--dry-run` builds the packet, presents the gate's disclosure block and stops before the question, so nothing reaches the network.
+**Consent is given once.** A single gate before round 1 shows the destination, the request params, the packet's byte size, its digest and its section list, then asks; the answer is read for what it means, not matched against a required word. That one approval covers everything the run may later send: rounds 2 and 3, certification, a corrective round if one runs, and up to 10 files or 200 KB of repository material granted to a Phase 2b context request, tagged GIVEN. A packet-only request builds the packet, presents the gate's disclosure block and stops before the question, so nothing reaches the network.
 
 **Termination is mechanical, not narrative.** Every finding ends in one of nine states:
 
@@ -234,7 +233,7 @@ STANDOFF is reserved for genuine substantive survival; every procedural failure 
 
 ## Acceptance status
 
-The end-to-end deliberation has not been run yet: the plugin was registered mid-session while it was being built, so no session with a live, connected MCP server and a real challenger API key has driven a full `/peer-review:review` invocation. The MCP handshake and the Phase 0 availability gate were verified directly against the shipped server, and CI is green, but the real cross-model dialectic itself is unproven, not merely undocumented. Treat the plugin as shipped-but-not-yet-accepted until that run happens; the runbook to close it out is at the end of `evals/peer-review/cases.md`.
+The end-to-end deliberation has not been run yet: the plugin was registered mid-session while it was being built, so no session with a live, connected MCP server and a real challenger API key has driven a full review run through `/daodan:get-second-opinion`. The MCP handshake and the Phase 0 availability gate were verified directly against the shipped server, and CI is green, but the real cross-model dialectic itself is unproven, not merely undocumented. Treat the plugin as shipped-but-not-yet-accepted until that run happens; the runbook to close it out is at the end of `evals/peer-review/cases.md`.
 
 **Related:** [senior-review](senior-review.md) (diff and PR review; `review-quality-gates` states the same shared-context provenance rule for reviewers inside one pipeline)
 
@@ -244,7 +243,7 @@ The end-to-end deliberation has not been run yet: the plugin was registered mid-
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `2.5.0`. **Source:** [plugin.toml](<../../plugins/peer-review/plugin.toml>).
+**Version:** `3.0.0`. **Source:** [plugin.toml](<../../plugins/peer-review/plugin.toml>).
 
 ### Required dependencies
 
@@ -273,35 +272,10 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `peer-review:cross-model-peer-review` | Doctrine for challenging a plan, spec or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates). | [cross-model-peer-review](<../../plugins/peer-review/skills/cross-model-peer-review/SKILL.md>) |
-| Role | `peer-review:brief-builder` | Materializes a session's context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly). | [brief-builder](<../../plugins/peer-review/roles/brief-builder.md>) |
-| Role | `peer-review:packet-builder` | Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1. | [packet-builder](<../../plugins/peer-review/roles/packet-builder.md>) |
-| Role | `peer-review:respondent` | Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those). | [respondent](<../../plugins/peer-review/roles/respondent.md>) |
-| Workflow | `peer-review:review` | Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the session's context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the session's own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session. | [review](<../../plugins/peer-review/workflows/review.md>) |
-
-### Workflow contracts
-
-Contracts describe observable outputs; Markdown bodies define decisions,
-flags, safety gates and execution. Declared `invoke` execution is unsupported.
-
-#### `peer-review:review`
-
-**Arguments:** <code>[&lt;path-to-plan-or-spec&gt; &#124; &lt;topic&gt;] [--challenger=&lt;profile&gt;] [--rounds=N] [--dry-run] [--apply]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `review-completed` |
-| Artifacts | `review-report` |
-| Schemas | None declared |
-| Declared workers | `peer-review/brief-builder`, `peer-review/packet-builder`, `peer-review/respondent` |
-| Composed worker isolation | Required |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [review.toml](<../../plugins/peer-review/workflows/review.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `run` | None | None | `shared` | None declared | `preferred` |
+| Skill | `peer-review:cross-model-peer-review` | Doctrine and review method for challenging a plan, spec, decision record or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring a cross-model peer review (the review method, loaded by /daodan:get-second-opinion for a file and by the task cycle to challenge a decision record or plan), deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates). | [cross-model-peer-review](<../../plugins/peer-review/skills/cross-model-peer-review/SKILL.md>) |
+| Role | `peer-review:brief-builder` | Materializes a session's context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly). | [brief-builder](<../../plugins/peer-review/roles/brief-builder.md>) |
+| Role | `peer-review:packet-builder` | Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 1. | [packet-builder](<../../plugins/peer-review/roles/packet-builder.md>) |
+| Role | `peer-review:respondent` | Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those). | [respondent](<../../plugins/peer-review/roles/respondent.md>) |
 
 ### Host exports
 
@@ -314,11 +288,11 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 | Host | Package | Binding | Selected workflow strategy |
 |---|---|---|---|
-| claude | [exports/claude/plugins/peer-review](<../../exports/claude/plugins/peer-review>) | `native` | `review: native-team` |
-| copilot | [exports/copilot/plugins/peer-review](<../../exports/copilot/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
-| codex | [exports/codex/plugins/peer-review](<../../exports/codex/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
-| pi | [exports/pi/plugins/peer-review](<../../exports/pi/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
-| opencode | [exports/opencode/plugins/peer-review](<../../exports/opencode/plugins/peer-review>) | `adapted` | `review: parallel-subagents` |
+| claude | [exports/claude/plugins/peer-review](<../../exports/claude/plugins/peer-review>) | `native` | No workflow entry points |
+| copilot | [exports/copilot/plugins/peer-review](<../../exports/copilot/plugins/peer-review>) | `adapted` | No workflow entry points |
+| codex | [exports/codex/plugins/peer-review](<../../exports/codex/plugins/peer-review>) | `adapted` | No workflow entry points |
+| pi | [exports/pi/plugins/peer-review](<../../exports/pi/plugins/peer-review>) | `adapted` | No workflow entry points |
+| opencode | [exports/opencode/plugins/peer-review](<../../exports/opencode/plugins/peer-review>) | `adapted` | No workflow entry points |
 
 ### Additional shipped contracts and mechanisms
 

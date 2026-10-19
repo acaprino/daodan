@@ -95,6 +95,7 @@ Each pattern is a symptom of a writing problem: vagueness, puffery, filler, form
 |---|---|
 | Italian vocabulary, calques, syntax and typography rules | `references/italiano.md` (mandatory whenever the text is Italian) |
 | Before/after specimens for all 24 patterns and the full end-to-end report example | `references/pattern-catalog.md` |
+| Running `/daodan:humanize-text` on a text or a file: inputs, the text-humanizer brief, the report and the write-back authorization | `references/humanize.md` |
 
 ## GROUND RULES
 
@@ -109,7 +110,7 @@ These hold in every register and every language.
 
 ## REGISTERS
 
-Infer the register from the text and its context: file path, format, audience. The caller or `--register` can set it. When unsure, use `docs`, the most conservative.
+Infer the register from the text and its context: file path, format, audience. The caller can set it. When unsure, use `docs`, the most conservative.
 
 | Register | Examples | Voice | Never |
 |---|---|---|---|

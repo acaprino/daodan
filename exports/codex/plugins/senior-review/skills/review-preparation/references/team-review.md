@@ -83,8 +83,8 @@ dependent operation; preserve archives and run IDs.
 ## Execution requirements
 
 This workflow fans out over the dimensions its detection step selects. Dispatch, scheduling and result
-collection belong to the host harness, generated from `contracts/team-review.workflow.toml`. What this
-workflow requires of any harness is fixed, and none of it is optional:
+collection belong to the harness of `/daodan:review-branch`; these units own the order. What this
+workflow requires of any harness is fixed and mandatory:
 
 - every reviewer runs in its own context and never reads another reviewer's result
 - exactly the selected dimensions are dispatched, once each
@@ -197,7 +197,7 @@ the other dimensions before dispatch.
 | Security | `senior-review:security-auditor` | Every change can introduce vulnerabilities |
 | Architecture | `senior-review:code-auditor` | Coupling, abstractions, failure flows, pattern consistency, scoring |
 | **Logic integrity** | `senior-review:logic-integrity-auditor` | **Hunts violations of contracts/invariants/domain rules surfaced in Phase 1b** (skipped if `--no-context`) |
-| Codebase hygiene | `senior-review:cleanup-auditor` | The **full** pass across all five dimensions that need source comprehension, over the whole codebase: dead code, orphan assets, phantom/unused deps plus barrel-file and eager-bundle bloat, stale documentation, and lifecycle archaeology. `/senior-review:code-review` and `/senior-review:pr-review` run only the lite subset (dead code, scoped to the diff), so this dimension is where the other four get covered at all |
+| Codebase hygiene | `senior-review:cleanup-auditor` | The **full** pass across all five dimensions that need source comprehension, over the whole codebase: dead code, orphan assets, phantom/unused deps plus barrel-file and eager-bundle bloat, stale documentation, and lifecycle archaeology. `code-review` and `pr-review` run only the lite subset (dead code, scoped to the diff), so this dimension is where the other four get covered at all |
 | Workspace hygiene | `repo-hygiene:workspace-auditor` | Everything the filesystem and git decide without reading a symbol: filesystem garbage, generated artifacts tracked in VCS, `.gitignore` completeness and archaeology, scratch and pipeline-output directories, orphan doc-assets, git auxiliary state. Disjoint from the row above by construction, so the two never contest the same finding |
 
 ### Conditional dimensions (auto-detected from context)
@@ -218,7 +218,7 @@ Structural entropy and testing quality live in required plugins `abstraction-arc
 | **Test files** | Changed files match `test_*`, `*_test.*`, `*.spec.*`, `*.test.*`, `conftest.py`, `__tests__/` | Testing quality | `testing:test-suite-auditor` |
 | **API files** | Changed files touch a formal contract file (`*.proto`, `openapi*.y*ml`, `swagger*`, `*.graphql`, `asyncapi*`, JSON Schema), or route definitions, serializers, or DTO/model declarations | API contracts | `senior-review:api-contract-auditor` |
 | **Migration files** | Changed files match database migration patterns (Alembic, Django, Rails, Prisma, SQL migrations) | Data migrations | `senior-review:data-integrity-auditor` (migration dimension) |
-| **Diff target adding code** | Target resolved to a diff in Phase 0 (git range, PR number, or uncommitted changes) AND the diff adds at least one function, method, class, module, constant table, or block longer than roughly five lines. Never activated for plain file/directory targets: there is no diff to anchor on, and the whole-tree question belongs to `/abstraction-architect:audit` | Structural entropy (**does this diff add a second place where a concept the codebase already owns lives?** Seven dimensions over two evidence tracks, diff-anchored: duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state, missed unification, prior art available, abstraction fitness) | `abstraction-architect:abstraction-architect-agent` (mode `diff`) |
+| **Diff target adding code** | Target resolved to a diff in Phase 0 (git range, PR number, or uncommitted changes) AND the diff adds at least one function, method, class, module, constant table, or block longer than roughly five lines. Never activated for plain file/directory targets: there is no diff to anchor on, and the whole-tree question belongs to `/daodan:check-health` | Structural entropy (**does this diff add a second place where a concept the codebase already owns lives?** Seven dimensions over two evidence tracks, diff-anchored: duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state, missed unification, prior art available, abstraction fitness) | `abstraction-architect:abstraction-architect-agent` (mode `diff`) |
 
 ### Detection implementation
 
@@ -323,9 +323,9 @@ Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `ph
 
 ### Phase 1a: Codebase Map Analysis
 
-The review coordinator executes the `codebase-map:analyze` entry's preflight, checkpoints, delivery check and publication decision, and dispatches `codebase-map:map-analyst` in one isolated context for the phases. Loading a method or role body runs nothing. Phase 1c, Phase 1b and every reviewer keep their own isolated contexts.
+The review coordinator executes the `codebase-map:map-method` analyze entry's preflight, checkpoints, delivery check and publication decision, and dispatches `codebase-map:map-analyst` in one isolated context for the phases. Loading a method or role body runs nothing. Phase 1c, Phase 1b and every reviewer keep their own isolated contexts.
 
-1. Execute the `codebase-map:analyze` preflight and coordinator-owned delivery/publication steps against the target. Dispatch `codebase-map:map-analyst` in an isolated context for its requested phases, preserving the canonical scope checkpoints, run binding, output and completion gates:
+1. Execute that entry's preflight and coordinator-owned delivery/publication steps against the target. Dispatch `codebase-map:map-analyst` in an isolated context for its requested phases, preserving the canonical scope checkpoints, run binding, output and completion gates:
    - Default mode: `--depth=lite` (structure + interfaces + risks only)
    - If `--deep` flag: full analysis
    - Target scope: the files from Phase 0

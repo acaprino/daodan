@@ -16,6 +16,15 @@ CORE_ROLES = {
     "team-review": {f"senior-review/{name}" for name in ("api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor")} | {"repo-hygiene/workspace-auditor", "testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent", "codebase-map/map-analyst", "codebase-map/semantic-interconnect-mapper"},
     "pr-review": {f"senior-review/{name}" for name in ("code-auditor", "security-auditor", "premise-auditor")},
 }
+# Since 38.0.0 every command is a workflow of the `daodan` entry plugin. The light
+# review of review-changes binds one reviewer chosen by the roster helper and runs
+# Lens 1 through the inline isolated worker. review-branch runs the team-review and
+# pr-review variants; its roster covers every dimension the retired code-review
+# entry bound, and the lifecycle's stage D runs the same branch shape.
+ENTRY = "daodan"
+LIGHT_ROLES = {"senior-review/code-auditor", "senior-review/premise-auditor"}
+BRANCH_ROLES = CORE_ROLES["code-review"] | CORE_ROLES["team-review"] | CORE_ROLES["pr-review"] | STACK_ROLES
+REVIEW_ENTRIES = {"review-changes": LIGHT_ROLES, "review-branch": BRANCH_ROLES}
 
 
 def manifest(name):
@@ -211,7 +220,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
                 roots = {}
-                for plugin in ("project-protocol", "project-knowledge", "testing", "project-lifecycle", "senior-review"):
+                for plugin in ("project-protocol", "project-knowledge", "testing", ENTRY):
                     roots[plugin] = Path(temporary) / host / plugin
                     render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), roots[plugin],
                                   adapters_root=ROOT / "adapters", plugin_registry=registry)
@@ -250,10 +259,11 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         else:
                             assert_delegated_writer(self, text)
                 if host in {"codex", "pi"}:
+                    # Since 38.0.0 the lifecycle and review entries are daodan's,
+                    # so the inline role bodies ship in its package.
                     resources = (
-                        ("project-lifecycle", "project-protocol", "isolated-worker", "Contract", expected_worker),
-                        ("senior-review", "project-protocol", "isolated-worker", "Contract", expected_worker),
-                        ("project-lifecycle", "testing", "test-writer", "Delegated execution", expected_writer),
+                        (ENTRY, "project-protocol", "isolated-worker", "Contract", expected_worker),
+                        (ENTRY, "testing", "test-writer", "Delegated execution", expected_writer),
                     )
                     for consumer, owner, role, title, expected in resources:
                         with self.subTest(host=host, consumer=consumer, resource=role):
@@ -275,15 +285,16 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
-                plugin = "senior-review"
+                # Since 38.0.0 the review wrappers are daodan's review entries.
+                plugin = ENTRY
                 with self.subTest(host=host):
                     root = Path(temporary) / host / plugin
                     render_plugin(registry[plugin], load_adapter(ROOT / "adapters", host), root,
                                   adapters_root=ROOT / "adapters", plugin_registry=registry)
-                    for entry, core in CORE_ROLES.items():
+                    for entry, roles in REVIEW_ENTRIES.items():
                         exported = (root / wrapper_path(host, plugin, entry)).read_text(encoding="utf-8")
                         body = without_host_binding(self, exported, host)
-                        for binding in core | STACK_ROLES:
+                        for binding in roles:
                             owner, role = binding.split("/")
                             identity = role if owner == plugin else f"{owner}:{role}"
                             self.assertIn(f"`{identity}`", body)
@@ -293,7 +304,7 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         # binding; the actual method and harness stay neutral.
                         self.assertNotIn("subagent_type", body)
                     if host in {"codex", "pi"}:
-                        for binding in CORE_ROLES["team-review"] | STACK_ROLES | {"project-protocol/isolated-worker"}:
+                        for binding in BRANCH_ROLES | {"project-protocol/isolated-worker"}:
                             owner, role = binding.split("/")
                             if owner == plugin:
                                 continue
@@ -311,13 +322,16 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         from scripts.daodan.render import render_plugin
 
         registry = {p.parent.name: load_plugin(p.parent) for p in (ROOT / "plugins").glob("*/plugin.toml")}
+        # Since 38.0.0 lifecycle change, repair and verify are daodan new-feature,
+        # fix-bug and stage D of finish-task, each reviewing waves with the light
+        # shape and the candidate with the branch shape; assess is check-health;
+        # the knowledge guide and maintain entries are both write-docs.
         cases = {
-            ("project-lifecycle", "change"): CORE_ROLES["code-review"] | STACK_ROLES | {"testing/test-writer", "project-knowledge/instructions-auditor", "clean-code/clean-code-agent"},
-            ("project-lifecycle", "repair"): CORE_ROLES["code-review"] | STACK_ROLES | {"clean-code/clean-code-agent"},
-            ("project-lifecycle", "verify"): CORE_ROLES["code-review"] | STACK_ROLES,
-            ("project-lifecycle", "assess"): {"project-knowledge/documentation-engineer", "project-knowledge/guide-reviewer"},
-            ("project-knowledge", "guide"): {"codebase-map/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer")},
-            ("project-knowledge", "maintain"): {f"project-knowledge/{role}" for role in ("documentation-engineer", "guide-reviewer", "instructions-auditor")},
+            (ENTRY, "new-feature"): BRANCH_ROLES | {"testing/test-writer", "project-knowledge/instructions-auditor", "clean-code/clean-code-agent"},
+            (ENTRY, "fix-bug"): BRANCH_ROLES | {"clean-code/clean-code-agent"},
+            (ENTRY, "finish-task"): BRANCH_ROLES,
+            (ENTRY, "check-health"): {"project-knowledge/documentation-engineer", "project-knowledge/guide-reviewer"},
+            (ENTRY, "write-docs"): {"codebase-map/semantic-interconnect-mapper", "text-humanizer/text-humanizer"} | {f"project-knowledge/{role}" for role in ("codebase-explorer", "overview-writer", "tech-writer", "flow-writer", "ops-writer", "onboarding-writer", "documentation-engineer", "guide-reviewer", "instructions-auditor")},
         }
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
@@ -349,7 +363,8 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
 
         project-lifecycle dispatches testing:test-writer and the inline isolated-worker,
         both of which write files. The wrappers used to allow workers only intermediate
-        reports, which contradicted those roles on all five hosts.
+        reports, which contradicted those roles on all five hosts. Since 38.0.0 the
+        lifecycle change and repair wrappers are daodan new-feature and fix-bug.
         """
         from scripts.daodan.adapter import HOSTS, load_adapter
         from scripts.daodan.load import load_plugin
@@ -374,12 +389,12 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             for host in HOSTS:
                 template = flat((ROOT / "adapters" / host / "templates" / templates[host]).read_text(encoding="utf-8"))
-                root = Path(temporary) / host / "project-lifecycle"
-                render_plugin(registry["project-lifecycle"], load_adapter(ROOT / "adapters", host), root,
+                root = Path(temporary) / host / ENTRY
+                render_plugin(registry[ENTRY], load_adapter(ROOT / "adapters", host), root,
                               adapters_root=ROOT / "adapters", plugin_registry=registry)
                 rendered = {entry: flat(without_host_binding(
-                    self, (root / wrapper_path(host, "project-lifecycle", entry)).read_text(encoding="utf-8"), host))
-                    for entry in ("change", "repair")}
+                    self, (root / wrapper_path(host, ENTRY, entry)).read_text(encoding="utf-8"), host))
+                    for entry in ("new-feature", "fix-bug")}
                 for name, text in {"template": template, **rendered}.items():
                     with self.subTest(host=host, wrapper=name):
                         self.assertNotIn("may write only intermediate reports", text)
@@ -433,17 +448,37 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         self.assertNotIn('action: "subagent"', text.split("\n---\n", 1)[0])
 
     def test_composed_inventory_binds_methods_without_copying_their_schedule(self):
-        for entry, core in CORE_ROLES.items():
+        self.assertFalse(manifest("senior-review")["components"].get("workflows"))
+        self.assertIn("project-protocol", manifest("senior-review")["dependencies"]["required"])
+        for entry, roles in REVIEW_ENTRIES.items():
             with self.subTest(entry=entry):
-                sidecar = tomllib.loads((ROOT / "plugins/senior-review/workflows" / f"{entry}.toml").read_text())
+                sidecar = tomllib.loads((ROOT / "plugins" / ENTRY / "workflows" / f"{entry}.toml").read_text(encoding="utf-8"))
                 dispatch = sidecar["dispatch"]
-                self.assertEqual(set(dispatch["roles"]), core | STACK_ROLES)
+                self.assertEqual(set(dispatch["roles"]), roles)
                 self.assertTrue(dispatch["isolated"])
                 self.assertIs(dispatch["inline_workers"], True)
-                self.assertIn("project-protocol", manifest("senior-review")["dependencies"]["required"])
-                if entry != "team-review":
-                    # Bind method workers without a duplicated outer phase graph.
-                    self.assertEqual([p["id"] for p in sidecar["phases"]], ["run"])
+                for provider in ("project-protocol", "senior-review"):
+                    self.assertIn(provider, manifest(ENTRY)["dependencies"]["required"])
+                # Bind method workers without a duplicated outer phase graph.
+                self.assertEqual([p["id"] for p in sidecar["phases"]], ["prepare", "execute"])
+                for phase in sidecar["phases"]:
+                    self.assertEqual(phase["isolation"], "shared")
+                    for key in ("role", "fanout", "fanout_from"):
+                        self.assertNotIn(key, phase)
+        # Since 38.0.0 no kernel declares the team-review phase graph. Its delivery
+        # barrier and single report owner are stated by the review method and stay
+        # declared as outcomes of the review-branch contract.
+        outcomes = tomllib.loads((ROOT / "plugins" / ENTRY / "workflows/review-branch.toml").read_text(encoding="utf-8"))["contract"]["outcomes"]
+        for outcome in ("every-expected-reviewer-is-delivered-or-failed",
+                        "consolidation-runs-only-after-the-delivery-barrier",
+                        "only-the-consolidator-writes-the-final-report"):
+            self.assertIn(outcome, outcomes)
+        method = ROOT / "plugins/senior-review/skills/review-method"
+        skill = " ".join((method / "SKILL.md").read_text(encoding="utf-8").split())
+        self.assertRegex(skill, r"(?i)one review preparation and final report owner")
+        team = " ".join((method / "references/team-review.md").read_text(encoding="utf-8").split())
+        self.assertRegex(team, r"(?i)hold the delivery barrier: wait until every dispatched reviewer is recorded `delivered` or `failed`")
+        self.assertRegex(team, r"(?i)consolidation does not start until every spawned reviewer has either delivered")
 
     def test_one_review_owner_has_mandatory_specialists_on_every_host(self):
         from scripts.daodan.adapter import HOSTS

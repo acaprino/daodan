@@ -11,13 +11,16 @@ from scripts.daodan.load import load_plugin
 from scripts.daodan.render import render_plugin
 from host_binding_assertions import loaded_instruction_text
 
+# Since 38.0.0 the map is started by the daodan entry `map-code`, which loads the
+# method and names both entry units; the storage control is parsed by those units.
 ENTRIES = {
     "claude": "commands/{name}.md",
     "copilot": "agents/{name}-coordinator.agent.md",
     "codex": "skills/{name}-workflow/SKILL.md",
-    "pi": "prompts/codebase-map-{name}.md",
+    "pi": "prompts/daodan-{name}.md",
     "opencode": "commands/{name}.md",
 }
+UNITS = ("entry-analyze.md", "entry-team-analyze.md")
 
 
 class StorageExportTests(unittest.TestCase):
@@ -29,13 +32,19 @@ class StorageExportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="map-storage-exports-") as temporary:
             for host in HOSTS:
                 with self.subTest(host=host):
+                    adapter = load_adapter(ROOT / "adapters", host)
                     package = Path(temporary) / host / "codebase-map"
-                    render_plugin(self.registry["codebase-map"], load_adapter(ROOT / "adapters", host), package,
+                    render_plugin(self.registry["codebase-map"], adapter, package,
                                   adapters_root=ROOT / "adapters", plugin_registry=self.registry)
-                    for name in ("analyze", "team-analyze"):
-                        text = loaded_instruction_text(self, package / ENTRIES[host].format(name=name), host)
-                        self.assertIn("--format sqlite|json", text)
+                    entry = Path(temporary) / host / "daodan"
+                    render_plugin(self.registry["daodan"], adapter, entry,
+                                  adapters_root=ROOT / "adapters", plugin_registry=self.registry)
+                    text = loaded_instruction_text(self, entry / ENTRIES[host].format(name="map-code"), host)
+                    self.assertIn("codebase-map:map-method", text)
                     references = package / "skills/map-method/references"
+                    for unit in UNITS:
+                        self.assertIn(f"references/{unit}", text)
+                        self.assertIn("--format sqlite|json", (references / unit).read_text(encoding="utf-8"))
                     snapshot = (references / "snapshot.md").read_text(encoding="utf-8")
                     self.assertIn("snapshot/manifest.sqlite", snapshot)
                     self.assertIn("--format json", snapshot)

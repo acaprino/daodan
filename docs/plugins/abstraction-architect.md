@@ -8,7 +8,7 @@ and [host setup](../hosts.md).
 
 ## Prerequisites
 
-The `codebase-map` plugin is a hard dependency: the global audit consumes `.codebase-map/` output and `/abstraction-architect:audit` auto-launches Codebase Map when that output is missing. Diff mode needs only whatever Codebase Map output is on disk and runs on the concept index plus Glob and Grep when there is none, at reduced confidence declared in its Gaps section.
+The `codebase-map` plugin is a hard dependency: the global audit consumes `.codebase-map/` output and its method, run by `/daodan:check-health`, auto-launches Codebase Map when that output is missing. Diff mode needs only whatever Codebase Map output is on disk and runs on the concept index plus Glob and Grep when there is none, at reduced confidence declared in its Gaps section.
 
 ## The seven dimensions
 
@@ -44,10 +44,10 @@ Adversarial auditor with two modes. Global mode censuses the whole codebase from
 ```
 Use the abstraction-architect-agent agent to audit [path] for structural entropy
 ```
-Also spawned by `/abstraction-architect:audit` and, in diff mode, as the structural entropy dimension of `/senior-review:team-review` and `/senior-review:code-review`.
+Also spawned by the audit method of `/daodan:check-health` and, in diff mode, as the structural entropy dimension of the reviews of `/daodan:review-branch` and `/daodan:review-changes`.
 
 **Key behaviors (global mode):**
-- Reads `01-structure.md`, `02-interfaces.md`, `03-flows.md`, `04-semantics.md`, plus `08-interconnect-map.md` when `/codebase-map:team-analyze` produced it (that file enables the bounded-context check; without it knowledge-track findings carry `Bounded-context exception: unverified`)
+- Reads `01-structure.md`, `02-interfaces.md`, `03-flows.md`, `04-semantics.md`, plus `08-interconnect-map.md` when the team entry of `codebase-map:map-method` produced it (that file enables the bounded-context check; without it knowledge-track findings carry `Bounded-context exception: unverified`)
 - Builds a seed map from the Codebase Map, extracts entity and behavioural concepts, then runs four search families per concept: by name and near-synonym, by literal, by call, by shape of decision. The seed map seeds the census and never bounds it
 - Builds a Concept Evidence Index (representations with roles, writers, consumers, canonical owner status), then tests every concept with more than one representation against its dimension gate and the lenses
 - Re-reads every cited representation on current source before promoting a finding
@@ -71,47 +71,34 @@ Knowledge base for structural entropy. Covers the two evidence tracks, the seven
 
 References, loaded on demand by the agent (`dimensions.md` first): `dimensions.md`, `evidence-tracks.md`, `concept-census.md`, `concept-index-protocol.md`, `decision-frame.md`, `unification-patterns.md`, `anti-patterns.md`, `scope-boundaries.md`, `theory.md`, `further-reading.md`. The skill also ships `scripts/concept_index.py`, which reports concept index freshness.
 
-## Commands
+## Entry and method
 
-### `/abstraction-architect:audit`
+The plugin has no command of its own. `/daodan:check-health` runs the audit as its structure dimension: the entry loads `abstraction-architect:abstraction-architect` and follows its `references/audit.md`. A coordinator that already holds a run loads the same method.
 
-```
-/abstraction-architect:audit                                    # audit current directory
-/abstraction-architect:audit src/services                       # audit a subpath
-/abstraction-architect:audit --severity-floor high              # only high-severity findings
-/abstraction-architect:audit --focus knowledge                  # D1-D4 only
-/abstraction-architect:audit --focus D2                         # competing sources of truth only
-/abstraction-architect:audit --diff                             # does my change add entropy?
-/abstraction-architect:audit --diff origin/master               # same, against an explicit base ref
-/abstraction-architect:audit --rebuild-index                    # ignore any existing concept index
-```
+What were flags are now decisions the method takes from the free-text target:
 
-| Argument | Effect |
-|------|--------|
-| `[path]` | Codebase root. Default: current working directory |
-| `--diff [<base-ref>]` | Diff-anchored mode: the seven questions as "introduced or aggravated by this change". Skips the Codebase Map auto-launch. Base ref defaults to the merge base with the default branch, falling back to `HEAD` for uncommitted work. Requires a git repository |
-| `--scope <subpath>` | Limit findings to a subtree. The Codebase Map still runs on the full codebase |
-| `--severity-floor low\|medium\|high` | Drop findings below this severity (default `medium`) |
-| `--focus all\|knowledge\|form\|D1..D7` | Restrict to a dimension subset (default `all`). `knowledge` is D1 to D4, `form` is D5 to D7, or name a single dimension |
-| `--no-index` | Do not read or write `concept-index.json` |
-| `--rebuild-index` | Global mode only: ignore any existing index and census the codebase from scratch |
+- **Mode.** No path, or a path, audits that codebase root in global mode (default: the current working directory). A commit, a branch or a PR selects diff mode against that base: the seven questions as "introduced or aggravated by this change". With no ref the base defaults to the merge base with the default branch, falling back to `HEAD` for uncommitted work. Diff mode requires a git repository and never launches a Codebase Map.
+- **Scope.** A subtree named beside the target limits findings to it. The Codebase Map still runs on the full codebase.
+- **Severity floor.** `medium` by default; `low` or `high` only when the caller passes it.
+- **Focus.** `all` by default. Knowledge-track concerns in the text select D1 to D4, form-track concerns select D5 to D7, and a dimension id selects that dimension.
+- **Concept index.** Not read or written when the target is not a Git repository. Global mode ignores an existing index and censuses the codebase from scratch only when the freshness check reports `unusable` for an unreachable baseline or rewritten history, or when the text names a large refactor.
 
-Without `--diff`, the command checks for `.codebase-map/` and auto-launches `/codebase-map:analyze` when it is missing or incomplete. Unless `--no-index`, it then runs the freshness script and prints the concept index state before spawning the agent, so a stale index is visible rather than silent:
+In global mode the method checks for a current `.codebase-map/` run holding the first four phases and, when that output is missing or stale, runs the analyze entry of `codebase-map:map-method` through phase 4. Unless the index is not used, it then runs the freshness script and prints the concept index state before spawning the agent, so a stale index is visible rather than silent:
 
 ```
 Concept index: delta-stale (baseline a13fe2, HEAD 92ac10, 4 concepts to revalidate)
 ```
 
-The states are `fresh` (indexed tree equals the current tree and the worktree is clean within scope), `delta-stale` (the normal case: touched concepts are marked dirty and revalidated) and `unusable` (the audit proceeds without the index and declares the reduced coverage in Gaps). In global mode the agent rewrites `.abstraction-architect/concept-index.json`; diff mode never does. Report-only: no file outside `.abstraction-architect/` is ever edited, and the suggested direction in each finding is one sentence, not a refactoring plan.
+The states are `fresh` (indexed tree equals the current tree and the worktree is clean within scope), `delta-stale` (the normal case: touched concepts are marked dirty and revalidated) and `unusable` (the audit proceeds without the index and declares the reduced coverage in Gaps). In global mode the agent rewrites `.abstraction-architect/concept-index.json`; diff mode never does. Report-only: the report goes to the run directory (`findings.md`, or `findings-diff.md` in diff mode), the concept index is the only write outside it, and the suggested direction in each finding is one sentence, not a refactoring plan.
 
 ## Ecosystem integration
 
-- **`/senior-review:team-review`** runs the agent in diff mode as its structural entropy dimension whenever the review target resolves to a diff that adds at least one function, method, class, module, constant table or block longer than roughly five lines. `senior-review` hard-depends on this plugin, so the only thing conditional about the dimension is that signal. Plain file/directory targets have no diff to anchor on and point here instead. The reviewer reads the concept index when one exists and never writes it.
-- **`/senior-review:code-review`** runs it as Agent J (Structural Entropy Review) on the same signal.
+- **`/daodan:review-branch`** (the team-review variant of `senior-review:review-method`) runs the agent in diff mode as its structural entropy dimension whenever the review target resolves to a diff that adds at least one function, method, class, module, constant table or block longer than roughly five lines. `senior-review` hard-depends on this plugin, so the only thing conditional about the dimension is that signal. Plain file/directory targets have no diff to anchor on and point to the global audit of `/daodan:check-health` instead. The reviewer reads the concept index when one exists and never writes it.
+- **The code-review variant** of `senior-review:review-method` runs it as Agent J (Structural Entropy Review) on the same signal.
 - **`senior-review:code-auditor`** keeps the smells fully visible inside one file (god functions, a leaky signature, an interface with one implementation); this agent owns the cross-file question. The dedup boundary is declared on both sides.
-- **`/codebase-map:team-analyze`** adds `08-interconnect-map.md` to the Codebase Map output, which enables the bounded-context check in global mode.
+- **The team entry of `codebase-map:map-method`** adds `08-interconnect-map.md` to the Codebase Map output, which enables the bounded-context check in global mode.
 
-**Related:** [codebase-map](codebase-map.md) (produces the `.codebase-map/` input) | [senior-review](senior-review.md) (`/senior-review:team-review` structural entropy dimension, code-review Agent J, code-auditor dedup boundary) | [clean-code](clean-code.md) (readability cleanup, different concern)
+**Related:** [codebase-map](codebase-map.md) (produces the `.codebase-map/` input) | [senior-review](senior-review.md) (`/daodan:review-branch` structural entropy dimension, code-review Agent J, code-auditor dedup boundary) | [clean-code](clean-code.md) (readability cleanup, different concern)
 
 <!-- daodan:reference:start -->
 ## Source-derived reference
@@ -119,7 +106,7 @@ The states are `fresh` (indexed tree equals the current tree and the worktree is
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `4.1.2`. **Source:** [plugin.toml](<../../plugins/abstraction-architect/plugin.toml>).
+**Version:** `5.0.0`. **Source:** [plugin.toml](<../../plugins/abstraction-architect/plugin.toml>).
 
 ### Required dependencies
 
@@ -148,34 +135,8 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `abstraction-architect:abstraction-architect` | Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness. TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under /abstraction-architect:audit or /senior-review:team-review. DO NOT TRIGGER WHEN: formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead code (use /senior-review:code-review --commit), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor). | [abstraction-architect](<../../plugins/abstraction-architect/skills/abstraction-architect/SKILL.md>) |
-| Role | `abstraction-architect:abstraction-architect-agent` | Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by /abstraction-architect:audit, /senior-review:team-review or /senior-review:code-review; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor). | [abstraction-architect-agent](<../../plugins/abstraction-architect/roles/abstraction-architect-agent.md>) |
-| Workflow | `abstraction-architect:audit` | Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; binds a current Codebase Map run through phase 4, obtaining one when needed. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions. | [audit](<../../plugins/abstraction-architect/workflows/audit.md>) |
-
-### Workflow contracts
-
-Contracts describe observable outputs; Markdown bodies define decisions,
-flags, safety gates and execution. Declared `invoke` execution is unsupported.
-
-#### `abstraction-architect:audit`
-
-**Arguments:** <code>[path] [--diff [&lt;base-ref&gt;]] [--scope &lt;subpath&gt;] [--severity-floor low&#124;medium&#124;high] [--focus all&#124;knowledge&#124;form&#124;D1..D7] [--no-index] [--rebuild-index]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `audit-completed` |
-| Artifacts | `audit-report` |
-| Schemas | None declared |
-| Declared workers | `abstraction-architect/abstraction-architect-agent`, `codebase-map/map-analyst` |
-| Composed worker isolation | Required |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [audit.toml](<../../plugins/abstraction-architect/workflows/audit.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `scope` | None | None | `shared` | None declared | `preferred` |
-| `review` | `scope` | `abstraction-architect-agent` | `required` | None declared | `preferred` |
+| Skill | `abstraction-architect:abstraction-architect` | Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness. TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under the audit method (references/audit.md, run by /daodan:check-health) or the reviews of /daodan:review-changes and /daodan:review-branch. DO NOT TRIGGER WHEN: formatting (use clean-code:readability-method), Python refactoring (use python-development:python-refactor-method), dead code (use senior-review:application-cleanup-method), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor). | [abstraction-architect](<../../plugins/abstraction-architect/skills/abstraction-architect/SKILL.md>) |
+| Role | `abstraction-architect:abstraction-architect-agent` | Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor). | [abstraction-architect-agent](<../../plugins/abstraction-architect/roles/abstraction-architect-agent.md>) |
 
 ### Host exports
 
@@ -188,10 +149,10 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 | Host | Package | Binding | Selected workflow strategy |
 |---|---|---|---|
-| claude | [exports/claude/plugins/abstraction-architect](<../../exports/claude/plugins/abstraction-architect>) | `native` | `audit: native-team` |
-| copilot | [exports/copilot/plugins/abstraction-architect](<../../exports/copilot/plugins/abstraction-architect>) | `native` | `audit: parallel-subagents` |
-| codex | [exports/codex/plugins/abstraction-architect](<../../exports/codex/plugins/abstraction-architect>) | `adapted` | `audit: parallel-subagents` |
-| pi | [exports/pi/plugins/abstraction-architect](<../../exports/pi/plugins/abstraction-architect>) | `adapted` | `audit: parallel-subagents` |
-| opencode | [exports/opencode/plugins/abstraction-architect](<../../exports/opencode/plugins/abstraction-architect>) | `native` | `audit: parallel-subagents` |
+| claude | [exports/claude/plugins/abstraction-architect](<../../exports/claude/plugins/abstraction-architect>) | `native` | No workflow entry points |
+| copilot | [exports/copilot/plugins/abstraction-architect](<../../exports/copilot/plugins/abstraction-architect>) | `native` | No workflow entry points |
+| codex | [exports/codex/plugins/abstraction-architect](<../../exports/codex/plugins/abstraction-architect>) | `adapted` | No workflow entry points |
+| pi | [exports/pi/plugins/abstraction-architect](<../../exports/pi/plugins/abstraction-architect>) | `adapted` | No workflow entry points |
+| opencode | [exports/opencode/plugins/abstraction-architect](<../../exports/opencode/plugins/abstraction-architect>) | `native` | No workflow entry points |
 
 <!-- daodan:reference:end -->

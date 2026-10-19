@@ -4,7 +4,7 @@
       "abstraction-architect": {
         "agents": [
           {
-            "description": "Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by /abstraction-architect:audit, /senior-review:team-review or /senior-review:code-review; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+            "description": "Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
             "file": "agents/abstraction-architect-agent.md",
             "id": "abstraction-architect:abstraction-architect-agent",
             "permissions": [
@@ -51,20 +51,13 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Audit a codebase for structural entropy, or with --diff check whether a change introduces new entropy. Report-only; binds a current Codebase Map run through phase 4, obtaining one when needed. TRIGGER WHEN: the user asks to audit duplicated knowledge, competing sources of truth, redundant models, derivable state, or wrong abstractions.",
-            "file": "commands/audit.md",
-            "name": "abstraction-architect:audit"
-          }
-        ],
         "dependencies": [
           "codebase-map"
         ],
         "root": "plugins/abstraction-architect",
         "skills": [
           {
-            "description": "Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness. TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under /abstraction-architect:audit or /senior-review:team-review. DO NOT TRIGGER WHEN: formatting (use clean-code:clean-code), Python refactoring (use python-development:python-refactor-method), dead code (use /senior-review:code-review --commit), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor).",
+            "description": "Structural entropy knowledge base: canonical ownership, duplicated domain rules, redundant models and abstraction fitness. TRIGGER WHEN: deciding whether to extract, centralize or inline; asking who owns a rule or state; auditing duplicated knowledge or competing sources of truth under the audit method (references/audit.md, run by /daodan:check-health) or the reviews of /daodan:review-changes and /daodan:review-branch. DO NOT TRIGGER WHEN: formatting (use clean-code:readability-method), Python refactoring (use python-development:python-refactor-method), dead code (use senior-review:application-cleanup-method), security (use senior-review:security-auditor), or contract drift (use senior-review:api-contract-auditor).",
             "file": "skills/abstraction-architect/SKILL.md",
             "id": "abstraction-architect:abstraction-architect",
             "name": "abstraction-architect"
@@ -74,7 +67,7 @@
       "clean-code": {
         "agents": [
           {
-            "description": "Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /clean-code:clean-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /clean-code:clean-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).",
+            "description": "Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).",
             "file": "agents/clean-code-agent.md",
             "id": "clean-code:clean-code-agent",
             "permissions": [
@@ -121,20 +114,13 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Readability-only rewrite of existing source. TRIGGER WHEN: the user asks to clean up code, improve naming, remove AI-generated boilerplate, simplify structure, or make code more maintainable without changing behavior. DO NOT TRIGGER WHEN: the target is prose or text (use /text-humanizer:humanize-text), or deep architectural refactoring (return to the development plan).",
-            "file": "commands/clean-code.md",
-            "name": "clean-code:clean-code"
-          }
-        ],
         "dependencies": [
           "project-protocol"
         ],
         "root": "plugins/clean-code",
         "skills": [
           {
-            "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /clean-code:clean-code or lifecycle readability phases.",
+            "description": "Canonical readability-only plan, transformation, candidate validation and owned recovery. Load when running /daodan:refactor-code for readability or lifecycle readability phases.",
             "file": "skills/readability-method/SKILL.md",
             "id": "clean-code:readability-method",
             "name": "readability-method"
@@ -191,7 +177,7 @@
             ]
           },
           {
-            "description": "Runs Flow Tracing and Semantic Understanding over one partition, reading every partitions structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its second wave.",
+            "description": "Runs Flow Tracing and Semantic Understanding over one partition, reading every partitions structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.",
             "file": "agents/partition-behavior-worker.md",
             "id": "codebase-map:partition-behavior-worker",
             "permissions": [
@@ -238,7 +224,7 @@
             ]
           },
           {
-            "description": "Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: spawned by /codebase-map:team-analyze in its second wave.",
+            "description": "Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.",
             "file": "agents/partition-quality-worker.md",
             "id": "codebase-map:partition-quality-worker",
             "permissions": [
@@ -285,7 +271,7 @@
             ]
           },
           {
-            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
+            "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-structure-worker.md",
             "id": "codebase-map:partition-structure-worker",
             "permissions": [
@@ -332,7 +318,7 @@
             ]
           },
           {
-            "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
+            "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.",
             "file": "agents/partition-synthesizer.md",
             "id": "codebase-map:partition-synthesizer",
             "permissions": [
@@ -374,7 +360,7 @@
             ]
           },
           {
-            "description": "Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers. TRIGGER WHEN: spawned by /codebase-map:team-analyze, /senior-review:team-review or /project-knowledge:guide, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /codebase-map:analyze or codebase-explorer first).",
+            "description": "Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-reviews branch review (/daodan:review-branch) or by project-knowledges guide method (/daodan:write-docs), or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /daodan:map-code or codebase-explorer first).",
             "file": "agents/semantic-interconnect-mapper.md",
             "id": "codebase-map:semantic-interconnect-mapper",
             "permissions": [
@@ -421,18 +407,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Run a Codebase Map: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support. TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide) or a shallow overview.",
-            "file": "commands/analyze.md",
-            "name": "codebase-map:analyze"
-          },
-          {
-            "description": "Multi-agent Codebase Map for monorepos and multi-workspace projects: analyzes partitions in parallel and publishes consolidated results to .codebase-map/. TRIGGER WHEN: running Codebase Map analysis on a monorepo or generating a cross-partition interconnection map. DO NOT TRIGGER WHEN: single small directory or documentation-only audit (use /codebase-map:analyze).",
-            "file": "commands/team-analyze.md",
-            "name": "codebase-map:team-analyze"
-          }
-        ],
         "dependencies": [
           "report-rendering"
         ],
@@ -452,25 +426,152 @@
         "root": "plugins/codebase-map",
         "skills": [
           {
-            "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead).",
+            "description": "Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /daodan:write-docs), a public-facing README, or a review verdict (senior-review consumes this output instead).",
             "file": "skills/map-method/SKILL.md",
             "id": "codebase-map:map-method",
             "name": "map-method"
           }
         ]
       },
-      "dependency-audit": {
+      "daodan": {
         "commands": [
           {
-            "description": "Audit dependencies across npm/pnpm/yarn/bun, pip/uv/poetry, cargo, go, gem, composer, maven/gradle and nuget using native ecosystem tooling and advisory databases. TRIGGER WHEN: scanning dependencies for CVEs, checking license compatibility, finding outdated packages, assessing supply-chain risk or preparing a dependency-update PR. DO NOT TRIGGER WHEN: dead-code/unused-dependency removal (use /senior-review:code-review --fix) or Python lint/type/coverage audits (use /python-development:python-audit).",
-            "file": "commands/deps-audit.md",
-            "name": "dependency-audit:deps-audit"
+            "description": "Bring a project into the Daodan cycle: map, decision record index, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
+            "file": "commands/init-project.md",
+            "name": "daodan:init-project"
+          },
+          {
+            "description": "Explain an unfamiliar project to whoever takes it over: purpose, modules, critical flows, setup and tests, evidenced risks, active decisions, real unknowns and a first scoped work plan. Changes nothing in the project. TRIGGER WHEN: the user is new to a project, takes one over, or asks to be walked through it. DO NOT TRIGGER WHEN: the user wants a durable guide written into the repository (use write-docs).",
+            "file": "commands/onboard-project.md",
+            "name": "daodan:onboard-project"
+          },
+          {
+            "description": "Diagnose the projects debt without changing it: structure, duplicated concepts, dead code, tests, documentation and instructions, workspace, and each stacks own audit (Python, React, TypeScript, platform, dependencies). Produces a plan of actions with owners and gates. TRIGGER WHEN: the user asks how healthy a project is, what its technical debt is, or what to clean up first. DO NOT TRIGGER WHEN: one change is to be reviewed (use review-changes or review-branch).",
+            "file": "commands/check-health.md",
+            "name": "daodan:check-health"
+          },
+          {
+            "description": "Run the complete guided maintenance campaign: orientation, stage-by-stage repair of knowledge, structure, tests and artifacts, each stage approved before the next, final verification. TRIGGER WHEN: the user wants a whole project brought back into good shape over several stages. DO NOT TRIGGER WHEN: one diagnosis is enough (use check-health) or one change is wanted (use new-feature, fix-bug or refactor-code).",
+            "file": "commands/run-maintenance.md",
+            "name": "daodan:run-maintenance"
+          },
+          {
+            "description": "Explore an idea with the user, grounded in the code and the decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
+            "file": "commands/brainstorm-idea.md",
+            "name": "daodan:brainstorm-idea"
+          },
+          {
+            "description": "Investigate an error, a bug or a strange behavior without fixing it: facts, perimeter from the map, hypotheses verified one by one in isolation, a reproduction test, bisection. Ends with the demonstrated cause or the remaining hypotheses and what would decide them. TRIGGER WHEN: the user reports an error, a failure, a regression or behavior they cannot explain, and the cause is not known. DO NOT TRIGGER WHEN: the cause is known and a fix is wanted (use fix-bug).",
+            "file": "commands/investigate-problem.md",
+            "name": "daodan:investigate-problem"
+          },
+          {
+            "description": "Have another model challenge a file (a plan, a decision record, a document, code), or have several models deliberate on a question. Asks for consent before any content leaves the machine. TRIGGER WHEN: the user asks for a second opinion, another models view, or a challenge of a plan or decision. DO NOT TRIGGER WHEN: a normal review is wanted (use review-changes or review-branch).",
+            "file": "commands/get-second-opinion.md",
+            "name": "daodan:get-second-opinion"
+          },
+          {
+            "description": "Add new behavior through the task cycle: an interview grounded in your code, a proposed decision record, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
+            "file": "commands/new-feature.md",
+            "name": "daodan:new-feature"
+          },
+          {
+            "description": "Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).",
+            "file": "commands/fix-bug.md",
+            "name": "daodan:fix-bug"
+          },
+          {
+            "description": "Restructure code without changing its behavior: characterization tests first, waves with structural oracles, a review of equivalence. Covers readability too. TRIGGER WHEN: the user wants code restructured, simplified, deduplicated, renamed or made more readable with the same behavior. DO NOT TRIGGER WHEN: behavior should change (use new-feature or fix-bug).",
+            "file": "commands/refactor-code.md",
+            "name": "daodan:refactor-code"
+          },
+          {
+            "description": "Resume the current branchs task, from this session or another: answers pending questions with the text given, then continues from the first open step. TRIGGER WHEN: the user wants to go on with an interrupted task, answers questions a command left pending, or opens a new session on a task branch. DO NOT TRIGGER WHEN: no task exists on this branch and the user wants new work (use new-feature, fix-bug or refactor-code).",
+            "file": "commands/continue-task.md",
+            "name": "daodan:continue-task"
+          },
+          {
+            "description": "Show where the work stands: open tasks with phase, progress, holder and pending questions, their branches, the maps freshness and the decision records. Changes nothing. TRIGGER WHEN: the user asks what is open, where a task stands, who is working on what, or what to do next. DO NOT TRIGGER WHEN: the user wants a task continued (use continue-task).",
+            "file": "commands/show-status.md",
+            "name": "daodan:show-status"
+          },
+          {
+            "description": "Close the current branchs task: complete review of the branch, merge with your authorization, decision record promoted, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).",
+            "file": "commands/finish-task.md",
+            "name": "daodan:finish-task"
+          },
+          {
+            "description": "Bring other peoples work into this copy: fetch, report what arrived and whether it touches an open task, fast-forward only, then realign map, records and documentation. TRIGGER WHEN: the user wants to pull, update from upstream, or see what others changed. DO NOT TRIGGER WHEN: the user wants their own work merged (use finish-task).",
+            "file": "commands/sync-upstream.md",
+            "name": "daodan:sync-upstream"
+          },
+          {
+            "description": "Light review of the current changes, the last commit, or the file, folder or commit you name: the projects tools, then one reviewer chosen by the targets kind. Code, plans, specifications and documents. Read-only. TRIGGER WHEN: the user asks to review their changes, a commit, a file or a document. DO NOT TRIGGER WHEN: a whole branch or a pull request is to be reviewed (use review-branch).",
+            "file": "commands/review-changes.md",
+            "name": "daodan:review-changes"
+          },
+          {
+            "description": "Complete review of a branch against its base, or of a pull request: every perspective the signals activate, the map, blind derivation of premises and the verification panel, chosen by a script from the diff and the map. TRIGGER WHEN: the user asks for a full or deep review of a branch, a pull request or a large change, or before a merge. DO NOT TRIGGER WHEN: only the current changes or one commit are to be reviewed (use review-changes).",
+            "file": "commands/review-branch.md",
+            "name": "daodan:review-branch"
+          },
+          {
+            "description": "Write tests for the code you name: behavior-driven, in the projects framework and layout, extending existing files rather than creating parallel ones. TRIGGER WHEN: the user asks for tests, more coverage or a test for a specific behavior. DO NOT TRIGGER WHEN: a defect is to be fixed with its test (use fix-bug) or the suite is to be audited (use check-health).",
+            "file": "commands/write-tests.md",
+            "name": "daodan:write-tests"
+          },
+          {
+            "description": "Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).",
+            "file": "commands/map-code.md",
+            "name": "daodan:map-code"
+          },
+          {
+            "description": "Realign the documentation with the code, or write what you ask for: a guide, the README, the project instructions. TRIGGER WHEN: the user asks for documentation, a guide, a README, onboarding docs, or project instructions (CLAUDE.md, AGENTS.md). DO NOT TRIGGER WHEN: the text only needs to sound natural (use humanize-text).",
+            "file": "commands/write-docs.md",
+            "name": "daodan:write-docs"
+          },
+          {
+            "description": "Record an architecture decision outside a task: a grounded interview, then a Proposed record under docs/adr/ and its index. TRIGGER WHEN: the user wants to write down, propose or document a technical decision. DO NOT TRIGGER WHEN: the decision belongs to a task being built (new-feature records it).",
+            "file": "commands/record-decision.md",
+            "name": "daodan:record-decision"
+          },
+          {
+            "description": "Clean the repository: workspace garbage and git leftovers, dead application code, redundant tests, concluded run output. Preview first, then one authorization. TRIGGER WHEN: the user asks to clean up, tidy, remove dead code, junk files or redundant tests. DO NOT TRIGGER WHEN: the code itself is to be restructured (use refactor-code).",
+            "file": "commands/tidy-repo.md",
+            "name": "daodan:tidy-repo"
+          },
+          {
+            "description": "Make a text read naturally, removing the patterns of machine writing, without inventing content. TRIGGER WHEN: the user asks to humanize, rewrite naturally or de-AI a text or a file. DO NOT TRIGGER WHEN: code is to be refactored (use refactor-code) or documentation written (use write-docs).",
+            "file": "commands/humanize-text.md",
+            "name": "daodan:humanize-text"
           }
         ],
+        "dependencies": [
+          "abstraction-architect",
+          "clean-code",
+          "codebase-map",
+          "moe",
+          "peer-review",
+          "platform-engineering",
+          "project-knowledge",
+          "project-lifecycle",
+          "project-protocol",
+          "python-development",
+          "react-development",
+          "repo-hygiene",
+          "senior-review",
+          "skill-catalog",
+          "testing",
+          "text-humanizer",
+          "typescript-development"
+        ],
+        "root": "plugins/daodan"
+      },
+      "dependency-audit": {
         "root": "plugins/dependency-audit",
         "skills": [
           {
-            "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; loaded by /dependency-audit:deps-audit. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:code-review or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",
+            "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; the audit method in references/audit.md is run by /daodan:check-health and by the dependency perspective of /daodan:review-changes and /daodan:review-branch. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:application-cleanup-method or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",
             "file": "skills/dependency-audit/SKILL.md",
             "id": "dependency-audit:dependency-audit",
             "name": "dependency-audit"
@@ -500,13 +601,6 @@
         ]
       },
       "moe": {
-        "commands": [
-          {
-            "description": "Solves difficult problems through independent models, reciprocal critique and verified synthesis. TRIGGER WHEN: the user explicitly enables Ultra Nerd or requests moe deliberation.",
-            "file": "commands/ultra-nerd.md",
-            "name": "moe:ultra-nerd"
-          }
-        ],
         "dependencies": [
           "peer-review"
         ],
@@ -526,7 +620,7 @@
         "root": "plugins/moe",
         "skills": [
           {
-            "description": "Coordinates bounded independent proposals and reciprocal critique. TRIGGER WHEN: explicitly requesting Ultra Nerd, moe, or a multi-model expert debate for a difficult problem. DO NOT TRIGGER WHEN: challenging an existing plan only (use peer-review:cross-model-peer-review).",
+            "description": "Coordinates bounded independent proposals and reciprocal critique. TRIGGER WHEN: /daodan:get-second-opinion receives a question rather than a file, or explicitly requesting Ultra Nerd, moe, or a multi-model expert debate for a difficult problem. DO NOT TRIGGER WHEN: challenging an existing plan only (use peer-review:cross-model-peer-review).",
             "file": "skills/multi-model-deliberation/SKILL.md",
             "id": "moe:multi-model-deliberation",
             "name": "multi-model-deliberation"
@@ -536,7 +630,7 @@
       "peer-review": {
         "agents": [
           {
-            "description": "Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).",
+            "description": "Materializes a sessions context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).",
             "file": "agents/brief-builder.md",
             "id": "peer-review:brief-builder",
             "permissions": [
@@ -548,7 +642,7 @@
             ]
           },
           {
-            "description": "Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the /peer-review:review command during Phase 1.",
+            "description": "Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 1.",
             "file": "agents/packet-builder.md",
             "id": "peer-review:packet-builder",
             "permissions": [
@@ -560,7 +654,7 @@
             ]
           },
           {
-            "description": "Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).",
+            "description": "Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).",
             "file": "agents/respondent.md",
             "id": "peer-review:respondent",
             "permissions": [
@@ -570,13 +664,6 @@
                 "resource": "<package-root>/**"
               }
             ]
-          }
-        ],
-        "commands": [
-          {
-            "description": "Runs the deliberation protocol end to end: consent gate, external call, multi-round dialectic, verdict computed from a verbatim ledger. With no path, materializes the sessions context and decisions into a brief and challenges that. TRIGGER WHEN: the user asks to have a plan, a spec, or the sessions own context and decisions (taken or still open) challenged by a second model family, stress-tested across models, or peer-reviewed outside this session.",
-            "file": "commands/review.md",
-            "name": "peer-review:review"
           }
         ],
         "mcp": [
@@ -595,7 +682,7 @@
         "root": "plugins/peer-review",
         "skills": [
           {
-            "description": "Doctrine for challenging a plan, spec or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).",
+            "description": "Doctrine and review method for challenging a plan, spec, decision record or session decisions with a second model family, including GIVEN vs DERIVED provenance rules. TRIGGER WHEN: running or configuring a cross-model peer review (the review method, loaded by /daodan:get-second-opinion for a file and by the task cycle to challenge a decision record or plan), deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions. DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).",
             "file": "skills/cross-model-peer-review/SKILL.md",
             "id": "peer-review:cross-model-peer-review",
             "name": "cross-model-peer-review"
@@ -605,7 +692,7 @@
       "platform-engineering": {
         "agents": [
           {
-            "description": "Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+            "description": "Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
             "file": "agents/platform-reviewer.md",
             "id": "platform-engineering:platform-reviewer",
             "permissions": [
@@ -652,13 +739,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Audit a codebase against the platform-engineering rulebook. TRIGGER WHEN: the user asks for a platform-level review, cross-platform security audit, Electron or Tauri hardening check, or an SPA, PWA, mobile, or desktop compliance review. DO NOT TRIGGER WHEN: reviewing generic code quality with no platform dimension (use /senior-review:code-review).",
-            "file": "commands/platform-review.md",
-            "name": "platform-engineering:platform-review"
-          }
-        ],
         "root": "plugins/platform-engineering",
         "skills": [
           {
@@ -672,7 +752,7 @@
       "project-knowledge": {
         "agents": [
           {
-            "description": "Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately. TRIGGER WHEN: spawned by project-knowledge workflows to gather repository context before writing or auditing docs.",
+            "description": "Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately. TRIGGER WHEN: spawned by project-knowledge methods to gather repository context before writing or auditing docs.",
             "file": "agents/codebase-explorer.md",
             "id": "project-knowledge:codebase-explorer",
             "permissions": [
@@ -719,7 +799,7 @@
             ]
           },
           {
-            "description": "Restructure existing technical documents for their planned readers without changing facts, code examples or author voice. TRIGGER WHEN: spawned by project-knowledge workflows to restructure technical documentation. DO NOT TRIGGER WHEN: editing prose voice (use text-humanizer).",
+            "description": "Restructure existing technical documents for their planned readers without changing facts, code examples or author voice. TRIGGER WHEN: spawned by project-knowledge methods to restructure technical documentation. DO NOT TRIGGER WHEN: editing prose voice (use text-humanizer).",
             "file": "agents/doc-humanizer.md",
             "id": "project-knowledge:doc-humanizer",
             "permissions": [
@@ -766,7 +846,7 @@
             ]
           },
           {
-            "description": "Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode. TRIGGER WHEN: spawned by /project-knowledge:maintain or lifecycle knowledge phases to audit or repair documentation drift.",
+            "description": "Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode. TRIGGER WHEN: dispatched by project-knowledges documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift.",
             "file": "agents/documentation-engineer.md",
             "id": "project-knowledge:documentation-engineer",
             "permissions": [
@@ -813,7 +893,7 @@
             ]
           },
           {
-            "description": "Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: spawned by /project-knowledge:guide to author user and data flow documentation.",
+            "description": "Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author user and data flow documentation.",
             "file": "agents/flow-writer.md",
             "id": "project-knowledge:flow-writer",
             "permissions": [
@@ -860,7 +940,7 @@
             ]
           },
           {
-            "description": "Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer. TRIGGER WHEN: spawned by /project-knowledge:guide to verify authored guide files.",
+            "description": "Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to verify authored guide files.",
             "file": "agents/guide-reviewer.md",
             "id": "project-knowledge:guide-reviewer",
             "permissions": [
@@ -907,7 +987,7 @@
             ]
           },
           {
-            "description": "Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files. TRIGGER WHEN: spawned by /project-knowledge:instructions or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md.",
+            "description": "Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files. TRIGGER WHEN: dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md.",
             "file": "agents/instructions-auditor.md",
             "id": "project-knowledge:instructions-auditor",
             "permissions": [
@@ -954,7 +1034,7 @@
             ]
           },
           {
-            "description": "Write verified reader-specific onboarding and real open questions. TRIGGER WHEN: spawned by /project-knowledge:guide to author onboarding documentation.",
+            "description": "Write verified reader-specific onboarding and real open questions. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author onboarding documentation.",
             "file": "agents/onboarding-writer.md",
             "id": "project-knowledge:onboarding-writer",
             "permissions": [
@@ -1001,7 +1081,7 @@
             ]
           },
           {
-            "description": "Own operational reference and configuration how-to, absorbing the former config writers techniques. TRIGGER WHEN: spawned by /project-knowledge:guide to author operational and configuration documentation.",
+            "description": "Own operational reference and configuration how-to, absorbing the former config writers techniques. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author operational and configuration documentation.",
             "file": "agents/ops-writer.md",
             "id": "project-knowledge:ops-writer",
             "permissions": [
@@ -1048,7 +1128,7 @@
             ]
           },
           {
-            "description": "Explain the project and implemented features for planned audiences. TRIGGER WHEN: spawned by /project-knowledge:guide to author project overview documentation.",
+            "description": "Explain the project and implemented features for planned audiences. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author project overview documentation.",
             "file": "agents/overview-writer.md",
             "id": "project-knowledge:overview-writer",
             "permissions": [
@@ -1095,7 +1175,7 @@
             ]
           },
           {
-            "description": "Document the verified stack, architecture and data model in planned files. TRIGGER WHEN: spawned by /project-knowledge:guide to author technical architecture and data-model documentation.",
+            "description": "Document the verified stack, architecture and data model in planned files. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author technical architecture and data-model documentation.",
             "file": "agents/tech-writer.md",
             "id": "project-knowledge:tech-writer",
             "permissions": [
@@ -1142,33 +1222,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Audit, create or maintain the projects authoritative durable instructions. TRIGGER WHEN: the user asks to audit, create or update AGENTS.md, CLAUDE.md or host instruction files.",
-            "file": "commands/instructions.md",
-            "name": "project-knowledge:instructions"
-          },
-          {
-            "description": "Create or update a proportional audience-specific project guide using an owned file plan. TRIGGER WHEN: the user asks to generate, audit or update a project guide or multi-file documentation set.",
-            "file": "commands/guide.md",
-            "name": "project-knowledge:guide"
-          },
-          {
-            "description": "Audit documentation drift and apply authorized evidence-backed maintenance. TRIGGER WHEN: the user asks to check documentation drift against code or maintain project documentation.",
-            "file": "commands/maintain.md",
-            "name": "project-knowledge:maintain"
-          },
-          {
-            "description": "Audit, create or maintain README.md without losing facts or author voice. TRIGGER WHEN: the user asks to audit, write or update README.md.",
-            "file": "commands/readme.md",
-            "name": "project-knowledge:readme"
-          },
-          {
-            "description": "Create, resolve, validate or promote architecture decision records in docs/adr/. TRIGGER WHEN: the user asks which decisions govern a scope, wants a decision recorded after an interview, or merged a change that implements a Proposed record. DO NOT TRIGGER WHEN: the user wants a decision challenged (use /senior-review:code-review on the record, or /peer-review:review).",
-            "file": "commands/adr.md",
-            "name": "project-knowledge:adr"
-          }
-        ],
         "dependencies": [
           "project-protocol",
           "codebase-map",
@@ -1197,7 +1250,7 @@
             "name": "readme-craft"
           },
           {
-            "description": "Create, resolve, validate and promote canonical architecture decision records in docs/adr/. TRIGGER WHEN: an interview settles a design, contract or domain decision; a task needs the decisions governing its scope; a merged change promotes a Proposed record. DO NOT TRIGGER WHEN: the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
+            "description": "Create, resolve, validate and promote canonical architecture decision records in docs/adr/. TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, or a merged change promotes a Proposed record. DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).",
             "file": "skills/adr-method/SKILL.md",
             "id": "project-knowledge:adr-method",
             "name": "adr-method"
@@ -1205,43 +1258,6 @@
         ]
       },
       "project-lifecycle": {
-        "commands": [
-          {
-            "description": "Assess project coherence and produce a scoped evidence-based repair plan. TRIGGER WHEN: the user requests lifecycle assess or its complete project outcome. DO NOT TRIGGER WHEN: a single-domain audit suffices (use /senior-review:code-review, /codebase-map:analyze, or /testing:test-audit).",
-            "file": "commands/assess.md",
-            "name": "project-lifecycle:assess"
-          },
-          {
-            "description": "Apply an identified repair plan through canonical owners and verified phase gates. TRIGGER WHEN: the user requests lifecycle repair or its complete project outcome. DO NOT TRIGGER WHEN: a single-domain fix suffices (use /senior-review:code-review --fix, /clean-code:clean-code, or /repo-hygiene:tidy --fix).",
-            "file": "commands/repair.md",
-            "name": "project-lifecycle:repair"
-          },
-          {
-            "description": "Develop a complete change with discovery, meaningful tests and coherent closure. TRIGGER WHEN: the user requests lifecycle change or its complete project outcome. DO NOT TRIGGER WHEN: a narrower specialist task covers the outcome (use clean-code, testing or project-knowledge directly).",
-            "file": "commands/change.md",
-            "name": "project-lifecycle:change"
-          },
-          {
-            "description": "Verify an exact candidate snapshot and account for checks, coverage and remaining gaps. TRIGGER WHEN: the user requests lifecycle verify or its complete project outcome. DO NOT TRIGGER WHEN: a single test-suite or code review suffices (use /testing:test-audit or /senior-review:code-review).",
-            "file": "commands/verify.md",
-            "name": "project-lifecycle:verify"
-          },
-          {
-            "description": "Consolidate experiment outcomes, durable conclusions and retention of owned artifacts. TRIGGER WHEN: the user requests lifecycle consolidate or its complete project outcome. DO NOT TRIGGER WHEN: workspace tidying without experiment consolidation (use /repo-hygiene:tidy).",
-            "file": "commands/consolidate.md",
-            "name": "project-lifecycle:consolidate"
-          },
-          {
-            "description": "Prepare an evidence-based consultant intake dossier without changing the project. TRIGGER WHEN: the user requests lifecycle handover or needs to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: the user requests correction and rationalization (use maintain).",
-            "file": "commands/handover.md",
-            "name": "project-lifecycle:handover"
-          },
-          {
-            "description": "Lead the complete Senior Maintainer campaign through canonical owners and separate stage runs. TRIGGER WHEN: the user requests a complete guided project rationalization, or lifecycle maintain. DO NOT TRIGGER WHEN: orientation for a new consultant is sufficient (use handover), or one specialist task covers the requested outcome.",
-            "file": "commands/maintain.md",
-            "name": "project-lifecycle:maintain"
-          }
-        ],
         "dependencies": [
           "project-protocol",
           "project-knowledge",
@@ -1251,11 +1267,11 @@
           "codebase-map",
           "repo-hygiene",
           "clean-code",
-          "text-humanizer",
           "react-development",
           "typescript-development",
           "platform-engineering",
           "python-development",
+          "dependency-audit",
           "skill-catalog",
           "peer-review",
           "moe",
@@ -1264,19 +1280,19 @@
         "root": "plugins/project-lifecycle",
         "skills": [
           {
-            "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: running project-lifecycle assess, repair, change, verify or consolidate, or explicitly taking responsibility for project coherence. DO NOT TRIGGER WHEN: an isolated specialist audit suffices (use senior-review, codebase-map or testing directly).",
+            "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: the user wants to brainstorm or explore an idea before building, initialize or set up a project, diagnose project health or technical debt, build a feature, fix a bug, refactor code, check task status, continue an open task, finish and merge a task, sync upstream, or run a daodan lifecycle command. DO NOT TRIGGER WHEN: the user requests code explanation without investigation or changes, wants an isolated specialist audit (use senior-review, codebase-map or testing directly), or only needs a problem investigated without fixing it (use senior-review:investigation-method).",
             "file": "skills/lifecycle-method/SKILL.md",
             "id": "project-lifecycle:lifecycle-method",
             "name": "lifecycle-method"
           },
           {
-            "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: running project-lifecycle maintain or leading its complete staged outcome. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual lifecycle operation covers the request.",
+            "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use lifecycle-method).",
             "file": "skills/maintainer-method/SKILL.md",
             "id": "project-lifecycle:maintainer-method",
             "name": "maintainer-method"
           },
           {
-            "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project. DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).",
+            "description": "Coordinate an evidence-based consultant intake dossier. TRIGGER WHEN: the user asks to be onboarded, walked through an unfamiliar codebase, given a project takeover or intake dossier, or runs /daodan:onboard-project. DO NOT TRIGGER WHEN: being new to a project is only background for a code change (use lifecycle-method), correcting and rationalizing the project (use maintainer-method), or writing durable repository documentation (use project-knowledge:project-knowledge).",
             "file": "skills/handover-method/SKILL.md",
             "id": "project-lifecycle:handover-method",
             "name": "handover-method"
@@ -1430,23 +1446,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or to prepare a codebase for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use /python-development:python-refactor), dead code alone (use /senior-review:code-review --commit), or test writing (use testing:test-writer with pytest-patterns context).",
-            "file": "commands/python-audit.md",
-            "name": "python-development:python-audit"
-          },
-          {
-            "description": "Measure, rewrite, verify against the tests, then report the delta. TRIGGER WHEN: the user asks to refactor Python code, reduce cyclomatic complexity, or restructure modules with measured before/after metrics. DO NOT TRIGGER WHEN: renaming or simplifying for readability only (use /clean-code:clean-code), or removing dead code (use /senior-review:code-review --commit).",
-            "file": "commands/python-refactor.md",
-            "name": "python-development:python-refactor"
-          },
-          {
-            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
-            "file": "commands/python-scaffold.md",
-            "name": "python-development:python-scaffold"
-          }
-        ],
         "dependencies": [
           "testing",
           "project-protocol"
@@ -1490,7 +1489,7 @@
             "name": "python-performance-optimization"
           },
           {
-            "description": "Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for \"readable\", \"maintainable\" or \"clean\" code, a review flags comprehension issues, or the task is legacy modernization or onboarding cleanup.",
+            "description": "Restructure tangled code into a clear equivalent, preserving behavior. TRIGGER WHEN: the user asks for \"readable\", \"maintainable\" or \"clean\" code, a review flags comprehension issues, the task is legacy modernization or onboarding cleanup, or `/daodan:refactor-code` runs on Python code.",
             "file": "skills/python-refactor-method/SKILL.md",
             "id": "python-development:python-refactor-method",
             "name": "python-refactor-method"
@@ -1506,13 +1505,25 @@
             "file": "skills/uv-package-manager/SKILL.md",
             "id": "python-development:uv-package-manager",
             "name": "uv-package-manager"
+          },
+          {
+            "description": "Run ruff, mypy/pyright, vulture, complexipy/radon and pytest, then report prioritized fixes. TRIGGER WHEN: `/daodan:check-health` runs on a Python project, the user asks to audit a Python codebase across lint, types, complexity, dead code and coverage, or a codebase is prepared for release review. DO NOT TRIGGER WHEN: only one dimension is in scope: restructuring (use python-development:python-refactor-method), dead code alone (use senior-review:application-cleanup-method), or test writing (use testing:test-writer with pytest-patterns context).",
+            "file": "skills/python-audit-method/SKILL.md",
+            "id": "python-development:python-audit-method",
+            "name": "python-audit-method"
+          },
+          {
+            "description": "Generate a fresh project skeleton, tests and lint config included. TRIGGER WHEN: `/daodan:init-project` runs on an empty folder and the user wants a Python project, or the user asks to start a new Python project, bootstrap FastAPI/Django/CLI/library structure, or set up uv+pytest+ruff from scratch. DO NOT TRIGGER WHEN: adding to an existing project (use python-engineer).",
+            "file": "skills/python-scaffold-method/SKILL.md",
+            "id": "python-development:python-scaffold-method",
+            "name": "python-scaffold-method"
           }
         ]
       },
       "react-development": {
         "agents": [
           {
-            "description": "Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat. TRIGGER WHEN: reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+            "description": "Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat. TRIGGER WHEN: dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
             "file": "agents/react-performance-optimizer.md",
             "id": "react-development:react-performance-optimizer",
             "permissions": [
@@ -1559,13 +1570,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Produce a scored markdown report with fix instructions. TRIGGER WHEN: the user asks to review React code for performance, re-renders, bundle size, state management, React 19 API adoption, or the Vercel best-practices checklist.",
-            "file": "commands/review-react.md",
-            "name": "react-development:review-react"
-          }
-        ],
         "root": "plugins/react-development",
         "skills": [
           {
@@ -1579,7 +1583,7 @@
       "repo-hygiene": {
         "agents": [
           {
-            "description": "Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches; spawned in review pipelines. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (use /repo-hygiene:tidy).",
+            "description": "Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
             "file": "agents/workspace-auditor.md",
             "id": "repo-hygiene:workspace-auditor",
             "permissions": [
@@ -1626,17 +1630,10 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Tidy the workspace: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: cleaning up a repository, removing committed build output, auditing .gitignore, clearing scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use /senior-review:code-review) or test consolidation (use /testing:test-consolidate).",
-            "file": "commands/tidy.md",
-            "name": "repo-hygiene:tidy"
-          }
-        ],
         "root": "plugins/repo-hygiene",
         "skills": [
           {
-            "description": "Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: running /repo-hygiene:tidy or the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review).",
+            "description": "Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: running the tidy method (references/tidy.md) behind /daodan:tidy-repo or a lifecycle plans workspace operations, or the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review), or test consolidation (use testing:test-remediation-method).",
             "file": "skills/repo-hygiene/SKILL.md",
             "id": "repo-hygiene:repo-hygiene",
             "name": "repo-hygiene"
@@ -1746,7 +1743,7 @@
             ]
           },
           {
-            "description": "Application-hygiene auditor for dead code, orphan assets, unused dependencies, stale docs and migration/debug leftovers. TRIGGER WHEN: spawned in /senior-review:team-review or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit. DO NOT TRIGGER WHEN: applying removals (use /senior-review:code-review --commit), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+            "description": "Application-hygiene auditor for dead code, orphan assets, unused dependencies, stale docs and migration/debug leftovers. TRIGGER WHEN: dispatched by senior-reviews review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit. DO NOT TRIGGER WHEN: applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
             "file": "agents/cleanup-auditor.md",
             "id": "senior-review:cleanup-auditor",
             "permissions": [
@@ -1934,7 +1931,7 @@
             ]
           },
           {
-            "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: /senior-review:team-review Phase 2 runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+            "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: Phase 2 of senior-reviews branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
             "file": "agents/logic-integrity-auditor.md",
             "id": "senior-review:logic-integrity-auditor",
             "permissions": [
@@ -1981,7 +1978,7 @@
             ]
           },
           {
-            "description": "Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3). TRIGGER WHEN: /senior-review:team-review Phase 1c runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+            "description": "Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3). TRIGGER WHEN: Phase 1c of senior-reviews branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
             "file": "agents/premise-auditor.md",
             "id": "senior-review:premise-auditor",
             "permissions": [
@@ -2216,23 +2213,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Multi-dimensional code, PR and branch review with optional --fix and --commit remediation (including dead-code subtraction). TRIGGER WHEN: reviewing recent changes, a PR or a branch for bugs, security or architecture, or removing dead code, unused exports/dependencies and orphan assets. DO NOT TRIGGER WHEN: full codebase-wide multi-phase review (use /senior-review:team-review), filesystem/git tidying (use /repo-hygiene:tidy), or readability-only rewrites (use /clean-code:clean-code).",
-            "file": "commands/code-review.md",
-            "name": "senior-review:code-review"
-          },
-          {
-            "description": "Generates a risk assessment, a review checklist, and a lite dead-code and VCS-hygiene pass over the diff, then submits it via gh with --create. TRIGGER WHEN: the user asks to prepare a PR, write a PR description, or open a pull request from the current branch. DO NOT TRIGGER WHEN: reviewing someone elses PR (use /senior-review:code-review with the PR number).",
-            "file": "commands/pr-review.md",
-            "name": "senior-review:pr-review"
-          },
-          {
-            "description": "Six-phase pipeline. Builds Codebase Map and interconnect context first, then runs specialized dimensions in parallel so cross-component logic bugs surface, not just local ones. TRIGGER WHEN: the user wants a multi-reviewer review of a whole codebase or a large change, or asks for the deepest review available.",
-            "file": "commands/team-review.md",
-            "name": "senior-review:team-review"
-          }
-        ],
         "dependencies": [
           "repo-hygiene",
           "codebase-map",
@@ -2256,13 +2236,13 @@
             "name": "defect-taxonomy"
           },
           {
-            "description": "Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation. TRIGGER WHEN: running /senior-review:team-review or /senior-review:code-review quality gates, or consolidating findings from parallel reviewers.",
+            "description": "Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation. TRIGGER WHEN: running team-review (/daodan:review-branch) or code-review quality gates, or consolidating findings from parallel reviewers.",
             "file": "skills/review-quality-gates/SKILL.md",
             "id": "senior-review:review-quality-gates",
             "name": "review-quality-gates"
           },
           {
-            "description": "Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists. Load when executing any senior-review workflow or lifecycle review phase.",
+            "description": "Unified review engine: the light review and the branch review (variants team-review and pr-review, and code-review), including signal-selected stack specialists. TRIGGER WHEN: the user asks to review current changes, a commit, a file, a plan, a specification, a document, a branch or a pull request for defects, or /daodan:review-changes, /daodan:review-branch or a lifecycle review phase runs a review. DO NOT TRIGGER WHEN: establishing the root cause of a reported failure without reviewing an artifact (use investigation-method), or removing dead code (use application-cleanup-method).",
             "file": "skills/review-method/SKILL.md",
             "id": "senior-review:review-method",
             "name": "review-method"
@@ -2274,19 +2254,19 @@
             "name": "review-preparation"
           },
           {
-            "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating /senior-review:code-review, team-review or pr-review results.",
+            "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating code-review, team-review or pr-review results.",
             "file": "skills/review-consolidation/SKILL.md",
             "id": "senior-review:review-consolidation",
             "name": "review-consolidation"
           },
           {
-            "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /senior-review:code-review Step 7c or lifecycle cleanup.",
+            "description": "Apply accepted application-subtraction findings with isolated phases and snapshot-bound build/test gates. Load when running /daodan:tidy-repo, code-review Step 7c or lifecycle cleanup.",
             "file": "skills/application-cleanup-method/SKILL.md",
             "id": "senior-review:application-cleanup-method",
             "name": "application-cleanup-method"
           },
           {
-            "description": "Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection. TRIGGER WHEN: a coordinator investigates a problem, or a bug fix starts without a known cause. DO NOT TRIGGER WHEN: reviewing a change for defects (use review-method), or the cause is already demonstrated by a failing test.",
+            "description": "Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection. TRIGGER WHEN: the user reports an error, regression or strange behavior whose cause is unknown and wants it investigated, a coordinator investigates a problem, or a bug fix starts without a known cause. DO NOT TRIGGER WHEN: assessing a change or artifact for defects (use review-method), or the root cause is already established with evidence.",
             "file": "skills/investigation-method/SKILL.md",
             "id": "senior-review:investigation-method",
             "name": "investigation-method"
@@ -2307,7 +2287,7 @@
       "testing": {
         "agents": [
           {
-            "description": "Runs as the testing-quality dimension of /senior-review:team-review and /senior-review:code-review, and as the engine of /testing:test-audit. TRIGGER WHEN: auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement. DO NOT TRIGGER WHEN: tests should be written (use test-writer), or quarantine or consolidation applied (use /testing:test-audit --fix or /testing:test-consolidate).",
+            "description": "Runs as the testing-quality dimension of senior-reviews team-review and code-review variants (/daodan:review-branch), and as the engine of the audit mode of testing:test-remediation-method. TRIGGER WHEN: auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement. DO NOT TRIGGER WHEN: tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
             "file": "agents/test-suite-auditor.md",
             "id": "testing:test-suite-auditor",
             "permissions": [
@@ -2401,18 +2381,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Writes a versioned TEST_AUDIT.md; with --fix, quarantines the rot in gated, revertible commits. TRIGGER WHEN: auditing a test suite, measuring test health, finding dead or flaky or redundant tests, or diagnosing failure causes and proposing temporary quarantine. DO NOT TRIGGER WHEN: one modules tests are consolidated (use /testing:test-consolidate), or new tests written (use the test-writer agent).",
-            "file": "commands/test-audit.md",
-            "name": "testing:test-audit"
-          },
-          {
-            "description": "Consolidates accepted overlapping protection by layer owner, preserving justified scope splits and verifying replacement protection before retiring approved originals in the same candidate and authorized commit. TRIGGER WHEN: consolidating, deduping or rewriting the tests of a module, or processing quarantined tests for code being touched. DO NOT TRIGGER WHEN: whole-suite health is measured or quarantined (use /testing:test-audit), or tests written for untested code (use the test-writer agent).",
-            "file": "commands/test-consolidate.md",
-            "name": "testing:test-consolidate"
-          }
-        ],
         "dependencies": [
           "project-protocol",
           "report-rendering"
@@ -2432,7 +2400,7 @@
             "name": "test-preparation"
           },
           {
-            "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when running /testing:test-audit or /testing:test-consolidate.",
+            "description": "Classify test failures before gated quarantine or consolidation, preserving behavior, independent failure modes and bugfix provenance. Load when auditing a suite, quarantining tests or consolidating a modules tests (consolidation through /daodan:tidy-repo).",
             "file": "skills/test-remediation-method/SKILL.md",
             "id": "testing:test-remediation-method",
             "name": "test-remediation-method"
@@ -2442,7 +2410,7 @@
       "text-humanizer": {
         "agents": [
           {
-            "description": "Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use clean-code:clean-code instead).",
+            "description": "Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).",
             "file": "agents/text-humanizer.md",
             "id": "text-humanizer:text-humanizer",
             "permissions": [
@@ -2474,13 +2442,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Detect the 24 catalogued patterns and edit them out without inventing content; --score adds a self-assessed quality score. TRIGGER WHEN: the user asks to humanize prose/text, remove AI-sounding copy, or rewrite articles/blog posts/documentation for natural voice. DO NOT TRIGGER WHEN: cleaning up source code (use /clean-code:clean-code) or translating text.",
-            "file": "commands/humanize-text.md",
-            "name": "text-humanizer:humanize-text"
-          }
-        ],
         "root": "plugins/text-humanizer",
         "skills": [
           {
@@ -2494,7 +2455,7 @@
       "typescript-development": {
         "agents": [
           {
-            "description": "TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling. TRIGGER WHEN: auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift. DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+            "description": "TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling. TRIGGER WHEN: dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift. DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
             "file": "agents/type-safety-auditor.md",
             "id": "typescript-development:type-safety-auditor",
             "permissions": [
@@ -2583,13 +2544,6 @@
             ]
           }
         ],
-        "commands": [
-          {
-            "description": "Audit a codebase for type-system erosion and write a markdown report. TRIGGER WHEN: the user asks to review TypeScript for type safety, `any` leakage, unsound casts, tsconfig strictness, exhaustiveness, generics soundness, or missing runtime validation at boundaries. DO NOT TRIGGER WHEN: style review (use typescript-write), React performance (use /react-development:review-react), or dead-code detection (use knip).",
-            "file": "commands/review-typescript.md",
-            "name": "typescript-development:review-typescript"
-          }
-        ],
         "root": "plugins/typescript-development",
         "skills": [
           {
@@ -2599,7 +2553,7 @@
             "name": "knip"
           },
           {
-            "description": "Advanced TypeScript 5.x patterns, strict tsconfig/Vite/Vitest setup, type-level programming and Zod runtime schemas. TRIGGER WHEN: migrating JS to TS, bootstrapping a TS project, writing generics, conditional/mapped/branded types, discriminated unions, Zod schemas, or typing React/NestJS. DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:review-react), or dead code (use knip).",
+            "description": "Advanced TypeScript 5.x patterns, strict tsconfig/Vite/Vitest setup, type-level programming and Zod runtime schemas. TRIGGER WHEN: migrating JS to TS, bootstrapping a TS project, writing generics, conditional/mapped/branded types, discriminated unions, Zod schemas, or typing React/NestJS. DO NOT TRIGGER WHEN: routine TS style (use typescript-write), React performance (use react-development:react-best-practices), or dead code (use knip).",
             "file": "skills/mastering-typescript/SKILL.md",
             "id": "typescript-development:mastering-typescript",
             "name": "mastering-typescript"
@@ -2630,5 +2584,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "37.3.0"
+  "version": "38.0.0"
 }

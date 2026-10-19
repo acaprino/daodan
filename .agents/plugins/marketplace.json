@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "37.3.0"
+    "version": "38.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -19,15 +19,14 @@
       "dependencies": [
         "codebase-map"
       ],
-      "description": "Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of /senior-review:team-review and /senior-review:code-review. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD).",
+      "description": "Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of senior-review's reviews; the whole-codebase audit runs under /daodan:check-health. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD).",
       "license": "MIT",
       "name": "abstraction-architect",
       "skills": [
-        "./skills/abstraction-architect",
-        "./skills/audit-workflow"
+        "./skills/abstraction-architect"
       ],
       "source": "./exports/codex/plugins/abstraction-architect",
-      "version": "4.1.2"
+      "version": "5.0.0"
     },
     {
       "author": {
@@ -40,11 +39,10 @@
       "license": "MIT",
       "name": "clean-code",
       "skills": [
-        "./skills/clean-code-workflow",
         "./skills/readability-method"
       ],
       "source": "./exports/codex/plugins/clean-code",
-      "version": "2.0.5"
+      "version": "3.0.0"
     },
     {
       "author": {
@@ -57,12 +55,63 @@
       "license": "MIT",
       "name": "codebase-map",
       "skills": [
-        "./skills/analyze-workflow",
-        "./skills/map-method",
-        "./skills/team-analyze-workflow"
+        "./skills/map-method"
       ],
       "source": "./exports/codex/plugins/codebase-map",
-      "version": "7.3.0"
+      "version": "8.0.0"
+    },
+    {
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "abstraction-architect",
+        "clean-code",
+        "codebase-map",
+        "moe",
+        "peer-review",
+        "platform-engineering",
+        "project-knowledge",
+        "project-lifecycle",
+        "project-protocol",
+        "python-development",
+        "react-development",
+        "repo-hygiene",
+        "senior-review",
+        "skill-catalog",
+        "testing",
+        "text-humanizer",
+        "typescript-development"
+      ],
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "license": "MIT",
+      "name": "daodan",
+      "skills": [
+        "./skills/brainstorm-idea-workflow",
+        "./skills/check-health-workflow",
+        "./skills/continue-task-workflow",
+        "./skills/finish-task-workflow",
+        "./skills/fix-bug-workflow",
+        "./skills/get-second-opinion-workflow",
+        "./skills/humanize-text-workflow",
+        "./skills/init-project-workflow",
+        "./skills/investigate-problem-workflow",
+        "./skills/map-code-workflow",
+        "./skills/new-feature-workflow",
+        "./skills/onboard-project-workflow",
+        "./skills/record-decision-workflow",
+        "./skills/refactor-code-workflow",
+        "./skills/review-branch-workflow",
+        "./skills/review-changes-workflow",
+        "./skills/run-maintenance-workflow",
+        "./skills/show-status-workflow",
+        "./skills/sync-upstream-workflow",
+        "./skills/tidy-repo-workflow",
+        "./skills/write-docs-workflow",
+        "./skills/write-tests-workflow"
+      ],
+      "source": "./exports/codex/plugins/daodan",
+      "version": "1.0.0"
     },
     {
       "author": {
@@ -73,11 +122,10 @@
       "license": "MIT",
       "name": "dependency-audit",
       "skills": [
-        "./skills/dependency-audit",
-        "./skills/deps-audit-workflow"
+        "./skills/dependency-audit"
       ],
       "source": "./exports/codex/plugins/dependency-audit",
-      "version": "1.1.3"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -118,11 +166,10 @@
       "license": "MIT",
       "name": "moe",
       "skills": [
-        "./skills/multi-model-deliberation",
-        "./skills/ultra-nerd-workflow"
+        "./skills/multi-model-deliberation"
       ],
       "source": "./exports/codex/plugins/moe",
-      "version": "1.2.0"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -133,26 +180,24 @@
       "license": "MIT",
       "name": "peer-review",
       "skills": [
-        "./skills/cross-model-peer-review",
-        "./skills/review-workflow"
+        "./skills/cross-model-peer-review"
       ],
       "source": "./exports/codex/plugins/peer-review",
-      "version": "2.5.0"
+      "version": "3.0.0"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; includes /platform-engineering:platform-review standalone command",
+      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; its audit method runs under /daodan:check-health and its reviewer inside senior-review's reviews",
       "license": "MIT",
       "name": "platform-engineering",
       "skills": [
-        "./skills/platform-engineering",
-        "./skills/platform-review-workflow"
+        "./skills/platform-engineering"
       ],
       "source": "./exports/codex/plugins/platform-engineering",
-      "version": "1.3.5"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -170,17 +215,12 @@
       "name": "project-knowledge",
       "skills": [
         "./skills/adr-method",
-        "./skills/adr-workflow",
-        "./skills/guide-workflow",
         "./skills/instructions-method",
-        "./skills/instructions-workflow",
-        "./skills/maintain-workflow",
         "./skills/project-knowledge",
-        "./skills/readme-craft",
-        "./skills/readme-workflow"
+        "./skills/readme-craft"
       ],
       "source": "./exports/codex/plugins/project-knowledge",
-      "version": "1.4.0"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -195,11 +235,11 @@
         "codebase-map",
         "repo-hygiene",
         "clean-code",
-        "text-humanizer",
         "react-development",
         "typescript-development",
         "platform-engineering",
         "python-development",
+        "dependency-audit",
         "skill-catalog",
         "peer-review",
         "moe",
@@ -209,19 +249,12 @@
       "license": "MIT",
       "name": "project-lifecycle",
       "skills": [
-        "./skills/assess-workflow",
-        "./skills/change-workflow",
-        "./skills/consolidate-workflow",
         "./skills/handover-method",
-        "./skills/handover-workflow",
         "./skills/lifecycle-method",
-        "./skills/maintain-workflow",
-        "./skills/maintainer-method",
-        "./skills/repair-workflow",
-        "./skills/verify-workflow"
+        "./skills/maintainer-method"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "1.7.0"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -235,7 +268,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/codex/plugins/project-protocol",
-      "version": "1.5.0"
+      "version": "1.6.0"
     },
     {
       "author": {
@@ -245,25 +278,24 @@
         "testing",
         "project-protocol"
       ],
-      "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report",
+      "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and a consolidated quality audit method run by /daodan:check-health",
       "license": "MIT",
       "name": "python-development",
       "skills": [
         "./skills/async-python-patterns",
         "./skills/pydantic-v2",
         "./skills/pytest-patterns",
-        "./skills/python-audit-workflow",
+        "./skills/python-audit-method",
         "./skills/python-comments",
         "./skills/python-dead-code",
         "./skills/python-packaging",
         "./skills/python-performance-optimization",
         "./skills/python-refactor-method",
-        "./skills/python-refactor-workflow",
-        "./skills/python-scaffold-workflow",
+        "./skills/python-scaffold-method",
         "./skills/uv-package-manager"
       ],
       "source": "./exports/codex/plugins/python-development",
-      "version": "3.0.3"
+      "version": "4.0.0"
     },
     {
       "author": {
@@ -274,26 +306,24 @@
       "license": "MIT",
       "name": "react-development",
       "skills": [
-        "./skills/react-best-practices",
-        "./skills/review-react-workflow"
+        "./skills/react-best-practices"
       ],
       "source": "./exports/codex/plugins/react-development",
-      "version": "1.11.5"
+      "version": "2.0.0"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Workspace tidying decided by the filesystem and git alone, with no source comprehension anywhere in it: filesystem garbage and shell-redirection artifacts, generated artifacts tracked in git (checked against publication conventions before anything is proposed for untracking), .gitignore completeness per ecosystem and archaeology over stale and overly-broad rules with git check-ignore provenance, scratch and pipeline-output directories, orphan doc-assets widened past literal Markdown links to configs, stylesheets and templates, and git auxiliary state. One check catalog with a full and a lite profile, so the diff-scoped pass inside a code review and the whole-tree pass share definitions and cannot drift. /repo-hygiene:tidy detects by default and applies under --fix or --commit; untracked removals are quarantined rather than deleted, git rm --cached is confirmed per item, and the git-state dimension is permanently detection-only because a dropped stash or a removed worktree leaves no diff for a per-phase commit to revert.",
+      "description": "Workspace tidying decided by the filesystem and git alone, with no source comprehension anywhere in it: filesystem garbage and shell-redirection artifacts, generated artifacts tracked in git (checked against publication conventions before anything is proposed for untracking), .gitignore completeness per ecosystem and archaeology over stale and overly-broad rules with git check-ignore provenance, scratch and pipeline-output directories, orphan doc-assets widened past literal Markdown links to configs, stylesheets and templates, and git auxiliary state. One check catalog with a full and a lite profile, so the diff-scoped pass inside a code review and the whole-tree pass share definitions and cannot drift. Its tidy method, run by /daodan:tidy-repo, previews first and applies only with an authorization asked after the preview, with or without commits; untracked removals are quarantined rather than deleted, git rm --cached is confirmed per item, and the git-state dimension is permanently detection-only because a dropped stash or a removed worktree leaves no diff for a per-phase commit to revert.",
       "license": "MIT",
       "name": "repo-hygiene",
       "skills": [
-        "./skills/repo-hygiene",
-        "./skills/tidy-workflow"
+        "./skills/repo-hygiene"
       ],
       "source": "./exports/codex/plugins/repo-hygiene",
-      "version": "1.3.5"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -332,18 +362,15 @@
       "name": "senior-review",
       "skills": [
         "./skills/application-cleanup-method",
-        "./skills/code-review-workflow",
         "./skills/defect-taxonomy",
         "./skills/investigation-method",
-        "./skills/pr-review-workflow",
         "./skills/review-consolidation",
         "./skills/review-method",
         "./skills/review-preparation",
-        "./skills/review-quality-gates",
-        "./skills/team-review-workflow"
+        "./skills/review-quality-gates"
       ],
       "source": "./exports/codex/plugins/senior-review",
-      "version": "15.5.0"
+      "version": "16.0.0"
     },
     {
       "author": {
@@ -373,47 +400,43 @@
       "license": "MIT",
       "name": "testing",
       "skills": [
-        "./skills/test-audit-workflow",
-        "./skills/test-consolidate-workflow",
         "./skills/test-hygiene",
         "./skills/test-preparation",
         "./skills/test-remediation-method"
       ],
       "source": "./exports/codex/plugins/testing",
-      "version": "3.1.4"
+      "version": "4.0.0"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the /humanize-text command with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), project-knowledge (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
+      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), project-knowledge (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
       "license": "MIT",
       "name": "text-humanizer",
       "skills": [
-        "./skills/anti-ai-writing-patterns",
-        "./skills/humanize-text-workflow"
+        "./skills/anti-ai-writing-patterns"
       ],
       "source": "./exports/codex/plugins/text-humanizer",
-      "version": "1.2.5"
+      "version": "2.0.0"
     },
     {
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and /review-typescript command with tsc/ESLint ground truth",
+      "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and an audit method with tsc/ESLint ground truth run by /daodan:check-health",
       "license": "MIT",
       "name": "typescript-development",
       "skills": [
         "./skills/knip",
         "./skills/mastering-typescript",
-        "./skills/review-typescript-workflow",
         "./skills/type-safety-rules",
         "./skills/typescript-write"
       ],
       "source": "./exports/codex/plugins/typescript-development",
-      "version": "2.3.4"
+      "version": "3.0.0"
     }
   ]
 }

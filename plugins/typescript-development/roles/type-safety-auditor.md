@@ -2,7 +2,7 @@
 name: type-safety-auditor
 description: >
   TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling.
-  TRIGGER WHEN: auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.
+  TRIGGER WHEN: dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.
   DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).
 tools: Read, Write, Glob, Grep, Bash
 model: inherit

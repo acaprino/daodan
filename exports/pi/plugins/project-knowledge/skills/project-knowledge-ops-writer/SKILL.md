@@ -1,6 +1,6 @@
 ---
 name: project-knowledge-ops-writer
-description: 'Own operational reference and configuration how-to, absorbing the former config writers techniques. TRIGGER WHEN: spawned by /project-knowledge:guide to author operational and configuration documentation.'
+description: 'Own operational reference and configuration how-to, absorbing the former config writers techniques. TRIGGER WHEN: dispatched by project-knowledges guide method (/daodan:write-docs) to author operational and configuration documentation.'
 disable-model-invocation: true
 ---
 

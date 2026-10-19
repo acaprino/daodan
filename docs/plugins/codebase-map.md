@@ -12,7 +12,7 @@ Every analysis is an isolated run under `.codebase-map/runs/<run-id>/` with its 
 
 Only an eligible completed run is **published**: the coordinator requires `complete` and `may_publish` from the delivery gate and every requested view before replacing the whole known phase-file mirror and `state.json` at `.codebase-map/`. The mirror contains the files declared for that mode, including `08-interconnect-map.md` only when a team run produces it; older files outside that set are removed. Partial, stopped, docs-only and single-phase runs stay in their own directory. Downstream workflows consuming a specific invocation retain that run directory and snapshot; the mutable root mirror serves latest-state consumers.
 
-By default, every run also records the tree it analyzed as `snapshot/manifest.sqlite`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry is `/codebase-map:analyze` only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. `/codebase-map:team-analyze` updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
+By default, every run also records the tree it analyzed as `snapshot/manifest.sqlite`: each file in its inventory with its size, mtime and content hash, each symbol with its span and body hash. The inventory has three sets: source in the parsed languages, configuration and documentation, and presentation files no adapter parses (markup and indented Sass, file-level with no symbols; the exact set is `PRESENTATION_EXTENSIONS` in `snapshot.py`). Stylesheets entered the inventory in plugin 4.1.0, after a global dark-theme rule that locked users out of a consent screen sat in a `.css` file no run had ever recorded, and became a parsed language in 4.2.0: CSS, SCSS and LESS carry one symbol per applied rule, so an edit to one rule marks stale the claims about that rule and about the at-rule or parent rule enclosing it, as a class encloses its methods, never those about its siblings. A minified stylesheet, one with any line longer than 10,000 characters, stays file-level with no symbols. Anything else is absent from the manifest, and the final report's metadata states three coverage figures, files in inventory, files read in depth and files exercised at runtime (always none, unless the user supplied runtime evidence), so that a file count is never read as coverage. A later run on the same target detects that snapshot, diffs it against the current worktree with no model tokens spent, and offers an incremental update. This claim-level carry belongs to the analyze entry only: unaffected claims are carried over verbatim, only the claims citing changed symbols or their direct importers are re-derived, and a mechanical gate refuses to publish while any of them is still marked stale. The team entry updates at the coarser partition granularity instead: a partition with no affected file is copied whole from the parent run, and a partition with any affected file is re-analyzed in full, never carried claim by claim. Each run records its parent, so the chain under `.codebase-map/runs/` is the analysis history, and `changes.md` in each run says what changed in the code and what that did to the claims. `--update` requires that a usable parent run exists and stops rather than falling back to a silent full run when one does not; execution mode is still resolved separately at the scope checkpoint. `--no-update` skips detection entirely. A target that changed too much is reported as needing a full run rather than being updated quietly.
 
 ## Reading source from a snapshot
 
@@ -73,17 +73,17 @@ Below its target the Codebase Map never analyzes what Git ignores, any directory
 
 The rule dates from plugin 5.1.0. Tools write beside the code they work on: a lifecycle campaign left its run records under `.daodan/` and its review under `.team-review/`, the next snapshot counted them as project files, and an incremental update of an untouched project asked for a full analysis. A list of known tool directories would have let the next tool's output in, so the rule is general. A parent run recorded before this rule holds paths the perimeter now leaves out. Its first update reports them as removed and retires the claims that cite them: they left the inventory, whether or not they left the disk.
 
-Two properties keep it from hiding anything. The target is analyzed as given: `/codebase-map:analyze .github/` is how a project's CI gets a Codebase Map, and a dot file beside analyzed source (`.eslintrc.json`) is not a directory and stays. A target that a repository ignores, itself or through a directory above it, is not that repository's: it is analyzed whole as its own root, its paths start at the target, and no commit, branch or dirty flag is borrowed from the repository that ignores it. A snapshot recorded for such a target before codebase-map 7.0.1 is bound to the enclosing repository, so an incremental update refuses it ("snapshot root differs from the target's repository binding") and a full analysis replaces it. And the exclusion is declared: `snapshot.py scope <target>` prints it for the scope confirmation, the manifest's `scope` block keeps it (`git_ignore` is `unavailable` when no work tree holds the target, in which case no ignore rule was applied), and the final report's inventory line repeats it. A file Git tracks is never ignored, whatever pattern it matches.
+Two properties keep it from hiding anything. The target is analyzed as given: a run whose target is `.github/` is how a project's CI gets a Codebase Map, and a dot file beside analyzed source (`.eslintrc.json`) is not a directory and stays. A target that a repository ignores, itself or through a directory above it, is not that repository's: it is analyzed whole as its own root, its paths start at the target, and no commit, branch or dirty flag is borrowed from the repository that ignores it. A snapshot recorded for such a target before codebase-map 7.0.1 is bound to the enclosing repository, so an incremental update refuses it ("snapshot root differs from the target's repository binding") and a full analysis replaces it. And the exclusion is declared: `snapshot.py scope <target>` prints it for the scope confirmation, the manifest's `scope` block keeps it (`git_ignore` is `unavailable` when no work tree holds the target, in which case no ignore rule was applied), and the final report's inventory line repeats it. A file Git tracks is never ignored, whatever pattern it matches.
 
 ## Agents
 
 ### `map-analyst`
 
-The classic `/codebase-map:analyze` coordinator dispatches one isolated `codebase-map:map-analyst` after resolving scope and preparing the run and current snapshot. The analyst reads source, loads only the selected phase procedures and writes its run's declared analysis artifacts. It asks no questions, never edits analyzed source and never publishes. The coordinator owns choices, delivery verification, requested views and publication. Required context isolation is a capability gate; an unavailable binding stops the run.
+The coordinator of the classic analyze entry dispatches one isolated `codebase-map:map-analyst` after resolving scope and preparing the run and current snapshot. The analyst reads source, loads only the selected phase procedures and writes its run's declared analysis artifacts. It asks no questions, never edits analyzed source and never publishes. The coordinator owns choices, delivery verification, requested views and publication. Required context isolation is a capability gate; an unavailable binding stops the run.
 
 ### Partition workers
 
-These four agents serve `/codebase-map:team-analyze` below. Classic `/codebase-map:analyze` uses `map-analyst` instead; it does not dispatch these partition roles.
+These four agents serve the team entry below. The classic analyze entry uses `map-analyst` instead; it does not dispatch these partition roles.
 
 | Agent | Model | Runs during | Produces (inside the run directory) |
 |-------|-------|--------------|----------|
@@ -108,9 +108,9 @@ Context-builder that produces a structured map of a codebase's contracts, invari
 
 | Pipeline | Phase | Artifact produced |
 |---|---|---|
-| `/codebase-map:team-analyze` | Phase 3 | `08-interconnect-map.md`, the global cross-partition view |
-| `/senior-review:team-review` | Phase 1b | `.team-review/02-interconnect.md`, which every reviewer reads and which `logic-integrity-auditor` requires |
-| `/project-knowledge:guide` | Guide preparation, when needed by the file/audience plan | The owned run's interconnect report, cited by the assigned writers and `guide-reviewer` |
+| The team entry of `codebase-map:map-method` | Phase 3 | `08-interconnect-map.md`, the global cross-partition view |
+| `/daodan:review-branch` (the team-review variant of `senior-review:review-method`) | Phase 1b | `.team-review/02-interconnect.md`, which every reviewer reads and which `logic-integrity-auditor` requires |
+| `/daodan:write-docs` (the guide method of `project-knowledge:project-knowledge`) | Guide preparation, when needed by the file/audience plan | The owned run's interconnect report, cited by the assigned writers and `guide-reviewer` |
 
 **Output sections:** `## Target scope`, `## Call Graph`, `## Contracts` (formal, structural and implicit), `## Invariants` (temporal + structural), `## Domain Rules`, `## Assumptions`, `## Integration Hot-Spots` (HTTP, queue, IPC, env/config), `## Change Impact Radius`, `## Reviewer Hints`. Each section is self-contained so consumers can Grep a single heading and get full context.
 
@@ -128,7 +128,7 @@ The method itself: structure extraction fused with semantic reading, the concurr
 
 | | |
 |---|---|
-| **Load as** | `codebase-map:map-method`; the `team-analyze` workers read it directly, and `/codebase-map:analyze` is the command that applies it |
+| **Load as** | `codebase-map:map-method`; the team entry's workers read it directly, and `/daodan:map-code` is the command that applies it |
 | **Use for** | Codebase understanding, architecture mapping, onboarding, evidence for a subsequent review |
 
 **Capabilities:**
@@ -151,32 +151,31 @@ Within the plugin, `skills/map-method/scripts/languages/` holds the adapters. `b
 
 ---
 
-## Commands
+## Entry and methods
 
-### `/codebase-map:analyze`
+The plugin has no command of its own. `/daodan:map-code` loads `codebase-map:map-method`: without a complete analysis of the project it runs the analyze entry (`references/entry-analyze.md`) at lite depth, and for a large, multi-language or multi-workspace scope it recommends the team entry (`references/entry-team-analyze.md`) and the user chooses. With an analysis it updates it incrementally when stale, then deepens the area named, or the whole target, as `references/deepen.md` directs. The reviews, the abstraction audit and the lifecycle run the same entries as composed callers.
+
+### Analyze entry
 
 8-phase systematic codebase analysis with per-run state management, output files, and phased execution: project knowledge discovery -> structure -> interfaces -> flows -> semantics -> risks -> documentation -> report.
 
 **Phase 0 (Project Knowledge Discovery)** starts every fresh run, including `--depth=lite`, `--phase N` and `--docs-only`; a resume can inherit its confirmed knowledge files. The isolated analyst owns it in classic mode, and the team entry runs it once for team mode. It is a preamble rather than a selectable analysis phase. Phases 1 to 7 keep their numbers: `--phase N` accepts 1 through 6 and selects Phase 0 plus N only; `--phase 0` and `--phase 7` are refused. `--docs-only` selects Phase 0 plus 6.
 
-Phase 0 reads the project's own instruction files and indexes and records where the project claims each concept lives, writing `knowledge/navigation.md` and `knowledge/documentation-leads.md`. Both hold **leads, never verified facts**: the phase reads no code, so every row is `documented` or `unverified`. This is the cheap discovery pass, kept deliberately apart from Phase 6, which is the expensive audit of whether those documents are accurate. Conflating the two is what once made lite mode blind to a project's own documentation. `/senior-review:team-review` Phase 1d consumes `knowledge/documentation-leads.md` as one half of its knowledge-provenance join.
+Phase 0 reads the project's own instruction files and indexes and records where the project claims each concept lives, writing `knowledge/navigation.md` and `knowledge/documentation-leads.md`. Both hold **leads, never verified facts**: the phase reads no code, so every row is `documented` or `unverified`. This is the cheap discovery pass, kept deliberately apart from Phase 6, which is the expensive audit of whether those documents are accurate. Conflating the two is what once made lite mode blind to a project's own documentation. The branch review's Phase 1d (`/daodan:review-branch`) consumes `knowledge/documentation-leads.md` as one half of its knowledge-provenance join.
 
 **Entry-gating paths** (authentication, onboarding, consent or policy acceptance, first-run setup) are mandatory critical paths in Phase 3 and a `Usability-blocking` category in Phase 5 and in the final risk matrix, since plugin 4.1.0. For client code the trace includes the effective style cascade over the screen, because a global selector that overrode a consent screen's positioning is what once made it impossible to complete on mobile in dark theme, with the component sitting in the inventory the whole time. Since plugin 4.2.0 `cascade_scan.py` does the mechanical half of that cascade reading: it lists every rule whose selector reaches the document root, every element or the root's untargeted children and sets a positioning, scroll, sizing, display or containing-block property, together with the class, id and attribute rules it can override and what decides it in cascade order (`!important`, cascade layer, specificity, source order). Conflicts that define a screen, a fixed or sticky position, a scroll container or a viewport height, come first. When a stylesheet uses Tailwind, the screen-level utilities written in string-literal `class` and `className` attributes count as conflicts too, from Tailwind's `utilities` layer. A rule on the root or mount element itself is reported without overrides, to limit noise, and the report says so rather than implying there are none. Tailwind `@apply` layout utilities count as the declarations they inline, and that is not a detail: on the Phazly stylesheets at commit `d8efc74e147c`, the Codebase Map's reference, 90% of the applied rules used `@apply` (2,643 of 2,938), all 44 rules of the consent modal's own stylesheet among them, and before the expansion the scan found the dark-theme rule and missed the modal. With it, and with the screen-level utilities read from markup, the same tree reports `.dark #root > div:first-child` beating `.terms-acceptance-modal` on specificity as one of 23 screen-level conflicts, two of them overlays written as `className="fixed ..."` in components, and the tree at the fix commit no longer reports the rule. Whether a candidate and its conflict match the same element depends on the rendered tree, so Phase 5 confirms each one by reading. The Codebase Map stays static: it names those paths and reports them as not exercised. Exercising them in a browser belongs to the project's own tests or to `frontend-review`, never to this plugin.
 
-```
-/codebase-map:analyze src/core/ --critical
-/codebase-map:analyze src/ --format sqlite        # explicit default
-/codebase-map:analyze src/ --format json          # upstream compatibility format
-/codebase-map:analyze src/api --run-name api      # named run, safe to run others concurrently
-/codebase-map:analyze src/                        # second time on the same target: offers an incremental update
-/codebase-map:analyze src/ --update               # require an update base; no usable parent is a hard stop
-/codebase-map:analyze src/ --no-update            # skip detection and run a full analysis
-/codebase-map:analyze src/ --comments             # include the comment quality audit in Phase 6
-/codebase-map:analyze src/ --docs-only            # documentation health only (Phase 6, after Phase 0)
-/codebase-map:analyze src/ --phase 5              # Phase 0 plus pattern and risk detection only
-/codebase-map:analyze src/ --run-name core --stop-after 2
-/codebase-map:analyze src/ --run-name core --resume-from
-```
+The entry's controls keep their former flag names. The coordinator resolves them from the request and the user's answers, and a composed caller binds them:
+
+- `--critical`: prioritize authentication, payment and persistence in Phases 3 and 4
+- `--format sqlite|json`: SQLite is the default; JSON is the upstream compatibility format
+- `--run-name <name>`: a named run, safe to run others concurrently
+- `--update`: require an update base; no usable parent is a hard stop. Without it, a second run on the same target offers an incremental update
+- `--no-update`: skip detection and run a full analysis
+- `--comments`: include the comment quality audit in Phase 6
+- `--docs-only`: documentation health only (Phase 6, after Phase 0)
+- `--phase N`: Phase 0 plus that phase only, for example 5 for pattern and risk detection
+- `--stop-after N` and `--resume-from [N]`: stop a named run after a phase, and resume it
 
 **Output:** `.codebase-map/runs/<run-id>/` holds the selected phases, Phase 0's `knowledge/` directory and a current `snapshot/manifest.sqlite` by default (`snapshot/manifest.json` for explicit JSON). A full run produces `01-structure.md` through `06-documentation.md` and `07-final-report.md`. Lite selects 0, 1, 2, 5 and a condensed 7, omitting 03, 04 and 06. Single-phase and docs-only runs produce no final report and never publish. A classic run never writes `08-interconnect-map.md`. Only eligible complete full or lite delivery replaces the root mirror; snapshots, and an update's `changes.json` and `changes.md`, stay in the run directory.
 
@@ -209,39 +208,33 @@ an import graph's transitive closure can span the whole target.
 
 The verified diff recommends a full run with reasons, including when more than 40% of files are affected. A recommendation is advice: with an eligible parent, the coordinator resolves update versus full from the request or earlier answers and asks only when undecided. The scope preview remains visible with `--update` and `--no-update`; it does not require repeated approval when authorization already settles the choice. `--update` makes a missing or unusable parent a hard stop. Ordinary parent selection requires a completed classic run for the same target with a manifest.
 
-A composed caller may bind a partial or team parent for a bounded classic `--stop-after 4` child only when the gate verifies the parent's declared 01 through 04 deliveries, project, target, common flags and snapshot. That child carries only 01 through 04 into a new classic run, never a team's 08 or a changed-mode resume. Ordinary classic updates still require a completed classic parent; `/codebase-map:team-analyze` has its separate partition-level update path below.
+A composed caller may bind a partial or team parent for a bounded classic `--stop-after 4` child only when the gate verifies the parent's declared 01 through 04 deliveries, project, target, common flags and snapshot. That child carries only 01 through 04 into a new classic run, never a team's 08 or a changed-mode resume. Ordinary classic updates still require a completed classic parent; the team entry has its separate partition-level update path below.
 
 ---
 
-### `/codebase-map:team-analyze`
+### Team entry
 
-Multi-agent variant of `/codebase-map:analyze` for large or partitioned codebases: auto-detects partitions, runs the structural/behavioral/quality phases in parallel per partition across two waves, then consolidates into the same `01..07.md` layout plus a global cross-partition interconnect map, all inside an isolated run directory.
+Multi-agent variant of the analyze entry for large or partitioned codebases: auto-detects partitions, runs the structural/behavioral/quality phases in parallel per partition across two waves, then consolidates into the same `01..07.md` layout plus a global cross-partition interconnect map, all inside an isolated run directory.
 
 **Prerequisites:** the required providers listed in the generated reference below, including `report-rendering`. Worker dispatch, context isolation and the delivery barrier come from the harness the compiler generates for each host; no separate team runtime is required. The kernel bodies name no host coordination primitive.
 
 | | |
 |---|---|
-| **Invoke** | `/codebase-map:team-analyze <target> [--format sqlite\|json] [--critical] [--comments] [--depth=lite\|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]` |
+| **Controls** | `[--format sqlite\|json] [--critical] [--comments] [--depth=lite\|full] [--partition <path>] [--partition-name <name>] [--skip-interconnect] [--skip-synthesis] [--run-name <name>] [--yes] [--update] [--no-update]`, resolved by the coordinator like the analyze entry's |
 
-`--partition-name <name>` gives the N-th manual `--partition` a symbolic name; without it the name derives from the path basename. `--phase N` and `--docs-only` are rejected with an explicit error that points to `/codebase-map:analyze`.
+`--partition-name <name>` gives the N-th manual `--partition` a symbolic name; without it the name derives from the path basename. `--phase N` and `--docs-only` are rejected with an explicit error that points to the analyze entry.
 
 **Pipeline:**
 
-0. **Project knowledge discovery**: the same Phase 0 as `/codebase-map:analyze`, run once inline for the whole run before partition detection. It is global, not per partition, and no worker owns any of its output: `knowledge/navigation.md` and `knowledge/documentation-leads.md`.
+0. **Project knowledge discovery**: the same Phase 0 as the analyze entry, run once inline for the whole run before partition detection. It is global, not per partition, and no worker owns any of its output: `knowledge/navigation.md` and `knowledge/documentation-leads.md`.
 1. **Partition detection** (its own Phase 0): explicit workspace manifests (pnpm/npm workspaces, Lerna, Nx, Turbo, Cargo, uv) -> convention-based monorepo layout (`apps/`, `packages/`, `services/`) -> frontend/backend layer split -> language-cluster split -> single-partition fallback. Stylesheets never form a language partition: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side. Shows the concrete partitions, mode and actual worker count before dispatch. A fresh run proceeds on the invocation's authorization, without requiring `--yes`. An unresolved choice or an explicit request to approve the plan gets a concrete question through a permitted input tool or ordinary chat; normal replies can accept or change the plan. There is no team-creation step: the host harness dispatches each worker and records it as delivered or failed.
 2. **Wave 1** (parallel): one `partition-structure-worker` per partition writes structure and interfaces.
 3. **Wave 2** (parallel): `partition-behavior-worker` and `partition-quality-worker` per partition write flows/semantics and risks/documentation, each citing sibling partitions' Wave 1 output for cross-partition calls. Under `--depth=lite` the behavior workers are not spawned and quality workers write risks only.
 4. **Synthesis**: `partition-synthesizer` consolidates every partition's output into the standard `01-structure.md` through `07-final-report.md` files inside the run directory, flagging any failed partition inline.
-5. **Interconnect map**: `codebase-map:semantic-interconnect-mapper` reads the consolidated output and produces `08-interconnect-map.md`, the global cross-partition contract/invariant map that `/senior-review:team-review` reuses directly.
+5. **Interconnect map**: `codebase-map:semantic-interconnect-mapper` reads the consolidated output and produces `08-interconnect-map.md`, the global cross-partition contract/invariant map that the branch review of `/daodan:review-branch` reuses directly.
 6. **Publish**: the coordinator requires every worker's accounted delivery, a gate result with `complete` and `may_publish`, and every requested view before replacing the root mirror with the declared consolidated set. Failed or missing partition or worker delivery prevents publication even if synthesis wrote warning reports; those reports stay in the run. `--skip-interconnect` omits 08 by declaration, while `--skip-synthesis` also skips interconnect and keeps all results run-local.
 
-```
-/codebase-map:team-analyze .                                   # auto-detect, full depth
-/codebase-map:team-analyze . --depth=lite                      # lite mode, fewer agents
-/codebase-map:team-analyze . --partition packages/api --partition packages/web --yes
-/codebase-map:team-analyze .                                   # second time: partitions that did not change are copied, not re-run
-/codebase-map:team-analyze . --update                          # require a usable team parent; none is a hard stop
-```
+Typical resolutions: auto-detected partitions at full depth; `--depth=lite` for fewer agents; manual partitions such as `packages/api` and `packages/web` with the recommended scope accepted; a second run on the same target, where partitions that did not change are copied, not re-run; `--update`, which requires a usable team parent, none being a hard stop.
 
 **Incremental updates at partition granularity.** A second team run on the same target diffs the last completed team run's snapshot against the worktree, once for the whole tree, and assigns each affected file to its partition. A partition with no affected file is copied whole from the parent run and gets no worker; a partition with at least one is re-analyzed through both waves exactly as in a fresh run. Synthesis and the interconnect map always run, because both are cross-partition by construction. The partition checkpoint labels each partition `unchanged (copied)` or `re-analyzed (N affected files)` before anything is dispatched, and the completion output repeats that split with a pointer to the `## Partitions` table in `changes.md`. The parent's partition set must match this run's exactly; a partition that appeared, vanished or was renamed forces a full run, with the reason named. The scope preview is always shown; choosing update versus full analysis waits only when the request or earlier answers have not settled it. `--yes` or an ordinary-language instruction to follow the recommendation selects the recommended eligible mode. `--update` still requires a usable parent and stops if none exists.
 
@@ -263,7 +256,7 @@ Optional methodology, patterns and comment taxonomy have declared on-demand read
 
 Classic analysis keeps its selected phases together in one isolated `map-analyst` context. The coordinator presents scope, resolves mode and flags, prepares the run and initial current snapshot, then dispatches the analyst. It does not read analyzed source or execute phase procedures. The analyst follows the declared phase loads in order and owns snapshot refresh during analysis; the coordinator checks the resulting artifacts, recovers incomplete produced work, verifies requested views and publishes only eligible delivery. An empty response or stopped worker is not a delivery.
 
-The invocation and prior answers supply authorization. Present the scope without pausing merely because a checkpoint exists; ask only for an unresolved material choice or an explicitly requested approval. For a large, multi-language or multi-workspace target, recommend `/codebase-map:team-analyze` before dispatch and resolve the mode choice from that authorization or an answer. Classic remains one isolated analysis context; missing required isolation is a concrete capability gap.
+The invocation and prior answers supply authorization. Present the scope without pausing merely because a checkpoint exists; ask only for an unresolved material choice or an explicitly requested approval. For a large, multi-language or multi-workspace target, recommend the team entry before dispatch and resolve the mode choice from that authorization or an answer. Classic remains one isolated analysis context; missing required isolation is a concrete capability gap.
 
 The three coverage lines are mandatory, in the condensed lite report as well. A single file count read as coverage is how a blocking defect in an inventoried component once went unreported: the component was in the inventory, the stylesheet that broke it was not, and nothing had exercised the path. The inventory line names what the perimeter left out for the same reason: `.github/` or a generated client is exactly what a reader assumes was read.
 
@@ -288,7 +281,7 @@ for startup, tool schemas, event cursors and the Tri-Tech Code integration bound
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `7.3.0`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
+**Version:** `8.0.0`. **Source:** [plugin.toml](<../../plugins/codebase-map/plugin.toml>).
 
 ### Required dependencies
 
@@ -317,65 +310,13 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `codebase-map:map-method` | Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide), a public-facing README, or a review verdict (senior-review consumes this output instead). | [map-method](<../../plugins/codebase-map/skills/map-method/SKILL.md>) |
+| Skill | `codebase-map:map-method` | Static codebase mapping: structure, purpose, integrations and change consequences. Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust, Go, CSS/SCSS/LESS. TRIGGER WHEN: unfamiliar codebases, pre-review context, major refactors, or stale documentation. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /daodan:write-docs), a public-facing README, or a review verdict (senior-review consumes this output instead). | [map-method](<../../plugins/codebase-map/skills/map-method/SKILL.md>) |
 | Role | `codebase-map:map-analyst` | Owns the declared classic Codebase Map phases in one isolated context, reading the bound snapshot and writing only its run's analysis artifacts. TRIGGER WHEN: dispatched by an analysis coordinator with a prepared classic run and resolved scope. | [map-analyst](<../../plugins/codebase-map/roles/map-analyst.md>) |
-| Role | `codebase-map:partition-behavior-worker` | Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its second wave. | [partition-behavior-worker](<../../plugins/codebase-map/roles/partition-behavior-worker.md>) |
-| Role | `codebase-map:partition-quality-worker` | Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: spawned by /codebase-map:team-analyze in its second wave. | [partition-quality-worker](<../../plugins/codebase-map/roles/partition-quality-worker.md>) |
-| Role | `codebase-map:partition-structure-worker` | Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst. | [partition-structure-worker](<../../plugins/codebase-map/roles/partition-structure-worker.md>) |
-| Role | `codebase-map:partition-synthesizer` | Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: spawned by /codebase-map:team-analyze in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst. | [partition-synthesizer](<../../plugins/codebase-map/roles/partition-synthesizer.md>) |
-| Role | `codebase-map:semantic-interconnect-mapper` | Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers. TRIGGER WHEN: spawned by /codebase-map:team-analyze, /senior-review:team-review or /project-knowledge:guide, or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /codebase-map:analyze or codebase-explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
-| Workflow | `codebase-map:analyze` | Run a Codebase Map: document WHAT, WHY, HOW and CONSEQUENCES into phased files, with concurrent-run support. TRIGGER WHEN: the user asks for a deep analysis of an unfamiliar codebase, pre-review context, or a structure-plus-semantics snapshot. DO NOT TRIGGER WHEN: the user wants human-readable narrative docs (use /project-knowledge:guide) or a shallow overview. | [analyze](<../../plugins/codebase-map/workflows/analyze.md>) |
-| Workflow | `codebase-map:team-analyze` | Multi-agent Codebase Map for monorepos and multi-workspace projects: analyzes partitions in parallel and publishes consolidated results to .codebase-map/. TRIGGER WHEN: running Codebase Map analysis on a monorepo or generating a cross-partition interconnection map. DO NOT TRIGGER WHEN: single small directory or documentation-only audit (use /codebase-map:analyze). | [team-analyze](<../../plugins/codebase-map/workflows/team-analyze.md>) |
-
-### Workflow contracts
-
-Contracts describe observable outputs; Markdown bodies define decisions,
-flags, safety gates and execution. Declared `invoke` execution is unsupported.
-
-#### `codebase-map:analyze`
-
-**Arguments:** <code>&lt;target path&gt; [--format sqlite&#124;json] [--critical] [--comments] [--docs-only] [--phase N] [--depth=lite&#124;full] [--run-name &lt;name&gt;] [--update] [--no-update] [--resume-from [N]] [--stop-after N]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `analyze-completed` |
-| Artifacts | `analyze-report` |
-| Schemas | None declared |
-| Declared workers | `codebase-map/map-analyst` |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [analyze.toml](<../../plugins/codebase-map/workflows/analyze.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `preflight` | None | None | `shared` | None declared | `preferred` |
-| `analysis` | `preflight` | `map-analyst` | `required` | None declared | `preferred` |
-| `publish` | `analysis` | None | `shared` | None declared | `preferred` |
-
-#### `codebase-map:team-analyze`
-
-**Arguments:** <code>&lt;target&gt; [--format sqlite&#124;json] [--critical] [--comments] [--depth=lite&#124;full] [--partition &lt;path&gt;] [--partition-name &lt;name&gt;] [--skip-interconnect] [--skip-synthesis] [--run-name &lt;name&gt;] [--yes] [--update] [--no-update]</code>
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `reviewers-use-isolated-contexts`, `every-partition-is-owned-by-one-worker`, `no-worker-writes-outside-its-partition-directory`, `synthesis-runs-after-every-partition-delivered`, `artifacts-published-under-xray-root` |
-| Artifacts | `xray-report` |
-| Schemas | None declared |
-| Declared workers | `codebase-map/partition-behavior-worker`, `codebase-map/partition-quality-worker`, `codebase-map/partition-structure-worker`, `codebase-map/partition-synthesizer`, `codebase-map/semantic-interconnect-mapper` |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [team-analyze.toml](<../../plugins/codebase-map/workflows/team-analyze.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `partition-selection` | None | None | `shared` | None declared | `preferred` |
-| `structure` | `partition-selection` | `partition-structure-worker`, `per item in selection:partitions` | `required` | `all-delivered` | `preferred` |
-| `behavior` | `structure` | `partition-behavior-worker`, `per item in selection:partitions` | `required` | `all-delivered` | `preferred` |
-| `quality` | `structure` | `partition-quality-worker`, `per item in selection:partitions` | `required` | `all-delivered` | `preferred` |
-| `synthesis` | `behavior`, `quality` | `partition-synthesizer` | `required` | None declared | `preferred` |
-| `interconnect` | `synthesis` | `semantic-interconnect-mapper` | `required` | None declared | `preferred` |
+| Role | `codebase-map:partition-behavior-worker` | Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave. | [partition-behavior-worker](<../../plugins/codebase-map/roles/partition-behavior-worker.md>) |
+| Role | `codebase-map:partition-quality-worker` | Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave. | [partition-quality-worker](<../../plugins/codebase-map/roles/partition-quality-worker.md>) |
+| Role | `codebase-map:partition-structure-worker` | Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-structure-worker](<../../plugins/codebase-map/roles/partition-structure-worker.md>) |
+| Role | `codebase-map:partition-synthesizer` | Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst. | [partition-synthesizer](<../../plugins/codebase-map/roles/partition-synthesizer.md>) |
+| Role | `codebase-map:semantic-interconnect-mapper` | Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-review's branch review (/daodan:review-branch) or by project-knowledge's guide method (/daodan:write-docs), or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /daodan:map-code or codebase-explorer first). | [semantic-interconnect-mapper](<../../plugins/codebase-map/roles/semantic-interconnect-mapper.md>) |
 
 ### Host exports
 
@@ -388,11 +329,11 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 | Host | Package | Binding | Selected workflow strategy |
 |---|---|---|---|
-| claude | [exports/claude/plugins/codebase-map](<../../exports/claude/plugins/codebase-map>) | `native` | `analyze: native-team`, `team-analyze: native-team` |
-| copilot | [exports/copilot/plugins/codebase-map](<../../exports/copilot/plugins/codebase-map>) | `adapted` | `analyze: parallel-subagents`, `team-analyze: parallel-subagents` |
-| codex | [exports/codex/plugins/codebase-map](<../../exports/codex/plugins/codebase-map>) | `adapted` | `analyze: parallel-subagents`, `team-analyze: parallel-subagents` |
-| pi | [exports/pi/plugins/codebase-map](<../../exports/pi/plugins/codebase-map>) | `adapted` | `analyze: parallel-subagents`, `team-analyze: parallel-subagents` |
-| opencode | [exports/opencode/plugins/codebase-map](<../../exports/opencode/plugins/codebase-map>) | `adapted` | `analyze: parallel-subagents`, `team-analyze: parallel-subagents` |
+| claude | [exports/claude/plugins/codebase-map](<../../exports/claude/plugins/codebase-map>) | `native` | No workflow entry points |
+| copilot | [exports/copilot/plugins/codebase-map](<../../exports/copilot/plugins/codebase-map>) | `adapted` | No workflow entry points |
+| codex | [exports/codex/plugins/codebase-map](<../../exports/codex/plugins/codebase-map>) | `adapted` | No workflow entry points |
+| pi | [exports/pi/plugins/codebase-map](<../../exports/pi/plugins/codebase-map>) | `adapted` | No workflow entry points |
+| opencode | [exports/opencode/plugins/codebase-map](<../../exports/opencode/plugins/codebase-map>) | `adapted` | No workflow entry points |
 
 ### Additional shipped contracts and mechanisms
 

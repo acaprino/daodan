@@ -207,3 +207,4 @@ Reference these guidelines when:
   - Correct code example with explanation
   - Additional context and references
 - The `references.md` file contains all 70 rules expanded into a single compiled document.
+- Read `references/audit.md` when running the React performance audit as a procedure (the React stack audit of `/daodan:check-health`): scope detection, ESLint ground truth, the isolated `react-performance-optimizer` review and the scored report under the run directory.

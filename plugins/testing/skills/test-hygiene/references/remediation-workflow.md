@@ -4,7 +4,7 @@ Mechanics for bonifying an already-degraded suite. The ladder is: measure, quara
 
 ## 1. Measure first: the TEST_AUDIT.md contract
 
-`/testing:test-audit` maintains a `TEST_AUDIT.md` at the audited root. Format:
+The audit mode of `testing:test-remediation-method` maintains a `TEST_AUDIT.md` at the audited root. Format:
 
 - Each run PREPENDS a `## Audit <ISO date>` section, newest first, so the file reads as its own history in addition to git's.
 - The section carries a metrics table with a delta column against the previous audit section when one exists:

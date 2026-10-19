@@ -39,123 +39,73 @@ call for, so a review, a handover or a maintenance campaign brings that domain
 knowledge to the map. Shinatama is a recommended companion, not a dependency: no
 Daodan plugin declares it, and every Daodan workflow runs without it.
 
-## Start with the project outcome
+## One command per intention
 
-| Command | Use it for | Result |
+Every command lives in the `daodan` plugin and takes no parameters: the only
+argument is what you want, in your words, or a path, commit, branch or pull
+request. Authorizations are asked when a step needs them, once. Each command
+works alone and is also a step of the task cycle.
+
+| Group | Command | Use it for |
 |---|---|---|
-| /project-lifecycle:handover | Take responsibility for an unfamiliar project | A consultant dossier with verified facts, readiness, risks and open questions |
-| /project-lifecycle:maintain | Lead a complete rationalization | A staged Senior Maintainer campaign with an approved roadmap and verified outcomes |
-| /project-lifecycle:assess | Understand incoherence and accumulated debt; with `--init`, bring a project into the task cycle | Evidence, coverage and an actionable plan; with `--init`, a Codebase Map, a decision index, the instruction loop block and a test baseline |
-| /project-lifecycle:repair | Apply an identified plan | Scoped remedies, verified phases and visible open decisions |
-| /project-lifecycle:change | One task through the cycle: feature, bugfix, refactor or migration | A reviewed, merged candidate with its decision record, tests, map and documentation realigned |
-| /project-lifecycle:verify | Check a candidate revision and its consequences | Snapshot-bound checks, review and honest limitations |
-| /project-lifecycle:consolidate | Integrate a task, realign after an outside merge, close experiments | Promoted record, map and documentation in line with the merged head, retained evidence |
+| Project | `/daodan:init-project` | Bring a project into the cycle: map, decision index, verified commands, test baseline. Scaffolds an empty folder |
+| | `/daodan:onboard-project` | Understand a project you take over; changes nothing |
+| | `/daodan:check-health` | Diagnose debt in structure, tests, docs, workspace and each stack, with a plan |
+| | `/daodan:run-maintenance` | The guided Senior Maintainer campaign, stage by stage |
+| Thinking | `/daodan:brainstorm-idea` | Explore an idea against your code before building it |
+| | `/daodan:investigate-problem` | Find the cause of an error or a strange behavior, with a reproduction test, without fixing it |
+| | `/daodan:get-second-opinion` | Have another model challenge a file, or several deliberate a question |
+| Working | `/daodan:new-feature` | New behavior through the task cycle |
+| | `/daodan:fix-bug` | A defect, reproduction test first |
+| | `/daodan:refactor-code` | Restructure with behavior unchanged, readability included |
+| | `/daodan:continue-task` | Resume the branch's task from any session; your text answers pending questions |
+| | `/daodan:show-status` | Open tasks, who holds them, pending questions, map and records |
+| | `/daodan:finish-task` | Branch review, merge with your authorization, record promoted, knowledge realigned |
+| | `/daodan:sync-upstream` | Bring in others' commits: fetch, report, fast-forward only, realign |
+| Review | `/daodan:review-changes` | Light review of your changes, a commit, a file or a document |
+| | `/daodan:review-branch` | Complete review of a branch or a pull request |
+| Tools | `/daodan:write-tests` | Tests for the code you name |
+| | `/daodan:map-code` | Deepen the Codebase Map on an area, or map the project |
+| | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
+| | `/daodan:record-decision` | A decision record outside a task |
+| | `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
+| | `/daodan:humanize-text` | Make a text read naturally |
+
+When unsure which work command fits, use `new-feature`: the interview corrects
+the course. On the other hosts the names follow the host: `/daodan-new-feature`
+on Pi, the `new-feature-workflow` skill on Codex, the `new-feature` prompt on
+Copilot; OpenCode V2 uses the Claude Code form.
 
 ## Work task by task
 
-The cycle is three steps, repeated:
-
-1. **Once per project:** `/project-lifecycle:assess --init` maps the project,
-   creates the decision index under `docs/adr/`, writes the loop block of
-   `AGENTS.md` or `CLAUDE.md` with the verified commands, and records the test
-   baseline.
-2. **Per task:** `/project-lifecycle:change <request>` asks whether to work in a
-   worktree, a branch or in place, then interviews you with real examples from
-   your code, one question at a time, until scope, examples, rejected
-   alternatives and invariants are fixed. It writes a proposed decision record,
-   plans waves of micro-tasks of at most four files, has the stack's specialist
-   write each one test first, and reviews the record, the plan, every wave and
-   the whole candidate with the multi-perspective review.
-3. **Merge:** with your authorization the cycle merges, promotes the record and
-   brings the Codebase Map, the documentation and the loop block in line with
-   the merged head. After a merge made elsewhere, `/project-lifecycle:consolidate`
-   does the same realignment.
-
-`--plan-only` stops after the plan for your approval, and `--run-id <id>`
-continues it. Every phase is also a command of its own:
-`/project-knowledge:adr` for decision records,
-`/senior-review:code-review` or `team-review` for a review of a changeset, a plan,
-a specification or a document, and each specialist's command. The cycle is
-described phase by phase in [project-lifecycle](docs/plugins/project-lifecycle.md#the-task-cycle).
-
-These entries use the same specialist methods as their standalone commands.
-Choose a focus (knowledge, structure, tests, artifacts or all) and a depth
-(quick, standard or deep). Assessment starts with one scoped pass. Development work
-uses checks proportional to its risk, rather than launching every auditor each time.
-
-Run records live in .daodan/runs/<id>/ of the main checkout, with an agenda of open
-tasks beside them. A task resumes from its branch, from any session.
-The record identifies intent, scope, file snapshots, authorization, plan, deliveries
-and checks. A missing worker or an unexecuted gate remains visible.
-
-Preview is the default for repair and retention. --fix applies authorized edits;
---commit adds commits and enables commit-only application cleanup. --purge is a
-separate explicit grant for concluded, owned experimental output. Quarantine moves
-preserve data and do not count as bytes deleted.
-
-## Take over a project, then maintain it
-
-Two separate entries serve an incoming consultant and the subsequent maintenance
-work. Both reuse Daodan's canonical specialists and keep their evidence in owned
-project runs.
-
-| Entry | Outcome |
-|---|---|
-| `project-lifecycle` `handover` | A consultant dossier: product purpose, modules and critical flows, setup and test procedures, constraints, evidenced risks, real open questions and a first scoped work plan |
-| `project-lifecycle` `maintain` | The Senior Maintainer campaign: baseline review and assessment, an approved roadmap, corrections, rationalization, verification and closure |
-
-Start with handover when you need to understand and take responsibility for an
-unfamiliar project. It writes run-owned reports and leaves project files alone.
-Checks default to `none`; `--checks=local` requests permitted local checks after
-reviewing their commands and environment. The dossier distinguishes procedures
-read from source from commands actually exercised. It proposes maintenance work
-and never starts it automatically.
-
-Run maintain when you want the complete rationalization. Its canonical campaign
-method owns the guidance previously pasted from this README. Each stage uses its
-owning method and separate lifecycle run; the command keeps the stage handoffs,
-authorizations and resume references together.
-
-| Host | Handover entry | Maintain entry |
-|---|---|---|
-| Claude Code / OpenCode V2 | `/project-lifecycle:handover` | `/project-lifecycle:maintain` |
-| Codex | `handover-workflow` skill | `maintain-workflow` skill |
-| GitHub Copilot | `handover` prompt with `handover-coordinator` | `maintain` prompt with `maintain-coordinator` |
-| Pi | `/project-lifecycle-handover` | `/project-lifecycle-maintain` |
-
-For example, on Claude Code or OpenCode V2:
-
 ```text
-/project-lifecycle:handover . --depth=standard --checks=none
-/project-lifecycle:maintain . --fix --pace=guided --from-handover <exact-assess-run-id>
+/daodan:init-project                  once per project
+/daodan:brainstorm-idea <idea>        when the idea is not clear yet
+/daodan:investigate-problem <error>   when the cause is not known
+/daodan:new-feature <what>            or fix-bug, refactor-code
+    a light review before every commit
+/daodan:finish-task                   branch review, merge, realignment
 ```
 
-Run the second entry after reading the dossier and choosing the maintenance scope.
-On the other hosts pass the same arguments through the entry listed above. See
-[host setup](docs/hosts.md) for worker and external-method support.
+A work command asks whether to work in a worktree, a branch or in place, then
+interviews you with real examples from your code, one question at a time, until
+scope, examples, rejected alternatives and invariants are fixed. It writes a
+proposed decision record under `docs/adr/`, plans waves of micro-tasks of at most
+four files, has the stack's specialist write each one test first, and commits each
+with a line naming the task and wave. It stops only for your answers, the plan
+approval and the merge authorization. How many reviewers each review gets is
+computed by a script from the diff and the map, never chosen by the model. The
+cycle is described phase by phase in
+[project-lifecycle](docs/plugins/project-lifecycle.md#the-task-cycle).
 
-Maintain accepts a target path or module, exclusions, focus
-`all|knowledge|structure|tests|artifacts`, depth `quick|standard|deep`, pace
-`guided|autonomous`, authorization `--dry-run|--fix|--commit`, exact resume IDs and
-an optional `--from-handover` assess run. Defaults are whole project, focus all,
-depth deep, guided pace and dry-run. Dry-run ends at the roadmap. Fix permits
-scoped edits; commit also permits local commits and commit-only application cleanup,
-subject to its own prerequisites. Push, deployment and permanent purge each need
-separate authorization.
+Run records live in `.daodan/runs/<id>/` of the main checkout, with an agenda of
+open tasks beside them. A task belongs to its branch and resumes from any session;
+the agenda row is also the lock that stops two sessions working on one task. A
+missing worker or an unexecuted check stays visible.
 
-Guided pace waits at the campaign brief and at the findings/roadmap. Autonomous pace
-removes those two waits while retaining every decision and gate owned by a method.
-Second opinions from another model (peer-review, moe) are offered and never run
-unasked; dependency facts come from the review when manifests are in scope. A
-handover result supplies evidence; it grants no permission to change the project.
-
-Every brief names the exact runs and the next entry. Resume those IDs after validating
-scope, candidate and authorization; an unrelated latest report is never a resume
-source. Completed stage results remain evidence of their recorded candidates. The
-final verification must match the current project, with missing deliveries and
-mandatory checks visible. [Lifecycle details](docs/plugins/project-lifecycle.md)
-describe both entries. Instruction and testing guidance follows the
-[source-backed research note](docs/references/project-instructions-and-test-practices.md).
+Preview is the default wherever something would change. Edits, commits, a merge,
+a push and a permanent deletion are separate authorizations, each asked at the
+step that needs it. Quarantine moves preserve data and do not count as deletion.
 
 ## Install
 
@@ -167,9 +117,8 @@ copilot plugin marketplace add acaprino/daodan
 codex plugin marketplace add acaprino/daodan
 ```
 
-Install project-lifecycle@daodan for the complete project paths, or individual
-specialists for a narrower task. Required local dependencies form the mandatory
-closure; external dependencies must also be available on the host.
+Install `daodan@daodan`: it brings every specialist it uses as a mandatory local
+dependency. External dependencies must also be available on the host.
 
 The lifecycle owns its task cycle and declares no upstream development method:
 its interview, plan and execution are shaped by the Codebase Map, the decision
@@ -209,6 +158,7 @@ commands, paths, installation requirements and runtime limits on each host.
 
 | Plugin | Responsibility |
 |---|---|
+| [daodan](docs/plugins/daodan.md) | The commands: one per intention, each an entry into its owner's method |
 | [codebase-map](docs/plugins/codebase-map.md) | The core: the static Meta-Code map of structure, behavior and interconnections that the other owners read |
 | [project-lifecycle](docs/plugins/project-lifecycle.md) | Complete project work and coordination |
 | [project-protocol](docs/plugins/project-protocol.md) | Run identity, snapshots, state, verification and recovery |
@@ -220,8 +170,9 @@ commands, paths, installation requirements and runtime limits on each host.
 | [clean-code](docs/plugins/clean-code.md) | Readability with behavior preserved |
 | [text-humanizer](docs/plugins/text-humanizer.md) | Voice and clarity of written content |
 
-Knowledge offers instructions, guide, maintain, readme and adr. It distinguishes
-approved intent from observed implementation and updates existing documents first.
+Knowledge writes instructions, guides, the README and decision records. It
+distinguishes approved intent from observed implementation and updates existing
+documents first.
 Operational state never belongs in AGENTS.md or CLAUDE.md.
 
 A failed test can expose a product bug, wrong oracle, environment problem or

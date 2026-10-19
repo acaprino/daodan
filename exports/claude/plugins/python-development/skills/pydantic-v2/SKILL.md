@@ -172,6 +172,6 @@ class LineItem(BaseModel):
 
 - Python architecture / API design with Pydantic v2 -> `python-development:python-engineer` agent
 - Testing Pydantic models -> `python-development:pytest-patterns` skill
-- FastAPI project scaffolding with v2 defaults -> `python-development:python-scaffold` command (`--type fastapi`)
+- FastAPI project scaffolding with v2 defaults -> `python-development:python-scaffold-method` skill (FastAPI type), reached through `/daodan:init-project` on an empty folder
 - Monetary precision patterns -> `senior-review:defect-taxonomy` (CWE-681 / CWE-682)
 - TypeScript equivalent (Zod / valibot) -> `typescript-development:mastering-typescript` skill

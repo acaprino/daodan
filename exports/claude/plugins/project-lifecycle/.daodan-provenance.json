@@ -1,17 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:5f8814936c761541725961c49a6a9df194a52bf6cafdfbfc13d5abdf2fcb6d07",
-  "harnessStrategies": {
-    "assess": "native-team",
-    "change": "native-team",
-    "consolidate": "native-team",
-    "handover": "native-team",
-    "maintain": "native-team",
-    "repair": "native-team",
-    "verify": "native-team"
-  },
+  "coreDigest": "sha256:0bf27e2c1e18b891880bea7a934912d750a181048766fe54ff7efeb836f732a7",
+  "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "project-lifecycle",
-  "version": "1.7.0"
+  "version": "2.0.0"
 }

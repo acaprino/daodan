@@ -1,7 +1,7 @@
 # Scorecard: <case> / <command>
 
 - **Date:**
-- **Command run:** `/senior-review:code-review` | `/senior-review:team-review` | vanilla `/code-review`
+- **Command run:** `/daodan:review-changes` | `/daodan:review-branch` | vanilla `/code-review`
 - **Model / session:**
 - **Review scope given:**
 

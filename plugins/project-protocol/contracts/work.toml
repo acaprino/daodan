@@ -11,6 +11,12 @@ minimum = 0
 type = "enum"
 values = ["in_progress", "complete"]
 
+# What a run is for. A refactor is a `change` that follows the refactor unit;
+# an initialization is an `assess` that writes outside its run.
+[fields.operation]
+type = "enum"
+values = ["assess", "repair", "change", "verify", "consolidate", "review", "investigate", "brainstorm"]
+
 [states.phases]
 values = ["pending", "in_progress", "complete", "skipped"]
 pending = ["pending", "in_progress", "complete", "skipped"]
@@ -36,6 +42,14 @@ gates = ["passed"]
 requires_current_snapshot = true
 requires_gate_evidence = true
 remote_requires_committed_candidate = true
+
+# Authorizations asked after init, at the step that needs them: the user's answer
+# is the source of each. Append-only, like required gates: a grant is never
+# altered, narrowed or removed, and `authorizations` keeps what init recorded.
+[grants]
+required = ["id", "kind", "scope", "source", "granted_at"]
+kinds = ["fix", "commit", "merge", "push", "purge", "send", "publish", "install"]
+append_only = true
 
 # Optional sections a lifecycle run may carry. Absent sections are not validated;
 # a present section must satisfy its rules. The required fields above are untouched.

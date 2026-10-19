@@ -262,7 +262,17 @@ def extract_references(plugins):
     for md in sorted(PLUGINS.glob("*/**/*.md")):
         owner = md.relative_to(PLUGINS).parts[0]
         lines = md.read_text(encoding="utf-8", errors="replace").splitlines()
+        # A table whose header names the action ("| Need | Load or dispatch |")
+        # applies that action to every row: a method's table of what it loads and
+        # dispatches is a declaration, as a workflow sidecar's roles were.
+        table_action = None
         for i, line in enumerate(lines, start=1):
+            if not line.lstrip().startswith("|"):
+                table_action = None
+            elif (table_action is None and i < len(lines)
+                    and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i])):
+                table_action = ("spawn" if SPAWN_LINE.search(line)
+                                else "skill-load" if SKILL_VERB.search(line) else False)
             if ROUTING_LINE.search(line):
                 continue  # TRIGGER WHEN routing labels are prose
             neutral_role = NEUTRAL_ROLE.match(line)
@@ -279,6 +289,8 @@ def extract_references(plugins):
                     kind = "spawn"
                 elif SKILL_LINE.search(line) and SKILL_VERB.search(line):
                     kind = "skill-load"
+                elif table_action:
+                    kind = table_action
                 else:
                     continue  # prose mention, not enforced
                 refs.append(Reference(owner, md, i, ns, kind, lines))

@@ -26,16 +26,18 @@ MUST assertions are the invariant. A single MUST failure fails the case. SHOULD 
 
 ## Cases
 
+Every case starts with `/daodan:map-code`, whose only argument has been free text since marketplace 38.0.0. A case asks in words for the controls the analyze or team entry of `codebase-map:map-method` reads (depth, run name, whether to update, the critical paths, the team entry, the recommended scope); its assertions keep the entry's own names for them (`--depth=lite`, `--run-name`, `--update`, `--no-update`, `--critical`, `--yes`).
+
 | Case | Command | Invariant under test |
 |---|---|---|
-| `phase0-always-runs` | `/codebase-map:analyze --depth=lite` | Phase 0 runs at every depth and produces leads, never verified facts |
-| `run-isolation` | `/codebase-map:analyze` twice | A run writes only under its own directory; the mirror changes only at publish; the registry is never clobbered |
-| `scripts-over-grep` | `/codebase-map:analyze` | Structure comes from the bundled parsers, not from reading every file by hand |
-| `forbidden-files` | `/codebase-map:analyze` | A secret file is noted by existence and never quoted |
-| `claims-cite-evidence` | `/codebase-map:analyze` | Every finding cites file and line; no runtime evidence is invented |
+| `phase0-always-runs` | `/daodan:map-code`, lite depth | Phase 0 runs at every depth and produces leads, never verified facts |
+| `run-isolation` | `/daodan:map-code` twice | A run writes only under its own directory; the mirror changes only at publish; the registry is never clobbered |
+| `scripts-over-grep` | `/daodan:map-code`, full depth | Structure comes from the bundled parsers, not from reading every file by hand |
+| `forbidden-files` | `/daodan:map-code`, full depth | A secret file is noted by existence and never quoted |
+| `claims-cite-evidence` | `/daodan:map-code`, full depth | Every finding cites file and line; no runtime evidence is invented |
 | `claims-carry-status` | `semantic-interconnect-mapper` | Every row carries one of the four statuses, and `verified` always cites its enforcement |
-| `team-mode-partition-ownership` | `/codebase-map:team-analyze` | Each worker writes only its owned files; the consolidated layout is the classic one |
-| `team-scope-authorization` | `/codebase-map:team-analyze` (six sessions) | An authorized scope proceeds without requiring `--yes`; an unresolved decision gets a concrete, answerable question and accepts ordinary replies, including when no input tool is available |
-| `mapper-scope-in-team-mode` | `/codebase-map:team-analyze` | The interconnect map covers the cross-partition surface, not the whole codebase |
-| `coverage-is-declared` | `/codebase-map:analyze` | Stylesheets are parsed into rule symbols and scanned for global-reach rules, entry-gating paths are traced with their style cascade, and the report separates inventoried, read in depth and exercised and names what the perimeter left out |
-| `incremental-carry-and-rederive` | `/codebase-map:analyze` (four sessions) plus a fifth in a separate scratch | An incremental run carries unmarked claims byte for byte, re-derives or retires every marked one, documents every added symbol, and never publishes with a marker still stale; `--update` and `--no-update` change only whether detection runs, never whether the checkpoint waits |
+| `team-mode-partition-ownership` | `/daodan:map-code`, team entry | Each worker writes only its owned files; the consolidated layout is the classic one |
+| `team-scope-authorization` | `/daodan:map-code`, team entry (six sessions) | An authorized scope proceeds without requiring `--yes`; an unresolved decision gets a concrete, answerable question and accepts ordinary replies, including when no input tool is available |
+| `mapper-scope-in-team-mode` | `/daodan:map-code`, team entry | The interconnect map covers the cross-partition surface, not the whole codebase |
+| `coverage-is-declared` | `/daodan:map-code`, full depth | Stylesheets are parsed into rule symbols and scanned for global-reach rules, entry-gating paths are traced with their style cascade, and the report separates inventoried, read in depth and exercised and names what the perimeter left out |
+| `incremental-carry-and-rederive` | `/daodan:map-code` (four sessions) plus a fifth in a separate scratch | An incremental run carries unmarked claims byte for byte, re-derives or retires every marked one, documents every added symbol, and never publishes with a marker still stale; `--update` and `--no-update` change only whether detection runs, never whether the checkpoint waits |

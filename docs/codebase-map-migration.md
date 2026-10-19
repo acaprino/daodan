@@ -9,8 +9,8 @@ exports. Its commands, skills and worker identities are no longer registered.
 
 Update Daodan through your host's ordinary marketplace or package update path.
 Remove the old `codebase-xray` installation or selection and enable `codebase-map`.
-Use `/codebase-map:analyze` or `/codebase-map:team-analyze` through the host's
-native workflow entry. Pi's repository package and the OpenCode catalog contain
+Use `/daodan:map-code`, which runs the analyze or team entry of
+`codebase-map:map-method`, through the host's native workflow entry. Pi's repository package and the OpenCode catalog contain
 only the canonical plugin. An explicit OpenCode `options.plugins` selection must
 name `codebase-map`; the removed name is not an alias.
 

@@ -32,10 +32,10 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
 1. Record `pre_phase_sha` and the pre-step bytes of every `write_set` file
    through the protocol helper.
 2. Dispatch the writer with the brief of `references/worker-brief.md`:
-   `python-development:python-engineer` for Python,
-   `typescript-development:typescript-engineer` for TypeScript and
-   JavaScript, `testing:test-writer` for a task that writes tests only, the
-   isolated worker for any other stack, with the knowledge selected when you
+   for Python dispatch `python-development:python-engineer`,
+   for TypeScript and JavaScript dispatch `typescript-development:typescript-engineer`,
+   for tests only dispatch `testing:test-writer`, for any
+   other stack the isolated worker, with the knowledge selected when you
    load the `skill-catalog:skill-catalog` skill. The writer runs the oracle first and stops with
    `ORACLE_INVALID` when it passes or fails for another reason; writes only
    inside `write_set` and stops with `NEEDS_REPLAN` when another file must

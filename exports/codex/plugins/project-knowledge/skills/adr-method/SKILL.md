@@ -2,8 +2,8 @@
 name: adr-method
 description: >
   Create, resolve, validate and promote canonical architecture decision records in docs/adr/.
-  TRIGGER WHEN: an interview settles a design, contract or domain decision; a task needs the decisions governing its scope; a merged change promotes a Proposed record.
-  DO NOT TRIGGER WHEN: the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).
+  TRIGGER WHEN: the user explicitly asks to record or write down an architecture or technical decision, an interview settles a design, contract or domain decision, a task needs the decisions governing its scope, or a merged change promotes a Proposed record.
+  DO NOT TRIGGER WHEN: the user only wants brainstorming or advice without recording a decision, the change needs no decision beyond existing records, or the request is project documentation (use project-knowledge:project-knowledge).
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -80,10 +80,10 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Architecture decision records
 
-Load `project-protocol:project-protocol` for run ownership and authorization.
+Load the skill `project-protocol:project-protocol` for run ownership and authorization.
 The helper is `python "<plugin-root>/skills/adr-method/scripts/adr_tool.py"`;
 it writes records and the index atomically and refuses an inconsistent state
-before the first write. The record format is `references/adr-template.md`.
+first. The record format is `references/adr-template.md`.
 
 ## Load map
 

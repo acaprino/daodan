@@ -1,7 +1,7 @@
 # Scorecard: <case>
 
 - **Date:**
-- **Component run:** `/codebase-map:analyze` | `/codebase-map:team-analyze` | `semantic-interconnect-mapper`
+- **Component run:** `/daodan:map-code` (analyze entry) | `/daodan:map-code` (team entry) | `semantic-interconnect-mapper`
 - **Host / model / session:**
 - **Plugin version under test:**
 - **Target materialized:** (scratch path, fixture used, any deliberate edits)

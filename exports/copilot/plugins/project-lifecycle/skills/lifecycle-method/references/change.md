@@ -89,9 +89,9 @@ unit is the overview, and each phase has its own unit.
 | 6. Candidate | The whole candidate reviewed with shape `branch`; blocking findings repaired in a bounded wave | `references/verify.md` |
 | 7. Integration | Merge, record promotion, map and knowledge realigned, workspace closed | `references/finish.md`, `references/realign.md` |
 
-`--plan-only` stops after phase 4 with the record `Proposed` and the plan
-approved; `--run-id RUN` on that run continues the approved plan from its
-first unsealed wave. A bugfix with a reproduction test follows `references/repair.md`, which
+When the user wants only the plan, the cycle stops after phase 4 with the
+record `Proposed` and the plan approved; `/daodan:continue-task` resumes it
+from its first unsealed wave. A bugfix with a reproduction test follows `references/repair.md`, which
 shortens phases 2 to 4 and keeps the rest.
 
 Rules that hold across phases:
@@ -102,7 +102,7 @@ Rules that hold across phases:
   current code is never promoted into the requirement.
 - Preserve preexisting edits and other sessions' work. Recovery restores the
   owned pre-phase state, never `HEAD~1`.
-- Bootstrap of a new project is phase 0 of `references/assess.md`, then this
-  cycle for its first task.
+- A project without map, record index or loop block is initialized first
+  through `references/init.md`.
 - Severe evidenced defects and broken entry paths come before cosmetic work.
 - A plan or a diff without verification is not completed development.

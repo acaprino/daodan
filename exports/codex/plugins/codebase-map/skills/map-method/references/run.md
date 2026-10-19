@@ -110,13 +110,13 @@ Declare exclusions: `snapshot.py scope <target>` prints them before a run; the m
 
 ## Team Mode Integration
 
-Classic `/codebase-map:analyze` delegates declared phases to one isolated `codebase-map:map-analyst` context. Use the team variant for monorepos, multi-language repos or targets exceeding one context:
+Classic `references/entry-analyze.md` delegates declared phases to one isolated `codebase-map:map-analyst` context. Use the team variant for monorepos, multi-language repos or targets exceeding one context:
 
 ```
-/codebase-map:team-analyze <target>
+/daodan:map-code <target>
 ```
 
-The team command:
+The team entry:
 1. Auto-detects partitions (workspaces, top-level dirs or language clusters) and shows concrete scope before dispatch. Fresh invocation authorization requires no `--yes`; unresolved choices or explicit approval requests get answerable questions through a permitted input tool or ordinary chat.
 2. Spawns three workers per partition: Wave 1 Structure; Wave 2 Behavior + Quality. Wave 2 reads every partition's Wave 1 output to cite cross-partition contracts and flows directly.
 3. Synthesizes a backward-compatible `01..07.md` set inside the run directory; the same all-mode gate and whole-mirror publication bind downstream consumers.

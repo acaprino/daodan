@@ -2,7 +2,7 @@
 name: ops-writer
 description: >
   Own operational reference and configuration how-to, absorbing the former config writer's techniques.
-  TRIGGER WHEN: spawned by /project-knowledge:guide to author operational and configuration documentation.
+  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author operational and configuration documentation.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
 color: cyan

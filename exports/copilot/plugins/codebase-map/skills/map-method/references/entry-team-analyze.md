@@ -79,7 +79,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 ## Execution requirements
 
 This workflow fans out over partitions. Dispatch, scheduling and result collection belong to the host
-harness, which is generated from `contracts/team-analyze.workflow.toml`. What this workflow requires of
+harness, which is generated from the `daodan` plugin's `map-code` workflow contract. What this workflow requires of
 any harness is fixed:
 
 - every partition worker runs in its own context and owns exactly one partition directory
@@ -133,7 +133,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
    - `--yes`: select the recommended eligible scope without another confirmation; ordinary language can authorize the same choice
    - `--update`: require an update base; error out if no usable parent team run exists (execution mode is still resolved at the checkpoint)
    - `--no-update`: skip parent detection and run every partition fresh
-   - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `/codebase-map:analyze`)
+   - REJECT with explicit error if `--phase N` or `--docs-only` are passed (suggest classic `references/entry-analyze.md`)
 3. Resolve the run (see `## Concurrent Runs Model` in the `codebase-map:map-method` skill's `references/run.md`):
    - Compute `run-id`: `--run-name` (normalized to `[a-z0-9-]`) or `<slug-of-target>-<YYYYMMDD-HHMMSS>`; append `-2`, `-3`, ... on collision
    - Set `RUN_DIR = .codebase-map/runs/<run-id>`
@@ -194,7 +194,7 @@ lineage changes so the registry records `parent_run` (`null` for a full run).
 
 ### Project Knowledge Discovery (Codebase Map Phase 0)
 
-Runs once for the whole run, inline in the orchestrating context, before partition detection. This is the same Phase 0 as `/codebase-map:analyze`, and it is global: it does not run per partition, and no partition worker owns any of its output. Read `CLAUDE.md`, `AGENTS.md`, and any equivalent project instruction file at the repository root and in the target's ancestors. Locate the canonical indexes the project actually uses, at minimum `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, all inside the perimeter: an index under a dot directory, or one Git ignores, is not a lead. For each concept, symbol and subsystem the run will cover across all partitions, search the located documents for an entry and record the concept, the document, and the anchor or heading that matched. Every row is a lead with status `documented` or `unverified`; nothing here is `verified`, because this phase reads no code.
+Runs once for the whole run, inline in the orchestrating context, before partition detection. This is the same Phase 0 as `references/entry-analyze.md`, and it is global: it does not run per partition, and no partition worker owns any of its output. Read `CLAUDE.md`, `AGENTS.md`, and any equivalent project instruction file at the repository root and in the target's ancestors. Locate the canonical indexes the project actually uses, at minimum `**/SEARCH_INDEX.md`, `**/INDEX.md`, `docs/README.md`, `README.md`, `**/BY_DOMAIN.md`, `**/adr/**`, `**/decisions/**`, `**/architecture/**`, `**/domains/**`, all inside the perimeter: an index under a dot directory, or one Git ignores, is not a lead. For each concept, symbol and subsystem the run will cover across all partitions, search the located documents for an entry and record the concept, the document, and the anchor or heading that matched. Every row is a lead with status `documented` or `unverified`; nothing here is `verified`, because this phase reads no code.
 
 **Output file:** `$RUN_DIR/knowledge/navigation.md`
 **Output file:** `$RUN_DIR/knowledge/documentation-leads.md`
@@ -240,7 +240,7 @@ For each partition, take `file_count` from `snapshot.py scope <partition path>`,
 
 ### Partition-level update
 
-The unit of an update here is the partition, deliberately coarser than the claim-level update of `/codebase-map:analyze`. A partition either changed or it did not, and a touched partition is worth re-analyzing whole: threading a change set through every worker would put it into every spawn prompt for a saving the partition split already provides most of.
+The unit of an update here is the partition, deliberately coarser than the claim-level update of `references/entry-analyze.md`. A partition either changed or it did not, and a touched partition is worth re-analyzing whole: threading a change set through every worker would put it into every spawn prompt for a saving the partition split already provides most of.
 
 Available only when pre-flight point 4 found a candidate parent and its change set does not recommend `full`; the checkpoint below resolves whether to use it, never forcing an update over a requested full run.
 
@@ -554,8 +554,8 @@ Summary:
 On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.codebase-map/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
 
 5. Present independent next-step suggestions, with the exact run directory and
-source snapshot attached. Project instructions use /project-knowledge:instructions
-with --create or --fix as authorized; guides use /project-knowledge:guide.
+source snapshot attached. Project instructions use `/daodan:write-docs`, creating
+or fixing as authorized; guides use it too.
 Development fixes and review are separate scoped tasks. Do not apply quick fixes
 or write durable project documents inside this confined analysis run.
 
@@ -574,10 +574,10 @@ Resuming dispatches fresh workers as needed. Worker contexts are not restored ac
 
 ## Quick Examples
 
-- `/codebase-map:team-analyze .` — auto-detect, full depth; a fresh run proceeds after the scope preview
-- `/codebase-map:team-analyze . --depth=lite` — lite mode (2N+2 agents)
-- `/codebase-map:team-analyze . --critical` — prioritize security paths in Phase 3-4
-- `/codebase-map:team-analyze . --partition packages/api --partition packages/web --yes` — manual partitions, auto-accept
-- `/codebase-map:team-analyze . --skip-interconnect` — stop at Phase 2
-- `/codebase-map:team-analyze . --skip-synthesis` — only per-partition reports (no consolidation, no publish)
-- `/codebase-map:team-analyze apps/backend --run-name backend` — named run, safe alongside other active runs
+- `.` — auto-detect, full depth; a fresh run proceeds after the scope preview
+- `. --depth=lite` — lite mode (2N+2 agents)
+- `. --critical` — prioritize security paths in Phase 3-4
+- `. --partition packages/api --partition packages/web --yes` — manual partitions, auto-accept
+- `. --skip-interconnect` — stop at Phase 2
+- `. --skip-synthesis` — only per-partition reports (no consolidation, no publish)
+- `apps/backend --run-name backend` — named run, safe alongside other active runs

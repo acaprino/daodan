@@ -85,31 +85,6 @@ Load the canonical methods before preparing inputs. Diagnosis does not modify
 application files, test files or durable instructions. Run-owned reports and the
 explicit Codebase Map run are the allowed audit outputs.
 
-## Initialization (`--init`)
-
-The first entry of a project into the cycle, new or existing, and the only
-assess mode that writes outside the run. It is idempotent: a part that exists
-and validates is kept.
-
-1. **Map.** Execute the analyze entry's preflight, dispatch
-   `codebase-map:map-analyst` in an isolated context for a full analysis of
-   the project, and bind the run. An existing completed run on the same
-   target is offered as the update parent.
-2. **Decision records.** Load `project-knowledge:adr-method` and run
-   `init-index`; an existing directory is validated, never rewritten.
-3. **Instructions.** Load `project-knowledge:instructions-method`; create the
-   authoritative file when authorized, or audit it, and write the loop block
-   with the verified test, lint, type and build commands, the workspace
-   convention and the active records.
-4. **Baseline.** Run the declared test command once and record the baseline
-   as `references/preflight.md` classifies it; record `last_synced` as the
-   current head in the run.
-5. **Report.** State what exists, what was created, what could not be
-   verified (a runner missing, a command that needs an environment), and
-   the first task's entry.
-
-Without `--init`, assess is the diagnosis below.
-
 ## Focus selection and inputs
 
 | Focus | Dimensions | Native inputs and preparation |
@@ -118,6 +93,7 @@ Without `--init`, assess is the diagnosis below.
 | structure | cleanup and abstraction | cleanup-auditor scoped target; abstraction auditor codebase_path, mode, xray_path, scope, changed_files for diff, report_path, concept_index_path=none |
 | tests | suite health | test-preparation determines runner/configuration/source mapping; test-suite-auditor receives paths, runner, layers, measurements and output path |
 | artifacts | workspace | workspace-auditor profile full, explicit scope, output path; filesystem/Git evidence only |
+| stack | each stack the snapshot shows | load each owner's audit skill on the whole project: `python-development:python-audit-method`; `references/audit.md` of `react-development:react-best-practices`, `typescript-development:type-safety-rules`, `platform-engineering:platform-engineering`, and of `dependency-audit:dependency-audit` when manifests exist |
 | all | union above | no duplicate worker or second detection prompt |
 
 Prepare selections cleanup, tests, structure, instructions and workspace with zero
@@ -129,8 +105,9 @@ Count documentation-engineer and guide-reviewer before dispatch. If the quick
 budget cannot cover the requested union, show the selected priorities and remaining
 dimensions; do not silently dispatch extra contexts or imply complete coverage.
 
-For abstraction context, execute the canonical codebase-map:analyze preflight
-and delivery/publication steps only when required by the requested scope.
+For abstraction context, execute the canonical preflight and delivery/publication
+steps of the analyze entry of codebase-map:map-method only when required by the
+requested scope.
 Dispatch codebase-map:map-analyst in one isolated context through the consuming
 workflow's declared host harness. Bind the exact new or validated Codebase Map
 run ID, source snapshot, depth and directory. Quick uses lite context and states
@@ -156,8 +133,8 @@ application-cleanup-method; known semantic refactors to change with abstraction
 audit before/after. Unknown design intent remains clarify with explicit alternatives.
 
 For every action record dependencies, scope/snapshot, evidence, cost, method, owner
-and gate. Cleanup requiring --commit is disclosed here; repair --fix leaves that
-action open. Missing credentials/build access need a runnable alternative or an
+and gate. Cleanup that needs a `commit` grant is disclosed here; a `fix` grant
+alone leaves that action open. Missing credentials/build access need a runnable alternative or an
 explicit non-executable action. They never become a green check.
 
 Write plan.json, native reports and result.json under this run. Show executable

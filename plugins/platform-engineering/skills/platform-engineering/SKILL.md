@@ -30,6 +30,7 @@ Three pillars govern every application you ship -- Security, Architecture, and P
 - **Architecture decisions**: Load `client-server-architecture`, `api-design`, `offline-first`, `infrastructure`
 - **Performance optimization**: Load `frontend-performance`, `backend-and-platform-performance`
 - **Full platform review**: Load all 13 references
+- **Platform audit as a procedure** (the platform stack audit of `/daodan:check-health`): Read `references/audit.md`, the procedure rather than a 14th rulebook reference; it detects platforms, runs the isolated `platform-reviewer` with the references above and writes the report under the run directory
 
 ## Reference Materials
 

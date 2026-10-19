@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "37.3.0"
+    "version": "38.0.0"
   },
   "name": "daodan",
   "owner": {
@@ -14,8 +14,7 @@
   "plugins": [
     {
       "agents": [
-        "./agents/abstraction-architect-agent.agent.md",
-        "./agents/audit-coordinator.agent.md"
+        "./agents/abstraction-architect-agent.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -23,19 +22,18 @@
       "dependencies": [
         "codebase-map"
       ],
-      "description": "Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of /senior-review:team-review and /senior-review:code-review. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD).",
+      "description": "Structural entropy auditor: finds where the same concept is represented, owned, computed or implemented more than once, and what it costs when that concept changes. Seven dimensions over two evidence tracks. Knowledge track (duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state) is judged by semantic identity and ownership, so two representations suffice behind a strict gate. Form track (missed unification, prior art available, abstraction fitness) is judged by recurrence, where the Rule of Three applies to missed unification only. Global mode censuses the codebase and persists a concept index; diff mode asks the same seven questions as 'introduced or aggravated by this change' and runs as the Abstraction dimension of senior-review's reviews; the whole-codebase audit runs under /daodan:check-health. Report-only, grounded in canonical theory (Metz, Beck, Fowler, Gross, North, DDD).",
       "license": "MIT",
       "name": "abstraction-architect",
       "skills": [
         "./skills/abstraction-architect"
       ],
       "source": "./exports/copilot/plugins/abstraction-architect",
-      "version": "4.1.2"
+      "version": "5.0.0"
     },
     {
       "agents": [
-        "./agents/clean-code-agent.agent.md",
-        "./agents/clean-code-coordinator.agent.md"
+        "./agents/clean-code-agent.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -50,18 +48,16 @@
         "./skills/readability-method"
       ],
       "source": "./exports/copilot/plugins/clean-code",
-      "version": "2.0.5"
+      "version": "3.0.0"
     },
     {
       "agents": [
-        "./agents/analyze-coordinator.agent.md",
         "./agents/map-analyst.agent.md",
         "./agents/partition-behavior-worker.agent.md",
         "./agents/partition-quality-worker.agent.md",
         "./agents/partition-structure-worker.agent.md",
         "./agents/partition-synthesizer.agent.md",
-        "./agents/semantic-interconnect-mapper.agent.md",
-        "./agents/team-analyze-coordinator.agent.md"
+        "./agents/semantic-interconnect-mapper.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -76,7 +72,58 @@
         "./skills/map-method"
       ],
       "source": "./exports/copilot/plugins/codebase-map",
-      "version": "7.3.0"
+      "version": "8.0.0"
+    },
+    {
+      "agents": [
+        "./agents/brainstorm-idea-coordinator.agent.md",
+        "./agents/check-health-coordinator.agent.md",
+        "./agents/continue-task-coordinator.agent.md",
+        "./agents/finish-task-coordinator.agent.md",
+        "./agents/fix-bug-coordinator.agent.md",
+        "./agents/get-second-opinion-coordinator.agent.md",
+        "./agents/humanize-text-coordinator.agent.md",
+        "./agents/init-project-coordinator.agent.md",
+        "./agents/investigate-problem-coordinator.agent.md",
+        "./agents/map-code-coordinator.agent.md",
+        "./agents/new-feature-coordinator.agent.md",
+        "./agents/onboard-project-coordinator.agent.md",
+        "./agents/refactor-code-coordinator.agent.md",
+        "./agents/review-branch-coordinator.agent.md",
+        "./agents/review-changes-coordinator.agent.md",
+        "./agents/run-maintenance-coordinator.agent.md",
+        "./agents/sync-upstream-coordinator.agent.md",
+        "./agents/tidy-repo-coordinator.agent.md",
+        "./agents/write-docs-coordinator.agent.md",
+        "./agents/write-tests-coordinator.agent.md"
+      ],
+      "author": {
+        "name": "Alfio Caprino"
+      },
+      "dependencies": [
+        "abstraction-architect",
+        "clean-code",
+        "codebase-map",
+        "moe",
+        "peer-review",
+        "platform-engineering",
+        "project-knowledge",
+        "project-lifecycle",
+        "project-protocol",
+        "python-development",
+        "react-development",
+        "repo-hygiene",
+        "senior-review",
+        "skill-catalog",
+        "testing",
+        "text-humanizer",
+        "typescript-development"
+      ],
+      "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
+      "license": "MIT",
+      "name": "daodan",
+      "source": "./exports/copilot/plugins/daodan",
+      "version": "1.0.0"
     },
     {
       "author": {
@@ -90,7 +137,7 @@
         "./skills/dependency-audit"
       ],
       "source": "./exports/copilot/plugins/dependency-audit",
-      "version": "1.1.3"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -134,14 +181,13 @@
         "./skills/multi-model-deliberation"
       ],
       "source": "./exports/copilot/plugins/moe",
-      "version": "1.2.0"
+      "version": "2.0.0"
     },
     {
       "agents": [
         "./agents/brief-builder.agent.md",
         "./agents/packet-builder.agent.md",
-        "./agents/respondent.agent.md",
-        "./agents/review-coordinator.agent.md"
+        "./agents/respondent.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -154,25 +200,24 @@
         "./skills/cross-model-peer-review"
       ],
       "source": "./exports/copilot/plugins/peer-review",
-      "version": "2.5.0"
+      "version": "3.0.0"
     },
     {
       "agents": [
-        "./agents/platform-review-coordinator.agent.md",
         "./agents/platform-reviewer.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; includes /platform-engineering:platform-review standalone command",
+      "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; its audit method runs under /daodan:check-health and its reviewer inside senior-review's reviews",
       "license": "MIT",
       "name": "platform-engineering",
       "skills": [
         "./skills/platform-engineering"
       ],
       "source": "./exports/copilot/plugins/platform-engineering",
-      "version": "1.3.5"
+      "version": "2.0.0"
     },
     {
       "agents": [
@@ -180,15 +225,11 @@
         "./agents/doc-humanizer.agent.md",
         "./agents/documentation-engineer.agent.md",
         "./agents/flow-writer.agent.md",
-        "./agents/guide-coordinator.agent.md",
         "./agents/guide-reviewer.agent.md",
         "./agents/instructions-auditor.agent.md",
-        "./agents/instructions-coordinator.agent.md",
-        "./agents/maintain-coordinator.agent.md",
         "./agents/onboarding-writer.agent.md",
         "./agents/ops-writer.agent.md",
         "./agents/overview-writer.agent.md",
-        "./agents/readme-coordinator.agent.md",
         "./agents/tech-writer.agent.md"
       ],
       "author": {
@@ -211,18 +252,9 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/copilot/plugins/project-knowledge",
-      "version": "1.4.0"
+      "version": "2.0.0"
     },
     {
-      "agents": [
-        "./agents/assess-coordinator.agent.md",
-        "./agents/change-coordinator.agent.md",
-        "./agents/consolidate-coordinator.agent.md",
-        "./agents/handover-coordinator.agent.md",
-        "./agents/maintain-coordinator.agent.md",
-        "./agents/repair-coordinator.agent.md",
-        "./agents/verify-coordinator.agent.md"
-      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -235,11 +267,11 @@
         "codebase-map",
         "repo-hygiene",
         "clean-code",
-        "text-humanizer",
         "react-development",
         "typescript-development",
         "platform-engineering",
         "python-development",
+        "dependency-audit",
         "skill-catalog",
         "peer-review",
         "moe",
@@ -254,7 +286,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/copilot/plugins/project-lifecycle",
-      "version": "1.7.0"
+      "version": "2.0.0"
     },
     {
       "agents": [
@@ -271,7 +303,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/copilot/plugins/project-protocol",
-      "version": "1.5.0"
+      "version": "1.6.0"
     },
     {
       "agents": [
@@ -285,27 +317,28 @@
         "testing",
         "project-protocol"
       ],
-      "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and /python-development:python-audit consolidated quality report",
+      "description": "Python development toolkit: pytest techniques with canonical testing authoring, code refactoring with complexity metrics, performance profiling, async patterns, uv package management, dead code detection, comment auditing, project scaffolding, deep Pydantic v2.13 guide (validators/serializers/strict/performance/security/PydanticAI+Logfire) with v1 migration, and a consolidated quality audit method run by /daodan:check-health",
       "license": "MIT",
       "name": "python-development",
       "skills": [
         "./skills/async-python-patterns",
         "./skills/pydantic-v2",
         "./skills/pytest-patterns",
+        "./skills/python-audit-method",
         "./skills/python-comments",
         "./skills/python-dead-code",
         "./skills/python-packaging",
         "./skills/python-performance-optimization",
         "./skills/python-refactor-method",
+        "./skills/python-scaffold-method",
         "./skills/uv-package-manager"
       ],
       "source": "./exports/copilot/plugins/python-development",
-      "version": "3.0.3"
+      "version": "4.0.0"
     },
     {
       "agents": [
-        "./agents/react-performance-optimizer.agent.md",
-        "./agents/review-react-coordinator.agent.md"
+        "./agents/react-performance-optimizer.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -318,25 +351,24 @@
         "./skills/react-best-practices"
       ],
       "source": "./exports/copilot/plugins/react-development",
-      "version": "1.11.5"
+      "version": "2.0.0"
     },
     {
       "agents": [
-        "./agents/tidy-coordinator.agent.md",
         "./agents/workspace-auditor.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Workspace tidying decided by the filesystem and git alone, with no source comprehension anywhere in it: filesystem garbage and shell-redirection artifacts, generated artifacts tracked in git (checked against publication conventions before anything is proposed for untracking), .gitignore completeness per ecosystem and archaeology over stale and overly-broad rules with git check-ignore provenance, scratch and pipeline-output directories, orphan doc-assets widened past literal Markdown links to configs, stylesheets and templates, and git auxiliary state. One check catalog with a full and a lite profile, so the diff-scoped pass inside a code review and the whole-tree pass share definitions and cannot drift. /repo-hygiene:tidy detects by default and applies under --fix or --commit; untracked removals are quarantined rather than deleted, git rm --cached is confirmed per item, and the git-state dimension is permanently detection-only because a dropped stash or a removed worktree leaves no diff for a per-phase commit to revert.",
+      "description": "Workspace tidying decided by the filesystem and git alone, with no source comprehension anywhere in it: filesystem garbage and shell-redirection artifacts, generated artifacts tracked in git (checked against publication conventions before anything is proposed for untracking), .gitignore completeness per ecosystem and archaeology over stale and overly-broad rules with git check-ignore provenance, scratch and pipeline-output directories, orphan doc-assets widened past literal Markdown links to configs, stylesheets and templates, and git auxiliary state. One check catalog with a full and a lite profile, so the diff-scoped pass inside a code review and the whole-tree pass share definitions and cannot drift. Its tidy method, run by /daodan:tidy-repo, previews first and applies only with an authorization asked after the preview, with or without commits; untracked removals are quarantined rather than deleted, git rm --cached is confirmed per item, and the git-state dimension is permanently detection-only because a dropped stash or a removed worktree leaves no diff for a per-phase commit to revert.",
       "license": "MIT",
       "name": "repo-hygiene",
       "skills": [
         "./skills/repo-hygiene"
       ],
       "source": "./exports/copilot/plugins/repo-hygiene",
-      "version": "1.3.5"
+      "version": "2.0.0"
     },
     {
       "author": {
@@ -358,15 +390,12 @@
         "./agents/chicken-egg-detector.agent.md",
         "./agents/cleanup-auditor.agent.md",
         "./agents/code-auditor.agent.md",
-        "./agents/code-review-coordinator.agent.md",
         "./agents/data-integrity-auditor.agent.md",
         "./agents/distributed-flow-auditor.agent.md",
         "./agents/logic-integrity-auditor.agent.md",
-        "./agents/pr-review-coordinator.agent.md",
         "./agents/premise-auditor.agent.md",
         "./agents/resource-lifecycle-auditor.agent.md",
         "./agents/security-auditor.agent.md",
-        "./agents/team-review-coordinator.agent.md",
         "./agents/temporal-resilience-auditor.agent.md",
         "./agents/ui-race-auditor.agent.md"
       ],
@@ -400,7 +429,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/copilot/plugins/senior-review",
-      "version": "15.5.0"
+      "version": "16.0.0"
     },
     {
       "author": {
@@ -439,29 +468,27 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/copilot/plugins/testing",
-      "version": "3.1.4"
+      "version": "4.0.0"
     },
     {
       "agents": [
-        "./agents/humanize-text-coordinator.agent.md",
         "./agents/text-humanizer.agent.md"
       ],
       "author": {
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the /humanize-text command with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), project-knowledge (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
+      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), project-knowledge (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
       "license": "MIT",
       "name": "text-humanizer",
       "skills": [
         "./skills/anti-ai-writing-patterns"
       ],
       "source": "./exports/copilot/plugins/text-humanizer",
-      "version": "1.2.5"
+      "version": "2.0.0"
     },
     {
       "agents": [
-        "./agents/review-typescript-coordinator.agent.md",
         "./agents/type-safety-auditor.agent.md",
         "./agents/typescript-engineer.agent.md"
       ],
@@ -469,7 +496,7 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and /review-typescript command with tsc/ESLint ground truth",
+      "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and an audit method with tsc/ESLint ground truth run by /daodan:check-health",
       "license": "MIT",
       "name": "typescript-development",
       "skills": [
@@ -479,7 +506,7 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/copilot/plugins/typescript-development",
-      "version": "2.3.4"
+      "version": "3.0.0"
     }
   ]
 }

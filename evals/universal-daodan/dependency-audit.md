@@ -1,6 +1,6 @@
 # Canary eval: `dependency-audit` on every host
 
-`dependency-audit` is the simple canary of the universal marketplace: one skill, one workflow, one
+`dependency-audit` is the simple canary of the universal marketplace: one skill, one entry, one
 context, no fan-out and no semantic override. It is what proves the compiler produces one
 installable package per host with one identity and one observable contract, before the review
 pipeline is attempted.
@@ -11,10 +11,12 @@ pipeline is attempted.
 
 - every host reports `dependency-audit` at the same version as the kernel, from its plugin manifest where it has one and from `.daodan-provenance.json` on Pi, which has none
 - all three packages carry the four skill resources byte-for-byte
-- each host exposes exactly one invocable audit workflow, at its native path:
-  `commands/deps-audit.md` (Claude), `prompts/deps-audit.prompt.md` (Copilot),
-  `skills/deps-audit/SKILL.md` (Codex)
-- the kernel declares the audit contract outcomes and the single report artifact
+- every host reaches the audit through `/daodan:check-health` (since marketplace 38.0.0 the
+  plugin has no command of its own): the entry renders at its native path on all five hosts,
+  and the lifecycle assess unit it loads names `dependency-audit:dependency-audit` when
+  manifests exist
+- the audit method, `skills/dependency-audit/references/audit.md`, states each audit contract
+  outcome, its steps in order and the single report in the run directory
 - no host needed a semantic override (`overrides: []` in every provenance file)
 
 Rebuild and verify with:

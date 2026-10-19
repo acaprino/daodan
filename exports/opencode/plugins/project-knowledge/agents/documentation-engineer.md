@@ -1,5 +1,5 @@
 ---
-description: 'Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode. TRIGGER WHEN: spawned by /project-knowledge:maintain or lifecycle knowledge phases to audit or repair documentation drift.'
+description: 'Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode. TRIGGER WHEN: dispatched by project-knowledges documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift.'
 mode: subagent
 permissions:
   - action: "*"

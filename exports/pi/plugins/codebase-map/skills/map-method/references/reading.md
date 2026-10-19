@@ -88,4 +88,4 @@ Workers only resolve bindings; legacy roots/bindings activate migration load.
 | Updating documentation | 06-documentation, 04-semantics | 02-interfaces |
 | Find concept documentation | knowledge/documentation-leads.md | knowledge/navigation.md |
 
-Phase 0's `knowledge/` files are discovery leads, never verified facts; `/senior-review:team-review` Phase 1d joins `knowledge/documentation-leads.md` against independent discovery; skipping Phase 0 leaves that input missing.
+Phase 0's `knowledge/` files are discovery leads, never verified facts; `team-review` Phase 1d joins `knowledge/documentation-leads.md` against independent discovery; skipping Phase 0 leaves that input missing.

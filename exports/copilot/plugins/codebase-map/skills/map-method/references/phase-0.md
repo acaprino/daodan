@@ -77,7 +77,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Phase 0: Project Knowledge Discovery
 
-Run first on every fresh run at every depth, including `--depth=lite`, `--phase N` (N from 1 to 6) and `--docs-only`. For `/codebase-map:analyze`, the isolated analyst runs Phase 0; for `/codebase-map:team-analyze`, the entry runs it once globally. A resume can inherit confirmed knowledge files. Phase 0 is a nonselectable preamble; phases 1 to 7 retain their numbers. Refuse `--phase 0` and `--phase 7`.
+Run first on every fresh run at every depth, including `--depth=lite`, `--phase N` (N from 1 to 6) and `--docs-only`. For `references/entry-analyze.md`, the isolated analyst runs Phase 0; for `references/entry-team-analyze.md`, the entry runs it once globally. A resume can inherit confirmed knowledge files. Phase 0 is a nonselectable preamble; phases 1 to 7 retain their numbers. Refuse `--phase 0` and `--phase 7`.
 
 Discover how the repository documents itself to guide phases; leave accuracy evaluation to Phase 6.
 
@@ -123,4 +123,4 @@ Discover how the repository documents itself to guide phases; leave accuracy eva
 [List scoped concepts with no document, which downstream consumers must discover independently.]
 ```
 
-This unit is Phase 0's only copy. `/senior-review:team-review` reaches it through `analyze`; Phase 1d consumes `knowledge/documentation-leads.md` from whichever path produced the run.
+This unit is Phase 0's only copy. `team-review` reaches it through `references/entry-analyze.md`; Phase 1d consumes `knowledge/documentation-leads.md` from whichever path produced the run.

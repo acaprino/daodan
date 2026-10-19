@@ -9,7 +9,7 @@ A scratch React-shaped client of about a dozen files: an `index.html` with a `#r
 ## Run
 
 ```
-/codebase-map:analyze src/
+/daodan:map-code src/ at full depth
 ```
 
 Accept the scope confirmation.

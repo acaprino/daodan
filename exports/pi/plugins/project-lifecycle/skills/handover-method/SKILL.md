@@ -2,8 +2,8 @@
 name: handover-method
 description: >
   Coordinate an evidence-based consultant intake dossier.
-  TRIGGER WHEN: running project-lifecycle handover or preparing to take responsibility for an unfamiliar project.
-  DO NOT TRIGGER WHEN: correcting and rationalizing the project (use maintainer-method).
+  TRIGGER WHEN: the user asks to be onboarded, walked through an unfamiliar codebase, given a project takeover or intake dossier, or runs /daodan:onboard-project.
+  DO NOT TRIGGER WHEN: being new to a project is only background for a code change (use lifecycle-method), correcting and rationalizing the project (use maintainer-method), or writing durable repository documentation (use project-knowledge:project-knowledge).
 ---
 
 > `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
@@ -133,12 +133,12 @@ Load project-protocol:project-protocol and project-knowledge:project-knowledge.
 Read the latter's references/preparation.md and references/guide-method.md from its
 installed skill. Apply their source/intent distinctions, audience/file plan and
 writer/reviewer ownership to this report-writing task. Do not execute the guide
-workflow's durable-document application path.
+method's durable-document application path.
 
 Initialize through the protocol helper with operation assess and objective
 handover. These are supported operational values; do not invent a handover
 operation. Save request.json inside the run with entrypoint
-project-lifecycle:handover, original request, resolved target, audience, depth,
+/daodan:onboard-project, original request, resolved target, audience, depth,
 checks and the exact authorization source. This note identifies the entry;
 it neither changes the protocol schema nor substitutes for work.json.
 
@@ -276,5 +276,5 @@ hashes, deliveries, snapshot-bound checks, output paths, limitations and complet
 state. Validate through run_state.py with --current and --result before declaring
 completion. An incomplete dossier remains available with its interruption reason
 and resume line. Report the dossier path, run ID, coverage and next scoped step.
-Offer project-lifecycle:maintain only when the findings justify remediation; wait
+Offer /daodan:run-maintenance only when the findings justify remediation; wait
 for an explicit request. Handover never chains maintenance automatically.

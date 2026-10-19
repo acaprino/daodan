@@ -1,6 +1,6 @@
 ---
 name: clean-code-clean-code-agent
-description: 'Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /clean-code:clean-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /clean-code:clean-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).'
+description: 'Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).'
 disable-model-invocation: true
 ---
 
@@ -91,7 +91,7 @@ including preexisting edits, before the first edit, and to restore them on failu
 
 If the brief lacks the owned files, the approved changes or the baseline, make no edit.
 Report the missing inputs and that the caller must prepare them through
-`clean-code:readability-method`, which the `/clean-code:clean-code` entry runs.
+`clean-code:readability-method`, which the `/daodan:refactor-code` entry runs for readability.
 
 
 # Clean Code Agent
@@ -231,7 +231,7 @@ Report suggestions as **recommendations**, not as changes made.
 
 ## Related tools: when to use what
 
-- **clean-code-agent** (this agent): the worker behind `/clean-code:clean-code`. Multi-language readability pass: renames variables, improves comments, simplifies structure.
+- **clean-code-agent** (this agent): the worker behind the readability pass of `/daodan:refactor-code`. Multi-language readability pass: renames variables, improves comments, simplifies structure.
 - **text-humanizer** (text-humanizer plugin): Prose/text AI trace removal. Use for: "make this text sound human".
 
 Architectural changes return to the caller's development plan.

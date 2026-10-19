@@ -2,7 +2,7 @@
 name: python-refactor-method
 description: >
   Restructure tangled code into a clear equivalent, preserving behavior.
-  TRIGGER WHEN: the user asks for "readable", "maintainable" or "clean" code, a review flags comprehension issues, or the task is legacy modernization or onboarding cleanup.
+  TRIGGER WHEN: the user asks for "readable", "maintainable" or "clean" code, a review flags comprehension issues, the task is legacy modernization or onboarding cleanup, or `/daodan:refactor-code` runs on Python code.
 ---
 
 <daodan_host_binding host="claude">
@@ -74,6 +74,19 @@ Compiled binding and static checks do not prove an installed host executed a run
 # Python Refactor
 
 Transform complex Python into clear, maintainable code while preserving correctness. Phased workflow with safety-by-design and continuous validation. For deep references (anti-patterns, OOP principles, cognitive complexity, regression prevention), see the `references/` directory.
+
+## Load map
+
+| Reference | Read when |
+|---|---|
+| `references/refactor.md` | A coordinator runs a refactor on Python code (`/daodan:refactor-code`): target reading, strict mode, session state and phase files in the run directory, the approval checkpoint and the completion report |
+| `references/REGRESSION_PREVENTION.md` | Before any session |
+| `references/anti-patterns.md` | Phase 1, identifying readability issues |
+| `references/oop_principles.md` | Phase 1, assessing architecture |
+| `references/patterns.md` | Selecting a refactoring pattern |
+| `references/cognitive_complexity_guide.md` | Cognitive complexity rules, tool configuration and Wily tracking |
+| `references/flake8_plugins_guide.md` | Projects already on flake8 |
+| `references/examples/` | Worked transformations |
 
 ## When to invoke
 

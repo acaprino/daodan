@@ -119,9 +119,9 @@ Isolated worker brief:
        skill's VCS checks at its lite profile, scoped to the changed files. Load
        that skill rather than restating its patterns: the full and lite passes
        share one set of check definitions and differ only in perimeter.
-       This is the same perimeter /senior-review:code-review runs. Do not widen
+       This is the same perimeter the code-review variant runs. Do not widen
        it to orphan assets, dependency hygiene, or stale docs: those belong to
-       the full pass in /senior-review:team-review.
+       the full pass in the team-review variant.
 
        **D1, dead code introduced or exposed by the diff.** Run the tool that
        matches the changed files and report only findings on lines the diff
@@ -152,10 +152,11 @@ Isolated worker brief:
        the pattern existed.
 
     Report hygiene findings in their own section, each with the path and the
-    owner-qualified phase that would resolve it: `/senior-review:code-review
-    --commit` phase `exports` for dead code, `/repo-hygiene:tidy` phase
-    `garbage` or `gitignore` for what the filesystem and git decide. A bare
-    phase name is ambiguous now that two commands own disjoint phase sets.
+    owner-qualified phase that would resolve it:
+    `senior-review:application-cleanup-method` phase `exports` for dead code,
+    the `repo-hygiene:repo-hygiene` tidy phase `garbage` or `gitignore` for
+    what the filesystem and git decide. A bare phase name is ambiguous now
+    that two methods own disjoint phase sets.
     Never remove anything: this command only describes the PR.
 
     Output a structured risk assessment with an overall risk level (Low/Medium/High/Critical).

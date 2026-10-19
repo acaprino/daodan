@@ -29,12 +29,13 @@ from scripts.daodan.render import render_plugin  # noqa: E402
 
 ADAPTERS = REPO_ROOT / "adapters"
 LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle"
+ENTRY = REPO_ROOT / "plugins/daodan"
 PROTOCOL = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/scripts/run_state.py"
 ENTRIES = {
     "claude": "commands/{name}.md",
     "copilot": "prompts/{name}.prompt.md",
     "codex": "skills/{name}-workflow/SKILL.md",
-    "pi": "prompts/project-lifecycle-{name}.md",
+    "pi": "prompts/daodan-{name}.md",
     "opencode": "commands/{name}.md",
 }
 
@@ -62,16 +63,19 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             path.parent.name: load_plugin(path.parent)
             for path in sorted((REPO_ROOT / "plugins").glob("*/plugin.toml"))
         }
-        cls.plugin = cls.registry["project-lifecycle"]
+        # The campaign and handover entries are `daodan` commands since 38.0.0;
+        # their methods stay in project-lifecycle.
+        cls.plugin = cls.registry["daodan"]
+        cls.lifecycle = cls.registry["project-lifecycle"]
         cls.workflows = {workflow.name: workflow for workflow in cls.plugin.workflows}
-        cls.commands = ("maintain", "handover")
+        cls.commands = ("run-maintenance", "onboard-project")
         # Fail here when an entry is absent, rather than silently testing a subset.
         cls.references = {
             name: workflow_roles(cls.plugin, cls.workflows[name]) for name in cls.commands
         }
         owners = {reference.partition("/")[0] for roles in cls.references.values()
                   for reference in roles}
-        cls.rendered_plugins = [cls.registry[name] for name in sorted(owners | {cls.plugin.name})]
+        cls.rendered_plugins = [cls.registry[name] for name in sorted(owners | {cls.plugin.name, cls.lifecycle.name})]
         cls.packages = {}
         cls.catalogs = {}
         for host in HOSTS:
@@ -96,34 +100,33 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
     def test_both_entries_and_their_canonical_methods_are_registered(self):
         self.assertTrue(set(self.commands).issubset(self.plugin.components.workflows))
         self.assertTrue({"maintainer-method", "handover-method"}.issubset(
-            self.plugin.components.skills
+            self.lifecycle.components.skills
         ))
-        methods = {"maintain": "maintainer-method", "handover": "handover-method"}
+        methods = {"run-maintenance": "maintainer-method", "onboard-project": "handover-method"}
         for host in HOSTS:
             for name, skill in methods.items():
                 with self.subTest(host=host, workflow=name):
                     package = self.packages[host][self.plugin.name]
                     path = package / ENTRIES[host].format(name=name)
                     self.assertTrue(path.is_file(), path)
-                    self.assertTrue((package / f"skills/{skill}/SKILL.md").is_file())
+                    self.assertTrue((self.packages[host][self.lifecycle.name] / f"skills/{skill}/SKILL.md").is_file())
                     self.assertIn(f"project-lifecycle:{skill}", self.entry(host, name).read_text(
                         encoding="utf-8"
                     ))
                     shipped = package / f"contracts/{name}.workflow.toml"
                     self.assertEqual(shipped.read_text(encoding="utf-8"),
-                                     (LIFECYCLE / f"workflows/{name}.toml").read_text(encoding="utf-8"))
+                                     (ENTRY / f"workflows/{name}.toml").read_text(encoding="utf-8"))
 
     def test_maintain_binds_the_composed_methods_entire_dispatch_surface(self):
+        # The campaign runs every stage the entry commands run: diagnosis, the
+        # task cycle, the branch review and integration.
         required = {"clean-code/clean-code-agent"}
-        for name in ("assess", "repair", "change", "verify", "consolidate"):
+        for name in ("check-health", "new-feature", "fix-bug", "refactor-code", "review-branch", "finish-task"):
             required.update(workflow_roles(self.plugin, self.workflows[name]))
-        review = self.registry["senior-review"]
-        team_review = next(workflow for workflow in review.workflows if workflow.name == "team-review")
-        required.update(workflow_roles(review, team_review))
-        self.assertTrue(required.issubset(self.references["maintain"]),
-                        f"Unbound composed workers: {sorted(required - self.references['maintain'])}")
-        self.assertTrue(self.workflows["maintain"].dispatch.isolated)
-        self.assertTrue(self.workflows["maintain"].dispatch.inline_workers)
+        self.assertTrue(required.issubset(self.references["run-maintenance"]),
+                        f"Unbound composed workers: {sorted(required - self.references['run-maintenance'])}")
+        self.assertTrue(self.workflows["run-maintenance"].dispatch.isolated)
+        self.assertTrue(self.workflows["run-maintenance"].dispatch.inline_workers)
 
     def test_handover_exposes_only_its_assigned_consultant_workers(self):
         required = {
@@ -132,14 +135,14 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
             "project-knowledge/guide-reviewer",
         }
         permitted = required | {"codebase-map/semantic-interconnect-mapper"}
-        self.assertTrue(required.issubset(self.references["handover"]))
-        self.assertTrue(self.references["handover"].issubset(permitted),
-                        f"Unscoped handover worker surface: {self.references['handover'] - permitted}")
-        self.assertTrue(self.workflows["handover"].dispatch.isolated)
-        self.assertFalse(self.workflows["handover"].dispatch.inline_workers)
+        self.assertTrue(required.issubset(self.references["onboard-project"]))
+        self.assertTrue(self.references["onboard-project"].issubset(permitted),
+                        f"Unscoped handover worker surface: {self.references['onboard-project'] - permitted}")
+        self.assertTrue(self.workflows["onboard-project"].dispatch.isolated)
+        self.assertFalse(self.workflows["onboard-project"].dispatch.inline_workers)
 
     def test_handover_has_one_dossier_writer_and_review_before_result(self):
-        workflow = self.workflows["handover"]
+        workflow = self.workflows["onboard-project"]
         writers = [phase for phase in workflow.phases
                    if "artifact:handover-dossier" in phase.produces]
         self.assertEqual(len(writers), 1)
@@ -195,14 +198,14 @@ class LifecycleCampaignRenderingTests(unittest.TestCase):
                 entry = listing[self.plugin.name]
                 commands = {item["name"]: item["file"] for item in entry["commands"]}
                 for name in self.commands:
-                    self.assertEqual(commands[f"project-lifecycle:{name}"], f"commands/{name}.md")
+                    self.assertEqual(commands[f"daodan:{name}"], f"commands/{name}.md")
                 for reference in set.union(*self.references.values()):
                     owner, _, role = reference.partition("/")
                     self.assertIn(f"{owner}:{role}", {item["id"] for item in listing[owner]["agents"]})
                 continue
             if host == "pi":
                 for name in self.commands:
-                    parent = f"./exports/pi/plugins/project-lifecycle/{Path(ENTRIES[host].format(name=name)).parent.as_posix()}"
+                    parent = f"./exports/pi/plugins/daodan/{Path(ENTRIES[host].format(name=name)).parent.as_posix()}"
                     self.assertTrue(any(fnmatch.fnmatchcase(parent, pattern) for pattern in catalog["pi"]["prompts"]))
                 continue
             listing = {entry["name"]: entry for entry in catalog["plugins"]}

@@ -21,8 +21,8 @@ from scripts.daodan.render import render_plugin  # noqa: E402
 from scripts.daodan.templates import render_path  # noqa: E402
 
 TEAM_ROLE_TRIGGERS = {
-    "partition-structure-worker": "spawned by /codebase-map:team-analyze in its first wave.",
-    "partition-synthesizer": "spawned by /codebase-map:team-analyze in its consolidation phase.",
+    "partition-structure-worker": "dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its first wave.",
+    "partition-synthesizer": "dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase.",
 }
 
 
@@ -59,17 +59,20 @@ def description(body):
 
 class CodebaseMapAnalysisOwnerTests(unittest.TestCase):
     def test_analysis_is_required_isolation_between_shared_preflight_and_publish(self):
-        workflow = tomllib.loads(read("workflows/analyze.toml"))
-        self.assertEqual([phase["id"] for phase in workflow["phases"]], ["preflight", "analysis", "publish"])
-        preflight, analysis, publish = workflow["phases"]
-        self.assertEqual(preflight["isolation"], "shared")
-        self.assertEqual(analysis["role"], "map-analyst")
-        self.assertEqual(analysis["isolation"], "required")
-        self.assertEqual(analysis["needs"], ["preflight"])
-        self.assertEqual(publish["isolation"], "shared")
-        self.assertEqual(publish["needs"], ["analysis"])
-        self.assertEqual(analysis["consumes"], preflight["produces"])
-        self.assertEqual(publish["consumes"], analysis["produces"])
+        # The entry is `/daodan:map-code` since 38.0.0: it binds the analyst in an
+        # isolated context, and the classic entry unit orders preflight, the one
+        # isolated analysis and publication.
+        workflow = tomllib.loads((ROOT / "plugins/daodan/workflows/map-code.toml").read_text(encoding="utf-8"))
+        self.assertIn("codebase-map/map-analyst", workflow["dispatch"]["roles"])
+        self.assertTrue(workflow["dispatch"]["isolated"])
+        entry = read("skills/map-method/references/entry-analyze.md")
+        headings = [line for line in entry.splitlines() if line.startswith("## ")]
+        order = [headings.index(name) for name in ("## Preflight", "## Isolated analysis", "## Publish and completion")]
+        self.assertEqual(order, sorted(order))
+        prose = " ".join(entry.split())
+        self.assertIn("dispatch one isolated `codebase-map:map-analyst`", prose)
+        self.assertIn("publish only when the gate permits it", prose)
+        self.assertIn("A classic run stays one isolated context.", prose)
 
     def test_coordinator_loads_no_source_or_phase_procedure(self):
         entry = read("skills/map-method/references/entry-analyze.md")
@@ -157,7 +160,7 @@ class CodebaseMapTeamRoleMetadataTests(unittest.TestCase):
         trigger, exclusion = text.split("TRIGGER WHEN:", 1)[1].split("DO NOT TRIGGER WHEN:", 1)
         self.assertEqual(trigger.strip(), TEAM_ROLE_TRIGGERS[role])
         self.assertNotIn("/codebase-map:analyze", trigger)
-        self.assertIn("Classic /codebase-map:analyze dispatches isolated codebase-map:map-analyst.",
+        self.assertIn("The classic analyze entry dispatches isolated codebase-map:map-analyst.",
                       exclusion)
         self.assertRegex(exclusion, r"outside that (?:team )?pipeline")
         for obsolete in ("inline without an agent", "writes its phase files directly", "no-agent"):

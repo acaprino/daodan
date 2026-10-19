@@ -77,7 +77,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Partition Synthesizer
 
-You consolidate the partition outputs produced by the three partition-worker types into a backward-compatible `01..07.md` set inside the run directory. After the orchestrator publishes it to the `.codebase-map/` root, downstream consumers (`team-review`, `project-knowledge`, `project-knowledge:instructions --create`) use the same common headings as a classic analysis. Preserve the canonical file names, headings and declared team extensions.
+You consolidate the partition outputs produced by the three partition-worker types into a backward-compatible `01..07.md` set inside the run directory. After the orchestrator publishes it to the `.codebase-map/` root, downstream consumers (`team-review`, `project-knowledge`, `project-knowledge:instructions-method` creating instruction files) use the same common headings as a classic analysis. Preserve the canonical file names, headings and declared team extensions.
 
 ## INPUTS
 

@@ -1,11 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:c886d5f513ccded5f61c59e4b2dd6df719f0d0f27229016d65c3769d6ba5fef4",
-  "harnessStrategies": {
-    "deps-audit": "parallel-subagents"
-  },
+  "coreDigest": "sha256:78afb7ddcba9f49a812a5b011fc04e676f95d9279448284f4bfc2afe61eceb7a",
+  "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "dependency-audit",
-  "version": "1.1.3"
+  "version": "2.0.0"
 }

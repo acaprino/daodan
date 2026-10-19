@@ -520,6 +520,24 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("append-only", dropped.stderr)
         self.assertIn("cites evidence", self.plan_check({"rulings": [{**ruling, "evidence": []}]}, ok=False).stderr)
 
+    def test_an_authorization_asked_later_is_an_append_only_grant(self):
+        record = self.init()
+        grant = {"id": "G1", "kind": "commit", "scope": ["src"], "granted_at": "wave-1",
+                 "source": {"kind": "user", "reference": "answer to: commit the wave?"}}
+        granted = self.invoke("update", {"grants": [grant]}, ["--expected-revision", "0"])
+        self.assertEqual(granted["grants"], [grant])
+        self.assertEqual(granted["authorizations"], record["authorizations"])
+        withdrawn = self.invoke("update", {"grants": []}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("append-only", withdrawn.stderr)
+        assumed = {**grant, "id": "G2", "source": {"kind": "coordinator", "reference": "seemed fine"}}
+        self.assertIn("user's answer", self.invoke("update", {"grants": [grant, assumed]},
+                                                    ["--expected-revision", "1"], ok=False).stderr)
+        unknown = {**grant, "id": "G2", "kind": "everything"}
+        self.assertIn("kind must be one of", self.invoke("update", {"grants": [grant, unknown]},
+                                                         ["--expected-revision", "1"], ok=False).stderr)
+        widened = self.invoke("update", {"authorizations": {"commit": True}}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("cannot replace identity, scope, authorization", widened.stderr)
+
     def test_each_review_bounds_only_the_deliveries_bound_to_it(self):
         light = {"id": "R1", "stage": "wave-1", "schema": "daodan/review-roster/v1", "shape": "light",
                  "kind": "changeset", "tier": "light", "roster": ["senior-review:code-auditor"],

@@ -1,12 +1,13 @@
 ---
 name: cross-model-peer-review
 description: >
-  Doctrine for challenging a plan, spec or session decisions with a second model family, including GIVEN vs DERIVED provenance rules.
-  TRIGGER WHEN: running or configuring /peer-review:review, deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions.
+  Doctrine and review method for challenging a plan, spec, decision record or session decisions with a second model family, including GIVEN vs DERIVED provenance rules.
+  TRIGGER WHEN: running or configuring a cross-model peer review (the review method, loaded by /daodan:get-second-opinion for a file and by the task cycle to challenge a decision record or plan), deciding whether an artifact warrants external model challenge, or interpreting standoffs and promotions.
   DO NOT TRIGGER WHEN: reviewing code diffs (use senior-review) or same-family multi-reviewer consolidation (use senior-review:review-quality-gates).
 ---
 
 > `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+> This plugin declares an MCP server, `peer-review`, started with `uv run --no-config --no-project --script ${PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py`. This host does not start a plugin-declared MCP server on its own. Before calling this server's tools, register that command under that name in the host's MCP configuration and verify the connection.
 
 <daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
@@ -90,7 +91,18 @@ normative text is `${PLUGIN_ROOT}/skills/cross-model-peer-review/references/PROT
 provider-independent, its requirement numbers stable identifiers that this skill and
 every agent in this plugin cite by number rather than restate loosely. Read it before
 touching a run that behaves unexpectedly; this skill explains why the rules exist and
-when to reach for the command at all, not what each phase does mechanically.
+when to reach for a review at all. What each phase does mechanically is the review
+method, `references/review.md`.
+
+## Load map
+
+| Reference | Read it when |
+|---|---|
+| `references/review.md` | Running a review: the method `/daodan:get-second-opinion` loads when its target is a file, and the task cycle loads when the user asks another model to challenge a decision record or a plan. Read it whole before Phase 0 |
+| `references/PROTOCOL.md` | The normative requirements R1 to R15 every phase and role cites; a run behaves unexpectedly |
+| `references/packet-anatomy.md` | Building or checking `00-packet.md` (Phase 1, `packet-builder`) |
+| `references/finding-lifecycle.md` | Writing a ledger entry or applying a state transition (Phases 2 to 5) |
+| `references/round-prompts.md` | Extracting the challenger prompt for a round or for certification (Phases 2, 4, 5) |
 
 ## The doctrine
 
@@ -149,7 +161,7 @@ model time. Three situations do not earn that cost:
   mode this is the dominant risk rather than an edge case, because the brief is drafted
   rather than written by hand: `brief-builder`'s decidability self-check is what catches
   it, its "could not be sharpened" list is what makes the softness visible, and the
-  command stops outright when nothing in the brief passes.
+  method stops outright when nothing in the brief passes.
 - **The reason for the decision cannot be written down.** The protocol judges the
   artifact, never its author (R1), and it has no way to weigh a constraint that is
   absent from the artifact. A reason that came from outside every document (a budget, a
@@ -158,7 +170,7 @@ model time. Three situations do not earn that cost:
   section exists for. What disqualifies a run is a reason that cannot be stated at all,
   because then the challenger attacks a document that does not represent the decision.
 - **The target is a diff.** This plugin reviews intent artifacts, not code changes; the
-  command itself refuses anything that looks like a unified diff or a source file.
+  method itself refuses anything that looks like a unified diff or a source file.
   `senior-review` owns diff and PR review.
 
 ## Relationship to senior-review

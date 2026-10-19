@@ -4,7 +4,7 @@ The interconnect map is the one Codebase Map artifact every reviewer reads, and 
 
 ## Setup
 
-A scratch Python package with a small service layer: a repository class whose `connect()` must precede `query()`, a validator that the HTTP handler calls before the service, a `balance` that the code assumes non-negative in three places and checks in one, and a docstring stating a rule the code does not enforce. Run `/codebase-map:analyze src/` first so a run directory exists.
+A scratch Python package with a small service layer: a repository class whose `connect()` must precede `query()`, a validator that the HTTP handler calls before the service, a `balance` that the code assumes non-negative in three places and checks in one, and a docstring stating a rule the code does not enforce. Run `/daodan:map-code src/ at full depth` first so a run directory exists.
 
 ## Run
 

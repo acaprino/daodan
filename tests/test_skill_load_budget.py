@@ -34,6 +34,10 @@ UNIT_CAPS = {
     LIFECYCLE / "references/sync.md": 175,
     LIFECYCLE / "references/retention.md": 420,
     LIFECYCLE / "references/brainstorm.md": 300,
+    LIFECYCLE / "references/init.md": 265,
+    LIFECYCLE / "references/refactor.md": 245,
+    LIFECYCLE / "references/continue.md": 195,
+    LIFECYCLE / "references/status.md": 150,
     LIFECYCLE / "references/repair.md": 335,
     LIFECYCLE / "references/assess.md": 740,
     PROTOCOL: 1_695,
@@ -72,6 +76,11 @@ STEPS = {
     "brainstorm": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/brainstorm.md", ADR / "SKILL.md"),
     "light review, standalone": (PROTOCOL, REVIEW / "review-method/SKILL.md", REVIEW / "review-method/references/light.md"),
     "investigation": (PROTOCOL, REVIEW / "investigation-method/SKILL.md"),
+    "initialization": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/init.md", ADR / "SKILL.md"),
+    "refactor: plan and execution": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/refactor.md",
+                                     LIFECYCLE / "references/waves.md", LIFECYCLE / "references/worker-brief.md"),
+    "continue": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/continue.md"),
+    "status": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/status.md"),
     "review preparation, before the variant": (
         REVIEW / "review-method/SKILL.md", REVIEW / "review-preparation/SKILL.md",
         REVIEW / "review-preparation/references/candidate-grounding.md",
@@ -100,6 +109,10 @@ STEP_CAPS = {
     "brainstorm": 3_050,
     "light review, standalone": 2_855,
     "investigation": 2_285,
+    "initialization": 3_015,
+    "refactor: plan and execution": 3_370,
+    "continue": 2_515,
+    "status": 2_470,
     "review preparation, before the variant": 3_410,
     # Before the split, this step loaded the whole quality-gates skill (1,800 words)
     # and the unlightened team preparation (3,562): 9,647 words.

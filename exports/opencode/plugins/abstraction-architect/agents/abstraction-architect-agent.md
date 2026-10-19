@@ -1,5 +1,5 @@
 ---
-description: 'Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by /abstraction-architect:audit, /senior-review:team-review or /senior-review:code-review; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).'
+description: 'Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).'
 mode: subagent
 permissions:
   - action: "*"
@@ -158,7 +158,7 @@ confidence; they do not abort the audit. This worker never launches a Map.
 - `04-semantics.md`: responsibilities and intent. The strongest seed for behavioural concepts.
 - `08-interconnect-map.md` (optional): cross-partition contracts. Enables the bounded-context check that gate K6 requires.
 
-Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by `--depth=lite`. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
+Mode `diff` needs only `01-structure.md` and `02-interfaces.md`, both produced by a lite-depth Codebase Map. With no Codebase Map output at all, `diff` runs on the concept index plus host file-discovery binding and host content-search binding, at reduced confidence, and says so in Gaps.
 
 For a compatibility caller that supplies the root directory as `xray_path`, read
 only its `state.json -> run_id` to resolve `.codebase-map/runs/<run-id>/`.

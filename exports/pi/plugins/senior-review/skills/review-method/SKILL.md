@@ -1,7 +1,9 @@
 ---
 name: review-method
 description: >
-  Unified review engine for code-review, team-review and pr-review, including signal-selected stack specialists. Load when executing any senior-review workflow or lifecycle review phase.
+  Unified review engine: the light review and the branch review (variants team-review and pr-review, and code-review), including signal-selected stack specialists.
+  TRIGGER WHEN: the user asks to review current changes, a commit, a file, a plan, a specification, a document, a branch or a pull request for defects, or /daodan:review-changes, /daodan:review-branch or a lifecycle review phase runs a review.
+  DO NOT TRIGGER WHEN: establishing the root cause of a reported failure without reviewing an artifact (use investigation-method), or removing dead code (use application-cleanup-method).
 ---
 
 <daodan_host_binding host="pi">
@@ -84,11 +86,12 @@ when absent.
 Output: native report and the project-result envelope.
 
 **Shape `light`:** read `references/light.md` in this skill and nothing else
-of this method; the steps below are the branch review and the named variants.
+of this method. Shape `branch` runs variant `team-review`, or `pr-review` on a
+pull request, through the steps below.
 
 Do not delegate execution
 to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
-the coordinator executes the canonical `codebase-map:analyze` entry's preflight,
+the coordinator executes the `codebase-map:map-method` analyze entry's preflight,
 answerable checkpoints, delivery check and publication decision. Its
 `codebase-map:map-analyst` runs the requested phases in one isolated context
 through this workflow's declared host harness. Loading the method alone executes
@@ -99,8 +102,8 @@ in isolated contexts through the declared host bindings.
 The consuming workflow declares the named reviewer inventory in `dispatch.roles`
 and isolated inline workers in its sidecar. Any inline lens, critic, history,
 hygiene or minimal-fix brief in the references uses the canonical
-`project-protocol:isolated-worker` binding supplied by the host harness. Use that
-exact binding rather than a generic host role name. Keep scope, authorization,
+`project-protocol:isolated-worker` binding supplied by the host harness, never
+a generic host role name. Keep scope, authorization,
 budget, expected report path and delivered or failed outcome for every brief.
 
 1. Load the `senior-review:review-preparation` skill, unless a same-snapshot prepared

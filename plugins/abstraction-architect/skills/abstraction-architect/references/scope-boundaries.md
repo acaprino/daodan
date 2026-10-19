@@ -32,7 +32,7 @@ Do not re-flag a smell that is fully visible inside one file without reference t
 ## Other neighbours
 
 - **Dead code, unused exports, orphan assets**: `senior-review:cleanup-auditor`. **Workspace hygiene** (tracked build output, `.gitignore`, scratch directories, git state): `repo-hygiene:workspace-auditor`. A duplicated representation that is simply unused is a cleanup finding, not a D3.
-- **Style and readability**: `clean-code:clean-code`. Renaming for clarity is not a structural finding.
+- **Style and readability**: `clean-code:readability-method`. Renaming for clarity is not a structural finding.
 - **Contract violations against a documented invariant**: `senior-review:logic-integrity-auditor`. That agent hunts code that *breaks* a documented rule. This one hunts a rule that has *two authoritative statements*. The two are complementary and neither subsumes the other.
 - **Persistence semantics**: `senior-review:data-integrity-auditor`. A derivable column with no constraint backing it is theirs. The same column with four repair functions around it is D4 here. When both apply, report D4 and note the overlap in Cross-Reviewer Notes.
 

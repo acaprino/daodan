@@ -1,5 +1,5 @@
 ---
-description: 'Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the /peer-review:review command during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).'
+description: 'Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).'
 mode: subagent
 permissions:
   - action: "external_directory"
@@ -91,7 +91,7 @@ Every non-ACCEPT verdict lives or dies on a locator, not on argument.
 
 Write the response file for the current round: `02-response.md` in round 1,
 `06-response-r2.md` in round 2, `08-response-r3.md` in round 3, exact path given by
-the invoking command. Check each finding's falsifier for admissibility before
+the invoking coordinator. Check each finding's falsifier for admissibility before
 touching the source, then investigate and verdict it. This agent never rules on the
 artifact's merits; it answers the findings raised against it.
 
@@ -130,7 +130,7 @@ Outcome: `OK | RESTATED | INADMISSIBLE`.
 - INADMISSIBLE: the falsifier still fails after the one restatement request. Record
   `INADMISSIBLE` in the ledger entry's admissibility field. Do not set the finding's
   state to UNTESTABLE yourself: recording the admissibility outcome is this agent's
-  job, the state transition belongs to the command (R9, R13).
+  job, the state transition belongs to the method (R9, R13).
 
 ## Evidence Rules
 
@@ -194,6 +194,6 @@ answered this round, update only the ledger entry fields this role owns: falsifi
 admissibility, respondent position, respondent evidence, restatements, and
 new evidence since previous round. Never write the finding's `claim` or `falsifier`
 text (carried verbatim per R10), never write `challenger evidence`, and never set
-`state`: state is computed from the ledger by the command (R13), not written
+`state`: state is computed from the ledger by the method (R13), not written
 freehand by any participant. Never edit the packet, the challenge file, the
 protocol files, or any run file other than your own response file.

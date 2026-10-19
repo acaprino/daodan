@@ -1,0 +1,47 @@
+name = "map-code"
+entrypoint = "map-code.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work"]
+
+[[phases]]
+id = "execute"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:work"]
+produces = ["artifact:result"]
+
+[dispatch]
+roles = [
+  "codebase-map/map-analyst",
+  "codebase-map/partition-behavior-worker",
+  "codebase-map/partition-quality-worker",
+  "codebase-map/partition-structure-worker",
+  "codebase-map/partition-synthesizer",
+  "codebase-map/semantic-interconnect-mapper",
+]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = [
+  "project",
+  "objective",
+  "scope",
+  "authorization",
+]
+outcomes = [
+  "scope-and-candidate-identified",
+  "deliveries-and-required-gates-accounted",
+  "limits-and-open-actions-visible",
+  "reviewers-use-isolated-contexts",
+  "every-partition-is-owned-by-one-worker",
+  "no-worker-writes-outside-its-partition-directory",
+  "synthesis-runs-after-every-partition-delivered",
+  "artifacts-published-under-xray-root",
+]
+artifacts = ["result"]
+schemas = []
+shared_schemas = ["project-protocol/contracts/work.toml", "project-protocol/contracts/project-result.toml"]

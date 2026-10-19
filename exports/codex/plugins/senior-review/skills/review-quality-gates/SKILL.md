@@ -2,7 +2,7 @@
 name: review-quality-gates
 description: >
   Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation.
-  TRIGGER WHEN: running /senior-review:team-review or /senior-review:code-review quality gates, or consolidating findings from parallel reviewers.
+  TRIGGER WHEN: running team-review (/daodan:review-branch) or code-review quality gates, or consolidating findings from parallel reviewers.
 ---
 
 <daodan_host_binding host="codex">
@@ -97,9 +97,9 @@ loaded by that step.
 | Preparing or dispatching reviewers with shared context | `references/context-sharing.md`: context artifacts, anchor routing per dimension, metrics, raw mode |
 | Consolidation | `references/verification-panel.md`: the four lenses, their gating, the cost guard and the completeness critic |
 | Writing a lens, critic or reviewer brief | `references/panel-and-critic-prompts.md` |
-| `/code-review` agent dispatch templates and Codebase Map context injection | `references/code-review-agents.md` |
-| `/code-review` native output and optional HTML view | `references/code-review-output.md` |
-| `/code-review --fix` and `--commit` remediation loop | `references/code-review-fix-loop.md` |
+| code-review agent dispatch templates and Codebase Map context injection | `references/code-review-agents.md` |
+| code-review native output and optional HTML view | `references/code-review-output.md` |
+| code-review `fix` and `commit` remediation loop | `references/code-review-fix-loop.md` |
 
 Lens 0 uses the declared `senior-review:premise-auditor` binding. Lenses 1 to 3,
 the critic and any inline brief use only the declared

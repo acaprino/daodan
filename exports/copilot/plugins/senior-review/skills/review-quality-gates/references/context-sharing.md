@@ -82,11 +82,11 @@ core governs everything here.
 
 ## Context Sharing Pattern
 
-When `/team-review` runs in pipeline mode (no `--no-context`), reviewers receive three context artifacts produced in Phase 1:
+When `team-review` runs in pipeline mode (no `--no-context`), reviewers receive three context artifacts produced in Phase 1:
 
-1. **Codebase Map output** (from `codebase-map`) at `$XRAY_RUN_DIR` when the command started the run itself (`/team-review` Phase 1a), or the `.codebase-map/` mirror when consuming an existing analysis (`/code-review` Step 2). A command that started a run never reads the mirror. Files: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and optionally `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
+1. **Codebase Map output** (from `codebase-map`) at `$XRAY_RUN_DIR` when the command started the run itself (`team-review` Phase 1a), or the `.codebase-map/` mirror when consuming an existing analysis (`code-review` Step 2). A command that started a run never reads the mirror. Files: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and optionally `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
 2. **Interconnect map** at `.team-review/02-interconnect.md` (from `codebase-map:semantic-interconnect-mapper`): contracts (formal / structural / implicit), invariants, domain rules, assumptions (verified / documented / unverified), integration hot-spots, change impact radius.
-3. **Knowledge provenance** at `.team-review/01-knowledge-provenance.md` (from `/team-review` Phase 1d): which concepts each discovery branch found, which neither found, and which they disagree about.
+3. **Knowledge provenance** at `.team-review/01-knowledge-provenance.md` (from `team-review` Phase 1d): which concepts each discovery branch found, which neither found, and which they disagree about.
 
 A fourth artifact, `.team-review/01b-independent-claims.md`, is derived in Phase 1c by `senior-review:premise-auditor` while blind to both of the above, and joined into `01-knowledge-provenance.md` in Phase 1d (contradictions become `disputed` rows).
 

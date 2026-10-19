@@ -71,13 +71,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ### 7c. Cleanup Phases
 
-Run this sub-step only when the accepted findings include codebase-hygiene items (dead code, orphan assets, unused or phantom deps, stale docs). Skip it entirely otherwise. Workspace hygiene that the filesystem and git decide alone (generated artifacts tracked in VCS, `.gitignore`, scratch directories, git auxiliary state) is applied by `/repo-hygiene:tidy`, never here. This is the only place in the marketplace that performs bulk removal of application code (test-file bulk removal is owned by the `testing` plugin's gated `/testing:test-consolidate` workflow); detection lives in `senior-review:cleanup-auditor` and in Agent B2 above, and neither of them deletes anything.
+Run this sub-step only when the accepted findings include codebase-hygiene items (dead code, orphan assets, unused or phantom deps, stale docs). Skip it entirely otherwise. Workspace hygiene that the filesystem and git decide alone (generated artifacts tracked in VCS, `.gitignore`, scratch directories, git auxiliary state) is applied by the tidy entry of `repo-hygiene:repo-hygiene`, never here. This is the only place in the marketplace that performs bulk removal of application code (test-file bulk removal is owned by the `testing` plugin's gated `testing:test-remediation-method`, mode `consolidate`); detection lives in `senior-review:cleanup-auditor` and in Agent B2 above, and neither of them deletes anything.
 
 #### Critical rules
 
 These are non-negotiable. Removal at this scale is safe only because of them.
 
-1. **`--commit` and accepted severities required.** Reuse the accepted finding list from 7a or the identified lifecycle plan. Fixes from 7b must have completed and been committed when needed; otherwise record the step as not applicable. Announce in assess when this method is unavailable under plain `--fix`.
+1. **A `commit` grant and accepted severities required.** Reuse the accepted finding list from 7a or the identified lifecycle plan. Fixes from 7b must have completed and been committed when needed; otherwise record the step as not applicable. Announce in assess when this method is unavailable under a `fix` grant alone.
 2. **Execution preflight.** Load the `project-protocol:project-protocol` skill. Require an exclusively owned isolated Git worktree with a clean tree, explicit scope and commit authorization. A shared checkout or dirty worktree is not eligible for hard reset.
 3. **Pre-phase recovery point.** Immediately before each phase capture `pre_phase_sha` and its owned file manifest. Successful prior phases belong to this recovery point and must survive.
 4. **Candidate gate before commit.** Run the project's recorded build and meaningful tests for the candidate snapshot. A remote gate must identify this exact snapshot, required command/configuration, job and successful result. Old green CI or collection alone cannot pass it. On failure use the common protocol's owned recovery to `pre_phase_sha`, verify restoration and halt. No commit exists for the failed candidate yet.
@@ -123,6 +123,6 @@ Highest false-positive rate of the five, so removal is opt-in and gated per item
 
 After the last phase, or at the first gate failure, present one row per phase with status, items removed, and the commit sha, plus the behavior/failure-mode gate evidence and descriptive before-and-after test counts and the reverted phase if any. Then run the alignment check: Grep the removed symbols, paths, and dependency names against `CLAUDE.md` and propose updates for any hit, since a cleanup that leaves the project instructions describing deleted code has only moved the problem.
 
-Four phase names that used to live here now belong to `/repo-hygiene:tidy`: `garbage`, `gitignore`, `scratch` and `git-state`. They left because the filesystem and git decide them without reading a symbol, so the build-and-test gate above protects nothing there. A hygiene finding naming one of those is not this loop's to apply.
+Four phase names that used to live here now belong to the tidy entry of `repo-hygiene:repo-hygiene`: `garbage`, `gitignore`, `scratch` and `git-state`. They left because the filesystem and git decide them without reading a symbol, so the build-and-test gate above protects nothing there. A hygiene finding naming one of those is not this loop's to apply.
 
 This step is pure subtraction. It does not refactor architecture, does not touch test files unless they reference removed symbols, and does not run a bundle analyzer.

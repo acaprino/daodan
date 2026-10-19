@@ -1,0 +1,77 @@
+name = "review-branch"
+entrypoint = "review-branch.md"
+
+[[phases]]
+id = "prepare"
+isolation = "shared"
+produces = ["artifact:work"]
+
+[[phases]]
+id = "execute"
+needs = ["prepare"]
+isolation = "shared"
+consumes = ["artifact:work"]
+produces = ["artifact:result"]
+
+[dispatch]
+roles = [
+  "abstraction-architect/abstraction-architect-agent",
+  "codebase-map/map-analyst",
+  "codebase-map/semantic-interconnect-mapper",
+  "platform-engineering/platform-reviewer",
+  "react-development/react-performance-optimizer",
+  "repo-hygiene/workspace-auditor",
+  "senior-review/api-contract-auditor",
+  "senior-review/chicken-egg-detector",
+  "senior-review/cleanup-auditor",
+  "senior-review/code-auditor",
+  "senior-review/data-integrity-auditor",
+  "senior-review/distributed-flow-auditor",
+  "senior-review/logic-integrity-auditor",
+  "senior-review/premise-auditor",
+  "senior-review/resource-lifecycle-auditor",
+  "senior-review/security-auditor",
+  "senior-review/temporal-resilience-auditor",
+  "senior-review/ui-race-auditor",
+  "testing/test-suite-auditor",
+  "typescript-development/type-safety-auditor",
+]
+isolated = true
+inline_workers = true
+
+[contract]
+inputs = [
+  "project",
+  "objective",
+  "scope",
+  "authorization",
+]
+outcomes = [
+  "scope-and-candidate-identified",
+  "deliveries-and-required-gates-accounted",
+  "limits-and-open-actions-visible",
+  "reviewers-use-isolated-contexts",
+  "every-selected-dimension-is-dispatched-exactly-once",
+  "every-expected-reviewer-is-delivered-or-failed",
+  "consolidation-runs-only-after-the-delivery-barrier",
+  "cross-examination-runs-in-fresh-contexts",
+  "every-retained-finding-carries-evidence",
+  "only-the-consolidator-writes-the-final-report",
+]
+artifacts = ["result"]
+schemas = []
+shared_schemas = [
+  "skill-catalog/contracts/knowledge-selection.toml",
+  "skill-catalog/contracts/knowledge-input.toml",
+  "skill-catalog/contracts/knowledge-assignment.toml",
+  "skill-catalog/contracts/knowledge-usage.toml",
+  "project-protocol/contracts/work.toml",
+  "project-protocol/contracts/project-result.toml",
+  "senior-review/contracts/review-brief.toml",
+  "senior-review/contracts/reviewer-binding.toml",
+  "senior-review/contracts/reviewer-selection.toml",
+  "senior-review/contracts/evidenced-finding.toml",
+  "senior-review/contracts/reviewer-result.toml",
+  "senior-review/contracts/delivery-ledger.toml",
+  "senior-review/contracts/final-report.toml",
+]

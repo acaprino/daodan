@@ -245,6 +245,12 @@ Claude Code, e i verbi li evitano.
    per area che scrive le schede della mappa. I router nascono con i workflow
    della fase 3, perché sono il corpo stesso di quei comandi.
 3. **Ingresso.** Il plugin `daodan`; i workflow tolti dagli altri plugin.
+   Consegnato in 38.0.0: i 22 comandi; il metodo che stava nei comandi degli
+   specialisti spostato nelle loro skill; le autorizzazioni chieste a metà run
+   registrate come `grants` del protocollo; la nota di registrazione MCP anche
+   sulle skill; il linter dei riferimenti ai componenti, che rifiuta un comando o
+   una skill che non esiste. I router di `write-docs`, `tidy-repo` e
+   `get-second-opinion` sono il corpo dei loro comandi.
 4. **Test e documentazione** sui cinque host. Marketplace 38.0.0.
 5. **Prova.** Stesso progetto e stesso bug della prima prova, da `init-project` a
    `finish-task`, in sessione interattiva e poi headless. Riesce se la correzione passa

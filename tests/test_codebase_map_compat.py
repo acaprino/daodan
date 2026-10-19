@@ -31,6 +31,9 @@ ROLES = (
     "semantic-interconnect-mapper",
 )
 WORKFLOWS = ("analyze", "team-analyze")
+# Since 38.0.0 both entry units are loaded by one daodan command, which replaced
+# the two codebase-map wrappers and runs the method in its orchestrating context.
+ENTRY = "map-code"
 ADAPTERS = REPO_ROOT / "adapters"
 
 
@@ -52,7 +55,7 @@ class CodebaseMapExportTests(unittest.TestCase):
         for host, adapter in cls.adapters.items():
             for plugin in (cls.canonical, cls.registry["abstraction-architect"],
                            cls.registry["project-lifecycle"], cls.registry["project-knowledge"],
-                           cls.registry["senior-review"]):
+                           cls.registry["senior-review"], cls.registry["daodan"]):
                 package = Path(cls.temp.name) / host / plugin.name
                 render_plugin(
                     plugin, adapter, package, adapters_root=ADAPTERS,
@@ -129,19 +132,29 @@ class CodebaseMapExportTests(unittest.TestCase):
 
     def test_shared_sources_keep_the_complete_canonical_execution(self):
         references = self.canonical.root / "skills/map-method/references"
+        entry = self.registry["daodan"]
+        wrapper = read(entry.root / "workflows" / f"{ENTRY}.md")
+        spec = next(item for item in entry.workflows if item.name == ENTRY)
+        # The command loads the method in the coordinator's own context: every
+        # phase of its graph is shared, and only the dispatched workers isolate.
+        self.assertTrue(spec.phases)
+        self.assertTrue(all(phase.isolation == "shared" for phase in spec.phases))
+        self.assertTrue(spec.dispatch.isolated)
+        self.assertIn("Load the skill `codebase-map:map-method`", wrapper)
+        self.assertNotIn("## Pre-flight", wrapper)
+        self.assertNotIn("## Method loads", wrapper)
         for workflow in WORKFLOWS:
             with self.subTest(workflow=workflow):
                 source = read(references / f"entry-{workflow}.md")
-                wrapper = read(self.canonical.root / "workflows" / f"{workflow}.md")
                 self.assertFalse(source.startswith("---\n"))
                 self.assertIn("## Method loads", source)
-                self.assertIn("in this same coordinator context", wrapper)
-                self.assertNotIn("## Pre-flight", wrapper)
+                self.assertIn(f"references/entry-{workflow}.md", wrapper)
                 if workflow == "analyze":
                     for section in ("## Coordinator boundary", "## Isolated analysis", "## Publish and completion"):
                         self.assertIn(section, source)
                         self.assertNotIn(section, wrapper)
                     self.assertIn("codebase-map:map-analyst", source)
+                    self.assertIn("nested loads in the coordinator context", " ".join(source.split()))
                 else:
                     self.assertIn("## CRITICAL RULES", source)
         for role in ROLES:
@@ -154,29 +167,37 @@ class CodebaseMapExportTests(unittest.TestCase):
                 self.assertIn("in this same worker context", wrapper)
 
     def test_all_five_hosts_ship_complete_canonical_entries_and_loaded_resources(self):
+        source = read(self.registry["daodan"].root / "workflows" / f"{ENTRY}.md")
+        entry_method = source.split("\n---\n", 1)[1].lstrip("\n")
         for host in HOSTS:
+            with self.subTest(host=host, workflow=ENTRY):
+                wrapper = read(self.component(host, "daodan", "workflows", ENTRY))
+                if host == "copilot":
+                    self.assertIn(f"daodan:{ENTRY}-coordinator", wrapper)
+                    wrapper = read(self.package(host, "daodan") /
+                                   f"agents/{ENTRY}-coordinator.agent.md")
+                self.assertIn("## Execution harness", wrapper)
+                self.assertIn("`execute`: runs in the orchestrating context", wrapper)
+                self.assertIn("Every dispatched worker runs in its own", wrapper)
+                self.assertIn("`codebase-map:map-analyst`", wrapper)
+                self.assertEqual(canonical_markdown(wrapper.split("\n## Method\n\n", 1)[1]),
+                                 canonical_markdown(self.adapt_placeholders(host, entry_method)))
             for workflow in WORKFLOWS:
                 with self.subTest(host=host, workflow=workflow):
                     resource = f"entry-{workflow}.md"
                     shared = self.assert_shared_resource(host, resource)
                     self.assertIn("## Coordinator boundary" if workflow == "analyze"
                                   else "## CRITICAL RULES", shared)
-                    wrapper = read(self.component(host, "codebase-map", "workflows", workflow))
-                    if host == "copilot":
-                        self.assertIn(f"codebase-map:{workflow}-coordinator", wrapper)
-                        wrapper = read(self.package(host, "codebase-map") /
-                                       f"agents/{workflow}-coordinator.agent.md")
-                    self.assertIn("## Execution harness", wrapper)
-                    self.assertIn(resource, wrapper)
-                    self.assertIn("## Method loads", wrapper)
-                    self.assertIn("same coordinator context", wrapper)
-                    source = read(self.canonical.root / "workflows" / f"{workflow}.md")
-                    method = source.split("\n---\n", 1)[1].lstrip("\n")
-                    self.assertEqual(canonical_markdown(wrapper.split("\n## Method\n\n", 1)[1]),
-                                     canonical_markdown(self.adapt_placeholders(host, method)))
+                    self.assertIn(f"references/{resource}", wrapper)
                     if workflow == "analyze":
-                        self.assertIn("`analysis`: one `map-analyst` in an isolated context", wrapper)
-                        self.assertIn("`publish`: runs in the orchestrating context; needs `analysis`", wrapper)
+                        # Since 38.0.0 no phase graph renders the old command's
+                        # analysis and publish phases: the shipped unit orders one
+                        # isolated analyst before publication by the coordinator.
+                        prose = " ".join(shared.split())
+                        self.assertIn("dispatch one isolated `codebase-map:map-analyst`", prose)
+                        self.assertIn("publish only when the gate permits it", prose)
+                        self.assertLess(shared.index("## Isolated analysis"),
+                                        shared.index("## Publish and completion"))
             for role in ROLES:
                 with self.subTest(host=host, role=role):
                     resource = f"role-{role}.md"

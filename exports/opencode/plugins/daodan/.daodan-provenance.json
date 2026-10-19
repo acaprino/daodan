@@ -1,0 +1,32 @@
+{
+  "adapterVersion": "1.0.0",
+  "coreDigest": "sha256:490d4e6c423abc72674e9d7a125fc1587e19562d08abb3f97c38d545434bb9bd",
+  "harnessStrategies": {
+    "brainstorm-idea": "parallel-subagents",
+    "check-health": "parallel-subagents",
+    "continue-task": "parallel-subagents",
+    "finish-task": "parallel-subagents",
+    "fix-bug": "parallel-subagents",
+    "get-second-opinion": "parallel-subagents",
+    "humanize-text": "parallel-subagents",
+    "init-project": "parallel-subagents",
+    "investigate-problem": "parallel-subagents",
+    "map-code": "parallel-subagents",
+    "new-feature": "parallel-subagents",
+    "onboard-project": "parallel-subagents",
+    "record-decision": "parallel-subagents",
+    "refactor-code": "parallel-subagents",
+    "review-branch": "parallel-subagents",
+    "review-changes": "parallel-subagents",
+    "run-maintenance": "parallel-subagents",
+    "show-status": "parallel-subagents",
+    "sync-upstream": "parallel-subagents",
+    "tidy-repo": "parallel-subagents",
+    "write-docs": "parallel-subagents",
+    "write-tests": "parallel-subagents"
+  },
+  "host": "opencode",
+  "overrides": [],
+  "plugin": "daodan",
+  "version": "1.0.0"
+}

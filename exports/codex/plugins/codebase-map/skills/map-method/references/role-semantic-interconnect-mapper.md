@@ -74,7 +74,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 You build the context that makes downstream reviewers **effective**. You do NOT review code -- you produce a precise map of the contracts, invariants, domain rules, and integration points that reviewers then use to hunt for violations.
 
-Your output is the single most important document for Phase 2 of `/team-review`. Every reviewer reads it. If it is vague, reviewers produce vague findings. If it is precise, reviewers find real bugs.
+Your output is the single most important document for Phase 2 of `team-review`. Every reviewer reads it. If it is vague, reviewers produce vague findings. If it is precise, reviewers find real bugs.
 
 ## PRIME DIRECTIVES
 
@@ -91,13 +91,13 @@ Before starting, locate and read these inputs. The invoking command specifies wh
 
 1. **Primary context source** (one of the following, required):
 
-   **1a. Codebase Map run directory** (used by `/team-review` and `/team-analyze`): the `.codebase-map/runs/<run-id>/` directory the prompt names, or the `.codebase-map/` mirror for a one-shot request that wants the latest published run
+   **1a. Codebase Map run directory** (used by `team-review` and the team entry): the `.codebase-map/runs/<run-id>/` directory the prompt names, or the `.codebase-map/` mirror for a one-shot request that wants the latest published run
    - `01-structure.md` -- file inventory, dependency graph, entry points
    - `02-interfaces.md` -- public APIs, exported symbols, contracts declared explicitly
    - `05-risks.md` -- anti-patterns, red flags identified
    - If full-depth ran, also: `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`
 
-   **1b. Context brief** (used by `/project-knowledge:guide`): the scoped context_path supplied by the caller, produced by its codebase-explorer inside the owned run. It covers project purpose, tech stack, directory structure, entry points, data model and workflows within the requested scope.
+   **1b. Context brief** (used by project-knowledge's guide method): the scoped context_path supplied by the caller, produced by its codebase-explorer inside the owned run. It covers project purpose, tech stack, directory structure, entry points, data model and workflows within the requested scope.
 
    Read whichever source the prompt points you to. If neither is available, stop and report the missing prerequisite.
 
@@ -273,9 +273,9 @@ This is the blast radius the reviewer uses to calibrate severity.
 ## OUTPUT FORMAT
 
 Write a single file to the path specified in your prompt. Default paths by invoker:
-- `/team-review`: `.team-review/02-interconnect.md`
-- `/project-knowledge:guide`: the caller's explicit owned report_path inside its run
-- `/team-analyze`: `.codebase-map/runs/<run-id>/08-interconnect-map.md`
+- `team-review`: `.team-review/02-interconnect.md`
+- project-knowledge's guide method: the caller's explicit owned report_path inside its run
+- the team entry: `.codebase-map/runs/<run-id>/08-interconnect-map.md`
 
 Follow this exact structure with stable anchors regardless of output path:
 
@@ -362,7 +362,7 @@ Follow this exact structure with stable anchors regardless of output path:
 
 ## CALIBRATION
 
-**Target length for the output file:** 400-1200 lines for a medium review (5-15 files). Scale up or down with scope. Err on precision over completeness -- reviewers need signal, not noise. Under `/team-analyze`, scale with the number of cross-partition edges, not with the codebase: a map that lists partition-internal contracts has widened past its scope.
+**Target length for the output file:** 400-1200 lines for a medium review (5-15 files). Scale up or down with scope. Err on precision over completeness -- reviewers need signal, not noise. Under the team entry, scale with the number of cross-partition edges, not with the codebase: a map that lists partition-internal contracts has widened past its scope.
 
 **Empty sections are acceptable.** If no cross-component invariants exist, write `*(none identified)*` under that section and move on. Do NOT invent contracts to fill space.
 

@@ -10,8 +10,8 @@ For each case in `cases/`:
 
 1. **Prepare the target.** Check out the case's `repo` at `review_rev` in a scratch worktree (`git worktree add <tmp> <review_rev>`). The bugs listed in the case are present at that revision.
 2. **Run one command per scorecard row**, scoped as the case specifies:
-   - `/senior-review:code-review` (scope per the case's `review_scope`)
-   - `/senior-review:team-review <review_scope>`
+   - `/daodan:review-changes` (scope per the case's `review_scope`)
+   - `/daodan:review-branch <review_scope>`
    - Claude Code's built-in `/code-review` as the vanilla baseline
    Run each in a FRESH session so no context leaks between runs, and never in the same session that is scoring.
 3. **Score against the ground truth.** For every bug in the case's table: `found` (a finding matches the defect, regardless of wording), `partial` (the right location or mechanism but the wrong conclusion), `missed`. Matching is by mechanism, not by phrasing.

@@ -8,7 +8,7 @@ doc-assets, and stale git state.
 
 | | |
 |---|---|
-| **Command** | `/repo-hygiene:tidy` |
+| **Entry** | `/daodan:tidy-repo`, which follows the skill's `references/tidy.md` |
 | **Agent** | `repo-hygiene:workspace-auditor` |
 | **Skill** | `repo-hygiene:repo-hygiene` |
 | **Dependencies** | none |
@@ -48,11 +48,12 @@ consequential than a dead export, and it still belongs here, because deciding it
 C5 protects `.daodan/` and `.codebase-map/` by name, plus any directory containing
 a `.daodan-root` sentinel and its ancestors. It never proposes removing these
 roots and does not interpret protocol states. Classifying run evidence, resume
-data and concluded output belongs to [project-lifecycle:consolidate](project-lifecycle.md).
+data and concluded output belongs to [project-lifecycle](project-lifecycle.md)'s retention
+method (`references/retention.md` of `project-lifecycle:lifecycle-method`).
 
 **Two profiles, one set of definitions.** The full profile runs over the working tree.
 The lite profile runs over the files a diff adds, and is what the inline hygiene pass
-of `/senior-review:code-review` and `/senior-review:pr-review` loads. C4 through C7 are
+of the code-review and pr-review variants of `senior-review:review-method` loads. C4 through C7 are
 absent from the lite profile on purpose: they are repository-historical, so a diff under
 review cannot have caused them, and reporting them there attributes old debt to an
 innocent change.
@@ -80,15 +81,17 @@ takes its uncommitted files with it, and a deleted branch survives only in a ref
 expires. The rollback mechanism the command promises does not reach that far, so the
 command does not go there. The findings carry the commands; the user runs them.
 
-## `/repo-hygiene:tidy`
+## `/daodan:tidy-repo`
 
-```
-/repo-hygiene:tidy [path] [--fix] [--commit] [--phases=garbage,gitignore,scratch,git-state]
-```
+The plugin has no command of its own. `/daodan:tidy-repo` loads `repo-hygiene:repo-hygiene`
+and follows its `references/tidy.md`, beside the other owners' detections, in one
+preview. The target is the repository root or a path; text naming phases restricts
+them.
 
-Detects and reports by default. `--fix` applies and leaves the working tree modified
-with no commits. `--commit` implies `--fix` and adds one commit per phase. The flags
-mean exactly what they mean in `/senior-review:code-review`.
+Detects and reports by default. Applying is one question asked after the report:
+applied without commits, the working tree is left modified with no commits; applied
+with commits, one commit per phase is added. The two answers mean exactly what
+applying and committing mean in `senior-review:review-method`.
 
 Four phases, run in order: `garbage`, `gitignore`, `scratch`, `git-state`.
 
@@ -100,17 +103,17 @@ sitting on disk.
 **Untracked removals go to quarantine**, at `.repo-hygiene/quarantine/<timestamp>/`,
 preserving relative paths. Git holds no copy of an untracked file, so deletion would be
 the one irreversible operation in the command, and it is not taken. This is what makes
-`--fix` safe without commits: everything it does is undoable by hand.
+applying without commits safe: everything it does is undoable by hand.
 
-**`--commit` requires a clean tree** because its per-phase commits are its revert
-mechanism and an unrelated modified file would be swept into one. `--fix` has no such
-requirement: it stages nothing and keeps untracked removals in quarantine. The
+**Applying with commits requires a clean tree** because its per-phase commits are its
+revert mechanism and an unrelated modified file would be swept into one. Applying
+without commits has no such requirement: it stages nothing and keeps untracked removals in quarantine. The
 accepted item list still bounds its changes. Staging is always by explicit path,
 never `git add -A`.
 
 ## Inside a team review
 
-`/senior-review:team-review` spawns `repo-hygiene:workspace-auditor` as an always-on
+The branch review of `/daodan:review-branch` spawns `repo-hygiene:workspace-auditor` as an always-on
 dimension alongside `senior-review:cleanup-auditor`. The two perimeters are disjoint by
 construction, so consolidation has nothing to deduplicate between them. **A finding
 appearing in both reports is a boundary violation to investigate, not an `echo` to
@@ -120,7 +123,8 @@ fold.**
 
 - [senior-review](senior-review.md): everything hygiene-adjacent that needs source
   comprehension, plus Step 7c, which removes application code in five gated phases.
-- [testing](testing.md): `/testing:test-consolidate` owns bulk removal of test files.
+- [testing](testing.md): `testing:test-remediation-method` in mode `consolidate`, run by
+  `/daodan:tidy-repo`, owns bulk removal of test files.
 - [dependency-audit](dependency-audit.md): CVEs, licenses and version drift from each
   ecosystem's own tooling, which is a different question from whether a dependency is
   used.
@@ -131,7 +135,7 @@ fold.**
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `1.3.5`. **Source:** [plugin.toml](<../../plugins/repo-hygiene/plugin.toml>).
+**Version:** `2.0.0`. **Source:** [plugin.toml](<../../plugins/repo-hygiene/plugin.toml>).
 
 ### Required dependencies
 
@@ -160,34 +164,8 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `repo-hygiene:repo-hygiene` | Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: running /repo-hygiene:tidy or the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review). | [repo-hygiene](<../../plugins/repo-hygiene/skills/repo-hygiene/SKILL.md>) |
-| Role | `repo-hygiene:workspace-auditor` | Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches; spawned in review pipelines. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (use /repo-hygiene:tidy). | [workspace-auditor](<../../plugins/repo-hygiene/roles/workspace-auditor.md>) |
-| Workflow | `repo-hygiene:tidy` | Tidy the workspace: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: cleaning up a repository, removing committed build output, auditing .gitignore, clearing scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use /senior-review:code-review) or test consolidation (use /testing:test-consolidate). | [tidy](<../../plugins/repo-hygiene/workflows/tidy.md>) |
-
-### Workflow contracts
-
-Contracts describe observable outputs; Markdown bodies define decisions,
-flags, safety gates and execution. Declared `invoke` execution is unsupported.
-
-#### `repo-hygiene:tidy`
-
-**Arguments:** `[path] [--fix] [--commit] [--phases=garbage,gitignore,scratch,git-state]`
-
-| Contract | Value |
-|---|---|
-| Inputs | `repository` |
-| Outcomes | `tidy-completed` |
-| Artifacts | `tidy-report` |
-| Schemas | None declared |
-| Declared workers | `repo-hygiene/workspace-auditor` |
-| Composed worker isolation | See phase isolation below |
-| Task-specific isolated workers | Not declared |
-| Sidecar | [tidy.toml](<../../plugins/repo-hygiene/workflows/tidy.toml>) |
-
-| Phase | Needs | Dispatch | Isolation | Join | Concurrency |
-|---|---|---|---|---|---|
-| `scope` | None | None | `shared` | None declared | `preferred` |
-| `review` | `scope` | `workspace-auditor` | `required` | None declared | `preferred` |
+| Skill | `repo-hygiene:repo-hygiene` | Check catalog for workspace tidying: filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: running the tidy method (references/tidy.md) behind /daodan:tidy-repo or a lifecycle plan's workspace operations, or the repo-hygiene dimension of a review pipeline. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review), or test consolidation (use testing:test-remediation-method). | [repo-hygiene](<../../plugins/repo-hygiene/skills/repo-hygiene/SKILL.md>) |
+| Role | `repo-hygiene:workspace-auditor` | Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo). | [workspace-auditor](<../../plugins/repo-hygiene/roles/workspace-auditor.md>) |
 
 ### Host exports
 
@@ -200,10 +178,10 @@ workers or phase fan-out; the host reference explains the entry artifacts.
 
 | Host | Package | Binding | Selected workflow strategy |
 |---|---|---|---|
-| claude | [exports/claude/plugins/repo-hygiene](<../../exports/claude/plugins/repo-hygiene>) | `native` | `tidy: native-team` |
-| copilot | [exports/copilot/plugins/repo-hygiene](<../../exports/copilot/plugins/repo-hygiene>) | `native` | `tidy: parallel-subagents` |
-| codex | [exports/codex/plugins/repo-hygiene](<../../exports/codex/plugins/repo-hygiene>) | `adapted` | `tidy: parallel-subagents` |
-| pi | [exports/pi/plugins/repo-hygiene](<../../exports/pi/plugins/repo-hygiene>) | `adapted` | `tidy: parallel-subagents` |
-| opencode | [exports/opencode/plugins/repo-hygiene](<../../exports/opencode/plugins/repo-hygiene>) | `native` | `tidy: parallel-subagents` |
+| claude | [exports/claude/plugins/repo-hygiene](<../../exports/claude/plugins/repo-hygiene>) | `native` | No workflow entry points |
+| copilot | [exports/copilot/plugins/repo-hygiene](<../../exports/copilot/plugins/repo-hygiene>) | `native` | No workflow entry points |
+| codex | [exports/codex/plugins/repo-hygiene](<../../exports/codex/plugins/repo-hygiene>) | `adapted` | No workflow entry points |
+| pi | [exports/pi/plugins/repo-hygiene](<../../exports/pi/plugins/repo-hygiene>) | `adapted` | No workflow entry points |
+| opencode | [exports/opencode/plugins/repo-hygiene](<../../exports/opencode/plugins/repo-hygiene>) | `native` | No workflow entry points |
 
 <!-- daodan:reference:end -->

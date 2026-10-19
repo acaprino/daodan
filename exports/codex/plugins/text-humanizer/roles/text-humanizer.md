@@ -1,6 +1,6 @@
 ---
 name: text-humanizer
-description: 'Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use clean-code:clean-code instead).'
+description: 'Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

@@ -11,7 +11,7 @@ Use a scratch workspace with `packages/api` and `packages/web` registered in the
 ### Session 1: invocation alone
 
 ```
-/codebase-map:team-analyze . --depth=lite
+/daodan:map-code . with the team entry at lite depth
 ```
 
 Give no subsequent approval. Keep the transcript and completed run for Session 4.
@@ -19,7 +19,7 @@ Give no subsequent approval. Keep the transcript and completed run for Session 4
 ### Session 2: explicit checkpoint, ordinary chat
 
 ```
-/codebase-map:team-analyze . --depth=lite
+/daodan:map-code . with the team entry at lite depth
 Show me the partition plan and wait for my approval before starting workers.
 ```
 
@@ -28,7 +28,7 @@ After the question, reply `yes, proceed`. Do not add `--yes` or repeat the comma
 ### Session 3: explicit auto-selection
 
 ```
-/codebase-map:team-analyze . --depth=lite --yes
+/daodan:map-code . with the team entry at lite depth, proceeding with the recommended scope
 ```
 
 ### Session 4: update choice already made
@@ -36,7 +36,7 @@ After the question, reply `yes, proceed`. Do not add `--yes` or repeat the comma
 In a copy of Session 1's completed workspace, change the body of one private function in `packages/api` that no other file imports, leaving the workspace manifest and `packages/web` unchanged. This keeps the affected-file ratio below the full-run threshold. Start a fresh conversation:
 
 ```
-/codebase-map:team-analyze . --depth=lite
+/daodan:map-code . with the team entry at lite depth
 Use a partition-level update from the previous run if eligible; otherwise ask me before a full run.
 ```
 
@@ -45,13 +45,13 @@ Use a partition-level update from the previous run if eligible; otherwise ask me
 In a fresh fixture:
 
 ```
-/codebase-map:team-analyze . --depth=lite --update --yes
+/daodan:map-code . with the team entry at lite depth, as an update that requires the previous run, proceeding with the recommended scope
 ```
 
 ### Session 6: later instruction requires a question
 
 ```
-/codebase-map:team-analyze . --depth=lite --yes
+/daodan:map-code . with the team entry at lite depth, proceeding with the recommended scope
 Before dispatching any workers, show me the partition plan and wait for my approval.
 ```
 
