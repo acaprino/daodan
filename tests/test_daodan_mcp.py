@@ -1,6 +1,6 @@
 """MCP server declarations: a manifest where the host starts them, a note where it does not.
 
-The motivating case is `peer-review`, whose `.mcp.json` and server lived at the kernel root
+The motivating case was `peer-review`, now shipped by Daodan, whose `.mcp.json` and server lived at the kernel root
 and shipped nowhere after the universal cutover: the compiler had no MCP concept, so the
 package rendered cleanly and the workflow's transport calls could never connect.
 """
@@ -31,9 +31,6 @@ DECLARATION = (
     '\n[[mcp.servers]]\nname = "example-tools"\ncommand = "uv"\n'
     'args = ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/server.py"]\n'
 )
-PEER_ROOT = REPO_ROOT / "plugins/peer-review"
-PEER_SCRIPTS = Path("skills/cross-model-peer-review/scripts")
-PEER_SERVER = (PEER_SCRIPTS / "server.py").as_posix()
 
 
 class McpRenderingTests(unittest.TestCase):
@@ -121,84 +118,16 @@ class McpRenderingTests(unittest.TestCase):
                     self.assertNotIn("before running this workflow", note)
 
 
-class PeerReviewMcpRenderingTests(unittest.TestCase):
+class McpBindingGateTests(unittest.TestCase):
+    """No kernel of this marketplace ships a server since `peer-review` and `moe` moved
+    to Daodan, whose suite pins their real rendering; the compiler gate stays pinned
+    here on the fixture."""
+
     @classmethod
     def setUpClass(cls):
         cls.temp = Path(tempfile.mkdtemp())
         cls.addClassCleanup(shutil.rmtree, cls.temp, True)
-        cls.plugin = load_plugin(PEER_ROOT)
-        cls.packages = {}
-        for host in HOSTS:
-            live = cls.temp / host / cls.plugin.name
-            publish_plugin(cls.plugin, load_adapter(ADAPTERS, host), live, adapters_root=ADAPTERS)
-            cls.packages[host] = live
-
-    def catalog(self, host):
-        return json.loads(render_catalog(
-            host, [self.plugin], "1.0.0", {self.plugin.name: self.packages[host]},
-        ))
-
-    def test_real_kernel_declares_the_shipped_server_as_a_required_capability(self):
-        self.assertIn("mcp.servers", self.plugin.capabilities.required)
-        self.assertEqual(
-            [(server.name, server.command, server.args) for server in self.plugin.mcp_servers],
-            [("peer-review", "uv", ("run", "--script", "${CLAUDE_PLUGIN_ROOT}/" + PEER_SERVER))],
-        )
-
-    def test_server_and_local_helpers_ship_unchanged_on_every_host(self):
-        self.assertTrue((PEER_ROOT / PEER_SERVER).is_file(), PEER_SERVER)
-        helpers = sorted((PEER_ROOT / PEER_SCRIPTS).rglob("*.py"))
-        for host, package in self.packages.items():
-            for source in helpers:
-                relative = source.relative_to(PEER_ROOT)
-                with self.subTest(host=host, helper=relative.as_posix()):
-                    rendered = package / relative
-                    self.assertTrue(rendered.is_file(), str(rendered))
-                    self.assertEqual(rendered.read_text(encoding="utf-8"), source.read_text(encoding="utf-8"))
-
-    def test_manifest_hosts_expose_the_actual_peer_review_command(self):
-        manifest = json.loads((self.packages["claude"] / ".mcp.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest, {"mcpServers": {"peer-review": {
-            "command": "uv",
-            "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/" + PEER_SERVER],
-        }}})
-        self.assertEqual(self.catalog("claude")["plugins"][0]["mcpServers"], "./.mcp.json")
-        self.assertEqual(self.catalog("opencode")["daodan"]["plugins"]["peer-review"]["mcp"], [{
-            "name": "peer-review",
-            "command": ["uv", "run", "--script", "<plugin-root>/" + PEER_SERVER],
-        }])
-        for host in ("claude", "opencode"):
-            for workflow in self.plugin.components.workflows:
-                with self.subTest(host=host, workflow=workflow):
-                    path = self.packages[host] / f"commands/{workflow}.md"
-                    self.assertNotIn("register that command", path.read_text(encoding="utf-8"))
-
-    def test_registration_hosts_bind_every_workflow_to_the_real_server_command(self):
-        entries = {
-            "codex": "skills/{workflow}-workflow/SKILL.md",
-            "copilot": "prompts/{workflow}.prompt.md",
-            "pi": "prompts/peer-review-{workflow}.md",
-        }
-        roots = {"codex": "<plugin-root>", "copilot": "${PLUGIN_ROOT}", "pi": "<plugin-root>"}
-        for host, entry in entries.items():
-            package = self.packages[host]
-            self.assertFalse((package / ".mcp.json").exists(), host)
-            for workflow in self.plugin.components.workflows:
-                paths = [package / entry.format(workflow=workflow)]
-                if host == "copilot":
-                    paths.append(package / f"agents/{workflow}-coordinator.agent.md")
-                for path in paths:
-                    with self.subTest(host=host, workflow=workflow, entry=path.name):
-                        text = path.read_text(encoding="utf-8")
-                        self.assertIn("`peer-review`", text)
-                        self.assertIn("register that command", text)
-                        self.assertIn(f"uv run --script {roots[host]}/{PEER_SERVER}", text)
-                        self.assertNotIn("${CLAUDE_PLUGIN_ROOT}", text)
-                        if host == "pi":
-                            self.assertIn("pi-mcp-adapter", text)
-                            self.assertIn("mcpServers", text)
-            if host != "pi":
-                self.assertNotIn("mcpServers", self.catalog(host)["plugins"][0])
+        cls.plugin = load_plugin(FIXTURE)
 
     def test_missing_or_unsupported_mcp_binding_blocks_publication_on_every_host(self):
         for host in HOSTS:

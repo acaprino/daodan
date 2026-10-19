@@ -28,8 +28,8 @@ MARKER = '<daodan_host_binding host="'
 
 
 class OperationalBindingTests(unittest.TestCase):
-    def render_in_memory(self, name, host, mutate=None):
-        plugin = load_plugin(REPO_ROOT / "plugins" / name)
+    def render_in_memory(self, name, host, mutate=None, root=None):
+        plugin = load_plugin(root or REPO_ROOT / "plugins" / name)
         if mutate:
             plugin = mutate(plugin)
         adapter = load_adapter(ADAPTERS, host)
@@ -86,7 +86,7 @@ class OperationalBindingTests(unittest.TestCase):
     def test_copilot_dispatched_prompt_hands_off_once_to_the_coordinator(self):
         for plugin, workflow in (("stripe", "audit-webhooks"),
                                  ("digital-marketing", "content-strategy"),
-                                 ("peer-review", "review")):
+                                 ("libgdx-development", "libgdx-audit")):
             with self.subTest(plugin=plugin):
                 rendered = self.render_in_memory(plugin, "copilot")
                 prompt = rendered[f"prompts/{workflow}.prompt.md"]
@@ -204,7 +204,7 @@ class OperationalBindingTests(unittest.TestCase):
                     self.assertNotIn("claude plugin install", text)
 
     def test_omitted_copilot_tools_preserve_host_defaults(self):
-        for plugin, role in (("peer-review", "respondent"), ("app-analyzer", "app-analyzer")):
+        for plugin, role in (("app-analyzer", "app-analyzer"),):
             with self.subTest(plugin=plugin):
                 text = self.render_in_memory(plugin, "copilot")[f"agents/{role}.agent.md"]
                 meta, _ = _frontmatter(text)
@@ -213,9 +213,10 @@ class OperationalBindingTests(unittest.TestCase):
         self.assertIsNone(_copilot_tools(None))
 
     def test_copilot_coordinator_allowlist_retains_declared_mcp_servers(self):
-        rendered = self.render_in_memory("peer-review", "copilot")
+        fixture = REPO_ROOT / "tests/fixtures/daodan/valid-mcp/plugins/example"
+        rendered = self.render_in_memory("example", "copilot", root=fixture)
         meta, _ = _frontmatter(rendered["agents/review-coordinator.agent.md"])
-        self.assertIn("'peer-review/*'", meta["tools"])
+        self.assertIn("'example-tools/*'", meta["tools"])
         self.assertNotIn("'*'", meta["tools"])
         self.assertNotIn("unrelated-server", meta["tools"])
         plain = self.render_in_memory("stripe", "copilot")

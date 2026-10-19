@@ -22,7 +22,6 @@ from host_binding_assertions import canonical_markdown, without_host_binding, lo
 ADAPTERS = REPO_ROOT / "adapters"
 MARKETING = REPO_ROOT / "plugins/digital-marketing"
 RESEARCH = REPO_ROOT / "plugins/research"
-PEER = REPO_ROOT / "plugins/peer-review"
 
 CLAUDE_ROOT = "${CLAUDE_PLUGIN_ROOT}"
 
@@ -49,7 +48,7 @@ class HostRenderingTests(unittest.TestCase):
         cls.packages = {}
         for host in HOSTS:
             adapter = load_adapter(ADAPTERS, host)
-            for plugin_root in (MARKETING, RESEARCH, PEER):
+            for plugin_root in (MARKETING, RESEARCH):
                 plugin = load_plugin(plugin_root)
                 staging = cls.temp / host / plugin.name
                 render_plugin(plugin, adapter, staging, adapters_root=ADAPTERS)
@@ -168,7 +167,7 @@ class HostRenderingTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_opencode_command_bodies_use_no_shell_template_syntax(self):
-        for plugin in ("digital-marketing", "research", "peer-review"):
+        for plugin in ("digital-marketing", "research"):
             for path in self.package("opencode", plugin).glob("commands/*.md"):
                 self.assertIsNone(re.search(r"(?m)^!`", _read(path)), path)
 

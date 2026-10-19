@@ -1,6 +1,6 @@
 # Shinatama
 
-Shinatama is the synthetic companion in Oni that supplies external intelligence, domain guidance and operational support alongside the Daodan symbiote. This repository is the companion marketplace to [`acaprino/daodan`](https://github.com/acaprino/daodan): it holds the 25 independent domain verticals, research, multi-model deliberation, office workflows and framework toolkits, while `acaprino/daodan` holds the core software engineering harness (`codebase-map`, `project-lifecycle`, `senior-review`, `testing`, `project-knowledge` and core language/stack providers). It ships to five hosts from one source. Remote: `acaprino/shinatama` on GitHub.
+Shinatama is the synthetic companion in Oni that supplies external intelligence, domain guidance and operational support alongside the Daodan symbiote. This repository is the companion marketplace to [`acaprino/daodan`](https://github.com/acaprino/daodan): it holds 23 independent domain verticals, research, office workflows and framework toolkits, while `acaprino/daodan` holds the core software engineering harness (`codebase-map`, `project-lifecycle`, `senior-review`, `testing`, `project-knowledge`, the cross-model deliberation of `peer-review` and `moe`, and core language/stack providers). `peer-review` and `moe` moved back to Daodan on 2026-10-19 because its task cycle consumes them. It ships to five hosts from one source. Remote: `acaprino/shinatama` on GitHub.
 
 ## Development harness
 
@@ -71,7 +71,7 @@ Markdown. Domain owners retain their reports, scoring and verdicts. See
 
 ## Project structure
 
-`plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow with a note giving the exact command to register. `peer-review` and `codebase-map` declare their servers under their owning skills. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
+`plugins/<name>/` is a plugin's **content kernel**, and it is the only hand-authored plugin source alongside `adapters/`. Each kernel holds `plugin.toml` (the neutral control plane), `roles/` (agent bodies), `workflows/` (entry-point bodies plus one TOML sidecar each), `skills/`, `contracts/` and `policies/`. Those are also the only directories the compiler ships: a `references/`, `scripts/` or `mcp/` directory at the kernel root reaches no host package, so anything a body reads at runtime lives under `skills/<name>/`, and `scripts/lint_bundled_paths.py` fails a `${CLAUDE_PLUGIN_ROOT}` reference that the generated package does not contain. A kernel that ships an MCP server declares it under `[[mcp.servers]]` in `plugin.toml` (name, command, args, the server file under a skill) and requires the `mcp.servers` capability; the Claude adapter renders it as the package's `.mcp.json` and the catalog entry's `mcpServers` pointer, the OpenCode loader registers it from the package manifest, and Codex, Copilot and Pi, where no probe has shown a host starting a plugin-declared server, ship the file and open every workflow with a note giving the exact command to register. A server lives under its owning skill. Markdown is always the behaviour; TOML is always declarative metadata and never carries a prompt.
 
 `adapters/<host>/` is what one host can do: `capabilities.toml` binds every neutral capability to a host mechanism, `coordination.toml` orders the coordination strategies that host supports, `layout.toml` says where each component lands in its packages and what the two Claude placeholders a kernel may write (`${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`) become on that host, `templates/` holds the harness wrappers, `policies/` holds this host's implementation of a neutral policy, and `overrides/` holds fingerprinted semantic divergences.
 
@@ -466,8 +466,8 @@ the host's native configuration. Preserve concrete install instructions in the
 consumer. Grabber's separately scoped Patchright technique remains local.
 
 testing delegates TDD to mattpocock-skills@mattpocock and browser E2E mechanics to
-developer-essentials@claude-code-workflows. project-lifecycle, ai-tooling and
-peer-review delegate development methods to superpowers@claude-plugins-official.
+developer-essentials@claude-code-workflows. ai-tooling delegates development
+methods to superpowers@claude-plugins-official.
 Do not vendor those upstream methods, revive the retired generic worktree plugin
 or restore the flawed codebase-cleanup trio. Dependency audit is a separately
 maintained tool-first capability, not forced package remediation.

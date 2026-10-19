@@ -224,16 +224,16 @@ class OpenCodeManifestTests(unittest.TestCase):
     """The published manifest is what the loader reads, so it is read as the loader would."""
 
     def test_ids_carry_the_plugin_prefix(self):
-        entry = live_opencode_manifest()["daodan"]["plugins"]["peer-review"]
-        self.assertIn("peer-review:respondent", [a["id"] for a in entry["agents"]])
-        self.assertIn("peer-review:review", [c["name"] for c in entry["commands"]])
+        entry = live_opencode_manifest()["daodan"]["plugins"]["trading-broker-integration"]
+        self.assertIn("trading-broker-integration:ibkr-architect", [a["id"] for a in entry["agents"]])
+        self.assertIn("trading-broker-integration:ibkr-audit", [c["name"] for c in entry["commands"]])
         self.assertIn(
-            "peer-review:cross-model-peer-review", [s["id"] for s in entry["skills"]]
+            "trading-broker-integration:broker-vocabulary", [s["id"] for s in entry["skills"]]
         )
 
     def test_dependencies_are_local_only(self):
         plugins = live_opencode_manifest()["daodan"]["plugins"]
-        self.assertIn("peer-review", plugins["moe"]["dependencies"])
+        self.assertIn("research", plugins["business"]["dependencies"])
         for name, entry in plugins.items():
             for dependency in entry.get("dependencies", []):
                 self.assertNotIn("@", dependency, name)
@@ -260,12 +260,6 @@ class OpenCodeManifestTests(unittest.TestCase):
             for kind in ("skills", "agents"):
                 for item in entry.get(kind, []):
                     self.assertTrue(item["description"].strip(), f"{name}: {item}")
-
-    def test_peer_review_declares_its_server(self):
-        mcp = live_opencode_manifest()["daodan"]["plugins"]["peer-review"]["mcp"]
-        self.assertEqual(mcp[0]["name"], "peer-review")
-        self.assertTrue(any("<plugin-root>" in part for part in mcp[0]["command"]))
-        self.assertFalse(any("CLAUDE_PLUGIN_ROOT" in part for part in mcp[0]["command"]))
 
     def test_loader_is_the_adapter_template_byte_for_byte(self):
         self.assertEqual(

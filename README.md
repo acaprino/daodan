@@ -3,9 +3,9 @@
 Shinatama is the companion marketplace to [Daodan](https://github.com/acaprino/daodan).
 While Daodan holds the core software engineering harness (`codebase-map`,
 `project-lifecycle`, `senior-review`, `testing`, `project-knowledge` and core
-language/stack providers), Shinatama holds the 25 independent domain verticals,
-research, multi-model deliberation, office workflows and specialized framework
-toolkits.
+language/stack providers), Shinatama holds 23 independent domain verticals,
+research, office workflows and specialized framework toolkits. Cross-model
+deliberation (`peer-review`, `moe`) ships with Daodan.
 
 One hand-authored source ships to Claude Code, GitHub Copilot, Codex, Pi and
 OpenCode V2.
@@ -51,7 +51,7 @@ commands, paths, installation requirements and runtime limits on each host.
 
 | Area | Plugins |
 |---|---|
-| AI, research and deliberation | [ai-tooling](docs/plugins/ai-tooling.md), [rag-development](docs/plugins/rag-development.md), [research](docs/plugins/research.md), [peer-review](docs/plugins/peer-review.md), [moe](docs/plugins/moe.md) |
+| AI and research | [ai-tooling](docs/plugins/ai-tooling.md), [rag-development](docs/plugins/rag-development.md), [research](docs/plugins/research.md) |
 | Office, business and marketing | [office](docs/plugins/office.md), [business](docs/plugins/business.md), [digital-marketing](docs/plugins/digital-marketing.md), [stripe](docs/plugins/stripe.md) |
 | UI, web and desktop frameworks | [frontend-review](docs/plugins/frontend-review.md), [pwa-expert](docs/plugins/pwa-expert.md), [browser-extensions](docs/plugins/browser-extensions.md), [tauri-development](docs/plugins/tauri-development.md), [xterm](docs/plugins/xterm.md), [obsidian-development](docs/plugins/obsidian-development.md), [libgdx-development](docs/plugins/libgdx-development.md) |
 | Domain and infrastructure verticals | [trading-broker-integration](docs/plugins/trading-broker-integration.md), [grabber-development](docs/plugins/grabber-development.md), [app-analyzer](docs/plugins/app-analyzer.md), [csp](docs/plugins/csp.md), [messaging](docs/plugins/messaging.md), [opentelemetry](docs/plugins/opentelemetry.md) |

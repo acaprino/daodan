@@ -304,10 +304,16 @@ A kernel that ships an MCP server declares it in `plugin.toml`, with the server 
 
 ```toml
 [[mcp.servers]]
-name = "peer-review"
+name = "example-tools"
 command = "uv"
-args = ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/cross-model-peer-review/scripts/server.py"]
+args = ["run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/server.py"]
 ```
+
+A `uv` server always starts with `run --no-config --no-project --script`. The server
+starts inside the user's project, and without those flags `uv` reads that project's
+`uv.toml`, `pyproject.toml` and `.python-version`, so the project under work would
+choose the package index and interpreter of a server that may hold an API key. No kernel of this marketplace ships a server: `peer-review` and `moe` moved to Daodan,
+whose suite pins their real rendering. A new server here gets the same table test.
 
 The validator refuses a server without the capability, the capability without a server, and an argument that names a file outside `skills/` (the compiler copies nothing else, so the server would exist in the checkout only). What the binding decides per host:
 
