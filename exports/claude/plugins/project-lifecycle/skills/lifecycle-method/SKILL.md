@@ -114,7 +114,7 @@ Load only what the step needs, by name, never by path into another plugin.
 |---|---|
 | Static context, impact packets, exact run binding | `codebase-map:map-method`; dispatch `codebase-map:map-analyst` in an isolated context for an analysis |
 | Decisions governing a scope, a proposed record, promotion at merge | `project-knowledge:adr-method` |
-| Candidate review at any stage, any target kind, budget `delta` or `full` | `senior-review:review-method`, through `senior-review:review-preparation` |
+| Candidate review at any stage, any target kind, shape `light` or `branch` | `senior-review:review-method`, through `senior-review:review-preparation` |
 | Application subtraction | `senior-review:application-cleanup-method` |
 | Suite preparation and remediation | `testing:test-preparation`, `testing:test-remediation-method` |
 | Test authoring | dispatch `testing:test-writer` |

@@ -86,9 +86,9 @@ Run the change cycle with phases 2 to 4 shortened:
 3. One wave: `testing:test-writer` writes the reproduction test (`RED`),
    the stack's specialist writes the fix inside its `write_set`, the oracle
    turns `GREEN`, the direct callers' tests run.
-4. Stage C on the wave; stage D with budget `full` when the diff touches
+4. Stage C on the wave; stage D with shape `branch` when the diff touches
    security, persistence, concurrency, resources or a public contract,
-   otherwise `delta`; then `references/consolidate.md`.
+   otherwise `light`; then `references/consolidate.md`.
 
 ## A plan produced by assess
 

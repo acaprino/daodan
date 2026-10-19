@@ -140,64 +140,56 @@ resume --project ROOT --run-id ID --payload CONTEXT.json [--out INTERNAL_ROOT]
 snapshot --project ROOT --payload CONTEXT.json [--out INTERNAL_ROOT]
 ```
 
-Pass `--out` consistently after a custom root is selected. Init requires
-`operation`, `objective`, `scope` (`paths` and optional `focus`/`excluded`),
-`authorizations` and `budget`. It defaults phases, plan, deliveries and gates to
-empty containers. Declare every expected worker in `deliveries` before dispatch
-and every known mandatory check in `required_gates` before execution. Add newly
-discovered checks before executing them; required gate identifiers are append-only.
-Snapshot hashes
-include dirty and untracked scoped inputs, never the run's own output root.
+Pass `--out` consistently once a custom root is selected. Init requires
+`operation`, `objective`, `scope` (`paths`, optional `focus` and `excluded`),
+`authorizations` and `budget`; phases, plan, deliveries and gates default to
+empty. Declare every expected worker in `deliveries` before dispatch and every
+known mandatory check in `required_gates` before execution; gate identifiers
+are append-only. Init, show and update emit the full record.
 
-Update recursively merges objects and replaces arrays. Identity, original scope,
-authorizations and baseline project binding are immutable. Completed runs are immutable.
-A revision mismatch writes nothing. The helper captures the current `candidate`
-binding on each update. `snapshot` returns a candidate project binding for a gate
-after source changes. A gate carries `status`, the candidate snapshot digest,
-candidate `head` when present, and evidence identifying the command or remote job.
-Remote evidence also identifies the exact source revision and job attempt. A green
-job for an earlier candidate is not the gate for this one.
-Remote-only checks require a nonempty Git revision and `head_matches_snapshot`
-true in the captured candidate. The helper compares scoped bytes with actual
-HEAD blobs and detects untracked inputs, including ignored input files. Index
-flags cannot hide a content change from that comparison. A job for
-HEAD cannot verify uncommitted edits. Without this binding, run a check against
-the actual local candidate or record the remote check as unavailable.
-The comparison is byte-exact. A checkout with transformed line endings needs
-local verification. Snapshots include regular-file kind and executable state
-where the filesystem supports it; HEAD symlink blobs cannot attest a regular file.
+Update merges objects and replaces arrays, refuses a revision mismatch, and
+captures the current `candidate` binding. Identity, original scope,
+authorizations, the baseline binding and a completed run are immutable.
 
-Init, show and update emit the full JSON record. Validate emits validity and
-identity. `validate --result` also checks the canonical envelope against this exact
-work revision, candidate snapshot, delivery ledger and required check statuses.
-Plain validation checks a historical record. Add `--current` before accepting a
-result as verification of the present project; it rejects changed scoped inputs
-or workspace identity.
-Resume requires current `authorizations`; an optional supplied scope must
-equal the recorded scope. It verifies project/worktree/HEAD and current candidate
-snapshot, returns the record plus pending phases and deliveries, and changes no
-file. New input or a broader authorization requires a new run, never rebinding a
-completed report. Record interruption reason and phase immediately when possible.
+A gate carries its status, the candidate snapshot digest and `head`, and
+evidence naming the command or the remote job with its exact revision and
+attempt. Snapshots hash scoped inputs byte for byte, dirty and untracked files
+included, never the run's output root, and record file kind and executable
+state where the filesystem supports it. A remote check counts only when the
+candidate has a Git revision and `head_matches_snapshot` is true: a job for HEAD
+cannot verify uncommitted edits, ignored inputs or transformed line endings, so
+run the check locally or record it as unavailable. `snapshot` returns a fresh
+candidate binding after source changes.
+
+Validate checks a historical record; `--current` rejects changed scoped inputs
+or workspace identity before a result counts for the present project;
+`--result` checks the canonical envelope against this revision, snapshot,
+ledger and gate statuses. Resume requires current `authorizations` and an equal
+scope, verifies project, worktree, HEAD and candidate snapshot, returns the
+record with pending phases and deliveries, and changes nothing. New input or a
+broader authorization is a new run. Record an interruption's reason and phase
+as soon as possible.
 
 ## Loop sections
 
-A lifecycle run may carry five optional sections, declared under `[loop]` in
-the work contract and validated whenever present: `workspace` (mode
-`WORKTREE`, `BRANCH` or `IN_PLACE`, branch, `base_sha`, environment bindings
-that never hold a secret value), `preflight` (test baseline `GREEN`,
-`KNOWN_RED` with its fingerprint, or `UNKNOWN_RED`; migration state), `adr`
-(active record identities and the proposed one), `waves` and `rulings`.
+A lifecycle run may carry six optional sections, declared under `[loop]` in
+the work contract and validated whenever present.
 
-A wave task names its `write_set`, `oracle` (command plus the failure it must
-produce before the change), `verification` command, and optional
-`resource_locks`, `produces` and `consumes`. The helper refuses more than four
-files in a `write_set` without a reasoned `granularity_exception` (six at
-most), two tasks of one wave that share a file, a lock or a produced-consumed
-contract, a parallel wave outside a `WORKTREE` workspace, and a `sealed` wave
-with an uncommitted task. Rulings are the worker's recorded local decisions;
-an update that alters or drops one is refused. Check a draft plan before it
-enters a run with `plan-check --project ROOT --payload PLAN.json`; the refusal
-names the exact rule, so the planner corrects the plan rather than the record.
+| Section | Holds | The helper refuses |
+|---|---|---|
+| `workspace` | mode `WORKTREE`, `BRANCH` or `IN_PLACE`, branch, `base_sha`, environment bindings | a binding that carries a secret value |
+| `preflight` | test baseline `GREEN`, `KNOWN_RED` with its fingerprint, or `UNKNOWN_RED`; migration state | an unknown state |
+| `adr` | active record identities and the proposed one | a malformed id |
+| `waves` | tasks with `write_set`, `oracle` (command plus the failure it must produce first), `verification`, optional `resource_locks`, `produces`, `consumes` | more than four files without a reasoned `granularity_exception` (six at most); two tasks of one wave sharing a file, a lock or a produced-consumed contract; a parallel wave outside `WORKTREE`; a `sealed` wave with an uncommitted task |
+| `rulings` | the worker's recorded local decisions | an update that alters or drops one |
+| `review` | the roster computed by `review_roster.py compute --shape light\|branch --diff DIFF --out ROSTER.json`: tier, roles, verification depth, blind derivation, critic | a delivery whose `role` is outside the roster |
+
+Check a draft plan before it enters a run with `plan-check --project ROOT
+--payload PLAN.json`; the refusal names the rule, so the planner corrects the
+plan rather than the record. Record the review roster before dispatching
+reviewers; `review_roster.py check` refuses a dispatch plan before it runs.
+`--deeper` raises the tier one step and nothing lowers it. Thresholds live at
+the top of the helper and change only with a recorded probe.
 
 ## State and completion
 

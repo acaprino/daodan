@@ -109,7 +109,7 @@ section as `proposed`. The record stays `Proposed` until integration.
 ## Review of the record (stage A)
 
 Run `senior-review:review-method` through `senior-review:review-preparation`
-with `target-kind=spec` on the record and budget `delta`. The preparation
+with `target-kind=spec` on the record and shape `light`. The preparation
 selects the premise lens against the current source, the logic lens for
 invariants and missing examples, the abstraction lens against the concept
 index, and the stack lenses the scope activates. A `disputed` premise or a

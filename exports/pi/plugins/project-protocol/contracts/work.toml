@@ -40,7 +40,7 @@ remote_requires_committed_candidate = true
 # Optional sections a lifecycle run may carry. Absent sections are not validated;
 # a present section must satisfy its rules. The required fields above are untouched.
 [loop]
-sections = ["workspace", "preflight", "adr", "waves", "rulings"]
+sections = ["workspace", "preflight", "adr", "waves", "rulings", "review"]
 
 [loop.workspace]
 required = ["mode", "branch", "base_sha"]
@@ -71,3 +71,12 @@ sealed_requires_task_state = "committed"
 [loop.rulings]
 required = ["id", "task", "sha", "decision", "reason", "cost_if_wrong", "evidence"]
 append_only = true
+
+[loop.review]
+# The roster of a review is computed by review_roster.py from measured signals and
+# recorded here before dispatch. A delivery whose role is not in the roster is
+# refused: the model never widens its own review. `deeper` is the only way up.
+schema = "daodan/review-roster/v1"
+shapes = ["light", "branch"]
+tiers = ["light", "small", "medium", "large"]
+required = ["schema", "shape", "tier", "roster", "reasons", "verification"]

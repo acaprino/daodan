@@ -82,7 +82,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 # Unified review method
 
 Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle;
-optional `budget` (`delta` for one wave's diff, `full` for the whole candidate) and
+optional `shape` (`light` for one wave's diff, `branch` for the whole candidate) and
 `target-kind` (`changeset`, `plan`, `spec`, `doc`), both resolved by preparation
 when absent.
 Output: native report and the project-result envelope. Do not delegate execution

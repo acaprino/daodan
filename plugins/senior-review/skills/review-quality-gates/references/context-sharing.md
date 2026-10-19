@@ -2,7 +2,7 @@
 
 On-demand unit of `senior-review:review-quality-gates`. Read it when preparing or
 dispatching reviewers of a review that builds shared context (the team variant,
-or a lifecycle review with budget `full`). The provenance rule in the skill's
+or a lifecycle review with shape `branch`). The provenance rule in the skill's
 core governs everything here.
 
 ## Context Sharing Pattern

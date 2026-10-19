@@ -520,6 +520,25 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("append-only", dropped.stderr)
         self.assertIn("cites evidence", self.plan_check({"rulings": [{**ruling, "evidence": []}]}, ok=False).stderr)
 
+    def test_a_review_delivery_outside_the_computed_roster_is_refused(self):
+        roster = {"schema": "daodan/review-roster/v1", "shape": "branch", "tier": "small",
+                  "roster": ["senior-review:code-auditor", "testing:test-suite-auditor"],
+                  "reasons": ["no raising signal"], "verification": "high-and-above"}
+        self.payload["review"] = roster
+        self.payload["deliveries"] = {"review-1-code-auditor": {"status": "pending", "role": "senior-review:code-auditor"}}
+        record = self.init()
+        self.assertEqual(record["review"]["tier"], "small")
+        widened = {"deliveries": {"review-2-security": {"status": "pending", "role": "senior-review:security-auditor"}}}
+        refusal = self.invoke("update", widened, ["--expected-revision", "0"], ok=False)
+        self.assertIn("computed review roster does not contain", refusal.stderr)
+        self.assertIn("senior-review:security-auditor", refusal.stderr)
+        inside = {"deliveries": {"review-2-tests": {"status": "pending", "role": "testing:test-suite-auditor"}}}
+        self.assertIn("review-2-tests", self.invoke("update", inside, ["--expected-revision", "0"])["deliveries"])
+        bad_tier = {**roster, "tier": "enormous"}
+        self.assertIn("review.tier must be one of", self.plan_check({"review": bad_tier}, ok=False).stderr)
+        self.assertIn("review.roster must be a nonempty list",
+                      self.plan_check({"review": {**roster, "roster": []}}, ok=False).stderr)
+
     def test_loop_sections_are_validated_inside_the_record_too(self):
         self.payload["waves"] = [self.wave("w1", self.task("a", "src/common.py"), self.task("b", "src/common.py"))]
         refusal = self.invoke("init", self.payload, ok=False)

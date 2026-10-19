@@ -10,8 +10,8 @@ unit is the overview, and each phase has its own unit.
 | 2. Interview | Scope, examples, rejected alternatives and invariants fixed from real code | `references/interview.md` |
 | 3. Record | A `Proposed` decision record written and reviewed as a `spec` | `references/interview.md` |
 | 4. Plan | Waves of micro-tasks compiled, checked by the helper, reviewed as a `plan` | `references/waves.md` |
-| 5. Execution | Each wave written by the stack's specialist, verified, reviewed with budget `delta`, sealed | `references/waves.md`, `references/worker-brief.md` |
-| 6. Candidate | The whole candidate reviewed with budget `full`; blocking findings repaired in a bounded wave | `references/verify.md` |
+| 5. Execution | Each wave written by the stack's specialist, verified, reviewed with shape `light`, sealed | `references/waves.md`, `references/worker-brief.md` |
+| 6. Candidate | The whole candidate reviewed with shape `branch`; blocking findings repaired in a bounded wave | `references/verify.md` |
 | 7. Integration | Merge, record promotion, map and knowledge realigned, workspace closed | `references/consolidate.md` |
 
 `--plan-only` stops after phase 4 with the record `Proposed` and the plan

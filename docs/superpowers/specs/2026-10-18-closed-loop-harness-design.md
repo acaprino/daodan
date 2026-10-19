@@ -614,5 +614,15 @@ Chiusi il 19 ottobre, dopo le ondate:
   come quello di `codebase-map`, e una tabella in `tests/test_daodan_mcp.py`
   obbliga ogni server dichiarato a quel lancio.
 
+Il 19 ottobre, dopo la prima prova reale
+(`docs/superpowers/reports/2026-10-19-closed-loop-probe-claude.md`), la
+proporzione della review è passata da prosa a script: `review_roster.py` nel
+protocollo calcola il roster dal diff e dalla mappa e il validatore rifiuta una
+consegna fuori roster. Con quello i budget `delta` e `full` di questo documento
+si chiamano `light` e `branch`, gli stessi nomi dei comandi `review-changes` e
+`review-branch` della proposta successiva
+(`docs/superpowers/specs/2026-10-19-command-set-design.md`), che sostituisce i
+comandi qui descritti.
+
 Aperti: sonde di esecuzione per host e misura della tesi. Lo stato
 successivo vive nei run, nei commit e nelle pagine `docs/plugins/`.

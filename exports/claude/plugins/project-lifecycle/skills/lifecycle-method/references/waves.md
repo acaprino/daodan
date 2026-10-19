@@ -81,7 +81,7 @@ until it passes, then write it into the run's `waves` section.
 
 ## Review of the plan (stage B)
 
-Run `senior-review:review-method` with `target-kind=plan` and budget `delta`
+Run `senior-review:review-method` with `target-kind=plan` and shape `light`
 on the plan. The preparation selects the premise lens (every cited path,
 symbol and caller exists in the current tree), the test lens (every oracle
 fails for the right reason and cannot pass trivially), the initialization
@@ -118,7 +118,7 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
 ## Review of the wave (stage C)
 
 When every task of the wave is committed or its candidate is recorded, run
-`senior-review:review-method` with budget `delta` on the wave's diff. The
+`senior-review:review-method` with shape `light` on the wave's diff. The
 preparation selects the logic lens for conformance to `EX-*` and `INV-*`, the
 test lens for the new oracles, the premise lens on every new ruling, and the
 stack lenses the diff activates. A blocking finding reopens the task; the

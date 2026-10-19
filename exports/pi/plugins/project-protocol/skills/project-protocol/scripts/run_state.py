@@ -370,6 +370,39 @@ def validate_rulings(section, rules):
             raise ProtocolError(f"Ruling {ruling['id']} cites evidence")
 
 
+def review_role(name):
+    """A delivery named `<role>` or `<role>#<suffix>` or `review-<n>-<role>` belongs to that role."""
+    text = str(name)
+    if text.startswith("review-"):
+        text = text.split("-", 2)[-1] if text.count("-") >= 2 else text
+    return text
+
+
+def validate_review(review, rules, deliveries):
+    """The recorded roster bounds every review delivery of the run."""
+    if not isinstance(review, dict):
+        raise ProtocolError("review must be an object")
+    for key in rules["required"]:
+        if key not in review:
+            raise ProtocolError(f"review.{key} is required")
+    if review["schema"] != rules["schema"]:
+        raise ProtocolError(f"review.schema must be {rules['schema']}")
+    if review["shape"] not in rules["shapes"]:
+        raise ProtocolError(f"review.shape must be one of {', '.join(rules['shapes'])}")
+    if review["tier"] not in rules["tiers"]:
+        raise ProtocolError(f"review.tier must be one of {', '.join(rules['tiers'])}")
+    roster = review["roster"]
+    if not isinstance(roster, list) or not roster or not all(isinstance(r, str) and r for r in roster):
+        raise ProtocolError("review.roster must be a nonempty list of role identities")
+    allowed = set(roster)
+    for name, delivery in deliveries.items():
+        role = delivery.get("role") if isinstance(delivery, dict) else None
+        if role is None:
+            continue
+        if role not in allowed:
+            raise ProtocolError(f"Delivery {name} dispatches {role}, which the computed review roster does not contain")
+
+
 def validate_loop(record):
     """Validate the optional loop sections a lifecycle run carries."""
     rules = contract().get("loop")
@@ -386,6 +419,8 @@ def validate_loop(record):
         validate_waves(present["waves"], rules["waves"], present.get("workspace"))
     if "rulings" in present:
         validate_rulings(present["rulings"], rules["rulings"])
+    if "review" in present:
+        validate_review(present["review"], rules["review"], record.get("deliveries", {}))
 
 
 def validate_loop_transitions(old, new):
@@ -615,7 +650,7 @@ def main(argv=None):
         if args.command == "plan-check":
             # A draft plan is checked against the loop rules before it is written
             # into a run, so a planner receives the exact refusal, not a failed update.
-            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings") if key in payload})
+            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "review") if key in payload})
             waves = payload.get("waves", [])
             output = {"valid": True, "waves": len(waves), "tasks": sum(len(w.get("tasks", [])) for w in waves)}
         elif args.command == "snapshot":
