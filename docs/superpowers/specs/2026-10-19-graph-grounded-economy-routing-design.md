@@ -707,3 +707,122 @@ le intestazioni e i codici di uscita richiesti da
      287/287 casi dell'oracolo superati al primo giro (incluso
      `minimum_unit="years"` su valori interi negativi), zero errori di quoting
      CLI e selezione chirurgica dei revisori tramite Choicer.
+
+---
+
+## 7. Open Points e Ricerche da Riprendere (Letteratura & Paper per Improvements, Review e Fix)
+
+Questa sezione raccoglie i filoni di ricerca scientifica e i punti aperti da
+approfondire in una seconda iterazione per perfezionare il router cognitivo
+(`tier_router.py`), i prompt del Choicer, la costruzione dei pacchetti dal grafo
+e i cicli di review e riparazione.
+
+### 7.1 Routing Dinamico e Cascading dei Modelli (`tier1` / `tier2` / `tier3`)
+- **Temi e paper di riferimento**:
+  - *Subtask-Level LLM Routing & Allocation* (`Route-and-Reason / R2-Reasoner`, `Router-R1`);
+  - *Pre-Generation Routing vs Post-Generation Cascading* (`Dynamic Model Routing and Cascading Survey arXiv:2603.04445`, `RouteLLM`, `Cascade Routing`, `CRE-Router`, `RLCascadeRouter arXiv:2608.15817`);
+  - *Test-Time Compute Scaling & Adaptive Reasoning Effort*.
+- **Open Points da riprendere**:
+  - **Improvements**: calibrare la soglia esatta tra pre-routing (scegliere
+    subito `tier3` prima della generazione) e cascading (partire da `tier2` e
+    scalare a `tier3` solo su fallimento) usando i segnali numerici del grafo
+    (numero di chiamanti, profondità del call-graph, complessità ciclomatica AST).
+  - **Review**: verificare se per alcune lenti critiche (`security-auditor` su
+    flussi di autenticazione complessi o `distributed-flow-auditor` su saghe)
+    convenga promuovere direttamente il revisore da `tier2#high` a `tier3#high`
+    quando il diff tocca più di $N$ moduli.
+  - **Fix**: prevenire il rischio di *retry amplification* (falso risparmio in
+    cui un task assegnato a `tier2` fallisce e brucia più token nel retry
+    rispetto a partire direttamente su `tier3`).
+
+### 7.2 Grafo del Codice, Sourcemap e Context Pruning (`1-hop` vs `2-hop`)
+- **Temi e paper di riferimento**:
+  - *Graph-Guided Code Localization & Repo-Level Code Graphs* (`LocAgent arXiv:2503.09089`, `Agentless arXiv:2407.01489`, `GraphLocator`, `GraphCodeAgent`);
+  - *Distance-Aware Context Pruning & k-Hop Program Slicing* (`OrcaLoca`, `FastCode`);
+  - *Topological Task Ordering (`callees -> callers`) & Semantic AST Hashing*.
+- **Open Points da riprendere**:
+  - **Improvements**: valutare algoritmi di *distance-aware pruning* pesato
+    sugli archi di `codebase-map` (dando priorità ai chiamanti che passano
+    argomenti non-default o che leggono il valore di ritorno rispetto ai
+    chiamanti pass-through) quando un simbolo ha molti chiamanti a 1 hop.
+  - **Review**: misurare quanto l'inclusione delle firme a 1 hop nei pacchetti
+    dei revisori riduca i falsi positivi rispetto a passare solo il `git diff`.
+  - **Fix**: gestire i casi in cui gli archi statici non vedono chiamate
+    dinamiche (reflection, dependency injection, event bus, route registrate via
+    stringa) integrando una ricerca lessicale di sicurezza nel pacchetto.
+
+### 7.3 Definizione Specifiche, Oracoli di Test da AST e Coerenza Documentale
+- **Temi e paper di riferimento**:
+  - *Specification-Driven & Example-Guided Code Generation*;
+  - *AST-Guided Input Space Partitioning & Boundary Value Analysis for LLMs*;
+  - *Oracle Independence & Anti-Tautological Test Generation*;
+  - *Requirement-to-Documentation Consistency Checking*.
+- **Open Points da riprendere**:
+  - **Improvements**: estendere `oracle_scaffold` oltre Python (`ast.parse`)
+    sfruttando i parser tree-sitter di `codebase-map` per estrarre parametri,
+    tipi, default e guardie condizionali anche in TypeScript, Go, Rust, Java e Kotlin.
+  - **Review**: rafforzare il controllo Stage A affinché verifichi
+    automaticamente che ogni esempio `EX-*` della specifica abbia una
+    corrispondenza 1:1 con un test `RED` nel piano e che nessuna documentazione
+    esistente (`docs/`, `README.md`, OpenAPI) resti in contraddizione col nuovo
+    comportamento.
+  - **Fix**: impedire i *test tautologici* (test che copiano l'implementazione
+    sbagliata del worker) verificando se l'oracolo `RED` debba essere scritto o
+    sigillato prima che il worker `GREEN` veda il corpo della funzione.
+
+### 7.4 Loop Engineering, Graph Engineering e Multi-Agent Verification
+- **Temi e paper di riferimento**:
+  - *Bounded Agentic Loops & Evidence-Gated State Machines* (`Loop Engineering arXiv:2607.00038`);
+  - *Multi-Agent System Failure Taxonomy (MAST)* (`Why Do Multi-Agent LLM Systems Fail?`);
+  - *Epistemic Independence & Adversarial Verification Panels*.
+- **Open Points da riprendere**:
+  - **Improvements**: affinare la funzione di `Failure Fingerprinting` per
+    distinguere quando un secondo errore su uno stesso test è in realtà un
+    progresso parziale (es. cambia il tipo di eccezione o avanza la riga di
+    fallimento) rispetto a uno stallo identico.
+  - **Review**: testare l'efficacia dell'isolamento epistemico dei revisori
+    (rimozione dei commenti giustificativi dell'autore dal pacchetto di review)
+    nel ridurre il *rubber-stamping* sui modelli `tier2`.
+  - **Fix**: definire regole di recovery pulite quando `post-task` rileva una
+    rottura di `interface_hash` o `effects_hash` su un chiamante non incluso nel
+    `write_set` della micro-task corrente (`NEEDS_REPLAN` automatico vs
+    accodamento di una micro-task nella wave successiva).
+
+### 7.5 Prompt Engineering per Modelli Low-Cost / Choicer e Compensazione dell'`effort`
+- **Temi e paper di riferimento**:
+  - *Cite-then-Decide & Evidence-Anchored Classification*;
+  - *Contrastive Triggering (`TRIGGER WHEN` vs `DO NOT TRIGGER WHEN`)*;
+  - *Schema-Guided Reasoning (SGR)* per modelli/harness senza parametro di `thinking`.
+- **Open Points da riprendere**:
+  - **Improvements**: misurare con benchmark dedicati in `evals/` la precisione
+    dei 3 prompt del Choicer (`TASK_TIER_CHOICER`, `REVIEWER_CHOICER`,
+    `RETRY_TRIAGER`) su modelli `tier1` diversi (Haiku, Flash-Lite, Mini) e
+    ottimizzare l'ordine dei campi JSON (mettendo `trigger_fact` /
+    `trigger_line` e `reason` *prima* di `tier` / `role` nello schema JSON per
+    forzare il ragionamento causale prima della scelta nei modelli autoregressivi).
+  - **Review**: verificare sistematicamente tutti i 20+ file `plugins/*/roles/*.md`
+    per assicurarsi che ogni `TRIGGER WHEN` e `DO NOT TRIGGER WHEN` sia scritto
+    in termini di segnali osservabili nel codice/diff (come fatto per
+    `security-auditor` su URL, route, permessi e IDOR).
+  - **Fix**: validare l'efficacia della tabella obbligatoria pre-azione
+    (*Schema-Guided Reasoning*) sugli host (`codex`, `copilot`) e sui modelli che
+    non espongono il controllo nativo del `thinking`/`effort`.
+
+### 7.6 Economia dell'Output, Silenzio sulla Routine e Compressione delle Traiettorie
+- **Temi e paper di riferimento**:
+  - *Chain-of-Draft (CoD) & Sketch-of-Thought (SoT)*;
+  - *Token-Budget-Aware LLM Reasoning (TALE) & Mitigating Overthinking ("Do Not Think That Much")*;
+  - *Event-Triggered / Exception-Based Communication in Multi-Agent Systems*;
+  - *Agent Trajectory Compression & Observation Masking*.
+- **Open Points da riprendere**:
+  - **Improvements**: applicare tecniche *Chain-of-Draft* ai campi `reason`,
+    `diagnostic` e `Rulings` (massimo 10-15 parole per punto, stile telegrafico
+    tecnico) per ridurre ulteriormente i token di output e l'accumulo nella
+    cronologia del Coordinatore.
+  - **Review**: applicare la stessa regola *Silent on Routine, Explicit on
+    Decisions* anche ai verdetti dei revisori (zero riassunti del codice quando
+    non ci sono finding; emissione dei soli finding verificati con localizzatore
+    e falsificatore).
+  - **Fix**: verificare che la regola di silenzio sulla routine non riduca la
+    qualità delle domande all'utente durante l'intervista sulle specifiche o la
+    completezza della diagnosi quando un controllo fallisce.
