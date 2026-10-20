@@ -420,6 +420,176 @@ class SemanticResolverTests(unittest.TestCase):
         self.assertEqual([u["reason"] for u in result["usages"] if u["type"] == "import"], ["import-binding-not-call"])
         self.assertIn("includes candidates", result["usage_count_meaning"])
 
+    def test_native_java_semantics_resolve_same_class_and_cross_file_calls_conservatively(self):
+        from languages._treesitter import get_parser
+        if get_parser("java") is None:
+            self.skipTest("native Java grammar unavailable")
+        core = self.add(
+            "src/com/acme/Core.java",
+            "package com.acme;\npublic class Core<T> {\n    public void run(int x) { helper(x); this.helper(x); overloaded(x); }\n    void helper(int z) {}\n    public static void staticHelper(int z) {}\n    void overloaded(int a) {}\n    void overloaded(String b) {}\n    void shadowed(int helper) { helper(); }\n}\n",
+            language="java",
+        )
+        other = self.add("src/com/acme/Other.java", "package com.acme;\npublic class Other {}\n", language="java")
+        self.add(
+            "src/com/acme/Main.java",
+            "package com.acme;\nimport com.acme.Core;\nimport com.acme.Other;\npublic class Main {\n    public void start() {\n        Core<String> c = new Core<String>();\n        c.run(1);\n        Core.staticHelper(2);\n        new Core<String>().run(3);\n        new Other();\n    }\n}\n",
+            language="java",
+        )
+        manifest = snapshot.build_manifest(self.root)
+        index = semantic_index.build_semantic_index(manifest)
+        self.assertEqual(index["coverage"]["src/com/acme/Core.java"]["status"], "ast")
+        core_calls = [r for r in index["references"] if r["file"] == "src/com/acme/Core.java" and r["kind"] == "call"]
+        by_parts = {tuple(r["parts"]) + (r["span"][0],): r for r in core_calls}
+        self.assertEqual(by_parts[("helper", 3)]["resolution"], "resolved")
+        self.assertEqual(by_parts[("helper", 3)]["reason"], "unique-lexical-binding")
+        self.assertEqual(by_parts[("this", "helper", 3)]["resolution"], "unresolved")
+        self.assertEqual(by_parts[("overloaded", 3)]["resolution"], "unresolved")
+        self.assertEqual(by_parts[("overloaded", 3)]["reason"], "ambiguous-binding")
+        self.assertTrue(by_parts[("helper", 8)]["known_unrelated"])
+        main_calls = [r for r in index["references"] if r["file"] == "src/com/acme/Main.java" and r["kind"] == "call"]
+        self.assertEqual([(r["parts"], r["resolution"], r["reason"]) for r in main_calls], [
+            (["Core"], "resolved", "direct-internal-import"),
+            (["c", "run"], "unresolved", "unknown-receiver"),
+            (["Core", "staticHelper"], "unresolved", "unknown-receiver-or-import-form"),
+            (["(expr)", "run"], "unresolved", "dynamic-callee"),
+            (["Core"], "resolved", "direct-internal-import"),
+            (["Other"], "resolved", "direct-internal-import"),
+        ])
+        for m_arg in (None, manifest):
+            usages = usage_finder.find_all_usages_batch(["Core", "staticHelper", "run"], core, self.root, manifest=m_arg)
+            self.assertEqual(usages["Core"].resolved_count, 2)
+            self.assertEqual(usages["Core"].importing_modules, ["src/com/acme/Main.java"])
+            self.assertEqual(usages["staticHelper"].ast_candidate_count, 1)
+            self.assertEqual(usages["run"].ast_candidate_count, 2)
+            other_usages = usage_finder.find_all_usages_batch(["Core"], other, self.root, manifest=m_arg)
+            self.assertEqual(other_usages["Core"].importing_modules, [])
+
+    def test_native_rust_semantics_resolve_functions_and_crate_imports_conservatively(self):
+        import semantic_store
+        from snapshot_store import open_snapshot
+        from languages._treesitter import get_parser
+        if get_parser("rust") is None:
+            self.skipTest("native Rust grammar unavailable")
+        core = self.add(
+            "src/core.rs",
+            "pub(crate) fn save<T>(x: T) { helper(1); }\nfn helper(z: i32) {}\npub struct Store { pub helper: i32 }\nimpl Store { pub fn method(&self) { helper(1); } }\npub mod inner { pub fn sub_fn() {} }\n",
+            language="rust",
+        )
+        self.add("src/other.rs", "pub fn a() {}\npub fn b() {}\n", language="rust")
+        self.add("src/log.rs", "pub fn info() {}\n", language="rust")
+        self.add(
+            "src/sub/child.rs",
+            "use super::core::save;\npub fn relay() { save(1); }\n",
+            language="rust",
+        )
+        self.add(
+            "src/main.rs",
+            "use crate::core::save as persist;\nuse crate::other::{a, b as b2};\nuse log::info;\npub fn log() {}\npub fn run(opt: Option<i32>) {\n    if let Some(helper) = opt {\n        helper();\n    }\n    persist(1);\n    a();\n    b2();\n    log!(\"macro\");\n    info();\n}\n",
+            language="rust",
+        )
+        manifest = snapshot.build_manifest(self.root)
+        index = semantic_index.build_semantic_index(manifest)
+        self.assertEqual(index["coverage"]["src/core.rs"]["status"], "ast")
+        self.assertIn("macro expansion bindings are not inferred", index["coverage"]["src/main.rs"]["notes"])
+        core_calls = [r for r in index["references"] if r["file"] == "src/core.rs" and r["kind"] == "call"]
+        self.assertEqual(len(core_calls), 2)
+        self.assertTrue(all(r["resolution"] == "resolved" and r["reason"] == "unique-lexical-binding" for r in core_calls))
+        child_calls = [r for r in index["references"] if r["file"] == "src/sub/child.rs" and r["kind"] == "call"]
+        self.assertEqual(len(child_calls), 1)
+        self.assertEqual(child_calls[0]["resolution"], "resolved")
+        self.assertEqual(child_calls[0]["target_id"], "src/core.rs::function@1:0")
+        main_calls = {tuple(r["parts"]): r for r in index["references"] if r["file"] == "src/main.rs" and r["kind"] == "call"}
+        self.assertEqual(main_calls[("persist",)]["resolution"], "resolved")
+        self.assertEqual(main_calls[("a",)]["resolution"], "resolved")
+        self.assertEqual(main_calls[("b2",)]["resolution"], "resolved")
+        self.assertTrue(main_calls[("helper",)]["known_unrelated"])
+        self.assertEqual(main_calls[("info",)]["resolution"], "unresolved")
+        self.assertNotIn(("log",), main_calls)
+        for m_arg in (None, manifest):
+            usages = usage_finder.find_all_usages_batch(["save"], core, self.root, manifest=m_arg)
+            self.assertEqual(usages["save"].resolved_count, 2)
+            self.assertEqual(usages["save"].importing_modules, ["src/main.rs", "src/sub/child.rs"])
+        db_path = self.root / ".codebase-map/manifest.sqlite"
+        snapshot.write_snapshot(self.root, db_path)
+        with open_snapshot(db_path) as store1:
+            meta1 = {s["name"]: s for s in semantic_store.query_meta_code(store1)["symbols"] if s["file"] == "src/core.rs"}
+        self.assertIn("Store.method", meta1)
+        self.assertIn("inner.sub_fn", meta1)
+        core.write_text(
+            "pub(crate) fn save<T>(x: T) { helper(1); }\nfn helper(z: i32) {}\npub struct Store { pub helper: i32 }\nimpl Store { pub fn method(&self) { let changed = 99; helper(changed); } }\npub mod inner { pub fn sub_fn() {} }\n",
+            encoding="utf-8",
+        )
+        db_path2 = self.root / ".codebase-map/manifest2.sqlite"
+        with open_snapshot(db_path) as store1:
+            snapshot.write_snapshot(self.root, db_path2, previous=store1)
+        with open_snapshot(db_path2) as store2:
+            meta2 = {s["name"]: s for s in semantic_store.query_meta_code(store2)["symbols"] if s["file"] == "src/core.rs"}
+        self.assertEqual(meta1["Store.method"]["interface_hash"], meta2["Store.method"]["interface_hash"])
+        self.assertNotEqual(meta1["Store.method"]["body_hash"], meta2["Store.method"]["body_hash"])
+
+    def test_go_semantics_and_personalized_pagerank_validation(self):
+        from dependency_graph import dependency_graph_metrics
+        from languages.semantic import go_semantics
+        from languages._treesitter import get_parser, get_tags_query, query_tags
+        if get_parser("rust") is not None:
+            parser, _ = get_parser("rust")
+            tree = parser.parse(b"pub struct Store;\npub fn save() { helper(); }\nfn helper() {}\n")
+            self.assertTrue(get_tags_query("rust"))
+            tags = query_tags("rust", tree.root_node)
+            self.assertIn("definition.function", tags)
+            self.assertIn("reference.call", tags)
+
+        class _FakeNode:
+            def __init__(self, ntype, start_b, end_b, row, col, end_row, end_col, children=None, fields=None):
+                self.type = ntype
+                self.start_byte, self.end_byte = start_b, end_b
+                self.start_point, self.end_point = (row, col), (end_row, end_col)
+                self.children = list(children or ())
+                self.named_children = [c for c in self.children if getattr(c, "is_named", True)]
+                self._fields = dict(fields or {})
+                self.is_named = True
+
+            def child_by_field_name(self, name):
+                return self._fields.get(name)
+
+            def children_by_field_name(self, name):
+                val = self._fields.get(name)
+                return val if isinstance(val, list) else ([val] if val is not None else [])
+
+        src = b"package main\nfunc (i *Invoice) Pay() { helper() }\nfunc helper() {}\n"
+        t_node = _FakeNode("type_identifier", 22, 29, 1, 9, 1, 16)
+        p_decl = _FakeNode("parameter_declaration", 19, 29, 1, 6, 1, 16, [t_node], {"type": t_node})
+        recv = _FakeNode("parameter_list", 18, 30, 1, 5, 1, 17, [p_decl])
+        m_name = _FakeNode("field_identifier", 31, 34, 1, 18, 1, 21)
+        c_ident = _FakeNode("identifier", 39, 45, 1, 26, 1, 32)
+        c_expr = _FakeNode("call_expression", 39, 47, 1, 26, 1, 34, [c_ident], {"function": c_ident})
+        m_body = _FakeNode("block", 37, 49, 1, 24, 1, 36, [c_expr])
+        m_node = _FakeNode("method_declaration", 13, 49, 1, 0, 1, 36, [recv, m_name, m_body],
+                           {"receiver": recv, "name": m_name, "body": m_body})
+        h_name = _FakeNode("identifier", 55, 61, 2, 5, 2, 11)
+        h_body = _FakeNode("block", 64, 66, 2, 14, 2, 16)
+        h_node = _FakeNode("function_declaration", 50, 66, 2, 0, 2, 16, [h_name, h_body],
+                           {"name": h_name, "body": h_body})
+        root = _FakeNode("source_file", 0, len(src), 0, 0, 3, 0, [m_node, h_node])
+        sem = go_semantics(root, src)
+        self.assertIsNone(semantic_index._validate(sem, src))
+        self.assertIn({"exported": "Invoice.Pay", "local": "Invoice.Pay"}, sem["exports"])
+        decls = {d["name"]: d for d in sem["declarations"]}
+        self.assertFalse(decls["Invoice.Pay"].get("lexical", True))
+        self.assertTrue(decls["helper"].get("lexical", True))
+
+        graph = {"a.py": ["b.py"], "b.py": [], "x.py": ["y.py"], "y.py": []}
+        uniform = dependency_graph_metrics(graph)["pagerank"]
+        seeded = dependency_graph_metrics(graph, personalization=["a.py"])["pagerank"]
+        weighted = dependency_graph_metrics(graph, personalization={"a.py": 3.0, "x.py": 1.0})["pagerank"]
+        self.assertAlmostEqual(uniform["b.py"], uniform["y.py"])
+        self.assertGreater(seeded["b.py"], seeded["y.py"])
+        self.assertGreater(weighted["b.py"], weighted["y.py"])
+        for bad in ("a.py", b"a.py", [123], {1: 1.0}, {"a.py": True}, {"a.py": -1.0},
+                    {"a.py": float("inf")}, {"a.py": float("nan")}):
+            with self.assertRaises(ValueError):
+                dependency_graph_metrics(graph, personalization=bad)
+
 
 if __name__ == "__main__":
     unittest.main()

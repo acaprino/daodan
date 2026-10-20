@@ -11,9 +11,9 @@ so the receiver type may have no declaration in the file that holds the method.
 
 Go imports name packages (directories) that resolve through the module path in
 go.mod. This adapter does not read it, so imports are recorded with
-`is_internal` False and the snapshot resolves no import edges for Go files.
-Semantic facts (scopes, references) are not extracted either: symbols, spans,
-digests and selective reading work, callers and callees do not.
+`is_internal` False and the snapshot resolves no cross-file import edges for Go
+files, while intra-file semantic scopes, declarations and call references are
+extracted when the Tree-sitter grammar is available.
 
 The regex fallback records a start line only, so snapshot.py infers every span
 as `inferred` and the source reader falls back to the whole file. It does not
@@ -43,6 +43,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .semantic import go_semantics
 
 __all__ = ["adapter"]
 
@@ -260,6 +261,12 @@ def _ts_parse(content: str) -> tuple[ParseResult | None, str | None]:
     syntax_error = check_syntax_errors(tree.root_node)
     if syntax_error is not None:
         notes.append(syntax_error)
+    semantic = None
+    if not tree.root_node.has_error:
+        try:
+            semantic = go_semantics(tree.root_node, src)
+        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
     return ParseResult(
         file_path="",
         language=_LANGUAGE_NAME,
@@ -270,6 +277,7 @@ def _ts_parse(content: str) -> tuple[ParseResult | None, str | None]:
         external_calls=scan_ast_external_calls(tree.root_node, src, content, _LANGUAGE_NAME, _scan_external_calls),
         exported_symbols=list(dict.fromkeys(exported)),
         notes=notes,
+        semantic=semantic,
     ), None
 
 

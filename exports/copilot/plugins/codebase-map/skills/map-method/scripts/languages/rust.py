@@ -38,6 +38,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_rust_comments
+from .semantic import rust_semantics
 
 __all__ = ["adapter"]
 
@@ -420,6 +421,12 @@ def _ts_parse(content: str) -> ParseResult | None:
     syn_err = check_syntax_errors(root)
     if syn_err is not None:
         notes.append(syn_err)
+    semantic = None
+    if not root.has_error:
+        try:
+            semantic = rust_semantics(root, src)
+        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
     return ParseResult(
         file_path="",
         language=_LANGUAGE_NAME,
@@ -430,6 +437,7 @@ def _ts_parse(content: str) -> ParseResult | None:
         external_calls=scan_ast_external_calls(root, src, content, _LANGUAGE_NAME, _scan_external_calls),
         exported_symbols=list(dict.fromkeys(exported)),
         notes=notes,
+        semantic=semantic,
     )
 
 

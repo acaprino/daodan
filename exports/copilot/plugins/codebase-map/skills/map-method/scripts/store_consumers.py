@@ -144,7 +144,7 @@ def _importing_symbols(store, db, source_key, symbols, searched):
             if default_import in names:
                 names.remove(default_import)
             wildcard = any(name.startswith("*") for name in names)
-            if not binding.get("from"):
+            if not binding.get("from") and Path(rel).suffix.lower() != ".rs":
                 wildcard = not names or not names[0].lstrip().startswith("{")
                 if Path(rel).suffix.lower() == ".py":
                     wildcard = True
@@ -155,6 +155,19 @@ def _importing_symbols(store, db, source_key, symbols, searched):
                                 for ending in (".py", "/__init__.py"))
             declared = {part.strip().split(" as ")[0].split(":")[0].strip()
                         for name in names for part in name.strip("{} ").split(",")}
+            suffix = Path(rel).suffix.lower()
+            if suffix in {".java", ".rs"} and binding.get("from") and not wildcard:
+                sep = "." if suffix == ".java" else "::"
+                filtered = set()
+                for member in declared:
+                    qmod = f"{binding['module']}{sep}{member}"
+                    has_q = db.execute("SELECT 1 FROM sem_modules WHERE file=? AND module=?", (rel, qmod)).fetchone()
+                    if has_q is None or db.execute(
+                        "SELECT 1 FROM sem_modules WHERE file=? AND module=? AND target=?",
+                        (rel, qmod, source_key),
+                    ).fetchone() is not None:
+                        filtered.add(member)
+                declared = filtered
             for symbol in symbols:
                 if wildcard or symbol in declared or ((default_import or "default" in declared) and symbol == default_export):
                     yield symbol, rel
@@ -196,19 +209,19 @@ def find_usages(store, db, symbols, source_file, project_root, *, limit=None, ob
                 WHERE file=? AND name=? AND kind IN ('function','class'))
             OR (r.known_unrelated=0 AND r.resolution<>'resolved' AND (
                 EXISTS(SELECT 1 FROM sem_reference_candidates c WHERE c.reference=r.id
-                    AND c.file=? AND c.imported IN (?,'default'))
+                    AND c.file=? AND (c.imported IN (?,'default') OR r.last_name=?))
                 OR (r.has_candidates=0 AND r.last_name=?)))
             ORDER BY r.file,r.rowid"""
         targets = {row[0] for row in db.execute(
             "SELECT id FROM sem_declarations WHERE file=? AND name=? AND kind IN ('function','class')", (source_key, symbol))}
-        for (payload,) in db.execute(query, (source_key, symbol, source_key, symbol, symbol)):
+        for (payload,) in db.execute(query, (source_key, symbol, source_key, symbol, symbol, symbol)):
             ref = _unpack(payload)
             l0, c0, l1, c1 = ref["span"]
             add(symbol, ref["file"], UsageLocation(
                 str(root / ref["file"]), l0, "", "call" if ref["kind"] == "call" else "reference",
                 "resolved-static" if ref["target_id"] in targets else "ast-candidate",
                 c0, l1, c1, ref["span"], ref["caller"], ref["target_id"], ref["reason"]))
-    graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
+    graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".java", ".rs"}
     for rel in sorted(searched):
         if coverage[rel]["status"] == "ast":
             for imported in store.iter_records("imports", path=rel):

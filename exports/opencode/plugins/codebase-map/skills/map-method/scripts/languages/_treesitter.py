@@ -35,10 +35,12 @@ __all__ = [
     "extract_ast_calls",
     "get_parser",
     "get_query",
+    "get_tags_query",
     "load_failure",
     "mask_comments",
     "node_text",
     "query_captures",
+    "query_tags",
     "scan_ast_external_calls",
 ]
 
@@ -269,6 +271,23 @@ def query_captures(language: str, sexp: str, root: Any) -> dict[str, list[Any]]:
         return out
     except Exception:
         return {}
+
+
+def get_tags_query(language: str) -> str | None:
+    """Return the bundled tree-sitter tags.scm query from tree-sitter-language-pack when available."""
+    pack_name = _LANG_PACK_ALIASES.get(language, language)
+    try:
+        from tree_sitter_language_pack import get_tags_query as _pack_tags_query  # type: ignore
+
+        return _pack_tags_query(pack_name)
+    except Exception:
+        return None
+
+
+def query_tags(language: str, root: Any) -> dict[str, list[Any]]:
+    """Run the official tree-sitter tags.scm query for `language` against `root`."""
+    sexp = get_tags_query(language)
+    return query_captures(language, sexp, root) if sexp else {}
 
 
 _CALL_NODE_TYPES = frozenset({

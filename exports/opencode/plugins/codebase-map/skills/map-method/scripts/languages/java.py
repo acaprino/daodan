@@ -26,6 +26,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .semantic import java_semantics
 
 __all__ = ["adapter"]
 
@@ -320,6 +321,13 @@ def _ts_parse(content: str) -> ParseResult | None:
     if syn_err is not None:
         notes.append(syn_err)
 
+    semantic = None
+    if not root.has_error:
+        try:
+            semantic = java_semantics(root, src)
+        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+
     return ParseResult(
         file_path="",
         language="java",
@@ -330,6 +338,7 @@ def _ts_parse(content: str) -> ParseResult | None:
         external_calls=scan_ast_external_calls(root, src, content, "java", _scan_external_calls),
         exported_symbols=exported,
         notes=notes,
+        semantic=semantic,
     )
 
 

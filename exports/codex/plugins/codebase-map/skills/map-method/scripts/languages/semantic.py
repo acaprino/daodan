@@ -688,3 +688,554 @@ class _JavaScriptEvidence(_Evidence):
             self.block(f"unsupported lexical construct: {t}")
         for child in node.named_children:
             self.walk(child)
+
+
+def treesitter_semantics(root, src, language):
+    return _TreeSitterEvidence(src, language).extract(root)
+
+
+def java_semantics(root, src):
+    return treesitter_semantics(root, src, "java")
+
+
+def rust_semantics(root, src):
+    return treesitter_semantics(root, src, "rust")
+
+
+def go_semantics(root, src):
+    return treesitter_semantics(root, src, "go")
+
+
+_TS_SKIP_NODES = frozenset({
+    "line_comment", "block_comment", "doc_comment", "comment",
+    "package_declaration", "package_clause", "modifiers", "marker_annotation",
+    "annotation", "attribute_item", "inner_attribute_item",
+    "type_identifier", "primitive_type", "generic_type", "scoped_type_identifier",
+    "qualified_type", "integral_type", "floating_point_type", "boolean_type",
+    "void_type", "array_type", "slice_type", "pointer_type", "reference_type",
+    "tuple_type", "unit_type", "map_type", "channel_type", "function_type",
+    "struct_type", "interface_type", "wildcard", "type_arguments",
+    "type_parameters", "type_parameter_list", "where_clause", "superclass",
+    "super_interfaces", "extends_interfaces", "throws", "macro_definition",
+    "string_literal", "raw_string_literal", "interpreted_string_literal",
+    "character_literal", "char_literal", "rune_literal", "decimal_integer_literal",
+    "hex_integer_literal", "octal_integer_literal", "binary_integer_literal",
+    "integer_literal", "int_literal", "decimal_floating_point_literal",
+    "hex_floating_point_literal", "float_literal", "imaginary_literal",
+    "boolean_literal", "true", "false", "null_literal", "nil", "iota",
+})
+_TS_CLASS_NODES = frozenset({
+    "class_declaration", "interface_declaration", "enum_declaration",
+    "record_declaration", "annotation_type_declaration",
+    "struct_item", "enum_item", "union_item", "trait_item", "type_item",
+})
+_TS_CALLABLE_NODES = frozenset({
+    "method_declaration", "constructor_declaration", "compact_constructor_declaration",
+    "function_item", "function_declaration",
+    "lambda_expression", "closure_expression", "func_literal",
+})
+_TS_ANON_CALLABLES = {
+    "lambda_expression": "(lambda)",
+    "closure_expression": "(closure)",
+    "func_literal": "(func)",
+}
+_TS_BLOCK_NODES = frozenset({
+    "block", "for_statement", "enhanced_for_statement",
+    "switch_block_statement_group", "switch_rule", "try_statement",
+    "try_with_resources_statement", "catch_clause", "for_expression",
+    "while_expression", "loop_expression", "match_arm", "if_statement",
+    "expression_switch_statement", "type_switch_statement", "select_statement",
+    "expression_case", "default_case", "type_case", "communication_case",
+})
+_TS_MEMBER_NODES = frozenset({
+    "field_access", "field_expression", "scoped_identifier",
+    "scoped_type_identifier", "selector_expression",
+})
+
+
+class _TreeSitterEvidence(_Evidence):
+    """Unified Tree-sitter semantic extractor backed by ._treesitter helpers and tags.scm."""
+
+    def __init__(self, src, language):
+        super().__init__("tree-sitter")
+        self.src = src
+        self.language = language
+        self.tag_calls = set()
+        self.writes = []
+
+    def extract(self, root):
+        from ._treesitter import query_tags
+
+        for node in query_tags(self.language, root).get("reference.call", ()):
+            if node.type != "macro_invocation":
+                self.tag_calls.add((node.start_byte, node.end_byte, node.type))
+        self.walk(root)
+        write_ids = {d["id"] for d in self.writes}
+        bindings = {(d["scope"], d["name"]) for d in self.data["declarations"]
+                    if d["id"] not in write_ids and d.get("lexical") is not False}
+        bindings.update((i["scope"], i["local"]) for i in self.data["imports"])
+        for declaration in self.writes:
+            scope = declaration["scope"]
+            while (scope, declaration["name"]) not in bindings and scope != "module":
+                scope = self.scope_by_id[scope]["parent"]
+            declaration["scope"] = scope
+            declaration["qualified_name"] = self.qualified(declaration["name"], scope)
+        return self.finish()
+
+    def text(self, node):
+        from ._treesitter import node_text
+
+        return node_text(node, self.src) if node is not None else ""
+
+    @staticmethod
+    def span(node):
+        return [node.start_point[0] + 1, node.start_point[1], node.end_point[0] + 1, node.end_point[1]]
+
+    def parts(self, node):
+        if node is None:
+            return []
+        if node.type in ("identifier", "type_identifier", "this", "self", "super", "crate"):
+            return [self.text(node)]
+        if node.type == "generic_function":
+            return self.parts(node.child_by_field_name("function"))
+        if node.type == "generic_type":
+            first = next((c for c in node.named_children if c.type != "type_arguments"), None)
+            return self.parts(first)
+        if node.type in _TS_MEMBER_NODES:
+            obj = (node.child_by_field_name("object") or node.child_by_field_name("scope")
+                   or node.child_by_field_name("path") or node.child_by_field_name("value")
+                   or node.child_by_field_name("operand"))
+            field = node.child_by_field_name("field") or node.child_by_field_name("name")
+            if obj is None and len(node.named_children) >= 2:
+                obj, field = node.named_children[0], node.named_children[-1]
+            prefix = self.parts(obj)
+            if prefix and field is not None and field.type in ("identifier", "type_identifier", "field_identifier"):
+                return prefix + [self.text(field)]
+        return []
+
+    def _is_exported(self, node, name):
+        if self.scope != "module" or not name:
+            return False
+        if self.language == "java":
+            return not any(c.type == "modifiers" and "private" in self.text(c).split() for c in node.children)
+        if self.language == "rust":
+            return any(
+                c.type == "visibility_modifier"
+                and self.text(c).strip().startswith("pub")
+                and self.text(c).strip() != "pub(self)"
+                for c in node.children
+            )
+        if self.language == "go":
+            return name.split(".")[-1][:1].isupper()
+        return False
+
+    def _bind_pattern(self, node, kind):
+        if node is None:
+            return
+        t = node.type
+        if t in ("identifier", "shorthand_field_identifier"):
+            name = self.text(node)
+            if name != "_":
+                self.declaration(name, kind, self.span(node))
+        elif t in ("_", "remaining_field_pattern", "rest_pattern", "mutable_specifier", "type_identifier", "scoped_identifier"):
+            return
+        elif t in ("mut_pattern", "reference_pattern", "ref_pattern", "tuple_pattern", "slice_pattern", "or_pattern", "captured_pattern"):
+            for child in node.named_children:
+                if child.type != "mutable_specifier":
+                    self._bind_pattern(child, kind)
+        elif t == "tuple_struct_pattern":
+            for child in node.named_children:
+                if child != node.child_by_field_name("type"):
+                    self._bind_pattern(child, kind)
+        elif t == "struct_pattern":
+            for child in node.named_children:
+                if child.type == "field_pattern":
+                    pat = child.child_by_field_name("pattern")
+                    if pat is not None:
+                        self._bind_pattern(pat, kind)
+                    else:
+                        for sub in child.named_children:
+                            if sub.type in ("shorthand_field_identifier", "identifier"):
+                                self._bind_pattern(sub, kind)
+        elif t not in _TS_SKIP_NODES:
+            self.block(f"unsupported binding pattern: {t}")
+
+    def _write_binding(self, node):
+        if node is None:
+            return
+        if node.type == "identifier":
+            name = self.text(node)
+            if name != "_":
+                self.declaration(name, "binding", self.span(node))
+                self.writes.append(self.data["declarations"][-1])
+        elif node.type == "expression_list":
+            for child in node.named_children:
+                self._write_binding(child)
+        else:
+            self.walk(node)
+
+    def _bind_params(self, params):
+        if params is None:
+            return
+        if params.type == "identifier":
+            self._bind_pattern(params, "parameter")
+            return
+        for param in params.named_children:
+            pt = param.type
+            if pt == "identifier":
+                self._bind_pattern(param, "parameter")
+            elif pt == "self_parameter":
+                self.declaration("self", "parameter", self.span(param))
+            elif pt == "parameter":
+                self._bind_pattern(param.child_by_field_name("pattern"), "parameter")
+            elif pt in ("parameter_declaration", "variadic_parameter_declaration"):
+                for name in param.children_by_field_name("name"):
+                    self._bind_pattern(name, "parameter")
+            elif pt in ("formal_parameter", "spread_parameter"):
+                pname = param.child_by_field_name("name")
+                if pname is None:
+                    decl = next((c for c in param.named_children if c.type == "variable_declarator"), None)
+                    pname = decl.child_by_field_name("name") if decl is not None else None
+                self._bind_pattern(pname, "parameter")
+            else:
+                self._bind_pattern(param.child_by_field_name("name") or param, "parameter")
+
+    def _use_tree(self, node, prefix=""):
+        if node is None:
+            return
+        t = node.type
+        if t == "use_wildcard":
+            self.block("wildcard use declaration introduces unknown bindings")
+        elif t == "identifier":
+            name = self.text(node)
+            full = f"{prefix}::{name}" if prefix else name
+            self.data["imports"].append({
+                "scope": self.scope, "local": name, "module": full,
+                "imported": name, "mode": "named", "span": self.span(node),
+            })
+        elif t == "scoped_identifier":
+            raw = self.text(node)
+            full = f"{prefix}::{raw}" if prefix else raw
+            name_node = node.child_by_field_name("name")
+            imported = self.text(name_node) if name_node is not None else full.rsplit("::", 1)[-1]
+            self.data["imports"].append({
+                "scope": self.scope, "local": imported, "module": full,
+                "imported": imported, "mode": "named", "span": self.span(name_node or node),
+            })
+        elif t == "use_as_clause":
+            raw_path = self.text(node.child_by_field_name("path"))
+            alias_node = node.child_by_field_name("alias")
+            full = f"{prefix}::{raw_path}" if prefix else raw_path
+            if alias_node is not None and self.text(alias_node) != "_":
+                if raw_path == "self" and prefix:
+                    self.data["imports"].append({
+                        "scope": self.scope, "local": self.text(alias_node),
+                        "module": prefix, "imported": "*",
+                        "mode": "namespace", "span": self.span(alias_node),
+                    })
+                else:
+                    self.data["imports"].append({
+                        "scope": self.scope, "local": self.text(alias_node),
+                        "module": full, "imported": raw_path.rsplit("::", 1)[-1],
+                        "mode": "named", "span": self.span(alias_node),
+                    })
+        elif t == "scoped_use_list":
+            path_node = node.child_by_field_name("path")
+            list_node = node.child_by_field_name("list")
+            sub = self.text(path_node) if path_node is not None else ""
+            full_prefix = f"{prefix}::{sub}" if prefix and sub else (sub or prefix)
+            for item in (list_node.named_children if list_node is not None else ()):
+                if item.type == "self":
+                    self.data["imports"].append({
+                        "scope": self.scope, "local": full_prefix.rsplit("::", 1)[-1],
+                        "module": full_prefix, "imported": "*", "mode": "namespace", "span": self.span(item),
+                    })
+                else:
+                    self._use_tree(item, full_prefix)
+        elif t == "use_list":
+            for item in node.named_children:
+                self._use_tree(item, prefix)
+
+    def _go_import_spec(self, spec):
+        path_node = spec.child_by_field_name("path")
+        if path_node is None:
+            return
+        module = self.text(path_node).strip('"`')
+        alias_node = spec.child_by_field_name("name")
+        alias = self.text(alias_node) if alias_node is not None else None
+        if alias == ".":
+            self.block("dot import introduces unknown package bindings")
+        elif alias != "_":
+            local = alias or module.rsplit("/", 1)[-1]
+            if local:
+                self.data["imports"].append({
+                    "scope": self.scope, "local": local, "module": module,
+                    "imported": "*", "mode": "namespace", "span": self.span(alias_node or spec),
+                })
+
+    def walk(self, node, create_block=True):
+        if node is None or node.type in _TS_SKIP_NODES:
+            return
+        t = node.type
+        if t == "import_declaration":
+            if self.language == "go":
+                for child in node.named_children:
+                    if child.type == "import_spec":
+                        self._go_import_spec(child)
+                    elif child.type == "import_spec_list":
+                        for spec in child.named_children:
+                            if spec.type == "import_spec":
+                                self._go_import_spec(spec)
+                return
+            if any(c.type == "asterisk" for c in node.children):
+                self.block("wildcard import introduces unknown bindings")
+                return
+            full = self.text(node).removeprefix("import").strip().rstrip(";").strip()
+            is_static = full.startswith("static ")
+            if is_static:
+                full = full.removeprefix("static").strip()
+            module = (full.rsplit(".", 1)[0] if "." in full else full) if is_static else full
+            imported = full.rsplit(".", 1)[-1]
+            if module and imported:
+                self.data["imports"].append({
+                    "scope": self.scope, "local": imported, "module": module,
+                    "imported": imported, "mode": "named", "span": self.span(node),
+                })
+            return
+        if t == "use_declaration":
+            self._use_tree(node.child_by_field_name("argument"))
+            return
+        if t == "type_declaration":
+            for spec in node.named_children:
+                if spec.type in ("type_spec", "type_alias"):
+                    name_node = spec.child_by_field_name("name")
+                    if name_node is not None:
+                        name = self.text(name_node)
+                        self.declaration(name, "class", self.span(spec))
+                        if self._is_exported(spec, name):
+                            self.data["exports"].append({"exported": name, "local": name})
+            return
+        if t in _TS_CLASS_NODES:
+            name_node = node.child_by_field_name("name")
+            name = self.text(name_node) if name_node is not None else None
+            identity = self.declaration(name, "class", self.span(node)) if name else None
+            if self._is_exported(node, name):
+                self.data["exports"].append({"exported": name, "local": name})
+            body = node.child_by_field_name("body")
+            if body is not None and (self.language == "java" or t == "trait_item"):
+                scope = self.new_scope("class", self.span(node))
+                if identity is not None:
+                    self.scope_by_id[scope]["declaration"] = identity
+                previous = self.scope
+                self.scope = scope
+                if t == "record_declaration":
+                    self._bind_params(node.child_by_field_name("parameters"))
+                self.walk(body, create_block=False)
+                self.scope = previous
+            return
+        if t == "impl_item":
+            type_node = node.child_by_field_name("type")
+            trait_node = node.child_by_field_name("trait")
+            if trait_node is not None and type_node is not None:
+                impl_name = f"{self.text(trait_node)} for {self.text(type_node)}"
+            elif type_node is not None:
+                impl_name = self.text(type_node)
+            else:
+                impl_name = "?"
+            identity = self.declaration(impl_name, "class", self.span(node))
+            self.data["declarations"][-1]["lexical"] = False
+            scope = self.new_scope("class", self.span(node))
+            self.scope_by_id[scope]["declaration"] = identity
+            previous = self.scope
+            self.scope = scope
+            self.walk(node.child_by_field_name("body"), create_block=False)
+            self.scope = previous
+            return
+        if t == "mod_item":
+            name_node = node.child_by_field_name("name")
+            identity = None
+            if name_node is not None:
+                name = self.text(name_node)
+                identity = self.declaration(name, "class", self.span(node))
+                if self._is_exported(node, name):
+                    self.data["exports"].append({"exported": name, "local": name})
+            body = node.child_by_field_name("body")
+            if body is not None:
+                scope = self.new_scope("block", self.span(body))
+                if identity is not None:
+                    self.scope_by_id[scope]["declaration"] = identity
+                previous = self.scope
+                self.scope = scope
+                self.walk(body, create_block=False)
+                self.scope = previous
+            return
+        if t in _TS_CALLABLE_NODES:
+            anon = _TS_ANON_CALLABLES.get(t)
+            name_node = node.child_by_field_name("name")
+            receiver = node.child_by_field_name("receiver") if self.language == "go" and t == "method_declaration" else None
+            if anon:
+                name = anon
+            elif receiver is not None:
+                decl = next((c for c in receiver.children if c.type == "parameter_declaration"), None)
+                tnode = decl.child_by_field_name("type") if decl is not None else None
+                mname = self.text(name_node)
+                rname = self.text(tnode).strip().lstrip("*").split("[", 1)[0].strip() if tnode is not None else ""
+                name = f"{rname}.{mname}" if rname else mname
+            else:
+                name = self.text(name_node) if name_node is not None else "(constructor)"
+            non_lexical = bool(anon or receiver is not None or (
+                self.language == "rust" and self.scope_by_id[self.scope]["kind"] == "class"
+            ))
+            identity = self.declaration(name, "function", self.span(node))
+            if non_lexical:
+                self.data["declarations"][-1]["lexical"] = False
+            if not anon and (receiver is not None or not non_lexical) and self._is_exported(node, name):
+                self.data["exports"].append({"exported": name, "local": name})
+            scope = self.new_scope("function", self.span(node), caller=identity)
+            previous = self.scope, self.caller
+            self.scope, self.caller = scope, identity
+            self._bind_params(receiver)
+            self._bind_params(node.child_by_field_name("parameters"))
+            self.walk(node.child_by_field_name("body"), create_block=False)
+            self.scope, self.caller = previous
+            return
+        if t in ("field_declaration", "constant_declaration", "local_variable_declaration"):
+            for child in node.named_children:
+                if child.type == "variable_declarator":
+                    self._bind_pattern(child.child_by_field_name("name"), "binding")
+                    self.walk(child.child_by_field_name("value"))
+            return
+        if t in ("enum_constant", "const_item", "static_item", "resource"):
+            self._bind_pattern(node.child_by_field_name("name"), "binding")
+            self.walk(node.child_by_field_name("value") or node.child_by_field_name("arguments"))
+            self.walk(node.child_by_field_name("body"))
+            return
+        if t in ("const_declaration", "var_declaration"):
+            for spec in node.named_children:
+                if spec.type in ("const_spec", "var_spec"):
+                    self.walk(spec.child_by_field_name("value"))
+                    for n in spec.children_by_field_name("name"):
+                        self._bind_pattern(n, "binding")
+            return
+        if t in ("let_declaration", "let_condition"):
+            self.walk(node.child_by_field_name("value"))
+            self._bind_pattern(node.child_by_field_name("pattern"), "binding")
+            return
+        if t == "short_var_declaration":
+            self.walk(node.child_by_field_name("right"))
+            left = node.child_by_field_name("left")
+            if left is not None:
+                for ident in left.named_children if left.type == "expression_list" else [left]:
+                    if ident.type == "identifier":
+                        self._bind_pattern(ident, "binding")
+            return
+        if t in ("assignment_expression", "augmented_assignment_expression", "assignment_statement"):
+            self._write_binding(node.child_by_field_name("left"))
+            self.walk(node.child_by_field_name("right"))
+            return
+        if t in ("update_expression", "inc_statement", "dec_statement"):
+            self._write_binding(node.child_by_field_name("argument") or (node.named_children[0] if node.named_children else None))
+            return
+        if t == "if_expression":
+            scope = self.new_scope("block", self.span(node))
+            previous = self.scope
+            self.scope = scope
+            self.walk(node.child_by_field_name("condition"))
+            self.walk(node.child_by_field_name("consequence"), create_block=False)
+            self.scope = previous
+            self.walk(node.child_by_field_name("alternative"))
+            return
+        if t in _TS_BLOCK_NODES and create_block:
+            if t == "enhanced_for_statement":
+                self.walk(node.child_by_field_name("value"))
+            elif t == "for_expression":
+                self.walk(node.child_by_field_name("value"))
+            scope = self.new_scope("block", self.span(node))
+            previous = self.scope
+            self.scope = scope
+            if t == "enhanced_for_statement":
+                self._bind_pattern(node.child_by_field_name("name"), "binding")
+            elif t == "catch_clause":
+                param = next((c for c in node.named_children if c.type == "catch_formal_parameter"), None)
+                if param is not None:
+                    self._bind_pattern(param.child_by_field_name("name"), "binding")
+            elif t == "for_expression":
+                self._bind_pattern(node.child_by_field_name("pattern"), "binding")
+            elif t == "match_arm":
+                pat = node.child_by_field_name("pattern")
+                for sub in (pat.named_children if pat is not None and pat.type == "match_pattern" else ([pat] if pat else ())):
+                    self._bind_pattern(sub, "binding")
+            for child in node.named_children:
+                if child.type == "range_clause":
+                    self.scope = previous
+                    self.walk(child.child_by_field_name("right"))
+                    self.scope = scope
+                    left = child.child_by_field_name("left")
+                    for ident in (left.named_children if left is not None and left.type == "expression_list" else ([left] if left else ())):
+                        self._bind_pattern(ident, "binding")
+                elif child.type not in ("catch_formal_parameter", "match_pattern") and child not in (
+                    node.child_by_field_name("pattern"),
+                    node.child_by_field_name("name") if t == "enhanced_for_statement" else None,
+                    node.child_by_field_name("value") if t in ("enhanced_for_statement", "for_expression") else None,
+                ):
+                    self.walk(child, create_block=not (t == "for_expression" and child == node.child_by_field_name("body")))
+            self.scope = previous
+            return
+        if t == "macro_invocation":
+            self.note("macro expansion bindings are not inferred")
+            return
+        if t in ("call_expression", "method_invocation", "object_creation_expression") or (
+            node.start_byte, node.end_byte, t
+        ) in self.tag_calls:
+            if t == "method_invocation":
+                obj = node.child_by_field_name("object")
+                name = node.child_by_field_name("name")
+                obj_parts = self.parts(obj)
+                if obj is None and name is not None:
+                    parts = [self.text(name)]
+                elif obj_parts and name is not None:
+                    parts = obj_parts + [self.text(name)]
+                elif name is not None:
+                    parts = ["(expr)", self.text(name)]
+                else:
+                    parts = []
+                target_node = name if obj is None and name is not None else node
+                if obj is not None and not obj_parts:
+                    self.walk(obj)
+            elif t == "object_creation_expression":
+                target_node = node.child_by_field_name("type") or node
+                parts = self.parts(node.child_by_field_name("type"))
+            else:
+                target_node = node.child_by_field_name("function") or node
+                parts = self.parts(target_node)
+                if target_node is not node and not parts:
+                    self.walk(target_node)
+            self.reference(
+                parts,
+                "call",
+                self.span(target_node),
+                "dynamic-callee" if (not parts or parts[0] == "(expr)") else None,
+            )
+            self.walk(node.child_by_field_name("arguments"))
+            for child in node.named_children:
+                if child.type == "class_body":
+                    scope = self.new_scope("class", self.span(child))
+                    previous = self.scope
+                    self.scope = scope
+                    self.walk(child, create_block=False)
+                    self.scope = previous
+            return
+        if t in _TS_MEMBER_NODES:
+            parts = self.parts(node)
+            if parts:
+                self.reference(parts, "read", self.span(node))
+            else:
+                self.walk(node.child_by_field_name("object") or node.child_by_field_name("value")
+                          or node.child_by_field_name("path") or node.child_by_field_name("operand"))
+            return
+        if t == "identifier":
+            self.reference([self.text(node)], "read", self.span(node))
+            return
+        for child in node.named_children:
+            self.walk(child)
+

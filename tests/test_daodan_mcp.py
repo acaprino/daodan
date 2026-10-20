@@ -236,6 +236,12 @@ class KernelMcpRenderingTests(unittest.TestCase):
                 if host != "pi":
                     self.assertNotIn("mcpServers", self.catalog(host, name)["plugins"][0])
 
+    def test_codebase_map_server_declares_tree_sitter_script_dependencies(self):
+        script = REPO_ROOT / "plugins/codebase-map" / server_path("codebase-map")
+        header = "\n".join(script.read_text(encoding="utf-8").splitlines()[:6])
+        self.assertIn("tree-sitter>=0.23", header)
+        self.assertIn("tree-sitter-language-pack>=1.0", header)
+
     def test_missing_or_unsupported_mcp_binding_blocks_publication_on_every_host(self):
         for host in HOSTS:
             for failure in ("missing", "unsupported"):

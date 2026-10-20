@@ -484,7 +484,7 @@ def _graph_importing_modules(symbols: list[str], source_file: Path,
                 # name an unrelated export with the same spelling.
                 names.remove(default_import)
             wildcard = any(name.startswith("*") for name in names)
-            if not binding.get("from"):
+            if not binding.get("from") and Path(rel).suffix.lower() != ".rs":
                 # Python import and a CommonJS module binding expose every
                 # exported member; destructuring names only exposes its keys.
                 wildcard = not names or not names[0].lstrip().startswith("{")
@@ -501,6 +501,14 @@ def _graph_importing_modules(symbols: list[str], source_file: Path,
                 )
             declared = {part.strip().split(" as ")[0].split(":")[0].strip()
                         for name in names for part in name.strip("{} ").split(",")}
+            suffix = Path(rel).suffix.lower()
+            if suffix in {".java", ".rs"} and binding.get("from") and not wildcard:
+                sep = "." if suffix == ".java" else "::"
+                declared = {
+                    member for member in declared
+                    if f"{binding['module']}{sep}{member}" not in modules
+                    or source_key in modules.get(f"{binding['module']}{sep}{member}", [])
+                }
             for symbol in symbols:
                 default_match = (default_import or "default" in declared) and symbol == default_export
                 if (wildcard or symbol in declared or default_match) and rel not in importing[symbol]:
@@ -549,7 +557,7 @@ def find_all_usages_batch(
             db = stack.enter_context(consumer_reader(manifest, fresh=fresh, observations=source_observations))
             return find_usages(manifest, db, valid_symbols, source_file, project_root,
                                limit=limit, observations=source_observations)
-    graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
+    graph_language = source_file.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".java", ".rs"}
     from semantic_index import _index_reusable, build_semantic_index
 
     # A prebuilt index is reusable within the same observed-source operation.
@@ -587,8 +595,11 @@ def find_all_usages_batch(
                 continue
             candidate = (not reference.get("known_unrelated") and reference["resolution"] != "resolved"
                          and ((source_key in reference.get("candidate_files", [])
-                               and reference.get("imported_name") in {symbol, "default"})
-                              or any(source_key in item["files"] and item["imported"] in {symbol, "default"}
+                               and (reference.get("imported_name") in {symbol, "default"}
+                                    or (reference["parts"] and reference["parts"][-1] == symbol)))
+                              or any(source_key in item["files"]
+                                     and (item["imported"] in {symbol, "default"}
+                                          or (reference["parts"] and reference["parts"][-1] == symbol))
                                      for item in reference.get("candidate_bindings", []))
                               or (not reference.get("candidate_files") and reference["parts"]
                                   and reference["parts"][-1] == symbol)))

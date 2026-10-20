@@ -8,7 +8,7 @@ This module reads no source files and changes no incremental-update decision.
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 import math
 
 
@@ -82,10 +82,13 @@ def dependency_graph_metrics(
     damping: float = 0.85,
     tolerance: float = 1e-10,
     max_iterations: int = 100,
+    personalization: Mapping[str, float] | Iterable[str] | None = None,
 ) -> dict:
     """Return cycles and PageRank on importer-to-dependency edges.
 
-    Rank includes uniform teleportation and redistributes dangling-node mass.
+    Rank uses uniform teleportation by default, or seed-weighted teleportation
+    (Personalized PageRank) when ``personalization`` is supplied, and
+    redistributes dangling-node mass with the same distribution.
     ``tolerance`` bounds the L1 change of the complete probability vector.
     The final iterate is returned even when the iteration limit is reached,
     with explicit convergence metadata. No rank threshold classifies a file.
@@ -101,14 +104,39 @@ def dependency_graph_metrics(
 
     adjacency = _normalise_graph(graph)
     nodes = list(adjacency)
-    ranks = {node: 1 / len(nodes) for node in nodes}
+    weights: dict[str, float] | None = None
+    if personalization is not None:
+        if isinstance(personalization, Mapping):
+            for key, val in personalization.items():
+                if not isinstance(key, str):
+                    raise ValueError("personalization keys must be string nodes")
+                if isinstance(val, bool) or not isinstance(val, (int, float)) or not math.isfinite(val) or val < 0:
+                    raise ValueError("personalization weights must be finite non-negative numbers")
+            raw = {n: float(personalization.get(n, 0.0)) for n in nodes}
+        else:
+            if isinstance(personalization, (str, bytes)) or not isinstance(personalization, Iterable):
+                raise ValueError("personalization must be a mapping or iterable of string nodes")
+            seed_list = list(personalization)
+            if any(not isinstance(item, str) for item in seed_list):
+                raise ValueError("personalization nodes must be strings")
+            seeds = set(seed_list)
+            raw = {n: 1.0 if n in seeds else 0.0 for n in nodes}
+        if nodes:
+            total_w = math.fsum(v for v in raw.values() if v > 0)
+            if total_w > 0:
+                weights = {n: (raw[n] / total_w if raw[n] > 0 else 0.0) for n in nodes}
+    ranks = dict(weights) if weights is not None else {node: 1 / len(nodes) for node in nodes}
     converged = not nodes
     iterations = 0
     if nodes:
         for iterations in range(1, max_iterations + 1):
             dangling = math.fsum(ranks[node] for node in nodes if not adjacency[node])
-            base = (1 - damping + damping * dangling) / len(nodes)
-            updated = {node: base for node in nodes}
+            if weights is None:
+                base = (1 - damping + damping * dangling) / len(nodes)
+                updated = {node: base for node in nodes}
+            else:
+                scale = 1 - damping + damping * dangling
+                updated = {node: scale * weights[node] for node in nodes}
             for node, targets in adjacency.items():
                 if targets:
                     contribution = damping * ranks[node] / len(targets)

@@ -211,7 +211,8 @@ def parser_fingerprint() -> str:
             digest.update(helper.read_bytes())
             digest.update(b"\0")
     packages = ("tree-sitter", "tree-sitter-language-pack", "tree-sitter-java",
-                "tree-sitter-javascript", "tree-sitter-typescript", "tree-sitter-rust")
+                "tree-sitter-javascript", "tree-sitter-typescript", "tree-sitter-rust",
+                "tree-sitter-go")
     versions = {}
     for package in packages:
         try:
@@ -1274,6 +1275,25 @@ def iter_resolved_imports(manifest: dict, config: dict | None = None, *,
                 hit = resolve_module(module, importer, known)
                 if hit and (include_self or hit != importer):
                     resolved.add(hit)
+                if suffix in {".java", ".rs"}:
+                    sep = "." if suffix == ".java" else "::"
+                    for binding in bindings:
+                        if binding.get("module") == module and binding.get("from"):
+                            for name in binding.get("names", []):
+                                if name == "*":
+                                    continue
+                                member = name.split(" as ", 1)[0].strip()
+                                qualified = f"{module}{sep}{member}"
+                                mhit = resolve_module(qualified, importer, known)
+                                if mhit and (include_self or mhit != importer):
+                                    resolved.add(mhit)
+                                    modules[qualified] = [mhit]
+                                elif hit and (include_self or hit != importer):
+                                    modules[qualified] = [hit]
+            if suffix == ".rs" and " as " in module:
+                clean_mod = module.split(" as ", 1)[0].strip()
+                if clean_mod and resolved:
+                    modules[clean_mod] = sorted(resolved)
             for candidate in candidates:
                 hit = lookup(candidate, importer)
                 if hit and (include_self or hit != importer):
@@ -1320,6 +1340,54 @@ def resolve_module(
         candidates.append(joined)
         candidates += [joined + ext for ext in _MODULE_EXTENSIONS]
         candidates += [f"{joined}/{name}" for name in _PACKAGE_FILES]
+    elif importer.lower().endswith(".rs"):
+        raw = module.split(" as ", 1)[0].strip()
+        if not raw.startswith(("crate::", "self::", "super::")):
+            return None
+        base = importer.rsplit("/", 1)[0] if "/" in importer else ""
+        stem = importer.rsplit("/", 1)[-1][:-3]
+        if raw.startswith("crate::"):
+            rel_mod = raw[len("crate::"):].replace("::", "/")
+            parts = importer.split("/")
+            src_idx = max((idx for idx, seg in enumerate(parts[:-1]) if seg == "src"), default=-1)
+            crate_root = "/".join(parts[:src_idx + 1]) if src_idx >= 0 else base
+            prefixes = [f"{crate_root}/{rel_mod}" if crate_root else rel_mod]
+            if crate_root:
+                prefixes.append(rel_mod)
+        elif raw.startswith("self::"):
+            rel_mod = raw[len("self::"):].replace("::", "/")
+            mod_dir = base if stem in {"mod", "lib", "main"} else (f"{base}/{stem}" if base else stem)
+            prefixes = [f"{mod_dir}/{rel_mod}" if mod_dir else rel_mod]
+        else:
+            prefixes = []
+            for start_dir in (
+                [base]
+                if stem in {"mod", "lib", "main"}
+                else [f"{base}/{stem}" if base else stem, base]
+            ):
+                parent = start_dir
+                rest = raw
+                underflow = False
+                while rest.startswith("super::"):
+                    rest = rest[len("super::"):]
+                    if not parent:
+                        underflow = True
+                        break
+                    parent = parent.rsplit("/", 1)[0] if "/" in parent else ""
+                if not underflow:
+                    rel_mod = rest.replace("::", "/")
+                    cand = f"{parent}/{rel_mod}" if parent else rel_mod
+                    if cand not in prefixes:
+                        prefixes.append(cand)
+        for pref in prefixes:
+            candidates += [pref + ".rs", f"{pref}/mod.rs"]
+            if "/" in pref:
+                mod_parent = pref.rsplit("/", 1)[0]
+                candidates += [mod_parent + ".rs", f"{mod_parent}/mod.rs"]
+        for candidate in candidates:
+            if candidate in known.get(candidate.rsplit("/", 1)[-1], []):
+                return candidate
+        return None
     else:
         specifiers = _expand_alias(module, aliases) + [module]
         for spec in specifiers:
