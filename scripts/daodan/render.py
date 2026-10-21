@@ -774,6 +774,19 @@ def render_plugin(
             raise RenderError(f"{adapter.host}: missing skill inventory binding")
         markdown(reference / "host-inventory.md", inventory)
 
+    if plugin.name == "senior-review":
+        from .reviewer_catalog import reviewer_catalog
+
+        registry = dict(plugin_registry or {})
+        if not registry:
+            from .load import load_plugin
+            registry = {p.parent.name: load_plugin(p.parent)
+                        for p in sorted(plugin.root.parent.glob("*/plugin.toml"))}
+        reference = staging_root / "skills/review-preparation/references"
+        _write_text(reference / "reviewer-catalog.json", json.dumps(
+            reviewer_catalog(registry, adapter.host, adapter.layout.get("roles")),
+            sort_keys=True, indent=2, ensure_ascii=False) + "\n")
+
     for role in plugin.components.roles:
         target = staging_root / render_path(adapter.layout["roles"], {**context, "role": role})
         override = replacements.get(f"role:{role}")

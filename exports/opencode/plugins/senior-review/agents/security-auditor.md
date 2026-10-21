@@ -1,5 +1,5 @@
 ---
-description: 'Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).'
+description: 'Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).'
 mode: subagent
 permissions:
   - action: "*"

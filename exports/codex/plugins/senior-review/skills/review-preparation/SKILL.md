@@ -105,9 +105,9 @@ the actual candidate and leave any gate needing that comparison unavailable.
 | Always, before the variant | `references/candidate-grounding.md`: target kind, policy from the base commit, ground-truth gate, evidence pack, budget and roster by kind |
 | Then | `references/<variant>.md` |
 | Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
+| Reviewer catalog | `references/reviewer-catalog.json` (compiled): reviewer identities, triggers, prerequisites, host bindings. Never scan role kernels at runtime |
 
-Read `references/<variant>.md` inside this skill and execute its preparation stages
-once. Existing reviewer inputs remain unchanged. For team review Phase 1a, the
+Execute the variant's preparation stages once. For team review Phase 1a, the
 coordinator executes the `codebase-map:map-method` analyze entry's preflight,
 answerable checkpoints, delivery check and publication decision, dispatching
 `codebase-map:map-analyst` in one isolated context through the consuming
@@ -117,10 +117,9 @@ second review preparation or final report owner. Required workers retain
 isolated contexts. Resolve the exact run in runs.json and never
 substitute a mirror for a missing run.
 
-Native report locations in the reference are relative to the explicit review
-output root. When lifecycle supplies a run root, put scratch/context there instead
-of creating a second root run. Record the same project snapshot and run identity.
-Return missing input/worker evidence as degraded coverage; do not invent findings.
+Report locations are relative to the explicit review output root; a lifecycle
+run root holds scratch/context instead of a second root. Record the same
+snapshot and run identity. Return missing evidence as degraded coverage.
 
 Read `references/stack-dimensions.md` to include React, TypeScript and platform
 bindings in the same reviewer selection. For team review this is part of Phase 0b,

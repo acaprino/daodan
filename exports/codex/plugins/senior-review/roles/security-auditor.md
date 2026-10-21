@@ -1,6 +1,6 @@
 ---
 name: security-auditor
-description: 'Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).'
+description: 'Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).'
 ---
 
 > `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.

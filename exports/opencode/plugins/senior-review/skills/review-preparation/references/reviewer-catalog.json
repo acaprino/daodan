@@ -1,0 +1,361 @@
+{
+  "entries": [
+    {
+      "body_sha256": "sha256:920ae5f28f2e5c1733996fe6390072aeb3aa66a0dcf8ac66330789c6f2badb44",
+      "description": "Auditor for drift between declared API contracts and their implementation. TRIGGER WHEN: checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes. DO NOT TRIGGER WHEN: no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+      "do_not_trigger_when": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+      "file": "roles/api-contract-auditor.md",
+      "host_binding": {
+        "file": "agents/api-contract-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:api-contract-auditor"
+      },
+      "id": "senior-review:api-contract-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "api-contract-auditor",
+      "trigger_when": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
+    },
+    {
+      "body_sha256": "sha256:6f3bb9be60a0be47bea19c4f25ea732c7b85cf4ba323fb3d6c4d9f3355a758b0",
+      "description": "Detects the chicken-and-egg cycle where component A needs B ready while B needs A: cold-start hangs, deadlocks, hidden temporal coupling. TRIGGER WHEN: the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck. DO NOT TRIGGER WHEN: the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+      "do_not_trigger_when": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+      "file": "roles/chicken-egg-detector.md",
+      "host_binding": {
+        "file": "agents/chicken-egg-detector.md",
+        "host": "opencode",
+        "id": "senior-review:chicken-egg-detector"
+      },
+      "id": "senior-review:chicken-egg-detector",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "chicken-egg-detector",
+      "trigger_when": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
+    },
+    {
+      "body_sha256": "sha256:f021d4bcd68a89d09ebbf8cb002475426799657212896aad1c2074b6a1fafcb3",
+      "description": "Application-hygiene auditor for dead code, orphan assets, unused dependencies, stale docs and migration/debug leftovers. TRIGGER WHEN: dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit. DO NOT TRIGGER WHEN: applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+      "do_not_trigger_when": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+      "file": "roles/cleanup-auditor.md",
+      "host_binding": {
+        "file": "agents/cleanup-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:cleanup-auditor"
+      },
+      "id": "senior-review:cleanup-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "cleanup-auditor",
+      "trigger_when": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit."
+    },
+    {
+      "body_sha256": "sha256:342bf859c4f3ca40423d82d3101db649815285f924c1e20f969cd7a39b58fc9e",
+      "description": "Hunts coupling violations, broken abstractions, resource leaks, stale caches, and anti-patterns. TRIGGER WHEN: the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check. DO NOT TRIGGER WHEN: the task is security-specific auditing (use security-auditor).",
+      "do_not_trigger_when": "the task is security-specific auditing (use security-auditor).",
+      "file": "roles/code-auditor.md",
+      "host_binding": {
+        "file": "agents/code-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:code-auditor"
+      },
+      "id": "senior-review:code-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "code-auditor",
+      "trigger_when": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
+    },
+    {
+      "body_sha256": "sha256:c5d24216beca0ef3ab585525f771f2dadfae7942abe735db7da51369a6729b4d",
+      "description": "Persistence-layer reviewer for partial writes, read-modify-write races, missing DB uniqueness constraints and cache-database divergence. TRIGGER WHEN: target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries. DO NOT TRIGGER WHEN: domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+      "do_not_trigger_when": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+      "file": "roles/data-integrity-auditor.md",
+      "host_binding": {
+        "file": "agents/data-integrity-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:data-integrity-auditor"
+      },
+      "id": "senior-review:data-integrity-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "data-integrity-auditor",
+      "trigger_when": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries."
+    },
+    {
+      "body_sha256": "sha256:efc23c28143a2d0016f8b43fef197476c067b0d4afc55af937f2a247680c57b1",
+      "description": "Hunts cascading timeout violations, missing idempotency, broken saga compensation, message ordering bugs, and split-brain risks. TRIGGER WHEN: the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+      "do_not_trigger_when": "",
+      "file": "roles/distributed-flow-auditor.md",
+      "host_binding": {
+        "file": "agents/distributed-flow-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:distributed-flow-auditor"
+      },
+      "id": "senior-review:distributed-flow-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "distributed-flow-auditor",
+      "trigger_when": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
+    },
+    {
+      "body_sha256": "sha256:90c76606df745f166ff2d94714796751b24b2192458fd877e4e847aa04dcabbd",
+      "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md, or in a scoped semantic context when no interconnect map exists. TRIGGER WHEN: Phase 2 of senior-review's branch review (/daodan:review-branch) runs, a lite review supplies a scoped semantic context, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or neither an interconnect map nor a scoped semantic context is supplied (report the missing prerequisite; in team review, semantic-interconnect-mapper can build the map).",
+      "do_not_trigger_when": "style/lint review (use code-auditor), security-only review (use security-auditor), or neither an interconnect map nor a scoped semantic context is supplied (report the missing prerequisite; in team review, semantic-interconnect-mapper can build the map).",
+      "file": "roles/logic-integrity-auditor.md",
+      "host_binding": {
+        "file": "agents/logic-integrity-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:logic-integrity-auditor"
+      },
+      "id": "senior-review:logic-integrity-auditor",
+      "kind": "role",
+      "prerequisites": [
+        "one-of: interconnect-map (team-review/02-interconnect.md), scoped-semantic-context"
+      ],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "logic-integrity-auditor",
+      "trigger_when": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, a lite review supplies a scoped semantic context, or asked for a logic, contract or invariant audit."
+    },
+    {
+      "body_sha256": "sha256:e2949deb7a254c55bfc8cccb6058e0ad45f68a0658bd6560ccebb9988d9849c3",
+      "description": "Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3). TRIGGER WHEN: Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+      "do_not_trigger_when": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+      "file": "roles/premise-auditor.md",
+      "host_binding": {
+        "file": "agents/premise-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:premise-auditor"
+      },
+      "id": "senior-review:premise-auditor",
+      "kind": "role",
+      "prerequisites": [
+        "declared-mode: 1-blind (no maps, no peer findings) or 2-full-context"
+      ],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "premise-auditor",
+      "trigger_when": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
+    },
+    {
+      "body_sha256": "sha256:0f505148f1ee85fc901f172e92e8e743b0b67805a90ea7e6d51b2a29d4c8206c",
+      "description": "Reviewer for resource acquisition and release across success, error and cancellation paths: leaks, double-release, use-after-release and unbounded pools. TRIGGER WHEN: target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory. DO NOT TRIGGER WHEN: behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+      "do_not_trigger_when": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+      "file": "roles/resource-lifecycle-auditor.md",
+      "host_binding": {
+        "file": "agents/resource-lifecycle-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:resource-lifecycle-auditor"
+      },
+      "id": "senior-review:resource-lifecycle-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "resource-lifecycle-auditor",
+      "trigger_when": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory."
+    },
+    {
+      "body_sha256": "sha256:178151c4ce8387d4f7fbdeddfafc88e360c0a6ba8aa7e7f17127a499a4283793",
+      "description": "Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+      "do_not_trigger_when": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+      "file": "roles/security-auditor.md",
+      "host_binding": {
+        "file": "agents/security-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:security-auditor"
+      },
+      "id": "senior-review:security-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "security-auditor",
+      "trigger_when": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions."
+    },
+    {
+      "body_sha256": "sha256:2300c58905b3296666d41c962eef3b916766018813ee4a503d30db79ae69612e",
+      "description": "Reviewer for failure-over-time defects: missing backoff/caps, silent subsystem death, uncleared guards, notification floods and clock hazards. TRIGGER WHEN: reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs. DO NOT TRIGGER WHEN: startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+      "do_not_trigger_when": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+      "file": "roles/temporal-resilience-auditor.md",
+      "host_binding": {
+        "file": "agents/temporal-resilience-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:temporal-resilience-auditor"
+      },
+      "id": "senior-review:temporal-resilience-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "temporal-resilience-auditor",
+      "trigger_when": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
+    },
+    {
+      "body_sha256": "sha256:4abe1a20cdf5a0ba3f490ee3ec035a61894d646143563fcce4acb84e4dee4293",
+      "description": "Framework-agnostic UI timing analyst: React, Angular, Vue, Qt, GTK, Flutter, SwiftUI, Electron, Tauri. TRIGGER WHEN: races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+      "do_not_trigger_when": "",
+      "file": "roles/ui-race-auditor.md",
+      "host_binding": {
+        "file": "agents/ui-race-auditor.md",
+        "host": "opencode",
+        "id": "senior-review:ui-race-auditor"
+      },
+      "id": "senior-review:ui-race-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "senior-review",
+      "provider_version": "16.1.0",
+      "role": "ui-race-auditor",
+      "trigger_when": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
+    },
+    {
+      "body_sha256": "sha256:424e8b1735268532b76009639375b12cc224a6e504911f36b153305f00896c60",
+      "description": "Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+      "do_not_trigger_when": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+      "file": "roles/workspace-auditor.md",
+      "host_binding": {
+        "file": "agents/workspace-auditor.md",
+        "host": "opencode",
+        "id": "repo-hygiene:workspace-auditor"
+      },
+      "id": "repo-hygiene:workspace-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "repo-hygiene",
+      "provider_version": "2.0.0",
+      "role": "workspace-auditor",
+      "trigger_when": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches."
+    },
+    {
+      "body_sha256": "sha256:d2d119140ed14363a818d69885cb552e6345edc5fb6807e50c2694896ab8798f",
+      "description": "Runs as the testing-quality dimension of senior-review's team-review and code-review variants (/daodan:review-branch), and as the engine of the audit mode of testing:test-remediation-method. TRIGGER WHEN: auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement. DO NOT TRIGGER WHEN: tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+      "do_not_trigger_when": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+      "file": "roles/test-suite-auditor.md",
+      "host_binding": {
+        "file": "agents/test-suite-auditor.md",
+        "host": "opencode",
+        "id": "testing:test-suite-auditor"
+      },
+      "id": "testing:test-suite-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "testing",
+      "provider_version": "4.0.0",
+      "role": "test-suite-auditor",
+      "trigger_when": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement."
+    },
+    {
+      "body_sha256": "sha256:4bbf227dcade68eefdbd14f94e01b9bcc56d4a640ad05899711ca30404e54028",
+      "description": "Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+      "do_not_trigger_when": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+      "file": "roles/abstraction-architect-agent.md",
+      "host_binding": {
+        "file": "agents/abstraction-architect-agent.md",
+        "host": "opencode",
+        "id": "abstraction-architect:abstraction-architect-agent"
+      },
+      "id": "abstraction-architect:abstraction-architect-agent",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "abstraction-architect",
+      "provider_version": "5.0.0",
+      "role": "abstraction-architect-agent",
+      "trigger_when": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic."
+    },
+    {
+      "body_sha256": "sha256:466200bea68d80e3e6c8be9220b2f1306899bc67358428254f9b54de581912ea",
+      "description": "Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat. TRIGGER WHEN: dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "do_not_trigger_when": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "file": "roles/react-performance-optimizer.md",
+      "host_binding": {
+        "file": "agents/react-performance-optimizer.md",
+        "host": "opencode",
+        "id": "react-development:react-performance-optimizer"
+      },
+      "id": "react-development:react-performance-optimizer",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "react-development",
+      "provider_version": "2.0.0",
+      "role": "react-performance-optimizer",
+      "trigger_when": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling."
+    },
+    {
+      "body_sha256": "sha256:8d93773b2e10e7d0bff7bc5c207c1e3e04cde91b1e1844e8e558a52c5e8ff2dd",
+      "description": "TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling. TRIGGER WHEN: dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift. DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+      "do_not_trigger_when": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+      "file": "roles/type-safety-auditor.md",
+      "host_binding": {
+        "file": "agents/type-safety-auditor.md",
+        "host": "opencode",
+        "id": "typescript-development:type-safety-auditor"
+      },
+      "id": "typescript-development:type-safety-auditor",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "typescript-development",
+      "provider_version": "3.0.0",
+      "role": "type-safety-auditor",
+      "trigger_when": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
+    },
+    {
+      "body_sha256": "sha256:2a126f83858c8fbb6e3012c5caa8fecb3310b98e20ca59d595661417c9ca3811",
+      "description": "Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+      "do_not_trigger_when": "",
+      "file": "roles/platform-reviewer.md",
+      "host_binding": {
+        "file": "agents/platform-reviewer.md",
+        "host": "opencode",
+        "id": "platform-engineering:platform-reviewer"
+      },
+      "id": "platform-engineering:platform-reviewer",
+      "kind": "role",
+      "prerequisites": [],
+      "provider": "platform-engineering",
+      "provider_version": "2.0.0",
+      "role": "platform-reviewer",
+      "trigger_when": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms."
+    },
+    {
+      "dimension": "python",
+      "do_not_trigger_when": "",
+      "id": "senior-review:python-method",
+      "kind": "method-binding",
+      "mode": "audit-only",
+      "prerequisites": [],
+      "role": "project-protocol:isolated-worker",
+      "skills": [
+        "python-development:python-refactor-method",
+        "python-development:python-dead-code"
+      ],
+      "trigger_when": "target includes .py or .pyi files, or the relevant package declares pyproject.toml, setup.py, uv.lock or requirements*.txt"
+    },
+    {
+      "dimension": "dependencies",
+      "do_not_trigger_when": "",
+      "id": "senior-review:dependencies-method",
+      "kind": "method-binding",
+      "mode": "audit-only",
+      "prerequisites": [],
+      "role": "project-protocol:isolated-worker",
+      "skills": [
+        "dependency-audit:dependency-audit"
+      ],
+      "trigger_when": "candidate changes a manifest or lockfile"
+    }
+  ],
+  "host": "opencode",
+  "schema": "daodan/reviewer-catalog/v1"
+}

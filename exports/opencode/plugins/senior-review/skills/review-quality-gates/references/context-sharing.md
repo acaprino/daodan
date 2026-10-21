@@ -71,24 +71,29 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Context sharing, anchor routing and metrics
 
-On-demand unit of `senior-review:review-quality-gates`. Read it when preparing or
-dispatching reviewers of a review that builds shared context (the team variant,
-or a lifecycle review with shape `branch`). The provenance rule in the skill's
-core governs everything here.
+On-demand unit of `senior-review:review-quality-gates`, read when preparing or
+dispatching reviewers that build shared context. The skill's provenance rule
+governs everything here.
 
 ## Context Sharing Pattern
 
 When `team-review` runs in pipeline mode (no `--no-context`), reviewers receive three context artifacts produced in Phase 1:
 
-1. **Codebase Map output** (from `codebase-map`) at `$XRAY_RUN_DIR` when the command started the run itself (`team-review` Phase 1a), or the `.codebase-map/` mirror when consuming an existing analysis (`code-review` Step 2). A command that started a run never reads the mirror. Files: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and optionally `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
-2. **Interconnect map** at `.team-review/02-interconnect.md` (from `codebase-map:semantic-interconnect-mapper`): contracts (formal / structural / implicit), invariants, domain rules, assumptions (verified / documented / unverified), integration hot-spots, change impact radius.
-3. **Knowledge provenance** at `.team-review/01-knowledge-provenance.md` (from `team-review` Phase 1d): which concepts each discovery branch found, which neither found, and which they disagree about.
+1. **Codebase Map output** at `$XRAY_RUN_DIR` for a run this command started, else the `.codebase-map/` mirror (never both). Files: `01-structure.md`, `02-interfaces.md`, `05-risks.md`, and optionally `03-flows.md`, `04-semantics.md`, `06-documentation.md`, `07-final-report.md`.
+2. **Interconnect map** at `.team-review/02-interconnect.md` (from `codebase-map:semantic-interconnect-mapper`): contracts, invariants, domain rules, assumptions, integration hot-spots, change impact radius.
+3. **Knowledge provenance** at `.team-review/01-knowledge-provenance.md` (Phase 1d): concepts found by each discovery branch, by neither, and disputed.
 
-A fourth artifact, `.team-review/01b-independent-claims.md`, is derived in Phase 1c by `senior-review:premise-auditor` while blind to both of the above, and joined into `01-knowledge-provenance.md` in Phase 1d (contradictions become `disputed` rows).
+A fourth artifact, `.team-review/01b-independent-claims.md`, is derived in Phase 1c by `senior-review:premise-auditor`, blind to the above, and joined into `01-knowledge-provenance.md` in Phase 1d (`disputed` rows).
+
+### Scoped semantic context and visibility
+
+With no interconnect map, preparation may supply a **scoped semantic context**: Code Graph rows (`symbols-at`, `edit-impact`, `stale-callers`) with snapshot, symbol, locator and freshness; records and documents citing the scope; and cards, each with provenance. Its contract, invariant, rule and assumption rows route through the table below. A row without provenance or freshness is a lead. This context lets `logic-integrity-auditor` run in lite reviews; with neither input it reports the missing prerequisite, never a silent pass.
+
+Premise-auditor Mode 1 receives no shared artifacts, map output or peer findings. Lens 0 (Mode 2) and ordinary reviewers receive the full admitted context.
 
 ### Default anchor routing
 
-Reviewers Grep or read only the anchors relevant to their dimension from `.team-review/02-interconnect.md` (see `references/panel-and-critic-prompts.md` for the context-aware spawn template):
+Reviewers read only their dimension's anchors from `.team-review/02-interconnect.md` (spawn template: `references/panel-and-critic-prompts.md`):
 
 | Reviewer dimension | Primary anchors in interconnect map |
 |---|---|
@@ -106,15 +111,15 @@ Reviewers Grep or read only the anchors relevant to their dimension from `.team-
 
 ### Metrics
 
-**Map utilization rate** (operational, not a quality signal): fraction of findings citing an interconnect anchor. Do not set a target for it.
+**Map utilization rate** (operational only): findings citing an interconnect anchor. No target.
 
 Quality signals:
-- **Independent premise reconstruction rate**: fraction of findings whose load-bearing premise was obtained without exposure to that premise (Phase 1c Premise Auditor or independent reviewer re-derivation; **Lens 0 does not count** because Mode 2 is primed).
-- **Premise challenge rate**: fraction of eligible premises (`shared-context`, `mixed`, or universal/negative quantifier) attacked by Lens 0.
-- **Map challenge rate**: fraction of consumed map rows explicitly tested rather than assumed.
+- **Independent premise reconstruction rate**: premises obtained without exposure to them (Phase 1c or re-derivation; Lens 0 excluded, Mode 2 is primed).
+- **Premise challenge rate**: eligible premises (`shared-context`, `mixed`, universal/negative) attacked by Lens 0.
+- **Map challenge rate**: consumed rows tested, not assumed.
 - **Map gap rate**: `[MAP-GAP]` findings over total findings.
-- **Cross-source corroboration rate**: diagnostic over findings corroborated across code, tests, and docs.
+- **Cross-source corroboration rate**: findings corroborated across code, tests and docs.
 
 ### Fallback: raw mode (`--no-context`)
 
-When `--no-context` is set, reviewers receive only target + diff: `logic-integrity-auditor`, `premise-auditor`, Phase 0c, and Lens 0 do not run; all findings are `independent` by construction; no `.codebase-map/`, `$XRAY_RUN_DIR`, or `.team-review/02-interconnect.md` references appear in reviewer prompts.
+With `--no-context`, reviewers receive only target + diff: `premise-auditor`, Phase 0c and Lens 0 do not run, and `logic-integrity-auditor` reports its missing prerequisite instead of running. All findings are `independent`; no map or run references appear in prompts.

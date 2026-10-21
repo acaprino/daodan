@@ -630,7 +630,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "16 macro-categories and 140+ subcategories of source-code failure modes, with CWE and OWASP mappings, fix patterns, and review frameworks. TRIGGER WHEN: an audit needs structured defect classification, a detection strategy, or severity calibration; loaded by code-auditor, security-auditor, and ui-race-auditor.",
@@ -652,7 +652,7 @@
       "topics": [
         "defects"
       ],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "Investigate an observed error, bug or strange behavior to a demonstrated cause, without fixing it: facts, perimeter from the map, isolated hypotheses, a reproduction test, bisection. TRIGGER WHEN: the user reports an error, regression or strange behavior whose cause is unknown and wants it investigated, a coordinator investigates a problem, or a bug fix starts without a known cause. DO NOT TRIGGER WHEN: assessing a change or artifact for defects (use review-method), or the root cause is already established with evidence.",
@@ -667,7 +667,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "Consolidate native review findings with evidence provenance, delivery accounting and adversarial verification. Load when consolidating code-review, team-review or pr-review results.",
@@ -682,7 +682,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "Unified review engine: the light review and the branch review (variants team-review and pr-review, and code-review), including signal-selected stack specialists. TRIGGER WHEN: the user asks to review current changes, a commit, a file, a plan, a specification, a document, a branch or a pull request for defects, or /daodan:review-changes, /daodan:review-branch or a lifecycle review phase runs a review. DO NOT TRIGGER WHEN: establishing the root cause of a reported failure without reviewing an artifact (use investigation-method), or removing dead code (use application-cleanup-method).",
@@ -697,7 +697,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "Prepare the existing code, team or PR review inputs without writing another detection prompt. Load before dispatching reviewers in senior-review or project-lifecycle.",
@@ -712,7 +712,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "Verification panel, completeness critic, pipeline conventions and shared-context provenance rules for multi-reviewer consolidation. TRIGGER WHEN: running team-review (/daodan:review-branch) or code-review quality gates, or consolidating findings from parallel reviewers.",
@@ -727,7 +727,7 @@
       "operations": [],
       "provider": "senior-review",
       "topics": [],
-      "version": "16.0.0"
+      "version": "16.1.0"
     },
     {
       "description": "Discover available skill metadata, select knowledge for the exact task scope and bind selected content to a project/run/snapshot. Shared by review, development, test and documentation methods. Does not execute other skills' workflows.",

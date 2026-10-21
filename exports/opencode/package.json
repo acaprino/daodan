@@ -1934,7 +1934,7 @@
             ]
           },
           {
-            "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: Phase 2 of senior-reviews branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+            "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md, or in a scoped semantic context when no interconnect map exists. TRIGGER WHEN: Phase 2 of senior-reviews branch review (/daodan:review-branch) runs, a lite review supplies a scoped semantic context, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or neither an interconnect map nor a scoped semantic context is supplied (report the missing prerequisite; in team review, semantic-interconnect-mapper can build the map).",
             "file": "agents/logic-integrity-auditor.md",
             "id": "senior-review:logic-integrity-auditor",
             "permissions": [
@@ -2075,7 +2075,7 @@
             ]
           },
           {
-            "description": "Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+            "description": "Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
             "file": "agents/security-auditor.md",
             "id": "senior-review:security-auditor",
             "permissions": [
@@ -2587,5 +2587,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "38.3.0"
+  "version": "38.4.0"
 }
