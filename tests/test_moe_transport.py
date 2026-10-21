@@ -207,4 +207,90 @@ class MoeTransportTests(unittest.TestCase):
             self.assertEqual(url,"http://127.0.0.1:1234/v1")
             self.assertEqual(secret,"local")
 
+    def test_managed_deliberation_creates_run_dir_composes_critiques_and_updates_exchange(self):
+        module = self.load()
+        with tempfile.TemporaryDirectory() as folder, patch.object(module.Path, "cwd", return_value=Path(folder)), patch.dict(os.environ, {"MOE_API_BASE": "https://fixture.invalid/v1", "MOE_API_KEY": "fixture"}, clear=True):
+            calls = []
+            def answer(path, body=None, binding=""):
+                calls.append(body)
+                model = "resolved-a" if body["model"] == "alias-a" else "resolved-b"
+                return {
+                    "model": model,
+                    "choices": [{"finish_reason": "stop", "message": {"role": "assistant", "content": f"Reply from {model} (#{len(calls)})"}}],
+                    "usage": {"total_tokens": 10 * len(calls)},
+                }
+            with patch.object(module, "_call", side_effect=answer):
+                r1a = module.moe_ask("alias-a", brief="Compare schema A and schema B for migration.")
+                self.assertNotIn("error", r1a)
+                run_id = r1a["run_id"]
+                self.assertEqual((r1a["round"], r1a["slot"], r1a["model"]), (1, "1", "resolved-a"))
+                run_dir = Path(folder) / ".moe" / run_id
+                self.assertTrue((run_dir / "brief.md").is_file())
+                self.assertTrue((run_dir / "round-1-proposal-1.md").is_file())
+
+                # Second proposal reuses brief.md and pins peer_model automatically
+                r1b = module.moe_ask("alias-b", run_id=run_id)
+                self.assertNotIn("error", r1b)
+                self.assertEqual((r1b["round"], r1b["slot"], r1b["model"]), (1, "2", "resolved-b"))
+                self.assertEqual(calls[0]["messages"][1]["content"], calls[1]["messages"][1]["content"])
+
+                # Round 2 critiques compose brief + both round 1 replies and pin expected_model/peer_model
+                r2a = module.moe_ask("alias-a", phase="critique", run_id=run_id)
+                self.assertNotIn("error", r2a)
+                self.assertEqual((r2a["round"], r2a["slot"]), (2, "1"))
+                self.assertIn("Reply from resolved-a (#1)", calls[2]["messages"][1]["content"])
+                self.assertIn("Reply from resolved-b (#2)", calls[2]["messages"][1]["content"])
+
+                r2b = module.moe_ask("alias-b", phase="critique", run_id=run_id, focus="Focus on rollback safety.")
+                self.assertNotIn("error", r2b)
+                self.assertEqual((r2b["round"], r2b["slot"]), (2, "2"))
+                self.assertIn("Focus on rollback safety.", calls[3]["messages"][1]["content"])
+
+                state = json.loads((run_dir / "exchange.json").read_text(encoding="utf-8"))
+                self.assertEqual(state["status"], "completed")
+                self.assertEqual(len(state["calls"]), 4)
+                self.assertEqual(state["participants"]["1"]["actual_model"], "resolved-a")
+                self.assertEqual(state["participants"]["2"]["actual_model"], "resolved-b")
+
+                # Round 3: first half puts status back to in_progress, second half completes it
+                r3a = module.moe_ask("alias-a", phase="critique", run_id=run_id, focus="Resolve edge case.")
+                self.assertEqual((r3a["round"], r3a["slot"]), (3, "1"))
+                state = json.loads((run_dir / "exchange.json").read_text(encoding="utf-8"))
+                self.assertEqual(state["status"], "in_progress")
+                r3b = module.moe_ask("alias-b", phase="critique", run_id=run_id, focus="Resolve edge case.")
+                self.assertEqual((r3b["round"], r3b["slot"]), (3, "2"))
+                state = json.loads((run_dir / "exchange.json").read_text(encoding="utf-8"))
+                self.assertEqual(state["status"], "completed")
+                self.assertEqual(len(state["calls"]), 6)
+
+    def test_managed_deliberation_records_collision_and_blocks_failed_run(self):
+        module = self.load()
+        with tempfile.TemporaryDirectory() as folder, patch.object(module.Path, "cwd", return_value=Path(folder)):
+            same = {"model": "same-backend", "choices": [{"finish_reason": "stop", "message": {"role": "assistant", "content": "Proposal"}}]}
+            with patch.object(module, "_call", return_value=same) as transport:
+                # Oversized custom system on first proposal fails before creating a run directory
+                bad_sys = module.moe_ask("alias-a", system="S" * 4097, brief="Problem statement", run_id="bad-sys-run")
+                self.assertEqual((bad_sys["code"], bad_sys["charged"]), ("invalid_request", False))
+                self.assertFalse((Path(folder) / ".moe/bad-sys-run").exists())
+
+                r1a = module.moe_ask("alias-a", brief="Problem statement")
+                run_id = r1a["run_id"]
+                # Requesting the exact same model on slot 2 is rejected before spending (charged=False)
+                same_req = module.moe_ask("alias-a", run_id=run_id)
+                self.assertEqual((same_req["code"], same_req["charged"]), ("model_collision", False))
+                self.assertEqual(transport.call_count, 1)
+
+            with patch.object(module, "_call", return_value=same) as transport:
+                r1a = module.moe_ask("alias-a", brief="Problem statement")
+                run_id = r1a["run_id"]
+                r1b = module.moe_ask("alias-b", run_id=run_id)
+                self.assertEqual((r1b["code"], r1b["charged"], r1b["run_id"]), ("model_collision", True, run_id))
+                state = json.loads((Path(folder) / ".moe" / run_id / "exchange.json").read_text(encoding="utf-8"))
+                self.assertEqual(state["status"], "failed")
+                self.assertEqual(state["calls"][-1]["code"], "model_collision")
+                # Further calls on a failed run are rejected before spending
+                after = module.moe_ask("alias-a", phase="critique", run_id=run_id)
+                self.assertEqual((after["code"], after["charged"]), ("invalid_request", False))
+                self.assertEqual(transport.call_count, 2)
+
 if __name__ == "__main__": unittest.main()

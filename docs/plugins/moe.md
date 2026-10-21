@@ -19,11 +19,14 @@ model exchange.
 
 The 24000-byte reciprocal payload reserves 6000 UTF-8 bytes for the brief, 8000
 for each exact reply and 2000 for framing. Oversized briefs stop before spending.
-The second proposal passes peer_model from the first returned model. Critiques
-require phase="critique", expected_model and peer_model pinned to the initial
-actual identities; collisions, missing identities or model changes stop the run.
-Payloads are read using pinned nonlink directory/file handles, not a checked path
-that is reopened without protection.
+In managed mode (`brief` / `run_id`), the MCP server automatically creates
+`<run_root>/<run_id>/` on the first proposal, writes `brief.md` and `exchange.json`,
+binds the second proposal's `peer_model` to the first returned model identity, and
+composes reciprocal critique payloads with both previous-round replies and pinned
+`expected_model` / `peer_model` identities. Collisions, missing identities or model
+changes stop the run and mark `exchange.json` as `failed`. Low-level `content_path`
+calls remain supported as well. Payloads are read using pinned nonlink directory/file
+handles, not a checked path that is reopened without protection.
 
 ## Launch isolation
 
