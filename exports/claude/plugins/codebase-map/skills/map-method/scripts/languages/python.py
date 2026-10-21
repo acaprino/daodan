@@ -135,6 +135,53 @@ def _decorators(node) -> tuple[bool, bool, bool]:
     return is_cm, is_sm, is_prop
 
 
+def _decorator_texts(node) -> list[str]:
+    return [_annotation_str(d) or "?" for d in node.decorator_list]
+
+
+# The stdlib AST holds the whole signature, so every field is extracted.
+_FUNCTION_FIELDS = ("parameters", "parameter_kinds", "annotations", "defaults",
+                    "returns", "async", "generator", "decorators")
+_CLASS_FIELDS = ("bases", "decorators", "attributes")
+
+
+def _parameters(args: ast.arguments) -> list[ParameterInfo]:
+    """Every parameter in declaration order, with how a caller passes it."""
+    positional = [*args.posonlyargs, *args.args]
+    # Defaults fill the tail of the positional parameters, positional-only ones included.
+    first_default = len(positional) - len(args.defaults)
+    params: list[ParameterInfo] = []
+    for index, arg in enumerate(positional):
+        params.append(ParameterInfo(
+            name=arg.arg,
+            annotation=_annotation_str(arg.annotation),
+            default=_default_str(args.defaults[index - first_default]) if index >= first_default else None,
+            kind="positional_only" if index < len(args.posonlyargs) else None,
+        ))
+    if args.vararg is not None:
+        params.append(ParameterInfo(name=args.vararg.arg, annotation=_annotation_str(args.vararg.annotation),
+                                    kind="var_positional"))
+    for arg, default in zip(args.kwonlyargs, args.kw_defaults):
+        params.append(ParameterInfo(name=arg.arg, annotation=_annotation_str(arg.annotation),
+                                    default=_default_str(default), kind="keyword_only"))
+    if args.kwarg is not None:
+        params.append(ParameterInfo(name=args.kwarg.arg, annotation=_annotation_str(args.kwarg.annotation),
+                                    kind="var_keyword"))
+    return params
+
+
+def _is_generator(node) -> bool:
+    """A yield in the body itself, not in a nested function, class or lambda."""
+    stack = list(node.body)
+    while stack:
+        current = stack.pop()
+        if isinstance(current, (ast.Yield, ast.YieldFrom)):
+            return True
+        if not isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            stack.extend(ast.iter_child_nodes(current))
+    return False
+
+
 def _extract_calls_from_ast(node) -> list[str]:
     """Collect distinct outgoing function/method calls inside a Python function body."""
     seen: list[str] = []
@@ -164,37 +211,10 @@ def _extract_calls_from_ast(node) -> list[str]:
 
 
 def _parse_function(node) -> FunctionInfo:
-    params: list[ParameterInfo] = []
-    args = node.args
-    num_defaults = len(args.defaults)
-    num_args = len(args.args)
-    non_default_args = num_args - num_defaults
-    for i, arg in enumerate(args.args):
-        default = None
-        if i >= non_default_args:
-            default = _default_str(args.defaults[i - non_default_args])
-        params.append(
-            ParameterInfo(
-                name=arg.arg,
-                annotation=_annotation_str(arg.annotation),
-                default=default,
-            )
-        )
-    for i, arg in enumerate(args.kwonlyargs):
-        default = None
-        if i < len(args.kw_defaults) and args.kw_defaults[i] is not None:
-            default = _default_str(args.kw_defaults[i])
-        params.append(
-            ParameterInfo(
-                name=arg.arg,
-                annotation=_annotation_str(arg.annotation),
-                default=default,
-            )
-        )
     is_cm, is_sm, is_prop = _decorators(node)
     return FunctionInfo(
         name=node.name,
-        parameters=params,
+        parameters=_parameters(node.args),
         return_annotation=_annotation_str(node.returns),
         is_async=isinstance(node, ast.AsyncFunctionDef),
         is_classmethod=is_cm,
@@ -205,27 +225,35 @@ def _parse_function(node) -> FunctionInfo:
         line_number=node.lineno,
         end_line=getattr(node, "end_lineno", None),
         calls_made=_extract_calls_from_ast(node),
+        decorators=_decorator_texts(node),
+        is_generator=_is_generator(node),
+        signature_fields=_FUNCTION_FIELDS,
     )
 
 
 def _parse_class(node: ast.ClassDef) -> ClassInfo:
     bases: list[str] = []
-    for base in node.bases:
+    # Keyword arguments of the class header (metaclass=...) are part of its contract.
+    for base in [*node.bases, *node.keywords]:
         try:
             bases.append(ast.unparse(base))
         except Exception:
             bases.append("?")
     methods: list[FunctionInfo] = []
     class_vars: list[str] = []
+    attributes: list[ParameterInfo] = []
     for item in node.body:
         if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
             methods.append(_parse_function(item))
         elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
             class_vars.append(item.target.id)
+            attributes.append(ParameterInfo(name=item.target.id, annotation=_annotation_str(item.annotation),
+                                            default=_default_str(item.value)))
         elif isinstance(item, ast.Assign):
             for target in item.targets:
                 if isinstance(target, ast.Name):
                     class_vars.append(target.id)
+                    attributes.append(ParameterInfo(name=target.id, default=_default_str(item.value)))
     return ClassInfo(
         name=node.name,
         bases=bases,
@@ -236,6 +264,9 @@ def _parse_class(node: ast.ClassDef) -> ClassInfo:
         docstring=_extract_docstring(node),
         line_number=node.lineno,
         end_line=getattr(node, "end_lineno", None),
+        decorators=_decorator_texts(node),
+        attributes=attributes,
+        signature_fields=_CLASS_FIELDS,
     )
 
 

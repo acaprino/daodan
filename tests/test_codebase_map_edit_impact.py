@@ -79,6 +79,86 @@ class EditImpactTests(unittest.TestCase):
         self.assertIn("return value + 1", emitted)
         self.assertNotIn("return 10", emitted, "an unselected callable body must not be read")
 
+    def test_target_and_neighbours_carry_their_signature_records(self):
+        packet = self.impact(["pkg/b.py::helper"], include_source=False)
+
+        target = packet["targets"][0]
+        self.assertEqual(target["signatures"][0]["params"], [{"name": "value"}])
+        self.assertIn("parameters", target["signatures"][0]["fields"])
+        caller = target["callers"]["listed"][0]
+        self.assertEqual(caller["symbol_id"], "pkg/a.py::run")
+        self.assertEqual(caller["signatures"][0]["params"], [{"name": "x"}])
+        with open_snapshot(self.out) as store:
+            meta = semantic_store.query_meta_code(store, symbol="pkg/b.py::helper", include_history=False)
+        self.assertEqual(meta["symbols"][0]["signatures"], target["signatures"])
+
+    def test_l1_edges_carry_exact_reference_sites(self):
+        target = self.impact(["pkg/b.py::helper"], include_source=False)["targets"][0]
+
+        caller_edge = target["callers"]["listed"][0]["edges"][0]
+        self.assertEqual(caller_edge["kind"], "call")
+        self.assertEqual(caller_edge["count"], 1)
+        self.assertEqual(caller_edge["sites"][0]["file"], "pkg/a.py")
+        self.assertEqual(caller_edge["sites"][0]["start_line"], 4)
+        run = self.impact(["pkg/a.py::run"], include_source=False)["targets"][0]
+        callee = next(item for item in run["callees"]["listed"] if item["symbol_id"] == "pkg/b.py::helper")
+        self.assertEqual(callee["edges"][0]["sites"][0]["start_line"], 4)
+
+    def test_second_hop_is_signature_only_and_budget_omissions_are_reported(self):
+        (self.root / "pkg/c.py").write_text(
+            "from .a import run\n\ndef top(x):\n    return run(x)\n", encoding="utf-8")
+        self.refresh()
+
+        target = self.impact(["pkg/b.py::helper"], hops=2, include_source=False)["targets"][0]
+        second = {item["symbol_id"]: item for item in target["second_hop"]["listed"]}
+        self.assertIn("pkg/c.py::top", second)
+        self.assertEqual(second["pkg/c.py::top"]["via"][0]["symbol_id"], "pkg/a.py::run")
+        self.assertNotIn("card", second["pkg/c.py::top"])
+        self.assertTrue(second["pkg/c.py::top"]["signatures"])
+
+        capped = self.impact(["pkg/b.py::helper"], hops=2, include_source=False,
+                             budget_chars=1000)["targets"][0]
+        self.assertEqual(capped["second_hop"]["listed"], [])
+        self.assertGreater(capped["second_hop"]["omitted_by_budget"], 0)
+
+    def test_neighbor_source_is_verified_and_l4_names_related_tests(self):
+        (self.root / "pkg/test_b.py").write_text(
+            "from .b import helper\n\ndef test_helper():\n    assert helper(1) == 2\n", encoding="utf-8")
+        self.refresh()
+
+        packet = self.impact(["pkg/b.py::helper"], include_source=False,
+                             include_neighbor_source=True)
+        target = packet["targets"][0]
+        emitted = "".join(block["source"] for item in packet["neighbor_source"]["files"]
+                          for block in item["blocks"])
+        self.assertIn("return helper(x) + extra()", emitted)
+        self.assertNotIn("getattr", emitted)
+        self.assertEqual([item["symbol_id"] for item in target["l4"]["related_tests"]],
+                         ["pkg/test_b.py::test_helper"])
+        self.assertIn("run-related-tests", {item["kind"] for item in target["l4"]["obligations"]})
+        self.assertEqual(target["l4"]["do_not_touch"]["status"], "unavailable")
+
+    def test_lazy_python_slice_excludes_unrelated_statements(self):
+        (self.root / "pkg/b.py").write_text(
+            "def helper(value):\n"
+            "    unused = 999\n"
+            "    step = value + 1\n"
+            "    if step > 0:\n"
+            "        result = step * 2\n"
+            "    else:\n"
+            "        result = 0\n"
+            "    return result\n\n"
+            "def extra():\n    return 10\n", encoding="utf-8")
+        self.refresh()
+
+        target = self.impact(["pkg/b.py::helper"], include_source=False,
+                             include_slices=True)["targets"][0]
+
+        self.assertEqual(target["slice"]["status"], "available")
+        starts = {item["start"] for item in target["slice"]["statements"]}
+        self.assertNotIn(2, starts, "the unused assignment is outside the backward slice")
+        self.assertTrue({3, 4, 5, 7, 8} <= starts)
+
     def test_callees_are_the_resolved_one_hop_calls_of_the_target(self):
         packet = self.impact(["pkg/a.py::run"], include_source=False)
 
@@ -151,7 +231,9 @@ class EditImpactTests(unittest.TestCase):
         for targets in ([], "pkg/b.py", [""], [3]):
             with self.subTest(targets=targets), self.assertRaises(ValueError):
                 self.impact(targets)
-        for options in ({"neighbors": 0}, {"history": 1000}, {"neighbors": True}):
+        for options in ({"neighbors": 0}, {"history": 1000}, {"neighbors": True},
+                        {"hops": 0}, {"hops": 3}, {"budget_chars": 999},
+                        {"include_neighbor_source": "yes"}, {"include_slices": 1}):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 self.impact(["pkg/b.py::helper"], **options)
         legacy = self.root / ".codebase-map" / "manifest.json"
@@ -185,6 +267,26 @@ class EditImpactEntryPointTests(unittest.TestCase):
             capture_output=True, text=True)
         self.assertEqual(failed.returncode, 2)
         self.assertIn("neighbors", failed.stderr)
+
+    def test_service_and_cli_accept_progressive_options(self):
+        self.service.create_run("src", "progressive", depth="lite")
+
+        packet = self.service.edit_impact(
+            "progressive", ["pkg/b.py::helper"], hops=2,
+            include_neighbor_source=True, include_slices=True)
+
+        self.assertIn("second_hop", packet["targets"][0])
+        self.assertIn("neighbor_source", packet)
+        self.assertEqual(packet["targets"][0]["slice"]["status"], "available")
+        out = self.project / "manifest.sqlite"
+        snapshot.write_snapshot(self.project / "src", out)
+        done = subprocess.run(
+            [sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "edit-impact", str(out),
+             "--target", "pkg/b.py::helper", "--hops", "2", "--neighbor-source",
+             "--slices", "--budget-chars", "120000"],
+            capture_output=True, text=True)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(json.loads(done.stdout)["schema"], "daodan/edit-impact/v2")
 
     def test_service_serves_the_packet_and_meta_query_for_a_run(self):
         self.service.create_run("src", "impact", depth="lite")

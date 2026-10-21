@@ -84,8 +84,11 @@ __all__ = [
     "resolve_module",
     "resolved_imports",
     "scan_claims",
+    "parse_unified_diff",
     "scope_record",
+    "signature_record",
     "symbol_spans",
+    "symbols_at",
     "ts_path_config",
 ]
 
@@ -99,6 +102,15 @@ MAX_FILE_BYTES = 20_000_000
 # line, so each rule symbol would hash the whole file and any edit would change
 # them all. It stays a file-level entry.
 MAX_STYLESHEET_LINE = 10_000
+# A signature value (an annotation, a default, a decorator) longer than this
+# keeps its head and a digest of the whole: a long literal cannot bloat every
+# packet that carries the signature, and an edit to it still changes the value.
+MAX_SIGNATURE_TEXT = 200
+SYMBOLS_AT_SCHEMA = "daodan/symbols-at/v1"
+MAX_SYMBOLS_AT_REQUESTS = 100
+MAX_SYMBOLS_AT_RANGES = 100
+MAX_DIFF_CHARS = 4_000_000
+MAX_DIFF_HUNKS = 2_000
 
 # Non-source files a phase file legitimately cites. API contracts (protobuf,
 # GraphQL, Prisma, XML schemas and WSDL), build files (Gradle, CMake, make,
@@ -276,6 +288,57 @@ def git_info(root: Path) -> dict | None:
     }
 
 
+def _signature_text(value: object) -> str:
+    text = " ".join(str(value).split())
+    if len(text) <= MAX_SIGNATURE_TEXT:
+        return text
+    return text[:160] + "..." + hash_text(text)
+
+
+def signature_record(info) -> dict | None:
+    """The declared signature of a function or class, in one comparable shape.
+
+    A key appears only with a value. `fields` lists the signature fields the
+    adapter extracts exhaustively (languages.base.SIGNATURE_FIELDS): a listed
+    field whose key is absent is absent from the source, while an unlisted one
+    may only be missing from the extraction. No position enters the record, so
+    a symbol that only moves keeps its signature.
+    """
+    record: dict = {}
+
+    def keep(key: str, value) -> None:
+        if value:
+            record[key] = value
+
+    def described(items) -> list[dict]:
+        out = []
+        for item in items:
+            entry = {"name": _signature_text(item.name)}
+            for key in ("kind", "annotation", "default"):
+                value = getattr(item, key, None)
+                if value is not None:
+                    entry[key] = _signature_text(value)
+            out.append(entry)
+        return out
+
+    if hasattr(info, "parameters"):
+        keep("params", described(info.parameters))
+        if info.return_annotation is not None:
+            keep("returns", _signature_text(info.return_annotation))
+        keep("async", bool(info.is_async))
+        keep("generator", bool(getattr(info, "is_generator", False)))
+        keep("static", bool(getattr(info, "is_staticmethod", False)))
+    else:
+        keep("bases", [_signature_text(base) for base in info.bases])
+        attributes = getattr(info, "attributes", None)
+        keep("attributes", described(attributes) if attributes
+             else [{"name": _signature_text(name)} for name in info.class_variables])
+    keep("decorators", [_signature_text(text) for text in getattr(info, "decorators", None) or ()])
+    keep("visibility", getattr(info, "visibility", None))
+    keep("fields", sorted(getattr(info, "signature_fields", ()) or ()))
+    return record or None
+
+
 def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
     """
     Every symbol in a parse result, qualified, with its line span and body hash.
@@ -284,6 +347,10 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
     end line where the adapter has one, otherwise the line before the next
     top-level symbol. Methods are spanned inside their class, so a class span
     always encloses its methods and editing a method moves both hashes.
+
+    A symbol the adapter describes also carries `signatures`, one
+    signature_record per declaration in source order: several when overloads
+    or redefinitions share the name.
     """
     total = len(lines)
     top: list[dict] = []
@@ -291,13 +358,13 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
         if cls.line_number > 0:
             top.append({
                 "name": cls.name, "kind": cls.kind, "start": cls.line_number,
-                "end": getattr(cls, "end_line", None), "methods": list(cls.methods),
+                "end": getattr(cls, "end_line", None), "methods": list(cls.methods), "info": cls,
             })
     for func in result.functions:
         if func.line_number > 0:
             top.append({
                 "name": func.name, "kind": "function", "start": func.line_number,
-                "end": getattr(func, "end_line", None), "methods": [],
+                "end": getattr(func, "end_line", None), "methods": [], "info": func,
             })
     top.sort(key=lambda item: (item["start"], item["name"]))
 
@@ -320,7 +387,7 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
             hashes[key] = hash_text("\n".join(lines[start - 1:end]))
         return hashes[key]
 
-    def record(name: str, kind: str, start: int, end: int, precision: str) -> None:
+    def record(name: str, kind: str, start: int, end: int, precision: str, info) -> None:
         if not (1 <= start <= end <= total):
             precision = "inferred"
         start = max(1, min(start, total))
@@ -333,10 +400,14 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
         # them moves the hash. That over-marks rather than under-marks: it
         # costs one extra re-derivation instead of a missed claim.
         existing = spans.get(name)
+        signatures = list(existing.get("signatures", ())) if existing is not None else []
         if existing is not None:
             start = min(start, existing["start"])
             end = max(end, existing["end"])
             precision = "merged"
+        signature = signature_record(info)
+        if signature is not None:
+            signatures.append(signature)
         spans[name] = {
             "kind": kind,
             "start": start,
@@ -344,9 +415,11 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
             "hash": span_hash(start, end),
             "span_precision": precision,
         }
+        if signatures:
+            spans[name]["signatures"] = signatures
 
     for item in top:
-        record(item["name"], item["kind"], item["start"], item["end"], item["precision"])
+        record(item["name"], item["kind"], item["start"], item["end"], item["precision"], item["info"])
         methods = sorted(
             (m for m in item["methods"] if m.line_number > 0),
             key=lambda m: m.line_number,
@@ -356,7 +429,7 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
             precision = "exact" if end else "inferred"
             if not end:
                 end = methods[index + 1].line_number - 1 if index + 1 < len(methods) else item["end"]
-            record(f"{item['name']}.{method.name}", "method", method.line_number, end, precision)
+            record(f"{item['name']}.{method.name}", "method", method.line_number, end, precision, method)
     return spans
 
 
@@ -818,7 +891,9 @@ def compare_symbols(manifest: dict, comparison: dict) -> dict:
             previous = old_symbols.get(name)
             if previous is None:
                 added.append({"file": rel, "symbol": name, "kind": spec["kind"]})
-            elif previous["hash"] != spec["hash"]:
+            # A decorator sits above a Python span: its edit moves the signature
+            # and leaves the body hash alone.
+            elif previous["hash"] != spec["hash"] or previous.get("signatures") != spec.get("signatures"):
                 changed.append({"file": rel, "symbol": name, "kind": spec["kind"]})
             else:
                 moved.append({
@@ -846,6 +921,314 @@ def compare_symbols(manifest: dict, comparison: dict) -> dict:
         "fresh": fresh,
     }
 
+
+def _snapshot_metadata(manifest) -> dict:
+    return manifest.metadata if isinstance(manifest, SnapshotStore) else manifest
+
+
+def _snapshot_info(manifest) -> dict:
+    metadata = _snapshot_metadata(manifest)
+    git = metadata.get("git") if isinstance(metadata.get("git"), dict) else {}
+    return {
+        "root": metadata.get("root"),
+        "target": metadata.get("target"),
+        "created_at": metadata.get("created_at"),
+        "repo_revision": git.get("commit"),
+        "parser_fingerprint": metadata.get("parser_fingerprint"),
+    }
+
+
+def _snapshot_entry(manifest, path: str) -> dict | None:
+    if isinstance(manifest, SnapshotStore):
+        return manifest.get_file(path, semantic=False)
+    files = manifest.get("files") if isinstance(manifest, dict) else None
+    if not isinstance(files, dict):
+        raise ValueError("snapshot has no file inventory")
+    entry = files.get(path)
+    if entry is not None and not isinstance(entry, dict):
+        raise ValueError(f"invalid snapshot file entry: {path}")
+    return entry
+
+
+def _entity_record(manifest, path: str, entry: dict, name: str, spec: dict) -> dict:
+    metadata = _snapshot_metadata(manifest)
+    git = metadata.get("git") if isinstance(metadata.get("git"), dict) else {}
+    parts = name.split(".")
+    signatures = spec.get("signatures") or []
+    return {
+        "entity_id": f"{path}::{name}",
+        "entity_key": {
+            "repo": metadata.get("root"),
+            "language": entry.get("language"),
+            "chain": [path, *parts[:-1]],
+            "kind": spec.get("kind"),
+            "name": parts[-1],
+            "overload": "merged" if spec.get("span_precision") == "merged" or len(signatures) > 1 else None,
+        },
+        "anchor": {
+            "repo_revision": git.get("commit"),
+            "file": path,
+            "start_line": spec.get("start"),
+            "end_line": spec.get("end"),
+            "start_byte": None,
+            "end_byte": None,
+            "byte_precision": "unavailable",
+            "ast_anchor": {
+                "kind": spec.get("kind"),
+                "start": spec.get("start"),
+                "end": spec.get("end"),
+                "span_precision": spec.get("span_precision"),
+            },
+        },
+        "body_hash": spec.get("hash"),
+        "signatures": signatures,
+    }
+
+
+def _map_ranges(manifest, path: str, ranges: list[dict]) -> dict:
+    entry = _snapshot_entry(manifest, path)
+    if entry is None:
+        return {"path": path, "ranges": [], "gaps": [{"range": item, "reason": "not-inventoried"} for item in ranges]}
+    total = entry.get("lines")
+    if type(total) is not int or total < 1:
+        raise ValueError(f"invalid line count in snapshot entry: {path}")
+    symbols = entry.get("symbols") or {}
+    if not isinstance(symbols, dict):
+        raise ValueError(f"invalid symbols in snapshot entry: {path}")
+    mapped_ranges = []
+    gaps = []
+    status = entry.get("status")
+    for item in ranges:
+        start, end = item["start"], item["end"]
+        if type(start) is not int or type(end) is not int or not 1 <= start <= end <= total:
+            raise ValueError(f"range {start}:{end} is outside {path} (1:{total})")
+        if status != "parsed":
+            gaps.append({"range": item, "reason": "no-ast", "status": status,
+                         "parser_notes": list(entry.get("parser_notes") or [])})
+            mapped_ranges.append({"start": start, "end": end, "symbols": []})
+            continue
+        found = []
+        for name, spec in symbols.items():
+            if not isinstance(spec, dict):
+                raise ValueError(f"invalid symbol metadata: {path}:{name}")
+            if spec["start"] <= end and start <= spec["end"]:
+                found.append((spec["end"] - spec["start"], spec["start"], name,
+                              _entity_record(manifest, path, entry, name, spec)))
+        found.sort(key=lambda value: (value[0], value[1], value[2]))
+        records = [value[3] for value in found]
+        if not records:
+            gaps.append({"range": item, "reason": "outside-symbols" if symbols else "no-symbols"})
+        mapped_ranges.append({"start": start, "end": end, "symbols": records})
+    return {"path": path, "language": entry.get("language"), "status": status,
+            "ranges": mapped_ranges, "gaps": gaps}
+
+
+def _validate_symbols_at_requests(requests) -> list[dict]:
+    if not isinstance(requests, list) or not 1 <= len(requests) <= MAX_SYMBOLS_AT_REQUESTS:
+        raise ValueError(f"requests must be a list of 1 to {MAX_SYMBOLS_AT_REQUESTS} items")
+    validated = []
+    range_count = 0
+    for request in requests:
+        if not isinstance(request, dict) or set(request) != {"path", "ranges"}:
+            raise ValueError("each symbols-at request must contain only path and ranges")
+        path, ranges = request["path"], request["ranges"]
+        if not isinstance(path, str) or not path or "\\" in path or path.startswith("/"):
+            raise ValueError("symbols-at path must be a snapshot-relative POSIX path")
+        if not isinstance(ranges, list) or not ranges:
+            raise ValueError("symbols-at ranges must be a nonempty list")
+        clean_ranges = []
+        for item in ranges:
+            if not isinstance(item, dict) or set(item) != {"start", "end"}:
+                raise ValueError("each symbols-at range must contain only start and end")
+            clean_ranges.append({"start": item["start"], "end": item["end"]})
+            range_count += 1
+        validated.append({"path": path, "ranges": clean_ranges})
+    if range_count > MAX_SYMBOLS_AT_RANGES:
+        raise ValueError(f"symbols-at accepts at most {MAX_SYMBOLS_AT_RANGES} ranges")
+    return validated
+
+
+_HUNK_HEADER = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+
+
+def _diff_path(value: str) -> str | None:
+    value = value.strip()
+    if value == "/dev/null":
+        return None
+    if value.startswith('"') and value.endswith('"'):
+        try:
+            value = json.loads(value)
+        except ValueError:
+            pass
+    for prefix in ("a/", "b/"):
+        if value.startswith(prefix):
+            return value[2:]
+    return value
+
+
+def _coalesce_lines(lines: list[int]) -> list[dict]:
+    ranges = []
+    for line in lines:
+        if ranges and line == ranges[-1]["end"] + 1:
+            ranges[-1]["end"] = line
+        else:
+            ranges.append({"start": line, "end": line})
+    return ranges
+
+
+def parse_unified_diff(text: str) -> list[dict]:
+    """File sections and hunks of a unified diff, with changed line numbers.
+
+    Only headers and hunk line positions are retained. Removed lines belong to
+    the old side and added lines to the new side; context lines belong to both
+    and are not changes.
+    """
+    if not isinstance(text, str) or len(text) > MAX_DIFF_CHARS:
+        raise ValueError(f"diff must be text of at most {MAX_DIFF_CHARS} characters")
+    sections = []
+    section = None
+    hunk = None
+    old_line = new_line = old_left = new_left = 0
+
+    def close_hunk():
+        nonlocal hunk
+        if section is not None and hunk is not None:
+            hunk["removed_ranges"] = _coalesce_lines(hunk.pop("removed_lines"))
+            hunk["added_ranges"] = _coalesce_lines(hunk.pop("added_lines"))
+            section["hunks"].append(hunk)
+        hunk = None
+
+    def close_section():
+        nonlocal section
+        close_hunk()
+        if section is not None:
+            sections.append(section)
+        section = None
+
+    for raw in text.splitlines():
+        if raw.startswith("diff --git "):
+            close_section()
+            section = {"old_path": None, "new_path": None, "hunks": []}
+            continue
+        if section is None:
+            if raw.startswith("--- "):
+                section = {"old_path": _diff_path(raw[4:]), "new_path": None, "hunks": []}
+            continue
+        header_open = hunk is None or (old_left <= 0 and new_left <= 0)
+        if header_open and raw.startswith("rename from "):
+            section["old_path"] = _diff_path(raw[len("rename from "):])
+            continue
+        if header_open and raw.startswith("rename to "):
+            section["new_path"] = _diff_path(raw[len("rename to "):])
+            continue
+        if header_open and raw.startswith("copy from "):
+            section["old_path"] = _diff_path(raw[len("copy from "):])
+            continue
+        if header_open and raw.startswith("copy to "):
+            section["new_path"] = _diff_path(raw[len("copy to "):])
+            continue
+        if header_open and raw.startswith("--- "):
+            if section["hunks"] or section["new_path"] is not None:
+                close_section()
+                section = {"old_path": None, "new_path": None, "hunks": []}
+            section["old_path"] = _diff_path(raw[4:])
+            continue
+        if header_open and raw.startswith("+++ "):
+            section["new_path"] = _diff_path(raw[4:])
+            continue
+        match = _HUNK_HEADER.match(raw) if header_open else None
+        if match:
+            close_hunk()
+            if sum(len(item["hunks"]) for item in sections) + sum(len(item["hunks"]) for item in ([section] if section else [])) >= MAX_DIFF_HUNKS:
+                raise ValueError(f"diff has more than {MAX_DIFF_HUNKS} hunks")
+            old_line = int(match.group(1))
+            old_left = int(match.group(2) or "1")
+            new_line = int(match.group(3))
+            new_left = int(match.group(4) or "1")
+            hunk = {"old_start": old_line, "old_count": old_left,
+                    "new_start": new_line, "new_count": new_left,
+                    "removed_lines": [], "added_lines": []}
+            continue
+        if hunk is None or (old_left <= 0 and new_left <= 0):
+            continue
+        prefix = raw[:1] or " "
+        if prefix == "\\":
+            continue
+        if prefix == "-":
+            hunk["removed_lines"].append(old_line)
+            old_line += 1
+            old_left -= 1
+        elif prefix == "+":
+            hunk["added_lines"].append(new_line)
+            new_line += 1
+            new_left -= 1
+        else:
+            old_line += 1
+            new_line += 1
+            old_left -= 1
+            new_left -= 1
+    close_section()
+    return sections
+
+
+def symbols_at(candidate, requests=None, *, base=None, diff: str | None = None) -> dict:
+    """Map line ranges, or a unified diff, to symbols in one or two snapshots.
+
+    In diff mode removed lines are read in the base snapshot and added lines in
+    the candidate snapshot. A file or range the snapshots cannot place is a
+    declared gap in the result, never an invented symbol.
+    """
+    if diff is None:
+        validated = _validate_symbols_at_requests(requests)
+        results = [_map_ranges(candidate, item["path"], item["ranges"]) for item in validated]
+        return {
+            "schema": SYMBOLS_AT_SCHEMA,
+            "mode": "ranges",
+            "candidate": _snapshot_info(candidate),
+            "results": results,
+            "summary": {
+                "requests": len(results),
+                "symbols": sum(len(item["symbols"]) for result in results for item in result["ranges"]),
+                "gaps": sum(len(result["gaps"]) for result in results),
+            },
+        }
+    if requests is not None:
+        raise ValueError("symbols-at takes either ranges or a diff, not both")
+    if base is None:
+        raise ValueError("diff mode requires a base snapshot")
+    hunks = []
+    symbol_count = gap_count = 0
+    for section in parse_unified_diff(diff):
+        old_path, new_path = section["old_path"], section["new_path"]
+        for item in section["hunks"]:
+            if old_path is None:
+                base_side = {"path": None, "ranges": [], "gaps": [{"reason": "file-added"}]}
+            else:
+                base_side = _map_ranges(base, old_path, item["removed_ranges"])
+            if new_path is None:
+                candidate_side = {"path": None, "ranges": [], "gaps": [{"reason": "file-removed"}]}
+            else:
+                candidate_side = _map_ranges(candidate, new_path, item["added_ranges"])
+            symbol_count += sum(len(value["symbols"]) for side in (base_side, candidate_side)
+                                for value in side["ranges"])
+            gap_count += len(base_side["gaps"]) + len(candidate_side["gaps"])
+            hunks.append({
+                "old_path": old_path,
+                "new_path": new_path,
+                "renamed": old_path is not None and new_path is not None and old_path != new_path,
+                "old_start": item["old_start"], "old_count": item["old_count"],
+                "new_start": item["new_start"], "new_count": item["new_count"],
+                "base": base_side,
+                "candidate": candidate_side,
+            })
+    return {
+        "schema": SYMBOLS_AT_SCHEMA,
+        "mode": "diff",
+        "base": _snapshot_info(base),
+        "candidate": _snapshot_info(candidate),
+        "hunks": hunks,
+        "summary": {"hunks": len(hunks), "symbols": symbol_count, "gaps": gap_count},
+    }
 
 # Extensions an import specifier may resolve to, in preference order.
 _MODULE_EXTENSIONS = (".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".java", ".rs")
@@ -2827,8 +3210,56 @@ def cmd_edit_impact(args: argparse.Namespace) -> int:
         with open_snapshot(Path(args.manifest)) as store:
             result = build_edit_impact(
                 store, args.target, cards_path=_cards_path(args), neighbors=args.neighbors,
-                history=args.history, include_source=not args.no_source,
+                history=args.history, include_source=not args.no_source, hops=args.hops,
+                include_neighbor_source=args.neighbor_source, include_slices=args.slices,
+                budget_chars=args.budget_chars,
             )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
+def cmd_symbols_at(args: argparse.Namespace) -> int:
+    try:
+        if args.diff is not None and args.request:
+            raise ValueError("symbols-at takes either --request or --diff, not both")
+        if args.diff is not None and not args.base:
+            raise ValueError("symbols-at --diff requires --base")
+        if args.diff is None and args.base:
+            raise ValueError("symbols-at --base requires --diff")
+        with ExitStack() as stack:
+            candidate = stack.enter_context(open_snapshot(Path(args.manifest)))
+            if args.diff is not None:
+                text = sys.stdin.read() if args.diff == "-" else Path(args.diff).read_text(encoding="utf-8")
+                base = stack.enter_context(open_snapshot(Path(args.base)))
+                result = symbols_at(candidate, base=base, diff=text)
+            else:
+                grouped: dict[str, list[dict]] = {}
+                for value in args.request or []:
+                    try:
+                        path, start, end = value.rsplit(":", 2)
+                        item = {"start": int(start), "end": int(end)}
+                    except ValueError as error:
+                        raise ValueError(f"symbols-at request must be PATH:START:END: {value}") from error
+                    grouped.setdefault(path, []).append(item)
+                requests = [{"path": path, "ranges": ranges} for path, ranges in grouped.items()]
+                result = symbols_at(candidate, requests)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
+def cmd_stale_callers(args: argparse.Namespace) -> int:
+    try:
+        from semantic_store import build_stale_callers
+        with ExitStack() as stack:
+            candidate = stack.enter_context(open_snapshot(Path(args.manifest)))
+            base = stack.enter_context(open_snapshot(Path(args.base)))
+            result = build_stale_callers(base, candidate, limit=args.limit)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (OSError, ValueError, KeyError) as error:
@@ -2921,14 +3352,31 @@ def main(argv: list[str] | None = None) -> int:
     meta_query_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     meta_query_parser.set_defaults(func=cmd_meta_query)
 
-    edit_impact_parser = sub.add_parser("edit-impact", help="what to know before editing symbols: digests, cards, one-hop callers and callees, blind spots, verified source")
+    edit_impact_parser = sub.add_parser("edit-impact", help="what to know before editing symbols: digests, signatures, cards, one-hop callers and callees, blind spots, verified source")
     edit_impact_parser.add_argument("manifest")
     edit_impact_parser.add_argument("--target", action="append", required=True, help="symbol id (path::Name) or file path; repeatable")
     edit_impact_parser.add_argument("--neighbors", type=int, default=20)
     edit_impact_parser.add_argument("--history", type=int, default=5)
+    edit_impact_parser.add_argument("--hops", type=int, default=1, help="graph hops: 1 or 2")
+    edit_impact_parser.add_argument("--neighbor-source", action="store_true", help="include verified source of listed one-hop neighbours")
+    edit_impact_parser.add_argument("--slices", action="store_true", help="compute lazy Python backward slices for targets")
+    edit_impact_parser.add_argument("--budget-chars", type=int, default=120000, help="packet budget in JSON characters")
     edit_impact_parser.add_argument("--no-source", action="store_true")
     edit_impact_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     edit_impact_parser.set_defaults(func=cmd_edit_impact)
+
+    symbols_at_parser = sub.add_parser("symbols-at", help="map line ranges or a unified diff to symbols in one or two snapshots")
+    symbols_at_parser.add_argument("manifest", help="candidate snapshot")
+    symbols_at_parser.add_argument("--request", action="append", default=[], help="PATH:START:END in the candidate snapshot; repeatable")
+    symbols_at_parser.add_argument("--base", help="base snapshot, required with --diff")
+    symbols_at_parser.add_argument("--diff", help="unified diff file, or - for standard input")
+    symbols_at_parser.set_defaults(func=cmd_symbols_at)
+
+    stale_parser = sub.add_parser("stale-callers", help="compare two snapshots and classify callers of changed symbols by edit and validation impact")
+    stale_parser.add_argument("manifest", help="candidate snapshot")
+    stale_parser.add_argument("--base", required=True, help="base snapshot")
+    stale_parser.add_argument("--limit", type=int, default=100)
+    stale_parser.set_defaults(func=cmd_stale_callers)
 
     meta_upsert_parser = sub.add_parser("meta-upsert", help="write Meta-Code cards, bound to the digests of this snapshot, to the card store")
     meta_upsert_parser.add_argument("manifest")

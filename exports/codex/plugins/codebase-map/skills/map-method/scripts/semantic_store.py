@@ -4,12 +4,15 @@ from __future__ import annotations
 from collections.abc import Mapping
 from contextlib import contextmanager
 from datetime import datetime, timezone
+import ast
 import hashlib
 import itertools
 import json
 from pathlib import Path
+import re
 import sqlite3
 import tempfile
+import textwrap
 
 import snapshot
 from snapshot_store import SnapshotStore, SnapshotWriter, _pack, _unpack, _settings, logical_digest
@@ -21,6 +24,24 @@ RESOLVER_VERSION = 1
 TARGET_KINDS = frozenset({"function", "class"})
 MAX_META_CHANGESETS = 16
 MAX_META_HISTORY_BYTES = 4 * 1024 * 1024
+# The algorithm behind interface_hash. A digest carries it as a `v<N>:` prefix,
+# and an unprefixed digest is version 1 (parameter names only), so a digest
+# computed by another algorithm is told apart instead of read as an edit.
+INTERFACE_DIGEST_VERSION = 2
+
+
+def digest_version(digest: object) -> int:
+    """The algorithm version of a `v<N>:`-prefixed digest; 1 when unprefixed."""
+    if isinstance(digest, str):
+        head, separator, _ = digest.partition(":")
+        if separator and head[:1] == "v" and head[1:].isdigit():
+            return int(head[1:])
+    return 1
+
+
+def _interface_digest(contract: dict) -> str:
+    canonical = json.dumps(contract, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return f"v{INTERFACE_DIGEST_VERSION}:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
 
 
 class ConfigObservations(Mapping):
@@ -380,6 +401,13 @@ def _compute_file_meta_symbols(
     The ids in sem_references are positional (`function@4:0`), so hashing them
     would change the effects of an untouched caller whenever a callee below an
     edit moved down a line.
+
+    The interface digest covers the symbol's kind, name, export, the parameter
+    names its semantic declarations bind and the adapter's signature records
+    (parameter kinds, annotations, defaults, return, async, generator,
+    decorators; bases and attributes of a class), and a class's members. A
+    symbol with neither declarations nor an exhaustive signature falls back to
+    its body: any edit may then have changed its contract.
     """
     if not sym_rows:
         return []
@@ -423,12 +451,15 @@ def _compute_file_meta_symbols(
                     for _pl0, _pc0, p_name in scope_params.get(sc_id, ()):
                         param_names.append(p_name)
         is_exp = 1 if (name in exported_names or name.split(".")[0] in exported_names) else 0
+        signatures = sym.get("signatures") or []
         sym_info[name] = {
             "sym": sym,
             "start": start,
             "end": end,
             "matched_decls": set(matched_decls),
-            "params_str": ",".join(param_names),
+            "own": {"params": param_names, "signatures": signatures},
+            "exhaustive": bool(signatures) and all(
+                isinstance(item, dict) and item.get("fields") for item in signatures),
             "is_exp": is_exp,
         }
 
@@ -440,20 +471,19 @@ def _compute_file_meta_symbols(
         body_hash = sym["hash"]
         is_exp = info["is_exp"]
         matched_decls = info["matched_decls"]
-        params_str = info["params_str"]
+        contract = {"kind": kind, "name": name, "exported": is_exp}
         if kind == "class":
             prefix = name + "."
-            members = sorted(
-                f"{m_name[len(prefix):]}({m_info['params_str']})"
+            contract.update(info["own"], members={
+                m_name[len(prefix):]: m_info["own"]
                 for m_name, m_info in sym_info.items()
                 if m_name.startswith(prefix)
-            )
-            interface_sig = f"{kind}|{name}|exp={is_exp}|params={params_str}|members={';'.join(members)}"
-        elif matched_decls:
-            interface_sig = f"{kind}|{name}|exp={is_exp}|params={params_str}|members="
+            })
+        elif matched_decls or info["exhaustive"]:
+            contract.update(info["own"])
         else:
-            interface_sig = f"{kind}|{name}|exp={is_exp}|body={body_hash}"
-        interface_hash = hashlib.sha256(interface_sig.encode("utf-8")).hexdigest()[:16]
+            contract["body"] = body_hash
+        interface_hash = _interface_digest(contract)
 
         child_spans = [
             (c_start, c_end)
@@ -953,6 +983,10 @@ class _Cards:
             current = symbols.get(symbol_id)
             if current is None:
                 states[symbol_id] = ("orphan", "symbol-removed")
+            elif digest_version(interface) != digest_version(current[2]):
+                # Written against another interface algorithm: the two digests do
+                # not compare, so the card is re-read rather than called changed.
+                states[symbol_id] = ("stale_interface", "digest-version-changed")
             elif interface != current[2]:
                 states[symbol_id] = ("stale_interface", "symbol-interface-changed")
             elif effects != current[3]:
@@ -1091,13 +1125,7 @@ def query_meta_code(
         limit = max(1, int(limit))
         selected = []
         if freshness != "orphan":
-            for row in db.execute(
-                f"""
-                SELECT m.id, m.file, m.name, m.kind, m.start, m.end,
-                       m.body_hash, m.interface_hash, m.effects_hash, m.exported
-                FROM meta_symbols m {where_sql}
-                ORDER BY m.file, m.start, m.name
-                """, params):
+            for row in db.execute(f"{_SYMBOL_SELECT} {where_sql} ORDER BY m.file, m.start, m.name", params):
                 state = cards.states.get(row[0], ("uncovered", None))[0]
                 if freshness is None or state == freshness:
                     selected.append(row)
@@ -1105,7 +1133,7 @@ def query_meta_code(
                         break
         cards.prefetch([row[0] for row in selected])
         symbols_out = []
-        for sym_id, file, name, kind, start, end, b_hash, i_hash, e_hash, exported in selected:
+        for sym_id, file, name, kind, start, end, b_hash, i_hash, e_hash, exported, spec in selected:
             card = cards.get(sym_id)
             symbols_out.append({
                 "symbol_id": sym_id,
@@ -1117,6 +1145,7 @@ def query_meta_code(
                 "body_hash": b_hash,
                 "interface_hash": i_hash,
                 "effects_hash": e_hash,
+                "signatures": _signatures(spec),
                 "exported": bool(exported),
                 "freshness": card["freshness"] if card else "uncovered",
                 "stale_reason": card["stale_reason"] if card else None,
@@ -1202,11 +1231,21 @@ def query_meta_code(
         }
 
 
-EDIT_IMPACT_SCHEMA = "daodan/edit-impact/v1"
+EDIT_IMPACT_SCHEMA = "daodan/edit-impact/v2"
 MAX_IMPACT_TARGETS = 25
+DEFAULT_IMPACT_BUDGET_CHARS = 120_000
+MAX_IMPACT_BUDGET_CHARS = 4_000_000
 # A name no scope binds is a builtin or an undeclared global: counted, not listed.
 _NOT_A_BLIND_SPOT = frozenset({"unbound-name"})
-_SYMBOL_COLUMNS = "id,file,name,kind,start,end,body_hash,interface_hash,effects_hash,exported"
+# A Meta-Code row with its manifest symbol entry, where the signature records live.
+_SYMBOL_SELECT = ("SELECT m.id,m.file,m.name,m.kind,m.start,m.end,m.body_hash,m.interface_hash,"
+                  "m.effects_hash,m.exported,s.payload FROM meta_symbols m "
+                  "LEFT JOIN symbols s ON s.file=m.file AND s.name=m.name")
+
+
+def _signatures(spec_blob):
+    """The signature records of a packed manifest symbol entry, or None."""
+    return _unpack(spec_blob).get("signatures") if spec_blob is not None else None
 
 
 class _ImpactIndex:
@@ -1220,7 +1259,7 @@ class _ImpactIndex:
     def symbols(self, file):
         if file not in self._symbols:
             self._symbols[file] = self.db.execute(
-                f"SELECT {_SYMBOL_COLUMNS} FROM meta_symbols WHERE file=? ORDER BY start,end", (file,)
+                f"{_SYMBOL_SELECT} WHERE m.file=? ORDER BY m.start,m.end", (file,)
             ).fetchall()
         return self._symbols[file]
 
@@ -1263,25 +1302,43 @@ class _ImpactIndex:
 
 
 def _symbol_fields(row):
-    sym_id, file, name, kind, start, end, body, interface, effects, _exported = row
+    sym_id, file, name, kind, start, end, body, interface, effects, _exported, spec = row
     return {"symbol_id": sym_id, "file": file, "name": name, "kind": kind, "start": start,
-            "end": end, "body_hash": body, "interface_hash": interface, "effects_hash": effects}
+            "end": end, "body_hash": body, "interface_hash": interface, "effects_hash": effects,
+            "signatures": _signatures(spec)}
+
+
+def _site(file, kind, start_line, start_col, end_line, end_col):
+    return {"file": file, "kind": kind, "start_line": start_line, "start_column": start_col,
+            "end_line": end_line, "end_column": end_col}
+
+
+def _add_reference(found, row, kind, site):
+    item = found.setdefault(row[0], [row, 0, {}])
+    item[1] += 1
+    edge = item[2].setdefault(kind, {"kind": kind, "count": 0, "sites": []})
+    edge["count"] += 1
+    if site not in edge["sites"]:
+        edge["sites"].append(site)
 
 
 def _neighbors(cards, found, limit):
     """Rank neighbours by how often they are referenced; cap, and report the total."""
     ranked = sorted(found.values(), key=lambda item: (-item[1], item[0][0]))
-    cards.prefetch([symbol[0] for symbol, _count in ranked[:limit]])
+    cards.prefetch([symbol[0] for symbol, _count, *_rest in ranked[:limit]])
     listed = []
-    for symbol, count in ranked[:limit]:
+    for item in ranked[:limit]:
+        symbol, count = item[0], item[1]
         entry = _symbol_fields(symbol)
         entry["references"] = count
+        entry["edges"] = [item[2][kind] for kind in sorted(item[2])] if len(item) > 2 else []
         entry["card"] = cards.get(symbol[0])
         listed.append(entry)
     return {"total": len(ranked), "listed": listed}
 
 
-def _impact_of(db, index, cards, symbol, limit, history):
+def _direct_edges(db, index, symbol):
+    """Resolved callers and callees of one symbol, with exact reference sites."""
     sym_id, file, _name, _kind, start, end = symbol[:6]
 
     def inside_target(other):
@@ -1291,24 +1348,73 @@ def _impact_of(db, index, cards, symbol, limit, history):
     declaration_ids = index.declaration_ids(symbol)
     if declaration_ids:
         marks = ",".join("?" for _ in declaration_ids)
-        for ref_file, line in db.execute(
-            f"SELECT file,l0 FROM sem_references WHERE resolution='resolved' AND target_id IN ({marks})",
+        for ref_file, kind, l0, c0, l1, c1 in db.execute(
+            f"SELECT file,kind,l0,c0,l1,c1 FROM sem_references WHERE resolution='resolved' AND target_id IN ({marks})",
             declaration_ids,
         ):
-            caller = index.enclosing(ref_file, line)
+            caller = index.enclosing(ref_file, l0)
             if caller is None or caller[0] == sym_id or inside_target(caller):
                 continue
-            callers.setdefault(caller[0], [caller, 0])[1] += 1
+            _add_reference(callers, caller, kind, _site(ref_file, kind, l0, c0, l1, c1))
 
     callees: dict = {}
-    for (target_id,) in db.execute(
-        "SELECT target_id FROM sem_references WHERE file=? AND resolution='resolved' "
+    for target_id, kind, l0, c0, l1, c1 in db.execute(
+        "SELECT target_id,kind,l0,c0,l1,c1 FROM sem_references WHERE file=? AND resolution='resolved' "
         "AND target_id IS NOT NULL AND l0 BETWEEN ? AND ?", (file, start, end),
     ):
         callee = index.symbol_for_declaration(target_id)
         if callee is None or callee[0] == sym_id or inside_target(callee):
             continue
-        callees.setdefault(callee[0], [callee, 0])[1] += 1
+        _add_reference(callees, callee, kind, _site(file, kind, l0, c0, l1, c1))
+    return callers, callees
+
+
+def _is_test_path(path: str) -> bool:
+    parts = path.replace("\\", "/").split("/")
+    name = parts[-1].lower()
+    return (
+        any(part.lower() in {"test", "tests", "testing"} for part in parts[:-1])
+        or name.startswith("test_")
+        or name.endswith(("_test.py", "_test.go", "_test.rs", "test.java", "tests.java"))
+        or ".test." in name
+        or ".spec." in name
+    )
+
+
+def _second_hop(db, index, target, callers, callees, limit, peer_ids=()):
+    excluded = {target[0], *peer_ids} | set(callers) | set(callees)
+    found: dict = {}
+    for direction, neighbours in (("caller", callers), ("callee", callees)):
+        for neighbour in neighbours.values():
+            row = neighbour[0]
+            next_callers, next_callees = _direct_edges(db, index, row)
+            for next_direction, group in (("caller", next_callers), ("callee", next_callees)):
+                for item in group.values():
+                    candidate = item[0]
+                    if candidate[0] in excluded:
+                        continue
+                    entry = found.setdefault(candidate[0], {
+                        "row": candidate, "references": 0, "via": [], "edge_kinds": {},
+                    })
+                    entry["references"] += item[1]
+                    via = {"symbol_id": row[0], "from_target": direction, "direction": next_direction}
+                    if via not in entry["via"]:
+                        entry["via"].append(via)
+                    for kind, edge in item[2].items():
+                        entry["edge_kinds"][kind] = entry["edge_kinds"].get(kind, 0) + edge["count"]
+    ranked = sorted(found.values(), key=lambda item: (-item["references"], item["row"][0]))
+    listed = []
+    for item in ranked[:limit]:
+        entry = _symbol_fields(item["row"])
+        entry.update(references=item["references"], via=item["via"], edge_kinds=item["edge_kinds"])
+        listed.append(entry)
+    return {"total": len(ranked), "listed": listed,
+            "omitted_by_cap": max(0, len(ranked) - len(listed)), "omitted_by_budget": 0}
+
+
+def _impact_of(db, index, cards, symbol, limit, history, hops=1, peer_ids=()):
+    sym_id, file, _name, _kind, start, end = symbol[:6]
+    callers, callees = _direct_edges(db, index, symbol)
 
     blind: dict = {}
     unbound = 0
@@ -1332,26 +1438,207 @@ def _impact_of(db, index, cards, symbol, limit, history):
                   "JOIN meta_changesets c ON c.seq=d.seq WHERE d.symbol_id=? ORDER BY d.seq DESC LIMIT ?",
                   (sym_id, history))]
 
-    return {
+    caller_packet = _neighbors(cards, callers, limit)
+    callee_packet = _neighbors(cards, callees, limit)
+    blind_packet = {"total": len(blind_spots), "listed": blind_spots[:limit], "unbound_names": unbound}
+    related_tests = []
+    for item in callers.values():
+        row = item[0]
+        if _is_test_path(row[1]):
+            entry = _symbol_fields(row)
+            entry["references"] = item[1]
+            related_tests.append(entry)
+    related_tests.sort(key=lambda item: (-item["references"], item["symbol_id"]))
+    obligations = []
+    if caller_packet["total"]:
+        obligations.append({"kind": "inspect-callers", "count": caller_packet["total"]})
+    if callee_packet["total"]:
+        obligations.append({"kind": "inspect-callees", "count": callee_packet["total"]})
+    if blind_packet["total"]:
+        obligations.append({"kind": "resolve-blind-spots", "count": blind_packet["total"]})
+    if related_tests:
+        obligations.append({"kind": "run-related-tests", "count": len(related_tests)})
+    omitted = (caller_packet["total"] - len(caller_packet["listed"])
+               + callee_packet["total"] - len(callee_packet["listed"]))
+    if omitted:
+        obligations.append({"kind": "inspect-omitted-neighbours", "count": omitted})
+
+    result = {
         **_symbol_fields(symbol),
         "card": cards.get(sym_id),
-        "callers": _neighbors(cards, callers, limit),
-        "callees": _neighbors(cards, callees, limit),
-        "blind_spots": {"total": len(blind_spots), "listed": blind_spots[:limit], "unbound_names": unbound},
+        "callers": caller_packet,
+        "callees": callee_packet,
+        "blind_spots": blind_packet,
+        "l4": {
+            "related_tests": related_tests[:limit],
+            "related_tests_total": len(related_tests),
+            "obligations": obligations,
+            "do_not_touch": {
+                "status": "unavailable",
+                "reason": "requires a base/candidate fingerprint delta; use stale-callers",
+                "symbols": [],
+            },
+        },
         "recent_changes": recent,
+    }
+    if hops == 2:
+        result["second_hop"] = _second_hop(db, index, symbol, callers, callees, limit, peer_ids)
+    return result
+
+
+def _slice_names(node, *, definitions: bool) -> set[str]:
+    names = set()
+    stack = [node]
+    while stack:
+        current = stack.pop()
+        if current is not node and isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            if definitions and isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                names.add(current.name)
+            continue
+        if isinstance(current, ast.Name):
+            if definitions and isinstance(current.ctx, ast.Store):
+                names.add(current.id)
+            if not definitions and isinstance(current.ctx, ast.Load):
+                names.add(current.id)
+        elif definitions and isinstance(current, ast.Import):
+            names.update(alias.asname or alias.name.split(".")[0] for alias in current.names)
+        elif definitions and isinstance(current, ast.ImportFrom):
+            names.update(alias.asname or alias.name for alias in current.names if alias.name != "*")
+        elif definitions and isinstance(current, ast.ExceptHandler) and current.name:
+            names.add(current.name)
+        stack.extend(ast.iter_child_nodes(current))
+    return names
+
+
+def _slice_statements(function) -> list[ast.stmt]:
+    statements = []
+
+    def visit(items):
+        for item in items:
+            statements.append(item)
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            for child in ast.iter_child_nodes(item):
+                if isinstance(child, ast.stmt):
+                    visit([child])
+
+    visit(function.body)
+    return statements
+
+
+def _python_slice(store, row) -> dict:
+    """A lazy conservative backward slice of one Python callable.
+
+    Seeds are observable statements. The closure follows definitions of names
+    they use and adds the first line of each enclosing control statement. This
+    is intraprocedural evidence, not a proof of runtime reachability.
+    """
+    _sym_id, file, name, kind, start, end, *_rest = row
+    if kind not in {"function", "method"}:
+        return {"status": "unavailable", "reason": "slice requires a function or method target"}
+    entry = store.get_file(file, semantic=False)
+    if entry is None or entry.get("language") != "python" or entry.get("status") != "parsed":
+        return {"status": "unavailable", "reason": "slice requires a parsed Python target"}
+    import source_reader
+
+    try:
+        read = source_reader.read_packet(store, [{"path": file, "ranges": [{"start": start, "end": end}]}])
+    except ValueError as error:
+        return {"status": "unavailable", "reason": str(error)}
+    lines = {}
+    for item in read["files"]:
+        if item["path"] != file:
+            continue
+        for block in item["blocks"]:
+            for raw in block["source"].splitlines():
+                match = re.match(r"(\d+): (.*)\Z", raw)
+                if match and start <= int(match.group(1)) <= end:
+                    lines[int(match.group(1))] = match.group(2)
+    if set(lines) != set(range(start, end + 1)):
+        return {"status": "unavailable", "reason": "verified source did not cover the whole target span"}
+    try:
+        tree = ast.parse(textwrap.dedent("\n".join(lines[number] for number in range(start, end + 1))))
+    except SyntaxError as error:
+        return {"status": "unavailable", "reason": f"Python slice parse failed: {error.msg}"}
+    short = name.split(".")[-1]
+    function = next((node for node in ast.walk(tree)
+                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == short), None)
+    if function is None:
+        return {"status": "unavailable", "reason": "target callable was not found in its verified span"}
+    statements = _slice_statements(function)
+    by_id = {id(item): item for item in statements}
+    uses = {id(item): _slice_names(item, definitions=False) for item in statements}
+    defines = {id(item): _slice_names(item, definitions=True) for item in statements}
+    included: dict[int, str] = {}
+
+    def include(item, reason):
+        if id(item) not in included:
+            included[id(item)] = reason
+            return True
+        return False
+
+    for item in statements:
+        if isinstance(item, (ast.Return, ast.Raise, ast.Expr, ast.Assert)):
+            include(item, "observable-statement")
+    changed = True
+    while changed:
+        changed = False
+        needed = set().union(*(uses[key] for key in included)) if included else set()
+        for item in statements:
+            if id(item) not in included and defines[id(item)] & needed:
+                changed = include(item, "defines-used-name") or changed
+    statement_ids = {id(item) for item in statements}
+    for item in statements:
+        if id(item) in included:
+            continue
+        descendants = {id(node) for node in ast.walk(item) if isinstance(node, ast.stmt)} & statement_ids
+        if descendants & set(included):
+            include(item, "control-header")
+    selected = []
+    for key, reason in included.items():
+        item = by_id[key]
+        first = start + item.lineno - 1
+        last = start + (item.end_lineno or item.lineno) - 1
+        if reason == "control-header":
+            last = first
+        selected.append({"start": first, "end": last, "kind": type(item).__name__, "reason": reason})
+    selected.sort(key=lambda item: (item["start"], item["end"], item["kind"]))
+    ranges = []
+    for item in selected:
+        if ranges and item["start"] <= ranges[-1]["end"] + 1:
+            ranges[-1]["end"] = max(ranges[-1]["end"], item["end"])
+        else:
+            ranges.append({"start": item["start"], "end": item["end"]})
+    return {
+        "status": "available",
+        "language": "python",
+        "method": "backward-def-use",
+        "statements": selected,
+        "ranges": ranges,
+        "limitations": [
+            "intraprocedural and conservative; dynamic dispatch and aliasing are not resolved",
+            "control headers are represented by their first line",
+        ],
     }
 
 
+def _packet_bytes(packet: dict) -> int:
+    return len(json.dumps(packet, separators=(",", ":")))
+
+
 def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=5,
-                      include_source=True) -> dict:
+                      include_source=True, hops=1, include_neighbor_source=False,
+                      include_slices=False, budget_chars=DEFAULT_IMPACT_BUDGET_CHARS) -> dict:
     """What to know before editing a symbol, in one bounded packet.
 
-    Read-only over the snapshot's Meta-Code index and the card store: the three
-    digests and the card (with its freshness against this snapshot) of each target,
-    its resolved one-hop callers and callees with their cards,
-    the references the static analysis could not resolve (dynamic calls,
-    ambiguous receivers), and the target's last changes. The target's source is
-    read through source_reader, so it is verified against the recorded hashes.
+    Read-only over the snapshot's Meta-Code index and the card store. Target
+    fields and digests are the core. Callers and callees are L1, with signatures,
+    cards and exact reference sites. A second hop is L2 and carries signatures
+    and structural summaries only. L3 slices are computed only when requested.
+    L4 lists related tests and obligations; its DO NOT TOUCH list stays
+    unavailable until a base/candidate delta can classify a symbol GREEN.
+    Verified target source is L0, and verified one-hop neighbour source is
+    included only when requested. Budget omissions are reported, never hidden.
     This is evidence and leads; whether an edit is correct stays with the reader.
     """
     if store.format != "sqlite":
@@ -1362,6 +1649,15 @@ def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=
     for name, value in (("neighbors", neighbors), ("history", history)):
         if type(value) is not int or not 1 <= value <= 200:
             raise ValueError(f"{name} must be an integer from 1 to 200")
+    if type(hops) is not int or hops not in (1, 2):
+        raise ValueError("hops must be 1 or 2")
+    for name, value in (("include_source", include_source),
+                        ("include_neighbor_source", include_neighbor_source),
+                        ("include_slices", include_slices)):
+        if type(value) is not bool:
+            raise ValueError(f"{name} must be a boolean")
+    if type(budget_chars) is not int or not 1_000 <= budget_chars <= MAX_IMPACT_BUDGET_CHARS:
+        raise ValueError(f"budget_chars must be an integer from 1000 to {MAX_IMPACT_BUDGET_CHARS}")
 
     with semantic_reader(store) as db:
         if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='meta_symbols'").fetchone() is None:
@@ -1371,9 +1667,9 @@ def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=
         resolved: list = []
         unknown: list = []
         for target in targets:
-            row = db.execute(f"SELECT {_SYMBOL_COLUMNS} FROM meta_symbols WHERE id=?", (target,)).fetchone()
+            row = db.execute(f"{_SYMBOL_SELECT} WHERE m.id=?", (target,)).fetchone()
             rows = [row] if row else db.execute(
-                f"SELECT {_SYMBOL_COLUMNS} FROM meta_symbols WHERE file=? ORDER BY start,end", (target,)
+                f"{_SYMBOL_SELECT} WHERE m.file=? ORDER BY m.start,m.end", (target,)
             ).fetchall()
             if rows:
                 resolved.extend(rows)
@@ -1385,9 +1681,17 @@ def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=
             "schema": EDIT_IMPACT_SCHEMA,
             "root": store.metadata.get("root"),
             "target": store.metadata.get("target"),
-            "targets": [_impact_of(db, index, cards, row, neighbors, history) for row in selected],
+            "targets": [_impact_of(db, index, cards, row, neighbors, history, hops,
+                                   {item[0] for item in selected}) for row in selected],
             "unknown_targets": unknown,
             "truncated_targets": max(0, len(unique) - len(selected)),
+            "disclosure": {
+                "L0": "source: verified target source, when requested",
+                "L1": "targets[].callers and targets[].callees: signatures, cards and reference sites",
+                "L2": "targets[].second_hop: signatures and structural summaries, when hops=2",
+                "L3": "targets[].slice: lazy Python backward slice, when requested",
+                "L4": "targets[].l4: related tests, obligations and DO NOT TOUCH status",
+            },
         }
 
     if include_source and selected:
@@ -1405,5 +1709,371 @@ def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=
             # Stale or unreadable source is reported, never hidden: the rest of
             # the packet is metadata and stays usable.
             packet["source"] = {"error": str(error)}
-    packet["bytes"] = len(json.dumps(packet, separators=(",", ":")))
+    selected_rows = {row[0]: row for row in selected}
+    neighbor_source_omitted: list[dict] = []
+    if include_neighbor_source and selected:
+        import source_reader
+
+        requests: dict[str, list[str]] = {}
+        priority: dict[str, int] = {}
+        for target in packet["targets"]:
+            for group in ("callers", "callees"):
+                for item in target[group]["listed"]:
+                    requests.setdefault(item["file"], []).append(item["name"])
+                    priority[item["file"]] = priority.get(item["file"], 0) + item["references"]
+        files = []
+        metrics = {"source_bytes_read": 0, "source_lines_emitted": 0, "source_characters_emitted": 0}
+        for file in sorted(requests, key=lambda item: (-priority[item], item)):
+            names = sorted(set(requests[file]))
+            try:
+                read = source_reader.read_packet(store, [{"path": file, "symbols": names}])
+            except ValueError as error:
+                neighbor_source_omitted.append({"file": file, "symbols": names, "reason": str(error)})
+                continue
+            candidate_files = [{key: item.get(key) for key in ("path", "status", "notes", "blocks")}
+                               for item in read["files"]]
+            packet["neighbor_source"] = {"files": files + candidate_files,
+                                         "metrics": metrics, "omitted": neighbor_source_omitted}
+            if _packet_bytes(packet) > budget_chars:
+                del packet["neighbor_source"]
+                neighbor_source_omitted.append({"file": file, "symbols": names, "reason": "budget"})
+                continue
+            files.extend(candidate_files)
+            for key in metrics:
+                metrics[key] += read["metrics"][key]
+        packet["neighbor_source"] = {"files": files, "metrics": metrics,
+                                     "omitted": neighbor_source_omitted}
+
+    if include_slices and selected:
+        for target in packet["targets"]:
+            target["slice"] = _python_slice(store, selected_rows[target["symbol_id"]])
+
+    l2_omitted = 0
+    while _packet_bytes(packet) > budget_chars:
+        removable = [target for target in packet["targets"]
+                     if target.get("second_hop", {}).get("listed")]
+        if not removable:
+            break
+        target = removable[-1]
+        target["second_hop"]["listed"].pop()
+        target["second_hop"]["omitted_by_budget"] += 1
+        l2_omitted += 1
+    packet["budget"] = {
+        "max_chars": budget_chars,
+        "final_bytes": _packet_bytes(packet),
+        "exceeded": _packet_bytes(packet) > budget_chars,
+        "second_hop_omitted": l2_omitted,
+        "neighbor_source_omitted": len(neighbor_source_omitted),
+    }
+    packet["bytes"] = _packet_bytes(packet)
     return packet
+
+
+STALE_CALLERS_SCHEMA = "daodan/stale-callers/v1"
+MAX_STALE_CALLERS = 1_000
+
+
+def _meta_map(db):
+    return {row[0]: row for row in db.execute(_SYMBOL_SELECT)}
+
+
+def build_stale_callers(base, candidate, *, limit=100) -> dict:
+    """Compare two snapshots and classify callers of changed symbols.
+
+    Interface or effects changes put direct candidate callers in
+    `edit_impact` (RED: inspect or edit). Body-only changes put transitive
+    callers in `validation_impact` (GREEN for editing: rerun tests, do not
+    rewrite). Edit propagation stops at a caller whose own interface and
+    effects did not change; that caller's callers are GREEN and join
+    `do_not_touch`. Callers are taken from resolved candidate references and
+    containment, whether or not they have cards. This query is distinct from
+    card freshness (`stale_callee`).
+    """
+    if type(limit) is not int or not 1 <= limit <= MAX_STALE_CALLERS:
+        raise ValueError(f"limit must be an integer from 1 to {MAX_STALE_CALLERS}")
+    for label, store in (("base", base), ("candidate", candidate)):
+        if store.format != "sqlite":
+            raise ValueError(f"stale-callers requires a SQLite {label} snapshot")
+
+    with semantic_reader(base) as base_db, semantic_reader(candidate) as candidate_db:
+        for db in (base_db, candidate_db):
+            if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='meta_symbols'").fetchone() is None:
+                raise ValueError("snapshot has no Meta-Code index; refresh the snapshot")
+        old = _meta_map(base_db)
+        new = _meta_map(candidate_db)
+        index = _ImpactIndex(candidate_db)
+
+        changed = []
+        incompatible = []
+        for symbol_id in sorted(set(old) | set(new)):
+            before, after = old.get(symbol_id), new.get(symbol_id)
+            if before is None:
+                kind = "added"
+            elif after is None:
+                kind = "removed"
+            elif digest_version(before[7]) != digest_version(after[7]):
+                kind = "digest_version_mismatch"
+            elif before[7] != after[7]:
+                kind = "interface_changed"
+            elif before[8] != after[8]:
+                kind = "effects_changed"
+            elif before[6] != after[6]:
+                kind = "body_only"
+            else:
+                continue
+            row = after or before
+            entry = {
+                **_symbol_fields(row),
+                "change_kind": kind,
+                "old": {"body_hash": before[6], "interface_hash": before[7], "effects_hash": before[8]} if before else None,
+                "new": {"body_hash": after[6], "interface_hash": after[7], "effects_hash": after[8]} if after else None,
+            }
+            (incompatible if kind == "digest_version_mismatch" else changed).append(entry)
+        changed_by_id = {item["symbol_id"]: item for item in changed}
+
+        # Reverse candidate graph: callee -> callers, with edge kinds and sites.
+        reverse: dict[str, dict[str, dict]] = {}
+        forward: dict[str, set[str]] = {}
+        callee_cache: dict[str, object] = {}
+        enclosing_cache: dict[tuple[str, int], object] = {}
+
+        def add_edge(caller, callee, kind, site):
+            if caller is None or callee is None or caller[0] == callee[0]:
+                if caller is not None and callee is not None and caller[0] == callee[0]:
+                    forward.setdefault(caller[0], set()).add(callee[0])
+                return
+            item = reverse.setdefault(callee[0], {}).setdefault(
+                caller[0], {"row": caller, "edges": {}})
+            edge = item["edges"].setdefault(kind, {"kind": kind, "count": 0, "sites": []})
+            edge["count"] += 1
+            if site is not None and site not in edge["sites"]:
+                edge["sites"].append(site)
+            forward.setdefault(caller[0], set()).add(callee[0])
+
+        for file, kind, l0, c0, l1, c1, target_id in candidate_db.execute(
+            "SELECT file,kind,l0,c0,l1,c1,target_id FROM sem_references "
+            "WHERE resolution='resolved' AND target_id IS NOT NULL"
+        ):
+            if target_id not in callee_cache:
+                callee_cache[target_id] = index.symbol_for_declaration(target_id)
+            callee = callee_cache[target_id]
+            key = (file, l0)
+            if key not in enclosing_cache:
+                enclosing_cache[key] = index.enclosing(file, l0)
+            edge_kind = {"call": "CALLS", "read": "READS"}.get(kind, str(kind).upper())
+            add_edge(enclosing_cache[key], callee, edge_kind,
+                     _site(file, kind, l0, c0, l1, c1))
+        for row in new.values():
+            name = row[2]
+            if "." not in name:
+                continue
+            parent = next((item for item in index.symbols(row[1]) if item[2] == name.rsplit(".", 1)[0]), None)
+            if parent is not None:
+                add_edge(parent, row, "CONTAINS", None)
+
+        def contract_changed(symbol_id):
+            item = changed_by_id.get(symbol_id)
+            return item is not None and item["change_kind"] in {"interface_changed", "effects_changed", "added"}
+
+        edit: dict[str, dict] = {}
+        validation: dict[str, dict] = {}
+        green: dict[str, dict] = {}
+
+        def record(store_map, row, status, channel, depth, reason):
+            entry = store_map.get(row[0])
+            if entry is None:
+                entry = {**_symbol_fields(row), "status": status, "channel": channel,
+                         "depth": depth, "reasons": []}
+                store_map[row[0]] = entry
+            entry["depth"] = min(entry["depth"], depth)
+            if reason not in entry["reasons"]:
+                entry["reasons"].append(reason)
+
+        from collections import deque
+
+        edit_queue = deque()
+        for item in changed:
+            if item["change_kind"] in {"interface_changed", "effects_changed", "added"}:
+                edit_queue.append((item["symbol_id"], 0))
+        seen_edit_sources = set()
+        while edit_queue:
+            source_id, depth = edit_queue.popleft()
+            if (source_id, depth) in seen_edit_sources:
+                continue
+            seen_edit_sources.add((source_id, depth))
+            for caller_id, item in sorted(reverse.get(source_id, {}).items()):
+                row = item["row"]
+                if caller_id in changed_by_id and contract_changed(caller_id):
+                    if caller_id != source_id:
+                        edit_queue.append((caller_id, depth + 1))
+                    continue
+                if caller_id in changed_by_id:
+                    continue
+                record(edit, row, "RED", "edit_impact", depth + 1, {
+                    "changed_symbol": source_id,
+                    "change_kind": changed_by_id[source_id]["change_kind"],
+                    "edges": [item["edges"][kind] for kind in sorted(item["edges"])],
+                })
+                if contract_changed(caller_id):
+                    edit_queue.append((caller_id, depth + 1))
+                else:
+                    for upper_id, upper in sorted(reverse.get(caller_id, {}).items()):
+                        if upper_id in changed_by_id or upper_id in edit:
+                            continue
+                        record(green, upper["row"], "GREEN", "do_not_touch", depth + 2, {
+                            "changed_symbol": source_id,
+                            "stopped_at": caller_id,
+                            "reason": "intermediate contract unchanged",
+                        })
+
+        validation_queue = deque(
+            (item["symbol_id"], 0) for item in changed if item["change_kind"] == "body_only")
+        seen_validation = set()
+        while validation_queue:
+            source_id, depth = validation_queue.popleft()
+            if source_id in seen_validation:
+                continue
+            seen_validation.add(source_id)
+            for caller_id, item in sorted(reverse.get(source_id, {}).items()):
+                if caller_id in changed_by_id:
+                    if changed_by_id[caller_id]["change_kind"] == "body_only":
+                        validation_queue.append((caller_id, depth + 1))
+                    continue
+                if caller_id in edit:
+                    continue
+                record(validation, item["row"], "GREEN", "validation_impact", depth + 1, {
+                    "changed_symbol": source_id,
+                    "change_kind": "body_only",
+                    "edges": [item["edges"][kind] for kind in sorted(item["edges"])],
+                })
+                validation_queue.append((caller_id, depth + 1))
+        for symbol_id in list(green):
+            if symbol_id in edit or symbol_id in validation or symbol_id in changed_by_id:
+                del green[symbol_id]
+
+        def bounded(store_map):
+            ranked = sorted(store_map.values(), key=lambda item: (item["depth"], item["symbol_id"]))
+            return {"total": len(ranked), "listed": ranked[:limit],
+                    "truncated": max(0, len(ranked) - limit)}
+
+        edit_packet = bounded(edit)
+        validation_packet = bounded(validation)
+        do_not_touch = dict(validation)
+        do_not_touch.update({key: value for key, value in green.items() if key not in do_not_touch})
+        green_packet = bounded(do_not_touch)
+
+        nodes = ({item["symbol_id"] for item in changed if new.get(item["symbol_id"]) is not None}
+                 | set(edit) | set(validation) | set(green))
+        components = _scc_components(nodes, forward)
+        component_of = {}
+        for position, component in enumerate(components):
+            for symbol_id in component["symbols"]:
+                component_of[symbol_id] = position
+        order = _component_order(components, forward, component_of)
+
+        return {
+            "schema": STALE_CALLERS_SCHEMA,
+            "base": snapshot._snapshot_info(base),
+            "candidate": snapshot._snapshot_info(candidate),
+            "changed": changed,
+            "edit_impact": edit_packet,
+            "validation_impact": validation_packet,
+            "do_not_touch": green_packet,
+            "components": [components[position] for position in order],
+            "incompatible": incompatible,
+            "unavailable_edge_kinds": ["OVERRIDES", "INHERITS", "IMPORTS"],
+            "summary": {
+                "changed": len(changed),
+                "edit_impact": len(edit),
+                "validation_impact": len(validation),
+                "do_not_touch": len(do_not_touch),
+                "incompatible": len(incompatible),
+                "components": len(components),
+            },
+        }
+
+
+def _scc_components(nodes, forward):
+    """Tarjan SCCs over the candidate graph induced by the impacted nodes."""
+    index_counter = [0]
+    indices: dict[str, int] = {}
+    lowlink: dict[str, int] = {}
+    stack: list[str] = []
+    on_stack: set[str] = set()
+    components = []
+
+    def neighbors(node):
+        return sorted(item for item in forward.get(node, ()) if item in nodes)
+
+    for root in sorted(nodes):
+        if root in indices:
+            continue
+        work = [(root, 0)]
+        while work:
+            node, child_pos = work[-1]
+            if child_pos == 0:
+                indices[node] = lowlink[node] = index_counter[0]
+                index_counter[0] += 1
+                stack.append(node)
+                on_stack.add(node)
+            recurse = False
+            children = neighbors(node)
+            for position in range(child_pos, len(children)):
+                child = children[position]
+                if child not in indices:
+                    work[-1] = (node, position + 1)
+                    work.append((child, 0))
+                    recurse = True
+                    break
+                if child in on_stack:
+                    lowlink[node] = min(lowlink[node], indices[child])
+            if recurse:
+                continue
+            if lowlink[node] == indices[node]:
+                component = []
+                while True:
+                    item = stack.pop()
+                    on_stack.remove(item)
+                    component.append(item)
+                    if item == node:
+                        break
+                component.sort()
+                components.append({
+                    "symbols": component,
+                    "cyclic": len(component) > 1 or component[0] in forward.get(component[0], ()),
+                    "atomic": True,
+                })
+            work.pop()
+            if work:
+                parent = work[-1][0]
+                lowlink[parent] = min(lowlink[parent], lowlink[node])
+    components.sort(key=lambda item: item["symbols"])
+    return components
+
+
+def _component_order(components, forward, component_of):
+    """Component positions in callees-before-callers order."""
+    precedence: dict[int, set[int]] = {position: set() for position in range(len(components))}
+    indegree: dict[int, int] = {position: 0 for position in range(len(components))}
+    for caller, callees in forward.items():
+        if caller not in component_of:
+            continue
+        for callee in callees:
+            if callee not in component_of:
+                continue
+            before, after = component_of[callee], component_of[caller]
+            if before != after and after not in precedence[before]:
+                precedence[before].add(after)
+                indegree[after] += 1
+    ready = sorted((position for position, degree in indegree.items() if degree == 0),
+                   key=lambda position: components[position]["symbols"])
+    order = []
+    while ready:
+        position = ready.pop(0)
+        order.append(position)
+        for nxt in sorted(precedence[position], key=lambda item: components[item]["symbols"]):
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                ready.append(nxt)
+        ready.sort(key=lambda item: components[item]["symbols"])
+    return order

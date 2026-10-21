@@ -13,6 +13,7 @@ if str(SCRIPTS) not in sys.path:
 
 from languages import javascript, typescript, java, rust, sql, plsql, python
 from languages import _treesitter as ts
+from languages.base import SIGNATURE_FIELDS
 
 
 class SqlMaskTests(unittest.TestCase):
@@ -281,6 +282,57 @@ class AstParserTests(unittest.TestCase):
         self.assertEqual([(i.module, i.names, i.is_internal) for i in result.imports],
                          [("..helpers", ["work"], True), (".", ["local"], True)])
         self.assertEqual(result.functions[0].calls_made, ["work"])
+
+    def test_python_signature_holds_every_parameter_kind_flag_and_decorator(self):
+        result = python.adapter.parse(
+            "import functools\n"
+            "@functools.cache\n"
+            "async def run(a, b=1, /, c: int = 2, *rest: str, d, e=None, **extra) -> 'Out':\n"
+            "    yield a\n"
+            "def plain():\n"
+            "    def inner():\n"
+            "        yield 1\n"
+            "    return inner\n"
+            "@dataclass(frozen=True)\n"
+            "class Point(Base, metaclass=Meta):\n"
+            "    x: int = 0\n"
+            "    LIMIT = 3\n", "mod.py")
+        run, plain = result.functions
+        self.assertEqual([(p.name, p.kind, p.annotation, p.default) for p in run.parameters], [
+            ("a", "positional_only", None, None),
+            ("b", "positional_only", None, "1"),
+            ("c", None, "int", "2"),
+            ("rest", "var_positional", "str", None),
+            ("d", "keyword_only", None, None),
+            ("e", "keyword_only", None, "None"),
+            ("extra", "var_keyword", None, None),
+        ])
+        self.assertEqual((run.return_annotation, run.is_async, run.is_generator), ("'Out'", True, True))
+        self.assertEqual(run.decorators, ["functools.cache"])
+        self.assertFalse(plain.is_generator, "a yield of a nested function is not the outer one's")
+        point = result.classes[0]
+        self.assertEqual(point.bases, ["Base", "metaclass=Meta"])
+        self.assertEqual(point.decorators, ["dataclass(frozen=True)"])
+        self.assertEqual([(a.name, a.annotation, a.default) for a in point.attributes],
+                         [("x", "int", "0"), ("LIMIT", None, "3")])
+        self.assertEqual(point.class_variables, ["x", "LIMIT"])
+        for declared in (run.signature_fields, point.signature_fields):
+            self.assertTrue(declared and set(declared) <= SIGNATURE_FIELDS, declared)
+
+    def test_typescript_optional_parameters_have_their_own_kind(self):
+        self.require("typescript")
+        function = typescript.adapter.parse("function f(a: number, b?: string) {}\n", "f.ts").functions[0]
+        self.assertEqual([(p.name, p.annotation, p.kind) for p in function.parameters],
+                         [("a", "number", None), ("b", "string", "optional")])
+
+    def test_java_varargs_and_annotations_enter_the_signature(self):
+        self.require("java")
+        method = java.adapter.parse(
+            "class A {\n  @Override @Deprecated\n  public int run(final String name, int... rest) { return 1; }\n}\n",
+            "A.java").classes[0].methods[0]
+        self.assertEqual([(p.name, p.annotation, p.kind) for p in method.parameters],
+                         [("name", "String", None), ("rest", "int...", "var_positional")])
+        self.assertEqual(method.decorators, ["@Override", "@Deprecated"])
 
     def test_missing_grammar_still_returns_explicit_regex_provenance(self):
         with mock.patch.object(javascript, "get_parser", return_value=None):

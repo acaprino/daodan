@@ -243,6 +243,50 @@ class ManifestTests(unittest.TestCase):
         files = self.manifest()["files"]
         return next(v for k, v in files.items() if k.endswith(rel))
 
+    def test_symbols_carry_their_signature_records(self):
+        files = self.manifest()["files"]
+        service = next(v for k, v in files.items() if k.endswith("orders/service.py"))
+        retry = service["symbols"]["retry_policy"]["signatures"]
+        place = service["symbols"]["OrderService.place"]["signatures"]
+
+        self.assertEqual(len(retry), 1)
+        self.assertEqual(retry[0]["params"], [{"name": "attempts", "default": "3"}])
+        self.assertEqual(place[0]["params"], [{"name": "self"}, {"name": "order"}])
+        # Declared exhaustive and absent: the source has no return annotation.
+        self.assertIn("returns", retry[0]["fields"])
+        self.assertNotIn("returns", retry[0])
+
+    def test_a_name_declared_twice_keeps_one_signature_per_declaration(self):
+        files = self.manifest_of("box.py", textwrap.dedent(
+            """
+            class Box:
+                @property
+                def size(self):
+                    return 1
+
+                @size.setter
+                def size(self, value):
+                    pass
+            """
+        ).lstrip())
+        size = files["symbols"]["Box.size"]
+
+        self.assertEqual(size["span_precision"], "merged")
+        self.assertEqual([s["decorators"] for s in size["signatures"]], [["property"], ["size.setter"]])
+        self.assertEqual([len(s["params"]) for s in size["signatures"]], [1, 2])
+
+    def test_a_long_signature_value_keeps_its_head_and_a_digest_of_the_whole(self):
+        import snapshot
+
+        literal = "[" + ", ".join(str(n) for n in range(200)) + "]"
+        before = self.manifest_of("long.py", f"def f(x={literal}):\n    return x\n")
+        after = self.manifest_of("long.py", f"def f(x={literal.replace('199', '1999')}):\n    return x\n")
+        default = before["symbols"]["f"]["signatures"][0]["params"][0]["default"]
+
+        self.assertLessEqual(len(default), snapshot.MAX_SIGNATURE_TEXT)
+        self.assertTrue(default.startswith("[0, 1, 2, 3"))
+        self.assertNotEqual(default, after["symbols"]["f"]["signatures"][0]["params"][0]["default"])
+
 
 class ParseReuseTests(unittest.TestCase):
     """Content-checked parse reuse at the public language-adapter boundary.
@@ -755,6 +799,13 @@ class ComparisonTests(unittest.TestCase):
         self.assertIn("retry_policy", changed)
         self.assertIn("OrderService", changed)
         self.assertNotIn("OrderService.place", changed)
+
+    def test_a_decorator_edit_above_the_span_changes_the_symbol(self):
+        path = self.src / "orders/service.py"
+        path.write_text(PY_SOURCE.replace("def retry_policy", "@cache\ndef retry_policy"), encoding="utf-8")
+        files = self.snapshot.compare_files(self.manifest, self.src)
+        symbols = self.snapshot.compare_symbols(self.manifest, files)
+        self.assertEqual([s["symbol"] for s in symbols["changed"]], ["retry_policy"])
 
     def test_renumber_records_the_old_span_and_the_new_start(self):
         path = self.src / "orders/service.py"

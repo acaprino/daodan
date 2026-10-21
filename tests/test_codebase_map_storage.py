@@ -400,6 +400,47 @@ class SnapshotStorageTests(unittest.TestCase):
         self.assertEqual(meta_capped["summary"]["changesets"], semantic_store.MAX_META_CHANGESETS)
         self.assertEqual(len(meta_capped["changesets"]), semantic_store.MAX_META_CHANGESETS)
 
+    def test_every_part_of_a_signature_is_an_interface_change(self):
+        # A digest of parameter names alone called each of these a body-only
+        # edit, and the decorator above the span no change at all.
+        storage = self.api()
+        import semantic_store
+        base = "import functools\n\ndef helper(value, offset=1):\n    return value + offset\n"
+        variants = {
+            "default": base.replace("offset=1", "offset=2"),
+            "annotation": base.replace("value,", "value: int,"),
+            "return annotation": base.replace("offset=1)", "offset=1) -> int"),
+            "async": base.replace("def helper", "async def helper"),
+            "parameter kind": base.replace("value, offset=1", "value, *, offset=1"),
+            "decorator above the span": base.replace("def helper", "@functools.cache\ndef helper"),
+            "generator": base.replace("return value + offset", "yield value + offset"),
+        }
+        (self.root / "pkg").mkdir(exist_ok=True)
+        (self.root / "pkg/__init__.py").write_text("", encoding="utf-8")
+        (self.root / "pkg/a.py").write_text("from .b import helper\n\ndef run(x):\n    return helper(x)\n",
+                                            encoding="utf-8")
+        (self.root / "pkg/b.py").write_text(base, encoding="utf-8")
+        snap_path = self.out()
+        snapshot.write_snapshot(self.root, snap_path)
+
+        def edit(text):
+            """Change kinds of the changesets this refresh recorded, by symbol name."""
+            with storage.open_snapshot(snap_path) as store:
+                seen = max((c["seq"] for c in semantic_store.query_meta_code(store)["changesets"]), default=0)
+            (self.root / "pkg/b.py").write_text(text, encoding="utf-8")
+            with storage.open_snapshot(snap_path) as prev:
+                snapshot.write_snapshot(self.root, snap_path, previous=prev)
+            with storage.open_snapshot(snap_path) as store:
+                changesets = semantic_store.query_meta_code(store)["changesets"]
+            return {d["name"]: d["change_kind"] for c in changesets if c["seq"] > seen for d in c["deltas"]}
+
+        for label, text in variants.items():
+            with self.subTest(label):
+                self.assertEqual(edit(text), {"helper": "interface_changed"})
+            edit(base)
+        body_only = base.replace("return value + offset", "total = value + offset\n    return total")
+        self.assertEqual(edit(body_only), {"helper": "body_only"})
+
 
 if __name__ == "__main__":
     unittest.main()

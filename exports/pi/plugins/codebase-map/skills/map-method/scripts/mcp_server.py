@@ -104,11 +104,31 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
     @server.tool(annotations=read_only)
     async def codebase_map_edit_impact(
         ctx: Context, run_id: str, targets: list[str], neighbors: int = 20,
-        history: int = 5, include_source: bool = True,
+        history: int = 5, include_source: bool = True, hops: int = 1,
+        include_neighbor_source: bool = False, include_slices: bool = False,
+        budget_chars: int = 120000,
     ) -> dict:
-        """Before editing symbols: digests, cards, one-hop callers and callees, unresolved references and verified source."""
+        """Before editing symbols: digests, signatures, cards, L1/L2 neighbours, optional verified neighbour source and lazy slices."""
         return await _invoke(ctx, service.edit_impact, run_id, targets, neighbors=neighbors,
-                             history=history, include_source=include_source)
+                             history=history, include_source=include_source, hops=hops,
+                             include_neighbor_source=include_neighbor_source,
+                             include_slices=include_slices, budget_chars=budget_chars)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_symbols_at(
+        ctx: Context, run_id: str, requests: list[dict] | None = None,
+        base_run_id: str | None = None, diff: str | None = None,
+    ) -> dict:
+        """Map line ranges, or a unified diff between two runs, to symbols and declared gaps."""
+        return await _invoke(ctx, service.symbols_at, run_id, requests=requests,
+                             base_run_id=base_run_id, diff=diff)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_stale_callers(
+        ctx: Context, run_id: str, base_run_id: str, limit: int = 100,
+    ) -> dict:
+        """Classify candidate callers of symbols changed since a base run by edit impact, validation impact and GREEN stop."""
+        return await _invoke(ctx, service.stale_callers, run_id, base_run_id, limit=limit)
 
     @server.tool(annotations=read_only)
     async def codebase_map_meta_query(

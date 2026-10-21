@@ -442,17 +442,53 @@ class MapService:
             raise ValueError(f"read result exceeds {MAX_READ_CHARS} characters; request fewer files, symbols or ranges")
         return packet
 
-    def edit_impact(self, run_id, targets, neighbors=20, history=5, include_source=True):
-        if type(include_source) is not bool:
-            raise ValueError("include_source must be a boolean")
+    def edit_impact(self, run_id, targets, neighbors=20, history=5, include_source=True,
+                    hops=1, include_neighbor_source=False, include_slices=False,
+                    budget_chars=semantic_store.DEFAULT_IMPACT_BUDGET_CHARS):
+        for name, value in (("include_source", include_source),
+                            ("include_neighbor_source", include_neighbor_source),
+                            ("include_slices", include_slices)):
+            if type(value) is not bool:
+                raise ValueError(f"{name} must be a boolean")
         with self._operation():
             _, _, manifest, _ = self._bound_run(run_id)
             packet = dict(semantic_store.build_edit_impact(
                 manifest, targets, cards_path=self.root / card_store.CARD_STORE_NAME,
-                neighbors=neighbors, history=history, include_source=include_source), run_id=run_id)
+                neighbors=neighbors, history=history, include_source=include_source, hops=hops,
+                include_neighbor_source=include_neighbor_source, include_slices=include_slices,
+                budget_chars=budget_chars), run_id=run_id)
         if len(json.dumps(packet)) > MAX_READ_CHARS:
             raise ValueError(f"edit impact exceeds {MAX_READ_CHARS} characters; request fewer targets or neighbors")
         return packet
+
+    def symbols_at(self, run_id, requests=None, base_run_id=None, diff=None):
+        if diff is not None:
+            if requests is not None:
+                raise ValueError("symbols-at takes either requests or a diff, not both")
+            if not isinstance(base_run_id, str) or not base_run_id:
+                raise ValueError("symbols-at diff mode requires base_run_id")
+            if not isinstance(diff, str) or len(diff) > snapshot.MAX_DIFF_CHARS:
+                raise ValueError(f"diff must be text of at most {snapshot.MAX_DIFF_CHARS} characters")
+        elif base_run_id is not None:
+            raise ValueError("base_run_id requires a diff")
+        with self._operation():
+            _, _, candidate, _ = self._bound_run(run_id)
+            if diff is not None:
+                _, _, base, _ = self._bound_run(base_run_id)
+                packet = snapshot.symbols_at(candidate, base=base, diff=diff)
+            else:
+                packet = snapshot.symbols_at(candidate, requests)
+            return dict(packet, run_id=run_id)
+
+    def stale_callers(self, run_id, base_run_id, limit=100):
+        _limit(limit)
+        if not isinstance(base_run_id, str) or not base_run_id:
+            raise ValueError("stale-callers requires base_run_id")
+        with self._operation():
+            _, _, candidate, _ = self._bound_run(run_id)
+            _, _, base, _ = self._bound_run(base_run_id)
+            return dict(semantic_store.build_stale_callers(base, candidate, limit=limit),
+                        run_id=run_id, base_run_id=base_run_id)
 
     def meta_query(self, run_id, paths=None, symbol=None, freshness=None, include_history=True, limit=100):
         _limit(limit)

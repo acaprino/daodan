@@ -23,6 +23,7 @@ __all__ = [
     "CallType",
     "Visibility",
     "Kind",
+    "SIGNATURE_FIELDS",
 ]
 
 
@@ -68,12 +69,35 @@ Kind = Literal[
     "variable",
 ]
 
+# The signature fields an adapter can declare as extracted exhaustively, in
+# `FunctionInfo.signature_fields` and `ClassInfo.signature_fields`. A declared
+# field that is empty is empty in the source; an undeclared one may only be
+# missing from the extraction.
+SIGNATURE_FIELDS = frozenset({
+    "parameters",       # every parameter, in order
+    "parameter_kinds",  # ParameterInfo.kind of every parameter
+    "annotations",      # ParameterInfo.annotation of every parameter
+    "defaults",         # ParameterInfo.default of every parameter
+    "returns",          # FunctionInfo.return_annotation
+    "async",            # FunctionInfo.is_async
+    "generator",        # FunctionInfo.is_generator
+    "decorators",       # decorators of a function or class
+    "bases",            # ClassInfo.bases
+    "attributes",       # ClassInfo.attributes
+})
+
 
 @dataclass
 class ParameterInfo:
     name: str
     annotation: str | None = None
     default: str | None = None
+    # How a caller passes an argument that is not an ordinary positional-or-
+    # keyword one: positional_only, var_positional, keyword_only or var_keyword
+    # (Python, Java varargs), or optional (TypeScript `x?`). None for an
+    # ordinary parameter where the adapter declares "parameter_kinds", and
+    # unknown otherwise.
+    kind: str | None = None
 
 
 @dataclass
@@ -99,6 +123,11 @@ class FunctionInfo:
     # Outgoing function/method call names inside the callable's body, in source
     # order without duplicates.
     calls_made: list[str] = field(default_factory=list)
+    # Decorator expressions in source order, where the adapter extracts them.
+    decorators: list[str] = field(default_factory=list)
+    is_generator: bool = False
+    # Members of SIGNATURE_FIELDS this adapter extracts exhaustively.
+    signature_fields: tuple[str, ...] = ()
 
 
 @dataclass
@@ -118,6 +147,12 @@ class ClassInfo:
     # Tree-sitter node, stylesheets from their own parser. None from a regex
     # parser: snapshot.py then infers the span from the next symbol's start.
     end_line: int | None = None
+    decorators: list[str] = field(default_factory=list)
+    # Class-level attributes with their annotation and value, where the adapter
+    # extracts them; class_variables keeps only the names.
+    attributes: list[ParameterInfo] = field(default_factory=list)
+    # Members of SIGNATURE_FIELDS this adapter extracts exhaustively.
+    signature_fields: tuple[str, ...] = ()
 
 
 @dataclass

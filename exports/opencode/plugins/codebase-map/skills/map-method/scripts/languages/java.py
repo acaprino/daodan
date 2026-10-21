@@ -129,16 +129,19 @@ def _ts_parse(content: str) -> ParseResult | None:
     def text(node: Any) -> str:
         return node_text(node, src)
 
-    def parse_modifiers(method_or_field: Any) -> tuple[str | None, bool, bool, bool]:
-        # Returns (visibility, is_static, is_final, is_abstract).
-        visibility = None
-        is_static = is_final = is_abstract = False
+    def modifiers_of(method_or_field: Any) -> Any:
         mods = method_or_field.child_by_field_name("modifiers")
         if mods is None:
             for child in method_or_field.children:
                 if child.type == "modifiers":
-                    mods = child
-                    break
+                    return child
+        return mods
+
+    def parse_modifiers(method_or_field: Any) -> tuple[str | None, bool, bool, bool]:
+        # Returns (visibility, is_static, is_final, is_abstract).
+        visibility = None
+        is_static = is_final = is_abstract = False
+        mods = modifiers_of(method_or_field)
         if mods is not None:
             for child in mods.children:
                 t = child.type
@@ -152,12 +155,17 @@ def _ts_parse(content: str) -> ParseResult | None:
                     is_abstract = True
         return visibility, is_static, is_final, is_abstract
 
+    def annotations_of(declaration: Any) -> list[str]:
+        mods = modifiers_of(declaration)
+        return [text(child) for child in mods.children
+                if child.type in ("marker_annotation", "annotation")] if mods is not None else []
+
     def parse_parameters(params_node: Any) -> list[ParameterInfo]:
         params: list[ParameterInfo] = []
         if params_node is None:
             return params
         for child in params_node.children:
-            if child.type in ("formal_parameter", "spread_parameter"):
+            if child.type == "formal_parameter":
                 ann_node = child.child_by_field_name("type")
                 name_node = child.child_by_field_name("name")
                 params.append(
@@ -167,6 +175,18 @@ def _ts_parse(content: str) -> ParseResult | None:
                         default=None,
                     )
                 )
+            elif child.type == "spread_parameter":
+                # `String... rest` has no type or name field: a type node, the
+                # ellipsis and a variable_declarator holding the name.
+                declarator = next((c for c in child.named_children if c.type == "variable_declarator"), None)
+                type_node = next((c for c in child.named_children
+                                  if c.type not in ("modifiers", "variable_declarator")), None)
+                name_node = declarator.child_by_field_name("name") if declarator is not None else None
+                params.append(ParameterInfo(
+                    name=text(name_node) if name_node else "?",
+                    annotation=text(type_node) + "..." if type_node is not None else None,
+                    kind="var_positional",
+                ))
         return params
 
     def parse_method(node: Any) -> FunctionInfo:
@@ -187,6 +207,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             line_number=node.start_point[0] + 1,
             end_line=node.end_point[0] + 1,
             calls_made=extract_ast_calls(node.child_by_field_name("body"), src, "java"),
+            decorators=annotations_of(node),
         )
 
     def parse_class_like(node: Any, kind: str) -> ClassInfo:
@@ -272,6 +293,7 @@ def _ts_parse(content: str) -> ParseResult | None:
             docstring=None,
             line_number=node.start_point[0] + 1,
             end_line=node.end_point[0] + 1,
+            decorators=annotations_of(node),
         )
 
     # Walk top-level only for declarations.

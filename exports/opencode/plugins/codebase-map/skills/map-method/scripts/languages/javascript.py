@@ -168,6 +168,7 @@ def _ts_parse(
                         name=text(name_node).lstrip(":?"),
                         annotation=text(ann_node).lstrip(":").strip() if ann_node else None,
                         default=text(default_node) if default_node else None,
+                        kind="optional" if child.type == "optional_parameter" else None,
                     )
                 )
             elif child.type == "rest_pattern":

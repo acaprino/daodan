@@ -294,6 +294,26 @@ class CardLifecycleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "freshness"):
             self.query(freshness="mostly-fresh")
 
+    def test_a_card_from_another_interface_algorithm_is_told_apart_from_an_edit(self):
+        self.seed()
+        current = self.query(symbol="pkg/b.py::helper")["symbols"][0]["interface_hash"]
+        self.assertEqual(semantic_store.digest_version(current), semantic_store.INTERFACE_DIGEST_VERSION)
+        self.assertEqual([semantic_store.digest_version(d) for d in ("0123456789abcdef", "sha256:0123", None)],
+                         [1, 1, 1])
+        # The card store as a version-1 algorithm left it: an unprefixed digest.
+        with closing(sqlite3.connect(self.cards)) as database, database:
+            database.execute("UPDATE cards SET interface_hash='0123456789abcdef' WHERE symbol_id='pkg/b.py::helper'")
+
+        helper = self.query(symbol="pkg/b.py::helper")["symbols"][0]
+
+        self.assertEqual((helper["freshness"], helper["stale_reason"]), ("stale_interface", "digest-version-changed"))
+        self.assertEqual(self.states()["pkg/a.py::run"], "fresh")
+        self.write([{"file": "pkg/b.py", "symbol": "helper", "purpose": "adds one"}])
+        self.assertEqual(self.states()["pkg/b.py::helper"], "fresh")
+        self.edit_helper("def helper(value, offset=1):\n    return value + offset\n\ndef extra():\n    return 10\n")
+        helper = self.query(symbol="pkg/b.py::helper")["symbols"][0]
+        self.assertEqual((helper["freshness"], helper["stale_reason"]), ("stale_interface", "symbol-interface-changed"))
+
 
 class CardEntryPointTests(unittest.TestCase):
     def setUp(self):
