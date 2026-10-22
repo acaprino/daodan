@@ -539,15 +539,35 @@ vincoli:
   suo interprete, quanti pacchetti offriva e se è stato usato per
   `create_environment` o solo come percorso aggiunto.
 
-**Prerequisito: copertura della tabella dei simboli.** Sulla stessa misura,
-**374 posizioni su 1.600 (23,4%)** sul primo progetto e **181 (11,3%)** sul
-secondo sono casi in cui l'engine risolve *dentro il progetto* e la nostra
-tabella dei simboli non riconosce il bersaglio: moduli scambiati per classi,
-metodi che il parser non estrae, funzioni non in tabella.
-Collegare un engine senza prima allargare l'estrazione dei simboli produce archi
-che non hanno un nodo di arrivo, cioè spreca circa un quarto del costo. Questo
-filone è **prerequisito** del livello di risoluzione, non una sua conseguenza, e
-le 374 posizioni misurate ne sono il primo inventario.
+**Prerequisito: regola di risoluzione e convenzione di estrazione.** La misura
+pubblicata contava 374 posizioni su 1.600 sul primo progetto e 181 sul secondo
+in cui l'engine risolve un bersaglio "nel progetto" che la tabella dei simboli
+non riconosce. Rigiocate sullo stesso campione con la stessa scelta di ambiente,
+con replica identica dei verdetti pubblicati, si scompongono così:
+
+- **234 e 114 non sono del progetto.** Lo script di misura considerava di
+  progetto ogni file sotto la radice, e gli ambienti virtuali stanno sotto la
+  radice: `rich`, `pytest`, `pydantic` finivano nel gap. Contando come progetto
+  solo i file dell'inventario dello snapshot, cioè il perimetro della mappa, il
+  gap scende a **140 e 67**, con gli archi confermati identici (505 e 324).
+  Per il livello di risoluzione la regola è vincolante: un bersaglio è di
+  progetto se il suo file è nell'inventario, mai per posizione nel filesystem;
+- **126 e 20 sono archi veri persi dalla regola**: metodi ereditati da una classe
+  base del progetto e funzioni chiamate come attributo di modulo (40 su 40
+  verificati a entrambi gli estremi). La correzione è seguire l'MRO verso le
+  basi di progetto e risolvere gli attributi di modulo;
+- il resto non è un arco (callee esterno, metodi di una base GUI di terze parti,
+  attributi di oggetti funzione come `mock.assert_called`);
+- **zero casi hanno causa nel parser.**
+
+La seconda perdita reale è la **convenzione di estrazione**: l'adapter registra
+solo definizioni top-level e metodi di classe, e scarta il 4,8–7,2% delle
+definizioni dei progetti e l'8,8–9,7% delle librerie (funzioni annidate, `if` e
+`try` a livello di modulo o classe, classi annidate, alias `type`). Ogni parser
+misurato le vede tutte: è una scelta dell'adapter. Regola di risoluzione e
+convenzione di estrazione sono il **prerequisito** del livello di risoluzione,
+perché un engine collegato prima produce archi senza nodo di arrivo; la misura
+completa è in `evals/codebase-map/python-parser/RESULTS.md`.
 
 **Parser dichiarati.** La regola è tree-sitter, senza fallback regex, perché uno
 scanner regex su linguaggi con quoting annidato produce simboli inventati: la
@@ -558,7 +578,7 @@ esplicitamente nel report**, mai implicite:
 
 | Linguaggio | Parser | Stato |
 |---|---|---|
-| Python | `ast` della libreria standard | **raccomandato, non ancora ratificato**: parser reale di riferimento di CPython, non regex, nessuna dipendenza nuova. La misura Jedi valuta il resolver, non il parser, quindi non discrimina `ast` da `tree-sitter-python`; la scelta si chiude per principio o con un confronto sui casi in cui la tabella dei simboli non riconosce il bersaglio |
+| Python | `ast` della libreria standard, interprete minimo dichiarato | **scelto su misura** (`evals/codebase-map/python-parser/`, 22.536 file). Sul codice valido tree-sitter-python coincide su 394.996 definizioni ma ne inventa 13 (`type(x).__name__ = ...` letto come alias), non copre i default PEP 696 e accetta codice invalido senza errori; LibCST coincide esattamente ma è 57 volte più lento; parso segnala errori su sintassi valida 3.10–3.14. La grammatica di `ast` segue l'interprete: sotto 3.11 quattro file misurati sono rifiutati, quindi la mappa dichiara la versione e ne impone un minimo. Sui file rotti oggi non recupera nulla: il prefisso che termina su una linea logica, tenendo solo le definizioni chiuse, recupera il 50,16% con **zero** simboli o span errati su 1.892 file, alla pari della migliore politica sicura di tree-sitter (50,95% con 869 span parziali) |
 | Java, JavaScript, TypeScript/TSX, Rust, Go | tree-sitter via `tree-sitter-language-pack` o modulo per grammar | regola soddisfatta, wheel pubblicate |
 | SQL dichiarativo | grammar tree-sitter pubblicata | regola soddisfatta |
 | CSS, SCSS, LESS | tokenizer proprio | **eccezione etichettata**: alimenta `cascade_scan.py` e l'espansione Tailwind `@apply`, nati dall'incidente del 2026-09-14; rinunciarvi è una regressione di usabilità già pagata |
@@ -1256,7 +1276,7 @@ proprietà dei file è ripartita in modo disgiunto:
 | File | Modifica |
 |---|---|
 | `plugins/codebase-map/skills/map-method/scripts/` e contratti della mappa | API `symbols-at` (hunk base/candidato -> simboli), firme complete (parametri, tipi, default, ritorno) e digest `interface_hash` versionati, composizione di sorgenti verificate dei vicini a 1-2 hop e query `stale-callers` di §3.2.1; binding CLI/MCP e regressioni su base/candidato, limiti e freschezza; nessun giudizio di review o stato delle wave |
-| `plugins/codebase-map/skills/map-method/scripts/` (`semantic_store.py`, `snapshot.py`, `languages/`) | Livello di risoluzione di §3.2.2: campo obbligatorio `resolver` su ogni arco e identità del resolver nel fingerprint; confidenza graduata con il grado *candidato* tenuto separato dagli archi confermati; sondaggio degli engine con degradazione dichiarata e attesa di readiness validata; stato `parse-unavailable` nel vocabolario di `snapshot.py` e nel blocco `scope` del manifest; eccezioni di parser etichettate (stylesheet, PL/SQL Oracle senza engine) e gap PL/pgSQL dichiarato. **Prerequisito**: allargare l'estrazione dei simboli sui casi misurati in cui un engine risolve dentro il progetto e la tabella non riconosce il bersaglio. Gate di regressione già consegnato in `evals/codebase-map/grammar-parity/`, da aggiornare a ogni cambio di versione degli engine |
+| `plugins/codebase-map/skills/map-method/scripts/` (`semantic_store.py`, `snapshot.py`, `languages/`) | Livello di risoluzione di §3.2.2: campo obbligatorio `resolver` su ogni arco e identità del resolver nel fingerprint; confidenza graduata con il grado *candidato* tenuto separato dagli archi confermati; sondaggio degli engine con degradazione dichiarata e attesa di readiness validata; stato `parse-unavailable` nel vocabolario di `snapshot.py` e nel blocco `scope` del manifest; eccezioni di parser etichettate (stylesheet, PL/SQL Oracle senza engine) e gap PL/pgSQL dichiarato. **Prerequisito**: regola di risoluzione (MRO verso le basi di progetto, attributi di modulo, bersaglio di progetto solo se nell'inventario), convenzione di estrazione allargata, recupero dei file Python rotti per prefisso chiuso e interprete minimo dichiarato, misurati in `evals/codebase-map/python-parser/`. Gate di regressione già consegnato in `evals/codebase-map/grammar-parity/`, da aggiornare a ogni cambio di versione degli engine |
 | `scripts/daodan/` e adapter dei 5 host (catalogo ruoli) | Generazione del catalogo portabile dei revisori dai manifesti e dai frontmatter `TRIGGER WHEN` / `DO NOT TRIGGER WHEN`, con identità e binding host; risorsa spedita sotto `skills/review-preparation/references/` del package `senior-review`, mai un accesso runtime a `plugins/*` |
 | `plugins/senior-review/skills/review-preparation/` e `skills/review-quality-gates/` | Raccolta degli input del Grafo del Codice per la review, grounding e provenance; aggiornamento di `candidate-grounding.md`, `context-sharing.md` e prompt del pannello per consumare i pacchetti ancorati al grafo e distinguere Mode 1 da Lente 0 |
 | `plugins/senior-review/roles/logic-integrity-auditor.md` | Accettazione del contesto semantico ridotto allo scope (derivato da Grafo del Codice + ADR/docs/card con provenienza) e del percorso consegnato, con prerequisiti e anchor di §4.3.2; aggiornamento di trigger e riferimenti collegati, senza esclusione fissa dalla `lite` |
@@ -1298,10 +1318,13 @@ possono avanzare in parallelo su sessioni distinte:
      `candidate-grounding.md`, `context-sharing.md`, `light.md`).
    - **poi, e solo dopo la conclusione della misura per linguaggio in
      `evals/codebase-map/resolver-spike/`**, il livello di risoluzione di
-     `§3.2.2`, in quest'ordine: prima il prerequisito sull'estrazione dei simboli
-     (i casi misurati in cui un engine risolve dentro il progetto e la tabella non
-     riconosce il bersaglio, il 23,4% del campione Python), perché collegare un
-     engine prima produce archi senza nodo di arrivo; poi il campo `resolver`, la
+     `§3.2.2`, in quest'ordine: prima il prerequisito, cioè la regola di
+     risoluzione (MRO verso le basi di progetto, attributi di modulo, bersaglio
+     di progetto solo se nell'inventario) e la convenzione di estrazione
+     (funzioni annidate, definizioni sotto `if`/`try`, classi annidate, alias
+     `type`), più il recupero dei file Python rotti per prefisso chiuso e
+     l'interprete minimo dichiarato, perché collegare un engine prima produce
+     archi senza nodo di arrivo; poi il campo `resolver`, la
      confidenza graduata con i candidati separati, il sondaggio e la degradazione
      dichiarata, lo stato `parse-unavailable` e le eccezioni di parser etichettate.
      `evals/codebase-map/grammar-parity/` è già consegnato e resta il gate: i suoi
