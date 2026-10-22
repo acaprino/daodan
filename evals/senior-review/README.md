@@ -21,6 +21,22 @@ For each case in `cases/`:
 5. **Record cost**: wall-clock time and, where visible, token spend or agent count.
 6. Fill a copy of `scorecard-template.md` into the case directory (`scorecard-<command>-<date>.md`) and add one row to `RESULTS.md`.
 
+### Deterministic setup for synthetic inline cases
+
+A case that carries its buggy code inline is materialized the same way by every operator:
+
+1. Create an empty scratch repository and make one empty base commit.
+2. Materialize exactly the files the case lists, verbatim, in a second commit. That commit is the case's `review_rev`.
+3. The review scope is the literal file list the case states, reviewed as the diff of base to `review_rev`.
+
+A reviewer receives the materialized files and diff only, never the case file. A setup that exposes more or fewer files is a protocol violation by the coordinator, and its scores do not count.
+
+### Investigation variant
+
+A case may declare `Mode: investigation` instead of a diff. It has no repository target and no `review_rev`. The reviewer receives exactly the facts packet the case states, verbatim, in a fresh session, and investigates the observed behaviour through `senior-review`'s investigation method. The scored output is the investigation report (`investigation.md`): ground-truth rows are expected outcomes, scored `found` / `partial` / `missed` by the same mechanism matching, and `must_not_report` rows keep the `avoided` / `reported` / `caught` scoring, with the killing lens recorded when the investigation's own verification produced and then killed the claim. Score it with `scorecard-investigation-template.md`. Running an investigation case as a diff review, or scoring it with the diff scorecard, is a failed setup whose results do not count.
+
+Packet-only binding: when the case states no code target, the packet is the whole perimeter. Investigation steps that require named symbols or a current codebase (map perimeter, reproduction test, bisection) do not apply and are not scored; the case states what replaces them, normally the decisive external evidence for each open hypothesis. In this variant `measured` in the case and the scorecard is the investigation method's `observed` (a fact from a log or a run), and reviewer-computed numbers are `derived` under both names. Conclusions the report asserts as established beyond the packet and its own derivations are false conclusions for the scorecard's precision section, whether or not a `must_not_report` row names them.
+
 ## Metrics
 
 - **Recall** = found / total known bugs (partial counts 0.5).
@@ -42,6 +58,7 @@ For each case in `cases/`:
 | Jupiter updater post-mortem (2026-08-10, production ground truth) | `jupiter-updater` |
 | Jupiter fix-commit history (bug = what the later fix commit repaired) | `jupiter-market-state-tristate`, `jupiter-economic-events-upsert`, `jupiter-cache-convergence`, `jupiter-trade-failure-drop`, `jupiter-position-notice-owner` |
 | Synthetic, bug injected by construction (targets the newest dimensions) | `synthetic-payment-double-insert`, `synthetic-cache-stale-read`, `synthetic-connection-pool-leak`, `synthetic-retry-storm` |
+| Synthetic, from the 2026-10-20 stuck session analysis (shared coordinator epoch, single-turn frontier, log-driven latency) | `synthetic-shared-coordinator-epoch`, `synthetic-single-turn-frontier`, `synthetic-session-log-latency` |
 | Jupiter false-positive incident (2026-08-10, precision ground truth) | `jupiter-credential-refill` |
 
 Synthetic cases carry their buggy code inline in the case file; materialize it into a scratch repo before running (instructions per case).

@@ -83,6 +83,7 @@ Each deduplicated finding selected for verification is judged by up to 4 verifie
    - `UNCERTAIN` (including Lens 0 errors or `REFUTED` without `file:line`): proceeds to lenses 1-2 tagged `premise-contested`.
    - `HOLDS`: proceeds to lenses 1-2 unchanged.
    - `premise_form: non-compliant` is recorded in the verification file regardless of verdict.
+   - **Absence claims are verified too.** A reviewer's claim that a control holds, that no path violates an invariant, or that a class of defect is absent, when stated with universal scope over shared or multi-instance state, is selected for Lens 0 exactly like a finding whose premise carries a universal quantifier. The claim's load-bearing premise is its instance and path scope: Lens 0 checks whether multiplicity and alternate paths were actually established. A `REFUTED` verdict converts the absence claim into a contested coverage gap in the report, naming the counterexample path; it never silently becomes a finding of the opposite defect without its own lenses 1-2.
 2. **Lenses 1 (Reachability) and 2 (False-Positive Causes)** run independently on findings surviving Lens 0:
    - **>= 2 REAL**: finding survives.
    - **>= 2 FALSE_POSITIVE**: finding discarded (`filtered`, count reported).

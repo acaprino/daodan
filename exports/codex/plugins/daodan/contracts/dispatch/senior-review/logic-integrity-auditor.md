@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: senior-review:logic-integrity-auditor; version: 16.1.0; source-sha256: 88a54004735ca00f35913075d541705d73c55994a460e4bf52c040a2e291e487. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: senior-review:logic-integrity-auditor; version: 16.2.0; source-sha256: a5d6d6260c26b5f3e01eb3762c02e0b28f38d4fc36bbf084544f7fe9884dcfdf. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `senior-review`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<senior-review-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `senior-review`. The owning plugin's declared logical skill identities are `senior-review:defect-taxonomy`, `senior-review:review-quality-gates`, `senior-review:review-method`, `senior-review:review-preparation`, `senior-review:review-consolidation`, `senior-review:application-cleanup-method`, `senior-review:investigation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -102,7 +102,8 @@ You also depend on one upstream context, in this order:
 4. **No reinventing other dimensions.** Do NOT re-flag injection (security-auditor's job), concurrency races (code-auditor/ui-race-auditor), or distributed saga compensation (distributed-flow-auditor). Your scope is logic integrity: the code's own declared-or-implied truths vs what it actually does.
 5. **Evidence over suspicion.** If you cannot cite a concrete scenario where the contract/invariant breaks, do not write the finding.
 6. **Scale scrutiny to surface area.** Trivial changes (typos, version bumps) may have 0 logic-integrity findings. Do NOT invent violations.
-7. **No capability listing.** Deliver findings. Do not describe who you are or what you can do.
+7. **Multiplicity before assurance.** An invariant over shared, coordinator or process-global state is only as strong as its instance count. Before reporting such an invariant as holding, or listing it under controls checked with no violation, establish from instantiation sites or the call graph how many live instances or handles share the state and who can mutate the shared fields. A second handle whose private state the shared mutation never updates is the standard counterexample: hunt for it explicitly. When the scope does not settle multiplicity, the verdict for that invariant is `unverifiable` with the missing evidence named, never "holds". The same rule binds degraded runs without an interconnect map: independent derivation may produce findings, but no table of proven or non-violated controls.
+8. **No capability listing.** Deliver findings. Do not describe who you are or what you can do.
 
 ## ANALYSIS PHASES
 

@@ -212,6 +212,8 @@ Structural entropy and testing quality live in required plugins `abstraction-arc
 | **Multi-service / messaging** | Changed files touch API routes, message handlers, gRPC definitions, queue consumers/producers, or `docker-compose.yml` with multiple services | Distributed flows | `senior-review:distributed-flow-auditor` |
 | **Init/startup code** | Changed files touch startup sequences, dependency injection, config bootstrap, migration runners, or service registration | Circular dependencies | `senior-review:chicken-egg-detector` |
 | **Long-running / scheduled execution** | Diff or changed files touch timers, schedulers, polling loops, retry/reconnect logic, cron jobs, queue workers, background daemons, updaters, or watchdogs (see detection command 5b) | Temporal resilience (**what does the user see after this has been failing for a day?**) | `senior-review:temporal-resilience-auditor` |
+| **Shared coordinator or registry state** | Changed files declare or mutate process-global state shared across instances (global registries, realm or module singletons, coordinator maps) or keep a per-instance copy of a fact that state owns (see detection command 5e) | Cross-instance invariants (**does a write in one instance reach every other instance?**) | `senior-review:logic-integrity-auditor` plus `senior-review:code-auditor` (per-instance state divergence) |
+| **Autonomous long-running loop** | Changed files drive repeated agent, step, worker or message loops whose lifetime is one long invocation, even with no timer or scheduler in the diff (see detection command 5e) | Temporal resilience (**what does the user see after this has been running and failing for an hour?**) | `senior-review:temporal-resilience-auditor` |
 | **Persistence code** | Diff or changed files touch schemas, models, ORM entities, repositories, raw SQL, cache layers, or transaction boundaries (see detection command 5c) | Data integrity (**can the store be made to hold an impossible state?**) | `senior-review:data-integrity-auditor` |
 | **Resource acquisition** | Diff or changed files acquire files, sockets, connections, subprocesses, listeners, subscriptions, locks, tasks, or timers, especially in manual-resource languages (C/C++/Rust/Go) or async-heavy code (see detection command 5d) | Resource lifecycle (**does every acquire release on success, error, AND cancellation?**) | `senior-review:resource-lifecycle-auditor` |
 | **Test files** | Changed files match `test_*`, `*_test.*`, `*.spec.*`, `*.test.*`, `conftest.py`, `__tests__/` | Testing quality | `testing:test-suite-auditor` |
@@ -246,6 +248,14 @@ echo "$DIFF_CONTENT" | grep -qiE '\btransaction\b|\bcommit\b|rollback|UPDATE |IN
 
 # 5d. Check for resource acquisition (resource lifecycle)
 echo "$DIFF_CONTENT" | grep -qiE 'open\(|createReadStream|createWriteStream|\bsocket\b|getConnection|acquire|addEventListener|subscribe\(|\block\b|mutex|semaphore|new Worker|subprocess|Popen|spawn\(|go func|tokio::spawn|asyncio\.create_task|createObjectURL' && echo "RESOURCES=true"
+
+# 5e. Check for semantic long-running and shared-state patterns (lexical greps miss these)
+echo "$DIFF_CONTENT" | grep -qiE 'globalThis|Symbol\.for\(|coordinator|registry|shared\.(epoch|state|credential)' && echo "SHARED_STATE=true"
+# Read the changed loop and call sites: an agent/step/worker loop that runs for one
+# long invocation is temporal machinery even when no timer keyword appears.
+# Instantiation sites of a shared-state factory are part of the scope: multiplicity
+# decides whether per-instance divergence is reachable at all.
+echo "$DIFF_CONTENT" | grep -qiE 'while \(|for \(;;\)|step|agent.*loop|runDelegated|process.*queue' && echo "LONG_LOOP_CHECK_NEEDED=true"
 
 # 6. Check for test and migration files
 echo "$CHANGED_FILES" | grep -qiE 'test_|_test\.|\.spec\.|\.test\.|conftest|__tests__' && echo "TEST_FILES=true"
@@ -284,7 +294,8 @@ Runs inline in the orchestrating context on every invocation except raw mode. It
 1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior Codebase Map run.
 2. Extract the concepts, domains and symbols the diff touches. Names of changed functions, classes, modules and config keys are the starting set; add the domain nouns that appear in the diff's own strings and comments.
 3. For each concept, search the project's indexes and documentation for a relevant entry, and search the tests for behaviour that encodes it.
-4. Write `.team-review/01a-review-knowledge-leads.md`.
+4. Collect runtime evidence the user or the run supplies: session logs, timing breakdowns, traces and metrics named in the request or the run record. Record their paths in the evidence pack and route latency, timing and failure-over-time hypotheses to the temporal-resilience dimension with those artifacts as declared inputs. Runtime evidence never enters by inference: an artifact nobody supplied is a recorded gap, and an assertion about observed runtime behaviour or a runtime value without one stays a gap rather than becoming a finding. A mechanism demonstrated statically from the code in scope, with its trigger and quantities labelled `derived`, remains reportable without runtime artifacts; the two evidence classes never substitute for each other. When the request is an observed runtime symptom with logs and no change to assess, stop preparation and route the work to the investigation method instead of reviewing a diff that does not carry the defect.
+5. Write `.team-review/01a-review-knowledge-leads.md`.
 
 **This file is immutable once written.** No later phase appends to it. Codebase Map's own leads are joined into a separate derived artifact in Phase 1d, precisely so that the snapshot Phase 1c consumes cannot change underneath it.
 

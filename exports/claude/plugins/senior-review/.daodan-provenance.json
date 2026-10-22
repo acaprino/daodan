@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:570d48c9960e9d7960c1c4e49a9721fda98ff6166eeec41aafa48793bfdc8eb7",
+  "coreDigest": "sha256:3d557c73e37baa48f01ec461148cd328c429af9293c79d12228f597570f43842",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "senior-review",
-  "version": "16.1.0"
+  "version": "16.2.0"
 }
