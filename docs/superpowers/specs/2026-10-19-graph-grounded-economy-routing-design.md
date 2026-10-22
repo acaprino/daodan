@@ -489,8 +489,11 @@ che ha prodotto l'arco (`lexical`, oppure nome e versione dell'engine, ad esempi
    riportati nel residuo visibile invece di essere riclassificati: il costruttore
    di una variante enum a tupla (`EnumMember`, semanticamente
    un'istanziazione) e la chiamata a un metodo di interfaccia che il server non
-   espone come simbolo (semanticamente una chiamata). Entrambi fanno del numero
-   pubblicato un limite inferiore, e la decisione di graduarli è aperta.
+   espone come simbolo (semanticamente una chiamata). Letti tutti a entrambi gli
+   estremi, sono veri positivi in ogni caso misurato (17 su 17 in Rust, 174 su
+   174 in Go), quindi il numero pubblicato è un limite inferiore. La decisione
+   di graduarli è aperta ed è registrata, con le opzioni e il loro effetto sui
+   numeri, in `evals/codebase-map/OPEN_POINTS.md` (OP-1, OP-2).
 
 **Sondaggio e degradazione dichiarata.** Ogni engine è sondato all'avvio, mai
 assunto presente. L'assenza non è un errore e non riduce silenziosamente la

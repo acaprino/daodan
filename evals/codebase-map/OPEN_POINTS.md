@@ -1,0 +1,205 @@
+# Open points: Codebase Map resolver layer
+
+Decisions measured but not yet taken. Each point states what was observed, the
+options, and what each option changes in the published numbers. A point leaves
+this file when its decision is recorded in the design (§3.2.2 of
+`docs/superpowers/specs/2026-10-19-graph-grounded-economy-routing-design.md`),
+with the date and who took it.
+
+Evidence comes from the 2026-10-22 measurement campaign. Raw results are
+machine-local, under the bench directory recorded in each point; the harness that
+produced them is `evals/codebase-map/resolver-spike/`.
+
+## Context: what the edge grades are
+
+The resolver measurement grades every definition an engine returns by its LSP
+`SymbolKind`:
+
+| Grade | Kinds | Counted as a call edge |
+|---|---|---|
+| `edge-call` | Method (6), Constructor (9), Function (12) | yes |
+| `edge-instantiation` | Class (5) | yes |
+| `edge-variable-binding` (candidate) | Variable (13), Constant (14), Field (8), Property (7), and any definition that falls inside a symbol without being its name | no, reported separately |
+| `definition-is-type-not-callable` | Enum (10), Interface (11), Module (2), Namespace (3), Package (4) | no |
+| residual, `definition-kind-not-graded` | every other kind | no, reported verbatim |
+
+A kind outside every grade stays visible in the residual rather than being
+re-graded after the fact. Both points below are kinds that landed in the residual
+or the candidate grade although, verified by reading every record at both ends,
+they are real calls into project code: 17 of 17 for OP-1, 174 of 174 for OP-2.
+**Both published numbers are therefore lower bounds.** What remains open is not
+whether these records are edges, but whether a grade rule should count them, and
+on what evidence beyond one workspace per language.
+
+---
+
+## OP-1. Rust: tuple-variant enum constructors (`SymbolKind` 22, EnumMember)
+
+**Status:** open, not blocking. The decision can wait for the remaining language
+numbers.
+
+### Observed
+
+rust-analyzer returns `SymbolKind` 22 (EnumMember) for a call that constructs a
+tuple variant. The variant is declared in the project, so the call is an
+instantiation of a project type, which is exactly what `edge-instantiation`
+exists for. Kind 22 is in no grade, so these records sit in the residual.
+
+| Workspace | Positions sampled | `edge-call` | EnumMember (22) | Struct (23) |
+|---|---:|---:|---:|---:|
+| `jupiter-desktop/src-tauri` | 949 | 204 | **17** | 2 |
+| `logs-viewer-desktop/src-tauri` | 424 (census) | 38 | 0 | 3 |
+
+**All 17 records were read at both ends: 17 true positives, 0 false, 0
+undecidable.** Each call site constructs the variant with an argument,
+`Enum::Variant(...)`, and each target line declares that variant as a tuple
+variant in the project. Seven distinct variants across six enums, for example:
+
+- `commands/trading.rs:65`
+  `return Ok(binary_error(CommandError::InvalidAction(request.action)))`
+  → `error.rs:44` `InvalidAction(String),`
+- `connection/session.rs:304` `return Err(SessionError::Auth(e));`
+  → `connection/session.rs:88` `Auth(#[from] HttpAuthTransportError),`
+- `connection/transport/amqp.rs:173` `.send(ConnectionCommand::SetCredentials(cfg))`
+  → `amqp/connection_manager.rs:89` `SetCredentials(AmqpConfig),`
+
+Fourteen of the 17 are error-type constructors (`CommandError`,
+`AuthClientError`, `BackendFetchError`, `SessionError`); three are command
+messages sent on a channel (`CloudWatchCommand`, `ConnectionCommand`). The
+evidence is one workspace: `logs-viewer-desktop` produced no EnumMember record.
+
+### Options
+
+| Option | Effect on `jupiter-desktop` |
+|---|---|
+| **A.** Grade 22 as `edge-instantiation` when the target is a tuple or struct variant declared in the project | 204 → **221** confirmed edges, 21.50 % → **23.29 %** |
+| **B.** Keep 22 in the residual and publish it as a declared lower bound | unchanged, 21.50 %; the 17 stay visible |
+
+Option A rests on 17 of 17 verified, from one workspace and one engine version
+(rust-analyzer 2023-10-09). A **unit** variant (`Enum::Variant` with no
+arguments) is not a call and never reaches this grade, because the snapshot does
+not record it as a call reference; that has not been measured either way, so
+option A should state the tuple or struct form explicitly rather than grade every
+kind 22.
+
+### Not part of this point: the five Struct (23) records
+
+They look similar and are a different case. All five resolve a call to a
+**derived** method onto the struct declaration, because the method has no body in
+the project:
+
+- `connection/transport/cloudwatch.rs:164` `cfg.clone()` →
+  `cloudwatch/native.rs:56`, `pub struct CloudWatchConfig` under `#[derive(Clone)]`
+- `logs-viewer-desktop/.../services/cloudwatch/insights.rs:78`
+  `InsightsStatistics::default()` → `models/insights.rs:40`, under
+  `#[derive(..., Default)]`
+
+`clone` and `default` are trait methods generated by the compiler. The call's
+real target is std's `Clone::clone` and `Default::default`, so these records are
+external in substance, not a missed project edge. They stay in the residual under
+any option above.
+
+### Raw data
+
+`<bench>/clean/lsp-rust-jupiter-desktop.json` and
+`lsp-rust-logs-viewer-desktop.json`, keys `verdicts`, `examples` and `records`
+(each record carries `call_site` and `target` with both line numbers). The
+17-record read is `<bench>/pyparser/op1-verified.txt`.
+
+---
+
+## OP-2. Go: method calls through an interface
+
+**Status:** open, not blocking. Same timing as OP-1.
+
+### Observed
+
+gopls does not report an interface's methods as document symbols. A call through
+an interface therefore resolves to the method signature inside the
+`type ... interface { ... }` declaration, and the classification finds no symbol
+whose name is that method. The record falls back to `containing-nested`, so it is
+graded as a **candidate**, `edge-variable-binding`, with
+`binding_kind_split` = `nested-inside-11:Interface`.
+
+On `opentelemetry-go` (1,000 positions sampled):
+
+| Grade | Count | Share |
+|---|---:|---:|
+| `edge-call`, published | 466 | **46.60 %** |
+| candidate, `nested-inside-11:Interface` | **174** | 17.4 pp |
+| candidate, `nested-inside-6:Method` | 25 | not examined |
+
+**All 174 interface records were read at both ends: 174 true positives, 0
+false, 0 undecidable.** In every one the target line is a method declared inside
+a `type X interface { ... }` block, and its name is the method called at the call
+site. 23 distinct methods on 7 interfaces: `Int64UpDownCounter` 76, `Meter` 49,
+`Int64Gauge` 40, `Span` 4, `Float64Counter` 3, `Tracer` 1, `ReadOnlySpan` 1.
+For example:
+
+- `semconv/v1.42.0/k8sconv/metric.go:348` `i, err := m.Int64UpDownCounter(`
+  → `metric/meter.go:73`
+  `Int64UpDownCounter(name string, options ...Int64UpDownCounterOption) (Int64UpDownCounter, error)`,
+  inside `type Meter interface` (line 44)
+- `m.Int64UpDownCounter.Add(ctx, incr)` → `metric/syncint64.go:98`
+  `Add(ctx context.Context, incr int64, options ...AddOption)`, inside
+  `type Int64UpDownCounter interface` (line 85)
+- `sdk/trace/trace_test.go:225` `_, span := tp.Tracer(name).Start(t.Context(), "StartSpan")`
+  → `trace/tracer.go:36` `Start(ctx context.Context, spanName string, ...)`,
+  inside `type Tracer interface`. This is the one `dynamic-callee` record among
+  the 174.
+
+**The precision is real; the 17.4 pp is not a corpus-wide figure.** 152 of the
+174 call sites are generated `semconv/v1.*/k8sconv/metric.go` files, the same
+three idioms repeated across semconv versions, because the sample is the files
+with the most unresolved calls. Only 22 come from hand-written code. The size of
+this effect on ordinary Go is therefore unknown; the sign is not.
+
+### Options
+
+| Option | Effect on Go |
+|---|---|
+| **A.** Grade a definition nested inside an Interface (11) as `edge-call` when the identifier written at the target position equals the called method name | 46.60 % → **64.00 %** |
+| **B.** Request hierarchical document symbols from gopls, so interface members become real symbols and the existing exact-match rule grades them, without a new rule | expected close to option A; not measured |
+| **C.** Keep them as candidates and publish 46.60 % as a declared lower bound | unchanged |
+
+Option B removes the cause instead of adding a rule. Verified in multilspy 0.1.1:
+its gopls `language_servers/gopls/initialize_params.json` declares only
+`completion`, `definition` and `synchronization` under `textDocument`, with no
+`documentSymbol` capability at all, so gopls answers in the legacy flat
+`SymbolInformation[]` form. The TypeScript client in the same package declares
+`hierarchicalDocumentSymbolSupport: true`, which is why TypeScript is unaffected.
+What is still unverified is the other half: that gopls v0.24.0, once asked for
+hierarchical symbols, nests interface members as children. That is a single run
+on the same corpus, and it decides between B and A.
+
+Two things hold for every option:
+
+- The 25 `nested-inside-6:Method` records were not examined and are not part of
+  this point. They need their own read before any grade covers them.
+- An edge to an interface method is a call to a **contract**, not to an
+  implementation. A resolver layer that adopts option A or B must say so in the
+  edge (`kind`, or a target marker), so that `stale-callers` and `edit_impact`
+  do not treat a change to one implementation as a change to every caller of
+  the interface.
+
+### Raw data
+
+`<bench>/clean/lsp-go-opentelemetry.json`, keys `verdicts`, `binding_kind_split`,
+`kind_match_counts` and `records`. The 174-record read is
+`<bench>/pyparser/op2-verified.txt`.
+
+---
+
+## Not open points: already decided by measurement
+
+Recorded so the question is not asked again:
+
+- **Go `edge-instantiation` (267 records) is not a call edge.** All 267 are one
+  target, `attribute/key.go:8` `type Key string`, reached through generated code
+  such as `attribute.Key("android.app.state")`. That is a Go type conversion.
+  `SymbolKind` 5 means a named type in Go, not a class. Counting it would add
+  26.7 pp from a single generated idiom. It is excluded from Go's edge claim.
+- **Rust `dynamic-callee` is not a recoverable category.** It is 29 % of the
+  population and under 3 % recoverable, because the callees are std methods
+  (`Iterator::map`, `Option::clone`, `Result::ok`). It is not queued for an
+  engine.
