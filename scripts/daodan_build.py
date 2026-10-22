@@ -14,6 +14,7 @@ prevent. Selecting a subset is a development affordance, and only under
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import os
 import re
@@ -234,6 +235,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
                                support=tuple(support))
 
         files = []
+        warnings = []
         for host in hosts:
             adapter = load_adapter(root / "adapters", host)
             packages = {plugin.name: staged_packages.get((host, plugin.name),
@@ -259,16 +261,25 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
                 finally:
                     shutil.rmtree(sibling, ignore_errors=True)
             for live_file, content in files:
-                _publish_file(live_file, content)
+                warning = _publish_file(live_file, content)
+                if warning:
+                    warnings.append(warning)
             for obsolete in retired:
                 # Ownership and every resolved boundary were checked before rendering.
                 shutil.rmtree(obsolete)
 
-    return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support))
+    return BuildReport(issues=tuple(issues), drift=tuple(drift), support=tuple(support),
+                       warnings=tuple(warnings))
 
 
-def _publish_file(destination: Path, content: bytes) -> None:
-    """Publish one complete file with an owned temporary sibling."""
+def _publish_file(destination: Path, content: bytes) -> str | None:
+    """Publish one complete file with an owned temporary sibling.
+
+    The atomic replace stays the only path that guarantees a reader never sees a partial
+    file. It returns ``None`` when that path succeeded, and a warning naming the file
+    when the destination was held open by another process and had to be written in place
+    instead, so the report says which publication was not atomic.
+    """
     destination.parent.mkdir(parents=True, exist_ok=True)
     handle, name = tempfile.mkstemp(prefix=f".{destination.name}.", suffix=".tmp",
                                     dir=destination.parent)
@@ -276,11 +287,77 @@ def _publish_file(destination: Path, content: bytes) -> None:
     os.close(handle)
     try:
         temporary.write_bytes(content)
-        _rename_with_retry(temporary, destination, replace_existing=True)
+        try:
+            _rename_with_retry(temporary, destination, replace_existing=True)
+        except OSError as error:
+            if not _is_sharing_violation(error):
+                raise
+            _publish_in_place(destination, content)
+            return (f"published in place, not atomically: {destination} is held open by "
+                    f"another process ({error.strerror or error})")
     except OSError as error:
         raise RenderError(f"could not publish {destination}: {error}") from error
     finally:
         temporary.unlink(missing_ok=True)
+    return None
+
+
+# A rename needs delete sharing on the destination. Windows reports its absence as a
+# sharing violation, POSIX as a busy or denied file; anything else (a missing parent, an
+# unwritable volume) is a real failure and must not take the in-place path.
+SHARING_WINERRORS = frozenset({5, 32, 33})
+SHARING_ERRNOS = frozenset(
+    value for value in (getattr(errno, name, None) for name in ("EBUSY", "EACCES", "EPERM"))
+    if value is not None)
+
+
+def _is_sharing_violation(error: OSError) -> bool:
+    if getattr(error, "winerror", None) in SHARING_WINERRORS:
+        return True
+    return error.errno in SHARING_ERRNOS
+
+
+def _read_back(destination: Path) -> bytes:
+    return destination.read_bytes()
+
+
+def _publish_in_place(destination: Path, content: bytes) -> None:
+    """Overwrite a file another process holds open, then prove the bytes are complete.
+
+    A host indexer that opens a repository-root manifest without delete sharing makes
+    every rename of it fail for as long as the process lives, and such a process is
+    supervised: measured on 2026-10-22, Tri-Tech Code's ``tritech-indexd`` respawned
+    within seconds of being stopped and re-locked the root, so publication of the root
+    manifest was impossible on the very host this repository ships to. Writing in place
+    is the only publication left there. It keeps the guarantee that matters, that the
+    file on disk is exactly the rendered content, by backing the previous bytes up,
+    verifying the result and restoring on any mismatch. What it cannot guarantee is that
+    a concurrent reader sees no intermediate state, which is why the caller records a
+    warning instead of passing silently.
+    """
+    backup = None
+    if destination.is_file():
+        handle, name = tempfile.mkstemp(prefix=f".{destination.name}.", suffix=".previous",
+                                        dir=destination.parent)
+        os.close(handle)
+        backup = Path(name)
+        shutil.copyfile(destination, backup)
+    try:
+        with open(destination, "r+b" if backup is not None else "wb") as handle:
+            handle.write(content)
+            handle.truncate()
+            handle.flush()
+            os.fsync(handle.fileno())
+        if _read_back(destination) != content:
+            raise RenderError(f"in-place publication of {destination} did not verify "
+                              "against the rendered bytes")
+    except BaseException:
+        if backup is not None:
+            shutil.copyfile(backup, destination)
+        raise
+    finally:
+        if backup is not None:
+            backup.unlink(missing_ok=True)
 
 
 def _retired_packages(root, adapter, active):

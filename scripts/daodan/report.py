@@ -19,6 +19,9 @@ class BuildReport:
     issues: tuple[ValidationIssue, ...] = ()
     drift: tuple[Path, ...] = ()
     support: tuple[SupportReport, ...] = field(default=())
+    # A publication that could not be atomic because another process held the file. The
+    # content is verified, so it is not a failure, but it is never silent either.
+    warnings: tuple[str, ...] = ()
 
     @property
     def has_failures(self) -> bool:
@@ -29,6 +32,8 @@ class BuildReport:
             stream.write(f"{issue.code}: {issue.path}: {issue.message}\n")
         for path in self.drift:
             stream.write(f"generated-drift: {path}\n")
+        for warning in self.warnings:
+            stream.write(f"warning: {warning}\n")
 
     def write_support(self, stream: TextIO) -> None:
         for report in sorted(self.support, key=lambda item: (item.host, item.plugin)):
@@ -41,4 +46,5 @@ def merge(reports: Sequence[BuildReport]) -> BuildReport:
         issues=tuple(issue for report in reports for issue in report.issues),
         drift=tuple(path for report in reports for path in report.drift),
         support=tuple(item for report in reports for item in report.support),
+        warnings=tuple(warning for report in reports for warning in report.warnings),
     )

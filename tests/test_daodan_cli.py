@@ -573,6 +573,91 @@ class ManifestPublicationTests(unittest.TestCase):
             self.assertEqual(manifest.read_bytes(), b"original manifest")
             self.assertEqual(list(root.iterdir()), [manifest])
 
+    def _locked_replace(self, winerror=32, errno_value=None):
+        """A destination another process holds open: every rename fails the same way."""
+        def always_locked(source, destination):
+            error = OSError("held open by another process")
+            if winerror is not None:
+                error.winerror = winerror
+            if errno_value is not None:
+                error.errno = errno_value
+            raise error
+        return always_locked
+
+    def test_a_persistent_sharing_violation_publishes_in_place_and_warns(self):
+        # The host this repository ships to runs an indexer that keeps a root manifest
+        # open without delete sharing and respawns when stopped, so the atomic replace is
+        # not merely transiently impossible there: publication falls back to a verified
+        # in-place write and says so, instead of never publishing at all.
+        with tempfile.TemporaryDirectory(prefix="daodan-manifest-") as holder:
+            root = Path(holder)
+            manifest = root / "package.json"
+            manifest.write_bytes(b"original manifest")
+            with patch("scripts.daodan_build.os.replace", self._locked_replace()), \
+                    patch("scripts.daodan.render.time.sleep"):
+                warning = _publish_file(manifest, b"complete new manifest")
+
+            self.assertEqual(manifest.read_bytes(), b"complete new manifest")
+            self.assertIn("not atomically", warning)
+            self.assertIn("package.json", warning)
+            self.assertEqual(list(root.iterdir()), [manifest])
+
+    def test_a_posix_busy_error_takes_the_same_verified_in_place_path(self):
+        import errno as errno_module
+
+        with tempfile.TemporaryDirectory(prefix="daodan-manifest-") as holder:
+            manifest = Path(holder) / "marketplace.json"
+            manifest.write_bytes(b"original")
+            with patch("scripts.daodan_build.os.replace",
+                       self._locked_replace(winerror=None,
+                                            errno_value=errno_module.EBUSY)), \
+                    patch("scripts.daodan.render.time.sleep"):
+                warning = _publish_file(manifest, b"rendered")
+
+            self.assertEqual(manifest.read_bytes(), b"rendered")
+            self.assertIn("not atomically", warning)
+
+    def test_an_in_place_publication_that_does_not_verify_restores_the_original(self):
+        from scripts.daodan.render import RenderError
+
+        with tempfile.TemporaryDirectory(prefix="daodan-manifest-") as holder:
+            root = Path(holder)
+            manifest = root / "package.json"
+            manifest.write_bytes(b"original manifest")
+            with patch("scripts.daodan_build.os.replace", self._locked_replace()), \
+                    patch("scripts.daodan.render.time.sleep"), \
+                    patch("scripts.daodan_build._read_back", return_value=b"a torn write"):
+                with self.assertRaises(RenderError):
+                    _publish_file(manifest, b"complete new manifest")
+
+            self.assertEqual(manifest.read_bytes(), b"original manifest")
+            self.assertEqual(list(root.iterdir()), [manifest])
+
+    def test_a_held_destination_that_does_not_exist_yet_is_created_in_place(self):
+        with tempfile.TemporaryDirectory(prefix="daodan-manifest-") as holder:
+            root = Path(holder)
+            manifest = root / "package.json"
+            with patch("scripts.daodan_build.os.replace", self._locked_replace()), \
+                    patch("scripts.daodan.render.time.sleep"):
+                warning = _publish_file(manifest, b"complete new manifest")
+
+            self.assertEqual(manifest.read_bytes(), b"complete new manifest")
+            self.assertIn("not atomically", warning)
+            self.assertEqual(list(root.iterdir()), [manifest])
+
+    def test_a_warning_is_reported_and_never_counts_as_a_failure(self):
+        from scripts.daodan.report import BuildReport, merge
+
+        report = BuildReport(warnings=("published in place, not atomically: package.json",))
+        self.assertFalse(report.has_failures)
+        stream = io.StringIO()
+        report.write(stream)
+        self.assertEqual(stream.getvalue(),
+                         "warning: published in place, not atomically: package.json\n")
+        merged = merge([report, BuildReport(warnings=("second",))])
+        self.assertEqual(merged.warnings,
+                         ("published in place, not atomically: package.json", "second"))
+
 
 if __name__ == "__main__":
     unittest.main()
