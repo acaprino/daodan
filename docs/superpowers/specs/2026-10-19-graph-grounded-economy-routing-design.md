@@ -438,6 +438,154 @@ dell'output. Un comando concluso con exit code zero non autorizza a usare una
 fetta che l'output dichiara non verificata. La mappa resta analisi statica:
 test e prove runtime appartengono al flusso consumatore.
 
+### 3.2.2 Livello di risoluzione: engine opzionali sondati, identità del resolver e parser dichiarati
+
+La risoluzione lessicale di `semantic_store.py` risolve una minoranza dei
+riferimenti di chiamata: 7.439 su 76.366 (9,7%) su un progetto reale misurato,
+10.726 su 82.227 (13,0%) su un secondo. Questa sezione stabilisce come il
+recupero del resto avviene senza introdurre congetture nel grafo.
+
+**Principio: nessun risolutore meccanico o euristico.** La risoluzione lessicale
+esistente resta la base e non viene sostituita. Non viene aggiunto alcun livello
+di inferenza approssimata (euristiche di nome, prossimità, frequenza, similarità
+lessicale): un arco inferito è indistinguibile da uno verificato per chi lo
+consuma, e il Choicer e i revisori lo trattano come evidenza. Un arco mancante
+è un gap dichiarato; un arco inventato è un difetto silenzioso. Il recupero
+passa esclusivamente da **engine esterni reali** (type checker o language
+server), opzionali e sondati, che aggiungono archi senza mai reinterpretare
+quelli esistenti.
+
+**Contratto dell'arco esteso.** `§3.2.1` stabilisce che ogni arco trasporta
+`kind`, `direction`, `confidence`, `source_span` e `callsite_count`. Il livello
+di risoluzione aggiunge un campo obbligatorio, `resolver`: l'identità dell'engine
+che ha prodotto l'arco (`lexical`, oppure nome e versione dell'engine, ad esempio
+`jedi 0.20.1`). Tre conseguenze vincolanti:
+
+1. **L'identità del resolver entra nel fingerprint** del simbolo e del grafo,
+   accanto a `digest_version`. Archi prodotti da resolver diversi non sono
+   confrontabili, perché non sono la stessa misura.
+2. **`stale-callers` ed `edit_impact` non confrontano mai archi di resolver
+   diversi.** Un cambio di resolver, o un cambio di versione dello stesso
+   resolver, è un **refresh esplicito con versione**, mai una reinterpretazione
+   degli hash storici: la stessa regola che `§3.2.1` stabilisce per i digest.
+3. **La confidenza è graduata, non binaria**, e il vocabolario dei gradi è
+   fissato dalla misura, non scelto a posteriori: arco confermato (definizione su
+   `Function`, `Method`, `Constructor`), istanziazione (`Class`), **candidato**
+   (`Variable`, `Field`, `Property`), definizione non chiamabile (`Enum`,
+   `Interface`, `Module`, `Namespace`), tipo sconosciuto. Il grado *candidato*
+   esiste perché in JS/TS `const f = () => {}` risolve legittimamente su una
+   variabile mentre `const x = 5` risolve sullo stesso tipo di nodo: un engine
+   che li contasse entrambi produrrebbe esattamente il sovracconteggio che questo
+   livello deve eliminare. **Un candidato non confluisce mai nel conteggio degli
+   archi confermati**; se viene promosso, la promozione è una regola dichiarata e
+   versionata, non un default.
+
+**Sondaggio e degradazione dichiarata.** Ogni engine è sondato all'avvio, mai
+assunto presente. L'assenza non è un errore e non riduce silenziosamente la
+copertura: è dichiarata nel report con il motivo e il comando di installazione,
+nello stesso canale che già etichetta i parser (`notes[0] = parser=<source>`).
+Un engine presente ma **non pronto** richiede un'attesa esplicita di readiness,
+validata rieseguendo una richiesta nota finché non risponde: Eclipse JDTLS
+indicizza in modo asincrono e restituisce risultati vuoti finché non ha finito, e
+zero archi Java per mancata readiness è un falso negativo, peggiore di nessun
+numero.
+
+**Costo dichiarato, non stimato.** Ogni engine riporta nel report latenza media e
+p95, tempo di avvio del server, tempo totale e la propria estrapolazione **con il
+bias di campionamento accanto al numero**. Sulla misura Python di riferimento, un
+campione di 1.600 posizioni costa 154 s single-thread con latenza media 99 ms e
+p95 307 ms; l'estrapolazione all'intero progetto va dichiarata come stima su
+campione non casuale, oppure pesata sulla distribuzione per motivo dell'intera
+popolazione, che la sonda del manifest produce e che è evidenza più forte del
+campione.
+
+**Esito della misura di riferimento (Python).** Con Jedi eseguito contro gli
+ambienti virtuali reali del progetto, su 1.600 posizioni precedentemente non
+risolte: **505 archi veri (31,6%)**, di cui 303 di metodo, 145 di istanziazione,
+57 di chiamata diretta; non risolto residuo **2,7%**. Lo stesso engine eseguito
+senza le dipendenze del progetto produceva 403 archi (25,2%) con il 24,1% di non
+risolto: la differenza dimostra che **un engine sondato senza l'ambiente del
+progetto misura un pavimento, non una stima**, e il sondaggio deve quindi
+includere la scoperta degli ambienti (nearest-enclosing-wins sui virtualenv del
+progetto) e dichiarare quale ambiente ha risolto ciascun file, incluso quello
+rotto.
+
+**Prerequisito: copertura della tabella dei simboli.** Sulla stessa misura,
+**374 posizioni su 1.600 (23,4%)** sono casi in cui l'engine risolve *dentro il
+progetto* e la nostra tabella dei simboli non riconosce il bersaglio: moduli
+scambiati per classi, metodi che il parser non estrae, funzioni non in tabella.
+Collegare un engine senza prima allargare l'estrazione dei simboli produce archi
+che non hanno un nodo di arrivo, cioè spreca circa un quarto del costo. Questo
+filone è **prerequisito** del livello di risoluzione, non una sua conseguenza, e
+le 374 posizioni misurate ne sono il primo inventario.
+
+**Parser dichiarati.** La regola è tree-sitter, senza fallback regex, perché uno
+scanner regex su linguaggi con quoting annidato produce simboli inventati: la
+misura su `languages/plsql.py` restituisce `sales data.order"items` come nome di
+classe e `CREATE VIEW ghost AS SELECT 1` (il *contenuto* di un identificatore
+quotato) come nome di view. Alla regola sono ammesse **solo eccezioni etichettate
+esplicitamente nel report**, mai implicite:
+
+| Linguaggio | Parser | Stato |
+|---|---|---|
+| Python | `ast` della libreria standard | parser reale di riferimento di CPython, non regex; nessuna dipendenza nuova |
+| Java, JavaScript, TypeScript/TSX, Rust, Go | tree-sitter via `tree-sitter-language-pack` o modulo per grammar | regola soddisfatta, wheel pubblicate |
+| SQL dichiarativo | grammar tree-sitter pubblicata | regola soddisfatta |
+| CSS, SCSS, LESS | tokenizer proprio | **eccezione etichettata**: alimenta `cascade_scan.py` e l'espansione Tailwind `@apply`, nati dall'incidente del 2026-09-14; rinunciarvi è una regressione di usabilità già pagata |
+| PL/SQL Oracle | grammar tree-sitter opzionale e sondata; in sua assenza lo scanner regex esistente | **eccezione etichettata** nel secondo caso |
+| PL/pgSQL | nessuno | **gap dichiarato** |
+
+Lo stato `parse-unavailable` entra nel vocabolario di `snapshot.py` accanto a
+`parsed`, `file-level`, `parse-error` e `parse-skipped`, e nel blocco `scope` del
+manifest, perché "il parser non è installato" è un fatto diverso da "il parse è
+fallito" e da "il file non è sorgente": il primo è recuperabile dall'utente, il
+secondo è un difetto del sorgente o del parser.
+
+**PL/SQL Oracle: engine opzionale, nessun bundling.** La grammar adottata è
+terza parte, MIT, e non pubblica wheel: consumarla richiede un compilatore C
+sulla macchina dell'utente. È accettato come **prerequisito documentato**, della
+stessa classe di Playwright MCP e dei language pack già sondati, e non come
+binaria inclusa nel pacchetto. La via è stata costata e scartata: una build abi3
+è fattibile e verificata su due versioni minori di Python (una binaria per
+piattaforma invece di venti, 0,79 MB per wheel), ma l'estensione compilata è
+11,12 MB e il compilatore la replica nei cinque pacchetti host, cioè 222 MB
+contro i ~30 MB attuali di tutto `exports/`, introducendo la prima binaria
+tracciata del repository e trasferendoci un obbligo di build su quattro
+piattaforme per un artefatto il cui upstream non pubblica test. L'escalation
+corretta, se un corpus Oracle reale lo richiederà, è pubblicare una wheel abi3
+nostra, non includere binarie. I numeri completi e la patch sono in
+`evals/codebase-map/grammar-parity/abi3-packaging.md`.
+
+**Perché serve un gate nostro.** Quella grammar non pubblica test, e il suo
+stesso README avverte che superare il proprio budget di stati «genera senza
+errori ma produce parsing errato a runtime in modo dipendente dal layout»:
+`STATE_COUNT` misurato 45.888 contro un limite dichiarato di ~48.000. Dipendere
+da un parser che può iniziare a leggere male il sorgente in silenzio, senza che
+nulla a valle lo segnali, è inaccettabile per una mappa il cui valore è l'evidenza
+citabile. `evals/codebase-map/grammar-parity/` è il controllo compensativo: un
+gate meccanico con exit code, tredici invarianti nominati, controlli negativi su
+Oracle invalido che deve essere rifiutato, e **pin invertiti** che falliscono
+rumorosamente il giorno in cui un gap noto viene corretto, così che una correzione
+imponga una rimisura invece di scivolare via. Copre anche i limiti misurati dei
+nostri scanner, perché il guadagno dell'engine sia dimostrato e non assunto.
+
+**Gap di dialetto, dichiarato.** Su 23 costrutti Oracle la grammar generica SQL ne
+parsa **1**, quella Oracle **16**: la prima non è un candidato per Oracle, e
+usarla produrrebbe `parse-error` su package, package body, object type, trigger e
+quasi tutto il SQL gerarchico. Sul procedurale PostgreSQL non esiste engine
+valutabile a qualità utilizzabile, e nessuna delle grammar disponibili parsa un
+corpo PL/pgSQL reale: il gap è dichiarato, non coperto da uno scanner che
+farebbe finta. Il corpo procedurale è dove vivono le chiamate, quindi su un
+progetto PL/pgSQL il grafo resta cieco all'interno delle funzioni: dichiararlo è
+l'unico esito onesto, e un pin nel gate segnala il giorno in cui cambia.
+
+**Stato delle misure per linguaggio.** Python e le grammar SQL/PL-SQL sono
+misurati e registrati. TypeScript, JavaScript, Rust, Go e Java sono in misura
+nell'harness `evals/codebase-map/resolver-spike/` con i risultati in
+`C:\Users\alfio\daodan-bench\clean\RESULTS.md`; i loro numeri entrano in questa
+sezione a misura conclusa, e nessuna decisione sul livello di risoluzione viene
+presa prima.
+
 ### 3.3 Il Contratto del Choicer (Regola della `trigger_line`)
 
 Il Choicer riceve il requisito, i fatti strutturali del grafo, il diff e il
@@ -1072,6 +1220,7 @@ proprietà dei file è ripartita in modo disgiunto:
 | File | Modifica |
 |---|---|
 | `plugins/codebase-map/skills/map-method/scripts/` e contratti della mappa | API `symbols-at` (hunk base/candidato -> simboli), firme complete (parametri, tipi, default, ritorno) e digest `interface_hash` versionati, composizione di sorgenti verificate dei vicini a 1-2 hop e query `stale-callers` di §3.2.1; binding CLI/MCP e regressioni su base/candidato, limiti e freschezza; nessun giudizio di review o stato delle wave |
+| `plugins/codebase-map/skills/map-method/scripts/` (`semantic_store.py`, `snapshot.py`, `languages/`) | Livello di risoluzione di §3.2.2: campo obbligatorio `resolver` su ogni arco e identità del resolver nel fingerprint; confidenza graduata con il grado *candidato* tenuto separato dagli archi confermati; sondaggio degli engine con degradazione dichiarata e attesa di readiness validata; stato `parse-unavailable` nel vocabolario di `snapshot.py` e nel blocco `scope` del manifest; eccezioni di parser etichettate (stylesheet, PL/SQL Oracle senza engine) e gap PL/pgSQL dichiarato. **Prerequisito**: allargare l'estrazione dei simboli sui casi misurati in cui un engine risolve dentro il progetto e la tabella non riconosce il bersaglio. Gate di regressione già consegnato in `evals/codebase-map/grammar-parity/`, da aggiornare a ogni cambio di versione degli engine |
 | `scripts/daodan/` e adapter dei 5 host (catalogo ruoli) | Generazione del catalogo portabile dei revisori dai manifesti e dai frontmatter `TRIGGER WHEN` / `DO NOT TRIGGER WHEN`, con identità e binding host; risorsa spedita sotto `skills/review-preparation/references/` del package `senior-review`, mai un accesso runtime a `plugins/*` |
 | `plugins/senior-review/skills/review-preparation/` e `skills/review-quality-gates/` | Raccolta degli input del Grafo del Codice per la review, grounding e provenance; aggiornamento di `candidate-grounding.md`, `context-sharing.md` e prompt del pannello per consumare i pacchetti ancorati al grafo e distinguere Mode 1 da Lente 0 |
 | `plugins/senior-review/roles/logic-integrity-auditor.md` | Accettazione del contesto semantico ridotto allo scope (derivato da Grafo del Codice + ADR/docs/card con provenienza) e del percorso consegnato, con prerequisiti e anchor di §4.3.2; aggiornamento di trigger e riferimenti collegati, senza esclusione fissa dalla `lite` |
@@ -1111,6 +1260,17 @@ possono avanzare in parallelo su sessioni distinte:
      aggiornare i ruoli e i riferimenti di `senior-review` (`security-auditor.md`,
      `logic-integrity-auditor.md` con contesto semantico ridotto,
      `candidate-grounding.md`, `context-sharing.md`, `light.md`).
+   - **poi, e solo dopo la conclusione della misura per linguaggio in
+     `evals/codebase-map/resolver-spike/`**, il livello di risoluzione di
+     `§3.2.2`, in quest'ordine: prima il prerequisito sull'estrazione dei simboli
+     (i casi misurati in cui un engine risolve dentro il progetto e la tabella non
+     riconosce il bersaglio, il 23,4% del campione Python), perché collegare un
+     engine prima produce archi senza nodo di arrivo; poi il campo `resolver`, la
+     confidenza graduata con i candidati separati, il sondaggio e la degradazione
+     dichiarata, lo stato `parse-unavailable` e le eccezioni di parser etichettate.
+     `evals/codebase-map/grammar-parity/` è già consegnato e resta il gate: i suoi
+     pin invertiti vanno aggiornati a ogni cambio di versione degli engine, mai
+     indeboliti per ottenere un run verde.
 3. **Filone B (Workflow a Grafo per Task di Sviluppo e Review, in sessione dedicata)**:
    - aggiornare `work.toml` e `run_state.py` (DAG delle `waves`, flag piatti,
      `Failure Fingerprinting`, validazione degli archi ricevuti);
@@ -1165,6 +1325,16 @@ sostituisce nessuna delle consegne del ciclo.
      auto-assolutoria e risultati dei peer sono esclusi dai pacchetti iniziali.
      L'assenza di prerequisiti semantici di `logic-integrity` non produce un
      `PASS` né una selezione ridotta silenziosamente.
+   - **Livello di risoluzione (`§3.2.2`):** ogni arco porta `resolver` e un
+     grado di confidenza; un grado *candidato* non è mai contato tra gli archi
+     confermati; archi con resolver diverso non sono confrontati né da
+     `stale-callers` né da `edit_impact`; un cambio di versione del resolver
+     richiede un refresh esplicito invece di reinterpretare gli hash storici;
+     engine assente produce `parse-unavailable` e un gap dichiarato, non un
+     fallimento né una copertura ridotta in silenzio; engine presente ma non
+     pronto attende la readiness e la valida rieseguendo una richiesta nota.
+     Il gate `evals/codebase-map/grammar-parity/` resta verde, pin invertiti
+     inclusi, e uno `SKIP` è contato separatamente dai `pass`.
    - **Confini di responsabilità:** gli helper foglia operano su input
      dichiarati anche senza checkout dei provider; la preparazione fallisce
      esplicitamente su provider obbligatorio mancante, catalogo obsoleto o
