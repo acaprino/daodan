@@ -471,14 +471,26 @@ che ha prodotto l'arco (`lexical`, oppure nome e versione dell'engine, ad esempi
 3. **La confidenza è graduata, non binaria**, e il vocabolario dei gradi è
    fissato dalla misura, non scelto a posteriori: arco confermato (definizione su
    `Function`, `Method`, `Constructor`), istanziazione (`Class`), **candidato**
-   (`Variable`, `Field`, `Property`), definizione non chiamabile (`Enum`,
-   `Interface`, `Module`, `Namespace`), tipo sconosciuto. Il grado *candidato*
-   esiste perché in JS/TS `const f = () => {}` risolve legittimamente su una
-   variabile mentre `const x = 5` risolve sullo stesso tipo di nodo: un engine
-   che li contasse entrambi produrrebbe esattamente il sovracconteggio che questo
-   livello deve eliminare. **Un candidato non confluisce mai nel conteggio degli
+   (`Variable`, `Constant`, `Field`, `Property`, e ogni definizione che cade
+   *dentro* un simbolo senza esserne il nome, cioè parametri e binding locali),
+   definizione non chiamabile (`Enum`, `Interface`, `Module`, `Namespace`), tipo
+   sconosciuto. Il grado *candidato* esiste perché in JS/TS `const f = () => {}`
+   risolve legittimamente su una costante mentre `const x = 5` risolve sullo
+   stesso tipo di nodo: un engine che li contasse entrambi produrrebbe
+   esattamente il sovracconteggio che questo livello deve eliminare. `Constant`
+   è nel grado per misura, non per analogia: tsserver riporta quel costrutto come
+   `SymbolKind` 14, non 13, e lasciarlo fuori metteva più candidati reali nel
+   residuo che nel grado costruito per loro (282 contro 0 su un workspace
+   misurato). Allo stesso modo un parametro risolto ricade nel simbolo che lo
+   contiene, e attribuirgli il tipo di quel simbolo produceva un falso `edge-call`
+   verificato sul sorgente. **Un candidato non confluisce mai nel conteggio degli
    archi confermati**; se viene promosso, la promozione è una regola dichiarata e
-   versionata, non un default.
+   versionata, non un default. Due casi restano fuori da ogni grado e sono
+   riportati nel residuo visibile invece di essere riclassificati: il costruttore
+   di una variante enum a tupla (`EnumMember`, semanticamente
+   un'istanziazione) e la chiamata a un metodo di interfaccia che il server non
+   espone come simbolo (semanticamente una chiamata). Entrambi fanno del numero
+   pubblicato un limite inferiore, e la decisione di graduarli è aperta.
 
 **Sondaggio e degradazione dichiarata.** Ogni engine è sondato all'avvio, mai
 assunto presente. L'assenza non è un errore e non riduce silenziosamente la
@@ -501,19 +513,34 @@ campione.
 
 **Esito della misura di riferimento (Python).** Con Jedi eseguito contro gli
 ambienti virtuali reali del progetto, su 1.600 posizioni precedentemente non
-risolte: **505 archi veri (31,6%)**, di cui 303 di metodo, 145 di istanziazione,
-57 di chiamata diretta; non risolto residuo **2,7%**. Lo stesso engine eseguito
-senza le dipendenze del progetto produceva 403 archi (25,2%) con il 24,1% di non
-risolto: la differenza dimostra che **un engine sondato senza l'ambiente del
-progetto misura un pavimento, non una stima**, e il sondaggio deve quindi
-includere la scoperta degli ambienti (nearest-enclosing-wins sui virtualenv del
-progetto) e dichiarare quale ambiente ha risolto ciascun file, incluso quello
-rotto.
+risolte del primo progetto: **505 archi veri (31,6%)**, di cui 303 di metodo, 145
+di istanziazione, 57 di chiamata diretta; non risolto residuo **2,7%**. Lo stesso
+engine eseguito senza le dipendenze del progetto produceva 403 archi (25,2%) con
+il 24,1% di non risolto: **un engine sondato senza l'ambiente del progetto misura
+un pavimento, non una stima.**
+
+Sul secondo progetto la stessa correzione **non ha cambiato nulla**: 324 archi
+(20,25%) prima e dopo. La causa è la scelta dell'ambiente, non l'engine: la
+`.venv` alla radice è uno stub con un solo nome importabile (`pip`), e la regola
+"vince l'ambiente più vicino" gliel'ha assegnata per 21 dei 40 file campionati,
+cioè per oltre metà delle posizioni. Sul primo progetto, accanto all'ambiente
+vivo con 168 pacchetti, esiste un `venv` con **206** pacchetti il cui interprete
+punta a una installazione Python cancellata e non si avvia. Ne seguono due
+vincoli:
+
+- **l'ambiente non si sceglie per prossimità di directory.** Un ambiente con
+  `site-packages` di fatto vuoto deve perdere contro uno popolato più lontano,
+  altrimenti la misura degrada in silenzio al numero senza dipendenze;
+- **un ambiente rotto è un fatto dichiarato**, non un ambiente scartato in
+  silenzio: il report nomina per ciascun file l'ambiente che lo ha risolto, il
+  suo interprete, quanti pacchetti offriva e se è stato usato per
+  `create_environment` o solo come percorso aggiunto.
 
 **Prerequisito: copertura della tabella dei simboli.** Sulla stessa misura,
-**374 posizioni su 1.600 (23,4%)** sono casi in cui l'engine risolve *dentro il
-progetto* e la nostra tabella dei simboli non riconosce il bersaglio: moduli
-scambiati per classi, metodi che il parser non estrae, funzioni non in tabella.
+**374 posizioni su 1.600 (23,4%)** sul primo progetto e **181 (11,3%)** sul
+secondo sono casi in cui l'engine risolve *dentro il progetto* e la nostra
+tabella dei simboli non riconosce il bersaglio: moduli scambiati per classi,
+metodi che il parser non estrae, funzioni non in tabella.
 Collegare un engine senza prima allargare l'estrazione dei simboli produce archi
 che non hanno un nodo di arrivo, cioè spreca circa un quarto del costo. Questo
 filone è **prerequisito** del livello di risoluzione, non una sua conseguenza, e
@@ -528,7 +555,7 @@ esplicitamente nel report**, mai implicite:
 
 | Linguaggio | Parser | Stato |
 |---|---|---|
-| Python | `ast` della libreria standard | parser reale di riferimento di CPython, non regex; nessuna dipendenza nuova |
+| Python | `ast` della libreria standard | **raccomandato, non ancora ratificato**: parser reale di riferimento di CPython, non regex, nessuna dipendenza nuova. La misura Jedi valuta il resolver, non il parser, quindi non discrimina `ast` da `tree-sitter-python`; la scelta si chiude per principio o con un confronto sui casi in cui la tabella dei simboli non riconosce il bersaglio |
 | Java, JavaScript, TypeScript/TSX, Rust, Go | tree-sitter via `tree-sitter-language-pack` o modulo per grammar | regola soddisfatta, wheel pubblicate |
 | SQL dichiarativo | grammar tree-sitter pubblicata | regola soddisfatta |
 | CSS, SCSS, LESS | tokenizer proprio | **eccezione etichettata**: alimenta `cascade_scan.py` e l'espansione Tailwind `@apply`, nati dall'incidente del 2026-09-14; rinunciarvi è una regressione di usabilità già pagata |
@@ -581,10 +608,16 @@ l'unico esito onesto, e un pin nel gate segnala il giorno in cui cambia.
 
 **Stato delle misure per linguaggio.** Python e le grammar SQL/PL-SQL sono
 misurati e registrati. TypeScript, JavaScript, Rust, Go e Java sono in misura
-nell'harness `evals/codebase-map/resolver-spike/` con i risultati in
-`C:\Users\alfio\daodan-bench\clean\RESULTS.md`; i loro numeri entrano in questa
-sezione a misura conclusa, e nessuna decisione sul livello di risoluzione viene
-presa prima.
+con l'harness `evals/codebase-map/resolver-spike/`, con la precisione verificata a
+mano sul sorgente a entrambi gli estremi di ogni arco campionato; il loro esito
+viene pubblicato accanto all'harness ed entra in questa sezione a misura
+conclusa, e nessuna decisione sul livello di risoluzione viene presa prima.
+L'harness stesso ha dovuto essere corretto prima di poter misurare: dieci difetti,
+due dei quali lo rendevano non eseguibile e due dei quali producevano numeri
+falsi in modo plausibile (Java con il 71% delle definizioni classificate fuori dal
+workspace su un corpus che *è* il workspace, Go con zero archi da un server che
+aveva risolto il 93% delle posizioni). Un numero implausibile si indaga prima di
+scriverlo, e uno zero non si pubblica senza il meccanismo che lo spiega.
 
 ### 3.3 Il Contratto del Choicer (Regola della `trigger_line`)
 
@@ -1332,7 +1365,11 @@ sostituisce nessuna delle consegne del ciclo.
      richiede un refresh esplicito invece di reinterpretare gli hash storici;
      engine assente produce `parse-unavailable` e un gap dichiarato, non un
      fallimento né una copertura ridotta in silenzio; engine presente ma non
-     pronto attende la readiness e la valida rieseguendo una richiesta nota.
+     pronto attende la readiness e la valida rieseguendo una richiesta nota;
+     l'ambiente di un engine Python non è scelto per prossimità di directory, un
+     ambiente con `site-packages` vuoto perde contro uno popolato e un ambiente
+     con interprete rotto è dichiarato per file, mai scartato in silenzio; un
+     parametro o binding locale risolto è un candidato, mai un `edge-call`.
      Il gate `evals/codebase-map/grammar-parity/` resta verde, pin invertiti
      inclusi, e uno `SKIP` è contato separatamente dai `pass`.
    - **Confini di responsabilità:** gli helper foglia operano su input
