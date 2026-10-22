@@ -43,6 +43,33 @@ Dependency Recall uses the one-hop expansion of the top 20 seeds. The expanded
 ranking interleaves each seed with its resolved neighbours, so dependencies
 of high seeds can enter the first 15 positions.
 
+`generate_queries.py` builds a **different** gold set, and does not produce the
+`queries.json` above. It derives a deterministic stratified set from a corpus
+already built by `run_benchmark.py`, and writes `version: 2` with
+`generated: true` and its seed. Use it to benchmark a project other than this
+repository, where 36 hand-written queries do not exist:
+
+```bash
+# 1. a benchmark run leaves the corpus and its adjacency behind
+python evals/codebase-map/retrieval-benchmark/run_benchmark.py --target <project> --out <dir>
+
+# 2. derive a generated gold set from those two artifacts
+python evals/codebase-map/retrieval-benchmark/generate_queries.py \
+    --corpus <dir>/corpus.jsonl --adjacency <dir>/adjacency.json \
+    --out <dir>/queries-generated.json --per-kind 40 --seed daodan-retrieval-v2
+
+# 3. score against it
+python evals/codebase-map/retrieval-benchmark/run_benchmark.py --target <project> \
+    --queries <dir>/queries-generated.json --out <dir>
+```
+
+`--corpus` and `--adjacency` are both required. Test files are excluded from the
+pool, as are symbols whose short name is under four characters or that declare no
+signature. Its queries come from symbol names and signatures, so they are biased
+toward identifier vocabulary: they stress scale, duplication and language mix on
+large projects and never replace the hand-written set for quality claims. The
+bias is declared in the `RESULTS.md` of every run that uses it.
+
 ## Run
 
 Candidate A is stdlib-only:
