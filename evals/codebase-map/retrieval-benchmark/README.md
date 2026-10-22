@@ -14,8 +14,18 @@ package and it does not change Codebase Map runtime behaviour.
 | A | Exact symbol anchors, code-aware SQLite FTS5 (`bm25(fts,10,5,3,1)` over exact name, identifier subtokens, signature and document columns), then one-hop graph expansion for dependency scoring |
 | B | `jinaai/jina-embeddings-v2-base-code`, official `onnx/model_quantized.onnx` at pinned revision `516f4baf13dec4ddddda8631e019b5737c8bc250`, Apache-2.0 |
 | C | `nomic-ai/CodeRankEmbed` through the pinned community INT8 ONNX export `mrsladoje/CodeRankEmbed-onnx-int8@e74f446dc6e67e29fcee77213472c142f73a6bbb`; the official repository ships no ONNX graph. The query prefix is `Represent this query for searching relevant code: ` |
+| D | `google/embeddinggemma-2` text tower (270M, 768d) through the pinned ungated Apache-2.0 export `onnx-community/embeddinggemma-2-ONNX@daa72c51243991dfcaf9f9137d2c573d8f7790c0`, file `onnx/model_quantized.onnx`. Query prefix `task: code retrieval \| query: `, documents formatted `title: {file} \| text: {document}` per the model card |
 
-For B and C, exact anchors stay first. Without an anchor, dense and FTS ranks
+The Gemma model the LiteRT route names, `litert-community/embeddinggemma-300m`,
+is **not** used: its TFLite artifacts are gated behind accepting the Gemma
+license and need a LiteRT plus SentencePiece runtime, a third binary dependency
+beside `onnxruntime`. Candidate D is the ungated Apache-2.0 ONNX export of the
+same family, on the existing sidecar. Two export facts are handled explicitly:
+its graph also declares `image_features`, `video_features` and `audio_features`,
+fed as empty `(0, 512)` float matrices for a text-only run, and it already
+returns a pooled `sentence_embedding`, so no mean pooling is applied on top.
+
+For B, C and D, exact anchors stay first. Without an anchor, dense and FTS ranks
 are fused with dense weight 0.75 and lexical weight 0.25. The same symbol
 document is used for every candidate: kind, qualified name, rendered full
 signature, file path and resolved caller/callee names from one snapshot.
@@ -46,8 +56,14 @@ All candidates use `uv` for the ONNX sidecar dependencies
 downloaded into `<output-dir>/models` and their SHA-256 is recorded:
 
 ```text
-python evals/codebase-map/retrieval-benchmark/run_benchmark.py --models A,B,C --out <output-dir>
+python evals/codebase-map/retrieval-benchmark/run_benchmark.py --models A,B,C,D --out <output-dir>
 ```
+
+Large corpora are slow on CPU: encoding 14,146 symbol documents took about
+19 minutes for Jina v2 and about 14 minutes for CodeRankEmbed, and
+EmbeddingGemma 2 measures roughly one second per document on this machine, so
+budget hours rather than minutes for candidate D. Document vectors are cached
+under `<output-dir>/models` and reused on a rerun.
 
 Use `--manifest <manifest.sqlite>` to reuse a snapshot, or `--target <tree>`
 to build one for another corpus. Outputs are `corpus.jsonl`, `adjacency.json`,

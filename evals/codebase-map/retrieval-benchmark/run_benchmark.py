@@ -163,19 +163,25 @@ def build_fts(docs: list[dict], path: Path) -> float:
 
 def anchors(docs: list[dict], query: str) -> list[str]:
     lowered = query.lower()
-    tokens = set(subtokens(query))
+    raw_tokens = {token.lower() for token in re.findall(r"[A-Za-z0-9_.]+", query)}
+    short_counts = {}
+    for doc in docs:
+        short = doc["short"].lower()
+        short_counts[short] = short_counts.get(short, 0) + 1
     scored = []
     for doc in docs:
         score = 0
-        if doc["id"].lower() in lowered or (len(doc["name"]) >= 3 and doc["name"].lower() in lowered):
+        short = doc["short"].lower()
+        if doc["id"].lower() in lowered or ("." in doc["name"] and doc["name"].lower() in raw_tokens):
             score = 3
-        elif len(doc["short"]) >= 3 and set(subtokens(doc["short"])) <= tokens:
+        elif (short in raw_tokens and ("_" in short or len(short) >= 12)
+              and short_counts.get(short, 0) <= 5):
             score = 2
-        elif doc["file"].lower() in lowered:
+        elif "/" in doc["file"] and doc["file"].lower() in lowered:
             score = 1
         if score:
-            scored.append((-score, -len(doc["name"]), doc["id"]))
-    return [symbol for _, _, symbol in sorted(scored)]
+            scored.append((-score, short_counts.get(short, 0), -len(doc["name"]), doc["id"]))
+    return [symbol for *_, symbol in sorted(scored)]
 
 
 def fts_ranking(db: sqlite3.Connection, docs: list[dict], query: str, limit: int = 100) -> tuple[list[str], float]:
@@ -229,12 +235,12 @@ def main(argv=None) -> int:
     parser.add_argument("--manifest", type=Path, help="existing snapshot manifest")
     parser.add_argument("--queries", type=Path, default=HERE / "queries.json")
     parser.add_argument("--out", type=Path, default=HERE / "results" / "latest")
-    parser.add_argument("--models", default="A", help="comma list: A,B,C")
+    parser.add_argument("--models", default="A", help="comma list: A,B,C,D")
     parser.add_argument("--keep-snapshot", action="store_true")
     args = parser.parse_args(argv)
     models = [item.strip().upper() for item in args.models.split(",") if item.strip()]
-    if not models or any(item not in {"A", "B", "C"} for item in models):
-        raise SystemExit("models must be a comma list containing A, B and/or C")
+    if not models or any(item not in {"A", "B", "C", "D"} for item in models):
+        raise SystemExit("models must be a comma list containing A, B, C and/or D")
 
     args.out.mkdir(parents=True, exist_ok=True)
     manifest = args.manifest or (args.out / "manifest.sqlite")
@@ -276,7 +282,8 @@ def main(argv=None) -> int:
             "A exact+code-aware-FTS5+graph", rankings_a, latencies_a, queries, adjacency,
             {"index_build_seconds": snapshot_seconds + corpus_seconds + fts_seconds}))
     for key, label in (("B", "B jina-embeddings-v2-base-code ONNX INT8+FTS5+graph"),
-                       ("C", "C CodeRankEmbed ONNX INT8+FTS5+graph")):
+                       ("C", "C CodeRankEmbed ONNX INT8+FTS5+graph"),
+                       ("D", "D EmbeddingGemma 2 text ONNX INT8+FTS5+graph")):
         if key not in models:
             continue
         uv = shutil.which("uv")

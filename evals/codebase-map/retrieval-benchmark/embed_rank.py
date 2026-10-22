@@ -46,14 +46,37 @@ MODELS = {
         "license": "MIT (base model); community ONNX export",
         "base_model": "nomic-ai/CodeRankEmbed",
     },
+    "D": {
+        # EmbeddingGemma 2, text tower (270M), int8, 768d mean-pooled output.
+        # The Gemma-licensed `litert-community/embeddinggemma-300m` TFLite route
+        # is gated and needs a LiteRT plus SentencePiece runtime; this Apache-2.0
+        # ONNX export is ungated and runs on the same onnxruntime sidecar.
+        "repo": "onnx-community/embeddinggemma-2-ONNX",
+        "revision": "daa72c51243991dfcaf9f9137d2c573d8f7790c0",
+        "model_file": "onnx/model_quantized.onnx",
+        "extra_files": ["onnx/model_quantized.onnx_data"],
+        "query_prefix": "task: code retrieval | query: ",
+        "doc_template": "title: {file} | text: {document}",
+        "license": "Apache-2.0",
+        "base_model": "google/embeddinggemma-2",
+        "dimensions": 768,
+    },
 }
 FILES = ["tokenizer.json", "tokenizer_config.json", "special_tokens_map.json"]
 
 
-def encode(session, tokenizer, texts: list[str], batch_size: int = 32) -> tuple[np.ndarray, float]:
+def encode(session, tokenizer, texts: list[str], batch_size: int = 16) -> tuple[np.ndarray, float]:
     started = time.perf_counter()
     vectors = []
     input_names = {item.name for item in session.get_inputs()}
+    # A multimodal export (EmbeddingGemma 2) also requires its media feature
+    # tensors. A text-only run feeds them as empty token matrices.
+    placeholders = {
+        item.name: np.zeros((0, item.shape[-1]), dtype=np.float32)
+        for item in session.get_inputs()
+        if item.name not in {"input_ids", "attention_mask", "token_type_ids"}
+        and "float" in item.type and isinstance(item.shape[-1] if item.shape else None, int)
+    }
     for start in range(0, len(texts), batch_size):
         batch = texts[start:start + batch_size]
         encoded = tokenizer.encode_batch(batch)
@@ -63,7 +86,7 @@ def encode(session, tokenizer, texts: list[str], batch_size: int = 32) -> tuple[
         for row, item in enumerate(encoded):
             input_ids[row, :len(item.ids)] = item.ids
             attention[row, :len(item.attention_mask)] = item.attention_mask
-        feeds = {}
+        feeds = dict(placeholders)
         if "input_ids" in input_names:
             feeds["input_ids"] = input_ids
         if "attention_mask" in input_names:
@@ -71,9 +94,14 @@ def encode(session, tokenizer, texts: list[str], batch_size: int = 32) -> tuple[
         if "token_type_ids" in input_names:
             feeds["token_type_ids"] = np.zeros_like(input_ids)
         outputs = session.run(None, feeds)
-        hidden = next(item for item in outputs if item.ndim == 3)
-        mask = attention[..., None].astype(np.float32)
-        pooled = (hidden.astype(np.float32) * mask).sum(axis=1) / np.maximum(mask.sum(axis=1), 1.0)
+        # Some exports pool inside the graph and return one vector per row.
+        pooled = next((item.astype(np.float32) for item in outputs
+                       if item.ndim == 2 and item.shape[0] == len(batch)), None)
+        if pooled is None:
+            hidden = next(item for item in outputs if item.ndim == 3)
+            mask = attention[..., None].astype(np.float32)
+            pooled = ((hidden.astype(np.float32) * mask).sum(axis=1)
+                      / np.maximum(mask.sum(axis=1), 1.0))
         vectors.append(pooled)
     result = np.vstack(vectors)
     result /= np.maximum(np.linalg.norm(result, axis=1, keepdims=True), 1e-12)
@@ -93,19 +121,31 @@ def main() -> int:
     config = MODELS[args.model]
     local = Path(snapshot_download(
         repo_id=config["repo"], revision=config["revision"],
-        allow_patterns=[config["model_file"], *FILES],
+        allow_patterns=[config["model_file"], *config.get("extra_files", []), *FILES],
         local_dir=args.cache_dir / args.model))
     model_path = local / config["model_file"]
     digest = hashlib.sha256(model_path.read_bytes()).hexdigest()
     tokenizer = Tokenizer.from_file(str(local / "tokenizer.json"))
-    tokenizer.enable_truncation(max_length=8192)
+    # Symbol documents are short by construction; 512 tokens bounds the
+    # attention memory of a batch without changing their content in practice.
+    tokenizer.enable_truncation(max_length=512)
     tokenizer.enable_padding()
     session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
 
     docs = [json.loads(line) for line in args.corpus.read_text(encoding="utf-8").splitlines() if line]
     queries = json.loads(args.queries.read_text(encoding="utf-8"))["queries"]
     fts = json.loads(args.fts_rankings.read_text(encoding="utf-8"))["rankings"]
-    doc_vectors, encode_seconds = encode(session, tokenizer, [doc["document"] for doc in docs])
+    vectors_path = args.cache_dir / f"doc_vectors_{args.model}_{len(docs)}.npy"
+    meta_path = args.cache_dir / f"doc_vectors_{args.model}_{len(docs)}.json"
+    template = config.get("doc_template")
+    documents = [template.format(**doc) if template else doc["document"] for doc in docs]
+    if vectors_path.is_file() and meta_path.is_file():
+        doc_vectors = np.load(vectors_path)
+        encode_seconds = float(json.loads(meta_path.read_text(encoding="utf-8"))["document_encode_seconds"])
+    else:
+        doc_vectors, encode_seconds = encode(session, tokenizer, documents)
+        np.save(vectors_path, doc_vectors)
+        meta_path.write_text(json.dumps({"document_encode_seconds": encode_seconds}), encoding="utf-8")
 
     # Exact anchors stay first, as in candidate A. Without an anchor, dense and
     # lexical ranks are fused with the dense rank carrying most of the weight.
@@ -118,16 +158,19 @@ def main() -> int:
         started = time.perf_counter()
         vector, _ = encode(session, tokenizer, [config["query_prefix"] + query["query"]], batch_size=1)
         scores = (doc_vectors @ vector[0]).astype(float)
-        dense = [doc_ids[index] for index in np.argsort(-scores)]
+        dense = [doc_ids[index] for index in np.argsort(-scores)[:500]]
         anchor_ids = anchors(docs, query["query"])
-        if anchor_ids:
-            ranked = anchor_ids + [symbol for symbol in dense if symbol not in anchor_ids]
-        else:
-            dense_rank = {symbol: index for index, symbol in enumerate(dense)}
-            fts_rank = {symbol: index for index, symbol in enumerate(fts.get(query["id"], []))}
-            ranked = sorted(doc_ids, key=lambda symbol: (
-                0.75 / (60 + dense_rank[symbol]) + 0.25 / (60 + fts_rank.get(symbol, len(doc_ids))),
+        fts_list = fts.get(query["id"], [])
+        dense_rank = {symbol: index for index, symbol in enumerate(dense)}
+        fts_rank = {symbol: index for index, symbol in enumerate(fts_list)}
+        pool = list(dict.fromkeys([*anchor_ids, *dense, *fts_list]))
+        fused = sorted(
+            (symbol for symbol in pool if symbol not in anchor_ids),
+            key=lambda symbol: (
+                -(0.75 / (60 + dense_rank.get(symbol, 1000))
+                  + 0.25 / (60 + fts_rank.get(symbol, 1000))),
                 symbol))
+        ranked = anchor_ids[:5] + fused
         rankings[query["id"]] = ranked[:100]
         latencies[query["id"]] = time.perf_counter() - started
     args.out.write_text(json.dumps({
