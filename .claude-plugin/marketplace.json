@@ -3,11 +3,12 @@
     "claude-plugins-official",
     "daodan",
     "impeccable",
+    "taste-skill",
     "ui-ux-pro-max-skill"
   ],
   "metadata": {
     "description": "Shinatama: companion AI domain specialists, research, deliberation, office workflows and framework toolkits across five coding-agent hosts.",
-    "version": "2.0.0"
+    "version": "2.1.2"
   },
   "name": "shinatama",
   "owner": {
@@ -294,6 +295,10 @@
       "version": "1.5.3"
     },
     {
+      "agents": [
+        "./agents/presentation-designer.md",
+        "./agents/presentation-reviewer.md"
+      ],
       "author": {
         "name": "Alfio Caprino"
       },
@@ -303,16 +308,23 @@
         "./commands/workbook.md"
       ],
       "dependencies": [],
-      "description": "Create professional editable PowerPoint presentations through SlidePoise, work with native Excel formulas, tables and charts, and create, read or edit Word documents with styles, tables and sections. Includes runtime discovery and document preservation evidence.",
+      "description": "Design editable presentations with creative specialists and SlidePoise, edit and preview PPTX through DeckCraft, and work with native Excel workbooks and Word documents. Includes harness image generation, runtime discovery and preservation evidence.",
       "license": "MIT",
       "name": "office",
+      "optionalDependencies": [
+        "frontend-design@claude-plugins-official",
+        "impeccable@impeccable",
+        "taste-skill@taste-skill"
+      ],
       "skills": [
+        "./skills/deckcraft",
         "./skills/docx",
+        "./skills/presentation-design",
         "./skills/slidepoise",
         "./skills/xlsx"
       ],
       "source": "./exports/claude/plugins/office",
-      "version": "1.1.2"
+      "version": "1.2.2"
     },
     {
       "agents": [

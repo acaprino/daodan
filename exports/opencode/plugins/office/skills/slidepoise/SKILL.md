@@ -5,7 +5,8 @@ description: >
   external SlidePoise framework, with visual design, native reconstruction and
   rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting
   presentation, branded slides, a presentation from research or a workbook, or
-  SlidePoise. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel
+  SlidePoise. Targeted edits and PDF export use office:deckcraft.
+  DO NOT TRIGGER WHEN: the requested deliverable is only an Excel
   workbook (use office:xlsx) or an image without an editable presentation.
 ---
 
@@ -49,9 +50,13 @@ Kernel owner-qualified skill references are logical provider identities: resolve
 them to the actual host registry name and verified installed provider path. Do not
 invent a registry string by adding an owner's prefix when the host does not use it.
 Do not load an agent identity as a skill or execute a workflow name as a shell
-command. Named foreign providers remain mandatory. If an installed provider, MCP
-server or required isolation mechanism is unavailable, stop its dependent phase
-and report the missing capability. Do not install a different host's plugin or
+command. Declared required foreign providers remain mandatory. If a required
+provider or capability (including required MCP access or isolation) is unavailable,
+stop its dependent phase and report the missing capability. Optional external
+providers follow the method's declared selection and absence behavior; their
+absence alone does not block the base workflow. Report any explicitly requested
+but unavailable provider contribution as unfulfilled and continue independent
+work. Do not install a different host's plugin or
 substitute unrelated skills to claim coverage.
 
 Shell execution alone does not establish interactive stdin. Before a capture or
@@ -92,6 +97,16 @@ are read from the installed runtime. Read `references/runtime.md` before setup o
 the first presentation. Daodan installation alone does not install that runtime.
 
 ## Establish the outcome
+
+For the complete coordinated workflow, load `office:presentation-design` for
+creative specialist delivery and the harness image contract. When called by its
+coordinator, consume the accepted design report and return construction evidence;
+do not start a second coordinator or duplicate specialist dispatch.
+Read `<plugin-root>/skills/presentation-design/references/pptx-compatibility.md`
+before visual planning, including when this skill is used directly. Carry the
+fixed canvas, font choices and native-object specification into the upstream
+planning context and compiled image request. Check reference designs can be
+reconstructed with the required editability before extending them across the deck.
 
 Infer audience, purpose, language, presentation length, delivery context, source
 material and brand from the request. Ask only for material missing decisions.
@@ -148,10 +163,13 @@ semantic mapping, measured reconstruction, assembly and final inspection.
 - Inspect relevant visual references and actual assets. Let comparisons,
   relationships and evidence determine the composition. Use a coherent hierarchy,
   typography and color system while allowing slide layouts to vary.
-- Generate from the runtime's compiled request using the user's selected image
-  tool. Preserve its prompt and reference ordering. Manual image exchange is an
-  explicit choice when creative generation is unavailable; it cannot supply a
-  missing reconstruction engine or visual reader.
+- Generate from the runtime's compiled request using the image-generation tool
+  actually exposed by the active harness. Preserve prompt and reference ordering
+  and follow `office:presentation-design`'s image handoff contract. The coordinator
+  performs the call; a worker without that tool returns the request to it.
+  Missing access blocks the dependent image step. External API scripts, image
+  CLIs and manual exchange require the user's explicit choice, never automatic
+  fallback. They cannot supply a missing reconstruction engine or visual reader.
 - Reconstruct selected designs through the upstream semantic map, OpenCV evidence
   and constructor-scene pipeline. Native text, tables, charts, shapes and
   connectors must remain editable where their meaning requires it. Photographs,

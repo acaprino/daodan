@@ -1082,9 +1082,35 @@
         ]
       },
       "office": {
+        "agents": [
+          {
+            "description": "Develop presentation art direction and slide composition from a supplied brief, sources and brand assets. Return design instructions and image requests without modifying the presentation.",
+            "file": "agents/presentation-designer.md",
+            "id": "office:presentation-designer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Independently inspect presentation renders, source fidelity, native editability evidence and preservation deltas. Return a candidate-bound review without editing the deck.",
+            "file": "agents/presentation-reviewer.md",
+            "id": "office:presentation-reviewer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          }
+        ],
         "commands": [
           {
-            "description": "Create or revise a professional editable PowerPoint through SlidePoise, with source-grounded content, visual composition, native reconstruction and rendered review. TRIGGER WHEN: the user requests a PPTX, pitch deck, consulting deck or presentation from documents, research or a workbook.",
+            "description": "Create, redesign or edit editable PowerPoint with creative specialists, SlidePoise generation and DeckCraft editing, preview and PDF export. TRIGGER WHEN: the user requests a PPTX, presentation template, pitch deck, consulting deck or changes to an existing presentation.",
             "file": "commands/create-presentation.md",
             "name": "office:create-presentation"
           },
@@ -1102,10 +1128,22 @@
         "root": "plugins/office",
         "skills": [
           {
-            "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
+            "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
+            "file": "skills/presentation-design/SKILL.md",
+            "id": "office:presentation-design",
+            "name": "presentation-design"
+          },
+          {
+            "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. Targeted edits and PDF export use office:deckcraft. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
             "file": "skills/slidepoise/SKILL.md",
             "id": "office:slidepoise",
             "name": "slidepoise"
+          },
+          {
+            "description": "Inspect, edit, render and export existing PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: targeted PowerPoint changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: a new creative deck needs SlidePoise generation or only a spreadsheet or document is requested.",
+            "file": "skills/deckcraft/SKILL.md",
+            "id": "office:deckcraft",
+            "name": "deckcraft"
           },
           {
             "description": "Create, edit, inspect and analyze native Excel (.xlsx) workbooks with editable formulas, tables, charts and formatting. TRIGGER WHEN: creating, editing, inspecting or analyzing Excel (.xlsx) workbooks or tabular models. DO NOT TRIGGER WHEN: Word documents (use office:docx) or presentations (use office:slidepoise).",
@@ -1982,5 +2020,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "2.0.0"
+  "version": "2.1.2"
 }

@@ -80,6 +80,11 @@ def reference(plugin, plugins, adapters, destination: Path, root: Path) -> str:
              f"| Direct external | {code(direct_external)} |",
              f"| Local closure ({len(local)}) | {plugin_links(local, destination, root)} |",
              f"| External closure ({len(external)}) | {code(external)} |", "",
+             *(["### Optional external providers", "",
+                f"{code(plugin.optional_dependencies)}.", "",
+                "These providers are outside the required dependency closure. Their absence",
+                "does not block the base workflow; consult the method for selection and scope.", ""]
+               if plugin.optional_dependencies else []),
              "External bundles are separate upstream installations, not copied local skills.",
              f"See {link(root / 'docs/hosts.md', destination, 'host setup')} for selection and availability requirements.", "",
              f"**Required capabilities:** {code(plugin.capabilities.required)}.",
@@ -192,6 +197,13 @@ def catalog(plugins, root: Path) -> str:
         local = sorted(dep for dep in plugin.required_dependencies if dep in plugins)
         upstream = sorted(dep for dep in plugin.required_dependencies if dep not in plugins)
         lines.append(f"| {plugin_links([plugin.name], destination, root)} | {plugin_links(local, destination, root)} | {code(upstream)} | {code(external)} |")
+    optional = [plugin for plugin in plugins.values() if plugin.optional_dependencies]
+    if optional:
+        lines += ["", "## Optional external providers", "",
+                  "These integrations do not enter the mandatory dependency closure.", "",
+                  "| Plugin | Optional external providers |", "|---|---|"]
+        for plugin in optional:
+            lines.append(f"| {plugin_links([plugin.name], destination, root)} | {code(plugin.optional_dependencies)} |")
     return "\n".join(lines) + "\n"
 
 

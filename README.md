@@ -63,6 +63,8 @@ The [Office plugin](docs/plugins/office.md) creates and revises editable `.pptx`
 works with native `.xlsx` cells, formulas, tables and charts, and reads, creates
 or edits `.docx` paragraphs, styles, tables and sections. Existing-file edits
 include preservation checks for content and features the task needs to retain.
+Presentations combine creative designer/reviewer roles, SlidePoise generation,
+DeckCraft editing and preview, and the active harness's image-generation tool.
 
 On Claude Code or OpenCode V2, use `/office:create-presentation`,
 `/office:workbook` or `/office:document`. The [host guide](docs/hosts.md#office-entry-points)

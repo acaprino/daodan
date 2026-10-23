@@ -104,6 +104,8 @@ def catalog_document(
             "author": dict(OWNER),
             "dependencies": list(plugin.required_dependencies),
         }
+        if plugin.optional_dependencies:
+            entry["optionalDependencies"] = list(plugin.optional_dependencies)
         # A host that needs its components declared gets them from the package
         # that was just rendered, never from a hand-maintained list.
         if packages is not None and plugin.name in packages:
@@ -127,7 +129,7 @@ def catalog_document(
         {
             dependency.partition("@")[2]
             for plugin in ordered
-            for dependency in plugin.required_dependencies
+            for dependency in (*plugin.required_dependencies, *plugin.optional_dependencies)
             if "@" in dependency
         }
     )
@@ -341,6 +343,10 @@ def merge_into_legacy(
             entry["description"] = plugin.description
             entry["license"] = plugin.license
             entry["source"] = _source(host, plugin.name)
+            entry["dependencies"] = list(plugin.required_dependencies)
+            entry.pop("optionalDependencies", None)
+            if plugin.optional_dependencies:
+                entry["optionalDependencies"] = list(plugin.optional_dependencies)
             for kind in ("agents", "skills", "commands", "mcpServers"):
                 entry.pop(kind, None)
             entry.update(package_components(packages[plugin.name]))
@@ -354,6 +360,8 @@ def merge_into_legacy(
             "license": plugin.license,
             "dependencies": list(plugin.required_dependencies),
         }
+        if plugin.optional_dependencies:
+            entry["optionalDependencies"] = list(plugin.optional_dependencies)
         entry["source"] = _source(host, plugin.name)
         entry.update(package_components(packages[plugin.name]))
         entries.append(entry)

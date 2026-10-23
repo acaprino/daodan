@@ -121,6 +121,7 @@ class PluginSpec:
     workflows: tuple[WorkflowSpec, ...]
     mcp_servers: tuple[McpServerSpec, ...] = ()
     contract_exports: tuple[Path, ...] = ()
+    optional_dependencies: tuple[str, ...] = ()
 
 
 class ModelError(ValueError):

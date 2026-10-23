@@ -4,7 +4,12 @@ entrypoint = "create-presentation.md"
 [[phases]]
 id = "run"
 isolation = "shared"
+concurrency = "forbidden"
 produces = ["artifact:editable-presentation", "artifact:presentation-review"]
+
+[dispatch]
+roles = ["office/presentation-designer", "office/presentation-reviewer"]
+isolated = true
 
 [contract]
 inputs = ["presentation-brief", "source-material"]

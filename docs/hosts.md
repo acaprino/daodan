@@ -103,13 +103,18 @@ The canonical dependency declarations live in `plugins/<plugin>/plugin.toml`.
 Every local runtime provider is mandatory, including shared-contract providers and
 workers declared by a composed method. There are no optional local dependencies
 or installed-check fallbacks. External references use `plugin@marketplace`.
+External providers may instead be declared in `[dependencies].optional`; their
+absence must leave the base workflow usable. Local providers cannot use this field.
 
 The compiler validates provider references and the dependency linter checks
 runtime use, missing declarations and unused local edges. The three generated
-marketplace catalogs retain qualified required dependencies. OpenCode's loader
+marketplace catalogs retain qualified required dependencies and list optional
+external providers separately as `optionalDependencies`. OpenCode's loader
 manifest retains the local graph for selection; Pi's glob manifest carries no
 per-plugin graph. Neither host should silently continue a workflow with a missing
 required external skill or worker.
+Optional external selection is defined in the rendered method on all five hosts;
+Pi and OpenCode do not install these providers through their package manifests.
 
 Consult each [plugin page](plugins/) for direct requirements and the
 [dependency catalog](catalog.md#mandatory-dependency-edges) for transitive
@@ -151,14 +156,16 @@ dispatch resources or contract files into extra user commands.
 ## Office entry points
 
 The [Office plugin](plugins/office.md) provides editable PowerPoint presentations
-through SlidePoise, native Excel workbooks and native Word documents. Install or
-select `office` using the host setup above. Its three workflow entries follow the
+through SlidePoise with creative specialists, DeckCraft editing and preview,
+native Excel workbooks and native Word documents. Install `office@shinatama` from
+`acaprino/shinatama`, or select Office in its Pi/OpenCode package, following the
+[Office installation guide](plugins/office.md#install-office). Its three workflow entries follow the
 same adapter mapping as the other plugins:
 
 | Host | PowerPoint (PPTX) | Excel (XLSX) | Word (DOCX) |
 |---|---|---|---|
 | Claude | `/office:create-presentation` | `/office:workbook` | `/office:document` |
-| Copilot | `create-presentation.prompt.md` | `workbook.prompt.md` | `document.prompt.md` |
+| Copilot | `create-presentation-coordinator` agent with `create-presentation.prompt.md` | `workbook.prompt.md` | `document.prompt.md` |
 | Codex | `create-presentation-workflow` | `workbook-workflow` | `document-workflow` |
 | Pi | `/office-create-presentation` | `/office-workbook` | `/office-document` |
 | OpenCode V2 | `/office:create-presentation` | `/office:workbook` | `/office:document` |
@@ -169,6 +176,21 @@ available in the active session. The packaged bridge discovers the runtime witho
 relying on upstream skill registration for a particular host. See the
 [runtime reference](../plugins/office/skills/slidepoise/references/runtime.md) for
 the inspected version, prerequisites and installation procedure.
+
+DeckCraft is a separate external executable for targeted edits, previews and PDF
+export; see its [runtime reference](../plugins/office/skills/deckcraft/references/runtime.md).
+The presentation entry declares isolated designer/reviewer roles and supports
+Frontend Design, Impeccable and Taste as optional providers for scoped visual guidance.
+The base workflow keeps its design and independent review obligations without them. Actual
+image generation must use the exposed harness tool in a context that can call it.
+Role dispatch, image access and a visual reader need separate runtime checks.
+Every selected creative provider receives the fixed-canvas and native-object
+requirements from Office's [PPTX compatibility contract](../plugins/office/skills/presentation-design/references/pptx-compatibility.md).
+Selected-engine previews do not establish fidelity in Microsoft PowerPoint;
+that claim requires actual target-application rendering evidence.
+For example, an explicit tool allowlist can exclude an image tool even when it
+exists elsewhere in the host. Missing access blocks the dependent operation;
+generated wrappers and successful compilation do not prove live availability.
 
 Excel and Word work use an available compatible document engine. The methods
 prefer a suitable host runtime; available `openpyxl` or `python-docx` can handle

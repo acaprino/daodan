@@ -185,6 +185,21 @@ class OperationalBindingTests(unittest.TestCase):
             bound = _host_text(sample, adapter, operational_binding=_operational_binding(adapter, ADAPTERS))
             self.assertEqual(without_host_binding(self, bound, host), _host_text(sample, adapter))
 
+    def test_optional_foreign_providers_do_not_become_required_in_loaded_bodies(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                rendered = self.render_in_memory("office", host)
+                for name, body in rendered.items():
+                    if not name.endswith(".md"):
+                        continue
+                    text = " ".join(body.split())
+                    self.assertNotIn("Named foreign providers remain mandatory", text, name)
+                    self.assertIn("Declared required foreign providers remain mandatory", text, name)
+                    self.assertIn("stop its dependent phase and report the missing capability", text, name)
+                    self.assertIn("Optional external providers follow the method's declared selection and absence behavior", text, name)
+                    self.assertIn("their absence alone does not block the base workflow", text, name)
+                    self.assertIn("explicitly requested but unavailable provider contribution as unfulfilled", text, name)
+
     def test_active_host_schema_and_dependency_provisioning_are_explicit(self):
         expectations = {
             "claude": ("Bash", "claude plugin install", "qualified ID"),
