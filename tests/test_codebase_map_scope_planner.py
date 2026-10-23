@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import subprocess
 from unittest import mock
 
 SCRIPTS = Path(__file__).resolve().parents[1] / 'plugins/codebase-map/skills/map-method/scripts'
@@ -114,6 +115,36 @@ class ScopePlannerTests(unittest.TestCase):
         authority['source_root'] = str(self.root.parent)
         with self.assertRaises(ValueError):
             scope.prepare_scope(request, authority=authority)
+
+    def test_git_source_coordinates_keep_reads_inside_subproject(self):
+        subprocess.run(['git', 'init', str(self.root)], capture_output=True, check=True)
+        project = self.root / 'pkg'
+        out = project / '.codebase-map'
+        out.mkdir()
+        manifest = out / 'candidate.sqlite'
+        request = self.request(None, base=None, candidate={'manifest': str(manifest)},
+            read_boundary=['pkg'], write_boundary=[], anchors=[], proposed_edits=[],
+            mandatory_requirements=[], query='helper')
+        snapshot.write_snapshot(project, manifest)
+        lexical = out / 'retrieval.sqlite'
+        retrieval.refresh_index(manifest, lexical)
+        authority = {'root': str(project), 'source_root': str(self.root),
+                     'read_boundary': ['pkg'], 'write_boundary': []}
+        original = source_reader.read_packet
+        def bounded(store, requests):
+            self.assertTrue(all(r['path'].startswith('pkg/') for r in requests))
+            return original(store, requests)
+        with mock.patch.object(source_reader, 'read_packet', side_effect=bounded):
+            plan = scope.prepare_scope(request, authority=authority, indexes={'retrieval': str(lexical)})
+        self.assertIn('retrieval', plan)
+        self.assertTrue(plan['localized'])
+        broad = dict(request, read_boundary=['.'])
+        with self.assertRaises(ValueError):
+            scope.prepare_scope(broad, authority=authority)
+        foreign = out / 'foreign-target.sqlite'
+        snapshot.write_snapshot(self.root / 'tests', foreign)
+        with self.assertRaises(ValueError):
+            scope.prepare_scope(dict(request, candidate={'manifest': str(foreign)}), authority=authority)
 
     def test_body_only_callers_retain_validation_without_edits(self):
         plan = self.prepare(self.request())

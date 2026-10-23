@@ -73,7 +73,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Reading an analysis
 
-Before lookup, coordinators run `python "<plugin-root>/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0. Workers resolve bindings only.
+Coordinators: before lookup, run `python "<plugin-root>/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0.
+Workers only resolve bindings; legacy bindings require migration.
 
 ## Views
 
