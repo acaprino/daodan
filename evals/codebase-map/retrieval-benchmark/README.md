@@ -122,3 +122,27 @@ Historical benchmark scores remain measurements of their recorded implementation
 they are not new measurements of this production API. Its Unicode subtokenization,
 case-sensitive anchor handling and freshness checks are explicit parts of the
 production contract. Embedding fusion remains a later, optional step.
+# P5 integration and separate holdout
+
+The optional provider lives in codebase-map's `embedding_worker.py`, with
+content-bound incremental vectors and explicitly validated retrieval fusion.
+The earlier `embed_rank.py` remains the historical benchmark; its count-only
+cache must not be used as a production index.
+
+`p5_holdout.json` freezes a separate synthetic Python service with 20 Italian,
+English and exact-reference queries. Evaluation metadata and gold stay below
+an excluded dot directory, outside the runtime inventory. Prepare with the map
+interpreter, then evaluate with that same interpreter and an explicit isolated
+encoder Python:
+
+```text
+python evaluate_p5.py prepare --project OWNED_NEW_DIRECTORY
+python evaluate_p5.py evaluate --project OWNED_NEW_DIRECTORY --model-dir PREPARED_CODERANK --runtime-python ISOLATED_PYTHON --out RESULT.json
+```
+
+No model is downloaded by evaluation. The result records complete inventory
+and query replay parity against a clean rebuild, cache reuse, exact-anchor
+regressions, timing and the adoption decision. The small synthetic holdout
+cannot certify real-task quality or token savings. See the
+[P5 report](../../../docs/superpowers/reports/2026-10-23-code-context-p5.md) and
+[runtime contract](../../../plugins/codebase-map/skills/map-method/references/embeddings.md).

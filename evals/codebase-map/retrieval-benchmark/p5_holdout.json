@@ -1,0 +1,37 @@
+{
+  "schema": "daodan/retrieval-holdout/v1",
+  "name": "python-service-fixtures-v1",
+  "purpose": "Frozen synthetic second project, separate from the 36 development queries. No ranking parameters are tuned on this fixture. It is not evidence of real-project or task-level token savings.",
+  "files": {
+    "billing.py": "from decimal import Decimal, ROUND_HALF_UP\n\ndef payable(lines, rebate):\n    subtotal = sum(Decimal(str(line['price'])) * line['quantity'] for line in lines)\n    return (subtotal * (1 - Decimal(str(rebate)))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)\n\ndef overdue(invoices, today):\n    return [item for item in invoices if not item['paid'] and item['due'] < today]\n",
+    "sessions.py": "def permit(session, revoked, now):\n    return session['token'] not in revoked and session['expires'] > now\n\ndef invalidate(token, revoked):\n    revoked.add(token)\n",
+    "storage.py": "import json\nimport os\nimport tempfile\nfrom pathlib import Path\n\ndef recover(path):\n    with open(path, encoding='utf8') as stream:\n        return json.load(stream)\n\ndef publish(path, data):\n    descriptor, staging = tempfile.mkstemp(dir=Path(path).parent)\n    try:\n        with os.fdopen(descriptor, 'w', encoding='utf8') as stream:\n            json.dump(data, stream)\n        os.replace(staging, path)\n    finally:\n        if os.path.exists(staging):\n            os.unlink(staging)\n",
+    "settings.py": "import os\n\ndef required(name):\n    value = os.environ.get(name)\n    if not value:\n        raise ValueError('missing environment setting: ' + name)\n    return value\n\ndef enabled(value):\n    return str(value).lower() in {'1', 'true', 'yes'}\n",
+    "queueing.py": "def unique(events):\n    seen = set()\n    for event in events:\n        if event['id'] not in seen:\n            seen.add(event['id'])\n            yield event\n\ndef attempt(operation, retries, pause):\n    for index in range(retries):\n        try:\n            return operation()\n        except TimeoutError:\n            if index + 1 == retries:\n                raise\n            pause(2 ** index)\n",
+    "cache.py": "def lookup(entries, key, now):\n    value, expiry = entries[key]\n    if expiry <= now:\n        del entries[key]\n        raise KeyError(key)\n    return value\n\ndef store(entries, key, value, now, lifetime):\n    entries[key] = (value, now + lifetime)\n",
+    "transport.py": "import csv\nimport io\n\ndef tabulate(rows):\n    stream = io.StringIO()\n    writer = csv.writer(stream)\n    writer.writerows(rows)\n    return stream.getvalue()\n\ndef dispatch(client, address, payload):\n    return client.send(to=address, body=payload)\n",
+    "paths.py": "from pathlib import Path\n\ndef confined(root, value):\n    base = Path(root).resolve()\n    result = (base / value).resolve()\n    if not result.is_relative_to(base):\n        raise ValueError('path escapes root')\n    return result\n\ndef regular_files(root):\n    return sorted(path for path in Path(root).rglob('*') if path.is_file() and not path.is_symlink())\n"
+  },
+  "queries": [
+    {"id": "en-money", "language": "en", "query": "Calculate the amount due after a discount and round currency to cents", "gold": ["billing.py::payable"]},
+    {"id": "it-money", "language": "it", "query": "Calcolare il totale da pagare applicando lo sconto e arrotondando ai centesimi", "gold": ["billing.py::payable"]},
+    {"id": "en-overdue", "language": "en", "query": "Find unpaid invoices whose due date has already passed", "gold": ["billing.py::overdue"]},
+    {"id": "it-overdue", "language": "it", "query": "Trovare le fatture scadute che non sono ancora state pagate", "gold": ["billing.py::overdue"]},
+    {"id": "en-session", "language": "en", "query": "Reject a session if its token has been revoked or its expiry has passed", "gold": ["sessions.py::permit"]},
+    {"id": "it-session", "language": "it", "query": "Controllare che una sessione non sia scaduta e che il token non sia stato revocato", "gold": ["sessions.py::permit"]},
+    {"id": "en-persist", "language": "en", "query": "Save structured data through a temporary file and replace the destination atomically", "gold": ["storage.py::publish"]},
+    {"id": "it-persist", "language": "it", "query": "Salvare dati JSON senza lasciare un file finale scritto a meta in caso di interruzione", "gold": ["storage.py::publish"]},
+    {"id": "en-read", "language": "en", "query": "Read JSON data from a UTF-8 file", "gold": ["storage.py::recover"]},
+    {"id": "it-read", "language": "it", "query": "Leggere e deserializzare un documento JSON dal disco", "gold": ["storage.py::recover"]},
+    {"id": "en-retry", "language": "en", "query": "Retry timed out work with exponentially increasing delays and a bounded attempt count", "gold": ["queueing.py::attempt"]},
+    {"id": "it-retry", "language": "it", "query": "Ripetere un lavoro dopo un timeout con attese crescenti e un numero massimo di tentativi", "gold": ["queueing.py::attempt"]},
+    {"id": "en-dedupe", "language": "en", "query": "Process each event identifier only once while retaining the original order", "gold": ["queueing.py::unique"]},
+    {"id": "it-dedupe", "language": "it", "query": "Eliminare eventi duplicati mantenendo il loro ordine di arrivo", "gold": ["queueing.py::unique"]},
+    {"id": "en-boundary", "language": "en", "query": "Refuse a path that escapes the permitted root directory", "gold": ["paths.py::confined"]},
+    {"id": "it-boundary", "language": "it", "query": "Impedire che un percorso relativo esca dalla cartella autorizzata", "gold": ["paths.py::confined"]},
+    {"id": "exact-persist", "language": "exact", "query": "storage.py::publish", "gold": ["storage.py::publish"]},
+    {"id": "exact-cache", "language": "exact", "query": "cache.py::lookup", "gold": ["cache.py::lookup"]},
+    {"id": "exact-env", "language": "exact", "query": "settings.py::required", "gold": ["settings.py::required"]},
+    {"id": "exact-trace", "language": "exact", "query": "File \"queueing.py\", line 10, in attempt", "gold": ["queueing.py::attempt"]}
+  ]
+}

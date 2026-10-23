@@ -51,7 +51,7 @@
       "operations": [],
       "provider": "codebase-map",
       "topics": [],
-      "version": "8.6.1"
+      "version": "8.6.2"
     },
     {
       "description": "Evidence-first dependency audit method: per-ecosystem tool matrix, license obligation model and supply-chain signal catalog. TRIGGER WHEN: auditing dependencies for CVEs, license obligations, outdated packages or supply-chain risk; the audit method in references/audit.md is run by /daodan:check-health and by the dependency perspective of /daodan:review-changes and /daodan:review-branch. DO NOT TRIGGER WHEN: dead-code or unused-dependency removal (use senior-review:application-cleanup-method or typescript-development:knip), or code-level security review (use senior-review:security-auditor).",

@@ -248,7 +248,7 @@ Checkpoint P4 (2026-10-23): renderer, metodo e documentazione consegnati nel com
 su 1.423 simboli e 36 query. Con soli metadati migliora Recall@20 da 0,7778 a
 0,8333; con corpi Python la baseline lessicale raggiunge 0,9167 e la combinazione
 con CodeRank 0,8611. Runtime offline verificato; nessuna promozione a default.
-Cache per contenuto, holdout, integrazione e gate P5 restano da completare.
+Cache per contenuto, integrazione e holdout separato sono implementati e verificati nel checkpoint P5.
 
 **Files:** nuovo `S/embedding_worker.py`, `S/retrieval.py`, nuovo
 `tests/test_codebase_map_embeddings.py`; estensioni del benchmark e report di
@@ -258,14 +258,16 @@ selezione in `evals/codebase-map/retrieval-benchmark/`. Nessun Qdrant obbligator
 tokenizer, document schema e hash; risposta con stato, artifact digest, metriche
 e ID/rank. I vettori restano nel derivato, non nello stdout.
 
-- [ ] Riesaminare candidati e fonti primarie della ricerca: manutenzione, licenza, Windows/Linux e Python, sicurezza del caricamento, dimensione, qualità italiana/inglese e costo totale. Registrare una scelta verificata prima di installare il backend. Se nessun candidato è ammissibile, P5 resta aperto con blocco specifico; P6 continua sulla baseline.
-- [ ] Separare runtime opzionale e toolchain. Riutilizzare il sidecar del benchmark dove idoneo, avvio con `uv run --no-config --no-project --script`; nessun import di codice del progetto, modello remoto non fissato o download implicito durante le query.
-- [ ] Testare con provider deterministico: modifica dello stesso ID invalida il vettore; modello/tokenizer/document schema diversi invalidano la cache; rename/cancellazione aggiornano l'indice; crash conserva l'ultima generazione valida; offline usa soltanto artefatti già disponibili.
-- [ ] Verificare l'hash dell'intero input codificato, path incluso quando presente; confrontare inventario, vettori e replay delle query con un rebuild indipendente. L'uguaglianza dei soli top-k non certifica che l'indice non conservi documenti rimossi.
-- [ ] Implementare cache per contenuto e provider, ranking locale e fusione versionata con P3. Usare storage derivato con ricerca esatta iniziale; introdurre ANN o un database dedicato solo se una misura ne dimostra la necessità.
-- [ ] Eseguire `test_codebase_map_embeddings.py`, regressioni retrieval e un'inferenza reale del provider scelto. Stubs provano il contratto, non supporto del runtime o qualità del modello.
-- [ ] Misurare baseline e embedding su holdout distinto, query italiane incluse. Rendere disponibile opt-in; abilitarlo come default solo se supera i criteri R9 della specifica. Documentare espressamente un esito non favorevole.
-- [ ] Aggiornare docs, requisiti opzionali, gate comuni e commit P5. **Done:** provider locale riproducibile, incrementale e disattivabile, con benefici e limiti misurati.
+- [x] Riesaminare candidati e fonti primarie della ricerca: manutenzione, licenza, Windows/Linux e Python, sicurezza del caricamento, dimensione, qualità italiana/inglese e costo totale. Registrare una scelta verificata prima di installare il backend. Se nessun candidato è ammissibile, P5 resta aperto con blocco specifico; P6 continua sulla baseline.
+- [x] Separare runtime opzionale e toolchain. Riutilizzare il sidecar del benchmark dove idoneo, avvio del solo encoder con il runtime installato esplicitamente selezionato e `-I` (motivazione nel report P5); nessun import di codice del progetto, modello remoto non fissato o download implicito durante le query.
+- [x] Testare con provider deterministico: modifica dello stesso ID invalida il vettore; modello/tokenizer/document schema diversi invalidano la cache; rename/cancellazione aggiornano l'indice; crash conserva l'ultima generazione valida; offline usa soltanto artefatti già disponibili.
+- [x] Verificare l'hash dell'intero input codificato, path incluso quando presente; confrontare inventario, vettori e replay delle query con un rebuild indipendente. L'uguaglianza dei soli top-k non certifica che l'indice non conservi documenti rimossi.
+- [x] Implementare cache per contenuto e provider, ranking locale e fusione versionata con P3. Usare storage derivato con ricerca esatta iniziale; introdurre ANN o un database dedicato solo se una misura ne dimostra la necessità.
+- [x] Eseguire `test_codebase_map_embeddings.py`, regressioni retrieval e un'inferenza reale del provider scelto. Stubs provano il contratto, non supporto del runtime o qualità del modello.
+- [x] Misurare baseline e embedding su holdout distinto, query italiane incluse. Rendere disponibile opt-in; abilitarlo come default solo se supera i criteri R9 della specifica. Documentare espressamente un esito non favorevole.
+- [x] Aggiornare docs, requisiti opzionali, gate comuni e commit P5. **Done:** provider locale riproducibile, incrementale e disattivabile, con benefici e limiti misurati.
+
+Checkpoint P5 (2026-10-23): provider opzionale offline, cache incrementale e fusione verificata, con pesi condivisibili tra progetti. Le 26 regressioni embedding e i 1.537 test del candidato passano; 10 controlli SDK sono esercitati separatamente. Holdout sintetico di 20 query: Recall@5 da 0,80 a 0,95, senza regressioni sugli exact. La versione 2 rende ogni vettore indipendente dal batch. Nessuna adozione a default: i risultati reali e i token complessivi restano da misurare in P10. Dettagli nel [report P5](../reports/2026-10-23-code-context-p5.md). P6-P10 restano da completare.
 
 ## P6: algoritmo di perimetrazione
 

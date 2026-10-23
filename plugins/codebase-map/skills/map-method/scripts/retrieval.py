@@ -219,8 +219,6 @@ def search(index_path: Path, query: str, *, anchors: list[dict], limit: int,
         raise ValueError("anchors must be a list of at most 100 anchors")
     if type(limit) is not int or not 1 <= limit <= 1000:
         raise ValueError("limit must be an integer from 1 through 1000")
-    if embedding_result is not None:
-        raise ValueError("embedding result integration requires the optional embedding provider contract (P5)")
     index_path = Path(index_path)
     migrate_root._reject_link_chain(index_path)
     with closing(_read(index_path)) as db:
@@ -277,6 +275,29 @@ def search(index_path: Path, query: str, *, anchors: list[dict], limit: int,
                     "SELECT entity_id,bm25(search_text,0,10,5,3,1) FROM search_text "
                     "WHERE search_text MATCH ? ORDER BY 2,entity_id", (expression,)):
                     add(records[identity], "fts5", 2, score)
+            embedding_status = "unavailable"
+            ranking_policy = RANKING_VERSION
+            if embedding_result is not None:
+                # Only consume an explicitly produced, bound result. Importing
+                # this standard-library validator never loads an encoder.
+                import embedding_worker
+                try:
+                    dense = embedding_worker.validate_result(embedding_result, metadata, query, records)
+                except embedding_worker.StaleEmbedding as error:
+                    gaps.append(str(error))
+                    embedding_status = "stale"
+                else:
+                    lexical = sorted((r for r in ranked.values() if "fts5" in r["provenance"]),
+                                     key=lambda r: (r["score"], r["entity_id"]))
+                    lexical_rank = {row["entity_id"]: rank for rank, row in enumerate(lexical)}
+                    dense_rank = {row["entity_id"]: row["rank"] for row in dense}
+                    for row in dense:
+                        add(records[row["entity_id"]], "embedding", 2)
+                    for identity, row in ranked.items():
+                        row["score"] = -(0.75 / (60 + dense_rank.get(identity, 1000))
+                                         + 0.25 / (60 + lexical_rank.get(identity, 1000)))
+                    embedding_status = "available"
+                    ranking_policy = "exact-rrf75-25-k60-v1"
             ordered = sorted(ranked.values(), key=lambda r: (r["priority"], r["score"], r["entity_id"]))
             result = [{k: v for k, v in record.items() if k != "priority"} for record in ordered[:limit]]
             return {"schema": "daodan/retrieval-result/v1", "binding": metadata["binding"],
@@ -284,4 +305,5 @@ def search(index_path: Path, query: str, *, anchors: list[dict], limit: int,
                     "exact": exact[:limit], "exact_total": len(exact), "exact_truncated": max(0, len(exact) - limit),
                     "ambiguous": ambiguous, "matched": len(ordered), "returned": len(result),
                     "truncated": max(0, len(ordered) - limit), "limit": limit, "gaps": gaps,
-                    "capabilities": {"exact": True, "fts5": True, "embedding": "unavailable"}}
+                    "ranking_policy": ranking_policy,
+                    "capabilities": {"exact": True, "fts5": True, "embedding": embedding_status}}
