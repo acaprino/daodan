@@ -1,5 +1,7 @@
 # Snapshot
 
+Progressive analysis and intervention scopes: [scope](scope.md).
+
 After scope confirmation, the coordinator writes the current snapshot before Phase 0.
 Classic refresh ownership then transfers to the isolated analyst; team ownership
 stays with the coordinator. Other workers report gaps. Preserve parent bytes and

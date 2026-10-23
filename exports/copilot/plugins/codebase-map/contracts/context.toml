@@ -9,13 +9,28 @@ required = ["schema", "task_id", "intent", "query", "read_boundary", "write_boun
 intents = ["analysis", "docs", "bug", "change", "test", "finish"]
 boundaries = "Derived from the owning run and tree_scope; requests cannot expand them."
 missing_inputs = "Explicit null or a declared gap, never inferred authorization."
+snapshot_descriptor = "candidate and optional base are {manifest: absolute_path}; SQLite snapshots belong to the authority root."
+authority = "Separate trusted argument {root, read_boundary, write_boundary}; request paths may only narrow it. Boundaries are relative POSIX prefixes; dot means the project; empty write boundary means read-only."
+budgets = ["max_candidates", "max_edges", "max_rounds", "max_seconds", "max_input_tokens", "max_output_tokens"]
+budget_units = "Nonnegative cumulative counts; seconds is cooperative wall time including preparation and verification. Token observations distinguish actual from estimated; no character conversion."
+requirements = "Unique IDs; support is a list of predicates. current_source requires entity_id and a verified source packet covering its current span. Other predicates remain missing. Gates remain open."
 
 [[records]]
 record_schema = "daodan/scope-plan/v1"
-required = ["schema", "task_id", "input_digest", "base", "candidate", "resolver_profile", "indices", "policy_version", "analysis", "edit_candidates", "potential_impact", "validation_obligations", "deferred", "unresolved", "outside_boundary", "coverage"]
+required = ["schema", "task_id", "input_digest", "base", "candidate", "resolver_profile", "indices", "policy_version", "analysis", "edit_candidates", "potential_impact", "validation_obligations", "deferred", "unresolved", "outside_boundary", "coverage", "status", "frontier", "active", "visited", "usage", "actions", "cursor"]
 entity_evidence = ["entity_id", "reason", "provenance", "status"]
 edit_candidates = "Proposed intervention sites do not grant write authority."
 validation_obligations = "Requirements and gates survive every budget projection."
+statuses = ["incomplete", "needs_localization", "needs_split", "ready_for_attempt"]
+stop_calibration = "uncalibrated"
+completion = "task_complete, validation_complete and write_authorized are always false. ready_for_attempt means enough localized evidence for an attempt, never validation or integration permission."
+cursor_binding = ["request", "effective_authority", "snapshot_bytes_and_logical_digest", "resolver", "index_bytes_and_missing_inputs", "policy", "entire_checkpoint_state"]
+frontier = "Entity IDs ordered by strongest [seed priority, producer rank] then identity, plus an active neighbor page and offset; visited IDs, obligations, usage observations and exhausted action keys survive JSON round trips. Mandatory source targets precede exact/diff/proposed sites, canonical impact, retrieval leads and indirect neighbors. Retrieval retains its producer relevance order. No fixed-hop proof of completeness."
+overflow = "Keep the canonical producer's uncapped impacted component inventory as conservative obligations when its detailed classifications are capped; report needs_split and never guess the missing classification."
+apis = ["prepare_scope(request, authority=authority, indexes=paths)", "advance_scope(plan, request, authority=authority, indexes=paths, evidence=evidence, max_steps=100)", "persist_scope(plan, output, authority=authority)"]
+evidence = "source_packets are reverified through source_reader; usage has unique ID, input_tokens, output_tokens and actual/estimated measurement; attempted_actions exhaust equivalent retries; anchors refine localization; leads never satisfy support."
+indices = "Optional explicit retrieval, cards, embedding_result, engine and base_engine paths. Default engine paths are bound even when absent. No implicit refresh, model startup or download."
+publication = "New exclusive JSON sibling of the candidate manifest; collisions and link paths fail without replacing evidence. Cursor hashes detect stale or altered records, not authorization forgery."
 
 [[records]]
 record_schema = "daodan/context-packet/v1"
