@@ -160,13 +160,13 @@ Docs: `docs/plugins/codebase-map.md`, riferimento `snapshot.md` nel budget esist
 `references`, `profile`, `coverage`, `conflicts`, `gaps`, con schema versionato
 (`EDGE_VIEW_VERSION`) e `target_kind` (`protocol|interface|concrete`).
 
-- [ ] Aggiungere regressioni: `test_resolver_version_mismatch_is_rejected`, `test_completed_empty_pass_is_distinct_from_missing_store`, `test_engine_target_must_belong_to_snapshot`, `test_divergent_targets_remain_conflicts`. Assert: nessun target incompatibile entra nelle relazioni effettive; byte del manifest invariati.
-- [ ] Eseguire i nuovi casi e conservare il fallimento che dimostra il gap, non un errore di fixture.
-- [ ] Validare versione resolver, reference/callsite/target, profilo engine e copertura. Persistire anche una passata valida con zero archi (con `no_edges_reason` nei metadati); un fallimento conserva il derivato precedente senza presentarlo come corrente.
-- [ ] Implementare la vista: riferimenti lessicali più inferenze confermate su irrisolti, deduplicazione con provenance, conflitti separati, candidati fuori dalle relazioni confermate. Distinguere dichiarazione di protocollo/ABC da implementazione concreta tramite `sem_declarations` e `signatures`.
-- [ ] Aggiungere report completo su file e modalità di risposta compatta esplicita, mantenendo la compatibilità della CLI esistente; i futuri wrapper usano quella compatta.
-- [ ] Verificare `python -B -m unittest discover -s tests -p 'test_codebase_map_resolve_edges.py'` e `... -p 'test_codebase_map_edge_view.py'`; atteso: nessun failure, skip motivati.
-- [ ] Aggiornare docs, gate comuni e commit P1. **Done:** una sola vista verificata utilizzabile senza avviare Jedi o caricare report completi nel contesto LLM.
+- [x] Aggiungere regressioni: `test_resolver_version_mismatch_is_rejected`, `test_completed_empty_pass_is_distinct_from_missing_store`, `test_engine_target_must_belong_to_snapshot`, `test_divergent_targets_remain_conflicts`. Assert: nessun target incompatibile entra nelle relazioni effettive; byte del manifest invariati.
+- [x] Eseguire i nuovi casi e conservare il fallimento che dimostra il gap, non un errore di fixture.
+- [x] Validare versione resolver, reference/callsite/target, profilo engine e copertura. Persistire anche una passata valida con zero archi (con `no_edges_reason` nei metadati); un fallimento conserva il derivato precedente senza presentarlo come corrente.
+- [x] Implementare la vista: riferimenti lessicali più inferenze confermate su irrisolti, deduplicazione con provenance, conflitti separati, candidati fuori dalle relazioni confermate. Distinguere dichiarazione di protocollo/ABC da implementazione concreta tramite `sem_declarations` e `signatures`.
+- [x] Aggiungere report completo su file e modalità di risposta compatta esplicita, mantenendo la compatibilità della CLI esistente; i futuri wrapper usano quella compatta.
+- [x] Verificare `python -B -m unittest discover -s tests -p 'test_codebase_map_resolve_edges.py'` e `... -p 'test_codebase_map_edge_view.py'`; atteso: nessun failure, skip motivati.
+- [x] Aggiornare docs, gate comuni e commit P1. **Done:** una sola vista verificata utilizzabile senza avviare Jedi o caricare report completi nel contesto LLM.
 
 ## P2: consumatori del grafo e impatto fra revisioni
 

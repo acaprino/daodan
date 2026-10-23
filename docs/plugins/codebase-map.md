@@ -435,15 +435,20 @@ file and replaces an earlier derived store only after a successful write.
 
 Three properties keep its output from being mistaken for the lexical graph's. Edges
 live in a **derived store** (`engine-edges.sqlite`, or `--out`) bound to the snapshot
-by its logical digest and parser fingerprint, because a snapshot is evidence and is
-never rewritten: `read_edge_store` returns the reason rather than the rows when the
-binding does not match. Every reference names its `resolver`, `builtin-lexical` or
-`<engine>@<version>`, so edges of two resolvers are never counted together. And
-coverage and cost are declared: `--limit` and `--stride` bound a pass, and the report
-distinguishes selected references from actual engine requests against the Python
-population. It records probe/init, inference and total elapsed time, mean and p95
-request latency, and an inference-only extrapolation with its deterministic sampling
-bias and assumptions. The [Python delivery report](../superpowers/reports/2026-10-22-codebase-map-python-resolver-delivery.md)
+by its logical digest, parser fingerprint and `resolver_version`, because a snapshot is
+evidence and is never rewritten: `read_edge_store` validates that binding and every
+confirmed target's membership in `sem_declarations`, returning the reason rather than
+the rows on any mismatch. Valid passes that produce zero edges still persist the bound
+store with `no_edges_reason` (`no-unresolved-calls`, `not-sampled`, `no-project-targets`),
+so consumers distinguish an empty pass from a missing store. Every reference names its
+`resolver`, `builtin-lexical` or `<engine>@<version>`, so edges of two resolvers are
+never counted together. And coverage and cost are declared: `--limit` and `--stride`
+bound a pass, `--report-out <path>` writes the full report to disk, and `--compact`
+emits only the bounded summary on stdout. The report distinguishes selected references
+from actual engine requests against the Python population, records probe/init,
+inference and total elapsed time, mean and p95 request latency, and an inference-only
+extrapolation with its deterministic sampling bias and assumptions. The
+[Python delivery report](../superpowers/reports/2026-10-22-codebase-map-python-resolver-delivery.md)
 records the measured local pass separately from the original campaign. An absent or
 unready engine is a declared degradation that writes nothing and names its recovery
 command; `--dry-run` grades without writing.
@@ -456,10 +461,13 @@ so package count is visible evidence rather than an assumed environment health c
 
 An engine's answer can land on a contract rather than an implementation, verified on
 this repository: `adapter.parse(...)` infers to the `LanguageAdapter.parse` protocol
-declaration. That edge is true and is not comparable to one landing on a concrete
-body, so a consumer that propagates through it decides that separately. No analysis
-phase runs this command; it is an explicit pass over a written snapshot, and no map
-consumer reads its store yet.
+declaration. `edge_view.py` (`load_edge_view`, schema `daodan/edge-view/v1`) merges
+the snapshot's lexical call references with the bound `engine-edges.sqlite` store
+without running an engine at query time: it keeps lexical bindings authoritative,
+surfaces divergent engine targets in `conflicts`, keeps candidate inferences in
+`candidates` outside confirmed edges, records coverage (`missing_store`,
+`rejected_store`, `completed_empty`, `sampled`, `complete`) and classifies each
+target's `target_kind` as `protocol`, `interface` or `concrete`.
 
 Tree-sitter grammars are shared across threads; mutable parsers and queries are
 cached per thread. `get_parser.cache_clear()` invalidates existing thread caches.

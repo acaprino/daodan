@@ -526,9 +526,9 @@ def write_edge_store(out: Path, edges: list[dict], binding: dict) -> Path:
 def read_edge_store(path: Path, store) -> tuple[list[dict] | None, dict | None, str | None]:
     """The edges bound to this exact snapshot, their binding, or the reason they are not.
 
-    A store whose manifest digest or parser fingerprint differs describes another
-    snapshot, and its edges are not this graph's: the caller gets the reason rather
-    than a plausible-looking join.
+    A store whose manifest digest, parser fingerprint or resolver version differs
+    describes another snapshot or policy, and its edges are not this graph's: the
+    caller gets the reason rather than a plausible-looking join.
     """
     path = Path(path)
     if not path.is_file():
@@ -544,12 +544,44 @@ def read_edge_store(path: Path, store) -> tuple[list[dict] | None, dict | None, 
             return None, binding, "the edge store is bound to a different snapshot revision"
         if binding.get("parser_fingerprint") != store.metadata.get("parser_fingerprint"):
             return None, binding, "the edge store was written under another parser fingerprint"
+        if binding.get("resolver_version") != semantic_store.RESOLVER_VERSION:
+            return (
+                None,
+                binding,
+                f"the edge store was written under resolver version {binding.get('resolver_version')}, "
+                f"expected {semantic_store.RESOLVER_VERSION}",
+            )
         edges = [dict(reference_id=row[0], file=row[1], caller=row[2], target_id=row[3],
                       verdict=row[4], resolver=row[5], confidence=row[6], l0=row[7], c0=row[8],
                       payload=_unpack(row[9]))
                  for row in connection.execute(
                      "SELECT reference_id,file,caller,target_id,verdict,resolver,confidence,"
                      "l0,c0,payload FROM edges ORDER BY file,l0,c0")]
+        if getattr(store, "format", None) == "sqlite" and getattr(store, "connection", None) is not None:
+            with semantic_store.semantic_reader(store) as sem_db:
+                valid_targets = {
+                    row[0]
+                    for row in sem_db.execute(
+                        "SELECT id FROM sem_declarations WHERE kind IN ('function','class')"
+                    )
+                }
+                valid_refs = {
+                    row[0]: (row[1], row[2])
+                    for row in sem_db.execute(
+                        "SELECT id,file,caller FROM sem_references WHERE kind='call'"
+                    )
+                }
+            for edge in edges:
+                ref_id = edge.get("reference_id")
+                if ref_id not in valid_refs:
+                    return None, binding, f"engine edge reference is not in snapshot: {ref_id}"
+                ref_file, ref_caller = valid_refs[ref_id]
+                if edge.get("file") != ref_file or edge.get("caller") != ref_caller:
+                    return None, binding, f"engine edge callsite metadata mismatch for {ref_id}"
+                if edge.get("confidence") == "confirmed" or str(edge.get("verdict", "")).startswith("edge-"):
+                    target_id = edge.get("target_id")
+                    if not target_id or target_id not in valid_targets:
+                        return None, binding, f"engine edge target is not in snapshot: {target_id}"
         return edges, binding, None
     except (sqlite3.Error, ValueError, TypeError) as error:
         return None, binding, f"invalid engine edge store: {error}"
@@ -688,6 +720,14 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         except (OSError, ValueError) as error:
             return {"engine": engine.identity(), "available": False,
                     "reason": str(error), "stage": "after-inference", "edges_store": None}
+        if edges:
+            no_edges_reason = None
+        elif not population:
+            no_edges_reason = "no-unresolved-calls"
+        elif not selected or not asked:
+            no_edges_reason = "not-sampled"
+        else:
+            no_edges_reason = "no-project-targets"
         binding = {
             "schema": EDGE_SCHEMA,
             "manifest": manifest.as_posix(),
@@ -703,15 +743,18 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
             "stride": stride,
             "confirmed": written,
             "candidates": candidates,
+            "no_edges_reason": no_edges_reason,
             "source_verification": {"before_inference": len(source_paths),
                                     "after_inference": len(source_paths)},
             "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
     latencies.sort()
     written_path = None
-    if not dry_run and edges:
+    if not dry_run:
         # The snapshot is evidence and stays read-only: an engine's edges are a
         # derived store bound to it, the way cards are, never a mutation of it.
+        # Persist valid empty passes too so consumers tell a completed empty
+        # pass apart from a missing store.
         try:
             written_path = write_edge_store(destination, edges, binding)
         except (OSError, sqlite3.Error, ValueError) as error:
@@ -731,6 +774,7 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         "stride": stride,
         "confirmed_edges": written,
         "candidates": candidates,
+        "no_edges_reason": no_edges_reason,
         "position_unverified": skipped_position,
         "source_verification": binding["source_verification"],
         "verdicts": verdicts,
@@ -757,6 +801,25 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
     }
 
 
+def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
+    """Bounded summary for CLI/coordinator callers when the full report is on disk."""
+    summary = {
+        key: report[key]
+        for key in (
+            "engine", "available", "reason", "stage", "install", "project_root",
+            "population", "population_language", "selected", "asked", "stride",
+            "confirmed_edges", "candidates", "no_edges_reason", "position_unverified",
+            "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
+            "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
+            "edges_store", "coverage",
+        )
+        if key in report
+    }
+    if report_out is not None:
+        summary["report_out"] = report_out.as_posix()
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     require_minimum_interpreter("resolve_edges.py")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -777,6 +840,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=None,
                         help="where to write the derived edge store; default "
                              "engine-edges.sqlite beside the manifest")
+    parser.add_argument("--report-out", type=Path, default=None,
+                        help="optional file path for the complete JSON report")
+    parser.add_argument("--compact", action="store_true",
+                        help="emit a compact summary on stdout instead of the full report")
     args = parser.parse_args(argv)
     if args.limit is not None and args.limit < 0:
         parser.error("--limit must be nonnegative")
@@ -794,7 +861,15 @@ def main(argv: list[str] | None = None) -> int:
     engine = JediEngine(project_root, [path.resolve() for path in args.environment])
     report = resolve_edges(manifest, engine=engine, limit=args.limit,
                            stride=args.stride, dry_run=args.dry_run, out=args.out)
-    print(json.dumps(report, indent=2, sort_keys=True))
+    report_out = None
+    if args.report_out is not None:
+        report_out = args.report_out.resolve()
+        report_out.parent.mkdir(parents=True, exist_ok=True)
+        report_out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    emitted = compact_report(report, report_out=report_out) if args.compact else (
+        {**report, "report_out": report_out.as_posix()} if report_out is not None else report
+    )
+    print(json.dumps(emitted, indent=2, sort_keys=True))
     return 0 if report.get("available") else 1
 
 

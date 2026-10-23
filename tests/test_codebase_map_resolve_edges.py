@@ -328,8 +328,11 @@ class ResolveEdgesTests(unittest.TestCase):
         report = self.run_engine(engine)
         self.assertEqual(report["verdicts"].get("external-definition"), 1)
         self.assertEqual(report["confirmed_edges"], 0)
-        self.assertFalse(self.edges.exists())
-        self.assertEqual(report["edges_store"], None)
+        self.assertTrue(self.edges.exists())
+        edges, binding, reason = self.stored_edges()
+        self.assertIsNone(reason)
+        self.assertEqual(edges, [])
+        self.assertEqual((binding["confirmed"], binding["candidates"]), (0, 0))
 
     def test_a_project_name_that_is_no_symbol_stays_a_candidate(self):
         _identity, before = self.unresolved_run_reference()
@@ -467,6 +470,86 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIsNone(edges)
         self.assertIsNone(binding)
         self.assertIn("invalid engine edge store", reason)
+
+    def test_resolver_version_mismatch_is_rejected(self):
+        _identity, before = self.unresolved_run_reference()
+        engine = StubEngine(answers={("use.py", before["span"][0]):
+                                     Definition(self.root / "app/tool.py", "run")})
+        self.run_engine(engine)
+        with mock.patch.object(resolve_edges.semantic_store, "RESOLVER_VERSION", 999):
+            edges, binding, reason = self.stored_edges()
+        self.assertIsNone(edges)
+        self.assertIsNotNone(binding)
+        self.assertIn("resolver version", reason)
+
+    def test_completed_empty_pass_is_distinct_from_missing_store(self):
+        with open_snapshot(self.manifest) as store:
+            missing_edges, missing_binding, missing_reason = resolve_edges.read_edge_store(self.edges, store)
+        self.assertIsNone(missing_edges)
+        self.assertIsNone(missing_binding)
+        self.assertIn("no engine edge store", missing_reason)
+
+        report = self.run_engine(StubEngine())
+        self.assertTrue(report["available"])
+        self.assertEqual((report["confirmed_edges"], report["candidates"]), (0, 0))
+        self.assertTrue(self.edges.is_file())
+        self.assertEqual(report["edges_store"], self.edges.as_posix())
+        edges, binding, reason = self.stored_edges()
+        self.assertIsNone(reason)
+        self.assertEqual(edges, [])
+        self.assertEqual(binding["confirmed"], 0)
+        self.assertEqual(binding["no_edges_reason"], "no-project-targets")
+
+    def test_engine_target_must_belong_to_snapshot(self):
+        _identity, before = self.unresolved_run_reference()
+        engine = StubEngine(answers={("use.py", before["span"][0]):
+                                     Definition(self.root / "app/tool.py", "run")})
+        self.run_engine(engine)
+        import sqlite3
+        conn = sqlite3.connect(self.edges)
+        try:
+            conn.execute("UPDATE edges SET target_id='app/ghost.py::function@1:0'")
+            conn.commit()
+        finally:
+            conn.close()
+        edges, binding, reason = self.stored_edges()
+        self.assertIsNone(edges)
+        self.assertIsNotNone(binding)
+        self.assertIn("not in snapshot", reason)
+
+    def test_divergent_targets_remain_conflicts(self):
+        import edge_view
+        _identity, before = self.unresolved_run_reference()
+        engine = StubEngine(answers={("use.py", before["span"][0]):
+                                     Definition(self.root / "app/tool.py", "run")})
+        self.run_engine(engine)
+        import sqlite3
+        with open_snapshot(self.manifest) as store:
+            row = store.connection.execute(
+                "SELECT id FROM sem_declarations WHERE file='app/tool.py' AND name='free'"
+            ).fetchone()
+            free_id = row[0]
+        conn = sqlite3.connect(self.manifest)
+        try:
+            # Simulate a reference already resolved lexically to `free` while engine says `run`
+            conn.close()
+        finally:
+            pass
+        with open_snapshot(self.manifest) as store:
+            edges, binding, reason = resolve_edges.read_edge_store(self.edges, store)
+            self.assertIsNone(reason)
+            view = edge_view.load_edge_view(
+                store,
+                engine_store=self.edges,
+                lexical_overrides={_identity: free_id},
+            )
+        self.assertEqual(len(view["conflicts"]), 1)
+        conflict = view["conflicts"][0]
+        self.assertEqual(conflict["reference_id"], _identity)
+        self.assertEqual(conflict["lexical_target_id"], free_id)
+        self.assertTrue(conflict["engine_target_id"].startswith("app/tool.py::function@2:4"))
+        ref_by_id = {item["id"]: item for item in view["references"]}
+        self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
 
 
 class CalleePositionTests(unittest.TestCase):

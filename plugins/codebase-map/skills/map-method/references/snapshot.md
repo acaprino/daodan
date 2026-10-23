@@ -125,9 +125,9 @@ uv pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/requirements.
 
 Python uses stdlib `ast`, SQL/PL-SQL regex DDL, CSS/SCSS/LESS the tokenizer.
 Notes expose `parser=stdlib-ast`, `parser=tree-sitter`, `parser=regex-fallback` or
-`parser=stylesheet`. Unavailable grammars report `tree-sitter unavailable: <error>`.
+`parser=stylesheet`; unavailable grammars report `tree-sitter unavailable: <error>`.
+Python engine passes write `<run-dir>/snapshot/engine-edges.sqlite` via
+`resolve_edges.py <manifest> --compact --report-out <report.json>`, read by `edge_view.py`.
 
-Tree-sitter supplies definition ends; regex supplies starts, ending at the next
-symbol. Line-granular endpoints can require whole-file reading for minified/shared
-lines holding another definition, class or static field.
-Documentation/comment diagnosis proposes changes; it never applies them.
+Tree-sitter supplies definition ends; regex ends at the next symbol. Shared
+lines can require whole-file reading. Diagnosis never applies changes.
