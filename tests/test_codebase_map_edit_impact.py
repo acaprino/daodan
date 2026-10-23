@@ -34,6 +34,75 @@ def write_project(root: Path) -> None:
     (root / "pkg/a.py").write_text(CALLER, encoding="utf-8")
 
 
+class EngineImpactTests(unittest.TestCase):
+    def setUp(self):
+        from test_codebase_map_edge_view import Definition, StubEngine
+        import resolve_edges
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+        for name, body in {
+            "leaf.py": "class Worker:\n    def run(self):\n        return 1\n",
+            "bridge.py": "def middle(obj):\n    return obj.run()\n",
+            "entry.py": "def top(obj):\n    return obj.middle()\n",
+        }.items():
+            (self.root / name).write_text(body, encoding="utf-8")
+        self.manifest = self.root / ".codebase-map/manifest.sqlite"
+        self.edges = self.manifest.with_name("engine-edges.sqlite")
+        snapshot.write_snapshot(self.root, self.manifest)
+        self.before = artifact_digest(self.manifest)
+        self.engine = StubEngine({
+            ("bridge.py", 2): Definition(self.root / "leaf.py", "run", line=2, column=8),
+            ("entry.py", 2): Definition(self.root / "bridge.py", "middle", line=1, column=4),
+        })
+        resolve_edges.resolve_edges(self.manifest, engine=self.engine, limit=None, stride=1, out=self.edges)
+
+    def test_engine_edges_reach_graph_and_both_impact_hops_without_inference(self):
+        from store_graph import query_graph
+        asked = list(self.engine.asked)
+        with open_snapshot(self.manifest) as store:
+            graph = query_graph(store, ["leaf.py"], hops=2, engine_store=self.edges)
+            packet = semantic_store.build_edit_impact(
+                store, ["leaf.py::Worker.run"], hops=2, include_source=False,
+                engine_store=self.edges)
+        self.assertEqual({call["file"] for call in graph["calls"]}, {"bridge.py", "entry.py"})
+        self.assertTrue(all(call["resolver"] == "stub@1.0" for call in graph["calls"]))
+        target = packet["targets"][0]
+        caller = target["callers"]["listed"][0]
+        self.assertEqual(caller["symbol_id"], "bridge.py::middle")
+        self.assertEqual(caller["edges"][0]["sites"][0]["resolver"], "stub@1.0")
+        self.assertEqual(caller["edges"][0]["sites"][0]["start_line"], 2)
+        self.assertIn("entry.py::top", {r["symbol_id"] for r in target["second_hop"]["listed"]})
+        self.assertEqual(self.engine.asked, asked)
+        self.assertEqual(artifact_digest(self.manifest), self.before)
+
+    def test_file_consumer_counts_engine_calls_and_card_freshness_stays_lexical(self):
+        from store_consumers import consumer_reader, file_analysis
+        cards = self.manifest.with_name("cards.sqlite")
+        with open_snapshot(self.manifest) as store:
+            semantic_store.upsert_meta_cards(store, cards, [
+                {"symbol_id": "bridge.py::middle", "purpose": "Delegate to the worker"}])
+            with consumer_reader(store, engine_store=self.edges) as db:
+                semantic, _, _ = file_analysis(store, db, "leaf.py")
+            packet = semantic_store.build_edit_impact(
+                store, ["bridge.py::middle"], cards_path=cards, include_source=False,
+                engine_store=self.edges)
+        self.assertEqual(semantic["counts"]["incoming_calls"], 1)
+        self.assertEqual(semantic["incoming_calls"][0]["resolver"], "stub@1.0")
+        self.assertEqual(semantic["edge_view"]["coverage"]["status"], "complete")
+        self.assertEqual(packet["targets"][0]["card"]["freshness"], "fresh")
+        self.assertEqual(packet["targets"][0]["card"]["freshness_basis"], "lexical")
+
+    def test_rejected_engine_store_keeps_lexical_fallback_explicit(self):
+        from store_graph import query_graph
+        self.edges.write_bytes(b"broken")
+        with open_snapshot(self.manifest) as store:
+            packet = query_graph(store, ["leaf.py"], engine_store=self.edges)
+        self.assertEqual(packet["calls"], [])
+        self.assertEqual(packet["edge_view"]["coverage"]["status"], "rejected_store")
+        self.assertTrue(packet["edge_view"]["gaps"])
+
+
 class EditImpactTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="map-edit-impact-")

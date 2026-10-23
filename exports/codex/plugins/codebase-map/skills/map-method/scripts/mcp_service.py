@@ -243,7 +243,7 @@ class MapService:
         # Helpers read these fixed inputs before validating their declaration.
         # Include optional inputs and possible unexpected phase files as well.
         names = {*snapshot.PHASE_FILES, "knowledge/navigation.md", "knowledge/documentation-leads.md",
-                 "comment_health.md", "changes.md"}
+                 "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
             migrate_root._reject_link_chain(path)
         delivery = state.get("delivery")
@@ -421,7 +421,18 @@ class MapService:
             _, _, manifest, _ = self._bound_run(run_id)
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
-    def graph(self, run_id, paths=None, hops=2, limit=100):
+    def _engine_store(self, run, value):
+        name = "snapshot/engine-edges.sqlite" if value is None else value
+        _relative(name)
+        path = run / name
+        if path.suffix != ".sqlite" or path.name in {"manifest.sqlite", "cards.sqlite", "retrieval.sqlite"}:
+            raise ValueError("engine_store must name an engine SQLite artifact within its run")
+        migrate_root._reject_link_chain(path)
+        if not path.resolve().is_relative_to(run.resolve()):
+            raise ValueError("engine_store is outside its run")
+        return path
+
+    def graph(self, run_id, paths=None, hops=2, limit=100, engine_store=None):
         _limit(limit)
         if paths is not None:
             if not isinstance(paths, list) or not paths:
@@ -429,8 +440,9 @@ class MapService:
             for path in paths:
                 _relative(path)
         with self._operation():
-            _, _, manifest, _ = self._bound_run(run_id)
-            return dict(source_reader.graph_packet(manifest, paths, hops, limit), run_id=run_id)
+            run, _, manifest, _ = self._bound_run(run_id)
+            return dict(source_reader.graph_packet(manifest, paths, hops, limit,
+                        engine_store=self._engine_store(run, engine_store)), run_id=run_id)
 
     def read(self, run_id, requests):
         if not isinstance(requests, list) or not 1 <= len(requests) <= MAX_LIMIT:
@@ -444,19 +456,19 @@ class MapService:
 
     def edit_impact(self, run_id, targets, neighbors=20, history=5, include_source=True,
                     hops=1, include_neighbor_source=False, include_slices=False,
-                    budget_chars=semantic_store.DEFAULT_IMPACT_BUDGET_CHARS):
+                    budget_chars=semantic_store.DEFAULT_IMPACT_BUDGET_CHARS, engine_store=None):
         for name, value in (("include_source", include_source),
                             ("include_neighbor_source", include_neighbor_source),
                             ("include_slices", include_slices)):
             if type(value) is not bool:
                 raise ValueError(f"{name} must be a boolean")
         with self._operation():
-            _, _, manifest, _ = self._bound_run(run_id)
+            run, _, manifest, _ = self._bound_run(run_id)
             packet = dict(semantic_store.build_edit_impact(
                 manifest, targets, cards_path=self.root / card_store.CARD_STORE_NAME,
                 neighbors=neighbors, history=history, include_source=include_source, hops=hops,
                 include_neighbor_source=include_neighbor_source, include_slices=include_slices,
-                budget_chars=budget_chars), run_id=run_id)
+                budget_chars=budget_chars, engine_store=self._engine_store(run, engine_store)), run_id=run_id)
         if len(json.dumps(packet)) > MAX_READ_CHARS:
             raise ValueError(f"edit impact exceeds {MAX_READ_CHARS} characters; request fewer targets or neighbors")
         return packet
@@ -480,14 +492,17 @@ class MapService:
                 packet = snapshot.symbols_at(candidate, requests)
             return dict(packet, run_id=run_id)
 
-    def stale_callers(self, run_id, base_run_id, limit=100):
+    def stale_callers(self, run_id, base_run_id, limit=100,
+                      base_engine_store=None, candidate_engine_store=None):
         _limit(limit)
         if not isinstance(base_run_id, str) or not base_run_id:
             raise ValueError("stale-callers requires base_run_id")
         with self._operation():
-            _, _, candidate, _ = self._bound_run(run_id)
-            _, _, base, _ = self._bound_run(base_run_id)
-            return dict(semantic_store.build_stale_callers(base, candidate, limit=limit),
+            candidate_run, _, candidate, _ = self._bound_run(run_id)
+            base_run, _, base, _ = self._bound_run(base_run_id)
+            return dict(semantic_store.build_stale_callers(base, candidate, limit=limit,
+                        base_engine_store=self._engine_store(base_run, base_engine_store),
+                        candidate_engine_store=self._engine_store(candidate_run, candidate_engine_store)),
                         run_id=run_id, base_run_id=base_run_id)
 
     def meta_query(self, run_id, paths=None, symbol=None, freshness=None, include_history=True, limit=100):

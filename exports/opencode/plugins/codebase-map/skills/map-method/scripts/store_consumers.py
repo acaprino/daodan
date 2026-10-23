@@ -7,7 +7,7 @@ import sqlite3
 import tempfile
 
 from snapshot_store import open_snapshot, _pack, _unpack
-from semantic_store import semantic_reader
+from semantic_store import semantic_reader, install_edge_view
 from store_graph_metrics import metric_metadata
 
 
@@ -23,7 +23,7 @@ def temporary_snapshot(target, *, parse_results=None):
 
 
 @contextmanager
-def consumer_reader(store, *, fresh=False, observations=None):
+def consumer_reader(store, *, fresh=False, observations=None, engine_store=None):
     """Fresh means the snapshot was extracted by this very operation."""
     from store_graph import _preflight
     with ExitStack() as stack:
@@ -35,6 +35,7 @@ def consumer_reader(store, *, fresh=False, observations=None):
             if rebuild:
                 db = stack.enter_context(semantic_reader(store, rebuild=True))
                 _preflight(store, db, set(), False, observations)
+        install_edge_view(db, store, engine_store=engine_store)
         yield db
 
 
@@ -59,13 +60,14 @@ def file_analysis(store, db, rel, limit=100):
     declarations_count, declarations = rows(
         "SELECT payload FROM sem_declarations WHERE file=? AND kind IN ('function','class') ORDER BY rowid", (rel,))
     calls_count, calls = rows(
-        "SELECT payload FROM sem_references WHERE file=? AND kind='call' ORDER BY rowid", (rel,))
-    incoming_count, incoming = rows("""SELECT r.payload FROM sem_references r JOIN sem_declarations d
+        "SELECT payload FROM effective_references WHERE file=? AND kind='call' ORDER BY rowid", (rel,))
+    incoming_count, incoming = rows("""SELECT r.payload FROM effective_references r JOIN sem_declarations d
         ON d.id=r.target_id WHERE d.file=? AND d.kind IN ('function','class')
         AND r.file<>? AND r.kind='call' ORDER BY r.file,r.rowid""", (rel, rel))
-    resolved = db.execute("SELECT count(*) FROM sem_references WHERE file=? AND kind='call' AND resolution='resolved'", (rel,)).fetchone()[0]
+    resolved = db.execute("SELECT count(*) FROM effective_references WHERE file=? AND kind='call' AND resolution='resolved'", (rel,)).fetchone()[0]
     coverage = db.execute("SELECT payload FROM q_cover WHERE file=?", (rel,)).fetchone()
     semantic = {
+        "edge_view": _unpack(db.execute("SELECT payload FROM effective_metadata").fetchone()[0]),
         "coverage": _unpack(coverage[0]) if coverage else {"status": "unavailable"},
         "project_coverage": dict(db.execute("SELECT status,count(*) FROM q_cover GROUP BY status")),
         "raw_hash": (store.get_file(rel, semantic=False) or {}).get("raw_hash"),
@@ -75,7 +77,7 @@ def file_analysis(store, db, rel, limit=100):
                    "resolved_callsites": resolved, "unresolved_callsites": calls_count - resolved,
                    "incoming_calls": incoming_count,
                    "project_unresolved_calls": db.execute(
-                       "SELECT count(*) FROM sem_references WHERE kind='call' AND resolution<>'resolved'").fetchone()[0]},
+                       "SELECT count(*) FROM effective_references WHERE kind='call' AND resolution<>'resolved'").fetchone()[0]},
         "limit": limit,
         "truncated": [name for name, count in (("declarations", declarations_count), ("callsites", calls_count),
                                               ("incoming_calls", incoming_count)) if count > limit],
@@ -204,7 +206,7 @@ def find_usages(store, db, symbols, source_file, project_root, *, limit=None, ob
     for symbol in symbols:
         # Candidate projection mirrors the conservative legacy predicate, including
         # unknown receivers with no candidate_files. Payloads are decoded after SQL selection.
-        query = """SELECT r.payload FROM sem_references r JOIN usage_searched s ON s.file=r.file
+        query = """SELECT r.payload FROM effective_references r JOIN usage_searched s ON s.file=r.file
             WHERE r.target_id IN (SELECT id FROM sem_declarations
                 WHERE file=? AND name=? AND kind IN ('function','class'))
             OR (r.known_unrelated=0 AND r.resolution<>'resolved' AND (

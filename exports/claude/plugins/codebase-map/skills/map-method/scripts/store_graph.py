@@ -6,7 +6,7 @@ from pathlib import Path
 
 import snapshot
 from snapshot_store import file_headers, logical_digest, _pack, _unpack
-from semantic_store import semantic_reader
+from semantic_store import semantic_reader, install_edge_view
 from store_graph_metrics import build_metrics, metric_metadata
 
 NOTES = [
@@ -99,11 +99,11 @@ def _packet(store, db, selected, hops, limit, digest):
                   JOIN q_cover c ON c.file=s.file AND c.verified=1""")
     caller = "coalesce(r.caller,r.file||'::@module')"
     for depth in range(hops):
-        db.execute(f"""INSERT OR IGNORE INTO q_dist SELECT r.target_id,? FROM sem_references r
+        db.execute(f"""INSERT OR IGNORE INTO q_dist SELECT r.target_id,? FROM effective_references r
             JOIN q_cover c ON c.file=r.file AND c.verified=1
             JOIN q_dist d ON d.node={caller} AND d.depth=?
             WHERE r.kind='call' AND r.resolution='resolved' ORDER BY r.target_id""", (depth + 1, depth))
-        db.execute(f"""INSERT OR IGNORE INTO q_dist SELECT {caller},? FROM sem_references r
+        db.execute(f"""INSERT OR IGNORE INTO q_dist SELECT {caller},? FROM effective_references r
             JOIN q_cover c ON c.file=r.file AND c.verified=1
             JOIN q_dist d ON d.node=r.target_id AND d.depth=?
             WHERE r.kind='call' AND r.resolution='resolved' ORDER BY 1""", (depth + 1, depth))
@@ -111,7 +111,7 @@ def _packet(store, db, selected, hops, limit, digest):
     db.execute(f"""INSERT INTO q_calls SELECT id,file,distance+1 FROM (
         SELECT r.id,r.file,min(coalesce(a.depth,?),
             CASE WHEN r.resolution='resolved' THEN coalesce(b.depth,?) ELSE ? END) AS distance
-        FROM sem_references r JOIN q_cover c ON c.file=r.file AND c.verified=1
+        FROM effective_references r JOIN q_cover c ON c.file=r.file AND c.verified=1
         LEFT JOIN q_dist a ON a.node={caller} LEFT JOIN q_dist b ON b.node=r.target_id
         WHERE r.kind='call') WHERE distance<?""", (hops, hops, hops, hops))
     db.execute("CREATE TEMP TABLE q_declarations(id TEXT PRIMARY KEY,file TEXT,depth INTEGER)")
@@ -133,7 +133,7 @@ def _packet(store, db, selected, hops, limit, digest):
 
     packet["query"]["paths"] = bounded("query_paths", "SELECT count(*) FROM q_seed", "SELECT file FROM q_seed ORDER BY file")
     packet["calls"] = bounded("calls", "SELECT count(*) FROM q_calls",
-        """SELECT r.payload,q.depth FROM q_calls q JOIN sem_references r ON r.id=q.id
+        """SELECT r.payload,q.depth FROM q_calls q JOIN effective_references r ON r.id=q.id
            ORDER BY q.depth,r.file,r.l0,r.c0,r.l1,r.c1,r.id""",
         lambda row: {**_unpack(row[0]), "depth": row[1]})
     packet["declarations"] = bounded("declarations", "SELECT count(*) FROM q_declarations",
@@ -221,7 +221,7 @@ def _packet(store, db, selected, hops, limit, digest):
     return packet
 
 
-def query_graph(store, paths=None, hops=2, limit=100):
+def query_graph(store, paths=None, hops=2, limit=100, *, engine_store=None):
     from source_reader import _relative
     if type(hops) is not int or not 1 <= hops <= 3:
         raise ValueError("hops must be an integer from 1 to 3")
@@ -237,8 +237,11 @@ def query_graph(store, paths=None, hops=2, limit=100):
         if rebuild:
             with semantic_reader(store, rebuild=True) as current:
                 _, digest = _preflight(store, current, set(selected), paths is not None)
+                edge_summary = install_edge_view(current, store, engine_store=engine_store, limit=limit)
                 packet = _packet(store, current, selected, hops, limit, digest)
         else:
+            edge_summary = install_edge_view(db, store, engine_store=engine_store, limit=limit)
             packet = _packet(store, db, selected, hops, limit, digest)
+    packet["edge_view"] = edge_summary
     packet["query"]["whole_inventory"] = paths is None
     return packet

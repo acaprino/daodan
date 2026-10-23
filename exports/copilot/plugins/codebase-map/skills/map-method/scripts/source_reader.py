@@ -355,7 +355,7 @@ def read_packet(manifest: dict, requests: list[dict]) -> dict:
 
 
 def graph_packet(manifest: dict, paths: list[str] | None = None,
-                 hops: int = 2, limit: int = 100) -> dict:
+                 hops: int = 2, limit: int = 100, *, engine_store=None) -> dict:
     """Query recorded static links and return verified-reader requests.
 
     Only resolved call edges expand the symbol neighborhood, in both directions.
@@ -364,7 +364,9 @@ def graph_packet(manifest: dict, paths: list[str] | None = None,
     """
     if isinstance(manifest, SnapshotStore):
         from semantic_store import query_graph
-        return query_graph(manifest, paths, hops, limit)
+        return query_graph(manifest, paths, hops, limit, engine_store=engine_store)
+    if engine_store is not None:
+        raise ValueError("engine edges require a SQLite snapshot")
     from dependency_graph import dependency_graph_metrics, transitive_importers
     from semantic_index import build_semantic_index
 
@@ -580,6 +582,7 @@ def main(argv: list[str] | None = None) -> int:
     graph.add_argument("--path", action="append")
     graph.add_argument("--hops", type=int, choices=(1, 2, 3), default=2)
     graph.add_argument("--limit", type=int, default=100)
+    graph.add_argument("--engine-store", type=Path)
     read = commands.add_parser("read", help="read source blocks verified against the snapshot")
     read.add_argument("manifest", type=Path)
     selection = read.add_mutually_exclusive_group(required=True)
@@ -595,7 +598,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.command == "outline":
                 packet = outline_manifest(manifest, args.path, args.pattern, args.limit)
             elif args.command == "graph":
-                packet = graph_packet(manifest, args.path, args.hops, args.limit)
+                packet = graph_packet(manifest, args.path, args.hops, args.limit,
+                                      engine_store=args.engine_store)
             else:
                 if args.requests:
                     if args.symbol or args.lines or args.full:

@@ -147,6 +147,23 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertTrue(self.call("codebase_map_create_run",
                                  {"target": "src", "run_id": "invalid", "format": "pickle"}).get("isError"))
 
+    def test_engine_parameters_and_coverage_cross_the_real_transport(self):
+        self.data(self.call("codebase_map_create_run", {"target": "src", "run_id": "engine-wire"}))
+        graph = self.data(self.call("codebase_map_graph", {
+            "run_id": "engine-wire", "engine_store": "snapshot/engine-edges.sqlite"}))
+        self.assertEqual(graph["edge_view"]["coverage"]["status"], "missing_store")
+        impact = self.data(self.call("codebase_map_edit_impact", {
+            "run_id": "engine-wire", "targets": ["src/service.py::greet"],
+            "engine_store": "snapshot/engine-edges.sqlite"}))
+        self.assertEqual(impact["freshness_basis"], "lexical")
+        drift = self.data(self.call("codebase_map_stale_callers", {
+            "run_id": "engine-wire", "base_run_id": "engine-wire",
+            "base_engine_store": "snapshot/engine-edges.sqlite",
+            "candidate_engine_store": "snapshot/engine-edges.sqlite"}))
+        self.assertEqual(drift["engine_callee_drift"]["status"], "unavailable")
+        self.assertTrue(self.call("codebase_map_graph", {
+            "run_id": "engine-wire", "engine_store": "../escape.sqlite"}).get("isError"))
+
     def test_scope_streams_monotonic_request_progress_and_structured_result(self):
         result = self.data(self.call("codebase_map_scope", {"target": "src"}, token="scope-1"))
         self.assertEqual(result["files"], 1)

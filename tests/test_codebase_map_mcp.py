@@ -34,6 +34,32 @@ class MapServiceTests(unittest.TestCase):
     def create(self, **options):
         return self.service.create_run("src", "example", **options)
 
+    def test_engine_paths_are_run_bound_and_missing_pass_is_explicit(self):
+        self.create()
+        for value in ("../escape.sqlite", str(self.project / "escape.sqlite"), "manifest.sqlite"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.service.graph("example", engine_store=value)
+        graph = self.service.graph("example", engine_store="engine-edges.sqlite")
+        self.assertEqual(graph["edge_view"]["coverage"]["status"], "missing_store")
+        impact = self.service.edit_impact("example", ["src/module.py::selected"],
+                                          engine_store="engine-edges.sqlite")
+        self.assertEqual(impact["freshness_basis"], "lexical")
+        compared = self.service.stale_callers(
+            "example", "example", base_engine_store="engine-edges.sqlite",
+            candidate_engine_store="engine-edges.sqlite")
+        self.assertEqual(compared["engine_callee_drift"]["status"], "unavailable")
+
+    def test_engine_store_symlink_is_rejected_before_query(self):
+        self.create()
+        outside = self.project / "outside.sqlite"
+        outside.write_bytes(b"not an engine store")
+        try:
+            (self.run_dir / "snapshot/engine-edges.sqlite").symlink_to(outside)
+        except OSError:
+            self.skipTest("host does not allow symlinks")
+        with self.assertRaises(ValueError):
+            self.service.graph("example")
+
     @property
     def run_dir(self):
         return self.project / ".codebase-map/runs/example"

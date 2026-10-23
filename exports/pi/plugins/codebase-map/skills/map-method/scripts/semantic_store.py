@@ -979,15 +979,45 @@ def semantic_reader(store, *, rebuild=False):
                 db.close()
 
 
-def query_graph(store, paths=None, hops=2, limit=100):
+def install_edge_view(db, store, *, engine_store=None, limit=100):
+    """Materialize effective references on the reader connection, never the snapshot.
+
+    Card digests continue to query sem_references. Consumer queries explicitly
+    use effective_references, so merely installing an engine cannot age cards.
+    """
+    from edge_view import load_edge_view
+    view = load_edge_view(store, engine_store=engine_store)
+    db.execute("CREATE TEMP TABLE effective_references AS SELECT * FROM sem_references")
+    db.execute("CREATE INDEX temp.effective_target ON effective_references(target_id)")
+    db.execute("CREATE UNIQUE INDEX temp.effective_id ON effective_references(id)")
+    coverage = "q_cover" if db.execute(
+        "SELECT 1 FROM sqlite_temp_master WHERE name='q_cover'").fetchone() else "sem_coverage"
+    allowed = {r[0] for r in db.execute(f"SELECT file FROM {coverage} WHERE verified=1")}
+    targets = {r[0] for r in db.execute("SELECT id,file FROM sem_declarations") if r[1] in allowed}
+    for ref in view["references"]:
+        if ref["file"] not in allowed or (ref["target_id"] and ref["target_id"] not in targets):
+            continue
+        db.execute("UPDATE effective_references SET target_id=?,resolution=?,payload=? WHERE id=?",
+                   (ref["target_id"], ref["resolution"], _pack(ref), ref["id"]))
+    summary = {key: view[key] for key in ("schema", "version", "profile", "coverage", "gaps")}
+    summary["profile"] = {key: value for key, value in view["profile"].items() if key != "engine_report"}
+    for key in ("candidates", "conflicts"):
+        summary[key] = {"items": view[key][:limit], "total": len(view[key]),
+                        "truncated": max(0, len(view[key]) - limit)}
+    db.execute("CREATE TEMP TABLE effective_metadata(payload BLOB)")
+    db.execute("INSERT INTO effective_metadata VALUES(?)", (_pack(summary),))
+    return summary
+
+
+def query_graph(store, paths=None, hops=2, limit=100, *, engine_store=None):
     from store_graph import query_graph as query
-    return query(store, paths, hops, limit)
+    return query(store, paths, hops, limit, engine_store=engine_store)
 
 
-def query_references(store, declaration_id):
+def query_references(store, declaration_id, *, engine_store=None):
     from store_consumers import consumer_reader
-    with consumer_reader(store) as db:
-        for (payload,) in db.execute("SELECT payload FROM sem_references WHERE target_id=? ORDER BY file,l0,c0,l1,c1,id", (declaration_id,)):
+    with consumer_reader(store, engine_store=engine_store) as db:
+        for (payload,) in db.execute("SELECT payload FROM effective_references WHERE target_id=? ORDER BY file,l0,c0,l1,c1,id", (declaration_id,)):
             yield _unpack(payload)
 
 
@@ -1054,7 +1084,8 @@ class _Cards:
             return None
         self.prefetch([symbol_id])
         freshness, reason = self.states[symbol_id]
-        return {"freshness": freshness, "stale_reason": reason, **self._payloads.get(symbol_id, {})}
+        return {**self._payloads.get(symbol_id, {}), "freshness": freshness,
+                "stale_reason": reason, "freshness_basis": "lexical"}
 
 
 def upsert_meta_cards(store: SnapshotStore, cards_path: Path | str, cards: list[dict]) -> dict:
@@ -1383,25 +1414,31 @@ def _direct_edges(db, index, symbol):
     declaration_ids = index.declaration_ids(symbol)
     if declaration_ids:
         marks = ",".join("?" for _ in declaration_ids)
-        for ref_file, kind, l0, c0, l1, c1 in db.execute(
-            f"SELECT file,kind,l0,c0,l1,c1 FROM sem_references WHERE resolution='resolved' AND target_id IN ({marks})",
+        for ref_file, kind, l0, c0, l1, c1, payload in db.execute(
+            f"SELECT file,kind,l0,c0,l1,c1,payload FROM effective_references WHERE resolution='resolved' AND target_id IN ({marks})",
             declaration_ids,
         ):
             caller = index.enclosing(ref_file, l0)
             if caller is None or caller[0] == sym_id or inside_target(caller):
                 continue
-            _add_reference(callers, caller, kind, _site(ref_file, kind, l0, c0, l1, c1))
+            _add_reference(callers, caller, kind, _evidence_site(ref_file, kind, l0, c0, l1, c1, payload))
 
     callees: dict = {}
-    for target_id, kind, l0, c0, l1, c1 in db.execute(
-        "SELECT target_id,kind,l0,c0,l1,c1 FROM sem_references WHERE file=? AND resolution='resolved' "
+    for target_id, kind, l0, c0, l1, c1, payload in db.execute(
+        "SELECT target_id,kind,l0,c0,l1,c1,payload FROM effective_references WHERE file=? AND resolution='resolved' "
         "AND target_id IS NOT NULL AND l0 BETWEEN ? AND ?", (file, start, end),
     ):
         callee = index.symbol_for_declaration(target_id)
         if callee is None or callee[0] == sym_id or inside_target(callee):
             continue
-        _add_reference(callees, callee, kind, _site(file, kind, l0, c0, l1, c1))
+        _add_reference(callees, callee, kind, _evidence_site(file, kind, l0, c0, l1, c1, payload))
     return callers, callees
+
+
+def _evidence_site(file, kind, l0, c0, l1, c1, payload):
+    ref = _unpack(payload)
+    return {**_site(file, kind, l0, c0, l1, c1),
+            **{key: ref[key] for key in ("resolver", "provenance", "target_kind") if key in ref}}
 
 
 def _is_test_path(path: str) -> bool:
@@ -1454,7 +1491,7 @@ def _impact_of(db, index, cards, symbol, limit, history, hops=1, peer_ids=()):
     blind: dict = {}
     unbound = 0
     for (payload,) in db.execute(
-        "SELECT payload FROM sem_references WHERE file=? AND resolution!='resolved' "
+        "SELECT payload FROM effective_references WHERE file=? AND resolution!='resolved' "
         "AND known_unrelated=0 AND l0 BETWEEN ? AND ?", (file, start, end),
     ):
         reference = _unpack(payload)
@@ -1663,7 +1700,8 @@ def _packet_bytes(packet: dict) -> int:
 
 def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=5,
                       include_source=True, hops=1, include_neighbor_source=False,
-                      include_slices=False, budget_chars=DEFAULT_IMPACT_BUDGET_CHARS) -> dict:
+                      include_slices=False, budget_chars=DEFAULT_IMPACT_BUDGET_CHARS,
+                      engine_store=None) -> dict:
     """What to know before editing a symbol, in one bounded packet.
 
     Read-only over the snapshot's Meta-Code index and the card store. Target
@@ -1699,6 +1737,7 @@ def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=
             raise ValueError("snapshot has no Meta-Code index; refresh the snapshot")
         index = _ImpactIndex(db)
         cards = _Cards(db, cards_path, store.metadata.get("root"))
+        edge_summary = install_edge_view(db, store, engine_store=engine_store, limit=neighbors)
         resolved: list = []
         unknown: list = []
         for target in targets:
@@ -1714,6 +1753,8 @@ def build_edit_impact(store, targets, *, cards_path=None, neighbors=20, history=
         selected = unique[:MAX_IMPACT_TARGETS]
         packet = {
             "schema": EDIT_IMPACT_SCHEMA,
+            "edge_view": edge_summary,
+            "freshness_basis": "lexical",
             "root": store.metadata.get("root"),
             "target": store.metadata.get("target"),
             "targets": [_impact_of(db, index, cards, row, neighbors, history, hops,
@@ -1812,7 +1853,79 @@ def _meta_map(db):
     return {row[0]: row for row in db.execute(_SYMBOL_SELECT)}
 
 
-def build_stale_callers(base, candidate, *, limit=100) -> dict:
+def _call_bindings(db, index, table):
+    """Match calls by enclosing symbol and ordinal, independently of shifted lines.
+
+    Changed caller bodies have no reliable callsite identity across revisions;
+    consumers retain both witnesses instead of interpreting absence as rewiring.
+    """
+    result, counts = {}, {}
+    for file, line, target, payload in db.execute(
+        f"SELECT file,l0,target_id,payload FROM {table} WHERE kind='call' ORDER BY file,l0,c0,id"
+    ):
+        caller = index.enclosing(file, line)
+        callee = index.symbol_for_declaration(target) if target else None
+        if caller is None:
+            continue
+        ref = _unpack(payload)
+        parts = tuple(ref.get("parts") or [])
+        key = (caller[0], parts)
+        ordinal = counts.get(key, 0)
+        counts[key] = ordinal + 1
+        result[(*key, ordinal)] = {
+            "caller": caller[0], "caller_body_hash": caller[6],
+            "target": callee[0] if callee else None,
+            "interface_hash": callee[7] if callee else None,
+            "target_kind": ref.get("target_kind", "concrete"),
+            "resolver": ref.get("resolver", "builtin-lexical"),
+            "site": {"file": file, "span": ref.get("span")},
+        }
+    return result
+
+
+def _binding_drift(before, after, new_symbols, *, engine=False):
+    items = []
+    for key in sorted(set(before) | set(after)):
+        old, new = before.get(key), after.get(key)
+        if engine and not any(r and r["resolver"] != "builtin-lexical" for r in (old, new)):
+            continue
+        kind = None
+        if old and old["target"] and old["target"] not in new_symbols:
+            kind = "removed_target"
+        elif old and new and old["caller_body_hash"] == new["caller_body_hash"]:
+            if old["target"] and new["target"] and old["target"] != new["target"]:
+                kind = ("dispatch_set_changed" if {old["target_kind"], new["target_kind"]}
+                        & {"protocol", "interface"} else "rewired_call")
+            elif old["target"] and old["target"] == new["target"] and old["interface_hash"] != new["interface_hash"]:
+                kind = "callee_interface_changed"
+        if kind:
+            items.append({"kind": kind, "caller": (new or old)["caller"],
+                          "before_target": old["target"] if old else None,
+                          "after_target": new["target"] if new else None,
+                          "before": old, "after": new,
+                          "certainty": "potential" if kind == "dispatch_set_changed" else "confirmed"})
+    return items
+
+
+def _engine_comparison(before, after):
+    available = [v["profile"]["engine_available"] for v in (before, after)]
+    if not any(available):
+        return "unavailable", "neither snapshot has a verified engine pass"
+    if not all(available):
+        return "incomparable", "only one snapshot has a verified engine pass"
+    if before["profile"]["engine"] != after["profile"]["engine"]:
+        return "incomparable", "engine versions differ"
+    sampled = [v["coverage"]["sampled"] for v in (before, after)]
+    if any(sampled):
+        keys = ("sampled", "population", "selected", "stride")
+        if any(before["coverage"][k] != after["coverage"][k] for k in keys):
+            return "incomparable", "sampled coverage differs"
+        return "partial", "only positively resolved witnesses are comparable; absence is not evidence"
+    return "complete", None
+
+
+def build_stale_callers(base, candidate, *, limit=100,
+                       base_engine_store=None, candidate_engine_store=None) -> dict:
     """Compare two snapshots and classify callers of changed symbols.
 
     Interface or effects changes put direct candidate callers in
@@ -1820,7 +1933,7 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
     callers in `validation_impact` (GREEN for editing: rerun tests, do not
     rewrite). Edit propagation stops at a caller whose own interface and
     effects did not change; that caller's callers are GREEN and join
-    `do_not_touch`. Callers are taken from resolved candidate references and
+    `do_not_touch`. Callers retain resolved base and candidate references and
     containment, whether or not they have cards. This query is distinct from
     card freshness (`stale_callee`).
     """
@@ -1837,6 +1950,16 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
         old = _meta_map(base_db)
         new = _meta_map(candidate_db)
         index = _ImpactIndex(candidate_db)
+        base_index = _ImpactIndex(base_db)
+        base_view = install_edge_view(base_db, base, engine_store=base_engine_store, limit=limit)
+        candidate_view = install_edge_view(candidate_db, candidate, engine_store=candidate_engine_store, limit=limit)
+        engine_status, engine_reason = _engine_comparison(base_view, candidate_view)
+        comparable = engine_status in {"complete", "partial"}
+        lexical_drift = _binding_drift(_call_bindings(base_db, base_index, "sem_references"),
+                                      _call_bindings(candidate_db, index, "sem_references"), new)
+        engine_drift = (_binding_drift(_call_bindings(base_db, base_index, "effective_references"),
+                                       _call_bindings(candidate_db, index, "effective_references"), new,
+                                       engine=True) if comparable else [])
 
         changed = []
         incompatible = []
@@ -1866,11 +1989,9 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
             (incompatible if kind == "digest_version_mismatch" else changed).append(entry)
         changed_by_id = {item["symbol_id"]: item for item in changed}
 
-        # Reverse candidate graph: callee -> callers, with edge kinds and sites.
+        # Keep base witnesses as well: removed bindings still impose inspection.
         reverse: dict[str, dict[str, dict]] = {}
         forward: dict[str, set[str]] = {}
-        callee_cache: dict[str, object] = {}
-        enclosing_cache: dict[tuple[str, int], object] = {}
 
         def add_edge(caller, callee, kind, site):
             if caller is None or callee is None or caller[0] == callee[0]:
@@ -1885,19 +2006,26 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
                 edge["sites"].append(site)
             forward.setdefault(caller[0], set()).add(callee[0])
 
-        for file, kind, l0, c0, l1, c1, target_id in candidate_db.execute(
-            "SELECT file,kind,l0,c0,l1,c1,target_id FROM sem_references "
-            "WHERE resolution='resolved' AND target_id IS NOT NULL"
-        ):
-            if target_id not in callee_cache:
-                callee_cache[target_id] = index.symbol_for_declaration(target_id)
-            callee = callee_cache[target_id]
-            key = (file, l0)
-            if key not in enclosing_cache:
-                enclosing_cache[key] = index.enclosing(file, l0)
-            edge_kind = {"call": "CALLS", "read": "READS"}.get(kind, str(kind).upper())
-            add_edge(enclosing_cache[key], callee, edge_kind,
-                     _site(file, kind, l0, c0, l1, c1))
+        # A positive witness remains an inspection obligation even when the
+        # two engine profiles cannot support a claim of changed resolution.
+        table = "effective_references"
+        witnessed = set()
+        for db, lookup, revision in ((candidate_db, index, "candidate"), (base_db, base_index, "base")):
+            for file, kind, l0, c0, l1, c1, target_id, payload in db.execute(
+                f"SELECT file,kind,l0,c0,l1,c1,target_id,payload FROM {table} "
+                "WHERE resolution='resolved' AND target_id IS NOT NULL"
+            ):
+                callee = lookup.symbol_for_declaration(target_id)
+                caller = lookup.enclosing(file, l0)
+                if caller is None or callee is None or caller[0] not in new:
+                    continue
+                witness = (caller[0], callee[0], kind, l0, c0, l1, c1)
+                if witness in witnessed:
+                    continue
+                witnessed.add(witness)
+                edge_kind = {"call": "CALLS", "read": "READS"}.get(kind, str(kind).upper())
+                add_edge(new[caller[0]], new.get(callee[0], callee), edge_kind,
+                         {**_evidence_site(file, kind, l0, c0, l1, c1, payload), "snapshot": revision})
         for row in new.values():
             name = row[2]
             if "." not in name:
@@ -1928,21 +2056,22 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
 
         edit_queue = deque()
         for item in changed:
-            if item["change_kind"] in {"interface_changed", "effects_changed", "added"}:
+            if item["change_kind"] in {"interface_changed", "effects_changed", "added", "removed"}:
                 edit_queue.append((item["symbol_id"], 0))
         seen_edit_sources = set()
         while edit_queue:
             source_id, depth = edit_queue.popleft()
-            if (source_id, depth) in seen_edit_sources:
+            if source_id in seen_edit_sources:
                 continue
-            seen_edit_sources.add((source_id, depth))
+            seen_edit_sources.add(source_id)
             for caller_id, item in sorted(reverse.get(source_id, {}).items()):
                 row = item["row"]
-                if caller_id in changed_by_id and contract_changed(caller_id):
+                removed_source = changed_by_id[source_id]["change_kind"] == "removed"
+                if caller_id in changed_by_id and contract_changed(caller_id) and not removed_source:
                     if caller_id != source_id:
                         edit_queue.append((caller_id, depth + 1))
                     continue
-                if caller_id in changed_by_id:
+                if caller_id in changed_by_id and not removed_source:
                     continue
                 record(edit, row, "RED", "edit_impact", depth + 1, {
                     "changed_symbol": source_id,
@@ -1991,6 +2120,10 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
             return {"total": len(ranked), "listed": ranked[:limit],
                     "truncated": max(0, len(ranked) - limit)}
 
+        def drift_packet(items, status, reason=None):
+            return {"status": status, "reason": reason, "items": items[:limit],
+                    "total": len(items), "truncated": max(0, len(items) - limit)}
+
         edit_packet = bounded(edit)
         validation_packet = bounded(validation)
         do_not_touch = dict(validation)
@@ -2008,6 +2141,10 @@ def build_stale_callers(base, candidate, *, limit=100) -> dict:
 
         return {
             "schema": STALE_CALLERS_SCHEMA,
+            "freshness_basis": "lexical",
+            "lexical_callee_drift": drift_packet(lexical_drift, "complete"),
+            "engine_callee_drift": drift_packet(engine_drift, engine_status, engine_reason),
+            "edge_views": {"base": base_view, "candidate": candidate_view},
             "base": snapshot._snapshot_info(base),
             "candidate": snapshot._snapshot_info(candidate),
             "changed": changed,

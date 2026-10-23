@@ -91,10 +91,11 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
     @server.tool(annotations=read_only)
     async def codebase_map_graph(
         ctx: Context, run_id: str, paths: list[str] | None = None,
-        hops: int = 2, limit: int = 100,
+        hops: int = 2, limit: int = 100, engine_store: str | None = None,
     ) -> dict:
         """Query verified static links and diagnostics for a run's source manifest."""
-        return await _invoke(ctx, service.graph, run_id, paths=paths, hops=hops, limit=limit)
+        return await _invoke(ctx, service.graph, run_id, paths=paths, hops=hops, limit=limit,
+                             engine_store=engine_store)
 
     @server.tool(annotations=read_only)
     async def codebase_map_read(ctx: Context, run_id: str, requests: list[dict]) -> dict:
@@ -106,13 +107,14 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         ctx: Context, run_id: str, targets: list[str], neighbors: int = 20,
         history: int = 5, include_source: bool = True, hops: int = 1,
         include_neighbor_source: bool = False, include_slices: bool = False,
-        budget_chars: int = 120000,
+        budget_chars: int = 120000, engine_store: str | None = None,
     ) -> dict:
         """Before editing symbols: digests, signatures, cards, L1/L2 neighbours, optional verified neighbour source and lazy slices."""
         return await _invoke(ctx, service.edit_impact, run_id, targets, neighbors=neighbors,
                              history=history, include_source=include_source, hops=hops,
                              include_neighbor_source=include_neighbor_source,
-                             include_slices=include_slices, budget_chars=budget_chars)
+                             include_slices=include_slices, budget_chars=budget_chars,
+                             engine_store=engine_store)
 
     @server.tool(annotations=read_only)
     async def codebase_map_symbols_at(
@@ -126,9 +128,11 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
     @server.tool(annotations=read_only)
     async def codebase_map_stale_callers(
         ctx: Context, run_id: str, base_run_id: str, limit: int = 100,
+        base_engine_store: str | None = None, candidate_engine_store: str | None = None,
     ) -> dict:
         """Classify candidate callers of symbols changed since a base run by edit impact, validation impact and GREEN stop."""
-        return await _invoke(ctx, service.stale_callers, run_id, base_run_id, limit=limit)
+        return await _invoke(ctx, service.stale_callers, run_id, base_run_id, limit=limit,
+                             base_engine_store=base_engine_store, candidate_engine_store=candidate_engine_store)
 
     @server.tool(annotations=read_only)
     async def codebase_map_meta_query(

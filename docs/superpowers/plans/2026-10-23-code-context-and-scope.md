@@ -183,12 +183,19 @@ bound store può avvenire automaticamente; una query non avvia una passata engin
 lessicale (`freshness_basis="lexical"`), mentre il drift su chiamati risolti via
 engine è esposto separatamente (`engine_callee_drift`) senza invalidare `cards.sqlite`.
 
-- [ ] Scrivere regressioni per arco Jedi presente in graph, primo/secondo hop, `store_consumers` e callsite; rimuovere il falso blind spot mantenendo il resolver originale visibile.
-- [ ] Scrivere i casi di staleness del codice (`removed_target`, `rewired_call`, `dispatch_set_changed` per implementazioni di un protocollo) separati dai casi di comparabilità dell'engine (`only_base_has_engine`, `only_candidate_has_engine`, `different_engine_version`, `sampled_coverage_differs`): nessun caso asimmetrico o flip protocollo/concreto può dichiarare indipendenza o generare un falso `rewired_call` confermato.
-- [ ] Collegare tutti i consumatori alla vista P1 e confrontare i grafi di entrambe le revisioni. Calcolare sempre lo strato lessicale e riportare separatamente lo stato dello strato engine (`complete|partial|unavailable|incomparable`) con `{items, total, truncated}`.
-- [ ] Propagare gli stessi campi in CLI, servizio e wire MCP; verificare percorsi consentiti e binding dello store. Nessun altro resolver copiato negli adapter.
-- [ ] Eseguire `test_codebase_map_edit_impact.py`, `test_codebase_map_stale_callers.py`, `test_xray_source_reader.py`, `test_codebase_map_mcp.py`, `test_codebase_map_mcp_wire.py` con unittest discover, un modulo per processo.
+- [x] Scrivere regressioni per arco Jedi presente in graph, primo/secondo hop, `store_consumers` e callsite; rimuovere il falso blind spot mantenendo il resolver originale visibile.
+- [x] Scrivere i casi di staleness del codice (`removed_target`, `rewired_call`, `dispatch_set_changed` per implementazioni di un protocollo) separati dai casi di comparabilità dell'engine (`only_base_has_engine`, `only_candidate_has_engine`, `different_engine_version`, `sampled_coverage_differs`): nessun caso asimmetrico o flip protocollo/concreto può dichiarare indipendenza o generare un falso `rewired_call` confermato.
+- [x] Collegare tutti i consumatori alla vista P1 e confrontare i grafi di entrambe le revisioni. Calcolare sempre lo strato lessicale e riportare separatamente lo stato dello strato engine (`complete|partial|unavailable|incomparable`) con `{items, total, truncated}`.
+- [x] Propagare gli stessi campi in CLI, servizio e wire MCP; verificare percorsi consentiti e binding dello store. Nessun altro resolver copiato negli adapter.
+- [x] Eseguire `test_codebase_map_edit_impact.py`, `test_codebase_map_stale_callers.py`, `test_xray_source_reader.py`, `test_codebase_map_mcp.py`, `test_codebase_map_mcp_wire.py` con unittest discover, un modulo per processo.
 - [ ] Aggiornare docs, gate comuni e commit P2. **Done:** impatto e grafo usano le prove Jedi disponibili senza perdere relazioni della base o nascondere copertura mancante.
+
+Checkpoint P2 (2026-10-23): implementazione e regressioni verificate, inclusa
+la chiusura dei cinque rilievi della revisione congiunta P2/P3. Il candidato
+isolato conserva un gate generale rosso preesistente: 20 violazioni del
+budget istruzioni, con test e input identici alla baseline 98d4b70c.
+La chiusura P2 resta aperta fino al superamento del gate. Evidenze nel run
+`code-context-scope-20261023`.
 
 ## P3: indice locale e ricerca dei punti di partenza
 

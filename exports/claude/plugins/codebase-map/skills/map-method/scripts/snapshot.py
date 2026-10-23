@@ -3237,7 +3237,7 @@ def cmd_edit_impact(args: argparse.Namespace) -> int:
                 store, args.target, cards_path=_cards_path(args), neighbors=args.neighbors,
                 history=args.history, include_source=not args.no_source, hops=args.hops,
                 include_neighbor_source=args.neighbor_source, include_slices=args.slices,
-                budget_chars=args.budget_chars,
+                budget_chars=args.budget_chars, engine_store=args.engine_store,
             )
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
@@ -3284,7 +3284,9 @@ def cmd_stale_callers(args: argparse.Namespace) -> int:
         with ExitStack() as stack:
             candidate = stack.enter_context(open_snapshot(Path(args.manifest)))
             base = stack.enter_context(open_snapshot(Path(args.base)))
-            result = build_stale_callers(base, candidate, limit=args.limit)
+            result = build_stale_callers(base, candidate, limit=args.limit,
+                                        base_engine_store=args.base_engine_store,
+                                        candidate_engine_store=args.candidate_engine_store)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (OSError, ValueError, KeyError) as error:
@@ -3389,6 +3391,7 @@ def main(argv: list[str] | None = None) -> int:
     edit_impact_parser.add_argument("--slices", action="store_true", help="compute lazy Python backward slices for targets")
     edit_impact_parser.add_argument("--budget-chars", type=int, default=120000, help="packet budget in JSON characters")
     edit_impact_parser.add_argument("--no-source", action="store_true")
+    edit_impact_parser.add_argument("--engine-store", type=Path)
     edit_impact_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     edit_impact_parser.set_defaults(func=cmd_edit_impact)
 
@@ -3403,6 +3406,8 @@ def main(argv: list[str] | None = None) -> int:
     stale_parser.add_argument("manifest", help="candidate snapshot")
     stale_parser.add_argument("--base", required=True, help="base snapshot")
     stale_parser.add_argument("--limit", type=int, default=100)
+    stale_parser.add_argument("--base-engine-store", type=Path)
+    stale_parser.add_argument("--candidate-engine-store", type=Path)
     stale_parser.set_defaults(func=cmd_stale_callers)
 
     meta_upsert_parser = sub.add_parser("meta-upsert", help="write Meta-Code cards, bound to the digests of this snapshot, to the card store")
