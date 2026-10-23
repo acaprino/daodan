@@ -106,7 +106,7 @@ Le firme seguenti sono il contratto da implementare, non API già esistenti.
 | `S/retrieval.py` | `refresh_index(manifest: Path, index_path: Path) -> dict`; `search(index_path: Path, query: str, *, anchors: list[dict], limit: int, embedding_result: dict | None = None) -> dict`. |
 | `S/semantic_map.py` | `render_map(manifest: Path, *, cards_path: Path, paths: list[str], out: Path) -> dict`: Markdown deterministico e relativo manifest di provenienza. |
 | `S/embedding_worker.py` | Sidecar a input/output file, `index` e `query`; import del runtime solo qui. Nessun download durante una normale query. |
-| `S/scope_planner.py` | `prepare_scope(request: dict, *, candidate, base=None, retrieval: dict, edge_views: dict) -> dict`; `advance_scope(plan: dict, evidence: dict) -> dict`. |
+| `S/scope_planner.py` | `prepare_scope(request, *, authority, indexes=None) -> dict`; `advance_scope(plan, request, *, authority, indexes=None, evidence=None, max_steps=100) -> dict`; `persist_scope(plan, output, *, authority) -> dict`. Snapshot descriptors live in the request; independent run authority is required again on resume. |
 | `S/context_packet.py` | `assemble_packet(plan: dict, *, candidate, cards_path: Path, budget: dict, cursor: dict | None = None) -> dict`. Non crea o chiude run. |
 | `plugins/project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py` | Adapter di orchestrazione `preflight`, `task-packet`, `post-task`; usa il provider tramite CLI/MCP e artefatti vincolati, mai import da percorsi privati di un altro plugin. |
 
@@ -278,13 +278,13 @@ nuovo `tests/test_codebase_map_scope_planner.py`.
 specifica; output `analysis`, `edit_candidates`, `potential_impact`, `validation_obligations`,
 `deferred`, `unresolved`, `outside_boundary` con motivi e binding.
 
-- [ ] Scrivere i cinque casi della Review Focus e due controlli: un cambio di corpo non prescrive edit dei chiamanti; un file fuori write boundary resta un obbligo segnalato, non un edit autorizzato.
-- [ ] Aggiungere `test_impacted_caller_is_not_automatically_an_edit` e `test_similarity_cannot_satisfy_hard_support`: impatto e intervento restano distinti; una card pertinente non sostituisce il corpo corrente richiesto.
-- [ ] Implementare seed da diff/anchor e ricerca, classificazione degli obblighi prima del budget, espansione direzionale e frontiera deduplicata. Non inventare tipi di arco mancanti, né collegare test e requisiti per sola similarità.
-- [ ] Implementare arresti espliciti `needs_localization`, `needs_split` e ripresa legata agli input. Non usare un limite fisso di hop come prova di completezza e non trasformare una frontiera vuota in successo del task.
-- [ ] Aggiungere budget indipendenti di candidati, archi, round, tempo e token cumulativi; testare frontier checkpoint e azioni guidate dai gap senza retry equivalente. `ready_for_attempt` non chiude validazione né autorizza integrazione; l'arresto è `uncalibrated`.
-- [ ] Eseguire `test_codebase_map_scope_planner.py`: ordine deterministico, nessun obbligo perso, ripresa equivalente alla corsa continua, cursori obsoleti rifiutati.
-- [ ] Aggiornare specifica se la ricerca cambia la politica, con motivazione e confronto; docs, gate comuni e commit P6. **Done:** algoritmo verificabile e utilizzabile indipendentemente dal modello embedding.
+- [x] Scrivere i cinque casi della Review Focus e due controlli: un cambio di corpo non prescrive edit dei chiamanti; un file fuori write boundary resta un obbligo segnalato, non un edit autorizzato.
+- [x] Aggiungere `test_impacted_caller_is_not_automatically_an_edit` e `test_similarity_cannot_satisfy_hard_support`: impatto e intervento restano distinti; una card pertinente non sostituisce il corpo corrente richiesto.
+- [x] Implementare seed da diff/anchor e ricerca, classificazione degli obblighi prima del budget, espansione direzionale e frontiera deduplicata. Non inventare tipi di arco mancanti, né collegare test e requisiti per sola similarità.
+- [x] Implementare arresti espliciti `needs_localization`, `needs_split` e ripresa legata agli input. Non usare un limite fisso di hop come prova di completezza e non trasformare una frontiera vuota in successo del task.
+- [x] Aggiungere budget indipendenti di candidati, archi, round, tempo e token cumulativi; testare frontier checkpoint e azioni guidate dai gap senza retry equivalente. `ready_for_attempt` non chiude validazione né autorizza integrazione; l'arresto è `uncalibrated`.
+- [x] Eseguire `test_codebase_map_scope_planner.py`: ordine deterministico, nessun obbligo perso, ripresa equivalente alla corsa continua, cursori obsoleti rifiutati.
+- [x] Aggiornare specifica se la ricerca cambia la politica, con motivazione e confronto; docs, gate comuni e commit P6. **Done:** algoritmo verificabile e utilizzabile indipendentemente dal modello embedding.
 
 ## P7: contesto limitato e interfacce CLI/MCP
 
