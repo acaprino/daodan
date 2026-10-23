@@ -3312,6 +3312,23 @@ def cmd_meta_upsert(args: argparse.Namespace) -> int:
         return 2
 
 
+def cmd_context(args: argparse.Namespace) -> int:
+    try:
+        import context_packet
+        def load(path):
+            _reject_links(Path(path))
+            return json.loads(Path(path).read_text(encoding='utf8'))
+        result = context_packet.create_context(Path(args.manifest), load(args.request), load(args.recipient),
+            authority=load(args.authority), out=Path(args.out),
+            cursor=Path(args.cursor) if args.cursor else None,
+            indexes=load(args.indexes) if args.indexes else None)
+        print(json.dumps(result, ensure_ascii=False))
+        return 0
+    except (ValueError, OSError) as error:
+        print(json.dumps({'error': str(error)}), file=sys.stderr)
+        return 1
+
+
 def main(argv: list[str] | None = None) -> int:
     from languages.python import require_minimum_interpreter
     require_minimum_interpreter("snapshot.py")
@@ -3380,6 +3397,14 @@ def main(argv: list[str] | None = None) -> int:
     meta_query_parser.add_argument("--limit", type=int, default=100)
     meta_query_parser.add_argument("--cards", help="card store; default: cards.sqlite of the analysis root the snapshot belongs to")
     meta_query_parser.set_defaults(func=cmd_meta_query)
+
+    context_parser = sub.add_parser('context', help='publish bounded evidence and resumable residuals; no implicit indexing or inference')
+    context_parser.add_argument('manifest')
+    for name in ('request', 'recipient', 'authority', 'out'):
+        context_parser.add_argument('--' + name, required=True)
+    context_parser.add_argument('--cursor')
+    context_parser.add_argument('--indexes')
+    context_parser.set_defaults(func=cmd_context)
 
     edit_impact_parser = sub.add_parser("edit-impact", help="what to know before editing symbols: digests, signatures, cards, one-hop callers and callees, blind spots, verified source")
     edit_impact_parser.add_argument("manifest")

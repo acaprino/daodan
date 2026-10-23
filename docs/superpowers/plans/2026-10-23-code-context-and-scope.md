@@ -294,21 +294,21 @@ Docs: riferimenti `mcp.md`, `snapshot.md`, `reading.md` (con saldo parole $\Delt
 su `reading.md`). Dividere packer (`P7a`) e CLI/MCP (`P7b`) in micro-task, in wave
 distinta da `P2c`.
 
-**Interfaces:** CLI proposta `snapshot.py context MANIFEST --request REQUEST.json
---out OUTPUT_DIR [--cursor CURSOR.json]`; tool proposto `codebase_map_context`
+**Interfaces:** CLI `snapshot.py context MANIFEST --request REQUEST.json
+--recipient RECIPIENT.json --authority AUTHORITY.json --out OUTPUT_DIR [--cursor CURSOR.json]`; tool `codebase_map_context`
 (registrato con annotazione `writes` in `mcp_server.py`, percorsi validati in
 `_validate_artifact_paths`, senza avviare implicitamente `refresh_index` o
 `embedding_worker.py`) con run ID e richiesta vincolata. Risposta: stato, packet
 path/digest, contatori, gap, costo e cursore. Le letture del pacchetto riusano il
 provider della mappa.
 
-- [ ] Testare budget con wrapper e metadati inclusi, deduplicazione di sorgenti sovrapposte, nucleo troppo grande e cursor replay. Assert: nessun `ready` se il nucleo eccede; tutti gli elementi omessi hanno motivo.
-- [ ] Implementare e confrontare con la baseline il packing con prerequisiti della specifica. Condensare eventuali cicli di prerequisiti (SCC) in unità tutto-o-niente (`needs_split` se la SCC eccede il budget). Testare prerequisito condiviso che rende ammissibile un bundle prima scartato, sostituzione card/corpo che perde un supporto, corpi identici con identità diverse e overflow dopo serializzazione. Limiti di lavoro espliciti; nessuna pretesa di ottimo o garanzia `1-1/e`.
-- [ ] Riutilizzare L0-L4 e letture verificate di `edit-impact`, senza costruire una seconda logica di impatto. Aggiungere card fresche, `engine_callee_drift` e riferimenti Markdown; dettaglio dei vicini progressivo.
-- [ ] Distinguere conteggio token del destinatario da stima e limite caratteri. Il caller passa lo spazio effettivamente disponibile e la riserva; non usare `chars/4` come garanzia. Conservare il packet completo su disco e stdout compatto.
-- [ ] Vincolare cursori ai digest di `{manifest, retrieval_index, edge_view, cards, request, policy_version}` e destinatario (`cursor_stale` su qualsiasi mismatch); scrittura atomica e collisioni rilevate. Stesso cursore/input restituisce gli stessi blocchi, non una nuova selezione casuale.
-- [ ] Eseguire test context, scope, edit-impact, MCP servizio e wire; verificare gli stessi esiti attraverso CLI e MCP.
-- [ ] Aggiornare docs, gate comuni e commit P7. **Done:** un agente riceve contesto circoscritto e può richiedere l'approfondimento successivo senza perdere il perimetro.
+- [x] Testare budget con wrapper e metadati inclusi, deduplicazione di sorgenti sovrapposte, nucleo troppo grande e cursor replay. Assert: nessun `ready` se il nucleo eccede; tutti gli elementi omessi hanno motivo.
+- [x] Implementare e confrontare con la baseline il packing con prerequisiti della specifica. Condensare eventuali cicli di prerequisiti (SCC) in unità tutto-o-niente (`needs_split` se la SCC eccede il budget). Testare prerequisito condiviso che rende ammissibile un bundle prima scartato, sostituzione card/corpo che perde un supporto, corpi identici con identità diverse e overflow dopo serializzazione. Limiti di lavoro espliciti; nessuna pretesa di ottimo o garanzia `1-1/e`.
+- [x] Riutilizzare L0-L4 e letture verificate di `edit-impact`, senza costruire una seconda logica di impatto. Aggiungere card fresche, `engine_callee_drift` e riferimenti Markdown; dettaglio dei vicini progressivo.
+- [x] Distinguere conteggio token del destinatario da stima e limite caratteri. Il caller passa lo spazio effettivamente disponibile e la riserva; non usare `chars/4` come garanzia. Conservare il packet completo su disco e stdout compatto.
+- [x] Vincolare cursori ai digest di `{manifest, retrieval_index, edge_view, cards, request, policy_version}` e destinatario (`cursor_stale` su qualsiasi mismatch); scrittura atomica e collisioni rilevate. Stesso cursore/input restituisce gli stessi blocchi, non una nuova selezione casuale.
+- [x] Eseguire test context, scope, edit-impact, MCP servizio e wire; verificare gli stessi esiti attraverso CLI e MCP.
+- [x] Aggiornare docs, gate comuni e commit P7. **Done:** un agente riceve contesto circoscritto e può richiedere l'approfondimento successivo senza perdere il perimetro.
 
 ## P8: integrazione nel ciclo di lavoro
 

@@ -243,7 +243,8 @@ class MapService:
         # Helpers read these fixed inputs before validating their declaration.
         # Include optional inputs and possible unexpected phase files as well.
         names = {*snapshot.PHASE_FILES, "knowledge/navigation.md", "knowledge/documentation-leads.md",
-                 "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite"}
+                 "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
+                 "snapshot/context", "cards.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
             migrate_root._reject_link_chain(path)
         delivery = state.get("delivery")
@@ -472,6 +473,45 @@ class MapService:
         if len(json.dumps(packet)) > MAX_READ_CHARS:
             raise ValueError(f"edit impact exceeds {MAX_READ_CHARS} characters; request fewer targets or neighbors")
         return packet
+
+    def context(self, run_id, request, recipient, out='context', cursor=None, base_run_id=None, embedding_result=None):
+        """Create a bounded evidence packet within an already bound analysis run."""
+        import context_packet
+        with self._operation(write=True):
+            run, _, manifest, _ = self._bound_run(run_id)
+            out = _relative(out)
+            output = manifest.path.parent / out
+            migrate_root._reject_link_chain(output)
+            checkpoint = None
+            if cursor is not None:
+                checkpoint = run / _relative(cursor)
+                migrate_root._reject_link_chain(checkpoint)
+            request = dict(request)
+            base_engine = None
+            if base_run_id is not None:
+                base_run, _, base, _ = self._bound_run(base_run_id)
+                expected_base = {'manifest': str(base.path)}
+                if request.get('base') not in (None, expected_base):
+                    raise ValueError('context base differs from the independently bound base run')
+                request['base'] = expected_base
+                base_engine = str(base.path.parent / 'engine-edges.sqlite')
+            elif request.get('base') is not None:
+                raise ValueError('context base requires a bound base_run_id')
+            authority = {'root': str(self.project_root), 'source_root': str(Path(manifest['root'])),
+                         'read_boundary': [manifest['target']], 'write_boundary': []}
+            indexes = {'cards': str(self.root / card_store.CARD_STORE_NAME),
+                       'retrieval': str(manifest.path.parent / 'retrieval.sqlite')}
+            if embedding_result is not None:
+                dense = run / _relative(embedding_result)
+                migrate_root._reject_link_chain(dense)
+                if not dense.is_relative_to(manifest.path.parent) or dense.suffix != '.json':
+                    raise ValueError('embedding receipt must be a JSON inside the bound snapshot directory')
+                indexes['embedding_result'] = str(dense)
+            if base_engine is not None:
+                indexes['base_engine'] = base_engine
+            result = context_packet.create_context(manifest.path, request, recipient,
+                authority=authority, out=output, cursor=checkpoint, indexes=indexes)
+            return dict(result, run_id=run_id, cursor=Path(result['cursor_path']).relative_to(run).as_posix())
 
     def symbols_at(self, run_id, requests=None, base_run_id=None, diff=None):
         if diff is not None:

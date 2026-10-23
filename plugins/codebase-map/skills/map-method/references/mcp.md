@@ -174,6 +174,11 @@ delivery checks rather than treating the last notification as proof of success.
 
 ## Native consumers
 
+`codebase_map_context` writes a bounded evidence packet and resumable checkpoint
+for a bound run. It returns compact paths and cost, with no implicit index refresh
+or inference. See `context.md` for recipient units, base-run binding, path confinement
+and the required dispatch check when the recipient tokenizer is unavailable.
+
 `MapService(project_root, store=None)` exposes the same methods as the tool suffixes and
 contains no SDK imports. A native backend can call it directly while its agents
 use MCP; both share the same run store and checks. Service mutations serialize

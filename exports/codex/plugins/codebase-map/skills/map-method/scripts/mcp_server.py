@@ -102,6 +102,16 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         """Read hash-verified source blocks using path, symbols, ranges or full_file requests."""
         return await _invoke(ctx, service.read, run_id, requests)
 
+    @server.tool(annotations=writes)
+    async def codebase_map_context(
+        ctx: Context, run_id: str, request: dict, recipient: dict,
+        out: str = 'context', cursor: str | None = None, base_run_id: str | None = None,
+        embedding_result: str | None = None,
+    ) -> dict:
+        """Write bounded static evidence and a resumable cursor. Returns compact paths; no implicit index refresh or model startup."""
+        return await _invoke(ctx, service.context, run_id, request, recipient, out=out,
+                             cursor=cursor, base_run_id=base_run_id, embedding_result=embedding_result)
+
     @server.tool(annotations=read_only)
     async def codebase_map_edit_impact(
         ctx: Context, run_id: str, targets: list[str], neighbors: int = 20,
