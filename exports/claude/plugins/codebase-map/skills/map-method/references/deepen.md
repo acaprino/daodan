@@ -67,35 +67,33 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Deepen an area
 
-A card is the map's reading of one symbol: purpose, preconditions,
-postconditions, invariants, side effects, failure modes. Cards outlive every
-run in the analysis root's `cards.sqlite`, carry the digests of the symbol
-they were written against, and are judged `fresh` or stale whenever a
-snapshot is queried. So the map deepens where work happens and only for what
-changed: a card still fresh is never written again.
+Cards record a symbol's purpose, contracts, effects and failures in the analysis
+root's `cards.sqlite`. Stored digests determine freshness against each snapshot.
+Deepen only the requested area; reuse complete fresh cards. `semantic-map.md`
+projects this evidence, exposing unread, stale and incomplete cards for this method.
 
 ## Coordinator
 
-1. Bind the latest complete run and verify the area against the current tree
-   with `snapshot.py diff --verify`; stale paths go through the incremental
-   update first. With no analysis, write a base snapshot of the target before
-   anything else; a full analysis is never the default.
+1. Bind the latest complete run; verify the area with `snapshot.py diff --verify`.
+   Update stale paths incrementally first. Without analysis, create the target's
+   base snapshot; never default to full analysis.
 2. Resolve the area. A task's area is the symbols it names and their one-hop
    callers and callees from `snapshot.py edit-impact`; an area given as a path
    is every symbol under it; no area is the whole target.
-3. List the symbols without a fresh card: `snapshot.py meta-query MANIFEST
-   --path AREA --no-history`, keeping `uncovered` and every stale state.
-   Nothing listed: the area is deep already, and nothing is dispatched.
+3. Run `semantic_map.py MANIFEST --path AREA`. Read its JSON `reading_requests`,
+   including incomplete fresh cards. Nothing listed: dispatch nothing.
 4. Dispatch `codebase-map:map-analyst` with mode `cards`, the manifest, the
    list and an expected delivery, in batches of at most 100 symbols.
-5. Verify with the same query that every listed symbol is `fresh` or carries
-   the analyst's reason.
+5. Regenerate the view. Verify every listed symbol has a fresh, complete card
+   or the analyst's reason for remaining gaps.
+6. Keep the view's provenance beside it; preserve finished phase reports.
 
 ## Analyst in cards mode
 
 For each listed symbol read its verified source and its neighbours through
 `snapshot.py edit-impact MANIFEST --target SYMBOL`; a stale card is a lead,
-never the answer. Write one card per symbol:
+never the answer. Reuse a fresh card's fields and fill its gaps; submit the complete
+merged card because upsert replaces its payload. Write one card per symbol:
 
 - `purpose`: one or two sentences on what it is for.
 - `preconditions`, `postconditions`, `invariants`: what callers must hold and
@@ -106,7 +104,7 @@ never the answer. Write one card per symbol:
 - `confidence`: `high` when read in full with its callers, `medium` when a
   neighbour was unresolved, `low` otherwise; `notes` for anything unverified.
 
-Write the batch with `snapshot.py meta-upsert MANIFEST --input -`, the cards
-as JSON on standard input, and deliver the command's result: cards written,
-symbols the snapshot lacks, cards refused with their reason. The card store is
-this mode's only write; analyzed source and finished runs stay untouched.
+Write JSON batches through `snapshot.py meta-upsert MANIFEST --input -`.
+Deliver cards written, absent symbols and refused cards with reasons, plus
+observed LLM tokens or `unavailable`; never estimate them as measured.
+Only the card store is writable in cards mode; source and finished runs stay untouched.

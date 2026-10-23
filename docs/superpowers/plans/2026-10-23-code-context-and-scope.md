@@ -232,11 +232,14 @@ $\Delta \le 0$).
 anchor, purpose, contratti, effetti, collegamenti al grafo e stato della card
 (`freshness_basis="lexical"`).
 
-- [ ] Scrivere fixture fresh/stale/unread e simbolo rimosso; assert: nessuna purpose inventata, provenienza completa, output deterministico, sorgenti intatti.
-- [ ] Rendere le card nello store canonico come Markdown generato. Preservare i report di fase esistenti e usare link, non copie concorrenti da mantenere a mano.
-- [ ] Collegare il bisogno di una card mancante al metodo di approfondimento già esistente, limitato all'area richiesta; riusare le card fresche e registrare il costo LLM effettivamente osservato.
-- [ ] Eseguire `test_codebase_map_semantic_map.py`, `test_codebase_map_card_store.py`, `test_xray_load_budget.py`.
+- [x] Scrivere fixture fresh/stale/unread e simbolo rimosso; assert: nessuna purpose inventata, provenienza completa, output deterministico, sorgenti intatti.
+- [x] Rendere le card nello store canonico come Markdown generato. Preservare i report di fase esistenti e usare link, non copie concorrenti da mantenere a mano.
+- [x] Collegare il bisogno di una card mancante al metodo di approfondimento già esistente, limitato all'area richiesta; riusare le card fresche e registrare il costo LLM effettivamente osservato.
+- [x] Eseguire `test_codebase_map_semantic_map.py`, `test_codebase_map_card_store.py`, `test_xray_load_budget.py`.
 - [ ] Aggiornare docs, gate comuni e commit P4. **Done:** Markdown navigabile e coerente con lo snapshot, con copertura semantica dichiarata.
+
+
+Checkpoint P4: renderer, metodo e documentazione consegnati con commit dedicato; test semantici 15/15 e card store 23/23 superati sul candidato isolato. Il gate condiviso skill-load-budget conserva i failure preesistenti documentati in P3: la chiusura formale resta aperta finché il gate obbligatorio non passa.
 
 ## P5: embedding locale, cache e gate di adozione
 
