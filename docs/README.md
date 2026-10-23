@@ -50,6 +50,16 @@ The names above are neutral workflow IDs. Use the corresponding entry syntax in
 the host reference; Codex workflow skills and Pi prompts have different names from
 Claude and OpenCode commands.
 
+## Graphs and prototypes
+
+Start with [Understand Daodan's graphs and experiments](graphs/README.md).
+Small diagrams explain the code graph (existing code relationships) and the work
+graph (dependencies between development activities). Choose a question to find an
+experiment, read a worked example, then follow its recorded results and limits.
+The work graph is a simulated prototype. The reference sections retain the four
+boundary interfaces, real and mocked implementations, and open integration points,
+including the duplicated routing policy.
+
 ## Installation and migration
 
 - [Main README](../README.md): introduction and installation.
