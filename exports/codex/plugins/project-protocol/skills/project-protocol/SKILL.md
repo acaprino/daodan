@@ -84,11 +84,10 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Ownership
 
-A workflow's `[dispatch]` names the roles its loaded methods may dispatch;
-`inline_workers` binds this plugin's `isolated-worker`, which takes a concrete
-task and report contract and exposes no other role. A coordinator sets a
-method's `--option` from the user's words or its default; an authorization
-comes only from a grant.
+A workflow's `[dispatch]` lists permitted method workers; `inline_workers` binds
+this plugin's `isolated-worker` to a concrete task and report contract, exposing
+no other role. Set method `--option` from the user's words or default; only a grant
+authorizes work.
 
 This leaf owns operational records and their validation. Canonical contracts are
 `<plugin-root>/contracts/work.toml` and
@@ -98,12 +97,11 @@ Review findings, severity and native dispositions remain the domain owner's
 payload. A common result references the original report, its hash, author,
 input snapshot and interpreting adapter.
 
-Operational state lives under `.daodan/` of the repository's main checkout
-(the project itself outside Git), so a worktree's records survive its removal
-and every session sees one agenda. The sentinel is `.daodan-root`. A
-coordinator owns `work.json` and `result.json`, each worker one declared
-report; a coordinator's scratch files, payloads and plans go under its run
-directory, never beside project files. Run state never enters durable
+State lives under `.daodan/` in the main checkout (project root outside Git),
+preserving worktree records after removal and one shared agenda. `.daodan-root`
+is the sentinel. The coordinator owns `work.json`, `result.json` and scratch
+files/payloads/plans under its run directory; each worker owns one declared
+report. Never put scratch files beside project files or run state in durable
 instructions.
 
 ## Working discipline
@@ -127,39 +125,16 @@ success concerns the assigned evidence and report within its permitted method.
 
 ## Authoring components
 
-Apply the working discipline and whole-run economy when creating or updating
-skills, agents, roles, workflows, prompts, tools, templates and specialist
-guidance for any language, framework or activity. The author must also carry
-applicable obligations into the produced components and their worker briefs.
-Repository authoring instructions alone do not reach installed consumers.
-
-Give each component an explicit consumption path: load the canonical owner
-through a declared required provider, receive the rules in a required caller
-brief, or include a concise domain adaptation when it must run independently.
-Reuse owners and references rather than copying a second full policy. Preserve
-required-provider failures and the active host's recovery instructions.
-For executable helpers, embody applicable obligations in their input/output
-contracts, boundary protections and meaningful checks; keep execution guidance
-in the owning skill.
-
-Adapt reuse, complete scope, protections and verification to the domain's
-requirements and existing conventions. Non-software activities use observable
-domain outcomes and evidence, without imposing software test procedures. Choose
-the least instructions and implementation that preserve verified effectiveness
-across preparation, execution, retries and downstream use.
-
-Before delivery, trace entry points through referenced methods, helpers and
-worker briefs; resolve conflicting nested instructions and verify applicable
-host exports. Report structural checks separately from exercised behavior,
-effectiveness and measured token savings.
+Before creating or updating skills, agents, roles, workflows, prompts, tools,
+templates or specialist guidance, read and apply `references/component-authoring.md`.
 
 ## Isolated worker briefs
 
-Before dispatch, include the task objective, approved requirement source,
-applicable instruction rules and observable delivery criteria in the worker
-brief, alongside its input snapshot, owned files, authorizations, budget and
-expected report path. Carry the working discipline into each worker prompt:
-inherited coordinator context and a role body alone are not the task.
+Before dispatch, brief each worker with task objective, approved requirement
+source, applicable instruction rules, observable delivery criteria, input
+snapshot, owned files, authorizations, budget and expected report path. Include
+the working discipline in each prompt; inherited context and a role body alone
+do not define the task.
 
 For independent discovery, omit peer findings and unverified coordinator
 conclusions. Verification or criticism may receive findings explicitly assigned
@@ -242,18 +217,16 @@ thresholds change only with a recorded probe.
 
 ## State and completion
 
-Read states and transitions from the work contract: runs `in_progress` or
-`complete`; phases `pending`, `in_progress`, `complete`, `skipped`, with the
-reason for a skip recorded; deliveries `pending`, `running`, `delivered`,
-`failed`, a failure retained in the attempt history when retried. Complete
-means every phase closed, every delivery delivered, no interruption, and
-every required gate passed for the current candidate with evidence; a failed
-or unavailable check stays explicit and a partial report authorizes nothing.
-A delivered worker names an `output` that exists inside its owned run, even
-with no findings; coordinator records and locks are not worker reports. A
-worker that honestly reports a product defect delivered; accounting for a
-worker failure does not turn it into a delivery. Report the uncovered
-dimension.
+The work contract defines states and transitions: runs `in_progress` or
+`complete`; phases `pending`, `in_progress`, `complete`, `skipped` (record why);
+deliveries `pending`, `running`, `delivered`, `failed` (retain failures in retry
+history). Completion requires closed phases, all deliveries delivered, no
+interruption and every required gate passed with current-candidate evidence.
+Keep failed or unavailable checks explicit; partial reports authorize nothing.
+Every delivered worker names an existing run-owned `output`, even without
+findings; coordinator records and locks are not worker reports. A worker that
+honestly reports a product defect delivered; accounting for a worker failure
+does not turn it into a delivery. Report the uncovered dimension.
 
 ## Baseline, gate and recovery
 

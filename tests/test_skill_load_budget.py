@@ -18,6 +18,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle/skills/lifecycle-method"
 PROTOCOL = REPO_ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md"
+AUTHORING = PROTOCOL.parent / "references/component-authoring.md"
 ADR = REPO_ROOT / "plugins/project-knowledge/skills/adr-method"
 REVIEW = REPO_ROOT / "plugins/senior-review/skills"
 
@@ -25,7 +26,7 @@ UNIT_CAPS = {
     LIFECYCLE / "SKILL.md": 630,
     LIFECYCLE / "references/change.md": 325,
     LIFECYCLE / "references/preflight.md": 580,
-    LIFECYCLE / "references/interview.md": 445,
+    LIFECYCLE / "references/interview.md": 400,
     LIFECYCLE / "references/waves.md": 515,
     LIFECYCLE / "references/worker-brief.md": 300,
     LIFECYCLE / "references/verify.md": 380,
@@ -40,7 +41,8 @@ UNIT_CAPS = {
     LIFECYCLE / "references/status.md": 150,
     LIFECYCLE / "references/repair.md": 335,
     LIFECYCLE / "references/assess.md": 740,
-    PROTOCOL: 1_695,
+    PROTOCOL: 1_682,
+    AUTHORING: 208,
     ADR / "SKILL.md": 430,
     ADR / "references/adr-template.md": 375,
     REVIEW / "review-method/SKILL.md": 565,
@@ -52,8 +54,8 @@ UNIT_CAPS = {
     REVIEW / "review-preparation/references/knowledge-bindings.md": 465,
     REVIEW / "review-quality-gates/SKILL.md": 895,
     REVIEW / "review-quality-gates/references/context-sharing.md": 560,
-    REVIEW / "review-quality-gates/references/verification-panel.md": 535,
-    REVIEW / "review-preparation/references/team-review.md": 3_130,
+    REVIEW / "review-quality-gates/references/verification-panel.md": 500,
+    REVIEW / "review-preparation/references/team-review.md": 3_050,
     REVIEW / "review-consolidation/SKILL.md": 595,
 }
 
@@ -61,6 +63,7 @@ UNIT_CAPS = {
 # project instructions. The protocol skill is loaded once per run and counted
 # in every step, because it stays in the context.
 STEPS = {
+    "component authoring": (PROTOCOL, AUTHORING),
     "change: preflight": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/preflight.md"),
     "change: interview and record": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/interview.md",
                                      ADR / "SKILL.md", ADR / "references/adr-template.md"),
@@ -99,6 +102,7 @@ STEPS = {
         REVIEW / "review-quality-gates/references/verification-panel.md"),
 }
 STEP_CAPS = {
+    "component authoring": 1_890,
     "change: preflight": 2_895,
     "change: interview and record": 3_565,
     "change: plan and execution": 3_125,
@@ -129,6 +133,20 @@ def words(path):
 
 
 class SkillLoadBudgetTests(unittest.TestCase):
+    def test_component_authoring_load_is_required_only_for_authoring(self):
+        protocol = PROTOCOL.read_text(encoding="utf-8")
+        section = protocol.split("## Authoring components\n", 1)[1].split("\n## ", 1)[0]
+        hook = " ".join(section.split())
+        self.assertRegex(hook, r"^Before creating or updating\b")
+        for component in ("skills", "agents", "roles", "workflows", "prompts",
+                          "tools", "templates", "specialist guidance"):
+            self.assertIn(component, hook)
+        self.assertRegex(hook, r", read and apply `references/component-authoring\.md`\.$")
+        self.assertEqual(STEPS["component authoring"], (PROTOCOL, AUTHORING))
+        for step, units in STEPS.items():
+            if step != "component authoring":
+                self.assertNotIn(AUTHORING, units, "unrelated steps do not load authoring detail")
+
     def test_every_unit_stays_under_its_cap(self):
         for path, cap in UNIT_CAPS.items():
             with self.subTest(unit=path.relative_to(REPO_ROOT).as_posix()):

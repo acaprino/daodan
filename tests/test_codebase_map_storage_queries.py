@@ -1,5 +1,6 @@
 """Persisted semantic queries match the conservative in-memory reference."""
 from pathlib import Path
+import copy
 import importlib.util
 import sys
 import tempfile
@@ -10,6 +11,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map
 sys.path.insert(0, str(SCRIPTS))
 import snapshot
 import source_reader
+from resolution import LEXICAL_RESOLVER
 from snapshot_store import open_snapshot
 
 
@@ -30,6 +32,34 @@ class StorageQueryTests(unittest.TestCase):
         snapshot.write_snapshot(self.root, out, format=format)
         return out
 
+    def assert_graph_parity(self, actual, reference, *, format="sqlite", enriched=True):
+        """Preserve every lexical field and verify the additive engine-view contract."""
+        expected = copy.deepcopy(reference)
+        sqlite = format == "sqlite"
+        expected["edge_view"] = {
+            "schema": "daodan/edge-view/v1", "version": 1,
+            "profile": {"lexical_resolver": LEXICAL_RESOLVER, "engine": None,
+                        "engine_available": False, **({"engine_store": None} if sqlite else {})},
+            "coverage": {
+                "status": "missing_store" if sqlite else "unsupported_format",
+                "sampled": False, "population": 0, "selected": 0, "asked": 0,
+                "stride": 1, "confirmed": 0, "candidates": 0,
+                "no_edges_reason": None if sqlite else "json-manifest",
+            },
+            "gaps": [] if sqlite else ["JSON snapshot holds no semantic reference table"],
+            "candidates": {"items": [], "total": 0, "truncated": 0},
+            "conflicts": {"items": [], "total": 0, "truncated": 0},
+        }
+        if sqlite and enriched:
+            for call in expected["calls"]:
+                resolved = call["resolution"] == "resolved"
+                call.update(confidence="confirmed" if resolved else None,
+                            provenance=[LEXICAL_RESOLVER] if resolved else [],
+                            lexical_resolution=call["resolution"],
+                            lexical_target_id=call["target_id"], lexical_reason=call["reason"],
+                            target_kind="concrete" if resolved else None)
+        self.assertEqual(actual, expected)
+
     def test_graph_parity_across_formats(self):
         self.api()
         for format in ("sqlite", "json"):
@@ -37,7 +67,7 @@ class StorageQueryTests(unittest.TestCase):
                 reference = {**store.metadata, "files": dict(store.iter_files())}
                 expected = source_reader.graph_packet(reference, ["b.py"], hops=2, limit=2)
                 actual = source_reader.graph_packet(store, ["b.py"], hops=2, limit=2)
-                self.assertEqual(actual, expected)
+                self.assert_graph_parity(actual, expected, format=format)
 
     def test_queries_do_not_call_global_semantic_builder(self):
         self.api()
@@ -73,19 +103,20 @@ class StorageQueryTests(unittest.TestCase):
         (self.root / "b.py").write_text("from a import target\n\ndef caller(target):\n    return target()\n")
         with open_snapshot(self.write()) as store:
             reference = {**store.metadata, "files": dict(store.iter_files())}
-            self.assertEqual(source_reader.graph_packet(store, ["b.py"]), source_reader.graph_packet(reference, ["b.py"]))
+            self.assert_graph_parity(source_reader.graph_packet(store, ["b.py"]),
+                                     source_reader.graph_packet(reference, ["b.py"]))
 
     def test_conservative_bindings_and_unicode_match_reference(self):
         original = snapshot.file_entry
         fixtures = [
-            ("def target(): pass\ndef target(): pass\n", "from a import target\ntarget()\n", False),
-            ("def target(): pass\n", "from a import target\ntarget()\n", True),
-            ("def café(): pass\n", "from a import café\ncafé()\n", False),
+            ("def target(): pass\ndef target(): pass\n", "from a import target\ntarget()\n", False, "unresolved"),
+            ("def target(): pass\n", "from a import target\ntarget()\n", True, "unresolved"),
+            ("def café(): pass\n", "from a import café\ncafé()\n", False, "resolved"),
         ]
-        for source, caller, type_only in fixtures:
+        for source, caller, type_only, resolution in fixtures:
             with self.subTest(source=source, type_only=type_only):
-                (self.root / "a.py").write_text(source)
-                (self.root / "b.py").write_text(caller)
+                (self.root / "a.py").write_text(source, encoding="utf-8")
+                (self.root / "b.py").write_text(caller, encoding="utf-8")
                 def entry(path, *args, **kwargs):
                     value = original(path, *args, **kwargs)
                     if path.name == "b.py" and type_only:
@@ -95,8 +126,11 @@ class StorageQueryTests(unittest.TestCase):
                     out = self.write()
                 with open_snapshot(out) as store:
                     reference = {**store.metadata, "files": dict(store.iter_files())}
-                    self.assertEqual(source_reader.graph_packet(store, ["b.py"]),
-                                     source_reader.graph_packet(reference, ["b.py"]))
+                    actual = source_reader.graph_packet(store, ["b.py"])
+                    self.assert_graph_parity(actual, source_reader.graph_packet(reference, ["b.py"]))
+                    self.assertEqual(len(actual["calls"]), 1)
+                    self.assertEqual(actual["calls"][0]["resolution"], resolution)
+                    self.assertEqual(actual["coverage"]["counts"], {"ast": 3})
 
     def test_reused_ast_does_not_reuse_resolved_edges(self):
         self.api()
@@ -109,7 +143,7 @@ class StorageQueryTests(unittest.TestCase):
         with open_snapshot(second) as store:
             reference = {**store.metadata, "files": dict(store.iter_files())}
             actual = source_reader.graph_packet(store, ["b.py"])
-            self.assertEqual(actual, source_reader.graph_packet(reference, ["b.py"]))
+            self.assert_graph_parity(actual, source_reader.graph_packet(reference, ["b.py"]))
             self.assertEqual(actual["calls"][0]["resolution"], "unresolved")
 
     def test_new_git_exclusion_rebuilds_only_derived_bindings(self):
@@ -122,7 +156,10 @@ class StorageQueryTests(unittest.TestCase):
         with open_snapshot(out) as store:
             reference = {**store.metadata, "files": dict(store.iter_files())}
             actual = source_reader.graph_packet(store, ["b.py"])
-            self.assertEqual(actual, source_reader.graph_packet(reference, ["b.py"]))
+            # Excluding the target rebuilds lexical bindings; an old view cannot
+            # attach metadata from its now-disallowed target to the new call.
+            self.assert_graph_parity(actual, source_reader.graph_packet(reference, ["b.py"]),
+                                     enriched=False)
             self.assertEqual(actual["calls"][0]["resolution"], "unresolved")
         self.assertEqual(out.read_bytes(), before)
 

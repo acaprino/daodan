@@ -69,7 +69,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: project-protocol:isolated-worker; version: 1.10.0; source-sha256: b9af721d265c17c8621c2cf316e5e3b85d3e6e45cd4e24e40d8396f1ed3eb6ad. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: project-protocol:isolated-worker; version: 1.10.1; source-sha256: b9af721d265c17c8621c2cf316e5e3b85d3e6e45cd4e24e40d8396f1ed3eb6ad. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `project-protocol`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<project-protocol-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `project-protocol`. The owning plugin's declared logical skill identities are `project-protocol:project-protocol`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Pi skill name bindings: `project-protocol:project-protocol` -> compiled registry name `project-protocol` at `skills/project-protocol/SKILL.md` inside the owner's package. Confirm those names and provider paths in the active inventory before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

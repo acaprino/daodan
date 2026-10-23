@@ -70,19 +70,18 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Phases 2 and 3: interview and decision record
 
-## Grounding, before the first question
+## Grounding before questions
 
-1. Load `codebase-map:map-method` and deepen the request's area as its
-   `references/deepen.md` directs, then take the cards of the entities the
-   request names and their one-hop neighbours from `edit-impact`, with their
-   current source. A card is a lead; the source is the fact.
-2. Load `project-knowledge:adr-method` and run `resolve` on the scope. The
-   one to three active records it returns are the constraints the task
-   inherits.
-3. Read the base-commit instructions (`AGENTS.md`, `CLAUDE.md`, nested files)
+1. Load `codebase-map:map-method`; deepen the requested area using
+   `references/deepen.md`. Read the named entities' cards, their one-hop
+   neighbours from `edit-impact`, and current source. Cards are leads; source
+   establishes facts.
+2. Load `project-knowledge:adr-method`; `resolve` the scope. Inherit the
+   returned one to three active records as constraints.
+3. Read base-commit instructions (`AGENTS.md`, `CLAUDE.md`, nested files)
    through `git show <base_sha>:<path>`.
-4. Record the grounding in the run's `adr` section as `active` and in every
-   later worker's brief.
+4. Record grounding as `active` in the run's `adr` section and every later
+   worker brief.
 
 Before fixing scope, trace affected flows in source beyond immediate map
 neighbours: callers, tests, fixtures, configuration and exports that must change
@@ -92,44 +91,41 @@ scope return to planning before edits there.
 
 ## One question per turn
 
-Ask one question at a time, anchored to a file and line, with the current
-and the proposed behavior as concrete input and output from the code or its
-tests. Prefer a question that closes a branch of the design. Offer the
-recommended answer and what the alternatives cost. Ask through the host's
-question tool; when the session has none, write every pending question to
-the run's `questions` section, end the turn listing them, and resume on the
-same run with the answers.
+Ask one question at a time. Anchor it to a file and line, showing current and proposed behavior
+through concrete inputs and outputs from code or tests. Prefer questions that
+close design branches. Recommend an answer and explain alternatives' costs.
+Use the host's question tool; without one, record every pending question in the
+run's `questions` section, end the turn listing them, and resume that run with
+answers.
 
-Stop asking when all of these are fixed:
+Stop when these are fixed:
 
-- scope: paths, modules, domains, symbols, and what is out of scope;
-- at least one nominal, one boundary and one rejection example, each as
+- scope: paths, modules, domains, symbols and exclusions;
+- at least one nominal, one boundary and one rejection example, each with
   input and expected output;
-- every alternative the user rejected, with the reason;
-- the invariants the code and its tests must keep;
-- whether an active record is respected or must be superseded, and by what;
-- the authorization: edit, commit, both, or plan only.
+- every alternative the user rejected, with its reason;
+- code and test invariants;
+- active records respected or superseded, and their replacements;
+- authorization: edit, commit, both or plan only.
 
-Never infer a missing answer: a decision the user did not make stays open in
-the record for the plan review to raise again.
+Never infer missing answers: undecided questions stay open in the record for
+plan review to raise again.
 
 ## The record
 
-Write the body from the helper's `template`, filling the examples (`EX-*`),
-rejected alternatives (`RA-*`) and invariants (`INV-*`) from the answers.
-Run `propose` with the title, a slug, the run identity, `base_sha`, the scope
-lists and any `--supersedes`. Record the returned identity in the run's `adr`
-section as `proposed`. The record stays `Proposed` until integration.
+Fill the helper's `template` with answered examples (`EX-*`), rejected
+alternatives (`RA-*`) and invariants (`INV-*`). Run `propose` with title, slug,
+run identity, `base_sha`, scope lists and any `--supersedes`. Save the returned
+identity as `proposed` in the run's `adr` section. Keep the record `Proposed`
+until integration.
 
-## Review of the record (stage A)
+## Record review (stage A)
 
-Run `senior-review:review-method` with shape `light`, kind `spec` and stage
-`record` on the record: the premise auditor checks every claim it makes about
-the code, and its missing boundary or rejection examples. A false claim or a
-blocking finding reopens the interview on that point.
+Run `senior-review:review-method` on the record: shape `light`, kind `spec`, stage `record`.
+The premise auditor checks every code claim and missing boundary or rejection
+examples. False claims or blocking findings reopen that interview point.
 
-When the user asks another model to challenge the record, dispatch
-`peer-review:packet-builder` and `peer-review:respondent` through
-`peer-review:cross-model-peer-review`; standoffs return to the user. For a
-second opinion, load the `moe:multi-model-deliberation` skill on the record.
-Neither runs unasked.
+Only on request, challenge the record through `peer-review:cross-model-peer-review`,
+dispatching `peer-review:packet-builder` and `peer-review:respondent`; return
+standoffs to the user. For a requested second opinion, load
+`moe:multi-model-deliberation` on the record.

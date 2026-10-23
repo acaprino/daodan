@@ -122,33 +122,33 @@ the other dimensions before dispatch.
 
 | Dimension | Agent | Rationale |
 |-----------|-------|-----------|
-| Security | `senior-review:security-auditor` | Every change can introduce vulnerabilities |
+| Security | `senior-review:security-auditor` | Vulnerabilities |
 | Architecture | `senior-review:code-auditor` | Coupling, abstractions, failure flows, pattern consistency, scoring |
-| **Logic integrity** | `senior-review:logic-integrity-auditor` | **Hunts violations of contracts/invariants/domain rules surfaced in Phase 1b** (skipped if `--no-context`) |
-| Codebase hygiene | `senior-review:cleanup-auditor` | The **full** pass across all five dimensions that need source comprehension, over the whole codebase: dead code, orphan assets, phantom/unused deps plus barrel-file and eager-bundle bloat, stale documentation, and lifecycle archaeology. `code-review` and `pr-review` run only the lite subset (dead code, scoped to the diff), so this dimension is where the other four get covered at all |
-| Workspace hygiene | `repo-hygiene:workspace-auditor` | Everything the filesystem and git decide without reading a symbol: filesystem garbage, generated artifacts tracked in VCS, `.gitignore` completeness and archaeology, scratch and pipeline-output directories, orphan doc-assets, git auxiliary state. Disjoint from the row above by construction, so the two never contest the same finding |
+| **Logic integrity** | `senior-review:logic-integrity-auditor` | Phase 1b contracts/invariants/domain-rule violations (skip if `--no-context`) |
+| Codebase hygiene | `senior-review:cleanup-auditor` | **Full, whole-codebase** source-comprehension pass: dead code, orphan assets, phantom/unused deps with barrel/eager-bundle bloat, stale documentation, lifecycle archaeology. `code-review`/`pr-review` cover only diff-scoped dead code |
+| Workspace hygiene | `repo-hygiene:workspace-auditor` | Filesystem/Git facts without symbol reading: garbage, tracked generated artifacts, `.gitignore` completeness/archaeology, scratch/pipeline-output directories, orphan doc-assets, Git auxiliary state. Disjoint from codebase hygiene |
 
 ### Conditional dimensions (auto-detected from context)
 
-Run these checks against the changed files and codebase to decide which extra reviewers to spawn.
-
-Structural entropy and testing quality live in required plugins `abstraction-architect` and `testing`. Workspace hygiene comes from required `repo-hygiene`. Skip a dimension only when its code signal does not match; failed dispatch must be reported as degraded delivery.
+Check changed files and codebase. Required providers: `abstraction-architect`
+(structural entropy), `testing` (test quality), `repo-hygiene` (workspace hygiene).
+Skip only unmatched code signals; failed dispatch means degraded delivery.
 
 | Signal | Detection rule | Dimension activated | Agent |
 |--------|---------------|---------------------|-------|
-| **UI/frontend files** | Changed files include `.tsx`, `.jsx`, `.vue`, `.svelte`, `.component.ts`, or files containing scroll/focus/layout manipulation | UI race conditions | `senior-review:ui-race-auditor` |
-| **Non-React frontend** | Frontend files detected but no React dependency | General performance | `senior-review:code-auditor` (performance dimension) |
-| **Multi-service / messaging** | Changed files touch API routes, message handlers, gRPC definitions, queue consumers/producers, or `docker-compose.yml` with multiple services | Distributed flows | `senior-review:distributed-flow-auditor` |
-| **Init/startup code** | Changed files touch startup sequences, dependency injection, config bootstrap, migration runners, or service registration | Circular dependencies | `senior-review:chicken-egg-detector` |
-| **Long-running / scheduled execution** | Diff or changed files touch timers, schedulers, polling loops, retry/reconnect logic, cron jobs, queue workers, background daemons, updaters, or watchdogs (see detection command 5b) | Temporal resilience (**what does the user see after this has been failing for a day?**) | `senior-review:temporal-resilience-auditor` |
-| **Shared coordinator or registry state** | Changed files declare or mutate process-global state shared across instances (global registries, realm or module singletons, coordinator maps) or keep a per-instance copy of a fact that state owns (see detection command 5e) | Cross-instance invariants (**does a write in one instance reach every other instance?**) | `senior-review:logic-integrity-auditor` plus `senior-review:code-auditor` (per-instance state divergence) |
-| **Autonomous long-running loop** | Changed files drive repeated agent, step, worker or message loops whose lifetime is one long invocation, even with no timer or scheduler in the diff (see detection command 5e) | Temporal resilience (**what does the user see after this has been running and failing for an hour?**) | `senior-review:temporal-resilience-auditor` |
-| **Persistence code** | Diff or changed files touch schemas, models, ORM entities, repositories, raw SQL, cache layers, or transaction boundaries (see detection command 5c) | Data integrity (**can the store be made to hold an impossible state?**) | `senior-review:data-integrity-auditor` |
-| **Resource acquisition** | Diff or changed files acquire files, sockets, connections, subprocesses, listeners, subscriptions, locks, tasks, or timers, especially in manual-resource languages (C/C++/Rust/Go) or async-heavy code (see detection command 5d) | Resource lifecycle (**does every acquire release on success, error, AND cancellation?**) | `senior-review:resource-lifecycle-auditor` |
-| **Test files** | Changed files match `test_*`, `*_test.*`, `*.spec.*`, `*.test.*`, `conftest.py`, `__tests__/` | Testing quality | `testing:test-suite-auditor` |
-| **API files** | Changed files touch a formal contract file (`*.proto`, `openapi*.y*ml`, `swagger*`, `*.graphql`, `asyncapi*`, JSON Schema), or route definitions, serializers, or DTO/model declarations | API contracts | `senior-review:api-contract-auditor` |
-| **Migration files** | Changed files match database migration patterns (Alembic, Django, Rails, Prisma, SQL migrations) | Data migrations | `senior-review:data-integrity-auditor` (migration dimension) |
-| **Diff target adding code** | Target resolved to a diff in Phase 0 (git range, PR number, or uncommitted changes) AND the diff adds at least one function, method, class, module, constant table, or block longer than roughly five lines. Never activated for plain file/directory targets: there is no diff to anchor on, and the whole-tree question belongs to `/daodan:check-health` | Structural entropy (**does this diff add a second place where a concept the codebase already owns lives?** Seven dimensions over two evidence tracks, diff-anchored: duplicated domain knowledge, competing sources of truth, redundant representation, duplicated or derivable state, missed unification, prior art available, abstraction fitness) | `abstraction-architect:abstraction-architect-agent` (mode `diff`) |
+| **UI/frontend** | `.tsx`, `.jsx`, `.vue`, `.svelte`, `.component.ts`, scroll/focus/layout manipulation | UI races | `senior-review:ui-race-auditor` |
+| **Non-React frontend** | Frontend files without React dependency | Performance | `senior-review:code-auditor` (performance dimension) |
+| **Multi-service/messaging** | API routes, message handlers, gRPC definitions, queue producers/consumers, multi-service `docker-compose.yml` | Distributed flows | `senior-review:distributed-flow-auditor` |
+| **Init/startup** | Startup, dependency injection, config bootstrap, migration runners, service registration | Circular dependencies | `senior-review:chicken-egg-detector` |
+| **Scheduled execution** | Timers, schedulers, polling, retry/reconnect, cron, queue workers, daemons, updaters, watchdogs (5b) | Temporal resilience: user-visible day-long failures | `senior-review:temporal-resilience-auditor` |
+| **Shared state** | Process-global registries, realm/module singletons, coordinator maps, per-instance copies of shared facts (5e) | Cross-instance invariants and write propagation | `senior-review:logic-integrity-auditor` plus `senior-review:code-auditor` (per-instance divergence) |
+| **Autonomous long-running loop** | Agent/step/worker/message loops in one long invocation, even without timers/schedulers (5e) | Temporal resilience: user-visible hour-long failures | `senior-review:temporal-resilience-auditor` |
+| **Persistence** | Schemas, models, ORM entities, repositories, SQL, caches, transactions (5c) | Impossible stored states | `senior-review:data-integrity-auditor` |
+| **Resource acquisition** | Files, sockets, connections, subprocesses, listeners, subscriptions, locks, tasks, timers; especially C/C++/Rust/Go or async code (5d) | Release on success, error AND cancellation | `senior-review:resource-lifecycle-auditor` |
+| **Tests** | `test_*`, `*_test.*`, `*.spec.*`, `*.test.*`, `conftest.py`, `__tests__/` | Testing quality | `testing:test-suite-auditor` |
+| **API** | `*.proto`, `openapi*.y*ml`, `swagger*`, `*.graphql`, `asyncapi*`, JSON Schema, routes, serializers, DTO/models | API contracts | `senior-review:api-contract-auditor` |
+| **Migrations** | Alembic, Django, Rails, Prisma, SQL migrations | Data migrations | `senior-review:data-integrity-auditor` (migration dimension) |
+| **Diff adding code** | Phase 0 git-range/PR/uncommitted diff adds a function, method, class, module, constant table or block over roughly five lines. Never plain file/directory targets; whole-tree work belongs to `/daodan:check-health` | Structural entropy: duplicated domain knowledge, competing sources of truth, redundant representation, duplicated/derivable state, missed unification, available prior art, abstraction fitness; seven dimensions, two evidence tracks | `abstraction-architect:abstraction-architect-agent` (mode `diff`) |
 
 ### Detection implementation
 
@@ -193,26 +193,14 @@ echo "$CHANGED_FILES" | grep -qiE 'migrat|alembic|versions/' && echo "MIGRATION_
 
 ### Display detected dimensions
 
-After detection, display the plan:
+Show always-on, detected and skipped dimensions with code evidence, reviewer
+count and the pipeline above: inline discovery; parallel map/blind derivation;
+join; interconnect; parallel reviewers; delivery barrier; consolidation,
+verification/critic; report. Include selected map depth.
 
-```
-Context detection complete:
-  - Always: security, architecture, logic-integrity, codebase-hygiene, workspace-hygiene
-  - Detected: ui-races (6 .tsx files), distributed-flows (API routes + RabbitMQ), temporal-resilience (retry + scheduler code), data-integrity (ORM writes + transactions), abstraction (diff adds 4 units)
-  - Skipped: chicken-egg (no startup code)
-
-Pipeline plan:
-  Phase 0c: review evidence discovery (inline)
-  Phase 1a: codebase-map (--depth=lite)   |  Phase 1c: premise-auditor (parallel, blind)
-  Phase 1d: knowledge reconciliation (inline)
-  Phase 1b: codebase-map:semantic-interconnect-mapper
-  Phase 2:  {N} reviewers in parallel
-  Phase 3:  monitor and collect (delivery barrier)
-  Phase 4:  consolidation, verification (4b), completeness critic (4c)
-  Phase 5:  report
-```
-
-Every reason on the Skipped line is a statement about the code, never about the install: "no startup code" means the code did not need the dimension. Every agent this command can spawn comes from a plugin `senior-review` declares as a hard dependency, so there is no "plugin not installed" reason and no generic fallback. If a spawn fails with "Agent type not found", stop and report the broken install instead of continuing with a silently reduced review.
+Skip reasons concern code, never installation. Every provider is required;
+there is no generic fallback. If dispatch fails with "Agent type not found",
+stop and report the broken install instead of silently reducing the review.
 
 Mark `phase_0b_detection` complete in `state.json`.
 

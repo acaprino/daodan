@@ -188,14 +188,13 @@ engine è esposto separatamente (`engine_callee_drift`) senza invalidare `cards.
 - [x] Collegare tutti i consumatori alla vista P1 e confrontare i grafi di entrambe le revisioni. Calcolare sempre lo strato lessicale e riportare separatamente lo stato dello strato engine (`complete|partial|unavailable|incomparable`) con `{items, total, truncated}`.
 - [x] Propagare gli stessi campi in CLI, servizio e wire MCP; verificare percorsi consentiti e binding dello store. Nessun altro resolver copiato negli adapter.
 - [x] Eseguire `test_codebase_map_edit_impact.py`, `test_codebase_map_stale_callers.py`, `test_xray_source_reader.py`, `test_codebase_map_mcp.py`, `test_codebase_map_mcp_wire.py` con unittest discover, un modulo per processo.
-- [ ] Aggiornare docs, gate comuni e commit P2. **Done:** impatto e grafo usano le prove Jedi disponibili senza perdere relazioni della base o nascondere copertura mancante.
+- [x] Aggiornare docs, gate comuni e commit P2. **Done:** impatto e grafo usano le prove Jedi disponibili senza perdere relazioni della base o nascondere copertura mancante.
 
 Checkpoint P2 (2026-10-23): implementazione e regressioni verificate, inclusa
-la chiusura dei cinque rilievi della revisione congiunta P2/P3. Il candidato
-isolato conserva un gate generale rosso preesistente: 20 violazioni del
-budget istruzioni, con test e input identici alla baseline 98d4b70c.
-La chiusura P2 resta aperta fino al superamento del gate. Evidenze nel run
-`code-context-scope-20261023`.
+la chiusura dei cinque rilievi della revisione congiunta P2/P3. Commit
+`2f55484a5591`. Il blocco del budget istruzioni è risolto con la
+[riparazione verificata](../reports/2026-10-23-instruction-budget-repair.md).
+Gate obbligatori superati; evidenze nel run `code-context-scope-20261023`.
 
 ## P3: indice locale e ricerca dei punti di partenza
 
@@ -212,13 +211,14 @@ Docs: `docs/plugins/codebase-map.md` e README del benchmark.
 - [x] Aggiornare per hash i documenti modificati, eliminare quelli rimossi e pubblicare atomicamente. Indicizzare metadati, firma e sorgente senza generare riassunti LLM; card fresche sono arricchimenti tracciati, mai un prerequisito della ricerca.
 - [x] Registrare gli input necessari al riuso, incluse assenze rilevanti e cambi di ambiente/configurazione; testare aggiunta di un export prima assente e passaggio da registro vuoto a popolato. Se il tracciamento manca, rebuild dichiarato, non cache considerata fresca.
 - [x] Verificare `test_codebase_map_retrieval.py` e `test_codebase_map_retrieval_benchmark.py`; confronto incrementale/full rebuild identico per lo stesso input e schema.
-- [ ] Aggiornare docs, gate comuni e commit P3. **Done:** localizzazione locale utilizzabile anche senza embedding.
+- [x] Aggiornare docs, gate comuni e commit P3. **Done:** localizzazione locale utilizzabile anche senza embedding.
 
 Checkpoint P3 (2026-10-23): ricerca exact/subtoken/FTS5, indice incrementale
-e contratti implementati. I test coprono anche il contesto fuori dai simboli,
-i caratteri form-feed e i traceback misti. La chiusura resta aperta per lo
-stesso gate generale preesistente documentato in P2. Embedding, selezione del
-perimetro e pacchetti automatici restano rispettivamente P5, P6 e P7.
+e contratti implementati nel commit `8694a96dfda8`. I test coprono anche il
+contesto fuori dai simboli, i caratteri form-feed e i traceback misti. Gate
+obbligatori superati dopo la riparazione documentata in P2. Embedding,
+selezione del perimetro e pacchetti automatici restano rispettivamente P5,
+P6 e P7.
 
 ## P4: mappa semantica Markdown riutilizzabile
 
@@ -236,10 +236,10 @@ anchor, purpose, contratti, effetti, collegamenti al grafo e stato della card
 - [x] Rendere le card nello store canonico come Markdown generato. Preservare i report di fase esistenti e usare link, non copie concorrenti da mantenere a mano.
 - [x] Collegare il bisogno di una card mancante al metodo di approfondimento già esistente, limitato all'area richiesta; riusare le card fresche e registrare il costo LLM effettivamente osservato.
 - [x] Eseguire `test_codebase_map_semantic_map.py`, `test_codebase_map_card_store.py`, `test_xray_load_budget.py`.
-- [ ] Aggiornare docs, gate comuni e commit P4. **Done:** Markdown navigabile e coerente con lo snapshot, con copertura semantica dichiarata.
+- [x] Aggiornare docs, gate comuni e commit P4. **Done:** Markdown navigabile e coerente con lo snapshot, con copertura semantica dichiarata.
 
 
-Checkpoint P4: renderer, metodo e documentazione consegnati con commit dedicato; test semantici 15/15 e card store 23/23 superati sul candidato isolato. Il gate condiviso skill-load-budget conserva i failure preesistenti documentati in P3: la chiusura formale resta aperta finché il gate obbligatorio non passa.
+Checkpoint P4 (2026-10-23): renderer, metodo e documentazione consegnati nel commit `1602f97490df`; test semantici 15/15 e card store 23/23 superati sul candidato isolato. La riparazione documentata in P2 supera il gate condiviso skill-load-budget e l'intera suite del candidato: nessun blocco residuo per P4.
 
 ## P5: embedding locale, cache e gate di adozione
 

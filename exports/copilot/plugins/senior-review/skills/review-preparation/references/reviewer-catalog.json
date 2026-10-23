@@ -14,7 +14,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "api-contract-auditor",
       "trigger_when": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
     },
@@ -32,7 +32,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "chicken-egg-detector",
       "trigger_when": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
     },
@@ -50,7 +50,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "cleanup-auditor",
       "trigger_when": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit."
     },
@@ -68,7 +68,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "code-auditor",
       "trigger_when": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
     },
@@ -86,7 +86,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "data-integrity-auditor",
       "trigger_when": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries."
     },
@@ -104,7 +104,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "distributed-flow-auditor",
       "trigger_when": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
     },
@@ -124,7 +124,7 @@
         "one-of: interconnect-map (team-review/02-interconnect.md), scoped-semantic-context"
       ],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "logic-integrity-auditor",
       "trigger_when": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, a lite review supplies a scoped semantic context, or asked for a logic, contract or invariant audit."
     },
@@ -144,7 +144,7 @@
         "declared-mode: 1-blind (no maps, no peer findings) or 2-full-context"
       ],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "premise-auditor",
       "trigger_when": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
     },
@@ -162,7 +162,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "resource-lifecycle-auditor",
       "trigger_when": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory."
     },
@@ -180,7 +180,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "security-auditor",
       "trigger_when": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions."
     },
@@ -198,7 +198,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "temporal-resilience-auditor",
       "trigger_when": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
     },
@@ -216,7 +216,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "senior-review",
-      "provider_version": "16.2.0",
+      "provider_version": "16.2.1",
       "role": "ui-race-auditor",
       "trigger_when": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
     },

@@ -71,13 +71,19 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Verification panel and completeness critic
 
-On-demand unit of `senior-review:review-quality-gates`. Read it at consolidation,
-after every selected reviewer is accounted for. The prompts each lens and the
-critic receive are in `references/panel-and-critic-prompts.md`.
+Consolidation unit of `senior-review:review-quality-gates`; account for every
+selected reviewer first. Prompts: `references/panel-and-critic-prompts.md`.
 
 ## Adversarial Verification Panel
 
-Each deduplicated finding selected for verification is judged by up to 4 verifiers (`references/panel-and-critic-prompts.md` Section 2). Dispatch one isolated worker per lens per finding through the consuming workflow's host harness. Lens 0 uses the declared `senior-review:premise-auditor` binding; lenses 1-3 use only the declared `project-protocol:isolated-worker` binding with the lens-specific briefs in `references/panel-and-critic-prompts.md`. Every brief carries the owned scope, authorization, budget, declared inputs and expected report path. Record each delivered or failed outcome in the same delivery ledger. Independent lenses receive no peer findings before their delivery. All lenses inherit the session model by default; apply a supported model override only when explicitly requested by the user and bound by the host harness, never by choosing a host-specific alias here.
+For each selected deduplicated finding, dispatch one isolated worker per lens
+through the consuming workflow's host harness. Lens 0 uses declared
+`senior-review:premise-auditor`; lenses 1-3 use only declared
+`project-protocol:isolated-worker`, with Section 2's lens-specific briefs.
+Include owned scope, authorization, budget, declared inputs and expected report
+path. Ledger every delivered/failed outcome; no peer findings before independent
+delivery. Inherit the session model; overrides require explicit user request and
+supported host binding, never invented host-specific aliases.
 
 ### Lens gating and Lens 0 resolution
 
@@ -87,7 +93,10 @@ Each deduplicated finding selected for verification is judged by up to 4 verifie
    - `UNCERTAIN` (including Lens 0 errors or `REFUTED` without `file:line`): proceeds to lenses 1-2 tagged `premise-contested`.
    - `HOLDS`: proceeds to lenses 1-2 unchanged.
    - `premise_form: non-compliant` is recorded in the verification file regardless of verdict.
-   - **Absence claims are verified too.** A reviewer's claim that a control holds, that no path violates an invariant, or that a class of defect is absent, when stated with universal scope over shared or multi-instance state, is selected for Lens 0 exactly like a finding whose premise carries a universal quantifier. The claim's load-bearing premise is its instance and path scope: Lens 0 checks whether multiplicity and alternate paths were actually established. A `REFUTED` verdict converts the absence claim into a contested coverage gap in the report, naming the counterexample path; it never silently becomes a finding of the opposite defect without its own lenses 1-2.
+   - **Absence claims too:** universal assurance over shared/multi-instance state
+     receives Lens 0. Its premise is instance/path scope: verify multiplicity and
+     alternate paths. `REFUTED` becomes a contested coverage gap naming the
+     counterexample path, never an opposite defect without its own lenses 1-2.
 2. **Lenses 1 (Reachability) and 2 (False-Positive Causes)** run independently on findings surviving Lens 0:
    - **>= 2 REAL**: finding survives.
    - **>= 2 FALSE_POSITIVE**: finding discarded (`filtered`, count reported).
@@ -97,7 +106,10 @@ Each deduplicated finding selected for verification is judged by up to 4 verifie
 ### Selection and Cost Guard
 
 - **Normal (default-on):** every deduplicated finding with confidence `>= 50%`.
-- **Under cost guard (> 25 surviving findings and `--rigorous` not set):** verify all Critical/High findings plus Medium/Low in the 50-75% confidence band or with conflicting reviewer severities; pass the rest through tagged `unverified (cost-guard)` and declare the narrowing (the threshold of 25 surviving findings is a finding-count proxy for token spend).
+- **Cost guard (> 25 survivors without `--rigorous`):** verify Critical/High plus
+  Medium/Low at 50-75% confidence or conflicting reviewer severities. Pass others
+  through as `unverified (cost-guard)`; disclose narrowing. Finding count proxies
+  token spend.
 - **`--rigorous`:** verify all findings above the floor. **`--fast`:** skip panel and critic.
 
 ## Completeness Critic
