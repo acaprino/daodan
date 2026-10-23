@@ -79,8 +79,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 Own the presentation outcome, not a second construction engine. Read
 `references/pptx-compatibility.md` and `references/design-library.md` before
 creative work, image generation or native construction. Apply their target,
-direction, slide-object and verification requirements to the presentation plan
-and any selected creative provider.
+direction, pattern, slide-object and verification requirements to the
+presentation plan and any selected creative provider.
+Choose the deck's visual direction from `references/visual-directions.md` and each
+slide's pattern from `references/layout-patterns.md`; record both in the plan so
+construction and review can verify them.
 Read
 `references/creative-providers.md` when first loading a creative provider or
 resolving its availability. Read `references/image-tools.md` before image work.

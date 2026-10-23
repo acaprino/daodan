@@ -220,7 +220,14 @@ class PresentationContractTests(unittest.TestCase):
 
     def test_nested_presentation_contracts_survive_every_host_verbatim(self):
         for host, package in self.packages.items():
-            for reference in ("creative-providers.md", "design-library.md", "image-tools.md", "pptx-compatibility.md"):
+            for reference in (
+                "creative-providers.md",
+                "design-library.md",
+                "image-tools.md",
+                "layout-patterns.md",
+                "pptx-compatibility.md",
+                "visual-directions.md",
+            ):
                 with self.subTest(host=host, reference=reference):
                     relative = Path("skills/presentation-design/references") / reference
                     source = _read(OFFICE / relative)
@@ -330,6 +337,38 @@ class PresentationContractTests(unittest.TestCase):
         ):
             self.assertIn(obligation, text)
         self.assertNotRegex(text, r"\b(?:image_gen__imagegen|mcp__\w+|spawn_agent)\b")
+
+    def test_design_library_routes_to_directions_and_patterns_with_density_caps(self):
+        index = _normalized(_read(OFFICE / "skills/presentation-design/references/design-library.md"))
+        directions = _normalized(_read(OFFICE / "skills/presentation-design/references/visual-directions.md"))
+        patterns = _normalized(_read(OFFICE / "skills/presentation-design/references/layout-patterns.md"))
+        for obligation in (
+            "at most 4 cards or columns per slide",
+            "at most 7 nodes in a process or architecture",
+            "never below `13 pt`",
+            "one visual direction",
+            "one pattern per slide",
+        ):
+            with self.subTest(obligation=obligation):
+                self.assertIn(obligation, index)
+        self.assertIn("visual-directions.md", index)
+        self.assertIn("layout-patterns.md", index)
+        for direction in ("A Executive Boardroom", "H Brand-Led Custom", "P Compliance Formal"):
+            with self.subTest(direction=direction):
+                self.assertIn(direction, directions)
+        self.assertIn("Direction pitfalls to avoid", directions)
+        for pattern in (
+            "**Cover**",
+            "**Executive summary**",
+            "**Chart and insight**",
+            "**Comparison matrix**",
+            "**Timeline and roadmap**",
+            "**Architecture and system map**",
+            "**Next steps and decision request**",
+        ):
+            with self.subTest(pattern=pattern):
+                self.assertIn(pattern, patterns)
+        self.assertIn("A pattern is a construction plan, not a picture", patterns)
 
     def test_creative_consultation_cannot_claim_the_full_ui_workflow_or_bootstrap_an_app(self):
         text = _normalized(_read(OFFICE / "skills/presentation-design/references/creative-providers.md"))

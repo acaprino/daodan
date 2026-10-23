@@ -82,7 +82,8 @@ Read the brief, allowed changes, design report and candidate identity. Load
 this assignment, not its coordinator dispatch procedure.
 Read that skill's `references/pptx-compatibility.md` and `references/design-library.md`.
 Compare the saved candidate
-to the accepted slide-object specification; verify required native representations,
+to the accepted slide-object specification and the recorded direction and
+patterns; verify required native representations,
 source data and font substitutions as well as the rendered composition.
 When selected and available, load the `impeccable:impeccable` skill for critique criteria under Office's scoped visual-guidance consultation.
 When selected and available, load the `taste-skill:design-taste-frontend` skill for its transferable critique references under the same scope.

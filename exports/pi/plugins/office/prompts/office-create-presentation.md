@@ -139,7 +139,9 @@ Create or revise the presentation requested in: $ARGUMENTS
 Load `office:presentation-design` and follow its routing, specialist delivery and
 image-tool contract. Read its `references/pptx-compatibility.md` and
 `references/design-library.md` before creative
-work; bind every selected provider to the fixed canvas, supported native objects,
+work, then select the visual direction and slide patterns from
+`references/visual-directions.md` and `references/layout-patterns.md`; bind every
+selected provider to the fixed canvas, supported native objects,
 fonts and editability requirements. The coordinator owns the outline, candidate files, image
 generation calls, repair loop and final report. Dispatch the declared
 `office:presentation-designer` and `office:presentation-reviewer` roles in isolated
