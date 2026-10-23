@@ -137,7 +137,8 @@ The phase graph and record-schema references are in `contracts/create-presentati
 Create or revise the presentation requested in: $ARGUMENTS
 
 Load `office:presentation-design` and follow its routing, specialist delivery and
-image-tool contract. Read its `references/pptx-compatibility.md` before creative
+image-tool contract. Read its `references/pptx-compatibility.md` and
+`references/design-library.md` before creative
 work; bind every selected provider to the fixed canvas, supported native objects,
 fonts and editability requirements. The coordinator owns the outline, candidate files, image
 generation calls, repair loop and final report. Dispatch the declared
@@ -145,7 +146,9 @@ generation calls, repair loop and final report. Dispatch the declared
 contexts as specified by that method. A skill load is not a worker dispatch.
 
 For a new presentation or substantive redesign, load `office:slidepoise` for
-creative generation and native reconstruction. For targeted PPTX edits, preview
+visual-first reference generation and native reconstruction, or load
+`office:deckcraft` for direct structured native construction when requested or
+when SlidePoise's runtime is unavailable. For targeted PPTX edits, preview
 or PDF export, load `office:deckcraft`. Preserve both engines' separate ownership;
 do not round-trip every SlidePoise result through DeckCraft unnecessarily.
 

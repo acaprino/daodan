@@ -1,10 +1,11 @@
 ---
 name: deckcraft
 description: >
-  Inspect, edit, render and export existing PPTX through the external DeckCraft
+  Create, inspect, edit, render and export PPTX through the external DeckCraft
   runtime, preserving sources and checking native-feature losses. TRIGGER WHEN:
-  targeted PowerPoint changes, slide previews, printable PDF or DeckCraft.
-  DO NOT TRIGGER WHEN: a new creative deck needs SlidePoise generation or only
+  direct native PowerPoint construction, targeted PPTX changes, slide previews,
+  printable PDF or DeckCraft.
+  DO NOT TRIGGER WHEN: a new creative deck uses SlidePoise reconstruction or only
   a spreadsheet or document is requested.
 ---
 
@@ -92,7 +93,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 # DeckCraft presentation operations
 
 Use the external [DeckCraft](https://github.com/storytold/deckcraft) engine for
-targeted edits, native object operations, rendering and PDF export. It complements
+direct native deck construction, targeted edits, native object operations,
+rendering and PDF export. It complements
 `office:slidepoise`; it does not replace that creative reconstruction workflow.
 Read `references/runtime.md` before discovery or the first operation. Office
 ships transport and read-only inspection helpers, not the engine or an MCP server.
@@ -101,6 +103,7 @@ The presentation coordinator loads `office:presentation-design` for creative
 decisions, specialist review and image-tool ownership. When invoked by it, return
 operation evidence without starting another coordinator or specialist team.
 Read `${PLUGIN_ROOT}/skills/presentation-design/references/pptx-compatibility.md`
+and `${PLUGIN_ROOT}/skills/presentation-design/references/design-library.md`
 before design or native construction, including direct use. Bind accepted object
 geometry, font choices and native editability to actual supported commands.
 For a narrow edit/export, preserve the existing design and apply only the relevant

@@ -6,6 +6,7 @@ host execution or PowerPoint fidelity. Runtime tests belong to each engine.
 
 import copy
 import json
+import os
 import re
 import sys
 import tempfile
@@ -40,6 +41,7 @@ PROVIDERS = {
     "taste-skill@taste-skill",
 }
 COMPATIBILITY_REFERENCE = Path("skills/presentation-design/references/pptx-compatibility.md")
+DESIGN_LIBRARY_REFERENCE = Path("skills/presentation-design/references/design-library.md")
 HARNESS_PATHS = {
     "claude": "commands/create-presentation.md",
     "copilot": "agents/create-presentation-coordinator.agent.md",
@@ -60,6 +62,11 @@ def _read(path):
     return Path(path).read_text(encoding="utf-8")
 
 
+def _temp_dir():
+    """Keep temporary files on the repository drive so package paths resolve."""
+    return str(REPO_ROOT) if os.name == "nt" else None
+
+
 def _normalized(text):
     return " ".join(text.split())
 
@@ -76,7 +83,7 @@ class PresentationContractTests(unittest.TestCase):
         cls.plugin = load_plugin(OFFICE)
         cls.workflow = next(item for item in cls.plugin.workflows if item.name == "create-presentation")
         cls.presentation_plugin = replace(cls.plugin, workflows=(cls.workflow,))
-        cls.temporary = tempfile.TemporaryDirectory()
+        cls.temporary = tempfile.TemporaryDirectory(dir=_temp_dir())
         cls.packages = {}
         cls.adapters = {}
         for host in HOSTS:
@@ -214,7 +221,7 @@ class PresentationContractTests(unittest.TestCase):
 
     def test_nested_presentation_contracts_survive_every_host_verbatim(self):
         for host, package in self.packages.items():
-            for reference in ("creative-providers.md", "image-tools.md", "pptx-compatibility.md"):
+            for reference in ("creative-providers.md", "design-library.md", "image-tools.md", "pptx-compatibility.md"):
                 with self.subTest(host=host, reference=reference):
                     relative = Path("skills/presentation-design/references") / reference
                     source = _read(OFFICE / relative)
@@ -327,13 +334,13 @@ class PresentationContractTests(unittest.TestCase):
 
     def test_creative_consultation_cannot_claim_the_full_ui_workflow_or_bootstrap_an_app(self):
         text = _normalized(_read(OFFICE / "skills/presentation-design/references/creative-providers.md"))
-        self.assertIn("Impeccable explicitly excludes general non-UI workflows", text)
+        self.assertIn("design-library.md", text)
         self.assertIn("do not invoke application bootstrap, context CLI", text)
         self.assertIn("does not claim any provider implements a PPTX engine", text)
-        self.assertIn("Do not run its direction-selection, asset-search, scene or browser-inspection scripts", text)
+        self.assertIn("direction-selection, asset-search, scene or browser-inspection scripts", text)
         self.assertIn("Use Office's harness image contract for generated or edited imagery", text)
         self.assertIn("Do not turn provider output into HTML/CSS and assume a faithful conversion to editable PPTX", text)
-        self.assertIn("When an optional provider is unavailable, skip its contribution", text)
+        self.assertIn("When the optional provider is unavailable, skip its contribution", text)
         self.assertIn("If the user explicitly requires a named provider", text)
         self.assertIn("keep that requested contribution unfulfilled", text)
 

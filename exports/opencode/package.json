@@ -1140,7 +1140,7 @@
             "name": "slidepoise"
           },
           {
-            "description": "Inspect, edit, render and export existing PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: targeted PowerPoint changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: a new creative deck needs SlidePoise generation or only a spreadsheet or document is requested.",
+            "description": "Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: a new creative deck uses SlidePoise reconstruction or only a spreadsheet or document is requested.",
             "file": "skills/deckcraft/SKILL.md",
             "id": "office:deckcraft",
             "name": "deckcraft"
@@ -2020,5 +2020,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "2.1.2"
+  "version": "2.2.0"
 }

@@ -10,9 +10,10 @@ description: >
 # Presentation design and delivery
 
 Own the presentation outcome, not a second construction engine. Read
-`references/pptx-compatibility.md` before creative work, image generation or native
-construction. Apply its target, slide-object and verification requirements to
-every selected creative provider.
+`references/pptx-compatibility.md` and `references/design-library.md` before
+creative work, image generation or native construction. Apply their target,
+direction, slide-object and verification requirements to the presentation plan
+and any selected creative provider.
 Read
 `references/creative-providers.md` when first loading a creative provider or
 resolving its availability. Read `references/image-tools.md` before image work.
@@ -31,7 +32,7 @@ Preserve facts and citations. Do not manufacture evidence to fill a composition.
 
 | Request | Method | Specialist scope |
 |---|---|---|
-| New deck, new template, substantial redesign | `office:slidepoise` | Designer establishes direction; reviewer inspects final renders |
+| New deck, new template, substantial redesign | `office:slidepoise` (visual-first reconstruction) or `office:deckcraft` (direct native construction when requested or when SlidePoise is unavailable) | Designer establishes direction and slide-object plan; reviewer inspects final renders |
 | Targeted content or formatting edit | `office:deckcraft` | Preserve direction; designer only if a design decision is needed; reviewer checks changes and preservation |
 | Preview or printable PDF only | `office:deckcraft` | No redesign; reviewer checks exported pages against the source |
 

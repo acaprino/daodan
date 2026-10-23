@@ -1,6 +1,7 @@
 """External optional providers stay outside required installation and dispatch."""
 
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -19,9 +20,14 @@ from scripts.daodan.validate import validate_dependencies
 from scripts.sync_plugin_docs import closure, reference
 
 
+def _temp_dir():
+    """Keep temporary files on the repository drive so relative links resolve."""
+    return str(ROOT) if os.name == "nt" else None
+
+
 class OptionalDependencyTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(dir=_temp_dir())
         self.addCleanup(self.temporary.cleanup)
         self.kernel = Path(self.temporary.name) / "example"
         shutil.copytree(ROOT / "tests/fixtures/daodan/valid/plugins/example", self.kernel)
