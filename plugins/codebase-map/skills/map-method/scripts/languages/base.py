@@ -18,6 +18,7 @@ __all__ = [
     "ClassInfo",
     "ImportInfo",
     "ExternalCallInfo",
+    "NestedDefinition",
     "ParseResult",
     "LanguageAdapter",
     "CallType",
@@ -175,6 +176,28 @@ class ExternalCallInfo:
 
 
 @dataclass
+class NestedDefinition:
+    """
+    A definition the two top-level lists omit, qualified by its enclosing chain.
+
+    `qualified_name` joins the enclosing class/def names with ".", the identity
+    the snapshot records as the symbol name: `inner` inside `Outer` is
+    `Outer.inner`, and a method of a nested class is `Outer.Inner.method`.
+    `kind` is "method" when the nearest enclosing definition is a class,
+    "function" when it is not, the `ClassInfo.kind` for a class, and
+    "type-alias" for a PEP 695 alias.
+
+    These exist so a call into one has an arrival node in the graph. They are
+    not part of the file outline: `functions` and `classes` keep their documented
+    meaning, and only the graph consumers read this list.
+    """
+
+    qualified_name: str
+    kind: str
+    info: "FunctionInfo | ClassInfo"
+
+
+@dataclass
 class ParseResult:
     """
     Convention for `functions` vs `classes[*].methods`:
@@ -188,7 +211,9 @@ class ParseResult:
       Java files; all callables are class methods.
 
     Consumers enumerating "every callable in the file" must visit both lists:
-    `functions + [m for c in classes for m in c.methods]`.
+    `functions + [m for c in classes for m in c.methods]`. Add `nested` when the
+    subject is the graph rather than the file outline: it holds the definitions
+    those two lists deliberately omit, already qualified by their enclosing chain.
 
     Convention for `notes`:
 
@@ -199,12 +224,24 @@ class ParseResult:
       `stylesheet (css)`, `stylesheet (scss)`, `stylesheet (less)` (CSS, SCSS, LESS).
     - Additional notes may be appended for syntax errors, tree-sitter
       exceptions, lossy encoding, etc.
+    - A `recovered prefix: line <N>, <M> closed definitions` note means the file
+      was rejected and the symbols present come from the longest prefix that
+      parses, keeping only the definitions that prefix closes. The
+      `syntax error:` note stays, so the file is still reported as a parse error:
+      recovery widens what a broken file yields, it never claims it parses.
     """
 
     file_path: str
     language: str = "unknown"
     classes: list[ClassInfo] = field(default_factory=list)
     functions: list[FunctionInfo] = field(default_factory=list)
+    # Definitions neither list holds: a nested function or class, a definition
+    # inside a compound statement (if/try/with/for/while/match) at module or class
+    # level, and a PEP 695 `type` alias. They carry the qualified name the
+    # snapshot records, so a call into one has an arrival node. Adapters that do
+    # not extract them leave the list empty, which is a convention, not an
+    # absence of nesting in the source.
+    nested: list[NestedDefinition] = field(default_factory=list)
     imports: list[ImportInfo] = field(default_factory=list)
     constants: list[str] = field(default_factory=list)
     external_calls: list[ExternalCallInfo] = field(default_factory=list)

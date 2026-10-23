@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.12"
+# ///
 """
 Analyze File CLI.
 
@@ -447,6 +450,8 @@ def format_as_summary(analysis: dict[str, Any]) -> str:
 
 
 def main():
+    from languages.python import require_minimum_interpreter
+    require_minimum_interpreter("analyze_file.py")
     # Configure logging
     logging.basicConfig(
         level=logging.WARNING,

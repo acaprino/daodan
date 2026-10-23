@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.12"
+# ///
 """
 Documentation Review Tool (Codebase Map Phase 6)
 
@@ -1023,6 +1026,8 @@ class DocReviewer:
 
 
 def main():
+    from languages.python import require_minimum_interpreter
+    require_minimum_interpreter("doc_review.py")
     parser = argparse.ArgumentParser(
         description="Documentation Review Tool (Codebase Map Phase 6)"
     )

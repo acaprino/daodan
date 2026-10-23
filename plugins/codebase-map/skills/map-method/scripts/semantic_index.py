@@ -12,9 +12,13 @@ import json
 from pathlib import Path
 
 from tree_scope import Perimeter
+import resolution
+
+# One vocabulary with semantic_store: both owners of the source graph answer with
+# the same target kinds and the same reasons, because resolution.py holds the policy.
+_TARGET_KINDS = resolution.TARGET_KINDS
 
 __all__ = ["build_semantic_index"]
-_TARGET_KINDS = frozenset({"function", "class"})
 
 
 def _manifest_signature(manifest: dict) -> str:
@@ -280,6 +284,35 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
             return None, "unsupported-target-kind"
         return value, None
 
+    class Lookup:
+        """The shared policy's view of this in-memory index.
+
+        `semantic_store._Resolver` answers the same lookups over the snapshot's
+        SQLite tables; resolution.py holds the rules so the two cannot drift.
+        """
+
+        def declaration(self, identity):
+            return declarations.get(identity)
+
+        def scope_record(self, rel, scope_id):
+            return scopes.get(rel, {}).get(scope_id)
+
+        def bindings_named(self, rel, scope_id, name):
+            return list(bindings.get(rel, {}).get((scope_id, name), ()))
+
+        def targets(self, rel, module):
+            return list(graph.get(rel, {}).get(module, []))
+
+        def language(self, rel):
+            return manifest["files"].get(rel, {}).get("language")
+
+        def lexical(self, rel, scope_id, name):
+            return lexical(rel, scope_id, name)
+
+        def exported_target(self, rel, exported):
+            return exported_target(rel, exported)
+
+    lookup = Lookup()
     references = []
     for rel, payload in sorted(payloads.items()):
         resolved_count = 0
@@ -287,6 +320,7 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
             record = {**item, "id": f"{rel}::reference#{number}", "file": rel,
                       "caller": f"{rel}::{item['caller']}" if item.get("caller") else None,
                       "target_id": None, "resolution": "unresolved", "reason": item.get("reason"),
+                      "resolver": resolution.LEXICAL_RESOLVER,
                       "known_unrelated": False, "candidate_files": [], "imported_name": None,
                       "candidate_bindings": []}
             references.append(record)
@@ -302,7 +336,13 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
             binding_kind, value = binding
             if binding_kind == "declaration":
                 if len(parts) != 1:
-                    record["reason"] = "unknown-receiver"
+                    found = (resolution.instance_method(lookup, rel, item, parts)
+                             if len(parts) == 2 else None)
+                    if found is None:
+                        record["reason"] = "unknown-receiver"
+                    else:
+                        record.update(target_id=found[0], resolution="resolved", reason=found[1])
+                        resolved_count += 1
                 elif declarations[value]["kind"] in _TARGET_KINDS:
                     record.update(target_id=value, resolution="resolved", reason="unique-lexical-binding")
                     resolved_count += 1
@@ -317,6 +357,13 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
                 record["reason"] = imported.get("reason") or "import-binding-unresolved"
             elif imported.get("type_only"):
                 record["reason"] = "type-only-import"
+            elif imported["mode"] == "named" and len(parts) == 2 and lookup.language(rel) == "python":
+                # Before the single-target rule: a Python relative import keys the
+                # module as written, so one file's several `from . import x`
+                # statements share the key and only the imported name picks the file.
+                identity, reason = resolution.module_attribute(lookup, rel, imported, parts[1])
+                record["imported_name"] = parts[1]
+                record.update(target_id=identity, reason=reason)
             elif len(targets) != 1:
                 record["reason"] = "import-target-missing-or-ambiguous"
             elif imported["mode"] == "namespace" and len(parts) == 2:

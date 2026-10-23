@@ -287,3 +287,14 @@ depending on an untested third-party grammar.
 
 PostgreSQL procedural stays a **declared gap**. There is no engine to adopt, and
 `G8` is the tripwire that says so the day there is.
+
+**Status of the mechanism this decision depends on (2026-10-22).** The stamping
+half now exists and is exercised for Python: every reference carries
+`payload.resolver` (`builtin-lexical`, or `<engine>@<version>` for an engine edge),
+a derived store binds engine edges to one snapshot revision, and
+[`resolve_edges.py`](../../../plugins/codebase-map/skills/map-method/scripts/resolve_edges.py)
+probes its engine and declares the degradation when it is absent. The PL/SQL engine
+itself is **not attached**: no `tree_sitter_plsql` adapter ships, the regex adapter
+still yields no call edges from bodies, and this gate still passes 13/13 only where
+both grammars are installed. What changed is that attaching it no longer requires
+inventing a resolver identity or a confidence vocabulary.

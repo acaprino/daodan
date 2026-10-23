@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.12"
+# ///
 """
 Structural snapshots and incremental change sets for the Codebase Map.
 
@@ -27,7 +30,9 @@ Subcommands:
     register <run_dir> / unregister <run_dir>
         Update only this run's active entry under the publication registry lock.
 
-Standard library only. Parsing reuses the adapters in ./languages/.
+Standard library only. Parsing reuses the adapters in ./languages/. The Python
+grammar is the running interpreter's, so this script declares `requires-python`
+for `uv run --script` and refuses an older interpreter in main().
 """
 
 from __future__ import annotations
@@ -215,7 +220,8 @@ def parser_fingerprint() -> str:
     helpers = [SCRIPT_DIR / name for name in
                ("snapshot.py", "ast_parser.py", "tree_scope.py", "source_reader.py",
                 "semantic_index.py", "dependency_graph.py", "snapshot_store.py", "json_snapshot.py",
-                "semantic_store.py", "store_graph.py", "store_graph_metrics.py", "store_consumers.py")]
+                "semantic_store.py", "resolution.py", "store_graph.py", "store_graph_metrics.py",
+                "store_consumers.py")]
     helpers += sorted((SCRIPT_DIR / "languages").rglob("*.py"))
     for helper in helpers:
         if helper.is_file():
@@ -347,6 +353,9 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
     end line where the adapter has one, otherwise the line before the next
     top-level symbol. Methods are spanned inside their class, so a class span
     always encloses its methods and editing a method moves both hashes.
+    Definitions the adapter reports in `nested` (a nested function or class, a
+    definition inside a compound statement, a PEP 695 alias) are spanned last,
+    inside the symbol that encloses them, under the name the adapter qualified.
 
     A symbol the adapter describes also carries `signatures`, one
     signature_record per declaration in source order: several when overloads
@@ -430,6 +439,22 @@ def symbol_spans(result, lines: list[str]) -> dict[str, dict]:
             if not end:
                 end = methods[index + 1].line_number - 1 if index + 1 < len(methods) else item["end"]
             record(f"{item['name']}.{method.name}", "method", method.line_number, end, precision, method)
+
+    # Definitions the adapter reports outside the two top-level lists: nested
+    # functions and classes, definitions inside a compound statement, and PEP 695
+    # type aliases. Their name is already qualified by the adapter, and their end
+    # line is exact, so nothing is inferred here. Recorded after the top-level
+    # symbols: a name both lists carry is a redefinition, and `record` widens the
+    # span to cover every occurrence rather than losing one.
+    nested = sorted(
+        (item for item in getattr(result, "nested", ()) or () if item.info.line_number > 0),
+        key=lambda item: (item.info.line_number, item.qualified_name),
+    )
+    for item in nested:
+        info = item.info
+        end = getattr(info, "end_line", None)
+        record(item.qualified_name, item.kind, info.line_number, end or total,
+               "exact" if end else "inferred", info)
     return spans
 
 
@@ -3286,6 +3311,8 @@ def cmd_meta_upsert(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from languages.python import require_minimum_interpreter
+    require_minimum_interpreter("snapshot.py")
     parser = argparse.ArgumentParser(description="Codebase Map structural snapshots and change sets.")
     sub = parser.add_subparsers(dest="command", required=True)
 

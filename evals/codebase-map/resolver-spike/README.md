@@ -25,9 +25,11 @@ definition of the callee, and the answer is graded:
 | `definition-is-type-not-callable` | Enum, Interface, Module, Namespace, Package | no |
 | `external-definition` | outside the project | no |
 
-A target is project code only when its file is in the snapshot inventory. The
-Python script below predates that rule and keeps a documented defect; see its
-docstring.
+A production resolver must count a target as project code only when its file is
+in the snapshot inventory. The Python script below predates that rule and keeps
+a documented defect; see its docstring. The LSP script uses workspace containment
+and external-path markers. Publication checked all its sampled edge-grade target
+files against the original inventories; see [RESULTS.md](RESULTS.md).
 
 ## Scripts
 
@@ -69,10 +71,55 @@ a workspace that is the snapshot root.
 
 ## What the campaign of 2026-10-22 found
 
-Measured per language on the projects and public corpora named in the spec, with
-every published edge grade hand-checked by reading source at both ends. The
-numbers, the ten defects found and fixed in `lsp_edges.py` before it could
-measure, and the configuration each engine needs (monorepo workspace selection
-for tsserver, a readiness wait for JDTLS, the crate fetch for rust-analyzer,
-`go mod download` for gopls) are summarised in the spec. Raw results are
-machine-local and are not committed.
+The retained per-language outcomes are published in [RESULTS.md](RESULTS.md),
+with sample denominators, reason weighting, engine costs, raw-artifact hashes and
+the source-audit boundary. Confirmed TypeScript counts survived dependency
+stripping in the measured samples; all three TypeScript monorepo-root runs
+failed readiness and supply no recovery rate. JavaScript has only small
+config/build populations and raw grade counts, with no recorded source audit.
+Rust and Go retain the open grading decisions in `../OPEN_POINTS.md`.
+
+The spec records the ten defects found and fixed in `lsp_edges.py` before it
+could measure. The results distinguish completed configuration comparisons from
+stale pending passages in the original notebook. Raw results remain machine-local
+under the exact bench root recorded there and are not committed.
+
+## What shipped from it (2026-10-22)
+
+Python's part became product code in
+[`resolve_edges.py`](../../../plugins/codebase-map/skills/map-method/scripts/resolve_edges.py),
+and three things this harness measured are load-bearing in it rather than
+restated:
+
+- **The environment model.** `create_environment(path, safe=False)` per
+  environment, `added_sys_path` over site-packages as the fallback when that
+  fails, and `project-only` without a usable offered environment. Selection now
+  prefers populated environments over installer-only stubs, then serving scope;
+  each file reports its selected environment, interpreter, package count and mode.
+  The 31.6% versus 25.2% remains the original campaign's environment comparison,
+  not a new measurement of that selection policy.
+- **The grading rule.** An engine's answer counts as an edge only when it lands on
+  a declaration the snapshot holds, the target file is in the inventory, and the
+  name is not ambiguous there. `in_project` by path containment, the documented
+  defect of `jedi_edges.py` that made the published gap three times its real size,
+  is not carried over: the shipped rule tests inventory membership.
+- **The callee position.** The probe lands on the callee name inside the recorded
+  span, never on the receiver, and a span that does not contain the callee name is
+  skipped as unverified instead of probed at a guess.
+
+The earlier smoke pass used jedi 0.20.1 on this plugin's own 39 Python files: 5,915 unresolved
+call references in the inventory, 200 selected, 158 engine requests in `create_environment`
+mode, 2 confirmed edges read true at both ends, 141 external definitions (the tree
+is stdlib-only), mean 212 ms and p95 533 ms per inference. The `fast_parser`
+pitfall recorded above is left alone in the shipped engine, and jedi 0.20's rename
+of `Script(source=)` to `Script(code=)` is why the readiness probe constructs the
+script positionally.
+
+The continuation separates selected references from actual engine requests,
+checks all source hashes before and after inference, and requires an exact
+declaration name position for confirmation. Those changes and their verification
+are recorded in the [Python delivery report](../../../docs/superpowers/reports/2026-10-22-codebase-map-python-resolver-delivery.md).
+
+What did not ship: every LSP engine (tsserver, JDTLS, rust-analyzer, gopls) stays
+in this harness, and OP-1/OP-2 in
+[`OPEN_POINTS.md`](../OPEN_POINTS.md) stay open.

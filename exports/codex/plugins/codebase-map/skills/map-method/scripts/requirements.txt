@@ -1,13 +1,21 @@
 # Optional dependencies for higher-fidelity multi-language parsing.
-# The scripts themselves require Python >= 3.10 (stdlib only).
+# The scripts themselves require Python >= 3.12 (stdlib only), and that floor is
+# enforced rather than documented: the Python grammar `ast` uses is the running
+# interpreter's, so an older one rejects every file written with newer syntax
+# (PEP 695 `type X = ...` and PEP 701 f-strings both need 3.12) and records it
+# with no symbols. `snapshot.py`, `analyze_file.py`, `doc_review.py` and
+# `mcp_server.py` refuse to start below it, and their PEP 723 `requires-python`
+# header lets `uv run --no-config --no-project --script <script>.py` provision a
+# compliant interpreter instead.
+# Measured over 22,536 files in evals/codebase-map/python-parser/RESULTS.md.
 #
 # Without these, the analysis scripts still work:
 #   - Python uses the stdlib `ast` module (always available).
-#   - Java / JavaScript / TypeScript / Rust fall back to regex-based extraction.
+#   - Java / JavaScript / TypeScript / Rust / Go fall back to regex-based extraction.
 #   - SQL / PL-SQL always use regex-based DDL extraction (tree-sitter is never
 #     used for them).
 #
-# With these installed, Java / JS / TS / Rust get tree-sitter accuracy
+# With these installed, Java / JS / TS / Rust / Go get tree-sitter accuracy
 # (correct handling of nested classes, generics, JSX, decorators, lifetimes).
 #
 # Install with:

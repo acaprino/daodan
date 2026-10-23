@@ -1,7 +1,9 @@
 """Real parser regressions for structural detail, call ownership and caches."""
 
+import ast
 import sys
 import threading
+import tomllib
 import unittest
 from contextlib import nullcontext
 from pathlib import Path
@@ -11,6 +13,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+import snapshot
 from languages import javascript, typescript, java, rust, sql, plsql, python
 from languages import _treesitter as ts
 from languages.base import SIGNATURE_FIELDS
@@ -339,6 +342,161 @@ class AstParserTests(unittest.TestCase):
             result = javascript.adapter.parse("function run() { fetch('/ok'); }", "fallback.js")
         self.assertIn("parser=regex-fallback", result.notes)
         self.assertEqual([f.name for f in result.functions], ["run"])
+
+
+class PythonExtractionTests(unittest.TestCase):
+    """The widened Python extraction convention and broken-file recovery.
+
+    Both are measured, not designed: evals/codebase-map/python-parser/RESULTS.md
+    records what the top-level-only convention dropped (4.8% to 7.2% of the
+    projects' definitions, 8.8% to 9.7% of the libraries') and which recovery
+    policy is safe on spans as well as names (50.16% of names at 100% precision
+    with zero unsafe emissions over 1,892 broken real files, against 58.14% with
+    2,218 unsafe emissions when definitions the cut leaves open are kept).
+    """
+
+    NESTED = (
+        "import sys\n"
+        "\n"
+        "if sys.platform == 'win32':\n"
+        "    def windows_only():\n"
+        "        return helper()\n"
+        "\n"
+        "def outer(value):\n"
+        "    def inner(x):\n"
+        "        return x + value\n"
+        "\n"
+        "    class Local:\n"
+        "        def method(self):\n"
+        "            return inner(1)\n"
+        "\n"
+        "class Top:\n"
+        "    def visible(self):\n"
+        "        def shadow():\n"
+        "            return 1\n"
+        "        return shadow()\n"
+        "\n"
+        "    if True:\n"
+        "        def conditional(self):\n"
+        "            return 2\n"
+    )
+
+    BROKEN = (
+        "def first():\n"
+        "    return 1\n"
+        "\n"
+        "class Second:\n"
+        "    def ok(self):\n"
+        "        return first()\n"
+        "\n"
+        "    def broken(self\n"
+        "        return 2\n"
+        "\n"
+        "def after():\n"
+        "    return 3\n"
+    )
+
+    def test_nested_and_conditional_definitions_are_qualified_graph_nodes(self):
+        result = python.adapter.parse(self.NESTED, "nested.py")
+        # The two documented lists keep their meaning, so no consumer of the file
+        # outline sees a new entry.
+        self.assertEqual([f.name for f in result.functions], ["outer"])
+        self.assertEqual([(c.name, [m.name for m in c.methods]) for c in result.classes],
+                         [("Top", ["visible"])])
+        self.assertEqual([(item.qualified_name, item.kind) for item in result.nested],
+                         [("windows_only", "function"), ("outer.inner", "function"),
+                          ("outer.Local", "class"), ("outer.Local.method", "method"),
+                          ("Top.visible.shadow", "function"), ("Top.conditional", "method")])
+
+    def test_symbol_spans_records_nested_symbols_once_with_exact_spans(self):
+        result = python.adapter.parse(self.NESTED, "nested.py")
+        spans = snapshot.symbol_spans(result, self.NESTED.split("\n"))
+        for name in ("windows_only", "outer.inner", "outer.Local", "outer.Local.method",
+                     "Top.visible.shadow", "Top.conditional"):
+            self.assertEqual(spans[name]["span_precision"], "exact", name)
+        self.assertEqual((spans["outer.inner"]["start"], spans["outer.inner"]["end"]), (8, 9))
+        self.assertEqual((spans["Top.conditional"]["start"], spans["Top.conditional"]["end"]),
+                         (22, 23))
+        # A nested symbol sits inside its enclosing one, so an edit moves both hashes.
+        self.assertEqual((spans["outer"]["start"], spans["outer"]["end"]), (7, 13))
+        # A direct method of a top-level class is recorded by the class pass only;
+        # "merged" would mean the nested pass recorded it a second time.
+        self.assertEqual(spans["Top.visible"]["span_precision"], "exact")
+        self.assertEqual(len(spans["Top.visible"]["signatures"]), 1)
+
+    def test_pep695_type_alias_is_a_symbol(self):
+        if getattr(ast, "TypeAlias", None) is None:
+            self.skipTest("PEP 695 aliases need Python 3.12")
+        source = ("type CellKey = tuple[str, str]\n"
+                  "\n"
+                  "class Holder:\n"
+                  "    type Inner = int\n"
+                  "\n"
+                  "    def method(self):\n"
+                  "        return 1\n")
+        result = python.adapter.parse(source, "alias.py")
+        self.assertEqual([(item.qualified_name, item.kind, item.info.line_number)
+                          for item in result.nested],
+                         [("CellKey", "type-alias", 1), ("Holder.Inner", "type-alias", 4)])
+        self.assertEqual([c.name for c in result.classes], ["Holder"])
+
+    def test_direct_nested_class_is_a_graph_node_with_exact_span(self):
+        source = "class Outer:\n    class Inner:\n        def run(self):\n            return 1\n"
+        result = python.adapter.parse(source, "nested.py")
+        self.assertEqual([(item.qualified_name, item.kind) for item in result.nested],
+                         [("Outer.Inner", "class"), ("Outer.Inner.run", "method")])
+        spans = snapshot.symbol_spans(result, source.split("\n"))
+        self.assertEqual((spans["Outer.Inner"]["start"], spans["Outer.Inner"]["end"],
+                          spans["Outer.Inner"]["span_precision"]), (2, 4, "exact"))
+
+    def test_conditional_top_level_class_keeps_its_direct_methods(self):
+        source = "if flag:\n    class Conditional:\n        def run(self):\n            return 1\n"
+        result = python.adapter.parse(source, "conditional.py")
+        self.assertEqual([(item.qualified_name, item.kind) for item in result.nested],
+                         [("Conditional", "class"), ("Conditional.run", "method")])
+        spans = snapshot.symbol_spans(result, source.split("\n"))
+        self.assertEqual((spans["Conditional.run"]["start"], spans["Conditional.run"]["end"]), (3, 4))
+
+    def test_broken_file_keeps_only_the_definitions_its_prefix_closes(self):
+        result = python.adapter.parse(self.BROKEN, "broken.py")
+        self.assertTrue(result.notes[1].startswith("syntax error:"), result.notes)
+        self.assertIn("recovered prefix: line 6, 1 closed definitions", result.notes)
+        self.assertEqual([f.name for f in result.functions], ["first"])
+        self.assertEqual([f.end_line for f in result.functions], [2])
+        # `Second` and `Second.ok` end at the prefix's last statement, so their span
+        # may be truncated. The safe policy drops them rather than record a body
+        # hash an edit outside them would move. `after` is past the damage.
+        self.assertEqual([c.name for c in result.classes], [])
+        self.assertEqual(result.nested, [])
+        # A prefix of a broken file cannot certify reference coverage.
+        self.assertIsNone(result.semantic)
+
+    def test_damage_before_any_complete_statement_recovers_nothing_and_says_so(self):
+        result = python.adapter.parse("def broken(:\n    return 1\n", "broken.py")
+        self.assertIn("recovered prefix: none", result.notes)
+        self.assertEqual((result.functions, result.classes, result.nested), ([], [], []))
+        self.assertTrue(any(note.startswith("syntax error:") for note in result.notes))
+
+    def test_minimum_interpreter_is_declared_and_enforced(self):
+        self.assertEqual(python.MINIMUM_PYTHON, (3, 12))
+        python.require_minimum_interpreter("test")
+        above = (sys.version_info[0], sys.version_info[1] + 1)
+        with mock.patch.object(python, "MINIMUM_PYTHON", above):
+            with self.assertRaises(SystemExit) as caught:
+                python.require_minimum_interpreter("test")
+        message = str(caught.exception)
+        self.assertIn("requires-python", message)
+        self.assertIn(f"{above[0]}.{above[1]}", message)
+
+    def test_entry_scripts_request_a_compatible_managed_interpreter(self):
+        for name in ("snapshot.py", "analyze_file.py", "doc_review.py",
+                     "mcp_server.py", "resolve_edges.py"):
+            with self.subTest(entry=name):
+                source = (SCRIPTS / name).read_text(encoding="utf-8")
+                metadata = source.split("# /// script\n", 1)[1].split("# ///", 1)[0]
+                config = tomllib.loads("\n".join(line.removeprefix("# ")
+                                               for line in metadata.splitlines()))
+                self.assertEqual(config["requires-python"], ">=3.12")
 
 
 if __name__ == "__main__":

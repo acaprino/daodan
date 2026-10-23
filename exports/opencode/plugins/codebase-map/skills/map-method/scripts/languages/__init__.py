@@ -25,6 +25,7 @@ from .base import (
     FunctionInfo,
     ImportInfo,
     LanguageAdapter,
+    NestedDefinition,
     ParameterInfo,
     ParseResult,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "ClassInfo",
     "ImportInfo",
     "ExternalCallInfo",
+    "NestedDefinition",
     "ParseResult",
     "CommentToken",
     "Language",

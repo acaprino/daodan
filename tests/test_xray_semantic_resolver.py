@@ -420,6 +420,211 @@ class SemanticResolverTests(unittest.TestCase):
         self.assertEqual([u["reason"] for u in result["usages"] if u["type"] == "import"], ["import-binding-not-call"])
         self.assertIn("includes candidates", result["usage_count_meaning"])
 
+    def test_python_instance_receiver_and_module_attribute_resolve_to_project_declarations(self):
+        """The resolution rule the resolver measurement made a prerequisite.
+
+        A method inherited from a project base class and a callable reached as an
+        attribute of a module bound by `from . import worker` were 146 of the
+        positions an engine resolved and the symbol table did not; 40 of 40 sampled
+        records read true at both ends (evals/codebase-map/python-parser/RESULTS.md,
+        section 6). Both resolve lexically now, and neither invents an edge where
+        the target is not a project callable.
+        """
+        if semantic_index is None:
+            self.skipTest("semantic index unavailable")
+        self.add("pkg/base.py", "class LoggingMixin:\n    def info(self, msg):\n        return msg\n")
+        self.add("pkg/attr.py", "class Helper:\n    def run(self):\n        return 1\n")
+        self.add(
+            "pkg/service.py",
+            "from .base import LoggingMixin\n"          # 1
+            "\n"                                        # 2
+            "class Service(LoggingMixin):\n"            # 3
+            "    def __init__(self):\n"                 # 4
+            "        self.callback = None\n"            # 5
+            "\n"                                        # 6
+            "    def run(self):\n"                      # 7
+            "        return self.info('x')\n"           # 8
+            "\n"                                        # 9
+            "    def own(self):\n"                      # 10
+            "        return self.run()\n"               # 11
+            "\n"                                        # 12
+            "    def missing(self):\n"                  # 13
+            "        return self.nope()\n"              # 14
+            "\n"                                        # 15
+            "    def attribute(self):\n"                # 16
+            "        return self.callback()\n"          # 17
+            "\n"                                        # 18
+            "class Deep(Service):\n"                   # 19
+            "    def go(self):\n"                       # 20
+            "        return self.info('y')\n"           # 21
+            "\n"                                        # 22
+            "def helper(service, other):\n"             # 23
+            "    return other.run()\n"                  # 24
+            "\n"                                        # 25
+            "class Mutating:\n"                        # 26
+            "    def write(self):\n"                    # 27
+            "        self.callback = None\n"            # 28
+            "        return self.callback()\n",         # 29
+        )
+        self.add("pkg/main.py",
+                 "from . import attr\n"
+                 "\n"
+                 "def go():\n"
+                 "    return attr.Helper().run()\n")
+        manifest = snapshot.build_manifest(self.root)
+        index = semantic_index.build_semantic_index(manifest)
+        calls = {(r["file"], tuple(r["parts"]), r["span"][0]): r
+                 for r in index["references"] if r["kind"] == "call"}
+
+        def call(parts, line, file="pkg/service.py"):
+            record = calls[(file, tuple(parts), line)]
+            return record["resolution"], record["reason"], record["target_id"]
+
+        # Inherited from a project base class in another file.
+        self.assertEqual(call(["self", "info"], 8),
+                         ("resolved", "inherited-project-method", "pkg/base.py::function@2:4"))
+        # The same method through two levels of MRO: Deep -> Service -> LoggingMixin.
+        self.assertEqual(call(["self", "info"], 21),
+                         ("resolved", "inherited-project-method", "pkg/base.py::function@2:4"))
+        # Declared on the class itself, so not an inheritance claim.
+        self.assertEqual(call(["self", "run"], 11),
+                         ("resolved", "instance-method", "pkg/service.py::function@7:4"))
+        # An attribute of a module bound by `from . import attr`.
+        self.assertEqual(call(["attr", "Helper"], 4, "pkg/main.py"),
+                         ("resolved", "module-attribute", "pkg/attr.py::class@1:0"))
+        # No project base declares it: unresolved, not guessed.
+        self.assertEqual(call(["self", "nope"], 14)[:2], ("unresolved", "unknown-receiver"))
+        # An instance attribute is a binding, not a symbol: it has no arrival node.
+        self.assertEqual(call(["self", "callback"], 17), ("unresolved", "unknown-receiver", None))
+        # Only the first parameter is the instance; a second one is not a receiver.
+        self.assertEqual(call(["other", "run"], 24)[:2], ("unresolved", "unknown-receiver"))
+        # An attribute write in the same body invalidates the receiver binding
+        # before any MRO walk, so the reference never becomes an edge either.
+        self.assertEqual(call(["self", "callback"], 29), ("unresolved", "ambiguous-binding", None))
+
+    def python_calls_with_storage_parity(self):
+        """Exercise both graph owners over real source, not scripted lookup answers."""
+        from snapshot_store import _unpack, open_snapshot
+        index = semantic_index.build_semantic_index(snapshot.build_manifest(self.root))
+        memory = {record["id"]: record for record in index["references"] if record["kind"] == "call"}
+        directory = self.root / ".test-snapshots"
+        directory.mkdir(exist_ok=True)
+        path = directory / "manifest.sqlite"
+        snapshot.write_snapshot(self.root, path)
+        with open_snapshot(path) as store:
+            persisted = {row[0]: _unpack(row[1]) for row in store.connection.execute(
+                "SELECT id,payload FROM sem_references WHERE kind='call'")}
+        self.assertEqual(memory, persisted)
+        return list(memory.values())
+
+    def test_python_multiple_inheritance_uses_c3_in_both_graph_owners(self):
+        self.add("main.py", "class A:\n"
+                 "    def target(self): return 'A'\n"
+                 "class B(A): pass\n"
+                 "class C:\n"
+                 "    def target(self): return 'C'\n"
+                 "class D(B, C):\n"
+                 "    def run(self): return self.target()\n")
+        calls = self.python_calls_with_storage_parity()
+        self.assertEqual([(r["resolution"], r["target_id"], r["reason"]) for r in calls],
+                         [("resolved", "main.py::function@2:4", "inherited-project-method")])
+
+    def test_python_project_namespace_bases_and_builtin_object_resolve(self):
+        self.add("pkg/base.py", "class Base(object):\n    def target(self): return 1\n")
+        self.add("pkg/use.py", "import pkg.base as namespace\n"
+                 "from . import base\n"
+                 "class Direct(namespace.Base):\n"
+                 "    def run(self): return self.target()\n"
+                 "class Relative(base.Base):\n"
+                 "    def run(self): return self.target()\n")
+        calls = self.python_calls_with_storage_parity()
+        self.assertEqual([(r["resolution"], r["target_id"]) for r in calls],
+                         [("resolved", "pkg/base.py::function@2:4")] * 2)
+
+    def test_python_inconsistent_or_cyclic_hierarchies_have_no_partial_mro(self):
+        sources = (
+            "class Root:\n    def target(self): return 1\n"
+            "class X(Root): pass\nclass Y(Root): pass\n"
+            "class A(X, Y): pass\nclass B(Y, X): pass\n"
+            "class Child(A, B):\n    def run(self): return self.target()\n",
+            "class A(B):\n    def target(self): return 1\n"
+            "class B(A): pass\n"
+            "class Child(A):\n    def run(self): return self.target()\n",
+        )
+        for source in sources:
+            with self.subTest(source=source):
+                self.add("main.py", source)
+                calls = self.python_calls_with_storage_parity()
+                self.assertEqual([(r["resolution"], r["target_id"]) for r in calls], [("unresolved", None)])
+
+    def test_python_partial_hierarchies_never_skip_an_unknown_base(self):
+        for base in ("Unknown", "factory()", "Generic[int]", "namespace.Unknown"):
+            with self.subTest(base=base):
+                self.add("main.py", "class Base:\n"
+                         "    def target(self): return 1\n"
+                         f"class Child({base}, Base):\n"
+                         "    def run(self): return self.target()\n")
+                calls = self.python_calls_with_storage_parity()
+                target = next(r for r in calls if r["parts"] == ["self", "target"])
+                self.assertEqual((target["resolution"], target["target_id"]), ("unresolved", None))
+
+    def test_python_member_shadows_and_dynamic_receivers_remain_unresolved(self):
+        cases = {
+            "class assignment": "    target = None\n    def run(self): return self.target()\n",
+            "method rebound": "    def target(self): return 2\n    target = None\n"
+                              "    def run(self): return self.target()\n",
+            "method redefined": "    def target(self): return 2\n    def target(self): return 3\n"
+                                "    def run(self): return self.target()\n",
+            "instance assignment in another method":
+                "    def __init__(self): self.target = lambda: 2\n"
+                "    def run(self): return self.target()\n",
+            "static method argument": "    @staticmethod\n    def run(value): return value.target()\n",
+            "setattr in another method":
+                "    def __init__(self): setattr(self, 'target', lambda: 2)\n"
+                "    def run(self): return self.target()\n",
+            "setattr of unknown name":
+                "    def replace(self, name): setattr(self, name, lambda: 2)\n"
+                "    def run(self): return self.target()\n",
+            "custom attribute lookup":
+                "    def __getattribute__(self, name): return lambda: 2\n"
+                "    def run(self): return self.target()\n",
+            "decorated receiver": "    @arbitrary\n    def run(self): return self.target()\n",
+            "decorated target": "    @property\n    def target(self): return lambda: 2\n"
+                                "    def run(self): return self.target()\n",
+            "keyword only argument": "    def run(*, value): return value.target()\n",
+            "conditional member": "    if False:\n        def target(self): return 2\n"
+                                  "    def run(self): return self.target()\n",
+        }
+        for label, body in cases.items():
+            with self.subTest(case=label):
+                self.add("main.py", "class Base:\n    def target(self): return 1\nclass Child(Base):\n" + body)
+                calls = self.python_calls_with_storage_parity()
+                target = next(r for r in calls if r["parts"] and r["parts"][-1] == "target")
+                self.assertEqual((target["resolution"], target["target_id"]), ("unresolved", None))
+
+    def test_python_dynamic_class_construction_prevents_member_claims(self):
+        for header in ("@arbitrary\nclass Child(Base):", "class Child(Base, metaclass=type):"):
+            with self.subTest(header=header):
+                self.add("main.py", "class Base:\n    def target(self): return 1\n" + header
+                         + "\n    def run(self): return self.target()\n")
+                calls = self.python_calls_with_storage_parity()
+                target = next(r for r in calls if r["parts"] == ["self", "target"])
+                self.assertEqual((target["resolution"], target["target_id"]), ("unresolved", None))
+
+    def test_python_existing_package_attribute_does_not_become_a_submodule(self):
+        self.add("pkg/__init__.py", "class base:\n    class Base:\n        def target(self): return 0\n")
+        self.add("pkg/base.py", "class Base:\n    def target(self): return 1\n")
+        self.add("pkg/use.py", "from . import base\nclass Child(base.Base):\n"
+                 "    def run(self): return self.target()\n")
+        calls = self.python_calls_with_storage_parity()
+        self.assertEqual([(r["resolution"], r["target_id"]) for r in calls], [("unresolved", None)])
+
+    def test_python_imported_class_with_module_name_does_not_become_a_module(self):
+        self.add("base.py", "class base:\n    pass\n\ndef target(): return 1\n")
+        self.add("use.py", "from base import base\n\ndef run(): return base.target()\n")
+        calls = self.python_calls_with_storage_parity()
+        self.assertEqual([(r["resolution"], r["target_id"]) for r in calls], [("unresolved", None)])
+
     def test_native_java_semantics_resolve_same_class_and_cross_file_calls_conservatively(self):
         from languages._treesitter import get_parser
         if get_parser("java") is None:

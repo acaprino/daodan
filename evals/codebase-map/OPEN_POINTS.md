@@ -48,7 +48,7 @@ exists for. Kind 22 is in no grade, so these records sit in the residual.
 | Workspace | Positions sampled | `edge-call` | EnumMember (22) | Struct (23) |
 |---|---:|---:|---:|---:|
 | `jupiter-desktop/src-tauri` | 949 | 204 | **17** | 2 |
-| `logs-viewer-desktop/src-tauri` | 424 (census) | 38 | 0 | 3 |
+| `logs-viewer-desktop/src-tauri` | 424 of 951 (all 21 files) | 38 | 0 | 3 |
 
 **All 17 records were read at both ends: 17 true positives, 0 false, 0
 undecidable.** Each call site constructs the variant with an argument,

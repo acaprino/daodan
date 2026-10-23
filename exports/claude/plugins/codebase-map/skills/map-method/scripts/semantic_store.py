@@ -18,10 +18,15 @@ import snapshot
 from snapshot_store import SnapshotStore, SnapshotWriter, _pack, _unpack, _settings, logical_digest
 from tree_scope import Perimeter
 import card_store
+import resolution
 import semantic_index
 
-RESOLVER_VERSION = 1
-TARGET_KINDS = frozenset({"function", "class"})
+RESOLVER_VERSION = 3
+# The resolution policy and its reason vocabulary live in resolution.py, shared with
+# semantic_index so the two owners of the source graph cannot disagree. Re-exported
+# here because consumers and tests read both names from this module.
+TARGET_KINDS = resolution.TARGET_KINDS
+MRO_LIMIT = resolution.MRO_LIMIT
 MAX_META_CHANGESETS = 16
 MAX_META_HISTORY_BYTES = 4 * 1024 * 1024
 # The algorithm behind interface_hash. A digest carries it as a `v<N>:` prefix,
@@ -229,10 +234,15 @@ class _Resolver:
         self.db = database
 
     def scope(self, rel, identity):
-        row = self.db.execute("SELECT payload FROM sem_scopes WHERE file=? AND id=?", (rel, identity)).fetchone()
-        if row is None:
+        record = self.scope_record(rel, identity)
+        if record is None:
             raise ValueError("semantic scope is missing")
-        return _unpack(row[0])
+        return record
+
+    def scope_record(self, rel, scope_id):
+        """One scope's payload, or None: the shared policy tolerates an absent scope."""
+        row = self.db.execute("SELECT payload FROM sem_scopes WHERE file=? AND id=?", (rel, scope_id)).fetchone()
+        return _unpack(row[0]) if row else None
 
     def bindings(self, rel, scope, name):
         return self.db.execute(
@@ -259,6 +269,14 @@ class _Resolver:
     def targets(self, rel, module):
         return [row[0] for row in self.db.execute(
             "SELECT target FROM sem_modules WHERE file=? AND module=? ORDER BY target", (rel, module))]
+
+    def language(self, rel):
+        row = self.db.execute("SELECT language FROM sem_coverage WHERE file=?", (rel,)).fetchone()
+        return row[0] if row else None
+
+    def bindings_named(self, rel, scope_id, name):
+        """Every binding is relevant: a non-callable member blocks a base member."""
+        return [self.binding(row) for row in self.bindings(rel, scope_id, name)]
 
     def uncertain_imports(self, rel, scope_id, parts):
         while scope_id is not None:
@@ -318,6 +336,7 @@ class _Resolver:
         record = {**item, "id": f"{rel}::reference#{number}", "file": rel,
                   "caller": f"{rel}::{item['caller']}" if item.get("caller") else None,
                   "target_id": None, "resolution": "unresolved", "reason": item.get("reason"),
+                  "resolver": resolution.LEXICAL_RESOLVER,
                   "known_unrelated": False, "candidate_files": [], "imported_name": None,
                   "candidate_bindings": []}
         if item.get("reason") or not item["parts"]:
@@ -332,7 +351,12 @@ class _Resolver:
         kind, value = binding
         if kind == "declaration":
             if len(parts) != 1:
-                record["reason"] = "unknown-receiver"
+                found = (resolution.instance_method(self, rel, item, parts)
+                         if len(parts) == 2 else None)
+                if found is None:
+                    record["reason"] = "unknown-receiver"
+                else:
+                    record.update(target_id=found[0], resolution="resolved", reason=found[1])
             elif self.declaration(value)["kind"] in TARGET_KINDS:
                 record.update(target_id=value, resolution="resolved", reason="unique-lexical-binding")
             else:
@@ -346,6 +370,13 @@ class _Resolver:
             record["reason"] = imported.get("reason") or "import-binding-unresolved"
         elif imported.get("type_only"):
             record["reason"] = "type-only-import"
+        elif imported["mode"] == "named" and len(parts) == 2 and self.language(rel) == "python":
+            # Checked before the single-target rule: a Python relative import keys
+            # the module as written, so one file's several `from . import x`
+            # statements share the key "." and only the imported name picks the file.
+            identity, reason = resolution.module_attribute(self, rel, imported, parts[1])
+            record["imported_name"] = parts[1]
+            record.update(target_id=identity, reason=reason)
         elif len(targets) != 1:
             record["reason"] = "import-target-missing-or-ambiguous"
         elif imported["mode"] == "namespace" and len(parts) == 2:
@@ -474,10 +505,14 @@ def _compute_file_meta_symbols(
         contract = {"kind": kind, "name": name, "exported": is_exp}
         if kind == "class":
             prefix = name + "."
+            # Direct members only. A definition nested inside a method is its own
+            # symbol now, and it is not part of the class contract: including it
+            # would make a private helper's signature change propagate to every
+            # caller of the class.
             contract.update(info["own"], members={
                 m_name[len(prefix):]: m_info["own"]
                 for m_name, m_info in sym_info.items()
-                if m_name.startswith(prefix)
+                if m_name.startswith(prefix) and "." not in m_name[len(prefix):]
             })
         elif matched_decls or info["exhaustive"]:
             contract.update(info["own"])

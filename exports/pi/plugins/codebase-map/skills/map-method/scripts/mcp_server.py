@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.11"
+# requires-python = ">=3.12"
 # dependencies = ["mcp>=2.0.0,<3", "tree-sitter>=0.23", "tree-sitter-language-pack>=1.0"]
 # ///
 """Local stdio access to the project-bound Codebase Map service.
@@ -183,6 +183,8 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
 
 def main(argv: list[str] | None = None) -> None:
+    from languages.python import require_minimum_interpreter
+    require_minimum_interpreter("the Codebase Map MCP server")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", type=Path, default=Path.cwd(),
                         help="project binding, fixed for the lifetime of this server")

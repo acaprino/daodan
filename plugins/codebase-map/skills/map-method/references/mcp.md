@@ -14,7 +14,8 @@ must never choose the package index or interpreter of its own analyzer. Keep
 both flags in any custom registration.
 
 `uv` provisions the official MCP Python SDK 2.x in its own runtime environment.
-The server requires Python 3.11 or later. Existing parser dependencies stay
+The server requires Python 3.12 or later, which its `requires-python` header makes
+`uv` provision and its startup check enforces. Existing parser dependencies stay
 optional, with the same parser diagnostics and fallback as the CLI. The build
 and the reusable `mcp_service.py` module remain standard-library-only.
 

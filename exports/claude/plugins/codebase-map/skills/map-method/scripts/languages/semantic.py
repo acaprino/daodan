@@ -42,11 +42,13 @@ class _Evidence:
         self.scope_by_id[self.scope].update(unresolved=True, reason=reason)
         self.note(reason)
 
-    def declaration(self, name, kind, span, scope=None):
+    def declaration(self, name, kind, span, scope=None, extra=None):
         owner_scope = scope or self.scope
         declaration = {"id": self.identity(kind, span), "name": name, "kind": kind,
                        "scope": owner_scope, "span": span,
                        "qualified_name": self.qualified(name, owner_scope)}
+        if extra:
+            declaration.update(extra)
         self.data["declarations"].append(declaration)
         self.declaration_by_id[declaration["id"]] = declaration
         return declaration["id"]
@@ -95,6 +97,21 @@ def _py_parts(node):
     return []
 
 
+def _py_base_names(bases):
+    """Base classes as written, dotted. Anything else is not a name to follow.
+
+    A subscript (`Base[T]`), a call (`factory()`), a star (`*mixins`) or any other
+    expression is skipped rather than guessed: an MRO walk follows only bases whose
+    name it can look up lexically, and reports nothing when it cannot.
+    """
+    named = []
+    for base in bases:
+        parts = _py_parts(base)
+        if parts:
+            named.append(".".join(parts))
+    return named
+
+
 class _PythonEvidence(ast.NodeVisitor, _Evidence):
     def __init__(self):
         _Evidence.__init__(self, "stdlib-ast")
@@ -134,7 +151,11 @@ class _PythonEvidence(ast.NodeVisitor, _Evidence):
         self.scope = previous
 
     def function(self, node):
-        identity = self.declaration(node.name, "function", _py_span(node))
+        positional = [*node.args.posonlyargs, *node.args.args]
+        identity = self.declaration(node.name, "function", _py_span(node), extra={
+            "decorated": bool(node.decorator_list),
+            "receiver": positional[0].arg if positional and not node.decorator_list else None,
+        })
         # Header expressions do not belong to the callable body. Unsupported
         # generic annotation scopes must not fall through to outer names.
         parameters = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
@@ -161,10 +182,18 @@ class _PythonEvidence(ast.NodeVisitor, _Evidence):
         self.in_scope(scope, identity, [node.body])
 
     def visit_ClassDef(self, node):
-        identity = self.declaration(node.name, "class", _py_span(node))
+        identity = self.declaration(node.name, "class", _py_span(node),
+                                    extra={"bases": _py_base_names(node.bases),
+                                           "bases_complete": all(_py_parts(base) for base in node.bases),
+                                           "dynamic_class": bool(node.decorator_list or node.keywords),
+                                           "instance_writes": []})
         self.header(node, [*node.decorator_list, *node.bases, *[k.value for k in node.keywords]])
         scope = self.new_scope("class", _py_span(node), self.lexical_parent())
         self.scope_by_id[scope]["declaration"] = identity
+        # The body scope is what makes an inherited-method lookup possible at all:
+        # a method's own function scope skips the class scope, because Python's
+        # lexical scoping does, so the class is reachable only from its declaration.
+        self.declaration_by_id[identity]["body"] = scope
         if getattr(node, "type_params", None):
             self.scope_by_id[scope]["generic"] = True
         previous = self.scope
@@ -207,10 +236,46 @@ class _PythonEvidence(ast.NodeVisitor, _Evidence):
             if not isinstance(node.ctx, ast.Load) and parts:
                 self.namespace_writes.append((parts[0], self.scope, _py_span(node)))
                 self.note("attribute mutation invalidates a namespace binding")
+                if len(parts) == 2:
+                    self.instance_write(parts[0], parts[1])
             self.visit(node.value)
+
+    def instance_write(self, receiver, name):
+        method = self.declaration_by_id.get(self.caller)
+        if method is None or method.get("receiver") != receiver:
+            return
+        body = self.scope_by_id[method["scope"]]
+        if body["kind"] != "class":
+            return
+        owner = self.declaration_by_id[body["declaration"]]
+        if name is None:
+            owner["instance_writes_unknown"] = True
+        elif name not in owner["instance_writes"]:
+            owner["instance_writes"].append(name)
+
+    def conditional_namespace(self, node):
+        # A sole declaration under `if False` is not an unconditional member.
+        # Keep its syntax evidence, but do not certify this class's member lookup.
+        if self.scope_by_id[self.scope]["kind"] == "class":
+            self.block("conditional class namespace is unresolved")
+        self.generic_visit(node)
+
+    visit_If = conditional_namespace
+    visit_Try = conditional_namespace
+    visit_TryStar = conditional_namespace
+    visit_For = conditional_namespace
+    visit_AsyncFor = conditional_namespace
+    visit_While = conditional_namespace
+    visit_With = conditional_namespace
+    visit_AsyncWith = conditional_namespace
+    visit_Match = conditional_namespace
 
     def visit_Call(self, node):
         parts = _py_parts(node.func)
+        if parts in (["setattr"], ["delattr"]) and len(node.args) >= 2 and isinstance(node.args[0], ast.Name):
+            attribute = node.args[1]
+            name = attribute.value if isinstance(attribute, ast.Constant) and isinstance(attribute.value, str) else None
+            self.instance_write(node.args[0].id, name)
         if parts == ["exec"]:
             scope = self.scope
             while scope is not None:

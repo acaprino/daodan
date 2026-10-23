@@ -92,8 +92,8 @@ python "${PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write <target> \
   --out <run-dir>/snapshot/manifest.sqlite
 ```
 
-`scope` counts languages/exclusions without parsing. Storage defaults to SQLite,
-independently of the filename. Explicit JSON:
+`scope` counts languages/exclusions without parsing. Storage defaults to SQLite.
+Explicit JSON:
 
 ```bash
 python "${PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write <target> \
@@ -102,7 +102,7 @@ python "${PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write <target> \
 
 Choose one file per run. After writing, set `state.json -> snapshot`:
 `{"format":"sqlite","path":"snapshot/manifest.sqlite","storage_version":1}`,
-or format `json` with `snapshot/manifest.json`. Storage is separate from flags.
+or format `json` with `snapshot/manifest.json`.
 Legacy runs without this record are JSON only; never rewrite them.
 
 Use `snapshot.py resolve` for current, existing and parent runs:
@@ -122,7 +122,7 @@ python "${PLUGIN_ROOT}/skills/map-method/scripts/snapshot.py" write <target> \
   --format "$snapshot_format" --out "$source_manifest" --reuse "$parent_manifest"
 ```
 
-New runs default to `snapshot_format=sqlite` and its canonical filename.
+New runs default to `snapshot_format=sqlite`.
 Parent/child formats may differ. Resume preserves format/path; changing them requires
 a new run/extraction. Same-path reuse closes its reader before Windows replacement.
 
@@ -191,7 +191,8 @@ preserves archives/unrelated files. Never hand-copy partial output.
 
 ## Prerequisites
 
-Python >= 3.10 and stdlib suffice. Optional Java/JS/TS/Rust Tree-sitter parsers:
+Python >= 3.12 and stdlib suffice; below it the entry scripts refuse, because `ast`
+parses with the running grammar. Optional Java/JS/TS/Rust/Go Tree-sitter parsers:
 
 ```bash
 pip install -r "${PLUGIN_ROOT}/skills/map-method/scripts/requirements.txt"
