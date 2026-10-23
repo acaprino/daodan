@@ -28,9 +28,10 @@ class RetrievalBenchmarkTests(unittest.TestCase):
 
     def test_anchors_ignore_one_letter_css_symbols(self):
         docs = [{"id": "x.css::a", "file": "x.css", "name": "a", "short": "a"},
-                {"id": "x.py::run", "file": "x.py", "name": "run", "short": "run"}]
+                {"id": "x.py::build_edit_impact", "file": "x.py",
+                 "name": "build_edit_impact", "short": "build_edit_impact"}]
 
-        self.assertEqual(BENCH.anchors(docs, "find a run"), ["x.py::run"])
+        self.assertEqual(BENCH.anchors(docs, "find a build_edit_impact"), ["x.py::build_edit_impact"])
 
     def test_gold_set_shape_and_categories(self):
         payload = json.loads((HARNESS.parent / "queries.json").read_text(encoding="utf-8"))

@@ -7,6 +7,11 @@ time and query latency, after exact anchors and the graph are already used?
 It is a development eval under `evals/`. It is never shipped in a plugin
 package and it does not change Codebase Map runtime behaviour.
 
+The [23 October local CodeRank trial](RESULTS-2026-10-23-coderank-local.md)
+compares metadata-only and Python-body representations on one frozen corpus.
+CodeRank improves the metadata baseline, while FTS with bodies wins overall;
+the experiment does not close the production adoption gate.
+
 ## Candidates
 
 | Candidate | Ranking |
