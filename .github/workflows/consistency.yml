@@ -20,7 +20,10 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          # 3.12 is the Codebase Map helper suite's declared floor: the Python
+          # grammar `ast` uses is the running interpreter's, so a suite tested on
+          # an older one would not exercise PEP 695/701 parsing at all.
+          python-version: "3.12"
 
       # The OpenCode loader's tests run under `node --test` from the Python
       # suite, and are skipped, not passed, where Node is absent.
@@ -72,7 +75,10 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          # 3.12 is the Codebase Map helper suite's declared floor: the Python
+          # grammar `ast` uses is the running interpreter's, so a suite tested on
+          # an older one would not exercise PEP 695/701 parsing at all.
+          python-version: "3.12"
 
       - name: Version bumps over the pushed or PR range
         run: |

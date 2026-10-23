@@ -12,9 +12,12 @@ removed. Both are one careless edit away, and neither shows up as a build
 failure.
 """
 
+import re
 import shlex
+import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = REPO_ROOT / ".github/workflows"
@@ -105,10 +108,22 @@ class PublishWorkflowContractTests(unittest.TestCase):
     def test_publication_release_notes_name_the_opencode_install(self):
         self.assertIn("opencode plugin add", workflow_text(PUBLISH))
 
-    def test_consistency_pins_python_311_or_later(self):
-        text = workflow_text(CONSISTENCY)
-        self.assertNotIn("python-version: '3.10'", text)
-        self.assertIn("python-version:", text)
+    def test_workflow_runtimes_can_start_codebase_map_helpers(self):
+        # A CI pin below the parser's floor must fail before the suite is run.
+        scripts = REPO_ROOT / "plugins/codebase-map/skills/map-method/scripts"
+        sys.path.insert(0, str(scripts))
+        from languages import python as python_adapter
+
+        for path in (CONSISTENCY, PUBLISH):
+            versions = re.findall(r'(?m)^\s+python-version:\s*["\']?(\d+)\.(\d+)', workflow_text(path))
+            self.assertTrue(versions, f"No explicit Python runtime in {path.name}")
+            for major, minor in versions:
+                with self.subTest(workflow=path.name, runtime=f"{major}.{minor}"):
+                    with mock.patch.object(python_adapter.sys, "version_info", (int(major), int(minor), 0)):
+                        try:
+                            python_adapter.require_minimum_interpreter(path.name)
+                        except SystemExit as error:
+                            self.fail(str(error))
 
     def test_no_workflow_mentions_the_extension_surface(self):
         for path in sorted(WORKFLOWS.glob("*.yml")):
