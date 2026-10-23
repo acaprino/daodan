@@ -1,0 +1,33 @@
+schema = "daodan/record-set/v1"
+name = "context"
+owner = "codebase-map"
+purpose = "Versioned evidence payloads; operational state remains in project-protocol work records."
+
+[[records]]
+record_schema = "daodan/context-request/v1"
+required = ["schema", "task_id", "intent", "query", "read_boundary", "write_boundary", "anchors", "base", "candidate", "diff", "proposed_edits", "mandatory_requirements", "required_gates", "budget", "policy_version"]
+intents = ["analysis", "docs", "bug", "change", "test", "finish"]
+boundaries = "Derived from the owning run and tree_scope; requests cannot expand them."
+missing_inputs = "Explicit null or a declared gap, never inferred authorization."
+
+[[records]]
+record_schema = "daodan/scope-plan/v1"
+required = ["schema", "task_id", "input_digest", "base", "candidate", "resolver_profile", "indices", "policy_version", "analysis", "edit_candidates", "potential_impact", "validation_obligations", "deferred", "unresolved", "outside_boundary", "coverage"]
+entity_evidence = ["entity_id", "reason", "provenance", "status"]
+edit_candidates = "Proposed intervention sites do not grant write authority."
+validation_obligations = "Requirements and gates survive every budget projection."
+
+[[records]]
+record_schema = "daodan/context-packet/v1"
+required = ["schema", "task_id", "input_digest", "plan_digest", "candidate", "resolver_profile", "indices", "policy_version", "status", "blocks", "gaps", "counts", "budget", "cursor"]
+statuses = ["ready", "needs_split", "incomplete"]
+cursor_binding = ["request", "snapshot", "resolver", "indices", "policy", "delivered_blocks"]
+blocks = "Source, signatures, callsites, fresh cards and documentation references retain source anchors."
+completion = "A packet is evidence; only the owning process gates can conclude work."
+
+[[records]]
+record_schema = "daodan/map-slice/v1"
+required = ["schema", "snapshot", "components", "edges", "gaps"]
+snapshot_required = ["run_id", "digest", "freshness"]
+edge_required = ["from", "to", "kind", "evidence"]
+compatibility = "I1 projection; gaps and snapshot freshness remain explicit."

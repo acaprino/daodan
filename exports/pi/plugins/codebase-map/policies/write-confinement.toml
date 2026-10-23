@@ -11,6 +11,9 @@ published_mirror = ".codebase-map"
 # Cards outlive every run: a run's snapshot is immutable evidence, so a model's
 # reading of a symbol is kept in one file beside the runs, never in a snapshot.
 card_store = ".codebase-map/cards.sqlite"
+# Derived engine-edges.sqlite and retrieval.sqlite live beside the run manifest
+# under snapshot/. The retrieval helper confines its output to that directory;
+# the service rejects linked artifacts and run-relative path escapes.
 forbid_writes_outside_roots = true
 
 # Where this policy is enforced, decided on 2026-09-03 after the cross-host

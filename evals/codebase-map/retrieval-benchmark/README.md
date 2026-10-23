@@ -112,3 +112,13 @@ to build one for another corpus. Outputs are `corpus.jsonl`, `adjacency.json`,
 Latency excludes model download. Index build time for B and C includes the
 sidecar process after its dependencies and model are available; the recorded
 run notes in `RESULTS.md` state when downloads were cold.
+# Production retrieval baseline
+
+The `codebase-map` kernel now provides `retrieval.refresh_index` and
+`retrieval.search`: exact anchors plus SQLite FTS5 over names, paths, signatures
+and verified bodies, with incremental document hashes and atomic generations.
+Its BM25 column weights are `(0, 10, 5, 3, 1)`, including the unindexed entity ID.
+Historical benchmark scores remain measurements of their recorded implementation;
+they are not new measurements of this production API. Its Unicode subtokenization,
+case-sensitive anchor handling and freshness checks are explicit parts of the
+production contract. Embedding fusion remains a later, optional step.

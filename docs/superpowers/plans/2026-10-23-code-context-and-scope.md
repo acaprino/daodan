@@ -207,12 +207,18 @@ Docs: `docs/plugins/codebase-map.md` e README del benchmark.
 **Interfaces:** `refresh_index` pubblica un indice derivato bound allo snapshot;
 `search` restituisce ID, anchor, provenienza, rank, matched/returned e troncamenti.
 
-- [ ] Congelare fixture con nome esatto, traceback, nome ambiguo, omonimi, rename, simbolo cancellato, file escluso e query italiana. Assert: gli exact verificati precedono i candidati e nessun risultato esce dall'inventario.
-- [ ] Portare in produzione soltanto le parti necessarie della baseline exact/subtoken/FTS5 già misurata, con query parametrizzate. Rilevare FTS5 indisponibile e dichiarare la capacità mancante.
-- [ ] Aggiornare per hash i documenti modificati, eliminare quelli rimossi e pubblicare atomicamente. Indicizzare metadati, firma e sorgente senza generare riassunti LLM; card fresche sono arricchimenti tracciati, mai un prerequisito della ricerca.
-- [ ] Registrare gli input necessari al riuso, incluse assenze rilevanti e cambi di ambiente/configurazione; testare aggiunta di un export prima assente e passaggio da registro vuoto a popolato. Se il tracciamento manca, rebuild dichiarato, non cache considerata fresca.
-- [ ] Verificare `test_codebase_map_retrieval.py` e `test_codebase_map_retrieval_benchmark.py`; confronto incrementale/full rebuild identico per lo stesso input e schema.
+- [x] Congelare fixture con nome esatto, traceback, nome ambiguo, omonimi, rename, simbolo cancellato, file escluso e query italiana. Assert: gli exact verificati precedono i candidati e nessun risultato esce dall'inventario.
+- [x] Portare in produzione soltanto le parti necessarie della baseline exact/subtoken/FTS5 già misurata, con query parametrizzate. Rilevare FTS5 indisponibile e dichiarare la capacità mancante.
+- [x] Aggiornare per hash i documenti modificati, eliminare quelli rimossi e pubblicare atomicamente. Indicizzare metadati, firma e sorgente senza generare riassunti LLM; card fresche sono arricchimenti tracciati, mai un prerequisito della ricerca.
+- [x] Registrare gli input necessari al riuso, incluse assenze rilevanti e cambi di ambiente/configurazione; testare aggiunta di un export prima assente e passaggio da registro vuoto a popolato. Se il tracciamento manca, rebuild dichiarato, non cache considerata fresca.
+- [x] Verificare `test_codebase_map_retrieval.py` e `test_codebase_map_retrieval_benchmark.py`; confronto incrementale/full rebuild identico per lo stesso input e schema.
 - [ ] Aggiornare docs, gate comuni e commit P3. **Done:** localizzazione locale utilizzabile anche senza embedding.
+
+Checkpoint P3 (2026-10-23): ricerca exact/subtoken/FTS5, indice incrementale
+e contratti implementati. I test coprono anche il contesto fuori dai simboli,
+i caratteri form-feed e i traceback misti. La chiusura resta aperta per lo
+stesso gate generale preesistente documentato in P2. Embedding, selezione del
+perimetro e pacchetti automatici restano rispettivamente P5, P6 e P7.
 
 ## P4: mappa semantica Markdown riutilizzabile
 
