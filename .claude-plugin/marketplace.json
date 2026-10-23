@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "38.6.0"
+    "version": "38.8.3"
   },
   "name": "daodan",
   "owner": {
@@ -73,7 +73,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/claude/plugins/codebase-map",
-      "version": "8.2.0"
+      "version": "8.3.0"
     },
     {
       "author": {
@@ -260,7 +260,7 @@
         "./skills/readme-craft"
       ],
       "source": "./exports/claude/plugins/project-knowledge",
-      "version": "2.0.0"
+      "version": "2.0.2"
     },
     {
       "author": {
@@ -294,7 +294,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/claude/plugins/project-lifecycle",
-      "version": "2.1.0"
+      "version": "2.1.2"
     },
     {
       "agents": [
@@ -311,7 +311,7 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/claude/plugins/project-protocol",
-      "version": "1.7.0"
+      "version": "1.10.0"
     },
     {
       "agents": [
@@ -342,7 +342,7 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/claude/plugins/python-development",
-      "version": "4.0.0"
+      "version": "4.0.1"
     },
     {
       "agents": [
@@ -476,7 +476,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "4.0.0"
+      "version": "4.1.1"
     },
     {
       "agents": [
@@ -503,7 +503,10 @@
       "author": {
         "name": "Alfio Caprino"
       },
-      "dependencies": [],
+      "dependencies": [
+        "project-protocol",
+        "testing"
+      ],
       "description": "TypeScript and JavaScript development toolkit - hands-on typescript-engineer agent (architecture + implementation), dead-code detection via Knip, coding standards enforcement, and enterprise-grade TypeScript mastery (type system, generics, React/NestJS integration, Zod validation, modern toolchain), and a type-safety review layer: adversarial type-safety-auditor agent, 20-rule type-safety-rules skill, and an audit method with tsc/ESLint ground truth run by /daodan:check-health",
       "license": "MIT",
       "name": "typescript-development",
@@ -514,7 +517,7 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/claude/plugins/typescript-development",
-      "version": "3.0.0"
+      "version": "3.1.0"
     }
   ]
 }

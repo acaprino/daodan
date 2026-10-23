@@ -66,6 +66,10 @@ The agent and SKILL.md are the highest-value targets per minute of refresh effor
 
 Steps to refresh a custom plugin. Same protocol regardless of risk class; only the cadence differs.
 
+When revising or adding components or helpers, follow the
+[component-authoring method](../../../plugins/project-protocol/skills/project-protocol/SKILL.md#authoring-components)
+so applicable discipline and economy reach their consumers in any domain.
+
 1. **Re-research the domain** with `research:deep-researcher`. Prioritize primary and recency sources in `Source families` at minimum. Prompt template (the spawn-block fields the agent's INPUT section expects, filled):
    ```
    Role: researcher

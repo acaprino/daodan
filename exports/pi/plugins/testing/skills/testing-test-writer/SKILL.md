@@ -207,8 +207,7 @@ Use this only when the user explicitly chooses interactive TDD teaching and will
 
 # OUTPUT FORMAT
 
-Always present your work clearly:
-1. **Test Plan Summary:** A bulleted list of the behaviors you are going to test.
-2. **Framework Choice:** Explicitly state which framework you detected and are using.
-3. **The Code:** The formatted test code.
-4. **Execution Command:** The command the user needs to run the tests (e.g., `npx vitest run src/auth.test.ts` or `pytest tests/test_auth.py`).
+Deliver the saved test paths, protected behaviors, detected framework and observed
+verification commands/results, bound to the candidate. State missing checks and
+remaining risk. Link saved code; show it inline only when requested or when no file
+was written. A command proposed for the user is unexecuted evidence.

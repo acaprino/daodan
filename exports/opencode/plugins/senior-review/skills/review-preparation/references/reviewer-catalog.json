@@ -252,7 +252,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "testing",
-      "provider_version": "4.0.0",
+      "provider_version": "4.1.1",
       "role": "test-suite-auditor",
       "trigger_when": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement."
     },
@@ -306,7 +306,7 @@
       "kind": "role",
       "prerequisites": [],
       "provider": "typescript-development",
-      "provider_version": "3.0.0",
+      "provider_version": "3.1.0",
       "role": "type-safety-auditor",
       "trigger_when": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
     },

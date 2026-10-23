@@ -2,7 +2,7 @@
 
 The writer of a micro-task receives this brief and nothing else of the
 conversation. Fill every field from the run record; a missing field is a
-reason not to dispatch. The protocol's four working rules and the isolated
+reason not to dispatch. The protocol's working discipline and the isolated
 worker contract travel with the brief, as `project-protocol:project-protocol`
 requires.
 

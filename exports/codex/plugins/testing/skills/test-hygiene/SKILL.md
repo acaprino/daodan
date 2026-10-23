@@ -86,6 +86,11 @@ For an agent, writing a new test file costs nearly nothing; understanding the ex
 
 ## The binding rules
 
+For new or changed behavior, identify the introduced failure modes and the smallest
+meaningful checks that protect them. Reuse sufficient existing protection; extend
+it where needed. Trivial changes need no ceremonial test. Report unverified
+behavior and remaining risk.
+
 Test ownership: source at unit; behavior at integration, contract and e2e.
 
 Full protocol with per-rule detail in `references/prevention-rules.md`. The condensed form:

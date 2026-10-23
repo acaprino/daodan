@@ -92,7 +92,7 @@ Give original local content and delegated methods an evidenced consumer:
 
 1. Keep runtime references and helpers under `skills/<skill>/` and index them in that skill's `SKILL.md` with a one-line topic description. Kernel-root references, scripts and MCP directories are not shipped.
 2. Update roles or workflows that consult the material. Own-plugin paths use `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/...` or skill-relative `references/...`. Cross-plugin consumers load the owner's named skill, with its required dependency declared; they never reach into another plugin's files by path. Declare role bindings in the workflow's phases or dispatch table when a loaded method needs them.
-3. Avoid preloading discipline: the consumers must read references on-demand, not all upfront. State this in the wiring text.
+3. Apply the [component-authoring method](../../../plugins/project-protocol/skills/project-protocol/SKILL.md#authoring-components) to new or revised components, including helpers, for any language, framework or activity. Wire applicable shared obligations before execution; load detailed task-specific references on demand. State each consumption path in the wiring text.
 
 ## 7. Preserve provenance and existing tracking
 

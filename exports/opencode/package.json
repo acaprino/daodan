@@ -1355,7 +1355,7 @@
         "root": "plugins/project-protocol",
         "skills": [
           {
-            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before briefing workers, recording, resuming or closing a project intervention.",
+            "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, recording, resuming or closing a project intervention.",
             "file": "skills/project-protocol/SKILL.md",
             "id": "project-protocol:project-protocol",
             "name": "project-protocol"
@@ -2547,6 +2547,10 @@
             ]
           }
         ],
+        "dependencies": [
+          "project-protocol",
+          "testing"
+        ],
         "root": "plugins/typescript-development",
         "skills": [
           {
@@ -2587,5 +2591,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "38.6.0"
+  "version": "38.8.3"
 }

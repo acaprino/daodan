@@ -117,7 +117,8 @@ Read `references/working-principles.md` when a new project needs working guidanc
 and `references/test-suite-rules.md` when tests exist or are planned. Existing
 equivalent rules remain valid; missing canonical wording alone is not a defect.
 Read `references/output-economy.md` when creating or maintaining context/output
-guidance. Keep the always-loaded rule short and preserve required reading,
+guidance or instructions for projects that author agent components or tools.
+Keep the always-loaded rule short and preserve required reading,
 independent verification and domain report contracts.
 `references/instruction-example.md` illustrates structure, not current package
 versions or requirements for the target project.

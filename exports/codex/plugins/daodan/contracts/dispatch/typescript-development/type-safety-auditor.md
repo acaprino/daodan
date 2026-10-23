@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: typescript-development:type-safety-auditor; version: 3.0.0; source-sha256: b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: typescript-development:type-safety-auditor; version: 3.1.0; source-sha256: b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `typescript-development`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<typescript-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `typescript-development`. The owning plugin's declared logical skill identities are `typescript-development:knip`, `typescript-development:mastering-typescript`, `typescript-development:type-safety-rules`, `typescript-development:typescript-write`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 

@@ -74,6 +74,13 @@ Use when a project's instruction plan calls for efficiency guidance. Equivalent
 local guidance remains valid. Add only obligations supported by the project's
 workflow and available tooling; a pointer does not prove automatic loading.
 
+For projects authoring skills, agents, tools or other agent components, apply
+the Authoring components section of the loaded `project-protocol:project-protocol`
+skill. The instruction plan names how produced components and their workers
+receive applicable rules, with domain-appropriate verification for any language,
+framework or activity. Verify that consumption path rather than assuming the
+project's instructions accompany independent deliverables.
+
 Keep always-loaded instructions focused on durable obligations. Put detailed
 procedures and templates in working references, loaded when the active step
 requires them. Length alone does not establish that a rule can be deleted.

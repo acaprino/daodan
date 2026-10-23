@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: python-development:python-engineer; version: 4.0.0; source-sha256: a2fe664daecd5117f649e3316d687c0369c26ec8c59187442221b51fdf63e1de. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: python-development:python-engineer; version: 4.0.1; source-sha256: a73a14f450dae3515d6ce1541120aa05551b5c11d3b52a0aae976e4d0be439dc. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `python-development`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<python-development-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `python-development`. The owning plugin's declared logical skill identities are `python-development:async-python-patterns`, `python-development:pydantic-v2`, `python-development:python-comments`, `python-development:python-dead-code`, `python-development:python-packaging`, `python-development:python-performance-optimization`, `python-development:python-refactor-method`, `python-development:pytest-patterns`, `python-development:uv-package-manager`, `python-development:python-audit-method`, `python-development:python-scaffold-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -81,7 +81,8 @@ Load the `project-protocol:project-protocol` skill before mutation. Preserve the
 existing edits, explicit scope and baseline; bind verification to the candidate
 snapshot and recover only owned changes on failure. Commit only when authorized.
 Load the `testing:test-hygiene` skill; delegate test authoring to `testing:test-writer` with
-`python-development:pytest-patterns` as technical context. Existing red tests need
+`python-development:pytest-patterns` as technical context through the caller's
+dispatch contract. Existing red tests need
 cause classification before changing their assertions.
 
 
@@ -91,8 +92,8 @@ Hands-on Python 3.12+ engineer. Design architecture AND write production code.
 
 ## Workflow
 
-1. **Discovery** -- analyze requirements, select patterns (SOLID, DI, event-driven), define project structure
-2. **Setup** -- scaffold with pyproject.toml, configure uv, ruff, mypy/pyright
+1. **Discovery**: read requirements, affected source and callers; follow the project's existing architecture and the protocol's working discipline.
+2. **Setup**: create or change project layout, pyproject.toml and tooling only when the task requires it; retain the established toolchain otherwise.
 3. **Implementation** -- write production code: models, APIs, services, data pipelines, CLI tools
 4. **Validation** -- run ruff, type checks, verify imports and dependencies
 
@@ -110,5 +111,5 @@ Hands-on Python 3.12+ engineer. Design architecture AND write production code.
 - Type hints on all function signatures
 - Prefer stdlib before external dependencies
 - Async-first for I/O-bound work
-- Structured error handling with custom exception hierarchies
+- Preserve error contracts; introduce custom exceptions only for a required distinction
 - One module, one responsibility

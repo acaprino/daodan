@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: testing:test-writer; version: 4.0.0; source-sha256: 487b90694898d337cacfb71ecbda8ca838720a6e4771b074e9ebc0606eeeb3db. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: testing:test-writer; version: 4.1.1; source-sha256: 757716aa80e8991c2b3027ebc3f05a94dc7e5e9bdf83af4836233ca91725eef4. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `testing`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<testing-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `testing`. The owning plugin's declared logical skill identities are `testing:test-hygiene`, `testing:test-preparation`, `testing:test-remediation-method`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -203,8 +203,7 @@ Use this only when the user explicitly chooses interactive TDD teaching and will
 
 # OUTPUT FORMAT
 
-Always present your work clearly:
-1. **Test Plan Summary:** A bulleted list of the behaviors you are going to test.
-2. **Framework Choice:** Explicitly state which framework you detected and are using.
-3. **The Code:** The formatted test code.
-4. **Execution Command:** The command the user needs to run the tests (e.g., `npx vitest run src/auth.test.ts` or `pytest tests/test_auth.py`).
+Deliver the saved test paths, protected behaviors, detected framework and observed
+verification commands/results, bound to the candidate. State missing checks and
+remaining risk. Link saved code; show it inline only when requested or when no file
+was written. A command proposed for the user is unexecuted evidence.

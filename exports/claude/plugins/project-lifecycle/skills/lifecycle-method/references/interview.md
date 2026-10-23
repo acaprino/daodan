@@ -81,6 +81,12 @@ Compiled binding and static checks do not prove an installed host executed a run
 4. Record the grounding in the run's `adr` section as `active` and in every
    later worker's brief.
 
+Before fixing scope, trace affected flows in source beyond immediate map
+neighbours: callers, tests, fixtures, configuration and exports that must change
+together. These are required scope, not extra features. For bugs, locate the
+shared cause before choosing a repair site. Necessary paths outside approved
+scope return to planning before edits there.
+
 ## One question per turn
 
 Ask one question at a time, anchored to a file and line, with the current
