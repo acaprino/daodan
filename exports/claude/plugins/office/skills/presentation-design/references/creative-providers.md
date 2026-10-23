@@ -76,7 +76,6 @@ implements a PPTX engine:
 
 | Provider | Canonical skill | Presentation use |
 |---|---|---|
-| `frontend-design@claude-plugins-official` | `frontend-design:frontend-design` | Distinct visual direction and composition |
 | `impeccable@impeccable` | `impeccable:impeccable` | Typography, colour, spatial hierarchy and critique criteria |
 | `taste-skill@taste-skill` | `taste-skill:design-taste-frontend` | Art direction, authored typography, purposeful imagery and critique |
 
@@ -86,20 +85,20 @@ engine-supported native objects and required editability. Translate its advice
 into the slide-object specification in the designer's report, before
 reference-image generation or native construction.
 
-## Select at most two providers
+## Select at most one provider per role
 
 Choose by the gap `design-library.md` leaves, not by availability alone:
 
-- **Designer**: `frontend-design` for visual direction, or `taste` for art
-  direction and typography. Pick one.
+- **Designer**: `taste` for art direction, authored typography and purposeful
+  imagery.
 - **Reviewer**: `impeccable` for critique criteria, or `taste` for critique
   references. Pick one.
 
-Do not load overlapping advice into one assignment: at most two providers per
-run, and never two providers with the same role above. Honor the user's requested
-selection when given. When nothing is selected, Office's built-in library and the
-selected engine's guidance are sufficient and complete; never open a provider
-merely because it is installed.
+Do not load overlapping advice into one assignment: at most one provider per
+worker, and never two providers with the same role above. Honor the user's
+requested selection when given. When nothing is selected, Office's built-in
+library and the selected engine's guidance are sufficient and complete; never
+open a provider merely because it is installed.
 
 For each selected provider, resolve its actual installed skill identity on the
 active host, read its canonical body, then only relevant references. Record
@@ -111,7 +110,6 @@ These providers primarily address web interfaces. Impeccable explicitly excludes
 general non-UI workflows. Here consult its transferable visual guidance as
 reference material for slide composition and critique; do not invoke application
 bootstrap, context CLI, page implementation or unrelated product-document writes.
-Frontend Design supplies direction, not HTML as the requested deliverable.
 Office owns the slide workflow, editability, source fidelity and render evidence.
 This scoped consultation does not claim any provider implements a PPTX engine or
 that its full UI workflow ran.

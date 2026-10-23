@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:65bf1c302448f848fbd60b55d97d641933937a828d3ab40aa02cfc0434b03ac7",
+  "coreDigest": "sha256:508631be24e872ae3af5a265d82d315ae84c749157195ca4845038d95051ffa9",
   "harnessStrategies": {
     "create-presentation": "serial-isolated",
     "document": "parallel-subagents",
@@ -9,5 +9,5 @@
   "host": "copilot",
   "overrides": [],
   "plugin": "office",
-  "version": "1.3.0"
+  "version": "1.3.1"
 }

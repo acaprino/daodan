@@ -36,7 +36,6 @@ OFFICE = REPO_ROOT / "plugins/office"
 ADAPTERS = REPO_ROOT / "adapters"
 ROLES = ("presentation-designer", "presentation-reviewer")
 PROVIDERS = {
-    "frontend-design@claude-plugins-official",
     "impeccable@impeccable",
     "taste-skill@taste-skill",
 }

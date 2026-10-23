@@ -1,7 +1,7 @@
 schema = "daodan/v1"
 name = "office"
-version = "1.3.0"
-description = "Design editable presentations with creative specialists, SlidePoise and DeckCraft, preview and export PPTX, and work with native Excel workbooks and Word documents. Includes slide design directions, harness image generation, runtime discovery and preservation evidence."
+version = "1.3.1"
+description = "Design editable presentations with art-direction specialists, a built-in slide design library, SlidePoise and DeckCraft, preview and export PPTX, and work with native Excel workbooks and Word documents. Includes harness image generation, runtime discovery and preservation evidence."
 license = "MIT"
 
 [capabilities]
@@ -10,7 +10,7 @@ optional = []
 
 [dependencies]
 required = []
-optional = ["frontend-design@claude-plugins-official", "impeccable@impeccable", "taste-skill@taste-skill"]
+optional = ["impeccable@impeccable", "taste-skill@taste-skill"]
 
 [components]
 skills = ["presentation-design", "slidepoise", "deckcraft", "xlsx", "docx"]

@@ -87,7 +87,6 @@ design choice. Return
 the specified slide objects, geometry, typography, native/image representations,
 editable data and support evidence in the existing design report. Flag unsupported
 effects or unresolved fonts before the coordinator generates reference imagery.
-When selected and available, load the `frontend-design:frontend-design` skill for visual direction.
 When selected and available, load the `impeccable:impeccable` skill for transferable visual guidance.
 When selected and available, load the `taste-skill:design-taste-frontend` skill for scoped art-direction references.
 Select at most two providers under that Office skill's `references/creative-providers.md`;
