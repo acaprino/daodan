@@ -10,7 +10,7 @@ intents = ["analysis", "docs", "bug", "change", "test", "finish"]
 boundaries = "Derived from the owning run and tree_scope; requests cannot expand them."
 missing_inputs = "Explicit null or a declared gap, never inferred authorization."
 snapshot_descriptor = "candidate and optional base are {manifest: absolute_path}; SQLite snapshots belong to the authority root."
-authority = "Separate trusted argument {root, read_boundary, write_boundary}; request paths may only narrow it. Boundaries are relative POSIX prefixes; dot means the project; empty write boundary means read-only."
+authority = "Separate trusted argument {root, read_boundary, write_boundary}, optionally source_root (an existing directory inside the artifact project root). Requests cannot choose source_root or expand boundaries. Relative POSIX prefixes use source coordinates; dot means the source root; empty write boundary means read-only."
 budgets = ["max_candidates", "max_edges", "max_rounds", "max_seconds", "max_input_tokens", "max_output_tokens"]
 budget_units = "Nonnegative cumulative counts; seconds is cooperative wall time including preparation and verification. Token observations distinguish actual from estimated; no character conversion."
 requirements = "Unique IDs; support is a list of predicates. current_source requires entity_id and a verified source packet covering its current span. Other predicates remain missing. Gates remain open."
@@ -36,9 +36,14 @@ publication = "New exclusive JSON sibling of the candidate manifest; collisions 
 record_schema = "daodan/context-packet/v1"
 required = ["schema", "task_id", "input_digest", "plan_digest", "candidate", "resolver_profile", "indices", "policy_version", "status", "blocks", "gaps", "counts", "budget", "cursor"]
 statuses = ["ready", "needs_split", "incomplete"]
-cursor_binding = ["request", "snapshot", "resolver", "indices", "policy", "delivered_blocks"]
+cursor_binding = ["request", "authority", "snapshot", "resolver", "indices_and_missing_inputs", "cards", "policy", "recipient", "scope_plan", "delivered_blocks"]
 blocks = "Source, signatures, callsites, fresh cards and documentation references retain source anchors."
 completion = "A packet is evidence; only the owning process gates can conclude work."
+recipient = "id, available_tokens, reserve_tokens, max_chars, max_evaluations; optional prefix/suffix, tokenizer_id and ordered/marginal policy. Explicit Python token_counter counts the complete input; CLI/MCP report characters_only with dispatch_verified false. No character-to-token conversion."
+input = "The exact recipient input string includes wrappers, bindings, provenance, obligations, gaps and selected blocks. Operational receipt and residuals stay on disk."
+packing = "prerequisite-pack-v1; hard support, exclusive representations, cyclic prerequisite closure, physical source deduplication, ordered/marginal comparison, bounded core search and single-bundle comparison. No optimality or infeasibility guarantee."
+limits = "At most 200 projected entities, 1000 variants and 10000 closure/serialization evaluations. Unsupported mandatory support and oversized core yield needs_split with preserved obligations."
+publication = "Exclusive content-addressed packet and checkpoint JSON under the candidate manifest directory. Cursors bind delivered representations and tokenized input separately from billed usage."
 
 [[records]]
 record_schema = "daodan/map-slice/v1"

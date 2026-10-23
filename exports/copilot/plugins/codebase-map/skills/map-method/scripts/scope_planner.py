@@ -53,6 +53,11 @@ def _authority(request, authority):
     migrate_root._reject_link_chain(root)
     root = root.resolve(strict=True)
     result = {"root": str(root)}
+    if 'source_root' in authority:
+        source = _path(authority['source_root'], root)
+        if not source.is_dir():
+            raise ValueError('independent source root must be an existing project directory')
+        result['source_root'] = str(source)
     for name in ("read_boundary", "write_boundary"):
         allowed = _boundaries(authority.get(name))
         requested = _boundaries(request.get(name))
@@ -166,7 +171,7 @@ def _inputs(request, authority, indexes, stack):
             raise ValueError(f"{name} must name a manifest")
         path = _path(descriptor["manifest"], root)
         store = stack.enter_context(open_snapshot(path))
-        if store.format != "sqlite" or Path(store.get("root")).resolve() != root:
+        if store.format != "sqlite" or Path(store.get("root")).resolve() != Path(bound.get('source_root', root)):
             raise ValueError("scope requires a project-bound SQLite snapshot")
         stores[name] = store
         bindings[name] = {**_stamp(path), "logical_digest": logical_digest(store),

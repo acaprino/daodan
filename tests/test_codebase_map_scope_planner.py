@@ -97,6 +97,24 @@ class ScopePlannerTests(unittest.TestCase):
         self.assertNotIn('pkg/top.py::top', ids(plan, 'edit_candidates'))
         self.assertFalse(plan['write_authorized'])
 
+    def test_trusted_artifact_root_does_not_expand_non_git_source_root(self):
+        source = self.root / 'nested'
+        source.mkdir()
+        (source / 'local.py').write_bytes(b'def local():\n    return 1\n')
+        request = self.request(None, base=None, anchors=[{'entity_id': 'local.py::local'}],
+                               proposed_edits=[], mandatory_requirements=[], write_boundary=[])
+        snapshot.write_snapshot(source, self.current)
+        authority = {'root': str(self.root), 'source_root': str(source),
+                     'read_boundary': ['.'], 'write_boundary': []}
+        plan = scope.prepare_scope(request, authority=authority)
+        self.assertEqual(plan['boundaries']['source_root'], str(source))
+        self.assertEqual(ids(plan, 'analysis'), {'local.py::local'})
+        with self.assertRaises(ValueError):
+            scope.prepare_scope(request, authority=self.authority)
+        authority['source_root'] = str(self.root.parent)
+        with self.assertRaises(ValueError):
+            scope.prepare_scope(request, authority=authority)
+
     def test_body_only_callers_retain_validation_without_edits(self):
         plan = self.prepare(self.request())
         impacted = ids(plan, 'validation_obligations')

@@ -139,6 +139,27 @@ class CodebaseMapWireTests(unittest.TestCase):
         format = by_name["codebase_map_create_run"]["inputSchema"]["properties"]["format"]
         self.assertEqual(format["default"], "sqlite")
         self.assertEqual(set(format["enum"]), {"sqlite", "json"})
+        context = by_name['codebase_map_context']
+        self.assertFalse(context['annotations']['readOnlyHint'])
+        self.assertTrue({'run_id', 'request', 'recipient'} <= set(context['inputSchema']['required']))
+
+    def test_context_writes_bounded_packet_over_real_transport(self):
+        self.data(self.call('codebase_map_create_run', {'target': 'src', 'run_id': 'context-wire'}))
+        request = {'schema': 'daodan/context-request/v1', 'task_id': 'wire-context',
+            'intent': 'analysis', 'query': '', 'read_boundary': ['.'], 'write_boundary': [],
+            'anchors': [{'entity_id': 'service.py::greet'}], 'base': None, 'candidate': None,
+            'diff': [], 'proposed_edits': [], 'mandatory_requirements': [], 'required_gates': [],
+            'budget': {'max_candidates': 100, 'max_edges': 1000, 'max_rounds': 100,
+                'max_seconds': 120, 'max_input_tokens': 100000, 'max_output_tokens': 100000},
+            'policy_version': 'scope-v1'}
+        result = self.data(self.call('codebase_map_context', {'run_id': 'context-wire', 'request': request,
+            'recipient': {'id': 'wire-host', 'available_tokens': 100000, 'reserve_tokens': 1000,
+                          'max_chars': 100000, 'max_evaluations': 100}}))
+        self.assertEqual(result['status'], 'ready')
+        self.assertNotIn('input', result)
+        packet = json.loads(Path(result['path']).read_text(encoding='utf8'))
+        self.assertIn("return 'Hello ' + name", packet['input'])
+        self.assertFalse(packet['budget']['dispatch_verified'])
 
     def test_json_requires_explicit_format_and_invalid_format_is_a_tool_error(self):
         run = self.data(self.call("codebase_map_create_run",

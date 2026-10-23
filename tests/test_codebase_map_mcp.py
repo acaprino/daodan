@@ -34,6 +34,79 @@ class MapServiceTests(unittest.TestCase):
     def create(self, **options):
         return self.service.create_run("src", "example", **options)
 
+    def context_request(self):
+        from snapshot_store import open_snapshot
+        with open_snapshot(self.run_dir / 'snapshot/manifest.sqlite') as manifest:
+            file = self.module.relative_to(Path(manifest['root'])).as_posix()
+        return {'schema': 'daodan/context-request/v1', 'task_id': 'mcp-context',
+            'intent': 'analysis', 'query': '', 'read_boundary': ['.'], 'write_boundary': [],
+            'anchors': [{'entity_id': file + '::selected'}], 'base': None, 'candidate': None,
+            'diff': [], 'proposed_edits': [], 'mandatory_requirements': [], 'required_gates': [{'id': 'tests'}],
+            'budget': {'max_candidates': 100, 'max_edges': 1000, 'max_rounds': 100,
+                'max_seconds': 120, 'max_input_tokens': 100000, 'max_output_tokens': 100000},
+            'policy_version': 'scope-v1'}
+
+    def test_context_uses_bound_non_git_run_and_returns_compact_immutable_artifacts(self):
+        self.create()
+        request = self.context_request()
+        recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 1000,
+                     'max_chars': 100000, 'max_evaluations': 100, 'policy': 'ordered'}
+        result = self.service.context('example', request, recipient)
+        packet = json.loads(Path(result['path']).read_text(encoding='utf8'))
+        self.assertEqual(result['status'], 'ready')
+        self.assertNotIn('blocks', result)
+        self.assertNotIn('input', result)
+        self.assertIn('return LIMIT', packet['input'])
+        self.assertFalse(packet['budget']['dispatch_verified'])
+        self.assertTrue(Path(result['cursor_path']).is_file())
+        request['candidate'] = {'manifest': str(self.project / 'foreign.sqlite')}
+        with self.assertRaises(ValueError):
+            self.service.context('example', request, recipient)
+
+    def test_context_output_and_resume_paths_cannot_escape_run(self):
+        self.create()
+        recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 0,
+                     'max_chars': 100000, 'max_evaluations': 100}
+        for output in ['../outside', str(self.project / 'outside')]:
+            with self.subTest(output=output), self.assertRaises(ValueError):
+                self.service.context('example', self.context_request(), recipient, out=output)
+        with self.assertRaises(ValueError):
+            self.service.context('example', self.context_request(), recipient, cursor='../outside.json')
+        with self.assertRaises(ValueError):
+            self.service.context('example', self.context_request(), recipient, embedding_result='../outside.json')
+
+    def test_context_base_is_resolved_by_run_identity(self):
+        self.create()
+        self.service.create_run('src', 'candidate')
+        recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 0,
+                     'max_chars': 100000, 'max_evaluations': 100}
+        result = self.service.context('candidate', self.context_request(), recipient, base_run_id='example')
+        packet = json.loads(Path(result['path']).read_text(encoding='utf8'))
+        self.assertIsNotNone(packet['engine_callee_drift'])
+
+    def test_context_resume_has_same_input_through_cli_and_service(self):
+        from snapshot_store import open_snapshot
+        self.create()
+        request = self.context_request()
+        recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 1000,
+                     'max_chars': 100000, 'max_evaluations': 100}
+        first = self.service.context('example', request, recipient)
+        via_service = self.service.context('example', request, recipient, out='service-resume', cursor=first['cursor'])
+        manifest = self.run_dir / 'snapshot/manifest.sqlite'
+        with open_snapshot(manifest) as store:
+            authority = {'root': str(self.project), 'source_root': str(Path(store['root'])),
+                         'read_boundary': [store['target']], 'write_boundary': []}
+        for name, value in [('request', request), ('recipient', recipient), ('authority', authority)]:
+            self.write('snapshot/' + name + '.json', json.dumps(value))
+        run = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'snapshot.py'), 'context', str(manifest),
+            '--request', str(manifest.parent / 'request.json'), '--recipient', str(manifest.parent / 'recipient.json'),
+            '--authority', str(manifest.parent / 'authority.json'), '--out', str(manifest.parent / 'cli-resume'),
+            '--cursor', first['cursor_path']], capture_output=True, text=True, encoding='utf8')
+        self.assertEqual(run.returncode, 0, run.stderr)
+        via_cli = json.loads(run.stdout)
+        self.assertEqual(via_cli['sha256'], via_service['sha256'])
+        self.assertEqual(via_cli['status'], via_service['status'])
+
     def test_engine_paths_are_run_bound_and_missing_pass_is_explicit(self):
         self.create()
         for value in ("../escape.sqlite", str(self.project / "escape.sqlite"), "manifest.sqlite"):

@@ -1,12 +1,11 @@
 # Reading an analysis
 
-Coordinators: before lookup, run `python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0.
-Workers only resolve bindings; legacy bindings require migration.
+Before lookup, coordinators run `python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0. Workers resolve bindings only.
 
 ## Views
 
 Generate `semantic-map.md` with `semantic_map.py MANIFEST --path AREA`; unread/stale
-cards use `deepen.md`. Keep provenance and existing phase reports.
+cards use `deepen.md`. Bounded, resumable LLM input: `context.md`. Preserve provenance.
 
 | Task | Start | Also |
 |------|------------|------------|
@@ -18,5 +17,5 @@ cards use `deepen.md`. Keep provenance and existing phase reports.
 | Documentation | 06-documentation, 04-semantics | 02-interfaces |
 | Concepts | knowledge/documentation-leads.md | knowledge/navigation.md |
 
-Phase 0's `knowledge/` holds unverified leads; `team-review` Phase 1d joins
-`knowledge/documentation-leads.md` with independent discovery. Skipping Phase 0 loses that input.
+Phase 0's `knowledge/` holds unverified leads; Phase 1d joins
+`knowledge/documentation-leads.md` with independent discovery.

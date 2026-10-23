@@ -207,3 +207,4 @@ Python engine passes write `<run-dir>/snapshot/engine-edges.sqlite` via
 
 Tree-sitter supplies definition ends; regex ends at the next symbol. Shared
 lines can require whole-file reading. Diagnosis never applies changes.
+Bounded packets: [context](context.md).
