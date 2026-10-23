@@ -100,6 +100,22 @@ wording, brand assets, delivery context, slide roles and editable objects. Resol
 material uncertainty; infer routine choices within the user's authorization.
 Preserve facts and citations. Do not manufacture evidence to fill a composition.
 
+Ask the user for the decisions that shape the deck before construction, in one
+round of questions: art direction (a library direction or their brand), style
+constraints, content and page count, and the slide types they expect. Suggest
+concrete options from `references/visual-directions.md` and
+`references/layout-patterns.md` rather than an open question. When the user
+already gave a complete brief, state the inferred choices instead of asking again.
+
+For a deck with more than a few slides, or whenever direction is genuinely
+uncertain, prepare the plan and show a preview before construction: compile the
+plan JSON in `references/design-preview.md`, render it with
+`python "${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/scripts/design_preview.py"`,
+and let the user choose the direction and the slide sequence. A separate style
+proof costs image generations and needs the user's explicit budget decision and
+their chosen number of candidate directions; a full autonomous request authorizes
+routine choices without a preview gate.
+
 | Request | Method | Specialist scope |
 |---|---|---|
 | New deck, new template, substantial redesign | `office:slidepoise` (visual-first reconstruction) or `office:deckcraft` (direct native construction when requested or when SlidePoise is unavailable) | Designer establishes direction and slide-object plan; reviewer inspects final renders |

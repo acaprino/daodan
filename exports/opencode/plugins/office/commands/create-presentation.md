@@ -139,12 +139,15 @@ The phase graph and the record schemas are in `contracts/create-presentation.wor
 Create or revise the presentation requested in: $ARGUMENTS
 
 Load `office:presentation-design` and follow its routing, specialist delivery and
-image-tool contract. Read its `references/pptx-compatibility.md` and
-`references/design-library.md` before creative
+image-tool contract. Read its `references/pptx-compatibility.md`,
+`references/design-library.md` and `references/design-preview.md` before creative
 work, then select the visual direction and slide patterns from
 `references/visual-directions.md` and `references/layout-patterns.md`; bind every
 selected provider to the fixed canvas, supported native objects,
-fonts and editability requirements. The coordinator owns the outline, candidate files, image
+fonts and editability requirements. When the request or direction is uncertain,
+compile the plan, render the static preview and let the user choose the direction
+and sequence before image generation or construction. The coordinator owns the
+outline, candidate files, image
 generation calls, repair loop and final report. Dispatch the declared
 `office:presentation-designer` and `office:presentation-reviewer` roles in isolated
 contexts as specified by that method. A skill load is not a worker dispatch.

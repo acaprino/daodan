@@ -223,6 +223,7 @@ class PresentationContractTests(unittest.TestCase):
             for reference in (
                 "creative-providers.md",
                 "design-library.md",
+                "design-preview.md",
                 "image-tools.md",
                 "layout-patterns.md",
                 "pptx-compatibility.md",

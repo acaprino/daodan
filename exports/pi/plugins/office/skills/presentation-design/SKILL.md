@@ -7,6 +7,8 @@ description: >
   DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.
 ---
 
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
 <daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
@@ -107,6 +109,22 @@ Keep one brief and outline: audience, decision, language, sources, required
 wording, brand assets, delivery context, slide roles and editable objects. Resolve
 material uncertainty; infer routine choices within the user's authorization.
 Preserve facts and citations. Do not manufacture evidence to fill a composition.
+
+Ask the user for the decisions that shape the deck before construction, in one
+round of questions: art direction (a library direction or their brand), style
+constraints, content and page count, and the slide types they expect. Suggest
+concrete options from `references/visual-directions.md` and
+`references/layout-patterns.md` rather than an open question. When the user
+already gave a complete brief, state the inferred choices instead of asking again.
+
+For a deck with more than a few slides, or whenever direction is genuinely
+uncertain, prepare the plan and show a preview before construction: compile the
+plan JSON in `references/design-preview.md`, render it with
+`python "<plugin-root>/skills/presentation-design/scripts/design_preview.py"`,
+and let the user choose the direction and the slide sequence. A separate style
+proof costs image generations and needs the user's explicit budget decision and
+their chosen number of candidate directions; a full autonomous request authorizes
+routine choices without a preview gate.
 
 | Request | Method | Specialist scope |
 |---|---|---|

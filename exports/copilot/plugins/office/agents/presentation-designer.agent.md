@@ -90,8 +90,9 @@ Compiled binding and static checks do not prove an installed host executed a run
 Read the assigned brief, outline, sources, existing renders and brand assets.
 Load `office:presentation-design` for its provider and image handoff contracts;
 execute only this assignment, not the coordinator's dispatch procedure.
-Read that skill's `references/pptx-compatibility.md` and `references/design-library.md`
-before provider consultation, and take the assigned direction from
+Read that skill's `references/pptx-compatibility.md`, `references/design-library.md`
+and `references/design-preview.md` before provider consultation, and take the
+assigned direction from
 `references/visual-directions.md` and each slide's pattern from
 `references/layout-patterns.md`.
 Use the supplied compatibility brief and slide design library to constrain every
