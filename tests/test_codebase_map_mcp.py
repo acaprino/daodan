@@ -107,6 +107,34 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(via_cli['sha256'], via_service['sha256'])
         self.assertEqual(via_cli['status'], via_service['status'])
 
+    def test_context_git_subproject_cannot_read_sibling_source(self):
+        import retrieval
+        import source_reader
+        subprocess.run(['git', 'init', str(self.project)], capture_output=True, check=True)
+        (self.project / 'outside.py').write_bytes(b'OUTSIDE_PROJECT_SENTINEL = 999\n')
+        self.create()
+        request = self.context_request()
+        request.update(query='selected', anchors=[], read_boundary=['src'])
+        service = mcp_service.MapService(self.source)
+        service.create_run('.', 'subproject')
+        manifest = self.source / '.codebase-map/runs/subproject/snapshot/manifest.sqlite'
+        retrieval.refresh_index(manifest, manifest.parent / 'retrieval.sqlite')
+        recipient = {'id': 'host', 'available_tokens': 100000, 'reserve_tokens': 1000,
+                     'max_chars': 100000, 'max_evaluations': 200}
+        original = source_reader.read_packet
+        def bounded(store, requests):
+            self.assertTrue(all(r['path'].startswith('src/') for r in requests))
+            return original(store, requests)
+        with mock.patch.object(source_reader, 'read_packet', side_effect=bounded):
+            result = service.context('subproject', request, recipient)
+        self.assertEqual(result['status'], 'ready')
+        packet = json.loads(Path(result['path']).read_text(encoding='utf8'))
+        self.assertIn('return LIMIT', packet['input'])
+        self.assertNotIn('OUTSIDE_PROJECT_SENTINEL', packet['input'])
+        request['read_boundary'] = ['.']
+        with self.assertRaises(ValueError):
+            service.context('subproject', request, recipient)
+
     def test_engine_paths_are_run_bound_and_missing_pass_is_explicit(self):
         self.create()
         for value in ("../escape.sqlite", str(self.project / "escape.sqlite"), "manifest.sqlite"):

@@ -11,8 +11,10 @@ snapshot.py context MANIFEST --request REQUEST.json --recipient RECIPIENT.json -
 ```
 
 Use the request and independent authority from `scope.md`. An authority may add
-`source_root`, an existing directory within its artifact project `root`, when a
-non-Git subtarget has its own source coordinates. Requests never choose this root.
+`source_root`, a related coordinate directory, when a non-Git subtarget has its
+own root or a Git subproject uses its enclosing repository's coordinates. Every
+granted prefix and snapshot target must resolve inside the artifact project
+`root`; coordinates grant no additional reads. Requests never choose this root.
 The CLI authority is an explicit caller input, separate from the request. Output
 is a directory under the manifest directory. JSON inputs and path chains reject
 links; artifact names are content addressed and published exclusively.

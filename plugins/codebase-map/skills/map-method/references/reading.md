@@ -1,6 +1,7 @@
 # Reading an analysis
 
-Before lookup, coordinators run `python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0. Workers resolve bindings only.
+Coordinators: before lookup, run `python "${CLAUDE_PLUGIN_ROOT}/skills/map-method/scripts/migrate_root.py" --project <project-root>`; require exit 0.
+Workers only resolve bindings; legacy bindings require migration.
 
 ## Views
 

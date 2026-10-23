@@ -53,13 +53,22 @@ def _authority(request, authority):
     migrate_root._reject_link_chain(root)
     root = root.resolve(strict=True)
     result = {"root": str(root)}
+    source = root
     if 'source_root' in authority:
-        source = _path(authority['source_root'], root)
-        if not source.is_dir():
-            raise ValueError('independent source root must be an existing project directory')
+        if not isinstance(authority['source_root'], (str, Path)):
+            raise ValueError('independent source root must name a directory')
+        source = Path(authority['source_root'])
+        if not source.is_absolute():
+            raise ValueError('independent source root must be absolute')
+        migrate_root._reject_link_chain(source)
+        source = source.resolve(strict=True)
+        if not source.is_dir() or not (source.is_relative_to(root) or root.is_relative_to(source)):
+            raise ValueError('source coordinate root must be related to the artifact project')
         result['source_root'] = str(source)
     for name in ("read_boundary", "write_boundary"):
         allowed = _boundaries(authority.get(name))
+        for boundary in allowed:
+            _path(source / boundary, root)
         requested = _boundaries(request.get(name))
         if any(not _inside(b, allowed) for b in requested):
             raise ValueError(f"request exceeds independent {name} boundary")
@@ -173,6 +182,7 @@ def _inputs(request, authority, indexes, stack):
         store = stack.enter_context(open_snapshot(path))
         if store.format != "sqlite" or Path(store.get("root")).resolve() != Path(bound.get('source_root', root)):
             raise ValueError("scope requires a project-bound SQLite snapshot")
+        _path(Path(store.get('root')) / _relative(store.get('target')), root)
         stores[name] = store
         bindings[name] = {**_stamp(path), "logical_digest": logical_digest(store),
                           **snapshot._snapshot_info(store)}

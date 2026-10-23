@@ -24,7 +24,11 @@ CLI `snapshot.py context` e tool MCP `codebase_map_context` condividono la stess
 operazione e restituiscono percorsi e contatori compatti. Il servizio lega il
 candidato e l'eventuale base a run verificati. Un'autorità distinta per il
 progetto degli artefatti e la radice delle sorgenti protegge i target non Git
-senza permettere alla richiesta di ampliare il perimetro.
+senza permettere alla richiesta di ampliare il perimetro. Sono verificati anche
+i sottoprogetti Git: le coordinate possono usare la radice superiore, ma ogni
+prefisso autorizzato e target deve restare nel progetto degli artefatti. Un
+target esterno e una richiesta allargata sono rifiutati; il test controlla che
+nessuna sorgente dei progetti fratelli venga letta.
 
 I checkpoint legano piano, richiesta, autorità, snapshot, resolver, indici,
 card, input mancanti, destinatario e policy. Le pubblicazioni sono esclusive;
@@ -45,9 +49,14 @@ conteggi, digest e riferimenti dei job sono nelle consegne del run.
 Le prime esecuzioni Windows hanno rilevato errori ambientali di memoria/paging;
 non sono classificate come esiti del prodotto.
 
-`reading.md` passa da 126 a 116 parole. Non aumentano i limiti di caricamento.
+`reading.md` passa da 126 a 120 parole. Non aumentano i limiti di caricamento.
 La compilazione deve rigenerare tutti e cinque gli host; una prova SDK stdio
 resta distinta da una prova eseguita da un plugin installato in un host.
+
+Il primo commit P7 ha eseguito 1598 test in CI, rilevando cinque failure dello
+stesso controllo sulle ancore di migrazione nei cinque host. La correzione
+ripristina il preambolo canonico di lettura e mantiene il saldo parole negativo,
+senza modificare o allentare il test. I log iniziali restano nel run.
 
 ## Limiti
 
