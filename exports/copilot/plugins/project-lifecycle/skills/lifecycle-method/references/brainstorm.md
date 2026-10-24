@@ -92,23 +92,18 @@ writes no code, no decision record and no plan; its run, with operation
 
 ## Talk
 
-One question per turn, through the host's question tool, or recorded in the
-run's `questions` with the turn closed. Each question is anchored to real
-code: "today `path:line` does X; should the idea change that?". Ask about
-purpose, who uses it, constraints and what success looks like, not about
-implementation the code already settles.
-
-When the idea is clear enough, present two or three alternatives, each with
-its cost: modules and files touched, records it extends or supersedes, tests
-it needs, risks, size in waves. Recommend one and say why. An alternative
-that would give a concept a second owner is named as such.
+Ask by the work record's question rule, one per turn, anchored to code
+("today `path:line` does X; should the idea change that?"): purpose, users,
+constraints, success, never what the code settles. Once the idea is clear,
+ask which of two or three alternatives to take, each costed in modules and
+files, records extended or superseded, tests, risks and waves; name one that
+gives a concept a second owner.
 
 ## Close with the user's choice
 
 - **Do it.** Write the brief into the run (objective, chosen alternative,
-  examples, constraints, rejected alternatives with their reasons) and hand
-  it to the change cycle, whose interview starts from it instead of from
-  zero.
+  examples, constraints, rejected alternatives with their reasons) for the
+  change cycle's interview to start from.
 - **Keep it.** With the user's agreement, write
   `docs/ideas/<YYYY-MM-DD>-<slug>.md`: the idea, the code and records it
   touches, the alternatives with their costs, and the open questions. It is

@@ -114,8 +114,7 @@ through the protocol helper with operation, objective, scope, authorizations,
 budget, phases, plan, deliveries and required gates; the loop sections are
 added as the phases produce them, and a draft plan passes `plan-check` before
 it enters the run. Resume the branch's task from the agenda with current
-authorizations and this session's id; a task another session holds is taken
-over only after the user confirms it is closed. Preview is the default; an
+authorizations and this session's id. Preview is the default; an
 authorization is asked when a step needs it and recorded in the run: `fix` for
 in-scope edits, `commit` for commits, neither a push or a permanent deletion.
 

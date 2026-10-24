@@ -19,14 +19,15 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 LIFECYCLE = REPO_ROOT / "plugins/project-lifecycle/skills/lifecycle-method"
 PROTOCOL = REPO_ROOT / "plugins/work-controller/skills/work-record/SKILL.md"
 AUTHORING = PROTOCOL.parent / "references/component-authoring.md"
+QUESTIONS = PROTOCOL.parent / "references/questions.md"
 ADR = REPO_ROOT / "plugins/project-knowledge/skills/adr-method"
 REVIEW = REPO_ROOT / "plugins/senior-review/skills"
 
 UNIT_CAPS = {
-    LIFECYCLE / "SKILL.md": 630,
+    LIFECYCLE / "SKILL.md": 585,
     LIFECYCLE / "references/change.md": 325,
     LIFECYCLE / "references/preflight.md": 580,
-    LIFECYCLE / "references/interview.md": 400,
+    LIFECYCLE / "references/interview.md": 360,
     LIFECYCLE / "references/waves.md": 515,
     LIFECYCLE / "references/worker-brief.md": 300,
     LIFECYCLE / "references/verify.md": 300,
@@ -34,14 +35,15 @@ UNIT_CAPS = {
     LIFECYCLE / "references/realign.md": 260,
     LIFECYCLE / "references/sync.md": 175,
     LIFECYCLE / "references/retention.md": 420,
-    LIFECYCLE / "references/brainstorm.md": 300,
+    LIFECYCLE / "references/brainstorm.md": 260,
     LIFECYCLE / "references/init.md": 265,
     LIFECYCLE / "references/refactor.md": 245,
-    LIFECYCLE / "references/continue.md": 195,
+    LIFECYCLE / "references/continue.md": 192,
     LIFECYCLE / "references/status.md": 150,
     LIFECYCLE / "references/repair.md": 335,
     LIFECYCLE / "references/assess.md": 740,
-    PROTOCOL: 1_682,
+    PROTOCOL: 1_675,
+    QUESTIONS: 95,
     AUTHORING: 208,
     ADR / "SKILL.md": 430,
     ADR / "references/adr-template.md": 375,
@@ -66,7 +68,7 @@ STEPS = {
     "component authoring": (PROTOCOL, AUTHORING),
     "change: preflight": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/preflight.md"),
     "change: interview and record": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/interview.md",
-                                     ADR / "SKILL.md", ADR / "references/adr-template.md"),
+                                     QUESTIONS, ADR / "SKILL.md", ADR / "references/adr-template.md"),
     "change: plan and execution": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/waves.md",
                                    LIFECYCLE / "references/worker-brief.md"),
     "verify": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/verify.md"),
@@ -76,7 +78,7 @@ STEPS = {
                LIFECYCLE / "references/realign.md", ADR / "SKILL.md"),
     "sync": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/sync.md",
              LIFECYCLE / "references/realign.md", ADR / "SKILL.md"),
-    "brainstorm": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/brainstorm.md", ADR / "SKILL.md"),
+    "brainstorm": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/brainstorm.md", QUESTIONS, ADR / "SKILL.md"),
     "light review, standalone": (PROTOCOL, REVIEW / "review-method/SKILL.md", REVIEW / "review-method/references/light.md"),
     "investigation": (PROTOCOL, REVIEW / "investigation-method/SKILL.md"),
     "initialization": (PROTOCOL, LIFECYCLE / "SKILL.md", LIFECYCLE / "references/init.md", ADR / "SKILL.md"),

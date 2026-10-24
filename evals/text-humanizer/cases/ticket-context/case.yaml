@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: ticket-context
+expected_outcome: |
+  Lead with the proposal while preserving QA versus unchecked production,
+  8 duplicates, 2 other clients, unconfirmed retry hypothesis, required verification
+  before data correction and the genuine approval request. No invented diagnosis.

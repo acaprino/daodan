@@ -109,9 +109,13 @@ verification_levels = ["critical-high", "high-and-above", "all-above-floor"]
 append_only = true
 
 [loop.questions]
-# Questions the coordinator could not ask because the host offers no question
-# tool. Each waits for an answer supplied on resume; nothing is inferred.
+# Questions to the user. `ask` records one before it is asked; only the user's
+# own words answer it, through `answer`, and nothing is inferred. A task that
+# consumes question:<id> waits until it is answered; a withdrawn question
+# closes without unblocking anyone.
 required = ["id", "phase", "text"]
+sources = ["question-tool", "chat", "continue"]
+consumer_prefix = "question:"
 
 [loop.environment]
 # The project's own interpreter and runners, found by the preflight and used by

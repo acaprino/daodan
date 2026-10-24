@@ -75,7 +75,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 Translate the record into micro-tasks and group them into waves. Every task
 carries `id`, `write_set`, `oracle` (command and the failure it must produce
 before the change), `verification` command, and when relevant
-`resource_locks`, `produces`, `consumes`, the `EX-*` it makes pass and the
+`resource_locks`, `produces`, `consumes` (`question:<id>` for an answer it
+needs, which holds it until answered), the `EX-*` it makes pass and the
 `INV-*` it enforces. Use provider I1 per `references/context-cycle.md`; approved
 contracts determine precedence. Build missing oracle fixtures first.
 

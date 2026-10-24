@@ -135,7 +135,7 @@ On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains befo
 ### 11. Elegant Variation / Synonym Cycling (**weak alone**)
 - This is not diagnostic of AI writing. Change only variation that makes the referent unclear; ordinary synonym variation, especially in Italian, stays.
 - **Before:** > The protagonist faces many challenges. The main character must overcome obstacles. The central figure eventually triumphs. The hero returns home.
-- **After:** > The protagonist faces many challenges but eventually triumphs and returns home.
+- **After:** > The protagonist faces many challenges and must overcome obstacles, but eventually triumphs and returns home.
 
 ### 12. False Ranges (**weak alone**)
 - This is not diagnostic of AI writing. Keep an intelligible expression of breadth; edit only when the range obscures what is being claimed.
@@ -167,8 +167,8 @@ On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains befo
 ### 16-24. Additional Specimens
 - **16. Title Case in Headings (**weak alone** in English, strong in Italian):** `## Strategic Negotiations And Global Partnerships` -> `## Strategic negotiations and global partnerships`.
   Headings written only for effect should name their subject, but preserve proper names, titles and linked anchors; do not break docs links to improve a heading.
-- **17. Emojis (**weak alone**):** Strip decorative line-initial emojis (`🚀`, `💡`, `✅`).
-- **18. Curly Quotation Marks (**weak alone**):** Unify mixed curly and straight quotes within a document while preserving native language quotation marks.
+- **17. Emojis (**weak alone**):** Strip decorative line-initial emojis only when the weak-alone test applies. Example in an otherwise formulaic heading: `## 🚀 Deployment` -> `## Deployment`. A meaningful status symbol is not decoration.
+- **18. Curly Quotation Marks (**weak alone**):** Unify mixed curly and straight quotes for the same use while preserving native quotation marks and direct quotations. Inconsistent scare quotes around interface labels: `Choose the “fast” mode or the "safe" mode.` -> `Choose the “fast” mode or the “safe” mode.`
 - **19. Collaborative Communication Artifacts:** Strip empty chatbot openings/closers ("I hope this helps", "Certainly!"), citation tokens (`:contentReference[oaicite:N]{index=N}`, `citeturn0search0`), and tracking params (`utm_source=chatgpt.com`, `utm_source=openai`, `utm_source=copilot.com`, `referrer=grok.com`). Keep genuine greetings, thanks, sign-offs and requests for a decision in correspondence.
 - **20. Knowledge-Cutoff Disclaimers:** `While specific details about the company's founding are not extensively documented in readily available sources, it appears to have been established sometime in the 1990s.` -> `The founding date is not documented in the available sources.` Log the unsupported 1990s estimate under Open points rather than turning it into a finding.
 - **21. Sycophantic/Servile Tone:** `Great question! You're absolutely right...` -> state the relevant point directly.
@@ -219,17 +219,18 @@ For realistic Italian examples and false-positive guards, read `italiano.md` in 
 **Final text**
 
 ````text
-AI coding assistants generate code, documentation, tests, and refactors. With them, code generation is faster, output quality has improved with better training, and usage keeps growing: adoption has spread from hobbyists and solo developers to enterprise-wide rollouts and cross-functional teams. The New York Times, Wired, and The Verge have covered them.
+AI coding assistants generate code, documentation, tests, and refactors. With them, code generation is faster and output quality has improved with better training. Usage keeps growing. The New York Times, Wired, and The Verge have covered them.
 
 Known problems include hallucinations, bias, and questions of accountability.
+
+Teams must follow best practices.
 ````
 
 **Changes:**
 - 19, 21: chatbot wrappers removed ("Great question!", "Here is an essay", "I hope this helps!", "Let me know...")
 - 1, 4, 7, 8: significance inflation, promotional language, AI vocabulary and copula avoidance cut ("enduring testament", "pivotal moment", "groundbreaking", "nestled", "serves as", "functions as", "stands as", "showcases", "intricate interplay")
-- 9, 10, 11: negative parallelism, triads and synonym cycling cut ("It's not just about autocomplete", "ideate, iterate, and deliver", "catalyst/partner/foundation")
-- 5: "Industry observers have noted" dropped; the adoption claim kept, stated plainly
-- 12: the doubled "from X to Y" range folded into one statement
+- 8, 9, 10: copula inflation, negative parallelism and forced abstract triads cut ("catalyst/partner/foundation", "It's not just about autocomplete", "ideate, iterate, and deliver"). Patterns 11 and 12 alone do not justify those cuts.
+- 5: the unnamed observers' adoption claim moved to Open points rather than promoted to an unattributed fact; the separate usage-growth claim in the input remains
 - 15: the inline-header list merged into prose
 - 6, 20, 23: the challenges formula, the knowledge-cutoff disclaimer and the stacked hedging cut; the named problems kept
 - 22, 24: "At its core", "In order to" and the generic conclusion cut
@@ -238,5 +239,6 @@ Known problems include hallucinations, bias, and questions of accountability.
 **Open points:**
 - "significantly faster": by how much, measured how? Kept as "faster".
 - "improved training" raising output quality: which models, what evidence?
+- "Industry observers have noted" adoption spreading from hobbyists and solo developers to enterprise-wide rollouts and cross-functional teams: name the observers or sources before restoring the claim.
 - "streamlining processes, enhancing collaboration, and fostering alignment": no concrete benefit named; cut.
-- "teams must align with best practices": which practices? Cut.
+- "teams must align with best practices": which practices? The obligation remains in the final text; missing specifics do not authorize changing "must" or removing it.

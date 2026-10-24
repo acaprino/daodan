@@ -231,5 +231,5 @@ Load the skills `project-lifecycle:lifecycle-method` and
 lifecycle method's `references/repair.md` directs: without a demonstrated cause,
 `senior-review:investigation-method` runs first and its reproduction test becomes the
 oracle. Stop only for the user's answers, the plan approval and the merge authorization;
-ask each with the host's question tool, or record it in the run and close the turn
-listing it. At the end, propose `/daodan:finish-task`.
+ask each as the work record's question rule says; a yes to an authorization is
+also a grant. At the end, propose `/daodan:finish-task`.

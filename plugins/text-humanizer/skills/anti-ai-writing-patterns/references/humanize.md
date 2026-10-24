@@ -6,7 +6,8 @@ Remove AI writing traces from prose, articles, blog posts, documentation or any 
 
 ## Inputs
 
-- **TARGET:** a file path, or inline text. TARGET is a file when it names an existing file; otherwise it is the inline text. With neither, ask the user for the text and wait.
+- **TARGET:** a file path, or inline text. If the user supplies a file target, verify that it exists and is readable; a missing or unreadable file is a blocker, not prose to rewrite. Ask for the correct path or pasted text. Treat a genuinely ambiguous input as text unless clarification is essential. With neither, ask for the text and wait.
+- **Conversation context:** relevant messages supplied with the target, kept separate from the text to rewrite. Forward them to the worker so it can judge repetition; never infer unseen context or insert the conversation into the final text.
 - **Register:** a signal. A register the user states with TARGET (`docs`, `business` or `personal`) sets it. Without one, the agent infers the register.
 - **Score:** a signal. The user asking for a score or quality rating with TARGET adds the quality score. Default: no score.
 - **Writing back:** an authorization asked when needed, for file input only (Step 3).
@@ -22,6 +23,7 @@ Humanize the text below following the anti-ai-writing-patterns skill: ground rul
 then register, language and patterns.
 
 Input: <the file path, or the inline text>
+Conversation context (not part of the final text): <relevant supplied messages, or none>
 File handling: if a path is given, read it; do not write or edit any file.
 Register: <docs | business | personal | infer>
 Score: <yes | no>
@@ -34,7 +36,7 @@ Show the agent's report as it came back: the final text, Changes, Open points, a
 
 ## Step 3: Offer to write (file input only)
 
-When the input was a file, ask once through the host's question tool, and record the answer in the run:
+When the input was a file, ask once through the host's question tool and record the answer in the run. If that tool is unavailable, present the same choices in the reply and wait for an explicit answer; never infer consent or write while waiting:
 
 ```
 Humanized version ready.

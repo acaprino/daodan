@@ -92,11 +92,8 @@ A shared type suffices within an atomic boundary; schema validity proves no doma
 
 ## One question per turn
 
-Ask one question at a time, anchored to a file/line and concrete current/proposed
-inputs and outputs. Close design branches; recommend an answer and explain costs.
-Use the host's question tool; without one, record every pending question in the
-run's `questions` section, end the turn listing them, and resume that run with
-answers.
+Ask as the work record's question rule says, one per turn, anchored to a
+file/line and concrete current/proposed inputs and outputs. Close design branches.
 
 Stop when these are fixed:
 
@@ -108,8 +105,7 @@ Stop when these are fixed:
 - active records respected or superseded, and their replacements;
 - authorization: edit, commit, both or plan only.
 
-Never infer missing answers: undecided questions stay open in the record for
-plan review to raise again.
+Undecided questions stay open in the record for plan review to raise again.
 
 ## The record
 

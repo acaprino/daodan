@@ -95,7 +95,7 @@ Each pattern is a symptom of a writing problem: vagueness, puffery, filler, form
 | Need | Reference |
 |---|---|
 | Italian vocabulary, calques, syntax and typography rules | `references/italiano.md` (mandatory whenever the text is Italian) |
-| Before/after specimens for all 25 local patterns and the full end-to-end report example | `references/pattern-catalog.md` |
+| Guidance and specimens for the 25 local patterns and the full end-to-end report example | `references/pattern-catalog.md` |
 | Running `/daodan:humanize-text` on a text or a file: inputs, the text-humanizer brief, the report and the write-back authorization | `references/humanize.md` |
 
 ## GROUND RULES
@@ -142,7 +142,7 @@ Do not edit away: perfect grammar and spelling; formal, academic or technical pr
 
 ## THE 25 LOCAL PATTERNS
 
-Patterns are **strong** unless marked **weak alone** (act on weak-alone patterns only when other tells cluster nearby or when plainly bad writing). See `references/pattern-catalog.md` for full before/after examples.
+**Strong** identifies an editing lead, not proof of AI authorship. A qualified strength applies only when its stated condition holds (density, stacking, empty wrappers or redundancy). **Weak alone** requires nearby tells or plainly bad writing; **context-dependent** requires the supplied context. The **dedicated pass** is the local punctuation policy, subject to protected-content exemptions. See `references/pattern-catalog.md` for guidance and specimens.
 
 | # | Pattern | Strength | Key Tells and Action |
 |---|---|---|---|
@@ -181,7 +181,7 @@ Compounds keep their required hyphens (`third-party`, `cross-functional`); patte
 3. Draft the rewrite. Where a fix needs a fact the input lacks, cut or state plainly, and note the open point.
 4. Second pass: read the passage aloud to yourself. Does it sound natural for this author, language, reader and register? Check paragraph rhythm and reply structure, not just flagged words. Rewrite an awkward sentence or paragraph around its point instead of mechanically replacing expressions.
 5. Fidelity check: compare the draft with the input, claim by claim. Nothing added; nothing dropped except puffery and the vague claims listed as open points; no certainty, quantity, order or obligation changed.
-6. Dash pass: scan the whole text for dashes used as connectors or to bracket asides, and replace each one using the strategy in pattern 13.
+6. Dash pass: outside protected content, replace dashes used as connectors or to bracket asides using pattern 13. Direct quotations, legal text, code and other protected content stay unchanged even when they contain those dashes.
 7. Reply in the requested format.
 
 ## Output Format

@@ -3,8 +3,9 @@ name: work-record
 description: >
   Shared working discipline, canonical run identity, snapshot bindings, delivery
   and verification accounting,
-  authorization continuity and safe phase recovery for coordinated project work.
-  Load before authoring agent components or tools, briefing workers, recording,
+  authorization continuity, questions to the user and safe phase recovery for
+  coordinated project work. Load before authoring agent components or tools,
+  briefing workers, asking the user, recording,
   resuming or closing a project intervention.
 ---
 
@@ -154,11 +155,11 @@ validate --project ROOT --run-id ID [--out INTERNAL_ROOT] [--current] [--result 
 resume --project ROOT --run-id ID --payload CONTEXT.json [--out INTERNAL_ROOT]
 snapshot --project ROOT --payload CONTEXT.json [--out INTERNAL_ROOT]
 agenda --project ROOT [--branch NAME] [--out INTERNAL_ROOT]
+ask --project ROOT --run-id ID --payload QUESTION.json
+answer --project ROOT --run-id ID --payload ANSWER.json
 ```
 
-`agenda.json` beside `runs/` holds one row per task: operation, objective,
-branch, phase, sealed waves, record, review tier, unanswered questions,
-holder. `--session ID` on init, update and resume records the holder; a task
+`agenda.json` beside `runs/` holds one row per task. `--session ID` on init, update and resume records the holder; a task
 another session holds is refused until `--take-over`, once the user confirms
 that session is closed. A branch holds one open loop task; a completed run
 releases its row.
@@ -207,7 +208,7 @@ A lifecycle run may carry the optional sections of the work contract's
 | `adr` | active record identities and the proposed one | a malformed id |
 | `waves` | tasks with `write_set`, `oracle` (command and the failure it must produce first), `verification`, optional `resource_locks`, `produces`, `consumes` | over four files without a reasoned `granularity_exception` (six at most); two tasks of a wave sharing a file, lock or contract; a parallel wave outside `WORKTREE`; a `sealed` wave with an uncommitted task |
 | `rulings` | the worker's recorded local decisions | an update that alters or drops one |
-| `questions` | questions the host could not ask: `id`, `phase`, `text`, later `answer` | an empty answer or a repeated id |
+| `questions` | read `references/questions.md` before asking | a changed or removed question or answer |
 | `environment` | `interpreter`, `commands` (test, lint, types, build, migrations), confirmed `models.assignments` | unknown commands; malformed or unconfirmed bindings |
 | `reviews` | one entry per review (record, plan, each wave, candidate) as senior-review's `review_roster.py compute` wrote it: id, stage, shape, kind, tier, roster, support, verification | a delivery naming a review whose roster and support lack its `role`; altering or dropping an entry |
 

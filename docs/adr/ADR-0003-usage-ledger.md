@@ -73,9 +73,11 @@ what it spent, and what happens when it spends more than its budget?
   the verified outcome of each role on each tier.
 - Standard library only, no network, no credentials, every host.
 - A gap must stay visible: an unreadable source is not a zero.
-- The run record owns run facts; ADR-0002 moves that owner to
-  `work-controller:work-record` and routing to `model-routing`, so the ledger follows
-  the run record and the prices follow the catalog.
+- The run record owns run facts. ADR-0002 assigns that owner to
+  `work-controller:work-record`; its updated target includes the model-router
+  inside the generalist controller. The ledger follows the run record and the
+  prices follow the router's catalog. The separate `model-routing` package is
+  the current implementation boundary pending that migration.
 
 ## Decision
 
@@ -133,11 +135,41 @@ Harvest runs at every wave boundary and at every phase close, because hosts purg
 transcripts. Hosts in scope: Claude Code, Codex, OpenCode and Pi. Copilot records
 `unavailable` until a probe verifies a source.
 
-Budget: `budget` accepts optional `max_usd` and `max_tokens`. At each wave boundary
-the coordinator harvests and compares: from 75% it records a warning; at 100% it
-does not start the next wave and asks the user, and work continues only after a
-new grant of kind `spend` naming the new ceiling. Nothing interrupts a running
-worker.
+Budget: `budget` accepts optional `max_usd` and `max_tokens`. Before admitting
+more work, the coordinator harvests and compares: from 75% it records a warning;
+at 100% it admits no new work and asks the user, and work continues only after
+a new grant of kind `spend` naming the new ceiling. In the Daodan task cycle,
+this check runs at each wave boundary. In the generalist graph runtime, it
+runs before each new job, loop iteration or retry is admitted. This admission
+check does not interrupt a running worker or guarantee a hard monetary cap
+on calls already in flight.
+
+## Generalist controller integration
+
+The user's later clarification of 2026-10-24 makes YAML the mandatory runtime
+input for jobs, graphs and bounded loops, and gives `work-controller` ownership
+of composition or integrity-only checking, orchestration and execution with an
+internal model-router. The [process specification, section 13](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md#13-deadly-brain-il-motore-condiviso)
+owns that interface; this record continues to own usage normalization, pricing
+and ledger rules. YAML process definitions and runtime usage records are
+separate artifacts. Integrity-only validation starts no jobs and produces no
+claim of execution consumption; previously incurred authoring or validation
+costs, when present, still belong to the process ledger.
+
+Each dispatch attempt binds the process/run identity, node and attempt identity,
+definition revision, model binding and host worker handle. Imported usage rows
+join to that handle and retain their source keys. A checkpoint or session
+handover preserves this mapping and the harvested rows; another harvest cannot
+count a row twice. Costs include composition, classification, coordination,
+worker execution, checks, failed iterations and retries. Coordinator usage
+that cannot be attributed reliably remains explicit process overhead.
+
+Report assigned and observed models separately, with gaps when the host provides
+no evidence. Keep measured usage, price-derived comparison costs and forecasts
+for pending or active work distinct; missing usage or prices do not become zero
+or prove that a required budget was respected. This is a future integration
+requirement, not a claim that the existing pricing helper already attributes
+every row to graph nodes or enforces their budgets.
 
 ## Verified Interview Examples
 
@@ -172,7 +204,8 @@ worker.
 - **INV-003**: harvest is idempotent: the same logs produce a byte-identical `usage` section, and each source row is counted once by its host key.
 - **INV-004**: every host is normalized to the same row shape, with `input` meaning uncached input and cache reads and writes in their own buckets.
 - **INV-005**: every USD figure is computed from the catalog and names its revision; a host-reported cost is a comparison field and never the reported figure.
-- **INV-006**: after a budget is reached no wave starts without a recorded `spend` grant.
+- **INV-006**: after a budget is reached no new work is admitted without a
+  recorded `spend` grant, including a wave, graph job, loop iteration or retry.
 - **INV-007**: usage is evidence, not authority: it never changes a delivery status, a gate or a completion decision.
 - **INV-008**: no model family has a hand-written price; every rate comes from the catalog's endpoint data or from a provider rule that names its official source and date.
 
@@ -185,7 +218,7 @@ worker.
 - ADR-0002 moves this section with the run record to `work-controller:work-record`.
 - The parked draft `docs/superpowers/specs/2026-10-24-derived-routing-signals-draft.md` gets its calibration data from this ledger joined to verified outcomes.
 - Open before acceptance: Pi worker attribution through `pi-subagents`, how the coordinator learns its own host session id on each host, and a Copilot source.
-- Pricing ships as `scripts/usage_pricing.py` (one reader per host, the pricer, a `summary` and a `rows` command), `scripts/build_model_prices.py`, `scripts/price_crosscheck.py` and `references/price-rules.json`, refreshed with the catalog through `references/model-catalog-refresh.md`; they move with the catalog to `model-routing` after ADR-0002. Measured on the local logs of 2026-10-24: every priced OpenCode group reproduces the host's logged cost exactly, and every Pi group does where the harness prices did not change since.
+- Pricing ships as `scripts/usage_pricing.py` (one reader per host, the pricer, a `summary` and a `rows` command), `scripts/build_model_prices.py`, `scripts/price_crosscheck.py` and `references/price-rules.json`, refreshed with the catalog through `references/model-catalog-refresh.md`. These currently live under the separate `model-routing` provider; ADR-0002's updated target places that router inside Work Controller. Measured on the local logs of 2026-10-24: every priced OpenCode group reproduces the host's logged cost exactly, and every Pi group does where the harness prices did not change since.
 - Provider rules: Anthropic verified on 2026-10-24 (1-hour write twice input, `inference_geo: us` 1.1 times); OpenAI, xAI, Moonshot, DeepSeek, Google, Alibaba, Zhipu, Mistral, MiniMax and Xiaomi still to verify on their official pricing pages.
 - Implementation starts in a worktree once the concurrent uncommitted work in `run_state.py`, `work.toml` and `tier_router.py` is committed.
 

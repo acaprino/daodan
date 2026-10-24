@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "39.0.3"
+    "version": "39.1.0"
   },
   "name": "daodan",
   "owner": {
@@ -114,7 +114,7 @@
         "./skills/write-tests-workflow"
       ],
       "source": "./exports/codex/plugins/daodan",
-      "version": "1.4.0"
+      "version": "1.5.0"
     },
     {
       "author": {
@@ -272,7 +272,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/codex/plugins/project-lifecycle",
-      "version": "2.2.3"
+      "version": "2.3.0"
     },
     {
       "author": {
@@ -327,7 +327,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/codex/plugins/repo-hygiene",
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "author": {
@@ -416,14 +416,14 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Prose humanization toolkit: the text-humanizer editor agent improves prose in any language without inventing content (25 local patterns, including redundant reply context), register-aware (docs, business, personal) with a natural Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by project-knowledge and project-lifecycle, and by digital-marketing and business in Shinatama. Clean-code routes prose requests here without a required dependency. Extracted from digital-marketing in marketplace 13.3.0.",
+      "description": "Prose humanization toolkit: the text-humanizer editor agent improves prose in any language without inventing content (25 local patterns, including replies that re-explain known context), register-aware (docs, business, personal) with a natural Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by project-knowledge and project-lifecycle, and by digital-marketing and business in Shinatama. Clean-code routes prose requests here without a required dependency. Extracted from digital-marketing in marketplace 13.3.0.",
       "license": "MIT",
       "name": "text-humanizer",
       "skills": [
         "./skills/anti-ai-writing-patterns"
       ],
       "source": "./exports/codex/plugins/text-humanizer",
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "author": {
@@ -457,7 +457,7 @@
         "./skills/work-record"
       ],
       "source": "./exports/codex/plugins/work-controller",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ]
 }

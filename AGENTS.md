@@ -44,7 +44,7 @@ default. Handover supplies evidence without granting edits or automatically
 starting maintenance.
 It prepares inputs and composes canonical specialist methods rather than duplicating detection
 prompts. work-controller is the shared leaf for run records, snapshots, delivery
-accounting, candidate gates and recovery. project-knowledge owns instructions,
+accounting, candidate gates, recovery and the questions a run waits on. project-knowledge owns instructions,
 guides, documentation and README. senior-review owns universal correctness and
 application subtraction, selecting React, TypeScript and platform specialists
 through the same methods and delivery ledger. skill-catalog selects available

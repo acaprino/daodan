@@ -286,7 +286,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.2.3"
+      "version": "2.3.0"
     },
     {
       "description": "Coordinate complete AI development work across code, tests, project knowledge and artifacts. TRIGGER WHEN: the user wants to brainstorm or explore an idea before building, initialize or set up a project, diagnose project health or technical debt, build a feature, fix a bug, refactor code, check task status, continue an open task, finish and merge a task, sync upstream, or run a daodan lifecycle command. DO NOT TRIGGER WHEN: the user requests code explanation without investigation or changes, wants an isolated specialist audit (use senior-review, codebase-map or testing directly), or only needs a problem investigated without fixing it (use senior-review:investigation-method).",
@@ -301,7 +301,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.2.3"
+      "version": "2.3.0"
     },
     {
       "description": "Coordinate the complete Senior Maintainer rationalization campaign. TRIGGER WHEN: the user wants a whole project brought back into good shape through a coordinated multistage campaign, or runs /daodan:run-maintenance. DO NOT TRIGGER WHEN: an intake dossier is sufficient (use handover-method), or an individual diagnosis or change covers the request (use lifecycle-method).",
@@ -316,7 +316,7 @@
       "operations": [],
       "provider": "project-lifecycle",
       "topics": [],
-      "version": "2.2.3"
+      "version": "2.3.0"
     },
     {
       "description": "Structure asyncio code: task management, cancellation, rate limiting, blocking calls kept off the event loop. TRIGGER WHEN: building async APIs, concurrent or I/O-bound systems needing non-blocking operations, or choosing between asyncio, threading and multiprocessing.",
@@ -600,7 +600,7 @@
         "filesystem",
         "git"
       ],
-      "version": "2.1.0"
+      "version": "2.2.0"
     },
     {
       "description": "Render an authoritative Markdown report as a standalone local HTML view using fixed reusable assets. TRIGGER WHEN: a report benefits from navigation, comparison, table filtering or naming-weight exploration, or the user requests an HTML report. DO NOT TRIGGER WHEN: diagram-only exports (use learning:forcegraph-exporter or learning:markmind-exporter).",
@@ -817,7 +817,7 @@
         "humanize",
         "prose"
       ],
-      "version": "2.1.0"
+      "version": "2.1.1"
     },
     {
       "description": "Run Knip to find unused files, dependencies, exports and types in TypeScript and JavaScript projects. TRIGGER WHEN: cleaning up TypeScript/JavaScript dead code, finding unused npm dependencies or exports, or configuring knip.json/knip.ts. DO NOT TRIGGER WHEN: the target is a Python codebase (use python-dead-code).",
@@ -904,7 +904,7 @@
       "version": "3.4.0"
     },
     {
-      "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, recording, resuming or closing a project intervention.",
+      "description": "Shared working discipline, canonical run identity, snapshot bindings, delivery and verification accounting, authorization continuity, questions to the user and safe phase recovery for coordinated project work. Load before authoring agent components or tools, briefing workers, asking the user, recording, resuming or closing a project intervention.",
       "dimensions": [],
       "file": "skills/work-record/SKILL.md",
       "frameworks": [],
@@ -916,7 +916,7 @@
       "operations": [],
       "provider": "work-controller",
       "topics": [],
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ],
   "installation_evidence": false,

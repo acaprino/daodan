@@ -79,7 +79,7 @@ workspace closed and the agenda row released.
    session holds is taken over only after the user confirms that session is
    closed. A branch without a task finishes plainly, without the
    record. Every wave must be `sealed`; an open one returns to
-   `references/waves.md`.
+   `references/waves.md`. Ask open questions first.
 2. **Stage D.** Run `references/verify.md` on the whole candidate. A
    blocking result after its remediation waves stops here with the finding
    and the options. Report the last receipt's residual obligations.

@@ -656,5 +656,152 @@ class LoopRecordTests(ProtocolCase):
         self.assertIn("share write_set files", refusal.stderr)
 
 
+    def test_question_sources_are_validated(self):
+        base = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
+        self.assertTrue(self.plan_check({"questions": [{**base, "answer": "yes", "source": "chat"}]})["valid"])
+        self.assertIn("is not one of", self.plan_check({"questions": [{**base, "answer": "yes", "source": "email"}]}, ok=False).stderr)
+        self.assertIn("withdrawn only beside an answer", self.plan_check({"questions": [{**base, "withdrawn": True}]}, ok=False).stderr)
+
+    def test_a_task_waits_for_the_questions_it_consumes(self):
+        question = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
+        waiting = self.task("a", "src/a.py", consumes=["question:Q1"])
+        self.assertTrue(self.plan_check({"questions": [question], "waves": [self.wave("w1", waiting)]})["valid"])
+        unknown = self.task("a", "src/a.py", consumes=["question:Q9"])
+        self.assertIn("does not ask Q9", self.plan_check({"questions": [question], "waves": [self.wave("w1", unknown)]}, ok=False).stderr)
+        running = {**waiting, "status": "running"}
+        self.assertIn("consumes question:Q1, which is not answered",
+                      self.plan_check({"questions": [question], "waves": [self.wave("w1", running)]}, ok=False).stderr)
+        answered = {**question, "answer": "yes", "source": "chat"}
+        self.assertTrue(self.plan_check({"questions": [answered], "waves": [self.wave("w1", running)]})["valid"])
+
+    def test_plan_check_resolves_questions_from_the_run(self):
+        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
+        self.init()
+        waiting = self.task("a", "src/a.py", consumes=["question:Q1"])
+        self.assertTrue(self.plan_check({"waves": [self.wave("w1", waiting)]})["valid"])
+
+    def test_questions_are_append_only(self):
+        q1 = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}
+        self.payload["questions"] = [q1]
+        self.init()
+        self.assertIn("append-only", self.invoke("update", {"questions": []}, ["--expected-revision", "0"], ok=False).stderr)
+        self.assertIn("append-only", self.invoke("update", {"questions": [{**q1, "text": "Drop it?"}]},
+                                                 ["--expected-revision", "0"], ok=False).stderr)
+        self.invoke("update", {"questions": [{**q1, "answer": "yes"}]}, ["--expected-revision", "0"])
+        self.assertIn("append-only", self.invoke("update", {"questions": [{**q1, "answer": "no"}]},
+                                                 ["--expected-revision", "1"], ok=False).stderr)
+
+    def test_completion_requires_every_question_closed(self):
+        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
+        self.init()
+        done = {"status": "complete", "phases": {"audit": {"status": "complete"}},
+                "deliveries": {"audit": {"status": "delivered", "output": self.report()}}}
+        refused = self.invoke("update", done, ["--expected-revision", "0"], ok=False)
+        self.assertIn("every question answered or withdrawn: Q1", refused.stderr)
+        self.invoke("update", {"questions": [{**self.payload["questions"][0], "answer": "yes"}]}, ["--expected-revision", "0"])
+        self.assertEqual(self.invoke("update", done, ["--expected-revision", "1"])["status"], "complete")
+
+    def test_new_question_fields_are_checked_on_write_not_on_read(self):
+        self.payload["questions"] = [{"id": "Q1", "phase": "audit", "text": "Keep the sync API?"}]
+        self.init()
+        path = self.project / ".daodan/runs/test-run/work.json"
+        record = json.loads(path.read_text(encoding="utf-8"))
+        record["questions"][0].update(answer="yes", source="email")
+        path.write_text(json.dumps(record), encoding="utf-8")
+        self.assertEqual(self.invoke("show")["questions"][0]["source"], "email")
+        self.invoke("update", {"phases": {"audit": {"status": "in_progress"}}}, ["--expected-revision", "0"])
+        bad = {"id": "Q2", "phase": "audit", "text": "Drop it?", "answer": "no", "source": "email"}
+        refused = self.invoke("update", {"questions": record["questions"] + [bad]}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("is not one of", refused.stderr)
+        self.payload["questions"] = [bad]
+        self.assertIn("is not one of", self.invoke("init", self.payload, ["--run-id", "other-run"], ok=False).stderr)
+
+    def test_legacy_question_records_still_load(self):
+        self.payload["questions"] = [{"id": "Q1", "phase": "audit", "text": "undecided: keep the sync API"}]
+        self.init()
+        self.invoke("update", {"phases": {"audit": {"status": "complete"}}}, ["--expected-revision", "0"])
+        self.assertEqual(self.invoke("show")["questions"][0]["id"], "Q1")
+        resumed = self.invoke("resume", {"authorizations": self.payload["authorizations"]})
+        self.assertEqual([q["id"] for q in resumed["pending_questions"]], ["Q1"])
+
+    def ask(self, question, ok=True, extra=()):
+        return self.invoke("ask", question, extra, ok=ok)
+
+    def answer(self, qid, text, source="question-tool", ok=True, **extra):
+        return self.invoke("answer", {"question": qid, "text": text, "source": source, **extra}, ok=ok)
+
+    def test_ask_records_a_shaped_question_once(self):
+        self.init()
+        q1 = {"id": "Q1", "phase": "interview", "text": "Keep the sync API?\nToday `api.py:12` serves it to two clients."}
+        self.assertEqual(self.ask(q1), {"question": "Q1", "revision": 1, "open": 1})
+        self.assertEqual(self.ask(q1), {"question": "Q1", "revision": 1, "open": 1, "existing": True})
+        self.assertIn("already asks", self.ask({**q1, "text": "Drop the sync API?"}, ok=False).stderr)
+        self.assertIn("first line must be the question", self.ask({**q1, "id": "Q2", "text": "Sync API"}, ok=False).stderr)
+        self.assertIn("ask records a question only", self.ask({**q1, "id": "Q3", "answer": "yes"}, ok=False).stderr)
+
+    def test_ask_returns_the_open_question_already_asking_it(self):
+        self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
+        same = self.ask({"id": "Q7", "phase": "interview", "text": "keep the  SYNC api?\nother context"})
+        self.assertEqual((same["question"], same["revision"], same["existing"]), ("Q1", 1, True))
+        self.assertEqual(self.ask({"id": "Q8", "phase": "waves", "text": "Keep the sync API?"})["question"], "Q8")
+        self.answer("Q1", "no, split wave 2")
+        again = self.ask({"id": "Q9", "phase": "interview", "text": "Keep the sync API?\nRevision 2 drops a client."})
+        self.assertEqual((again["question"], again["revision"], again["open"]), ("Q9", 4, 2))
+
+    def test_answer_unblocks_only_tasks_whose_questions_are_all_answered(self):
+        self.payload["waves"] = [self.wave("w1", self.task("a", "src/a.py", consumes=["question:Q1"]),
+                                          self.task("b", "src/b.py", consumes=["question:Q1", "question:Q2"]),
+                                          self.task("c", "src/c.py"))]
+        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"},
+                                     {"id": "Q2", "phase": "interview", "text": "Which clients migrate first?"}]
+        self.init()
+        self.assertEqual(self.answer("Q1", "yes")["unblocked"], ["a"])
+        resumed = self.invoke("resume", {"authorizations": self.payload["authorizations"]})
+        self.assertEqual(resumed["waiting"], {"b": ["Q2"]})
+        self.assertEqual(self.answer("Q2", "web first", source="chat"),
+                         {"question": "Q2", "revision": 2, "open": 0, "unblocked": ["b"]})
+
+    def test_a_repeated_answer_changes_nothing_and_a_different_one_is_refused(self):
+        self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
+        self.answer("Q1", "yes")
+        again = self.answer("Q1", "yes")
+        self.assertEqual((again["revision"], again["unchanged"]), (2, True))
+        self.assertTrue(self.answer("Q1", "yes", source="continue")["unchanged"])
+        self.assertIn("a changed answer is a new question", self.answer("Q1", "no", ok=False).stderr)
+        self.assertIn("does not ask Q9", self.answer("Q9", "yes", ok=False).stderr)
+
+    def test_a_withdrawn_question_closes_without_unblocking(self):
+        self.payload["waves"] = [self.wave("w1", self.task("a", "src/a.py", consumes=["question:Q1"]))]
+        self.payload["questions"] = [{"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}]
+        self.init()
+        withdrawn = self.answer("Q1", "drop the export goal", source="chat", withdraw=True)
+        self.assertEqual((withdrawn["unblocked"], withdrawn["replan"], withdrawn["open"]), ([], ["a"], 0))
+        self.assertEqual(self.invoke("resume", {"authorizations": self.payload["authorizations"]})["replan"], ["a"])
+        self.assertEqual(self.invoke("agenda")["tasks"][0]["questions"], 0)
+        retried = self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"})
+        self.assertEqual((retried["existing"], retried["withdrawn"]), (True, True))
+
+    def test_answer_keeps_the_users_words_exactly(self):
+        self.init()
+        self.ask({"id": "Q1", "phase": "interview", "text": "Quale finestra di fermo?"})
+        words = 'Sì, ma "solo" lunedì\nseconda riga, perché sì'
+        self.answer("Q1", words)
+        stored = self.invoke("show")["questions"][0]
+        self.assertEqual((stored["answer"], stored["source"]), (words, "question-tool"))
+        self.assertIn("answered_at", stored)
+        self.assertEqual(self.invoke("show").get("grants", []), [])
+
+    def test_the_question_rule_ships_with_the_skill(self):
+        skill = SCRIPT.parents[1]
+        self.assertIn("`ask`", (skill / "references/questions.md").read_text(encoding="utf-8"))
+        self.assertIn("references/questions.md", (skill / "SKILL.md").read_text(encoding="utf-8"))
+
+    def test_ask_respects_the_task_holder(self):
+        self.invoke("init", self.payload, ["--session", "s1"])
+        held = self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}, ok=False, extra=["--session", "s2"])
+        self.assertIn("held by session s1", held.stderr)
+
 if __name__ == "__main__":
     unittest.main()

@@ -16,5 +16,5 @@ through the phases of the lifecycle method's `references/change.md`, initializin
 project first when it is not in the cycle. A request that turns out to be a defect or a
 pure restructuring follows `references/repair.md` or `references/refactor.md` instead,
 said to the user. Stop only for the user's answers, the plan approval and the merge
-authorization; ask each with the host's question tool, or record it in the run and close
-the turn listing it. At the end, propose `/daodan:finish-task`.
+authorization; ask each as the work record's question rule says; a yes to an authorization is
+also a grant. At the end, propose `/daodan:finish-task`.

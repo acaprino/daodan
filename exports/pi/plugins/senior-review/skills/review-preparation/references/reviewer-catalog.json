@@ -539,10 +539,10 @@
       "operation_scope": "Declared role operation allowlist: read files; create or overwrite files; discover file paths; search file contents; execute shell commands. Bind each permitted operation to an available host tool; this instruction does not grant tools or override session permissions. Do not use operations omitted from this list.",
       "prerequisites": [],
       "provider": "repo-hygiene",
-      "provider_version": "2.1.0",
+      "provider_version": "2.2.0",
       "role": "workspace-auditor",
       "source_hashes": {
-        "repo-hygiene/kernel": "sha256:447865900aa5ef5cb42efc2ddb826684a9aba143b287efbf7360c1585c925cc4",
+        "repo-hygiene/kernel": "sha256:dbc2e349f47db1b7623cfae3ed67171a3215dc6b6bf50a460cb3a621cc2b10f4",
         "repo-hygiene/roles/workspace-auditor.md": "sha256:f453bfc486ae2121676e701c0a76b9aca12bd484322dcf00f5f3f79fd7c700bf"
       },
       "trigger_when": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches."

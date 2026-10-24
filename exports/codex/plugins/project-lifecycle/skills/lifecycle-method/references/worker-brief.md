@@ -104,7 +104,7 @@ edits inside write_set only; no commit; no new dependency; no change to a public
 ## Exit
 Return exactly one of:
 - OK, with the changed paths, the oracle output before and after, the verification output, and any ruling (decision, reason, cost if wrong, evidence)
-- NEEDS_REPLAN, with the file that must change and why
+- NEEDS_REPLAN, with the file that must change and why, or the human decision missing and its evidence
 - ORACLE_INVALID, with the oracle output and why it did not fail as expected
 Do not widen write_set. Do not weaken the oracle. Do not retry past one attempt.
 ```

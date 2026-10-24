@@ -1,21 +1,27 @@
 # Chiarimenti, mappe decisionali e grafi di lavoro
 
-Data: 24 ottobre 2026. Stato: **specifica proposta; integrazione da implementare e verificare**.
+Data: 24 ottobre 2026. Stato: **specifica proposta; passo 1 implementato (sezione 11), il resto da implementare e verificare in Deadly Brain (sezione 13)**.
 
 Questa specifica estende [ADR-0001](../../adr/ADR-0001-work-graph-step0-llm.md)
 e il [disegno dei grafi di lavoro](2026-10-20-system1-work-graph-composition-design.md).
 Definisce quando Daodan deve coinvolgere l'utente, come scegliere la forma della
-conversazione e come riprendere il lavoro. Non introduce un nuovo motore di grafi.
+conversazione e come riprendere il lavoro. La sezione 13 definisce il perimetro
+del futuro motore condiviso di processi.
 
-[ADR-0002](../../adr/ADR-0002-work-controller.md), proposto, sposta nel plugin
-`work-controller` le responsabilità che qui sono attribuite a `work-controller`,
-insieme a chiarimenti, intervista generica, mappa e composizione dei grafi.
+[ADR-0002](../../adr/ADR-0002-work-controller.md), proposto, assegna a
+`work-controller` il motore generalista: composizione o sola verifica dei grafi,
+orchestrazione ed esecuzione, con model-router interno e contabilizzazione dei
+costi. Per decisione successiva dello stesso giorno, il motore esce da Daodan in
+un repository proprio, Deadly Brain, da cui dipendono Daodan, Shinatama e altri
+progetti (sezione 13). Il runtime riceve obbligatoriamente definizioni YAML di
+job, grafi e loop; anche l'intervista produce quel formato. Dove questo documento
+dice `work-controller`, indica il motore, ovunque sia pubblicato.
 
 **Il bisogno di una decisione umana attiva un chiarimento proporzionato:** una
 domanda diretta, un'intervista mirata oppure una mappa decisionale. I prototipi dei
 grafi operativi continuano a descrivere metodi, dipendenze, consegne e verifiche.
-La mappa decisionale, metodo proprio di Daodan ispirato a Wayfinder, aiuta a
-esplorare le decisioni che determinano quel lavoro.
+La mappa decisionale, progettata in Daodan da idee di Wayfinder e destinata al
+motore condiviso, aiuta a esplorare le decisioni che determinano quel lavoro.
 
 L'utente ha richiesto la stesura della specifica. Questo documento non prova
 l'esecuzione del flusso e non autorizza installazioni, scritture su tracker,
@@ -50,10 +56,17 @@ il ritorno di evidenza alla conversazione non crea prerequisiti circolari tra ta
 | Requisiti, specifiche e ADR | Conservare gli esiti sostanziali nel documento del rispettivo proprietario. | Secondo il ciclo del documento; un ADR resta `Proposed` fino alla sua integrazione. |
 | Registro del run | Registrare domande pendenti, autorizzazioni, revisioni, consegne e controlli. | Secondo i gate di `work-controller`; un riepilogo conversazionale non li sostituisce. |
 
+Il modulo di composizione espone anche un ingresso esplicito per iniziare
+l'intervista da un obiettivo, senza YAML iniziale (sezione 13). L'utente può
+quindi avviarla direttamente; il coordinatore può richiamare lo stesso metodo
+quando un processo autorizzato richiede una composizione nuova.
+
 Il metodo proprietario dell'attività decide quali input servono. `project-lifecycle`
-coordina il piano e l'intervista del task cycle; gli altri metodi richiamano lo
-stesso contratto di chiarimento senza duplicare un proprio framework di intervista.
-`work-controller` possiede persistenza, ripresa e contabilizzazione. `senior-review`
+fornisce il contesto e i vincoli del task cycle all'intervista generica del motore;
+gli altri metodi richiamano lo stesso contratto di chiarimento senza duplicare un
+proprio framework di intervista. `work-controller` possiede composizione,
+validazione, orchestrazione, esecuzione, routing interno e contabilizzazione.
+`senior-review`
 possiede obblighi, roster e composizione della review. Il catalogo verifica le
 identità dei metodi disponibili; l'adapter dell'host lega strumenti e capacità.
 
@@ -135,7 +148,7 @@ fatti. Vale anche per ogni ticket della mappa decisionale.
 
 ### Avvio della mappa
 
-La mappa è un metodo di Daodan: il coordinatore la apre o la riprende da sé quando
+La mappa è un metodo di `work-controller`: il coordinatore la apre o la riprende quando
 la forma scelta è la mappa, e dice all'utente il motivo in una riga. L'utente può
 chiedere una forma più leggera. Si riusa la mappa pertinente esistente invece di
 aprirne una seconda.
@@ -212,10 +225,11 @@ Questo è comportamento richiesto al futuro runtime. Un host senza interruzione
 sicura o isolamento comprovato deve dichiarare il limite e trattenere l'ammissione
 dei risultati coinvolti; la specifica non gli attribuisce capacità inesistenti.
 
-## 7. Mappa decisionale: idee di Wayfinder, metodo di Daodan
+## 7. Mappa decisionale: idee di Wayfinder, metodo condiviso
 
-Decisione del 24 ottobre 2026: Daodan scrive un proprio metodo di mappa decisionale
-ispirato a Wayfinder (`mattpocock/skills`, licenza MIT), nella modalità
+Decisione del 24 ottobre 2026: il metodo di mappa decisionale nasce in Daodan e
+confluisce in `work-controller` (sezione 13). È ispirato a Wayfinder
+(`mattpocock/skills`, licenza MIT), nella modalità
 *ispirazione originale* della procedura di intake. Nessun testo upstream viene
 copiato. I motivi:
 
@@ -373,11 +387,16 @@ I seguenti scenari definiscono cosa verificare durante l'implementazione.
    prove reali sugli host installati. Misurare domande evitabili, richieste ripetute,
    riprese errate e costo totale di contesto, esecuzione, verifica e retry.
 
-Oggi `work.toml` e `run_state.py` già conservano domande per gli host senza
-strumento di interrogazione e le espongono alla ripresa. Questo non prova ancora
-l'attesa selettiva dei nodi, i legami di validità o la mappa decisionale qui
-descritti. L'assemblaggio canonico dei reviewer è invece presente; va distinto
+Il passo 1 è implementato da
+[questo piano](../plans/2026-10-24-work-controller-questions.md): `ask` registra
+ogni domanda prima di porla, `answer` registra parole e fonte dell'utente, un task
+che consuma `question:<id>` attende la risposta e un run non si chiude con domande
+aperte. Restano da implementare i legami di validità, la revisione del lavoro già
+fatto dopo una decisione cambiata e la mappa decisionale. L'assemblaggio canonico dei reviewer è invece presente; va distinto
 dalla proposta semantica a prompt e dalle capacità del futuro runtime dei grafi.
+
+Dal passo 3 in poi il lavoro si svolge in Deadly Brain, dopo la toolchain
+comune che ne è il prerequisito (sezione 13).
 
 La prima adozione non richiede un planner offline completo. La specifica non
 promette una riduzione dei token senza confronti misurati su lavoro equivalente.
@@ -401,3 +420,303 @@ dipendenza:
 - [Regole di invocazione](https://github.com/mattpocock/skills/blob/main/.agents/invocation.md).
 - [Tracker locale](https://github.com/mattpocock/skills/blob/main/skills/engineering/setup-matt-pocock-skills/issue-tracker-local.md).
 - [Licenza MIT](https://github.com/mattpocock/skills/blob/main/LICENSE) e [changelog](https://github.com/mattpocock/skills/blob/main/CHANGELOG.md).
+
+## 13. Deadly Brain: il motore condiviso
+
+Decisione dell'utente del 24 ottobre 2026, successiva ad ADR-0002. Orchestrazione,
+routing e composizione dei grafi escono da Daodan e vanno in un repository proprio,
+**Deadly Brain** (nome dal mondo di Oni, come Daodan, Shinatama e Mukade). Daodan,
+Shinatama, Mukade e altri progetti dipendono da Deadly Brain; il motore non
+dipende da questi consumatori. La decisione sostituisce RA-001 di ADR-0002, che respingeva
+un terzo repository, e fissa il verso delle dipendenze: nessun marketplace dipende
+da Daodan per avere il motore.
+
+Identità, nelle parole dell'utente: ispirata a Wayfinder, con una forte componente
+a grafo, anche deterministica. La precisazione successiva dello stesso giorno
+fissa `work-controller` come creatore ed esecutore generalista di processi, con
+orchestrazione e model-router propri. Questo è il perimetro da implementare;
+la presenza di helper, skill o prototipi non ne prova l'esecuzione.
+
+| Contenuto | Oggi | In Deadly Brain |
+|---|---|---|
+| Registro del run, agenda, gate, worker isolato, domande (`ask`, `answer`) | `work-controller@daodan` | parte di `work-controller@deadly-brain` |
+| Routing dei modelli e prezzi | plugin separato `model-routing@daodan` | model-router interno di `work-controller` |
+| Intervista generica, mappa decisionale e composizione dei grafi | integrazione da completare | parte del motore |
+| Checkpoint, memoria, handover, comunicazione ed esecuzione dei grafi | runtime generalista da implementare | parte del motore |
+
+Gli archetipi restano ai consumatori: il task cycle di Daodan, le operazioni Office
+di Mukade, i flussi di Shinatama. Il nucleo gestisce dipendenze, decisioni,
+tentativi, consegne, verifiche e budget. Regole su branch, worktree, ADR e commit
+restano nel contratto Daodan; un processo documentale non deve ereditarle.
+
+### Tre usi, un solo contratto YAML
+
+Il runtime **deve ricevere una definizione YAML** per ogni job, grafo o loop.
+Il formato è obbligatorio anche quando il processo nasce da conversazione,
+contesto, intervista o archetipi: il compositore materializza il YAML prima
+dell'ammissione. Il file scritto dall'utente segue lo stesso percorso.
+
+| Uso | Comportamento |
+|---|---|
+| Composizione | Avviare l'intervista dall'ingresso esplicito o dal coordinatore, leggere contesto e capacità disponibili, chiedere ciò che manca, riusare un archetipo pertinente oppure proporre il processo con un LLM (ADR-0001), quindi produrre YAML. |
+| Sola verifica di integrità | Ricevere YAML già scritto e restituire errori, lacune o validità strutturale. Non avviare job, assegnare modelli o concedere autorizzazioni. |
+| Esecuzione o ripresa | Ammettere una versione YAML validata, assegnare i modelli ai job LLM, eseguire i nodi pronti e conservarne stato, consegne, verifiche e costi. |
+
+Il passaggio logico è: **contesto o YAML fornito → definizione YAML → validazione
+→ binding dei job LLM → esecuzione e contabilizzazione**. La modalità di sola
+verifica termina alla validazione. Un YAML valido non dimostra da solo che il
+processo raggiunga l'obiettivo e non autorizza la sua esecuzione.
+
+Il contratto identifica versione e tipo della definizione: job singolo, grafo o
+loop. Per ogni nodo dichiara identità, attività, componente o worker consentito,
+input, output, dipendenze, condizioni, controlli di successo, perimetro e capacità
+richieste. I nodi possono essere LLM, operazioni deterministiche o passaggi umani.
+Un input proviene da un predecessore oppure è dichiarato come input esterno del
+processo. Il tipo di grafo conserva i riferimenti ai componenti registrati e ai
+loro contratti; non copia gli inventari di `plugin.toml`. Le capacità restano
+neutre, per esempio `repository.read` e `shell.execute`; l'adapter lega gli
+strumenti dell'host. Una skill fornisce un metodo, un ruolo identifica un worker,
+un workflow un ingresso: caricare una skill non equivale ad avviare un agente.
+
+Lo schema concreto e i nomi dei campi saranno definiti nel piano di
+implementazione, riusando i contratti esistenti dove servono già. TOML può restare
+il formato dei metadati e dei contratti dei componenti; JSON può restare una
+rappresentazione interna e il formato dei record di esecuzione. Nessuno dei due
+sostituisce il YAML obbligatorio in ingresso al runtime.
+
+Il parser YAML è una **eccezione circoscritta** al vincolo della sola libreria
+standard: lettura di dati senza costruttori eseguibili, errori espliciti per
+definizioni ambigue o non supportate. Il nucleo mantiene la libreria standard.
+Nessuna libreria viene selezionata o installata da questa specifica; prima
+dell'adozione vanno verificati manutenzione, compatibilità, licenza e sicurezza.
+Non realizzare un parser artigianale o chiamare YAML un sottoinsieme implicito.
+
+### Modulo di composizione tramite intervista
+
+Il compositore è un modulo interno di `work-controller`. Riceve obiettivo,
+contesto ed evidenze accessibili, decisioni e vincoli, eventuale processo da
+evolvere e inventario reale dell'harness. Produce la definizione YAML con i
+riferimenti ai componenti scelti e agli artefatti ad hoc; le decisioni mancanti
+rimangono domande registrate. Non introduce un secondo planner o catalogo
+canonico accanto ai proprietari esistenti.
+
+**Trigger pubblico di avvio.** Deve esistere un ingresso dedicato, con identità
+funzionale proposta `compose-process`, esposto dall'adapter come comando oppure
+skill/workflow invocabile dall'utente. L'utente lo richiama con l'obiettivo in
+testo libero, per esempio «costruisci un processo che analizzi questi documenti
+e produca un report verificato». Il YAML non è un prerequisito per iniziare
+l'intervista: è l'output del compositore e il successivo ingresso del runtime.
+Nome registrato, sintassi e meccanismo effettivi vanno legati a ciascun host;
+questa specifica non dichiara il comando già disponibile.
+
+Il trigger legge il contesto e le decisioni applicabili, chiarisce destinazione
+e criteri di successo e pone soltanto le domande necessarie nella forma della
+sezione 4. Se l'utente indica un processo, una mappa o un'intervista esistente,
+ne verifica l'identità e riprende dal checkpoint e dalle domande aperte, senza
+creare una seconda intervista. Il coordinatore dispone dello stesso ingresso
+interno quando il lavoro autorizzato richiede composizione: l'avvio manuale e
+quello contestuale condividono metodo, memoria e contratto. La sola richiesta
+di comporre non concede nuove autorizzazioni di esecuzione.
+
+L'analogia con [l'invocazione di Wayfinder](https://github.com/mattpocock/skills/blob/main/skills/engineering/wayfinder/SKILL.md#invocation)
+è l'ingresso esplicito da un'idea oppure da una mappa da riprendere. Il suo
+`disable-model-invocation: true` resta una proprietà dell'upstream; il modulo
+condiviso qui descritto espone anche il richiamo da parte del coordinatore.
+
+**Discovery dell'harness.** L'adapter fornisce l'intero inventario disponibile di
+strumenti, agenti/ruoli, skill, workflow, script e capacità dei provider. Ogni
+voce distingue tipo, identità reale, origine e revisione, interfaccia o schema
+degli argomenti, input/output, disponibilità e permessi. Dichiarato, installato,
+utilizzabile e verificato sono fatti distinti. Una capacità sconosciuta rimane
+una lacuna. Il motore riceve questo inventario attraverso il contratto
+dell'adapter e non dipende da un catalogo specifico di Daodan.
+
+La ricerca copre l'inventario con metadati e paginazione; legge corpi, contratti
+e dettagli soltanto per i candidati pertinenti. Le parole chiave aiutano a
+trovare candidati, poi il compositore verifica la corrispondenza con l'incarico.
+Registra identità e revisioni scelte e rivalida i riferimenti se l'inventario
+cambia prima dell'esecuzione o durante la ripresa.
+
+**Riuso e job ad hoc.** Si riusano prima archetipi, strumenti e specialisti
+pertinenti. Quando manca un componente adatto e il contratto lo permette, il
+compositore può definire un nuovo incarico e il suo prompt, produrre uno script
+o preparare una chiamata. Un job inline usa un executor registrato e consentito,
+per esempio il worker isolato del controller, con obiettivo, input/output,
+perimetro, controlli, capacità e budget espliciti. Il prompt è un dato del job;
+l'incarico nuovo non simula l'esistenza di un agente registrato. Un job ad hoc
+non sostituisce uno specialista obbligatorio né aggira un provider richiesto ma
+indisponibile: quel caso segue il recupero del proprietario.
+
+Gli script prodotti sono artefatti del run identificati da percorso e impronta,
+con interprete, argomenti, input/output e verifiche dichiarate. Il grafo rende
+esplicita la loro produzione e verifica prima dell'uso; l'executor esegue la
+versione verificata entro le autorizzazioni applicabili. Le chiamate citano
+strumenti o API realmente disponibili e i loro schemi, senza inventare nomi o
+permessi. Parsing, composizione e sola verifica non eseguono gli script né le
+chiamate di lavoro proposte; le operazioni di lettura e discovery necessarie
+alla composizione seguono il perimetro già autorizzato. La generazione non
+installa provider o dipendenze e non modifica permanentemente l'harness.
+
+### Integrità, revisioni e loop
+
+La validazione controlla schema, identità, componenti e capacità disponibili,
+collegamenti degli input, dipendenze e limiti. I prerequisiti formano un DAG
+verificato con `graphlib`. Il risultato distingue errore strutturale, requisito
+non verificato e capacità non disponibile; una lacuna non diventa un successo.
+
+Un loop è un costrutto dichiarato: corpo da ripetere, condizione d'uscita,
+massimo di iterazioni e budget applicabile. Il corpo di ogni iterazione conserva
+dipendenze acicliche. Condizioni e controlli usano dati e verificatori consentiti
+dal contratto, senza valutare codice arbitrario incorporato nel YAML. Iterazioni
+e retry hanno identità distinte e restano consultabili; raggiungere un limite
+interrompe l'avanzamento con una causa, senza fingere raggiunto l'obiettivo.
+
+Ogni esecuzione si lega alla versione e all'impronta della definizione YAML
+ammessa, ai contratti, agli input e alle autorizzazioni applicabili. Una modifica
+produce una nuova revisione, con riesame dei dipendenti e conservazione dei
+risultati ancora validi; non modifica retroattivamente la definizione eseguita.
+
+### Orchestrazione, memoria e passaggio tra sessioni
+
+Il motore possiede la frontiera dei nodi pronti, le prese in carico e i tentativi.
+Prima di avviare un job verifica input, dipendenze, autorizzazioni, binding,
+isolamento, risorse e budget. Registra il tentativo prima del dispatch e collega
+l'handle restituito dall'host al job e al tentativo. Le consegne e i controlli
+competenti decidono il completamento; un turno finito non è una consegna.
+
+Il **checkpoint** conserva il punto dell'esecuzione: revisione, nodi e tentativi,
+handle attivi, risultati, domande, controlli e contabilizzazione. La **memoria**
+conserva contesto, decisioni ed evidenze con fonte, perimetro e validità; prepara
+il contesto pertinente senza trasformare un riepilogo in una nuova fonte
+normativa. Non richiede di introdurre un servizio o un archivio vettoriale.
+Entrambi vivono nella home persistente del progetto, condivisa tra worktree.
+
+Il **session handover** trasferisce identità del processo e della revisione,
+titolarità, checkpoint, riferimenti alla memoria e lavoro aperto. Prima di
+riprendere, il nuovo coordinatore riconcilia handle, effetti e risultati: un job
+ancora attivo non viene duplicato; un esito ignoto rimane tale fino al recupero.
+La presa in carico impedisce a due sessioni di avviare lo stesso tentativo.
+
+La **comunicazione tra agenti** è legata a processo, nodo e tentativo: mittente,
+destinatario, contenuto o riferimento e identità del messaggio sono registrati,
+con deduplicazione e consegna osservabile secondo le capacità dell'host. I
+messaggi non sostituiscono risposte umane, autorizzazioni o gate. Una domanda
+umana sospende i dipendenti e lascia proseguire soltanto il lavoro indipendente
+ammesso, secondo le sezioni 5 e 6.
+
+### Esecuzione e model-router interno
+
+`work-controller` possiede l'esecuzione reale. Gli adapter collegano il runtime
+ai meccanismi verificati degli host: avvio e osservazione dei worker, isolamento,
+selezione del modello e dell'effort, arresto, comunicazione e lettura dei consumi.
+Le capacità mancanti sono dichiarate prima del dispatch coinvolto. Il motore
+mantiene stato e decisioni; l'adapter applica le operazioni dell'host. La forma
+di distribuzione del runtime resta da progettare: questa decisione non promette
+un servizio autonomo né lavoro in background dopo la chiusura della chat.
+
+Il **model-router è un sottosistema interno** del controller. Riusa classificazione,
+cataloghi, prezzi e selezione dell'attuale `model-routing`, anziché richiedere al
+consumatore di coordinare un secondo plugin. La migrazione stabilirà i percorsi e
+il trattamento delle identità già installate; la separazione corrente rimane un
+fatto dell'implementazione, non la destinazione del nuovo motore.
+
+Ogni job LLM, inclusi compositore, classificatore e verifiche semantiche, riceve
+il proprio binding di modello ed effort secondo le regole applicabili del router.
+Conta l'incarico concreto, con obiettivo, input, capacità, complessità e rischio:
+lo stesso agente può usare modelli diversi per job diversi. Un nodo deterministico
+non richiede un modello. L'assegnazione è derivata e si lega a nodo, tentativo,
+richiesta, inventario e catalogo; non è una scelta unica per tutto il grafo.
+
+Prima di dispatch e ripresa si verifica che il binding sia ancora applicabile e
+che l'host possa applicarlo. Modello assegnato e modello effettivamente osservato
+restano fatti distinti; discrepanze o assenza di prova sono lacune visibili.
+Il gate corrente richiede conferma della proposta concreta. Un'eventuale delega
+iniziale a una politica di routing, con modelli consentiti, limiti ed escalation,
+richiede una decisione esplicita e il relativo contratto: questo documento non
+la deduce dall'approvazione del processo e non la considera già implementata.
+
+### Consumi, costi e budget
+
+[ADR-0003](../../adr/ADR-0003-usage-ledger.md) conserva la proprietà del ledger e
+delle regole di normalizzazione e prezzo. Il controller collega i consumi
+osservati al job, al tentativo e all'handle dell'host; deduplica per identità della
+sorgente anche dopo ripresa o handover. Include composizione, routing,
+coordinamento, esecuzione, verifiche, iterazioni fallite e retry. Il lavoro non
+attribuibile a un nodo rimane costo esplicito di coordinamento del processo.
+
+La vista presenta consumi misurati, costo calcolato ai prezzi dell'endpoint con
+le revisioni applicate e stime del lavoro futuro separate. I valori servono al
+confronto dei processi; non sono una fattura. Sorgenti mancanti e prezzi ignoti
+restano mancanti o parziali, mai zero. Una modifica dei prezzi non riscrive le
+misure e le basi storiche del run.
+
+Il budget è verificato prima di nuove ammissioni, comprese iterazioni e retry,
+riusando gli avvisi e le autorizzazioni di aumento di ADR-0003. Un superamento
+ferma nuove partenze; le operazioni già attive seguono le capacità di arresto
+effettivamente provate. Il controllo non promette un tetto monetario esatto sulle
+chiamate già in corso. Misure incomplete lasciano il budget non verificato;
+un limite obbligatorio non può essere dichiarato rispettato senza evidenza.
+
+### Prerequisiti e costi
+
+- **Toolchain comune prima dello split.** Compilatore e adapter (`scripts/daodan/`,
+  `adapters/`) vanno in un repository di toolchain, `daodan-common`, installato in
+  CI e fissato a una versione per marketplace, come deciso nella sessione Mukade
+  dello stesso giorno. Le copie in Daodan, Shinatama e Mukade già divergono;
+  Deadly Brain non ne aggiunge un'altra.
+- Un marketplace in più da registrare su Claude, Copilot e Codex.
+- Su Pi e OpenCode il pacchetto di Deadly Brain si installa a parte, perché questi
+  host non installano plugin di marketplace esterni
+  ([host](../../hosts.md)). Va provato su host installati prima della migrazione.
+- I consumatori dichiarano `work-controller@deadly-brain`, che comprende il
+  model-router. Daodan perde gli attuali due plugin: versione maggiore del suo
+  marketplace, con una migrazione esplicita delle dipendenze e degli archivi.
+- Il registro del run deve accettare le operazioni di consumatori diversi. Oggi
+  l'enum `operation` di `work.toml` elenca solo quelle di Daodan (`assess`,
+  `repair`, `change`, `verify`, `consolidate`, `review`, `investigate`,
+  `brainstorm`) e rifiuta, per esempio, le operazioni Office (Create, Derive,
+  Expand, Revise, Restyle, Edit). Va ridisegnato con la migrazione.
+
+### Criteri di accettazione del motore
+
+Questi scenari definiscono il lavoro futuro; non sono risultati già ottenuti.
+
+| ID | Scenario | Risultato osservabile |
+|---|---|---|
+| WC-01 | Un'intervista, un archetipo e un file fornito descrivono lo stesso processo. | Producono o forniscono YAML equivalente, ammesso dallo stesso validatore. |
+| WC-02 | Si richiede soltanto il check di integrità. | Il risultato contiene diagnosi; nessun job viene eseguito o instradato a un modello. |
+| WC-03 | YAML malformato, componente inesistente, ciclo o input senza produttore e senza dichiarazione esterna. | L'ammissione è rifiutata con la causa precisa; un processo valido lega la versione e l'impronta eseguite. |
+| WC-04 | Si eseguono un job singolo, un grafo e un loop. | Tutti entrano da YAML; il loop verifica uscita, iterazioni massime e budget, conservando ogni tentativo. |
+| WC-05 | Si usa lo stesso agente in due job LLM diversi, accanto a un nodo deterministico. | I job ricevono binding propri di modello ed effort; il nodo deterministico non riceve un modello. |
+| WC-06 | L'host non applica il modello richiesto oppure non espone una capacità necessaria. | Il limite impedisce il dispatch interessato o l'ammissione del risultato; nessuna esecuzione conforme viene dedotta. |
+| WC-07 | Una sessione si interrompe con un worker attivo; un'altra prende in carico il processo. | Checkpoint e memoria vengono recuperati; l'handle è riconciliato prima della ripresa, senza duplicare job o costi. |
+| WC-08 | Due sessioni reclamano lo stesso tentativo oppure un messaggio viene consegnato due volte. | Una sola presa in carico e una sola applicazione del messaggio; origine e destinazione restano osservabili. |
+| WC-09 | Una risposta o una nuova revisione YAML cambia un input. | I dipendenti sono riesaminati; le revisioni e le evidenze precedenti rimangono consultabili. |
+| WC-10 | Un job fallisce e viene ritentato; i log sono raccolti due volte. | Ogni tentativo conserva consumi e risultato; le righe di origine sono contate una sola volta, inclusi costi di routing e coordinamento. |
+| WC-11 | Manca un prezzo o una fonte di consumo; il budget è raggiunto. | Totale parziale o non misurato esplicito; nessuna nuova ammissione oltre il limite senza autorizzazione, nessuno zero inventato. |
+| WC-12 | Un processo documentale viene eseguito senza il task cycle di Daodan. | Il nucleo non impone branch, worktree, ADR, commit o controlli specifici del codice; applica i contratti del processo. |
+| WC-13 | L'utente invoca l'ingresso di composizione con un obiettivo e nessun YAML. | Si avvia l'intervista con contesto e domande persistenti; l'esito è YAML, senza avvio implicito del processo. |
+| WC-14 | L'utente o il coordinatore richiama il compositore per un processo già aperto. | Si riprendono identità, decisioni, checkpoint e domande applicabili, senza duplicare l'intervista o inferire risposte. |
+| WC-15 | Nell'inventario esiste uno specialista o uno strumento pertinente. | Il compositore lo trova e riusa con identità, metodo e interfaccia verificati; un cambiamento dell'inventario richiede rivalidazione prima dell'uso. |
+| WC-16 | Nessun componente soddisfa un incarico e il contratto permette un job ad hoc. | Il YAML contiene un job inline con executor disponibile, prompt, input/output e controlli; non occorre inventare un ruolo o installare un nuovo plugin. |
+| WC-17 | Una chiamata cita uno strumento inesistente o argomenti non validi; oppure lo script differisce dalla versione verificata. | L'operazione non è ammessa e la causa è esplicita; un job ad hoc non aggira l'assenza di un provider obbligatorio. |
+| WC-18 | La composizione propone uno script o una chiamata ad hoc. | L'artefatto e i suoi controlli compaiono nel grafo; parsing, composizione e sola verifica non eseguono il lavoro proposto. |
+
+### Questioni aperte
+
+- **Una domanda per turno o tutta la frontiera in un round?** La sezione 4 e
+  l'intervista del task cycle chiedono una domanda per turno. L'intake Office di
+  Mukade e il grilling di Wayfinder pongono in un solo round tutte le domande già
+  sbloccate. Nella sessione Mukade è stato raccomandato il round. Il contratto
+  delle domande regge entrambe le forme: `ask` registra ogni domanda e `answer`
+  ogni risposta. La scelta cambia solo la prosa dei metodi che chiedono.
+- Schema YAML concreto per job, grafi e loop; parser da verificare prima
+  dell'adozione. Il formato YAML obbligatorio non è più una questione aperta.
+- Nome e binding dell'ingresso pubblico di composizione (`compose-process`
+  proposto), da registrare e verificare sugli host insieme al richiamo interno.
+- Distribuzione del runtime e prove delle capacità degli host; un servizio
+  autonomo non è stato selezionato dalla conversazione.
+- Conferma per singolo binding oppure futura delega esplicita a una politica
+  di routing; fino a tale decisione resta il gate corrente.
+- Repository e nomi: proposta `acaprino/deadly-brain`, pubblico, licenza MIT,
+  ingresso `work-controller` e model-router interno.

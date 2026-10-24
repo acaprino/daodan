@@ -20,6 +20,7 @@ import tomllib
 import uuid
 
 SCHEMA = "daodan/work/v1"
+QUESTION_PREFIX = "question:"
 RUN_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,95}$")
 CONTRACT = Path(__file__).resolve().parents[3] / "contracts/work.toml"
 IMMUTABLE = frozenset({"schema", "revision", "run_id", "project", "scope", "authorizations",
@@ -412,6 +413,45 @@ def validate_questions(section, rules):
             raise ProtocolError(f"Question {question['id']} has an empty answer; omit the field until it is answered")
 
 
+def validate_written_questions(questions, before=()):
+    """Check the fields of each question this write adds or changes, never a stored one."""
+    rules = contract()["loop"]["questions"]
+    stored = list(before)
+    for index, question in enumerate(questions or []):
+        if index < len(stored) and stored[index] == question:
+            continue
+        if "source" in question and question["source"] not in rules["sources"]:
+            raise ProtocolError(f"Question {question['id']} source is not one of {', '.join(rules['sources'])}")
+        if "withdrawn" in question and (question["withdrawn"] is not True or "answer" not in question):
+            raise ProtocolError(f"Question {question['id']} is withdrawn only beside an answer")
+
+
+def consumed_questions(task):
+    """The question ids a wave task waits for, named question:<id> in its consumes."""
+    return [item[len(QUESTION_PREFIX):] for item in task.get("consumes", [])
+            if isinstance(item, str) and item.startswith(QUESTION_PREFIX)]
+
+
+def is_open(question):
+    return not question.get("answer")
+
+
+def is_settled(question):
+    """Answered and not withdrawn: only then does a consumer go on."""
+    return not is_open(question) and not question.get("withdrawn")
+
+
+def validate_question_consumers(waves, questions):
+    known = {q.get("id"): q for q in questions if isinstance(q, dict)}
+    for wave in waves:
+        for task in wave.get("tasks", []):
+            for qid in consumed_questions(task):
+                if qid not in known:
+                    raise ProtocolError(f"Task {task['id']} consumes question:{qid}, but the record does not ask {qid}")
+                if task["status"] in ("running", "green", "committed") and not is_settled(known[qid]):
+                    raise ProtocolError(f"Task {task['id']} consumes question:{qid}, which is not answered")
+
+
 def validate_environment(section, rules):
     if not isinstance(section, dict):
         raise ProtocolError("environment must be an object")
@@ -797,6 +837,8 @@ def validate_loop(record):
                      complete=record.get("status") == "complete")
     if "questions" in present:
         validate_questions(present["questions"], rules["questions"])
+    if "waves" in present:
+        validate_question_consumers(present["waves"], present.get("questions", []))
     if "environment" in present:
         validate_environment(present["environment"], rules["environment"])
 
@@ -809,6 +851,12 @@ def validate_loop_transitions(old, new):
         before = old.get(section, [])
         if rules[section].get("append_only") and new.get(section, [])[:len(before)] != before:
             raise ProtocolError(f"{section.capitalize()} are append-only; {entry} cannot be altered or removed")
+    before, after = old.get("questions", []), new.get("questions", [])
+    if len(after) < len(before) or any(
+            any(b.get(key) != a.get(key) for key in b) or ("answer" in b and a != b)
+            for b, a in zip(before, after)):
+        raise ProtocolError("Questions are append-only; a question or its answer cannot be altered or removed")
+    validate_written_questions(after, before)
 
 
 def validate_record(record, project=None, root=None, current=False):
@@ -901,6 +949,10 @@ def validate_transitions(old, new):
     rules = contract()
     if old["status"] == "complete" and new["status"] != "complete":
         raise ProtocolError("A complete run cannot be reopened")
+    if old["status"] != "complete" and new["status"] == "complete":
+        waiting = [q["id"] for q in new.get("questions", []) if is_open(q)]
+        if waiting:
+            raise ProtocolError(f"Completion requires every question answered or withdrawn: {', '.join(waiting)}")
     if new["required_gates"][:len(old["required_gates"])] != old["required_gates"]:
         raise ProtocolError("Required gates are append-only; a check cannot be removed or weakened")
     if new.get("grants", [])[:len(old.get("grants", []))] != old.get("grants", []):
@@ -962,6 +1014,114 @@ def merge(base, patch):
     for key, value in patch.items():
         result[key] = merge(result[key], value) if isinstance(value, dict) and isinstance(result.get(key), dict) else copy.deepcopy(value)
     return result
+
+
+ASK_FIELDS = frozenset({"id", "phase", "text"})
+ANSWER_FIELDS = frozenset({"question", "text", "source", "withdraw"})
+QUESTION_MARKS = ("?", "\uff1f", "\u061f")
+
+
+def decision(text):
+    """The question's first line, normalized: two questions asking it are one."""
+    lines = text.strip().splitlines()
+    return " ".join(lines[0].split()).casefold() if lines else ""
+
+
+def ask_question(record, question):
+    """Return the updated record, or None when the question is already recorded, and its id."""
+    if set(question) - ASK_FIELDS:
+        raise ProtocolError("ask records a question only; answers go through answer")
+    text = question.get("text")
+    if not isinstance(text, str) or not text.strip():
+        raise ProtocolError("A question needs a nonempty text")
+    if not text.strip().splitlines()[0].rstrip().endswith(QUESTION_MARKS):
+        raise ProtocolError("The first line must be the question, ending with a question mark")
+    questions = record.get("questions") or []
+    for existing in questions:
+        if existing.get("id") == question.get("id"):
+            if {key: existing[key] for key in ASK_FIELDS if key in existing} != question:
+                raise ProtocolError(f"Question {question['id']} already asks something else")
+            return None, existing["id"]
+    # Only an open question of the same phase is the same request; whether an
+    # earlier answer still applies is the coordinator's judgment, not a match.
+    for existing in questions:
+        if (is_open(existing) and existing.get("phase") == question.get("phase")
+                and decision(existing.get("text", "")) == decision(text)):
+            return None, existing["id"]
+    updated = copy.deepcopy(record)
+    updated.setdefault("questions", []).append({**question, "asked_at": timestamp()})
+    return updated, question.get("id")
+
+
+def answer_question(record, reply):
+    """Return the record with the user's answer, or None when it repeats the recorded one."""
+    if set(reply) - ANSWER_FIELDS:
+        raise ProtocolError("answer takes question, text, source and withdraw")
+    qid, withdraw = reply.get("question"), reply.get("withdraw", False)
+    if not isinstance(withdraw, bool):
+        raise ProtocolError("withdraw must be a boolean")
+    target = next((q for q in record.get("questions") or [] if q.get("id") == qid), None)
+    if target is None:
+        raise ProtocolError(f"The record does not ask {qid}")
+    if not is_open(target):
+        if (target["answer"], bool(target.get("withdrawn"))) == (reply.get("text"), withdraw):
+            return None
+        raise ProtocolError(f"Question {qid} is answered; a changed answer is a new question")
+    updated = copy.deepcopy(record)
+    entry = next(q for q in updated["questions"] if q.get("id") == qid)
+    entry.update(answer=reply.get("text"), source=reply.get("source"), answered_at=timestamp())
+    if withdraw:
+        entry["withdrawn"] = True
+    return updated
+
+
+def pending_consumers(record):
+    questions = {q.get("id"): q for q in record.get("questions") or []}
+    for wave in record.get("waves") or []:
+        for task in wave.get("tasks", []):
+            consumed = consumed_questions(task)
+            if task.get("status") == "pending" and consumed:
+                yield task["id"], [questions[qid] for qid in consumed if qid in questions]
+
+
+def waiting(record):
+    """Pending tasks and the open questions each still waits for."""
+    return {task: [q["id"] for q in consumed if is_open(q)]
+            for task, consumed in pending_consumers(record) if any(is_open(q) for q in consumed)}
+
+
+def stranded(record):
+    """Pending tasks that consume a withdrawn question: only a new plan drops them."""
+    return [task for task, consumed in pending_consumers(record) if any(q.get("withdrawn") for q in consumed)]
+
+
+def unblocked(record, qid):
+    return [task for task, consumed in pending_consumers(record)
+            if qid in {q["id"] for q in consumed} and all(is_settled(q) for q in consumed)]
+
+
+def commit_change(project, root, directory, path, session, take_over, change):
+    """Apply change(before) under the writer lock and return the record; None writes nothing.
+
+    Update, ask and answer share this path: revision, candidate binding,
+    validation, transitions and the agenda row are the same for every write.
+    """
+    with writer_lock(directory, root):
+        before = validate_record(read_json(path), project, root)
+        updated = change(before)
+        if updated is None:
+            return before
+        if before["status"] == "complete":
+            raise ProtocolError("A completed run is immutable; create a new run")
+        updated["revision"] += 1
+        updated["updated_at"] = timestamp()
+        updated["candidate"] = project_binding(project, before["scope"], root)
+        validate_record(updated, project, root, current=True)
+        validate_transitions(before, updated)
+        agenda = plan_agenda(root, project, updated, session, take_over)
+        atomic_write(path, updated, root)
+        write_agenda(root, agenda)
+        return updated
 
 
 AGENDA_SCHEMA = "daodan/agenda/v1"
@@ -1081,7 +1241,7 @@ def atomic_write(path, record, boundary):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check", "agenda"))
+    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check", "agenda", "ask", "answer"))
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--run-id")
     parser.add_argument("--session", help="identity of the session doing the work; recorded as the task's holder")
@@ -1099,7 +1259,14 @@ def main(argv=None):
         if args.command == "plan-check":
             # A draft plan is checked against the loop rules before it is written
             # into a run, so a planner receives the exact refusal, not a failed update.
-            validate_loop({key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment", "deliveries") if key in payload})
+            draft = {key: payload[key] for key in ("workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment", "deliveries") if key in payload}
+            if "questions" not in draft and args.run_id:
+                # The questions a draft's tasks consume are the run's, when it exists.
+                path = run_paths(project, root, args.run_id)[1]
+                if path.is_file():
+                    draft["questions"] = read_json(path).get("questions", [])
+            validate_loop(draft)
+            validate_written_questions(payload.get("questions"))
             waves = payload.get("waves", [])
             output = {"valid": True, "waves": len(waves), "tasks": sum(len(w.get("tasks", [])) for w in waves)}
         elif args.command == "snapshot":
@@ -1124,6 +1291,7 @@ def main(argv=None):
             for key, default in (("phases", {}), ("plan", []), ("deliveries", {}), ("required_gates", []), ("gates", {})):
                 record.setdefault(key, default)
             validate_record(record, project, root)
+            validate_written_questions(record.get("questions"))
             if directory.exists():
                 raise ProtocolError("Run already exists; choose another exact ID or resume")
             root.mkdir(parents=True, exist_ok=True)
@@ -1159,28 +1327,51 @@ def main(argv=None):
                 output = {**record,
                           "pending_phases": [k for k, p in record["phases"].items() if p["status"] not in {"complete", "skipped"}],
                           "pending_deliveries": [k for k, d in record["deliveries"].items() if d["status"] != "delivered"],
-                          "pending_questions": [q for q in record.get("questions", []) if not q.get("answer")]}
+                          "pending_questions": [q for q in record.get("questions", []) if not q.get("answer")],
+                          "waiting": waiting(record), "replan": stranded(record)}
+            elif args.command == "ask":
+                found = {}
+
+                def change(before):
+                    updated, found["id"] = ask_question(before, payload)
+                    found["new"] = updated is not None
+                    return updated
+                final = commit_change(project, root, directory, path, args.session, args.take_over, change)
+                question = next(q for q in final["questions"] if q.get("id") == found["id"])
+                output = {"question": found["id"], "revision": final["revision"],
+                          "open": sum(1 for q in final["questions"] if is_open(q))}
+                if not found["new"]:
+                    output["existing"] = True
+                    if not is_open(question):
+                        output["answer"] = question["answer"]
+                        if question.get("withdrawn"):
+                            output["withdrawn"] = True
+            elif args.command == "answer":
+                wrote = {}
+
+                def change(before):
+                    updated = answer_question(before, payload)
+                    wrote["yes"] = updated is not None
+                    return updated
+                final = commit_change(project, root, directory, path, args.session, args.take_over, change)
+                qid = payload["question"]
+                output = {"question": qid, "revision": final["revision"],
+                          "open": sum(1 for q in final["questions"] if is_open(q)), "unblocked": unblocked(final, qid)}
+                if next(q for q in final["questions"] if q.get("id") == qid).get("withdrawn"):
+                    output["replan"] = stranded(final)
+                if not wrote["yes"]:
+                    output["unchanged"] = True
             else:
                 if args.expected_revision is None:
                     raise ProtocolError("Update requires --expected-revision")
                 if set(payload) & IMMUTABLE:
                     raise ProtocolError("Patch cannot replace identity, scope, authorization or baseline")
-                with writer_lock(directory, root):
-                    before = validate_record(read_json(path), project, root)
+
+                def change(before):
                     if before["revision"] != args.expected_revision:
                         raise ProtocolError("Record revision changed; read the current record")
-                    if before["status"] == "complete":
-                        raise ProtocolError("A completed run is immutable; create a new run")
-                    updated = merge(before, payload)
-                    updated["revision"] += 1
-                    updated["updated_at"] = timestamp()
-                    updated["candidate"] = project_binding(project, before["scope"], root)
-                    validate_record(updated, project, root, current=True)
-                    validate_transitions(before, updated)
-                    agenda = plan_agenda(root, project, updated, args.session, args.take_over)
-                    atomic_write(path, updated, root)
-                    write_agenda(root, agenda)
-                    output = updated
+                    return merge(before, payload)
+                output = commit_change(project, root, directory, path, args.session, args.take_over, change)
         print(json.dumps(output, indent=2, sort_keys=True))
         return 0
     except (ProtocolError, OSError, KeyError, TypeError) as error:

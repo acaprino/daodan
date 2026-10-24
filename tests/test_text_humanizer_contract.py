@@ -49,7 +49,7 @@ class TextHumanizerContractTests(unittest.TestCase):
     def test_every_host_ships_italian_examples_catalog_and_license(self):
         for host in HOSTS:
             exported = ROOT / f"exports/{host}/plugins/text-humanizer/skills/anti-ai-writing-patterns"
-            for name in ("italiano.md", "pattern-catalog.md", "upstream-license.txt"):
+            for name in ("italiano.md", "pattern-catalog.md", "humanize.md", "upstream-license.txt"):
                 with self.subTest(host=host, reference=name):
                     source = (SKILL / "references" / name).read_text(encoding="utf-8")
                     rendered = (exported / "references" / name).read_text(encoding="utf-8")
@@ -58,6 +58,39 @@ class TextHumanizerContractTests(unittest.TestCase):
                         rendered = re.sub(r"<daodan_host_binding\b[^>]*>.*?</daodan_host_binding>\s*",
                                           "", rendered, flags=re.DOTALL)
                     self.assertEqual(source, rendered)
+
+    def test_worker_brief_forwards_conversation_as_separate_input(self):
+        method = (SKILL / "references/humanize.md").read_text(encoding="utf-8")
+        brief = re.search(r"```\n(Humanize the text below.*?)\n```", method, re.DOTALL)
+        self.assertIsNotNone(brief)
+        self.assertIn("Conversation context (not part of the final text):", brief.group(1))
+        self.assertIn("relevant supplied messages, or none", brief.group(1))
+        self.assertIn("do not write or edit any file", brief.group(1))
+
+    def test_missing_file_is_not_inline_prose_and_write_consent_is_explicit(self):
+        method = (SKILL / "references/humanize.md").read_text(encoding="utf-8")
+        self.assertIn("missing or unreadable file is a blocker, not prose to rewrite", method)
+        self.assertIn("wait for an explicit answer", method)
+        self.assertIn("never infer consent or write while waiting", method)
+        self.assertIn("Write only after the user picks 1 or 2", method)
+
+    def test_dash_pass_respects_quoted_and_legal_content(self):
+        skill = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+        role = (PLUGIN / "roles/text-humanizer.md").read_text(encoding="utf-8")
+        skill_pass = next(line for line in skill.splitlines() if line.startswith("6. Dash pass:"))
+        role_pass = next(line for line in role.splitlines() if line.startswith("5. Dash pass:"))
+        for text in (skill_pass, role_pass):
+            self.assertIn("outside protected content", text)
+            self.assertIn("Direct quotations, legal text, code", text)
+
+    def test_examples_do_not_delete_obligations_or_promote_unnamed_sources(self):
+        catalog = (SKILL / "references/pattern-catalog.md").read_text(encoding="utf-8")
+        final = re.search(r"````text\n(.*?)\n````", catalog, re.DOTALL).group(1)
+        self.assertIn("Teams must follow best practices.", final)
+        self.assertNotIn("adoption has spread", final)
+        synonym_example = catalog.split("### 11.", 1)[1].split("### 12.", 1)[0]
+        after = synonym_example.split("**After:**", 1)[1]
+        self.assertIn("must overcome obstacles", after)
 
     def test_leaf_contract_and_attribution_survive_update(self):
         manifest = tomllib.loads((PLUGIN / "plugin.toml").read_text(encoding="utf-8"))

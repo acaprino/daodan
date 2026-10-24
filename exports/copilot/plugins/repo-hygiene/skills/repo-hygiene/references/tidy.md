@@ -155,11 +155,12 @@ apply answer, stop here.
 
 Ask only when the report holds a finding that some phase would apply; a report whose
 findings are all `KEEP`, `REVIEW`, `REPORT-ONLY` or `git-state` needs no question.
-Reuse an apply authorization the run already records. Otherwise ask once, through the
-host's question tool, with the report's counts per phase, and record the answer in the
-run (`work-controller:work-record`). When the session has no question tool, write
-the question to the run's `questions` section, end the turn after the report, and
-resume on the same run with the answer.
+Reuse an apply authorization the run already records. Otherwise ask once, with the
+report's counts per phase, by the question rule of the run
+(`work-controller:work-record`): record the question with `ask`, ask it, record the
+user's reply with `answer` and the authorization it gives as a grant. Without a
+question tool, the turn ends after the report and resumes on the same run with the
+answer.
 
 | Answer | Contract |
 |---|---|

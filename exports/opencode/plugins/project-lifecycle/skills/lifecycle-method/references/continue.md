@@ -84,7 +84,7 @@ machine or another.
    when, and take it over only after the user confirms that session is
    closed.
 3. **Answer.** Text given with the command answers the pending questions in
-   order; write each answer into the run's `questions` before anything else.
+   order: record each with `answer`, source `continue`, before anything else.
    A question still unanswered is asked again, one per turn.
 4. **Go on.** Restart at the phase the agenda names, from its first open
    step: the first unsealed wave, the review not yet delivered, the merge not
