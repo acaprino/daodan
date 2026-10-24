@@ -1,0 +1,42 @@
+{
+  "id": "individual-B026-grounded_noul",
+  "kind": "individual",
+  "case_id": "B026",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Audit dependency declarations across the workspace packages before publishing them separately.",
+    "artifacts": [
+      {
+        "path": "package.json",
+        "content": "{\"private\":true,\"workspaces\":[\"packages/*\"]}"
+      },
+      {
+        "path": "packages/web/package.json",
+        "content": "{\"name\":\"web\",\"dependencies\":{\"date-fns\":\"4.1.0\"}}"
+      },
+      {
+        "path": "packages/web/index.js",
+        "content": "export const title = \"Team calendar\";"
+      },
+      {
+        "path": "packages/calendar/package.json",
+        "content": "{\"name\":\"calendar\",\"dependencies\":{}}"
+      },
+      {
+        "path": "packages/calendar/index.js",
+        "content": "import {formatISO} from \"date-fns\";\nexport const serializeDay = day => formatISO(day, {representation: \"date\"});"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    }
+  },
+  "sha256": "e1b3aa3c1ad6521ed2342f3b6cec19f6045a26b39f285ece762c5dc96d73c2db"
+}

@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review this change to the empty-input behavior of the average helper.",
+    "artifacts": [
+      {
+        "path": "average.py",
+        "content": "def average(values):\n    if not values:\n        return None\n    return sum(values) / len(values)"
+      },
+      {
+        "path": "requirements.md",
+        "content": "Return None for an empty finite sequence. Otherwise return its arithmetic mean."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the task is security-specific auditing (use security-auditor).",
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
+      }
+    }
+  }
+}

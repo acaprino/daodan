@@ -1,0 +1,30 @@
+{
+  "id": "individual-B013-grounded_choice",
+  "kind": "individual",
+  "case_id": "B013",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review restoration of the conversation viewport when older messages finish loading.",
+    "artifacts": [
+      {
+        "path": "History.tsx",
+        "content": "function History({load}) {\n  const [messages, setMessages] = useState([]);\n  const pane = useRef(null);\n  useEffect(() => { load().then(setMessages); }, [load]);\n  useEffect(() => {\n    pane.current.scrollTop = pane.current.scrollHeight;\n  }, [messages]);\n  return <div ref={pane}><VirtualList items={messages} estimateSize={() => 30} /></div>;\n}"
+      },
+      {
+        "path": "VirtualList.md",
+        "content": "Rows are measured after mounting. Images can change row heights when they load; the virtualizer updates its total height after each measurement."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "choice",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    }
+  },
+  "sha256": "b92af8c5f522d8f84ff14058ee7c3513ba4516d96b728f17ab202eac55ab7c7c"
+}

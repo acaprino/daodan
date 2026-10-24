@@ -1,0 +1,197 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H5",
+  "request_sha256": "3148babc39302f93edd0d3668d3175744f94fb3edb0328094642e4c130ba2aab",
+  "status": "error",
+  "selected": [],
+  "probabilities": null,
+  "wall_seconds": 9.683696600026451,
+  "cpu_seconds": 26.140625,
+  "phase": "warm",
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": 0
+  },
+  "raw_output": {
+    "answers": {
+      "senior-review:api-contract-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.00010349189286058907,
+          "true": 0.9998965081071394
+        },
+        "noul": 0.9998965081071394
+      },
+      "senior-review:chicken-egg-detector": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.1958876701231683,
+          "true": 0.8041123298768318
+        },
+        "noul": 0.8041123298768318
+      },
+      "senior-review:code-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.3230859478144413,
+          "true": 0.6769140521855588
+        },
+        "noul": 0.6769140521855588
+      },
+      "senior-review:data-integrity-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.028534917299740996,
+          "true": 0.971465082700259
+        },
+        "noul": 0.971465082700259
+      },
+      "senior-review:logic-integrity-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.7658374920724023,
+          "true": 0.23416250792759774
+        },
+        "noul": 0.23416250792759774
+      },
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.8154470516804364,
+          "true": 0.18455294831956356
+        },
+        "noul": 0.18455294831956356
+      },
+      "senior-review:security-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.07461356968629367,
+          "true": 0.9253864303137063
+        },
+        "noul": 0.9253864303137063
+      },
+      "senior-review:temporal-resilience-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.019986450186418807,
+          "true": 0.9800135498135812
+        },
+        "noul": 0.9800135498135812
+      },
+      "testing:test-suite-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.7197297409601544,
+          "true": 0.28027025903984565
+        },
+        "noul": 0.28027025903984565
+      }
+    }
+  },
+  "encoding": {
+    "senior-review:api-contract-auditor": {
+      "tokens": 508,
+      "optionTokens": [
+        38,
+        36
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:chicken-egg-detector": {
+      "tokens": 483,
+      "optionTokens": [
+        18,
+        31
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:code-auditor": {
+      "tokens": 472,
+      "optionTokens": [
+        14,
+        24
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:data-integrity-auditor": {
+      "tokens": 482,
+      "optionTokens": [
+        29,
+        19
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:logic-integrity-auditor": {
+      "tokens": 504,
+      "optionTokens": [
+        38,
+        32
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "tokens": 499,
+      "optionTokens": [
+        37,
+        28
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:security-auditor": {
+      "tokens": 504,
+      "optionTokens": [
+        24,
+        46
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "tokens": 498,
+      "optionTokens": [
+        39,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "testing:test-suite-auditor": {
+      "tokens": 490,
+      "optionTokens": [
+        31,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "question_errors": {
+    "abstraction-architect:abstraction-architect-agent": "ValueError: Option exceeds 48-token model contract",
+    "platform-engineering:platform-reviewer": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "react-development:react-performance-optimizer": "ValueError: Option exceeds 48-token model contract",
+    "repo-hygiene:workspace-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:cleanup-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:distributed-flow-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "senior-review:premise-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:ui-race-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "typescript-development:type-safety-auditor": "ValueError: Option exceeds 48-token model contract"
+  },
+  "error": "One or more exact questions are unsupported; see question_errors"
+}

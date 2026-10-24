@@ -1,0 +1,95 @@
+{
+  "kind": "Historical model-input reconstruction, not a contemporaneous wire capture",
+  "derivation": "Frozen full request restricted to successfully encoded questions; submitted IDs are corroborated by the raw answer IDs and original dispatcher behavior.",
+  "source_request_sha256": "3148babc39302f93edd0d3668d3175744f94fb3edb0328094642e4c130ba2aab",
+  "source_result_sha256": "1bf507731497e4bc04bb40934091d0095f04d069401e7345b2bc82cc1abd9394",
+  "effective_input": {
+    "state": "[H5]\njupiter-core/jupiter_core/agents/alive_agent.py:377 \njupiter-core/jupiter_core/agents/alive_agent.py:378     def _heartbeat_requires_bootstrap(self) -> bool:\njupiter-core/jupiter_core/agents/alive_agent.py:379         \"\"\"Whether this agent type must complete bootstrap before emitting\njupiter-core/jupiter_core/agents/alive_agent.py:380         periodic heartbeats.\njupiter-core/jupiter_core/agents/alive_agent.py:381 \njupiter-core/jupiter_core/agents/alive_agent.py:382         Default False (executors and other agents with initial_status=RUNNING\njupiter-core/jupiter_core/agents/alive_agent.py:383         in their lifecycle config). The Generator base class (SignalGeneratorAgent)\njupiter-core/jupiter_core/agents/alive_agent.py:384         overrides this to True so the middleware sees\njupiter-core/jupiter_core/agents/alive_agent.py:385         REGISTERED -> BOOTSTRAPPING -> RUNNING cleanly instead of being\njupiter-core/jupiter_core/agents/alive_agent.py:386         pulled into the heartbeat auto-register path during startup.\njupiter-core/jupiter_core/agents/alive_agent.py:387         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:388         return False",
+    "questions": {
+      "senior-review:api-contract-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+          "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+        }
+      },
+      "senior-review:chicken-egg-detector": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+          "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+        }
+      },
+      "senior-review:code-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+          "false": "the task is security-specific auditing (use security-auditor)."
+        }
+      },
+      "senior-review:data-integrity-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+          "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+        }
+      },
+      "senior-review:logic-integrity-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+          "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+        }
+      },
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+          "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+        }
+      },
+      "senior-review:security-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+          "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+        }
+      },
+      "senior-review:temporal-resilience-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+          "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+        }
+      },
+      "testing:test-suite-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+          "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+        }
+      }
+    }
+  },
+  "effective_input_sha256": "42242bc19ffdaa81966d132479e0e3af584b76c0ac3d37f1f2609bcac5bf9952",
+  "submitted_question_ids": [
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "testing:test-suite-auditor"
+  ]
+}

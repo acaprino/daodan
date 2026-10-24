@@ -1,0 +1,26 @@
+{
+  "id": "individual-C040-grounded_choice",
+  "kind": "individual",
+  "case_id": "C040",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Make the release announcement sound less promotional. Edit only tone and filler; do not verify technical claims or change document organization.",
+    "artifacts": [
+      {
+        "path": "communications/announcement.md",
+        "content": "We are thrilled to unveil a groundbreaking export experience that empowers teams to unlock unparalleled productivity."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "choice",
+      "instructions": "Does the requested review assess existing technical documentation against implementation for factual drift, missing coverage, stale examples, broken links, duplicated topics, or affected consumers?",
+      "criteria": {
+        "false": "The task does not assess existing technical documentation against implementation; authoring alone, voice editing, instruction-policy audits, and code-only review do not qualify.",
+        "true": "The task assesses existing technical documentation against implementation across interfaces, configuration, architecture, operations, migrations, or other technical dimensions, whether discrepancies exist or not."
+      }
+    }
+  },
+  "sha256": "808802c109de5c2c677f3ff530b7a00c661931cf1cb64624226a49e5cad548cd"
+}

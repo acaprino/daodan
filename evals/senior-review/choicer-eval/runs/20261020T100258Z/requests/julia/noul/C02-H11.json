@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H11",
+  "state": "[H11]\njupiter-core/jupiter_core/agents/alive_agent.py:691 \njupiter-core/jupiter_core/agents/alive_agent.py:692     async def _notify_agent_ready(self):\njupiter-core/jupiter_core/agents/alive_agent.py:693         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:694         Notify middleware that agent is ready, and BLOCK until the middleware\njupiter-core/jupiter_core/agents/alive_agent.py:695         confirms it has committed the REGISTERED -> {BOOTSTRAPPING|RUNNING}\njupiter-core/jupiter_core/agents/alive_agent.py:696         transition.\njupiter-core/jupiter_core/agents/alive_agent.py:697 \njupiter-core/jupiter_core/agents/alive_agent.py:698         Sends initial status (RUNNING for Executor, BOOTSTRAPPING for Generator)\njupiter-core/jupiter_core/agents/alive_agent.py:699         to middleware, which broadcasts to Desktop/channels.\njupiter-core/jupiter_core/agents/alive_agent.py:700 \njupiter-core/jupiter_core/agents/alive_agent.py:701         MUST be called by subclasses after all AMQP bindings are complete:\njupiter-core/jupiter_core/agents/alive_agent.py:702         - Executor: After command listeners registered (list_open_positions, etc.)\njupiter-core/jupiter_core/agents/alive_agent.py:703         - Generator: After super().start() returns (market observer done)\njupiter-core/jupiter_core/agents/alive_agent.py:704 \njupiter-core/jupiter_core/agents/alive_agent.py:705         Why the ACK round-trip: without it, a Generator's fast bootstrap can\njupiter-core/jupiter_core/agents/alive_agent.py:706         publish event.bootstrap.complete before the middleware has processed\njupiter-core/jupiter_core/agents/alive_agent.py:707         the lifecycle config, and the bootstrap handler drops the event with\njupiter-core/jupiter_core/agents/alive_agent.py:708         \"not in BOOTSTRAPPING state\". The ACK guarantees the middleware state\njupiter-core/jupiter_core/agents/alive_agent.py:709         machine is where it needs to be before bootstrap starts.\njupiter-core/jupiter_core/agents/alive_agent.py:710 \njupiter-core/jupiter_core/agents/alive_agent.py:711         Shape mirrors _send_registration_request + _wait_registration_confirmation:\njupiter-core/jupiter_core/agents/alive_agent.py:712         progressive timeouts, retry with backoff, trace_id validation in callback.\njupiter-core/jupiter_core/agents/alive_agent.py:713 \njupiter-core/jupiter_core/agents/alive_agent.py:714         Raises:\njupiter-core/jupiter_core/agents/alive_agent.py:715             RuntimeError: if the middleware never ACKs after all retries. The\njupiter-core/jupiter_core/agents/alive_agent.py:716                 caller (e.g. AdrasteaGeneratorStrategy.start) translates this\njupiter-core/jupiter_core/agents/alive_agent.py:717                 into event.bootstrap.failed so operators get a Telegram alert.\njupiter-core/jupiter_core/agents/alive_agent.py:718         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:719         lifecycle_config = self.get_lifecycle_config()\njupiter-core/jupiter_core/agents/alive_agent.py:720 \njupiter-core/jupiter_core/agents/alive_agent.py:721         self.info(\njupiter-core/jupiter_core/agents/alive_agent.py:722             f\"[LIFECYCLE] Sending lifecycle config to middleware: \"\njupiter-core/jupiter_core/agents/alive_agent.py:723             f\"initial_status={lifecycle_config.initial_status.value}, \"\njupiter-core/jupiter_core/agents/alive_agent.py:724             f\"has_bootstrap={lifecycle_config.has_bootstrap}\"\njupiter-core/jupiter_core/agents/alive_agent.py:725         )\njupiter-core/jupiter_core/agents/alive_agent.py:726 \njupiter-core/jupiter_core/agents/alive_agent.py:727         # Build message context (same as registration)\njupiter-core/jupiter_core/agents/alive_agent.py:728         name = self.config.get_config_name()\njupiter-core/jupiter_core/agents/alive_agent.py:729         message_context = MessageContext(\njupiter-core/jupiter_core/agents/alive_agent.py:730             agent_name=self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:731             agent_instance_id=self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:732             mode=self.config.get_bot_mode(),\njupiter-core/jupiter_core/agents/alive_agent.py:733             tenant=self.config.get_tenant(),\njupiter-core/jupiter_core/agents/alive_agent.py:734             config_name=name,\njupiter-core/jupiter_core/agents/alive_agent.py:735             symbol=self.trading_config.get_symbol(),\njupiter-core/jupiter_core/agents/alive_agent.py:736             timeframe=self.trading_config.get_timeframe(),\njupiter-core/jupiter_core/agents/alive_agent.py:737             direction=self.trading_config.get_trading_direction(),\njupiter-core/jupiter_core/agents/alive_agent.py:738             strategy_id=self.trading_config.get_strategy_id()\njupiter-core/jupiter_core/agents/alive_agent.py:739         )\njupiter-core/jupiter_core/agents/alive_agent.py:740 \njupiter-core/jupiter_core/agents/alive_agent.py:741         routing_key = RoutingKeyBuilder.middleware_lifecycle_config()\njupiter-core/jupiter_core/agents/alive_agent.py:742 \njupiter-core/jupiter_core/agents/alive_agent.py:743         # Lifecycle ACK via canonical round-trip (ADR-005, same schedule as\njupiter-core/jupiter_core/agents/alive_agent.py:744         # registration). The publish closure builds the QueueMessage with the\njupiter-core/jupiter_core/agents/alive_agent.py:745         # helper-provided trace_id so the listener (`on_client_lifecycle_ack`)\njupiter-core/jupiter_core/agents/alive_agent.py:746         # validates ACK.trace_id against self._pending_lifecycle_trace_id (set\njupiter-core/jupiter_core/agents/alive_agent.py:747         # by set_pending_lifecycle_trace below).\njupiter-core/jupiter_core/agents/alive_agent.py:748         from jupiter_common.utils.ack_round_trip import ack_round_trip\njupiter-core/jupiter_core/agents/alive_agent.py:749         from jupiter_common.utils.backoff import REGISTRATION_SCHEDULE\njupiter-core/jupiter_core/agents/alive_agent.py:750 \njupiter-core/jupiter_core/agents/alive_agent.py:751         def set_pending_lifecycle_trace(trace_id: str | None) -> None:\njupiter-core/jupiter_core/agents/alive_agent.py:752             self._pending_lifecycle_trace_id = trace_id\njupiter-core/jupiter_core/agents/alive_agent.py:753 \njupiter-core/jupiter_core/agents/alive_agent.py:754         async def publish_lifecycle(lifecycle_trace_id: str) -> None:\njupiter-core/jupiter_core/agents/alive_agent.py:755             lifecycle_message = QueueMessage(\njupiter-core/jupiter_core/agents/alive_agent.py:756                 sender=self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:757                 payload={\njupiter-core/jupiter_core/agents/alive_agent.py:758                     \"lifecycle_config\": lifecycle_config.to_dict(),\njupiter-core/jupiter_core/agents/alive_agent.py:759                     # M-003 (2026-04-24 review): tag lifecycle publishes with the\njupiter-core/jupiter_core/agents/alive_agent.py:760                     # same process-session id as registration so middleware can\njupiter-core/jupiter_core/agents/alive_agent.py:761                     # drop lifecycle configs from a dead process that arrive\njupiter-core/jupiter_core/agents/alive_agent.py:762                     # after a new process's registration replaced the record.\njupiter-core/jupiter_core/agents/alive_agent.py:763                     \"boot_id\": _PROCESS_BOOT_ID,\njupiter-core/jupiter_core/agents/alive_agent.py:764                 },\njupiter-core/jupiter_core/agents/alive_agent.py:765                 recipient=\"middleware\",\njupiter-core/jupiter_core/agents/alive_agent.py:766                 context=message_context,\njupiter-core/jupiter_core/agents/alive_agent.py:767                 trace_id=lifecycle_trace_id,\njupiter-core/jupiter_core/agents/alive_agent.py:768             )\njupiter-core/jupiter_core/agents/alive_agent.py:769             await self.amqp_s.publish_message(\njupiter-core/jupiter_core/agents/alive_agent.py:770                 exchange_name=AMQPExchange.jupiter_system.name,\njupiter-core/jupiter_core/agents/alive_agent.py:771                 exchange_type=AMQPExchange.jupiter_system.exchange_type,\njupiter-core/jupiter_core/agents/alive_agent.py:772                 routing_key=routing_key,\njupiter-core/jupiter_core/agents/alive_agent.py:773                 message=lifecycle_message,\njupiter-core/jupiter_core/agents/alive_agent.py:774             )\njupiter-core/jupiter_core/agents/alive_agent.py:775 \njupiter-core/jupiter_core/agents/alive_agent.py:776         try:\njupiter-core/jupiter_core/agents/alive_agent.py:777             await ack_round_trip(\njupiter-core/jupiter_core/agents/alive_agent.py:778                 publish=publish_lifecycle,\njupiter-core/jupiter_core/agents/alive_agent.py:779                 ack_event=self.client_lifecycle_ack_event,\njupiter-core/jupiter_core/agents/alive_agent.py:780                 set_pending_trace_id=set_pending_lifecycle_trace,\njupiter-core/jupiter_core/agents/alive_agent.py:781                 schedule=REGISTRATION_SCHEDULE,\njupiter-core/jupiter_core/agents/alive_agent.py:782                 label=\"LIFECYCLE\",\njupiter-core/jupiter_core/agents/alive_agent.py:783                 logger=self,\njupiter-core/jupiter_core/agents/alive_agent.py:784                 # Mirrors the original generic except-Exception around the\njupiter-core/jupiter_core/agents/alive_agent.py:785                 # publish: any publish error is treated as transient and the\njupiter-core/jupiter_core/agents/alive_agent.py:786                 # helper retries with the schedule's delay.\njupiter-core/jupiter_core/agents/alive_agent.py:787                 retry_on_publish_exc=(Exception,),\njupiter-core/jupiter_core/agents/alive_agent.py:788             )\njupiter-core/jupiter_core/agents/alive_agent.py:789         except RuntimeError:\njupiter-core/jupiter_core/agents/alive_agent.py:790             self.critical(\njupiter-core/jupiter_core/agents/alive_agent.py:791                 f\"[LIFECYCLE] Failed to receive ACK from middleware after \"\njupiter-core/jupiter_core/agents/alive_agent.py:792                 f\"{REGISTRATION_SCHEDULE.max_attempts} attempts. Agent cannot \"\njupiter-core/jupiter_core/agents/alive_agent.py:793                 f\"safely start bootstrap without confirmed lifecycle transition.\",\njupiter-core/jupiter_core/agents/alive_agent.py:794                 agent_instance_id=self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:795                 operation='lifecycle_ack_timeout',\njupiter-core/jupiter_core/agents/alive_agent.py:796             )\njupiter-core/jupiter_core/agents/alive_agent.py:797             raise RuntimeError(\njupiter-core/jupiter_core/agents/alive_agent.py:798                 f\"Lifecycle ACK not received after \"\njupiter-core/jupiter_core/agents/alive_agent.py:799                 f\"{REGISTRATION_SCHEDULE.max_attempts} attempts\"\njupiter-core/jupiter_core/agents/alive_agent.py:800             )",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "e0dd5b16c5bd1a6b95d9d275a15c319380b52188ef79445318c7f660bde032f9"
+}

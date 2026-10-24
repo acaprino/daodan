@@ -1,0 +1,30 @@
+{
+  "id": "individual-A008-catalog_noul",
+  "kind": "individual",
+  "case_id": "A008",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Before combining this change with other analyses, derive from these files which paths may update a shipment's destination. Record the source-backed claims without comparing them with earlier summaries.",
+    "artifacts": [
+      {
+        "path": "src/shipping.py",
+        "content": "def change_destination(shipment, address):\n    if shipment.dispatched:\n        raise ValueError(\"already dispatched\")\n    shipment.address = address\n\ndef apply_correction(shipment, address):\n    shipment.address = address\n"
+      },
+      {
+        "path": "src/importer.py",
+        "content": "from shipping import apply_correction\n\ndef import_row(shipment, row):\n    apply_correction(shipment, row[\"address\"])\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
+      }
+    }
+  },
+  "sha256": "9201922224d6c77fc885a9c434acec2032cc706b3cdf1459ef5703c3f725b151"
+}

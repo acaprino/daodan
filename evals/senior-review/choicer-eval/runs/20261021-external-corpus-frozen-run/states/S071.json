@@ -1,0 +1,40 @@
+{
+  "prefix_sha256": "0419209b8d6f59323ba85cf52614c7a6ba23760fd06ac51bdc3c9eb83cb9763d",
+  "prefix_tokens": 113,
+  "erase": {
+    "id_slot": 0,
+    "n_erased": 188
+  },
+  "encode": {
+    "seconds": 0.7304861000011442,
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 113,
+      "prompt_ms": 727.577,
+      "prompt_per_token_ms": 6.438734513274336,
+      "prompt_per_second": 155.31002216947485,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "content": "   "
+  },
+  "save": {
+    "seconds": 0.05775920000451151,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_saved": 113,
+      "n_written": 41795812,
+      "timings": {
+        "save_ms": 37.16
+      }
+    }
+  },
+  "state_id": "S071",
+  "first_job": "Q1121",
+  "case_id": "F42",
+  "mode": "windowed",
+  "window_id": "W005"
+}

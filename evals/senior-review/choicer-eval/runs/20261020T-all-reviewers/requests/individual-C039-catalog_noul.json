@@ -1,0 +1,38 @@
+{
+  "id": "individual-C039-catalog_noul",
+  "kind": "individual",
+  "case_id": "C039",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit the release migration and rollback guide against the executable deployment flow and the previous application version. Report unsupported rollback claims without editing documents or code.",
+    "artifacts": [
+      {
+        "path": "docs/release.md",
+        "content": "Release v12 renames customers to accounts. To roll back, run rollback.sh. Restoring the application image is sufficient; the database needs no rollback step."
+      },
+      {
+        "path": "migrations/0012.sql",
+        "content": "ALTER TABLE customers RENAME TO accounts;"
+      },
+      {
+        "path": "deploy/rollback.sh",
+        "content": "#!/bin/sh\nset -eu\nkubectl set image deployment/api api=example/api:v11\n"
+      },
+      {
+        "path": "releases/v11/customer-report.sql",
+        "content": "SELECT id, email FROM customers ORDER BY id;"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift."
+      }
+    }
+  },
+  "sha256": "c2cceeecd21b1f3a67a1e1a5867a4ef4398de5c283b0720893bd0579bfede4f7"
+}

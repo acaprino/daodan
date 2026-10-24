@@ -1,0 +1,30 @@
+{
+  "id": "individual-B041-catalog_noul",
+  "kind": "individual",
+  "case_id": "B041",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Proofread the FAQ wording for clarity and consistent capitalization.",
+    "artifacts": [
+      {
+        "path": "web/package.json",
+        "content": "{\"dependencies\":{\"react\":\"19.0.0\"}}"
+      },
+      {
+        "path": "web/content/faq.md",
+        "content": "# Frequently asked questions\n## Can i change my display name?\nOpen settings, choose profile and enter a new name.\n## Where are exports?\nYour exports appear in Downloads."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms."
+      }
+    }
+  },
+  "sha256": "2b42d2055647547e158143706c312027f6010b8b765e51846fc8a6cd12e6f10e"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "individual-B033-grounded_choice",
+  "kind": "individual",
+  "case_id": "B033",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review whether the pricing layer gives both checkout and invoice generation one source for the service fee.",
+    "artifacts": [
+      {
+        "path": "pricing/fees.py",
+        "content": "def service_fee_cents(subtotal):\n    return min(500, subtotal // 20)"
+      },
+      {
+        "path": "checkout/total.py",
+        "content": "from pricing.fees import service_fee_cents\ndef total(subtotal):\n    return subtotal + service_fee_cents(subtotal)"
+      },
+      {
+        "path": "invoices/rows.py",
+        "content": "from pricing.fees import service_fee_cents\ndef fee_row(subtotal):\n    return {\"label\": \"Service fee\", \"cents\": service_fee_cents(subtotal)}"
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "choice",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    }
+  },
+  "sha256": "ab272e348d96d717baec16ea27fb0a19522132628ba1eeb2dd695780e14a688e"
+}

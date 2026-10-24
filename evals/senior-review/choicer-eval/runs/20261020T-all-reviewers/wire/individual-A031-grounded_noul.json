@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review only the dependency ordering before this application begins serving requests.",
+    "artifacts": [
+      {
+        "path": "src/bootstrap.py",
+        "content": "def start(container):\n    container.handlers = build_handlers(container.store)\n    container.store = create_store()\n    return build_application(container.handlers)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      }
+    }
+  }
+}

@@ -71,7 +71,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Step 3: Run Parallel Review Agents
 
-Use the host coordination mechanism to dispatch the selected roles in isolated contexts.
+Use the host coordination mechanism to dispatch the validated jobs in isolated contexts.
 
 ### Shared Instructions for All Agents
 
@@ -83,7 +83,7 @@ Include these instructions in every agent prompt:
 
 ## Diff Scope & Pre-existing Classification
 
-Classify every finding into one of three tiers:
+For changeset basis, classify findings under the base policy into three tiers:
 
 - **Primary** -- lines added or modified in the diff. Your main focus. Full confidence.
 - **Secondary** -- unchanged code in the same function/block as a changed line. Report
@@ -93,6 +93,10 @@ Classify every finding into one of three tiers:
 
 Rule: if you'd flag the same issue on an identical diff without the surrounding file,
 it's pre-existing. If the diff makes it newly relevant, it's secondary.
+An unchanged evidence line alone does not make an exposed defect ineligible.
+For content basis, admit evidenced defects in the named scope, including
+preexisting ones, under the requested snapshot's policy. For claims basis, judge
+the document's assertions under its method; do not reinterpret it as a source audit.
 
 ## Premise declaration (required on every finding)
 
@@ -120,7 +124,8 @@ A finding is a hypothesis the verification panel will try to falsify. Give it:
 - **Counterevidence checked:** what you looked for that would have refuted the
   finding (guards, validations, callers, tests, configuration) and did not find.
 - **introduced_by_candidate:** true only when the candidate change causes the
-  defect; otherwise mark `[PRE-EXISTING]` as above.
+  defect. Apply the classification above only to changeset basis; this field does
+  not exclude an eligible content or claims finding.
 - **evidence_class:** `reproduced` (a test or run showed it), `tool-reported`
   (a tool in the evidence pack reported it), `measured` or `derived`.
 
@@ -128,35 +133,31 @@ The evidence pack is attached to this brief. Do not restate a tool line and do
 not spend reading on what a tool already settled; report what tools cannot see.
 ```
 
-Run all selected agents **in parallel** in a single response; conditional agents run only when their dispatch condition matches:
+Dispatch the validated jobs in isolated contexts using the host's supported
+coordination mechanism. Preserve the roster's floor, support requirements and verification
+level. The native variant supplies finding classification and report structure;
+it does not add always-on workers or shrink the prepared set.
 
-### Dispatch table
+### Dispatch
 
-The core spawn prompts live in the `senior-review:review-quality-gates` skill,
-file `references/code-review-agents.md` (resolve it inside that skill's installed
-directory). Stack bindings and inputs come from review-preparation's
-`references/stack-dimensions.md`; their prompts remain in their canonical role
-definitions. Dispatch the complete prepared selection once, using the shared
-instructions above for every reviewer.
+Dispatch the validated jobs under preparation's
+`references/composition.md`, once each. Keep the computed roster as required
+coverage, not a second dispatch list. Preserve every member's canonical method,
+scope and result in the same ledger. The role-oriented instructions below describe
+each member's obligations within its assigned job.
 
-| Agent | Dimension | role | Run when |
-|-------|-----------|---------------|----------|
-| A | Code audit: architecture, failure flow, patterns, scoring | `senior-review:code-auditor` | Always |
-| B | Security | `senior-review:security-auditor` | Always |
-| B2 | Dead code, unused parameters, VCS hygiene (lite, diff-scoped, rules from `repo-hygiene`) | `project-protocol:isolated-worker` | Always |
-| C | UI race conditions | `senior-review:ui-race-auditor` | Changed files include UI/frontend code (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.component.ts`, `.qml`, or scroll/focus/layout manipulation) |
-| E | Git blame and history | `project-protocol:isolated-worker` | Always |
-| F | Testing quality | `testing:test-suite-auditor` | Diff touches test files |
-| G | API contracts | `project-protocol:isolated-worker` | Diff touches API-related files (routes, serializers, OpenAPI/GraphQL/proto specs, DTOs) |
-| H | Data migrations | `project-protocol:isolated-worker` | Diff touches migration files |
-| J | Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness) | `abstraction-architect:abstraction-architect-agent` | Diff adds at least one function/method/class/module/constant table or 5+ line block |
-| L | Temporal resilience (failure-over-time) | `senior-review:temporal-resilience-auditor` | Diff touches timers, schedulers, polling, retry/reconnect, cron, queue workers, daemons, updaters, watchdogs |
-| M | Data integrity (persistence semantics) | `senior-review:data-integrity-auditor` | Diff touches schemas, models, ORM, raw SQL, caches, or transaction boundaries |
-| N | Resource lifecycle (ownership and release) | `senior-review:resource-lifecycle-auditor` | Diff acquires files, sockets, connections, subprocesses, listeners, locks, tasks, or timers |
+Load `senior-review:review-quality-gates` and its
+`references/code-review-agents.md` for the shared handoff and input adaptations.
+Each selected member executes its canonical body. Resolve all identities through
+the compiled catalog, including accessibility, general performance and operability;
+API and migration reviews use their registered owners rather than duplicate
+inline checklists. Stack and method bindings come from preparation's
+`references/stack-dimensions.md`.
 
-Add the selected stack dimensions to these core slots in the same batch. Testing,
-structural entropy and stack specialists use required external providers. Skip
-only on absent code signals or an explicit reviewer scope; declare unknown signals
-as gaps. A failed binding is a failed delivery, never an omitted dimension.
-
----
+Record each expected job, its member identities, scope, snapshot and assigned intermediate output
+before dispatch. Reuse Phase 1c's same-snapshot blind premise delivery when it is
+the selected premise discovery result; later verification remains separate.
+Preserve required isolation and omit peer findings from independent discovery.
+A missing catalog binding, prerequisite or delivery remains a failed or incomplete
+review, never an omitted dimension or a clean result. Account for every expected
+job and member before consolidation. The coordinator alone writes the native final report.

@@ -1,0 +1,174 @@
+{
+  "summary": {
+    "labeled_cases": 10,
+    "expected_role_recall": "13/23 (56.5%)",
+    "critical_recall": "3/5 (60.0%)",
+    "security_recall": "0/1",
+    "data_integrity_recall": "3/4",
+    "excess_activations_per_case": 1.5,
+    "mean_selected_per_case": 2.8
+  },
+  "cases": [
+    {
+      "case_id": "C01",
+      "source_case": "jupiter-cache-convergence",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "avg_query_latency_ms": 4159.7
+    },
+    {
+      "case_id": "C02",
+      "source_case": "jupiter-credential-refill",
+      "label_status": "unlabeled",
+      "expected": [],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "avg_query_latency_ms": 4437.9
+    },
+    {
+      "case_id": "C03",
+      "source_case": "jupiter-economic-events-upsert",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "avg_query_latency_ms": 4066.8
+    },
+    {
+      "case_id": "C04",
+      "source_case": "jupiter-market-state-tristate",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "avg_query_latency_ms": 4088.7
+    },
+    {
+      "case_id": "C05",
+      "source_case": "jupiter-position-notice-owner",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "avg_query_latency_ms": 2430.4
+    },
+    {
+      "case_id": "C06",
+      "source_case": "jupiter-trade-failure-drop",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "avg_query_latency_ms": 3318.5
+    },
+    {
+      "case_id": "C07",
+      "source_case": "jupiter-updater",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "avg_query_latency_ms": 3761.8
+    },
+    {
+      "case_id": "C08",
+      "source_case": "synthetic-cache-stale-read",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor"
+      ],
+      "avg_query_latency_ms": 1783.3
+    },
+    {
+      "case_id": "C09",
+      "source_case": "synthetic-connection-pool-leak",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "avg_query_latency_ms": 1749.0
+    },
+    {
+      "case_id": "C10",
+      "source_case": "synthetic-payment-double-insert",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "avg_query_latency_ms": 1523.0
+    },
+    {
+      "case_id": "C11",
+      "source_case": "synthetic-retry-storm",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "avg_query_latency_ms": 1428.5
+    }
+  ]
+}

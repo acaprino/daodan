@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Humanize only the prose voice of this technical paragraph. Keep the current headings, order, navigation, diagram and paragraph boundaries exactly as they are.",
+    "artifacts": [
+      {
+        "path": "docs/cache.md",
+        "content": "# Cache\nOur robust caching mechanism seamlessly empowers the application to leverage lightning-fast reads. The default retention period is 60 seconds."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  }
+}

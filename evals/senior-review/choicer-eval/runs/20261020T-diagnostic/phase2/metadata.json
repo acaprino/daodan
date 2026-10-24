@@ -1,0 +1,154 @@
+{
+  "schema": "choicer-eval/v1",
+  "generated_at": "2026-10-20T11:11:59.343664+00:00",
+  "run_path": "evals/senior-review/choicer-eval/runs/20261020T-diagnostic/phase2",
+  "hardware": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "machine": "",
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 155H",
+    "logical_cpus": 22,
+    "python": "3.13.14",
+    "ram_bytes": null,
+    "gpu": "unused; CPU protocol"
+  },
+  "threshold": 0.5,
+  "threshold_protocol": "Fixed at 0.5 before inference; curve is descriptive, never tuned.",
+  "models": {
+    "julia/type-parity": {
+      "session_id": "type-parity-2026-10-20T11:11:25.865994+00:00",
+      "load_started_at": "2026-10-20T11:11:25.865994+00:00",
+      "repo": "SupersonicLabs/Julia-1",
+      "revision": "a85b127321d580d65176c89ced8273f305745d85",
+      "weight_sha256": "df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72",
+      "weight_bytes": 577189056,
+      "precision": "FP32",
+      "device": "cpu",
+      "threads": 4,
+      "batch_size": 1,
+      "require_complete_catalog": true,
+      "strict_encoding": true,
+      "marker_only_head": false,
+      "max_length": 8192,
+      "load_wall_seconds": 33.51914620003663,
+      "load_cpu_seconds": 32.96875,
+      "versions": {
+        "torch": "2.14.0",
+        "transformers": "5.0.0",
+        "safetensors": "0.8.0",
+        "numpy": "2.5.4",
+        "huggingface-hub": "1.33.0"
+      },
+      "checkpoint_files": {
+        "config.json": "da8dc5e01fa7c23035ac5b9f02979ba114aac6fc039d7635f56e8043ef8f9672",
+        "inference-policy.json": "415468ae1c229186e63a277b2fd2e5ee3bbf4c00655125c0e43e01d5a8406e8a",
+        "julia_config.json": "b9b881646beeac5414eaa78b39d3fe89ff8a2c062731ad718432620f9aee6bf7",
+        "model.safetensors": "df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72",
+        "provenance.json": "d3322e07820ad33b38e4bf5b4c4833c6b7e858ca553754fb8cac682ee802fd25",
+        "encoder/config.json": "c79cda42d42ddf777218254845ce92fb25a10dc35874be40d06abd707894523d",
+        "julia/cuda.py": "138ab63182f25473ce3886296c47ac44e94fc50ae5270927ae4c373f7bb49137",
+        "julia/data.py": "e3510fa4152ec11fa193046715991f44d7c2f85fd2488a98ef11c9d3db23da4e",
+        "julia/inference.py": "79b4e716365a6e07da4580ead725d5b76d06ef3a824a3ec23738feba64704b36",
+        "julia/model.py": "ef2ba82fe20cdf0db7bb887e9ef075476ed08b985ce9a95be0de3e26246ecc81",
+        "julia/probabilities.py": "2a0197d2e0fa5a3c4b06b93599a85706724df7b0d2cc821a13ed293aef59f206",
+        "julia/typed.py": "ed89e66a70fcedac1339347bd8fcca69fd2cd1a31535ad0148dae42c610b544d",
+        "julia/__init__.py": "02485eb4dd7dadd13907380d1a9c3398709bd8af54b3e0e12b3061a3ebb5c1da",
+        "metrics/accuracy-20260924.json": "7d3613bca83a255b9d6da313cc7f849c9c559a0485c55bf37565fd14673c544b",
+        "metrics/context-8k-smoke.json": "1c5aa2aee7946ec0070a735953ef13f31a4c1b6a03543e37df4d48c256c06eec",
+        "metrics/typed-cpu-20260926.json": "5d51e84097d629cfb0f5c14d90bcbbfd467d2d25252adfb4e86ae16db083746c",
+        "metrics/validation.json": "c1dd9a94af32066a38db43410323ec23c1db73af5966109c9a9a25e102f8fa9e",
+        "tokenizer/tokenizer.json": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+        "tokenizer/tokenizer_config.json": "6b069e57db0ce0794c22547725275f22618809c4ef4249307337e651a0dfef8c",
+        "julia/router/build.py": "ea059c3a97425cadb1068fe41626b6d3bcd77e1efccfc154dbde29352c432ed9",
+        "julia/router/encoder.py": "df25efee2ed916d52af9c4e9c0d98e80854ca70bbfc8140f1de871f290fd3238",
+        "julia/router/engine.py": "91bb30987ff8626ed1610955c6fd796939a5d271e2405b73f8674ccb947eb931",
+        "julia/router/native.py": "42bdba5ea7d874e1f53b2f17e99e731789611b5bd6734f687eaa2b0262c5d7ae",
+        "julia/router/router.py": "624b0b82fd34e4c6874a37595fa91a1d79553d0ca9d8111ef8330ed805f6be7c",
+        "julia/router/specialize.py": "4ba766a45785da0f48898143eb04e13bdf736019a8ba76b71ad84a4bfec8b2d9",
+        "julia/router/transformer.py": "0ce04fab361ca4e8bed636c615e5a6e178fa1a52332db34457e5235c667e1786",
+        "julia/router/__init__.py": "832cf0a44569941efba66dfa7099b645fdb1084082e40c6115bb0ac5edd78a96",
+        "julia/router/tests/synthetic.py": "f2b37bd6ceaf184449f1037b6aa8fda3bcb6263c76b3d11453c11c18d23d0196",
+        "julia/router/tests/test_engine.py": "eb91ee1963400cb732350dadb7f5e39cb68917c6314ca8039e24974310364d52",
+        "julia/router/tests/test_router.py": "e4df6d1f7d0962d0b5b119572d2d3897f1f4cadaa72600f26f3e72090a49172b"
+      },
+      "load_sessions": [
+        {
+          "session_id": "type-parity-2026-10-20T11:11:25.865994+00:00",
+          "load_started_at": "2026-10-20T11:11:25.865994+00:00",
+          "repo": "SupersonicLabs/Julia-1",
+          "revision": "a85b127321d580d65176c89ced8273f305745d85",
+          "weight_sha256": "df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72",
+          "weight_bytes": 577189056,
+          "precision": "FP32",
+          "device": "cpu",
+          "threads": 4,
+          "batch_size": 1,
+          "require_complete_catalog": true,
+          "strict_encoding": true,
+          "marker_only_head": false,
+          "max_length": 8192,
+          "load_wall_seconds": 33.51914620003663,
+          "load_cpu_seconds": 32.96875,
+          "versions": {
+            "torch": "2.14.0",
+            "transformers": "5.0.0",
+            "safetensors": "0.8.0",
+            "numpy": "2.5.4",
+            "huggingface-hub": "1.33.0"
+          },
+          "checkpoint_files": {
+            "config.json": "da8dc5e01fa7c23035ac5b9f02979ba114aac6fc039d7635f56e8043ef8f9672",
+            "inference-policy.json": "415468ae1c229186e63a277b2fd2e5ee3bbf4c00655125c0e43e01d5a8406e8a",
+            "julia_config.json": "b9b881646beeac5414eaa78b39d3fe89ff8a2c062731ad718432620f9aee6bf7",
+            "model.safetensors": "df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72",
+            "provenance.json": "d3322e07820ad33b38e4bf5b4c4833c6b7e858ca553754fb8cac682ee802fd25",
+            "encoder/config.json": "c79cda42d42ddf777218254845ce92fb25a10dc35874be40d06abd707894523d",
+            "julia/cuda.py": "138ab63182f25473ce3886296c47ac44e94fc50ae5270927ae4c373f7bb49137",
+            "julia/data.py": "e3510fa4152ec11fa193046715991f44d7c2f85fd2488a98ef11c9d3db23da4e",
+            "julia/inference.py": "79b4e716365a6e07da4580ead725d5b76d06ef3a824a3ec23738feba64704b36",
+            "julia/model.py": "ef2ba82fe20cdf0db7bb887e9ef075476ed08b985ce9a95be0de3e26246ecc81",
+            "julia/probabilities.py": "2a0197d2e0fa5a3c4b06b93599a85706724df7b0d2cc821a13ed293aef59f206",
+            "julia/typed.py": "ed89e66a70fcedac1339347bd8fcca69fd2cd1a31535ad0148dae42c610b544d",
+            "julia/__init__.py": "02485eb4dd7dadd13907380d1a9c3398709bd8af54b3e0e12b3061a3ebb5c1da",
+            "metrics/accuracy-20260924.json": "7d3613bca83a255b9d6da313cc7f849c9c559a0485c55bf37565fd14673c544b",
+            "metrics/context-8k-smoke.json": "1c5aa2aee7946ec0070a735953ef13f31a4c1b6a03543e37df4d48c256c06eec",
+            "metrics/typed-cpu-20260926.json": "5d51e84097d629cfb0f5c14d90bcbbfd467d2d25252adfb4e86ae16db083746c",
+            "metrics/validation.json": "c1dd9a94af32066a38db43410323ec23c1db73af5966109c9a9a25e102f8fa9e",
+            "tokenizer/tokenizer.json": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+            "tokenizer/tokenizer_config.json": "6b069e57db0ce0794c22547725275f22618809c4ef4249307337e651a0dfef8c",
+            "julia/router/build.py": "ea059c3a97425cadb1068fe41626b6d3bcd77e1efccfc154dbde29352c432ed9",
+            "julia/router/encoder.py": "df25efee2ed916d52af9c4e9c0d98e80854ca70bbfc8140f1de871f290fd3238",
+            "julia/router/engine.py": "91bb30987ff8626ed1610955c6fd796939a5d271e2405b73f8674ccb947eb931",
+            "julia/router/native.py": "42bdba5ea7d874e1f53b2f17e99e731789611b5bd6734f687eaa2b0262c5d7ae",
+            "julia/router/router.py": "624b0b82fd34e4c6874a37595fa91a1d79553d0ca9d8111ef8330ed805f6be7c",
+            "julia/router/specialize.py": "4ba766a45785da0f48898143eb04e13bdf736019a8ba76b71ad84a4bfec8b2d9",
+            "julia/router/transformer.py": "0ce04fab361ca4e8bed636c615e5a6e178fa1a52332db34457e5235c667e1786",
+            "julia/router/__init__.py": "832cf0a44569941efba66dfa7099b645fdb1084082e40c6115bb0ac5edd78a96",
+            "julia/router/tests/synthetic.py": "f2b37bd6ceaf184449f1037b6aa8fda3bcb6263c76b3d11453c11c18d23d0196",
+            "julia/router/tests/test_engine.py": "eb91ee1963400cb732350dadb7f5e39cb68917c6314ca8039e24974310364d52",
+            "julia/router/tests/test_router.py": "e4df6d1f7d0962d0b5b119572d2d3897f1f4cadaa72600f26f3e72090a49172b"
+          }
+        }
+      ]
+    }
+  },
+  "gates": [
+    {
+      "gate": "environment and weights",
+      "status": "Previously authorized benchmark-local cache reused offline; no new provisioning."
+    },
+    {
+      "gate": "paid LLM",
+      "status": "No paid LLM calls in diagnosis."
+    }
+  ],
+  "anomalies": [
+    "Adaptive development diagnostics; not a new independent reviewer-routing benchmark.",
+    "Expected values are scorer-only; all model submissions contain only source-derived state and questions."
+  ],
+  "provenance": {
+    "entry_sha256": "d8b18e7e7d7b68cb6cc39b33c7359661e962c61d3502fee5094a3be033b87573"
+  },
+  "experiment": "Julia usage diagnosis",
+  "execution_status": "Completed with recorded local inference outputs.",
+  "completed_at": "2026-10-20T11:17:43.951263+00:00"
+}

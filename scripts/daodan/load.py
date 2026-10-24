@@ -42,6 +42,7 @@ PLUGIN_KEYS = frozenset(
         "components",
         "mcp",
         "contracts",
+        "reviewers",
     }
 )
 PLUGIN_REQUIRED_KEYS = ("schema", "name", "version", "description", "license")
@@ -293,6 +294,24 @@ def load_plugin(path: Path) -> PluginSpec:
         for item in _strings(manifest, export_table, "exports", "contracts")
     )
 
+    reviewers = table.get("reviewers", {})
+    if not isinstance(reviewers, dict):
+        raise ModelError(manifest, "[reviewers] must be a table")
+    _reject_unknown(manifest, reviewers, frozenset({"compositions"}), "reviewers")
+    compositions = reviewers.get("compositions", {})
+    if not isinstance(compositions, dict):
+        raise ModelError(manifest, "reviewers.compositions must be a table")
+    composition_rows = []
+    for name, definition in compositions.items():
+        _relative(manifest, name, "composition role")
+        if not isinstance(definition, dict):
+            raise ModelError(manifest, f"composition {name} must be a table")
+        _reject_unknown(manifest, definition, frozenset({"members"}), f"composition {name}")
+        members = _strings(manifest, definition, "members", f"composition {name}")
+        if not members:
+            raise ModelError(manifest, f"composition {name} requires members")
+        composition_rows.append((name, members))
+
     return PluginSpec(
         root=root,
         schema=schema,
@@ -306,4 +325,5 @@ def load_plugin(path: Path) -> PluginSpec:
         workflows=workflows,
         mcp_servers=load_mcp_servers(manifest, table),
         contract_exports=exports,
+        reviewer_compositions=tuple(composition_rows),
     )

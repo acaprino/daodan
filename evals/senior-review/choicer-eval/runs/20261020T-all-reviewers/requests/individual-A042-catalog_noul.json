@@ -1,0 +1,30 @@
+{
+  "id": "individual-A042-catalog_noul",
+  "kind": "individual",
+  "case_id": "A042",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the payment request across checkout and billing, including the caller's retry after a timeout.",
+    "artifacts": [
+      {
+        "path": "checkout/pay.py",
+        "content": "def pay(http, order):\n    for attempt in range(2):\n        try:\n            return http.post(\"http://billing:8080/charge\", json={\"order_id\": order.id, \"cents\": order.cents}, timeout=3)\n        except TimeoutError:\n            if attempt == 1:\n                raise\n"
+      },
+      {
+        "path": "billing/routes.py",
+        "content": "@app.post(\"/charge\")\ndef charge():\n    payment = processor.charge(request.json[\"cents\"])\n    return {\"payment_id\": payment.id}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
+      }
+    }
+  },
+  "sha256": "84ef6c7f47b115f38b9d8790ce9e03c0ab24c536b95cbbd458affb8a6e6aed56"
+}

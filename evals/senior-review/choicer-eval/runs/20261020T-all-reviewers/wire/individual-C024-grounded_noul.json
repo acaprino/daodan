@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Resolve the unused-export report by tracing callers and plugin entry points. Limit the assessment to reachability; do not review TypeScript casts or strictness.",
+    "artifacts": [
+      {
+        "path": "tool-output/unused.json",
+        "content": "{\"files\":[],\"exports\":[{\"file\":\"src/report.ts\",\"name\":\"makeReport\"}]}"
+      },
+      {
+        "path": "src/report.ts",
+        "content": "export function makeReport(rows: readonly string[]): string { return rows.join(\"\\n\"); }"
+      },
+      {
+        "path": "src/registry.ts",
+        "content": "export const actions = { report: { module: \"./report\", export: \"makeReport\" } };"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      }
+    }
+  }
+}

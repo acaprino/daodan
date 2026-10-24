@@ -1,0 +1,913 @@
+{
+  "schema": "choicer-eval/cases-v1",
+  "cases": [
+    {
+      "id": "C01",
+      "source_case": "jupiter-cache-convergence",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected_dimensions": [
+        "data-integrity",
+        "temporal-resilience"
+      ],
+      "hunks": [
+        {
+          "path": "jupiter-common/jupiter_common/utils/backoff.py",
+          "start_line": 78,
+          "end_line": 83,
+          "text": "# credentials from turning the refill into a permanent probe storm.\nCREDENTIAL_REFILL_DELAYS_S: tuple[float, ...] = (15, 30, 60, 120, 300)\n\n\nasync def with_exponential_backoff(\n    op: Callable[[], Awaitable[T]],\n",
+          "sha256": "664505a3dbbb81ae146b5b47206b80a45c9cb54e1d1ec03131e1962ce86c854d",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H1"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "start_line": 141,
+          "end_line": 146,
+          "text": "        self._heartbeat_sequence: int = 0\n        # Consumer tag for probe listener (middleware active probing)\n        self._probe_consumer_tag: str | None = None\n        # v5.0: Agent path from validated API key (set on registration ACK)\n        # Used for scope-based visibility in REST API and UI\n        self._agent_path: str | None = None\n",
+          "sha256": "e5ce40d4316b3eafc7fd16474b72107c5e111fce47172a81564994b0a83682c5",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H2"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "start_line": 334,
+          "end_line": 344,
+          "text": "            try:\n                m_state_notif = await NotifierMarketState.get_instance(self.config)\n\n                # Get tenant and broker_alias for AMQP routing\n                # NotifierMarketState uses these to publish market state to Executor agents\n                tenant = self.config.get_tenant()\n                broker_config = self.config.get_broker_config()\n                broker_alias = broker_config.get(\"alias\") if broker_config and isinstance(broker_config, dict) else None\n\n                self._market_observer_id = await m_state_notif.register_observer(\n                    self.trading_config.symbol,\n",
+          "sha256": "2565bec5f2b7ec1d3a9ec06ad7e81776f0a38d23dadb97967fb87a2e15b3171c",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H3"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "start_line": 351,
+          "end_line": 356,
+          "text": "            except Exception as e:\n                await self._cleanup_resources()\n                raise RuntimeError(f\"Market state registration failed: {str(e)}\")\n        else:\n            self.info(f\"Skipping direct market observer registration - agent receives market state via AMQP\")\n\n",
+          "sha256": "14eaa3e3dcceb8f404384f6cada87be3d40bdeaaae3bdb232c16f2380db71254",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 3,
+          "id": "H4"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "start_line": 999,
+          "end_line": 1015,
+          "text": "                self.info(\"Unregistered lifecycle ACK listener\")\n        except Exception as e:\n            self.error(f\"Error unregistering lifecycle ACK listener: {str(e)}\", exc_info=e)\n        # Only unregister market observer if we registered one\n        if self._market_observer_id:\n            try:\n                m_state_notif = await NotifierMarketState.get_instance(self.config)\n                # Get broker_alias for proper observer key\n                broker_config = self.config.get_broker_config()\n                broker_alias = broker_config.get(\"alias\") if broker_config and isinstance(broker_config, dict) else None\n                await m_state_notif.unregister_observer(\n                    self.trading_config.symbol,\n                    self._market_observer_id,\n                    broker_alias=broker_alias\n                )\n                self._market_observer_id = None\n                self.info(\"Unregistered market observer\")\n",
+          "sha256": "f5a0621aa8586f73aca223d2ec7ececfe104b8ec6d4048f00844f8c5a619e2f5",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 4,
+          "id": "H5"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "start_line": 1066,
+          "end_line": 1071,
+          "text": "        except Exception as e:\n            self.warning(f\"Failed to respond to probe: {str(e)}\")\n\n    async def _send_immediate_heartbeat(self):\n        \"\"\"\n        Send a single heartbeat immediately (for probe response).\n",
+          "sha256": "19aea110261c8e3cbc2259602e39e8a36bb3e7355302ad522f884d238baa9d62",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 5,
+          "id": "H6"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 12,
+          "end_line": 20,
+          "text": "import asyncio\nimport time\nfrom collections.abc import Callable, Awaitable\nfrom typing import TYPE_CHECKING\n\nfrom jupiter_common.types import AMQPExchange\nfrom jupiter_common.utils.error_handler import exception_handler\nfrom jupiter_core.brokers.events import MarketStateEvent\nfrom jupiter_core.brokers.reactive_broker import Subscription\n",
+          "sha256": "d6a8f7c8ba8c2d05fbfe84c16780140756356b011326f38f13c455abfce1c851",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H7"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 31,
+          "end_line": 36,
+          "text": "\nObserverCallback = Callable[[str, bool, float | None, float | None, bool], Awaitable[None]]\n\n\nclass MarketStateObserver:\n    \"\"\"Represents an observer for a symbol's market state.\"\"\"\n",
+          "sha256": "8634ffcf8c3cb8e22c05a49197a0cea444228c51cbd363ed1df75c372e0f344d",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H8"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 75,
+          "end_line": 80,
+          "text": "        self._last_published_state: dict[str, bool] = {}\n        self._amqp_service = None\n\n        # Reactive subscriptions per observer_key to prevent accumulation on re-registration\n        self._symbol_subscriptions: dict[str, list[Subscription]] = {}\n\n",
+          "sha256": "04dd7acc62f1aff7455a7726bafc6e200b262489bdfbbc8be9b6781c9aa73149",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 3,
+          "id": "H9"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 358,
+          "end_line": 363,
+          "text": "            except Exception as e:\n                self.error(f\"Observer callback failed for {observer_key}/{observer_id}\", exc_info=e)\n\n    # =========================================================================\n    # AMQP PUBLICATION\n    # =========================================================================\n",
+          "sha256": "0cfcf955b8b26f77e4b6e0c5716cea73a19922136fd69ff2cb9c93d169621b78",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 4,
+          "id": "H10"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 376,
+          "end_line": 382,
+          "text": "        opening_time: float | None,\n        is_initial: bool = False,\n    ):\n        \"\"\"Publish market state to AMQP for all brokers trading this symbol.\"\"\"\n        from opentelemetry.trace import StatusCode\n\n        with self._tracer.start_as_current_span(\"notifier.market_state.publish_amqp\") as span:\n",
+          "sha256": "059bb6b73e4960fbfd003ee3646a3f133da0e432dc7cd425815d80e327451682",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 5,
+          "id": "H11"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 392,
+          "end_line": 399,
+          "text": "                    if info.get('symbol') == symbol\n                ]\n                if not matching:\n                    span.set_status(StatusCode.OK)\n                    return\n\n                for routing_key_id, routing_info in matching:\n                    # Dedup\n",
+          "sha256": "ac16b44bedfe143801f76407109d312d77f7494e169497d67eeaef3afc0f2735",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 6,
+          "id": "H12"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 416,
+          "end_line": 421,
+          "text": "                            \"broker_alias\": broker_alias,\n                            \"is_initial\": is_initial,\n                        }\n\n                        context = MessageContext(\n                            agent_name=self.agent,\n",
+          "sha256": "a86ddbcc8947bc557f388dd2e34290ebbf61905c828b06459d9091b07da9c17f",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 7,
+          "id": "H13"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "start_line": 450,
+          "end_line": 455,
+          "text": "                span.set_attribute(\"market.publish_count\", published_count)\n                span.set_attribute(\"market.duration_ms\", round((time.perf_counter() - start_time) * 1000, 2))\n                span.set_status(StatusCode.OK)\n\n            except Exception as e:\n                span.set_status(StatusCode.ERROR, str(e))\n",
+          "sha256": "055bd3031ace7813bd10d1cda9de5aa7a19717f422be238d5c856acf04a63593",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 8,
+          "id": "H14"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/jupiter-cache-convergence/case.md",
+          "sha256": "41466497b7206094827a3b852eeb66148f817153b45eb8041304255d90cd6315"
+        },
+        "kind": "git-history",
+        "source_repo": "D:\\Projects\\jupiter",
+        "review_ref": "cea26146~1",
+        "review_revision": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+        "fix_ref": "cea26146",
+        "fix_revision": "cea261465f434d08bd6501d3534107e208364579",
+        "diff_before": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+        "diff_after": "cea261465f434d08bd6501d3534107e208364579",
+        "selected_side": "old",
+        "scope": [
+          "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "jupiter-common/jupiter_common/utils/backoff.py",
+          "jupiter-core/jupiter_core/notifiers/notifier_market_state.py"
+        ],
+        "scope_rule": "Explicit backticked scope paths in the case. Resolve 'market-state notifier path the diff touches' to notifier_market_state.py.",
+        "source_blobs": [
+          {
+            "path": "jupiter-common/jupiter_common/utils/backoff.py",
+            "revision": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+            "blob_id": "5de55f2b03ef4855c4f18d2b30b1545476d11dea",
+            "sha256": "f310bebfca8abc45181093acc4aa5591b07536dcb2f29e0c60307695a020d73e",
+            "diff_sha256": "cd55f64ca558941dbd1168fd451bc82063e9c265078870a3fa9f0997cc70dd99"
+          },
+          {
+            "path": "jupiter-core/jupiter_core/agents/alive_agent.py",
+            "revision": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+            "blob_id": "9e3b507bf8415e5c237e61e8c175e4607cdf9e9e",
+            "sha256": "fcc91a9c397f9042ef83a2c2305481228b6094ff806eca1173fcc575ba431f31",
+            "diff_sha256": "fa44e3dd69543401fc5d2c80004b9effd46779892e09f384f9b4695d620302b4"
+          },
+          {
+            "path": "jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+            "revision": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+            "blob_id": "04fe3b180d09cb4aa29d42a0057283cd46251d2b",
+            "sha256": "64266483768b95f3ae6aa697d8c6ed3d3e4a80ff242b24c391ba2a68798f31a8",
+            "diff_sha256": "9e2280547ce1c7a03498fe1dbfbbded46b9eb5a7107b3c1f23cbfaf72ee18043"
+          }
+        ],
+        "omitted_empty_blocks": []
+      }
+    },
+    {
+      "id": "C03",
+      "source_case": "jupiter-economic-events-upsert",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected_dimensions": [
+        "data-integrity"
+      ],
+      "hunks": [
+        {
+          "path": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "start_line": 26,
+          "end_line": 31,
+          "text": "import time\nfrom datetime import datetime, timedelta, timezone\n\nfrom jupiter_core.models.beanie.EconomicEventDocument import EconomicEventDocument\nfrom jupiter_core.models.standard_economic_event import EventImportance\nfrom jupiter_core.utils.config import ConfigReader\n",
+          "sha256": "2ce793ae1a9560eb8718f6e0b40dfdf53bd819e1124eeaeb3223f7caee661b09",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H1"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "start_line": 91,
+          "end_line": 112,
+          "text": "            self.critical(\"Failed to initialize Beanie ODM for EconomicEventRepository\", exc_info=e)\n            raise\n\n    async def save_event(self, event: EconomicEventDocument) -> bool:\n        \"\"\"\n        Save economic event with optimistic locking (prevents duplicates via unique_id constraint).\n\n        Args:\n            event: EconomicEventDocument to save\n\n        Returns:\n            True if successful\n\n        Raises:\n            ValueError: If optimistic lock fails (concurrent modification detected)\n        \"\"\"\n        with self._tracer.start_as_current_span(\"repository.economic_event.save\") as span:\n            span.set_attribute(\"db.system\", \"mongodb\")\n            span.set_attribute(\"db.operation\", \"save\")\n            span.set_attribute(\"event.event_id\", event.event_id)\n            span.set_attribute(\"event.country\", event.country)\n            span.set_attribute(\"event.importance\", event.importance.name)\n",
+          "sha256": "964b1c5465f31319cb51f748993a3d5d5baa05f45a22d3998a0daa2e86051abd",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H2"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "start_line": 114,
+          "end_line": 148,
+          "text": "            start_time = time.perf_counter()\n\n            try:\n                # Check if this is an update (has ID) or insert (new)\n                if event.id:\n                    span.set_attribute(\"db.operation_type\", \"update\")\n                    # Update existing event with optimistic locking\n                    current_version = event.version\n                    span.set_attribute(\"event.old_version\", current_version)\n\n                    # Update metadata\n                    event.updated_at = datetime.now(timezone.utc)\n                    event.version += 1\n\n                    # Verify no concurrent modification before saving\n                    result = await EconomicEventDocument.find_one(\n                        EconomicEventDocument.id == event.id,\n                        EconomicEventDocument.version == current_version\n                    )\n\n                    if result is None:\n                        span.set_attribute(\"db.success\", False)\n                        span.set_attribute(\"db.error\", \"optimistic_lock_failure\")\n                        raise ValueError(f\"Economic event {event.event_id} was modified by another process (optimistic lock failure)\")\n\n                else:\n                    span.set_attribute(\"db.operation_type\", \"insert\")\n                    # New event - just update metadata\n                    event.updated_at = datetime.now(timezone.utc)\n\n                # Beanie handles upsert via unique constraint on unique_id\n                await event.save()\n\n                duration_ms = (time.perf_counter() - start_time) * 1000\n                span.set_attribute(\"db.duration_ms\", round(duration_ms, 2))\n",
+          "sha256": "1ec13c5662f3210078b4e4d0727cfbce409a151052713ac56f49dcf810000515",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 3,
+          "id": "H3"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "start_line": 156,
+          "end_line": 164,
+          "text": "                )\n                return True\n\n            except ValueError:\n                # Re-raise optimistic lock failures\n                raise\n            except Exception as e:\n                duration_ms = (time.perf_counter() - start_time) * 1000\n                span.set_attribute(\"db.duration_ms\", round(duration_ms, 2))\n",
+          "sha256": "0901097aa330eda8d7fb2714fec45addba5016a2fc55d5125f8c71f023dc4fef",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 4,
+          "id": "H4"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "start_line": 172,
+          "end_line": 177,
+          "text": "                )\n                return False\n\n    async def get_events_range(\n            self,\n            from_datetime: datetime,\n",
+          "sha256": "42495c1f9fd45337bade47fa84a600c7da1f2dfb47c4ba15527f21603c575550",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 5,
+          "id": "H5"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/jupiter-economic-events-upsert/case.md",
+          "sha256": "2841cb280d1fac302acdc1ce6c43c9c690a6cff29abdad0184f2c4fb64e2195b"
+        },
+        "kind": "git-history",
+        "source_repo": "D:\\Projects\\jupiter",
+        "review_ref": "77381da4~1",
+        "review_revision": "4fc1154d66c9532cab4017a3b244e6b9f7629e65",
+        "fix_ref": "77381da4",
+        "fix_revision": "77381da4fcf00649889bdde011b74b8c1a08ce63",
+        "diff_before": "4fc1154d66c9532cab4017a3b244e6b9f7629e65",
+        "diff_after": "77381da4fcf00649889bdde011b74b8c1a08ce63",
+        "selected_side": "old",
+        "scope": [
+          "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py"
+        ],
+        "scope_rule": "Explicit backticked scope paths in the case.",
+        "source_blobs": [
+          {
+            "path": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+            "revision": "4fc1154d66c9532cab4017a3b244e6b9f7629e65",
+            "blob_id": "7ce05069489c0c3ac9629714659ae74e0ee62e33",
+            "sha256": "8cc880ebd7dd7f05176a2db3b71fbb2e1aa7b18bc12cb2c594011e511a3030f2",
+            "diff_sha256": "4380822a6799d989ed59ad7922eb880f43f8e99504b25b98204743c00c2e6cb1"
+          }
+        ],
+        "omitted_empty_blocks": []
+      }
+    },
+    {
+      "id": "C04",
+      "source_case": "jupiter-market-state-tristate",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected_dimensions": [
+        "logic-integrity",
+        "temporal-resilience"
+      ],
+      "hunks": [
+        {
+          "path": "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+          "start_line": 2778,
+          "end_line": 2789,
+          "text": "            self.warning(f\"Failed to fetch trading hours for {symbol}: {e}\")\n\n    @staticmethod\n    def _check_trading_hours(hours_str: str, utc_dt: datetime, tz_id: str = \"US/Eastern\") -> bool:\n        \"\"\"Check if utc_dt falls within any of the trading hour ranges.\n\n        IBKR tradingHours format: 'yyyyMMdd:HHmm-yyyyMMdd:HHmm;...'\n        Segments separated by ';'. 'CLOSED' segments indicate non-trading days.\n        Times are in exchange-local timezone (provided by contract details).\n        \"\"\"\n        import zoneinfo\n\n",
+          "sha256": "12874cbda0e1323715d4da44248d49ffb2c6a5996fc6ed7486c4547f523c0ad3",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H1"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+          "start_line": 2796,
+          "end_line": 2805,
+          "text": "            exchange_tz = zoneinfo.ZoneInfo(\"US/Eastern\")\n        check_et = utc_dt.astimezone(exchange_tz)\n\n        segments = hours_str.split(\";\")\n        for segment in segments:\n            segment = segment.strip()\n            if not segment or \"CLOSED\" in segment.upper():\n                continue\n\n            # Parse range: 'yyyyMMdd:HHmm-yyyyMMdd:HHmm'\n",
+          "sha256": "f791c802104f8cbe2863fc913b4b91c9493fabd9c3ee6ec077b538590e45ed99",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H2"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+          "start_line": 2822,
+          "end_line": 2830,
+          "text": "            except ValueError:\n                continue\n\n            if start_dt <= check_et <= end_dt:\n                return True\n\n        return False\n\n    # =========================================================================\n",
+          "sha256": "cdb524029cd5a5221e0ad729abced54325bec03f15c2e1eed60e58a31251c773",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 3,
+          "id": "H3"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/brokers/mt5/mt5_broker_base.py",
+          "start_line": 742,
+          "end_line": 749,
+          "text": "            return None\n\n    @exception_handler\n    async def is_active_session(self, symbol: str, utc_timestamp: datetime):\n        \"\"\"Check if market session is active for symbol at given time.\"\"\"\n        await self._wait_for_connection()\n        broker_offset_hours = await self.get_broker_timezone_offset()\n        if broker_offset_hours is None:\n",
+          "sha256": "661f344387dc164b1427e275fda5df32ad97a81bbd182d9c7ef51fb8423a0ccf",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H4"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/brokers/mt5/mt5_broker_base.py",
+          "start_line": 752,
+          "end_line": 758,
+          "text": "                symbol=symbol,\n                operation='get_broker_timezone_offset'\n            )\n            return False\n\n        broker_timestamp = utc_timestamp + timedelta(hours=broker_offset_hours)\n        broker_day_name = broker_timestamp.strftime('%A')\n",
+          "sha256": "9cfb8ed52eca1d36d750bf6fbd80482486e4873dbcfda94d965e49ba78388ff4",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H5"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/brokers/mt5/mt5_broker_base.py",
+          "start_line": 1004,
+          "end_line": 1025,
+          "text": "        return \"Unknown\"\n\n    @exception_handler\n    async def is_market_open(self, symbol: str, utc_dt: datetime | None = None) -> bool:\n        \"\"\"Check if market is open for symbol. Thread-safe via _run_mt5_sync.\"\"\"\n        await self._wait_for_connection()\n        if not await self._ensure_symbol_available(symbol):\n            return False\n\n        if utc_dt is None:\n            symbol_info = await self._run_mt5_sync(mt5.symbol_info, symbol)\n            if symbol_info is None:\n                return False\n            if symbol_info.trade_mode == mt5.SYMBOL_TRADE_MODE_DISABLED:\n                self.info(f\"{symbol} trading is disabled\")\n                return False\n\n        current_time = utc_dt if utc_dt is not None else now_utc()\n        if not await self.is_active_session(symbol, current_time):\n            self.info(f\"{symbol} is not in an active trading session.\")\n            return False\n\n",
+          "sha256": "4f443f6469dca9b457d27a3d00a2b7d677806900a527c8a85dbe41a9593346c5",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 3,
+          "id": "H6"
+        },
+        {
+          "path": "jupiter-core/jupiter_core/brokers/mt5/mt5_reactive_broker.py",
+          "start_line": 489,
+          "end_line": 494,
+          "text": "        for symbol in symbols:\n            try:\n                is_open = await self._mt5_broker.is_market_open(symbol)\n\n                async with self._state_lock:\n                    previous = self._previous_market_states.get(symbol)\n",
+          "sha256": "c89c7a9b34f3170f22f678377e1a03a2c45996df91723af040a9fcbe2d14a166",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H7"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/jupiter-market-state-tristate/case.md",
+          "sha256": "24a26414b3fd5ca9bb0542227b3c12396134b09077d0eb6cf2ea87b293c23467"
+        },
+        "kind": "git-history",
+        "source_repo": "D:\\Projects\\jupiter",
+        "review_ref": "7c07ce98~1",
+        "review_revision": "f1075003783ac9a995b152ce1ccd168ed077bc3f",
+        "fix_ref": "7c07ce98",
+        "fix_revision": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+        "diff_before": "f1075003783ac9a995b152ce1ccd168ed077bc3f",
+        "diff_after": "7c07ce9821c7b2bec7a98981e9fdb59c6954d626",
+        "selected_side": "old",
+        "scope": [
+          "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+          "jupiter-core/jupiter_core/brokers/mt5/mt5_broker_base.py",
+          "jupiter-core/jupiter_core/brokers/mt5/mt5_reactive_broker.py"
+        ],
+        "scope_rule": "Explicit backticked scope paths in the case.",
+        "source_blobs": [
+          {
+            "path": "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+            "revision": "f1075003783ac9a995b152ce1ccd168ed077bc3f",
+            "blob_id": "2e74cd9c10822083fd9469aaed5dda432f5366c9",
+            "sha256": "8ae485bf5f2e4fa6ea103ef5b39f3c8e173fb2cf29ffab14563f1f2b44c2b03b",
+            "diff_sha256": "aef7c5ad835d85ea4b67e9b6151f70d32116f5a3b28d73772031a1f6f148bcf6"
+          },
+          {
+            "path": "jupiter-core/jupiter_core/brokers/mt5/mt5_broker_base.py",
+            "revision": "f1075003783ac9a995b152ce1ccd168ed077bc3f",
+            "blob_id": "1f317cb166bbccb2e2e1f7611ccd525ae27f6594",
+            "sha256": "24f26ee4d59fbb7158df0147fbeab0d8fe517cf76925d9617592d37104d2b4d3",
+            "diff_sha256": "82afbb64466d3255fc93abfcdbfd92995c79f27e8d751550f9040271aac881c3"
+          },
+          {
+            "path": "jupiter-core/jupiter_core/brokers/mt5/mt5_reactive_broker.py",
+            "revision": "f1075003783ac9a995b152ce1ccd168ed077bc3f",
+            "blob_id": "01f04eae02d3429f56c29b0c9f573a2ec27703af",
+            "sha256": "3296b315aa8b83ec150ff9c11b6e15645dd40eca9e198562cd04ee8f968d4c08",
+            "diff_sha256": "3985597b14db94e2062b6e10c50c03287ef7fcc5226a58164e89b6173dcc4670"
+          }
+        ],
+        "omitted_empty_blocks": []
+      }
+    },
+    {
+      "id": "C05",
+      "source_case": "jupiter-position-notice-owner",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "expected_dimensions": [
+        "logic-integrity",
+        "security"
+      ],
+      "hunks": [
+        {
+          "path": "jupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py",
+          "start_line": 1495,
+          "end_line": 1507,
+          "text": "        \"\"\"\n        Handle a notification describing one position.\n\n        Telegram addresses recipients per agent and already filters their chats\n        by scope, so the delivery machinery is the same as for a broadcast: the\n        structured branch below renders the template and\n        ``_filter_chat_ids_by_scope`` decides who reads it. The routing\n        distinction that keeps this notification off the desktop's shared\n        fanout lives in the AMQP channel, which keys it by ``config_name``.\n        \"\"\"\n        enriched_metadata = dict(metadata or {})\n        enriched_metadata['notification_id'] = notification_id\n        enriched_metadata['notification_level'] = notification_level\n",
+          "sha256": "5edee9eaf636e71fedaf5f24e46c1c2694948cccda69febce51f47929b72747b",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H1"
+        },
+        {
+          "path": "jupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py",
+          "start_line": 1511,
+          "end_line": 1520,
+          "text": "            pattern=enriched_metadata.get('symbol_pattern', ''),\n            message='',\n            metadata=enriched_metadata,\n            matching_agents=matching_agents or [],\n            context=context,\n        )\n\n    @exception_handler\n    async def on_broadcast(self, pattern: str, message: str, metadata: dict[str, Any],\n                         matching_agents: list[str],\n",
+          "sha256": "5770953073079a093b8884a3233131b7811b869d5a386a0d16a78c97545aece7",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H2"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/jupiter-position-notice-owner/case.md",
+          "sha256": "6eee0a0bf2c57bbc8f8bdc30e9a995f8b3d15fff164f12e90cc0df76a85fa4be"
+        },
+        "kind": "git-history",
+        "source_repo": "D:\\Projects\\jupiter",
+        "review_ref": "1d988c53~1",
+        "review_revision": "d6cc6b1509a31212c8b9b36cce4607c1650d9c96",
+        "fix_ref": "1d988c53",
+        "fix_revision": "1d988c53ad6d38eeaeb2459a305d872f4a6e9bdc",
+        "diff_before": "d6cc6b1509a31212c8b9b36cce4607c1650d9c96",
+        "diff_after": "1d988c53ad6d38eeaeb2459a305d872f4a6e9bdc",
+        "selected_side": "old",
+        "scope": [
+          "jupiter-channel-telegram/**/telegram_channel_event.py"
+        ],
+        "scope_rule": "Explicit backticked scope paths in the case.",
+        "source_blobs": [
+          {
+            "path": "jupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py",
+            "revision": "d6cc6b1509a31212c8b9b36cce4607c1650d9c96",
+            "blob_id": "7fa0a0f85a466969b145eff53e40933f3bb2cf6a",
+            "sha256": "7d9507b69a15b910719345f711a7d1e1e0741d17c3709116d7558af3a3ef75db",
+            "diff_sha256": "d436de81825f3f50650648ac888e58d6adaefef26b9494e8cf84ed90d50ae53c"
+          }
+        ],
+        "omitted_empty_blocks": []
+      }
+    },
+    {
+      "id": "C06",
+      "source_case": "jupiter-trade-failure-drop",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected_dimensions": [
+        "temporal-resilience",
+        "ui"
+      ],
+      "hunks": [
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 19,
+          "end_line": 25,
+          "text": "import { createRateLimitedLogger } from '@/lib/rateLimitedLogger'\nimport { normalizeAllOrdersResponse, normalizeOrder, type RawOrder } from '@/utils/eventNormalizers'\nimport { buildExecutorDisplay, normalizeAgentName } from '@/utils/displayFormatters'\nimport { deriveScopeVisibility, isAdminUser, filterPositionsByScope, filterOrdersByScope, logScopeFilterWarning } from '@/utils/scopeFilter'\nimport { DEBUG_CONFIG, isValidTicket, isValidSymbol } from '@/config/eventConfig'\nimport type { CorrelationIdTracker } from './eventUtils'\nimport { isCorrelationIdProcessed, markTradeEventNotified, shouldNotifyTradeEvent } from './eventUtils'\n",
+          "sha256": "e0250fcbbb640ce8a2b6d69825f17e635ba6f2299e8609921fc81f6f61294a91",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H1"
+        },
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 56,
+          "end_line": 61,
+          "text": "// Notification Helper\n// ============================================================================\n\ninterface TradeNotificationParams {\n  symbol?: string\n  direction?: string\n",
+          "sha256": "d1ff6bc52d1f29a3493afd07c83ab73aef1f3b07323b88840b901c934d9f4c7b",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H2"
+        },
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 83,
+          "end_line": 95,
+          "text": "function triggerTradeNotification(\n  innerEventType: string,\n  tradeData: TradeNotificationParams,\n  addNotification: (notification: {\n    id: string\n    type: 'success' | 'warning' | 'info'\n    title: string\n    message: string\n    timestamp: number\n  }) => void\n): void {\n  let notificationId = ''\n  let title = ''\n",
+          "sha256": "a7d661fe03751f07885bf4733744f6b65cf68f2c68a1e9f9df4e44ce3f2c948d",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 3,
+          "id": "H3"
+        },
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 183,
+          "end_line": 188,
+          "text": "  }\n}\n\n// ============================================================================\n// Hook\n// ============================================================================\n",
+          "sha256": "3fd77af51e3915255f0dfb24bc9ee37363fc620ed4e5d439c7b1d706532f588a",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 4,
+          "id": "H4"
+        },
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 415,
+          "end_line": 420,
+          "text": "        const incrementalEventType = pushData.event_type\n        const rawData = pushData.data\n\n        // Queue event if still initializing. Normalize+wrap to the shape the\n        // drain consumes so the queued event is not dropped as invalid.\n        if (store.isTradeCacheInitializing) {\n",
+          "sha256": "5eaa63a865f480c5aa36c2de6e0dfa4e01fa1551a168ab496d4953dd595aacdd",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 5,
+          "id": "H5"
+        },
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 500,
+          "end_line": 505,
+          "text": "\n      console.log('[TradeEvents] Processing trade_state_update:', innerEventType)\n\n      // Queue event if still initializing. Normalize+wrap to the shape the\n      // drain consumes so the queued event is not dropped as invalid.\n      if (store.isTradeCacheInitializing) {\n",
+          "sha256": "88811df903b2c80607bf53cb4fccc9d637642e529cf8e00b121296f50d05078a",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 6,
+          "id": "H6"
+        },
+        {
+          "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "start_line": 585,
+          "end_line": 590,
+          "text": "\n      if (!payload || !innerEventType) return true\n\n      // Handle order events\n      if (innerEventType.startsWith('order_') && payload) {\n        const ticket = (payload.order_id as number) ?? (payload.ticket as number)\n",
+          "sha256": "77e4b034f663b183f773092f6c864493079d3aed14082e48403559f27cfcc3e6",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 7,
+          "id": "H7"
+        },
+        {
+          "path": "jupiter-desktop/src-tauri/src/amqp/event_routing.rs",
+          "start_line": 472,
+          "end_line": 477,
+          "text": "            // Order events\n            \"order_submitted\" | \"order_placed\" | \"order_filled\" | \"order_cancelled\"\n            | \"order_modified\" => \"trade_state_update\".to_string(),\n            // Snapshot events\n            \"snapshot\" => \"trade_state_snapshot\".to_string(),\n            // Broadcast events (positions/orders cleared when all executors die)\n",
+          "sha256": "c1c6d0452679e87a3ebde1ad27892273ec7ab8c1a321ac40e2ad6df8ddc5c32e",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 1,
+          "id": "H8"
+        },
+        {
+          "path": "jupiter-desktop/src-tauri/src/amqp/event_routing.rs",
+          "start_line": 955,
+          "end_line": 960,
+          "text": "        }\n    }\n\n    #[test]\n    fn map_trade_state_event_maps_snapshot_and_cleared() {\n        assert_eq!(AmqpClient::map_trade_state_event(\"snapshot\"), \"trade_state_snapshot\");\n",
+          "sha256": "dc119955fa7f31484d7b7f24f47f96247dc1f3e75f65b8683bf3ebfce165f596",
+          "symbol_cards": [],
+          "extraction": "unified-3-old-side",
+          "source_block": 2,
+          "id": "H9"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/jupiter-trade-failure-drop/case.md",
+          "sha256": "7e26d18f6b6c9bc20dc98e6b78dcd51da15f8073fea791be9d8d6293403591b9"
+        },
+        "kind": "git-history",
+        "source_repo": "D:\\Projects\\jupiter",
+        "review_ref": "231a0212~1",
+        "review_revision": "103fc13aa9acb9008fe7e606f8e3d2df9b355bd4",
+        "fix_ref": "231a0212",
+        "fix_revision": "231a0212b78d3358422e921c2f0465dd8108d874",
+        "diff_before": "103fc13aa9acb9008fe7e606f8e3d2df9b355bd4",
+        "diff_after": "231a0212b78d3358422e921c2f0465dd8108d874",
+        "selected_side": "old",
+        "scope": [
+          "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "jupiter-desktop/src-tauri/src/amqp/event_routing.rs"
+        ],
+        "scope_rule": "Explicit backticked scope paths in the case.",
+        "source_blobs": [
+          {
+            "path": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+            "revision": "103fc13aa9acb9008fe7e606f8e3d2df9b355bd4",
+            "blob_id": "6484e162fd8672bf7c8ed83ab328e17e9585962b",
+            "sha256": "0c75740609546d6163180afee473e5c262108a10f9957233f1cb52bb7471d5f8",
+            "diff_sha256": "55909e28ec9b34f725768eb937edea681e39c2355f38300f2ef9b4ba9474feb7"
+          },
+          {
+            "path": "jupiter-desktop/src-tauri/src/amqp/event_routing.rs",
+            "revision": "103fc13aa9acb9008fe7e606f8e3d2df9b355bd4",
+            "blob_id": "3087e18d2ddf59f3b90fb83427bcd8dae0c1e5df",
+            "sha256": "8c38dfa17e180be90ef52118a2d9e759b3a2c7994bb764668e8aae9777a106e8",
+            "diff_sha256": "6c1e68b54898208a0a34f529f14ee8f845c89b99ab75868bed6b03e775827da9"
+          }
+        ],
+        "omitted_empty_blocks": []
+      }
+    },
+    {
+      "id": "C08",
+      "source_case": "synthetic-cache-stale-read",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected_dimensions": [
+        "data-integrity"
+      ],
+      "hunks": [
+        {
+          "path": "profiles/repo.py",
+          "start_line": 1,
+          "end_line": 16,
+          "text": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+          "sha256": "73f25e80be678542cb98b20b839a5d734d5f751e49762f50fd91b55b5e6254e0",
+          "symbol_cards": [],
+          "extraction": "verbatim-inline-added-block",
+          "id": "H1"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/synthetic-cache-stale-read/case.md",
+          "sha256": "07d03592e3b24d100a6920d564db1eeacc43516998a43d2be433b541d81d9e4d"
+        },
+        "kind": "inline",
+        "source_file_count": 1
+      }
+    },
+    {
+      "id": "C09",
+      "source_case": "synthetic-connection-pool-leak",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected_dimensions": [
+        "architecture",
+        "resource-lifecycle",
+        "temporal-resilience"
+      ],
+      "hunks": [
+        {
+          "path": "worker/exporter.ts",
+          "start_line": 1,
+          "end_line": 18,
+          "text": "// worker/exporter.ts\nconst pool = new Pool({ max: 10 })\n\nexport async function exportRows(query: string, res: Response) {\n  const client = await pool.connect()\n  const stream = client.query(new QueryStream(query))\n  stream.pipe(res)\n  stream.on(\"end\", () => client.release())\n}\n\nexport function watchExports(emitter: EventEmitter) {\n  setInterval(async () => {\n    const client = await pool.connect()\n    const pending = await client.query(\"SELECT count(*) FROM exports WHERE state = 'pending'\")\n    emitter.emit(\"pending\", pending.rows[0].count)\n    client.release()\n  }, 5_000)\n}\n",
+          "sha256": "f552e6f1b1071bdf54f61ee69a5635eedbb766136a58530f040d58106db7de55",
+          "symbol_cards": [],
+          "extraction": "verbatim-inline-added-block",
+          "id": "H1"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/synthetic-connection-pool-leak/case.md",
+          "sha256": "96a5f170329097e83c85d03bf661c1577ee7b7e9d4f593f779a48784fadc73b2"
+        },
+        "kind": "inline",
+        "source_file_count": 1
+      }
+    },
+    {
+      "id": "C10",
+      "source_case": "synthetic-payment-double-insert",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected_dimensions": [
+        "data-integrity",
+        "distributed-flow",
+        "logic-integrity"
+      ],
+      "hunks": [
+        {
+          "path": "payments/service.py",
+          "start_line": 1,
+          "end_line": 14,
+          "text": "# payments/service.py\nasync def record_payment(session, order_id: str, amount: Decimal) -> Payment:\n    existing = await session.execute(\n        select(Payment).where(Payment.order_id == order_id)\n    )\n    if existing.scalar_one_or_none() is not None:\n        raise DuplicatePaymentError(order_id)\n\n    payment = Payment(order_id=order_id, amount=amount, status=\"captured\")\n    session.add(payment)\n    await session.commit()\n\n    await charge_gateway(order_id, amount)  # network call, can fail\n    return payment\n",
+          "sha256": "a8ead4c91b7c66a126d8b3de4d8c7aa5b76f59fc3d5e561a89976ccdf3a51ce0",
+          "symbol_cards": [],
+          "extraction": "verbatim-inline-added-block",
+          "id": "H1"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/synthetic-payment-double-insert/case.md",
+          "sha256": "141635b934ee4a6c85336659cd6ddf79df27bcc93fb0d433d28b9acba27d57f1"
+        },
+        "kind": "inline",
+        "source_file_count": 1
+      }
+    },
+    {
+      "id": "C11",
+      "source_case": "synthetic-retry-storm",
+      "label_status": "labeled",
+      "expected_roles": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected_dimensions": [
+        "architecture",
+        "temporal-resilience"
+      ],
+      "hunks": [
+        {
+          "path": "sync/replicator.py",
+          "start_line": 1,
+          "end_line": 10,
+          "text": "# sync/replicator.py\nasync def replicate_forever(source, target):\n    while True:\n        try:\n            batch = await source.fetch_batch()      # no timeout\n            await target.write(batch)               # full batch, not resumable\n            await notify_ops(f\"replicated {len(batch)} rows\")\n        except Exception:\n            logger.debug(\"replication failed, retrying\")\n        await asyncio.sleep(5)\n",
+          "sha256": "e18aa2410901b52c9795f79103ff50b93b093e73dbcaab3a5589b0bf31364b8f",
+          "symbol_cards": [],
+          "extraction": "verbatim-inline-added-block",
+          "id": "H1"
+        }
+      ],
+      "provenance": {
+        "case_source": {
+          "path": "evals/senior-review/cases/synthetic-retry-storm/case.md",
+          "sha256": "6a00ed9323f8c9192d221f6a4ba5f22f8f6ddd1196e8807eb2c624458300529c"
+        },
+        "kind": "inline",
+        "source_file_count": 1
+      }
+    }
+  ],
+  "dimension_mapping": {
+    "architecture": "senior-review:code-auditor",
+    "data-integrity": "senior-review:data-integrity-auditor",
+    "distributed-flow": "senior-review:distributed-flow-auditor",
+    "documentation": "senior-review:cleanup-auditor",
+    "hygiene": "senior-review:cleanup-auditor",
+    "logic-integrity": "senior-review:logic-integrity-auditor",
+    "premise": "senior-review:premise-auditor",
+    "resource": "senior-review:resource-lifecycle-auditor",
+    "resource-lifecycle": "senior-review:resource-lifecycle-auditor",
+    "security": "senior-review:security-auditor",
+    "temporal": "senior-review:temporal-resilience-auditor",
+    "temporal-resilience": "senior-review:temporal-resilience-auditor",
+    "ui": "senior-review:ui-race-auditor"
+  },
+  "dimension_mapping_provenance": {
+    "source": {
+      "path": "plugins/senior-review/skills/review-method/references/team-review.md",
+      "sha256": "89383467d1ad7a34beb2021b97869407e49b75ea6322aa3b43932f1c8516bde1"
+    },
+    "documentation_and_hygiene": {
+      "path": "plugins/senior-review/roles/cleanup-auditor.md",
+      "sha256": "3f46c57b34faf982d4734b9de132ff4eb3d4e8e351730da7031828db1905cc97"
+    },
+    "rule": "Architecture follows the method's code-auditor row; UI follows UI race conditions; documentation/hygiene use the codebase-hygiene owner, whose remit explicitly includes stale docs."
+  },
+  "protocol": {
+    "version": "choicer-pilot-source-v1",
+    "case_order": "Lexicographic case-directory order, opaque IDs C01..C11.",
+    "history_rule": "For fix-history cases, git diff --no-ext-diff --no-textconv --no-renames --unified=3 REVIEW FIX, restricted to the case's explicit paths. Each unified block becomes one hunk containing only the OLD side (unchanged context and removed lines). No fixed lines, commit messages or labels enter model state. Added-only blocks retain their old context. Empty old-side blocks are omitted and recorded. Later fixes localize these retrospective inputs; this is not a prospective routing sample.",
+    "updater_rule": "The case explicitly permits 936ba644~1..936ba644. Use the full diff alternative, including its docs, tests and configuration. Each unified block contains only the NEW side, which is the buggy reviewed revision.",
+    "synthetic_rule": "Each verbatim fenced buggy source file is one contiguous introduced block, including its source-path comment. Do not invent companion files or missing model/schema declarations.",
+    "credential_rule": "No diff is supplied. Read complete alive_agent.py and middleware/heartbeat_monitor.py at a0bb4f10. Split all top-level declarations and class members by Python AST source ranges. Attach intervening lines, imports, class headers and comments to the following declaration; append trailing source to the final declaration. Functions remain complete and decorators remain attached. No method is selected using the precision oracle or case narrative. This case is unlabeled.",
+    "line_coordinates": "start_line and end_line are 1-based in the reviewed source blob. Hunk text has no diff prefix; no cross-hunk source rewriting occurs.",
+    "symbol_cards": "No case supplies a symbol card. All symbol_cards are empty; no inferred cards or undocumented one-hop context are synthesized.",
+    "labels": "Union roles from Expected dimension cells, dropping parenthetical qualifiers and deduplicating roles. No Expected dimension table means unlabeled, not a negative example. Labels are case-level only.",
+    "threshold": "noul P(true) >= 0.5 fixed a priori; full curve is descriptive.",
+    "leakage_boundary": "Only hunk id, path, source line coordinates, source text and supplied symbol_cards are model-state fields. source_case, labels, revisions, case Markdown, provenance and anomalies are scorer-side metadata."
+  },
+  "anomalies": [
+    {
+      "case_id": "C02",
+      "kind": "missing_reviewer_ground_truth",
+      "detail": "Precision-only must_not_report case has no Expected dimension table; exclude from recall, false activations and calibration."
+    },
+    {
+      "case_id": "C10",
+      "kind": "unspecified_companion_model",
+      "detail": "Case requests payments/models.py with no unique constraint but supplies no model source. Only verbatim service code is materialized; no schema is invented."
+    },
+    {
+      "kind": "no_supplied_symbol_cards",
+      "detail": "All 11 case inputs omit symbol cards because the source cases supply none."
+    },
+    {
+      "kind": "no_positive_premise_label",
+      "detail": "The labeled case tables contain no premise expected role; premise recall is unmeasurable in this pilot."
+    },
+    {
+      "kind": "case_labels_are_not_exhaustive_trigger_labels",
+      "detail": "Expected dimension attributes known defects. Treat non-listed roles as negatives only for the requested pilot proxy; a selected role may be relevant without owning a listed defect."
+    },
+    {
+      "kind": "proposed_router_not_in_working_tree",
+      "observed": true,
+      "detail": "The spec prompt is the baseline definition; do not describe it as a verified live implementation."
+    }
+  ],
+  "adapted_subset": {
+    "rule": "Exclude an entire case if any original state alone exceeds Julia's sequence limit.",
+    "selection_uses_labels_or_predictions": false,
+    "original_case_count": 11,
+    "excluded_case_ids": [
+      "C02",
+      "C07"
+    ],
+    "overflow_evidence": [
+      {
+        "case_id": "C02",
+        "hunk_id": "H32",
+        "state_tokens": 21251,
+        "sequence_limit": 8192,
+        "state_alone_exceeds_sequence_limit": true
+      },
+      {
+        "case_id": "C02",
+        "hunk_id": "H33",
+        "state_tokens": 41219,
+        "sequence_limit": 8192,
+        "state_alone_exceeds_sequence_limit": true
+      },
+      {
+        "case_id": "C07",
+        "hunk_id": "H22",
+        "state_tokens": 22647,
+        "sequence_limit": 8192,
+        "state_alone_exceeds_sequence_limit": true
+      },
+      {
+        "case_id": "C07",
+        "hunk_id": "H28",
+        "state_tokens": 10309,
+        "sequence_limit": 8192,
+        "state_alone_exceeds_sequence_limit": true
+      }
+    ],
+    "remaining_hunks_rewritten": false,
+    "full_question_encoding_still_required": true
+  }
+}

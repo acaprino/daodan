@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Audit layout and progressive disclosure in this existing technical page. Propose how to separate the process explanation from the field reference and whether the diagram can be split without losing meaning. Do not edit documents.",
+    "artifacts": [
+      {
+        "path": "docs/sync.mdx",
+        "content": "# Synchronization\nThe client queues a change, uploads it, receives an acknowledgement, then removes the queue item.\n```mermaid\nflowchart LR\n A[Edit]-->B[Queue]-->C[Upload]-->D[Acknowledge]-->E[Remove]\n C-->F[Retry]-->C\n```\n| Field | Meaning |\n| revision | Server version |\n| pending | Local queue size |\nFor a first sync, press Connect and wait for pending to become zero.\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  }
+}

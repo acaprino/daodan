@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Audit layout and progressive disclosure in this existing technical page. Propose how to separate the process explanation from the field reference and whether the diagram can be split without losing meaning. Do not edit documents.",
+    "artifacts": [
+      {
+        "path": "docs/sync.mdx",
+        "content": "# Synchronization\nThe client queues a change, uploads it, receives an acknowledgement, then removes the queue item.\n```mermaid\nflowchart LR\n A[Edit]-->B[Queue]-->C[Upload]-->D[Acknowledge]-->E[Remove]\n C-->F[Retry]-->C\n```\n| Field | Meaning |\n| revision | Server version |\n| pending | Local queue size |\nFor a first sync, press Connect and wait for pending to become zero.\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "editing prose voice (use text-humanizer).",
+        "true": "spawned by project-knowledge methods to restructure technical documentation."
+      }
+    }
+  }
+}

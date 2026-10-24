@@ -1,0 +1,38 @@
+{
+  "id": "individual-A022-grounded_choice",
+  "request_sha256": "2eca1bd63cb4bfe04ad9a5273d682700aaae338b6bfaf65ffffe1b73d01f4f52",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:logic-integrity-auditor": {
+        "type": "choice",
+        "probabilities": {
+          "false": 0.9565882817451733,
+          "true": 0.043411718254826565
+        },
+        "choice": "false",
+        "max_probability": 0.9565882817451733
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:logic-integrity-auditor": 0.043411718254826565
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:logic-integrity-auditor": {
+      "tokens": 283,
+      "optionTokens": [
+        26,
+        31
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [],
+  "wall_seconds": 0.6567933999467641
+}

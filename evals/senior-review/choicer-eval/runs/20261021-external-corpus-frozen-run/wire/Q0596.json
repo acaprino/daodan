@@ -1,0 +1,969 @@
+{
+  "id": "Q0596",
+  "case_id": "F21",
+  "role": "senior-review:logic-integrity-auditor",
+  "mode": "windowed",
+  "variant": "candidate",
+  "window_id": "W001",
+  "prompt_sha256": "5409265553cb84575138b0499c36577448e200aa268b9a56a544ab9ca1ff3c33",
+  "prompt_tokens": 802,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F21\n[Code Under Review]\n[H1] django/utils/html.py:1 (character offset 0)\n\"\"\"HTML utilities suitable for global use.\"\"\"\n\nimport json\nimport re\nfrom html.parser import HTMLParser\n\n\n[H2] django/utils/html.py:24 (character offset 0)\nsimple_url_re = re.compile(r'^https?://\\[?\\w', re.IGNORECASE)\nsimple_url_2_re = re.compile(r'^www\\.|^(?!http)\\w[^@]+\\.(com|edu|gov|int|mil|net|org)($|/.*)$', re.IGNORECASE)\n\n_html_escapes = {\n    ord('&'): '&amp;',\n    ord('<'): '&lt;',\n    ord('>'): '&gt;',\n    ord('\"'): '&quot;',\n    ord(\"'\"): '&#39;',\n}\n\n\n@keep_lazy(str, SafeString)\ndef escape(text):\n\n\n[H3] django/utils/html.py:43 (character offset 0)\n    This may result in double-escaping. If this is a concern, use\n    conditional_escape() instead.\n    \"\"\"\n    return mark_safe(str(text).translate(_html_escapes))\n\n\n_js_escapes = {\n\n\n[H4] django/utils/html.py:259 (character offset 0)\n            return x\n        return '%s…' % x[:max(0, limit - 1)]\n\n    def unescape(text):\n        \"\"\"\n        If input URL is HTML-escaped, unescape it so that it can be safely fed\n        to smart_urlquote. For example:\n        http://example.com?x=1&amp;y=&lt;2&gt; => http://example.com?x=1&y=<2>\n        \"\"\"\n        return text.replace('&amp;', '&').replace('&lt;', '<').replace(\n            '&gt;', '>').replace('&quot;', '\"').replace('&#39;', \"'\")\n\n    def trim_punctuation(lead, middle, trail):\n        \"\"\"\n        Trim trailing and wrapping punctuation from `middle`. Return the items\n\n\n[H5] django/utils/html.py:292 (character offset 0)\n            # Trim trailing punctuation (after trimming wrapping punctuation,\n            # as encoded entities contain ';'). Unescape entites to avoid\n            # breaking them by removing ';'.\n            middle_unescaped = unescape(middle)\n            stripped = middle_unescaped.rstrip(TRAILING_PUNCTUATION_CHARS)\n            if middle_unescaped != stripped:\n                trail = middle[len(stripped):] + trail\n\n\n[H6] django/utils/html.py:329 (character offset 0)\n            url = None\n            nofollow_attr = ' rel=\"nofollow\"' if nofollow else ''\n            if simple_url_re.match(middle):\n                url = smart_urlquote(unescape(middle))\n            elif simple_url_2_re.match(middle):\n                url = smart_urlquote('http://%s' % unescape(middle))\n            elif ':' not in middle and is_email_simple(middle):\n                local, domain = middle.rsplit('@', 1)\n                try:\n\nQuestion: Does this code enforce a domain rule, allowed state transition, ordering requirement, idempotency condition or ownership rule across operations? Consider correctness of fallback values and terminal states. Generic formatting or numerical conversion alone is not sufficient.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "85d2896fb4897e1381806386579e352ab3a559abf584f9af537b103c066b8279",
+  "prefix_tokens": 713,
+  "state_id": "S038",
+  "restore": {
+    "seconds": 0.04515370000444818,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 713,
+      "n_read": 49185412,
+      "timings": {
+        "restore_ms": 42.682
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 802,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F21\n[Code Under Review]\n[H1] django/utils/html.py:1 (character offset 0)\n\"\"\"HTML utilities suitable for global use.\"\"\"\n\nimport json\nimport re\nfrom html.parser import HTMLParser\n\n\n[H2] django/utils/html.py:24 (character offset 0)\nsimple_url_re = re.compile(r'^https?://\\[?\\w', re.IGNORECASE)\nsimple_url_2_re = re.compile(r'^www\\.|^(?!http)\\w[^@]+\\.(com|edu|gov|int|mil|net|org)($|/.*)$', re.IGNORECASE)\n\n_html_escapes = {\n    ord('&'): '&amp;',\n    ord('<'): '&lt;',\n    ord('>'): '&gt;',\n    ord('\"'): '&quot;',\n    ord(\"'\"): '&#39;',\n}\n\n\n@keep_lazy(str, SafeString)\ndef escape(text):\n\n\n[H3] django/utils/html.py:43 (character offset 0)\n    This may result in double-escaping. If this is a concern, use\n    conditional_escape() instead.\n    \"\"\"\n    return mark_safe(str(text).translate(_html_escapes))\n\n\n_js_escapes = {\n\n\n[H4] django/utils/html.py:259 (character offset 0)\n            return x\n        return '%s…' % x[:max(0, limit - 1)]\n\n    def unescape(text):\n        \"\"\"\n        If input URL is HTML-escaped, unescape it so that it can be safely fed\n        to smart_urlquote. For example:\n        http://example.com?x=1&amp;y=&lt;2&gt; => http://example.com?x=1&y=<2>\n        \"\"\"\n        return text.replace('&amp;', '&').replace('&lt;', '<').replace(\n            '&gt;', '>').replace('&quot;', '\"').replace('&#39;', \"'\")\n\n    def trim_punctuation(lead, middle, trail):\n        \"\"\"\n        Trim trailing and wrapping punctuation from `middle`. Return the items\n\n\n[H5] django/utils/html.py:292 (character offset 0)\n            # Trim trailing punctuation (after trimming wrapping punctuation,\n            # as encoded entities contain ';'). Unescape entites to avoid\n            # breaking them by removing ';'.\n            middle_unescaped = unescape(middle)\n            stripped = middle_unescaped.rstrip(TRAILING_PUNCTUATION_CHARS)\n            if middle_unescaped != stripped:\n                trail = middle[len(stripped):] + trail\n\n\n[H6] django/utils/html.py:329 (character offset 0)\n            url = None\n            nofollow_attr = ' rel=\"nofollow\"' if nofollow else ''\n            if simple_url_re.match(middle):\n                url = smart_urlquote(unescape(middle))\n            elif simple_url_2_re.match(middle):\n                url = smart_urlquote('http://%s' % unescape(middle))\n            elif ':' not in middle and is_email_simple(middle):\n                local, domain = middle.rsplit('@', 1)\n                try:\n\nQuestion: Does this code enforce a domain rule, allowed state transition, ordering requirement, idempotency condition or ownership rule across operations? Consider correctness of fallback values and terminal states. Generic formatting or numerical conversion alone is not sufficient.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 802,
+    "timings": {
+      "cache_n": 713,
+      "prompt_n": 89,
+      "prompt_ms": 627.131,
+      "prompt_per_token_ms": 7.0464157303370785,
+      "prompt_per_second": 141.91612278774292,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -1.355583906173706,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -1.355583906173706
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -1.9589811563491821
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -2.9092633724212646
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -3.0201728343963623
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.254943609237671
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -4.006906986236572
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.503808498382568
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -4.81547212600708
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -4.821104526519775
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -4.845855236053467
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -4.906265735626221
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -4.933425426483154
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -4.946164608001709
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -4.98101282119751
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -5.017587184906006
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.098782062530518
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -5.229546070098877
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -5.3073039054870605
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.424248218536377
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.53513765335083
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -5.579264163970947
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -5.658674716949463
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -5.662346363067627
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -5.690250873565674
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -5.715162754058838
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -5.749319553375244
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -5.8383612632751465
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -5.875749111175537
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -5.990597248077393
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -6.015683650970459
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -6.023062229156494
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -6.040817737579346
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -6.051690578460693
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.096907138824463
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -6.116072177886963
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -6.121801853179932
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -6.131533145904541
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.137465953826904
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.161488056182861
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.173710346221924
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -6.283280849456787
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.293392658233643
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.3483052253723145
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.484555721282959
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -6.502578258514404
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -6.540773868560791
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -6.651858806610107
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -6.7714924812316895
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -6.773660182952881
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.779602527618408
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -6.821169376373291
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -6.823840618133545
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -6.848168849945068
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -6.848743915557861
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -6.868828296661377
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -6.932318210601807
+          },
+          {
+            "id": 357,
+            "token": " A",
+            "bytes": [
+              32,
+              65
+            ],
+            "logprob": -6.953262805938721
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -6.955236911773682
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -6.9710516929626465
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -6.98336935043335
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.024722576141357
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.0342326164245605
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -7.1162896156311035
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.146159648895264
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.266213893890381
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.267002582550049
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.349343776702881
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.3711113929748535
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.397944927215576
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.399038791656494
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.408544063568115
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.415133953094482
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.4343953132629395
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.511653900146484
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.512998580932617
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.532819747924805
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.534021854400635
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -7.53629207611084
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.538477420806885
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.550685405731201
+          },
+          {
+            "id": 1,
+            "token": "\"",
+            "bytes": [
+              34
+            ],
+            "logprob": -7.597860813140869
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.619176387786865
+          },
+          {
+            "id": 13,
+            "token": ".",
+            "bytes": [
+              46
+            ],
+            "logprob": -7.660144329071045
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.702739238739014
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.720189571380615
+          },
+          {
+            "id": 414,
+            "token": " D",
+            "bytes": [
+              32,
+              68
+            ],
+            "logprob": -7.749244213104248
+          },
+          {
+            "id": 2014,
+            "token": "An",
+            "bytes": [
+              65,
+              110
+            ],
+            "logprob": -7.7767510414123535
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.814713001251221
+          },
+          {
+            "id": 256,
+            "token": "  ",
+            "bytes": [
+              32,
+              32
+            ],
+            "logprob": -7.868645191192627
+          },
+          {
+            "id": 62,
+            "token": "_",
+            "bytes": [
+              95
+            ],
+            "logprob": -7.877744197845459
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.888970375061035
+          },
+          {
+            "id": 1076,
+            "token": "...",
+            "bytes": [
+              46,
+              46,
+              46
+            ],
+            "logprob": -7.890440940856934
+          },
+          {
+            "id": 1803,
+            "token": "AB",
+            "bytes": [
+              65,
+              66
+            ],
+            "logprob": -7.894990921020508
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.905788898468018
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.939419269561768
+          },
+          {
+            "id": 351,
+            "token": " C",
+            "bytes": [
+              32,
+              67
+            ],
+            "logprob": -7.955082416534424
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -7.982003211975098
+          },
+          {
+            "id": 248068,
+            "token": "<think>",
+            "bytes": [
+              60,
+              116,
+              104,
+              105,
+              110,
+              107,
+              62
+            ],
+            "logprob": -8.020848274230957
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -8.025403022766113
+          },
+          {
+            "id": 4,
+            "token": "%",
+            "bytes": [
+              37
+            ],
+            "logprob": -8.04472827911377
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.6563016000000061,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.14100200676220526,
+    "B": 0.25779672139865023,
+    "Z": 0.007201791773545311
+  },
+  "prefix_reuse_verified": true
+}

@@ -1,0 +1,963 @@
+{
+  "id": "Q0085",
+  "case_id": "F05",
+  "role": "senior-review:resource-lifecycle-auditor",
+  "mode": "windowed",
+  "variant": "candidate",
+  "window_id": "W002",
+  "prompt_sha256": "f9a7a940fc7bc6d220c2b0c8d14186889e5616769177720a757aa9887596da71",
+  "prompt_tokens": 540,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F05\n[Code Under Review]\n[H1] FFmpeg/function-3.c:155 (character offset 2800)\neams * 20)\n\n            return AVERROR_INVALIDDATA;\n\n        for (i = 0; i < nb_streams; i++)\n\n            codec->channels += codec->extradata[8 + i * 20 + 17];\n\n    }\n\n\n\n    if (bitrate > INT_MAX) {\n\n        if (s->error_recognition & AV_EF_EXPLODE) {\n\n            av_log(s, AV_LOG_ERROR,\n\n                   \"The bitrate %\"PRIu64\" is too large.\\n\",\n\n                    bitrate);\n\n            return AVERROR_INVALIDDATA;\n\n        } else {\n\n            av_log(s, AV_LOG_WARNING,\n\n                   \"The bitrate %\"PRIu64\" is too large, resetting to 0.\",\n\n                   bitrate);\n\n            codec->bit_rate = 0;\n\n        }\n\n    } else {\n\n        codec->bit_rate = bitrate;\n\n    }\n\n\n\n    if (codec->sample_rate <= 0) {\n\n        av_log(s, AV_LOG_ERROR,\n\n               \"Invalid sample rate: %d\\n\", codec->sample_rate);\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n    if (codec->codec_id == AV_CODEC_ID_AAC_LATM) {\n\n        /* Channels and sample_rate values are those prior to applying SBR\n\n         * and/or PS. */\n\n        codec->channels    = 0;\n\n        codec->sample_rate = 0;\n\n    }\n\n    /* override bits_per_coded_sample for G.726 */\n\n    if (codec->codec_id == AV_CODEC_ID_ADPCM_G726 && codec->sample_rate)\n\n        codec->bits_per_coded_sample = codec->bit_rate / codec->sample_rate;\n\n\n\n    return 0;\n\n}\n\nQuestion: Does this code acquire, retain or release a lock, file, connection, subscription, worker or bounded resource slot? Consider success, failure and cancellation paths. Ordinary value allocation or an async call alone is not sufficient.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "5efcdd4f35e48aa05c94fa9ee643b1594003fbce80834494d22eee23dbd79403",
+  "prefix_tokens": 453,
+  "state_id": "S006",
+  "restore": {
+    "seconds": 0.04638949999934994,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 453,
+      "n_read": 45983252,
+      "timings": {
+        "restore_ms": 43.959
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 540,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F05\n[Code Under Review]\n[H1] FFmpeg/function-3.c:155 (character offset 2800)\neams * 20)\n\n            return AVERROR_INVALIDDATA;\n\n        for (i = 0; i < nb_streams; i++)\n\n            codec->channels += codec->extradata[8 + i * 20 + 17];\n\n    }\n\n\n\n    if (bitrate > INT_MAX) {\n\n        if (s->error_recognition & AV_EF_EXPLODE) {\n\n            av_log(s, AV_LOG_ERROR,\n\n                   \"The bitrate %\"PRIu64\" is too large.\\n\",\n\n                    bitrate);\n\n            return AVERROR_INVALIDDATA;\n\n        } else {\n\n            av_log(s, AV_LOG_WARNING,\n\n                   \"The bitrate %\"PRIu64\" is too large, resetting to 0.\",\n\n                   bitrate);\n\n            codec->bit_rate = 0;\n\n        }\n\n    } else {\n\n        codec->bit_rate = bitrate;\n\n    }\n\n\n\n    if (codec->sample_rate <= 0) {\n\n        av_log(s, AV_LOG_ERROR,\n\n               \"Invalid sample rate: %d\\n\", codec->sample_rate);\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n    if (codec->codec_id == AV_CODEC_ID_AAC_LATM) {\n\n        /* Channels and sample_rate values are those prior to applying SBR\n\n         * and/or PS. */\n\n        codec->channels    = 0;\n\n        codec->sample_rate = 0;\n\n    }\n\n    /* override bits_per_coded_sample for G.726 */\n\n    if (codec->codec_id == AV_CODEC_ID_ADPCM_G726 && codec->sample_rate)\n\n        codec->bits_per_coded_sample = codec->bit_rate / codec->sample_rate;\n\n\n\n    return 0;\n\n}\n\nQuestion: Does this code acquire, retain or release a lock, file, connection, subscription, worker or bounded resource slot? Consider success, failure and cancellation paths. Ordinary value allocation or an async call alone is not sufficient.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 540,
+    "timings": {
+      "cache_n": 453,
+      "prompt_n": 87,
+      "prompt_ms": 569.106,
+      "prompt_per_token_ms": 6.541448275862069,
+      "prompt_per_second": 152.8713455841267,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.3831179738044739,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -0.3831179738044739
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -3.8324615955352783
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -3.883861780166626
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -4.006411075592041
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -4.475830554962158
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -4.886518955230713
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -4.939958095550537
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -5.088294506072998
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.120925426483154
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -5.273691654205322
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -5.293970584869385
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -5.450750827789307
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -5.796126842498779
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -5.827158451080322
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -5.9491448402404785
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.959421634674072
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -6.061926364898682
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.07265043258667
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.143266201019287
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.190872669219971
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -6.1938796043396
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -6.3066935539245605
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -6.318769931793213
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -6.4072184562683105
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -6.448191165924072
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.505491733551025
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -6.576609134674072
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.593551158905029
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -6.64171838760376
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.6732611656188965
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -6.685122966766357
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -6.696394443511963
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -6.697316646575928
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -6.719393253326416
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -6.73966646194458
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.741067409515381
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -6.783520221710205
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.791491985321045
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -6.815521717071533
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -6.896078586578369
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -7.011127948760986
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -7.0638298988342285
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -7.077922344207764
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.088148593902588
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -7.105471134185791
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.107513904571533
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -7.120529651641846
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.2973504066467285
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -7.3015971183776855
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.3108134269714355
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -7.329712390899658
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.330725193023682
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.361012935638428
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.374135494232178
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -7.378488063812256
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.381504535675049
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.434229373931885
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -7.467670917510986
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -7.52617883682251
+          },
+          {
+            "id": 3320,
+            "token": "Be",
+            "bytes": [
+              66,
+              101
+            ],
+            "logprob": -7.556973934173584
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -7.57587194442749
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -7.593494892120361
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.606672763824463
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.670022487640381
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.6961350440979
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.708744525909424
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.710683345794678
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.715147495269775
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.7235589027404785
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -7.740362644195557
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.756229877471924
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.761415958404541
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -7.773031711578369
+          },
+          {
+            "id": 1,
+            "token": "\"",
+            "bytes": [
+              34
+            ],
+            "logprob": -7.7792887687683105
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.79810094833374
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -7.798394680023193
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.81119966506958
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.822145938873291
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.832214832305908
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.833463191986084
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.863235950469971
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.867210865020752
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -7.882966041564941
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.906373977661133
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.921533107757568
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.940465450286865
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -8.048840522766113
+          },
+          {
+            "id": 22,
+            "token": "7",
+            "bytes": [
+              55
+            ],
+            "logprob": -8.080594062805176
+          },
+          {
+            "id": 61442,
+            "token": "\"B",
+            "bytes": [
+              34,
+              66
+            ],
+            "logprob": -8.204041481018066
+          },
+          {
+            "id": 34902,
+            "token": "Bi",
+            "bytes": [
+              66,
+              105
+            ],
+            "logprob": -8.210458755493164
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -8.214881896972656
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -8.216119766235352
+          },
+          {
+            "id": 1323,
+            "token": "be",
+            "bytes": [
+              98,
+              101
+            ],
+            "logprob": -8.221871376037598
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.23939037322998
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -8.279022216796875
+          },
+          {
+            "id": 57790,
+            "token": "Bu",
+            "bytes": [
+              66,
+              117
+            ],
+            "logprob": -8.299448013305664
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -8.31931209564209
+          },
+          {
+            "id": 256,
+            "token": "  ",
+            "bytes": [
+              32,
+              32
+            ],
+            "logprob": -8.327533721923828
+          },
+          {
+            "id": 28,
+            "token": "=",
+            "bytes": [
+              61
+            ],
+            "logprob": -8.330300331115723
+          },
+          {
+            "id": 31543,
+            "token": "[B",
+            "bytes": [
+              91,
+              66
+            ],
+            "logprob": -8.336697578430176
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.5779919999913545,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.021656241057198117,
+    "B": 0.6817324679688099,
+    "Z": 0.001011745131096297
+  },
+  "prefix_reuse_verified": true
+}

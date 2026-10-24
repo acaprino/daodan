@@ -1,0 +1,38 @@
+{
+  "started_at": "2026-10-20T10:12:29.663266+00:00",
+  "command": [
+    "C:\\Users\\alfio\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\\uv.EXE",
+    "run",
+    "--no-config",
+    "--no-project",
+    "--no-python-downloads",
+    "--python",
+    "C:\\Users\\alfio\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "--script",
+    "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\run_eval.py",
+    "run",
+    "--run-dir",
+    "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\runs\\20261020T100258Z",
+    "--impl",
+    "julia",
+    "--variant",
+    "noul",
+    "--allow-download"
+  ],
+  "cwd": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval",
+  "cache_environment": {
+    "UV_CACHE_DIR": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\uv",
+    "UV_PYTHON_INSTALL_DIR": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\python",
+    "TMP": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\tmp",
+    "TEMP": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\tmp",
+    "TMPDIR": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\tmp",
+    "UV_PYTHON_DOWNLOADS": "never",
+    "UV_NO_PROGRESS": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "UV_LINK_MODE": "copy"
+  },
+  "entry_sha256": "994fcece16289e350dd62b23b57a37569c432e9dd0be4d9fe9b4249e0b28d807",
+  "finished_at": "2026-10-20T10:12:35.141497+00:00",
+  "wall_seconds": 5.466623599990271,
+  "exit_code": 2
+}

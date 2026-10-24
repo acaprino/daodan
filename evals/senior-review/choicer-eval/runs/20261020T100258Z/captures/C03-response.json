@@ -1,0 +1,28 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H3] candidate jupiter-core/jupiter_core/services/beanie/economic_event_repository.py:129 EconomicEventDocument.id == event.id",
+      "reason": "Verify record access by ID cannot expose or modify another user's event.",
+      "role": "senior-review:security-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H3] candidate jupiter-core/jupiter_core/services/beanie/economic_event_repository.py:121 current_version = event.version",
+      "reason": "Check optimistic-lock version increments and concurrent-update boundary behavior.",
+      "role": "senior-review:premise-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H3] candidate jupiter-core/jupiter_core/services/beanie/economic_event_repository.py:145 await event.save()",
+      "reason": "Verify repository persistence preserves entity and transaction consistency.",
+      "role": "senior-review:data-integrity-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

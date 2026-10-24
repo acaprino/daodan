@@ -1,0 +1,396 @@
+{
+  "schema": "choicer-eval/external-visibility-audit-v1",
+  "scope": "development cases only; verification locked",
+  "categories": {
+    "visible_signal_in_code": "At least two code signal terms, or a strong resource phrase, in the shown input.",
+    "weak_signal_in_code": "Exactly one code signal term in the shown input.",
+    "no_signal_in_code_external_only": "No code signal term in the shown input; the label came from external evidence."
+  },
+  "counts_by_role": {
+    "security-auditor": {
+      "no_signal_in_code_external_only": 3,
+      "weak_signal_in_code": 1
+    },
+    "data-integrity-auditor": {
+      "weak_signal_in_code": 3,
+      "no_signal_in_code_external_only": 5
+    },
+    "temporal-resilience-auditor": {
+      "weak_signal_in_code": 1
+    },
+    "resource-lifecycle-auditor": {
+      "no_signal_in_code_external_only": 1
+    },
+    "ui-race-auditor": {
+      "weak_signal_in_code": 2,
+      "no_signal_in_code_external_only": 1
+    },
+    "distributed-flow-auditor": {
+      "no_signal_in_code_external_only": 4,
+      "visible_signal_in_code": 1,
+      "weak_signal_in_code": 1
+    },
+    "logic-integrity-auditor": {
+      "no_signal_in_code_external_only": 3,
+      "visible_signal_in_code": 1,
+      "weak_signal_in_code": 1
+    },
+    "cleanup-auditor": {
+      "no_signal_in_code_external_only": 4
+    }
+  },
+  "rows": [
+    {
+      "case_id": "F01",
+      "source_candidate_id": "X103",
+      "source": "commitbench",
+      "repo": "WellCommerce_WishlistBundle",
+      "role": "cleanup-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 1,
+      "evidence_summary": "Removed unused use statements (cherry picked from commit fe<I>e8e<I>c0ee<I>de<I>a5cb4deb<I>f<I>c<I>)"
+    },
+    {
+      "case_id": "F02",
+      "source_candidate_id": "X112",
+      "source": "commitbench",
+      "repo": "WellCommerce_WishlistBundle",
+      "role": "cleanup-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 1,
+      "evidence_summary": "Removed unused use statement in ProductDatagrid"
+    },
+    {
+      "case_id": "F03",
+      "source_candidate_id": "X117",
+      "source": "commitbench",
+      "repo": "openlayers_openlayers",
+      "role": "cleanup-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Remove unused 'opaque' property from ol/source/Stamen options And set the `layer` property as mandatory."
+    },
+    {
+      "case_id": "F04",
+      "source_candidate_id": "X072",
+      "source": "commitbench",
+      "repo": "tensorflow_probability",
+      "role": "cleanup-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "sort supported dtypes in host_callback_test.py (#<I>) * sort supported dtypes in host_callback_test.py This fixes issues I ran into with running `pytest -n auto tests/host_callback_test.py` or similar. * remove unused import"
+    },
+    {
+      "case_id": "F06",
+      "source_candidate_id": "X051",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "role": "security-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 0,
+      "evidence_summary": "Devign dataset target=True"
+    },
+    {
+      "case_id": "F08",
+      "source_candidate_id": "X057",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "role": "security-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 0,
+      "evidence_summary": "Devign dataset target=True"
+    },
+    {
+      "case_id": "F09",
+      "source_candidate_id": "X058",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "role": "security-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 0,
+      "evidence_summary": "Devign dataset target=True"
+    },
+    {
+      "case_id": "F11",
+      "source_candidate_id": "X036",
+      "source": "multi-swe-bench",
+      "repo": "fasterxml/jackson-databind",
+      "role": "logic-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Fix #4481: allow override of `READ_UNKNOWN_ENUM_VALUES_AS_NULL`; Unable to override `DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL` with `JsonFormat.Feature.READ_UNKNOWN_ENUM_VALUES_AS_NULL`"
+    },
+    {
+      "case_id": "F12",
+      "source_candidate_id": "X088",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "role": "temporal-resilience-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "dns: do not call NewServiceConfig when lookups are disabled; Re-resolution loop when service config is not supported"
+    },
+    {
+      "case_id": "F13",
+      "source_candidate_id": "X089",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "role": "data-integrity-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "credentials/alts: fix panic detecting GCP environment; credentials/alts: isRunningOnGCP fatalf's if /sys/class/dmi/id/product_name does not exist"
+    },
+    {
+      "case_id": "F14",
+      "source_candidate_id": "X025",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "role": "ui-race-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 3,
+      "evidence_summary": "[system] Add outlineColor to defaultSxConfig; [system] `sx` field outlineColor doesn't take the theme into account"
+    },
+    {
+      "case_id": "F15",
+      "source_candidate_id": "X027",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "role": "data-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "[joy-ui][Stepper] Add new `Stepper` components; [joy-ui] Add `Stepper` component"
+    },
+    {
+      "case_id": "F16",
+      "source_candidate_id": "X086",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "role": "ui-race-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "[lab][LoadingButton] LoadingButton now inherits props from ButtonGroup; LoadingButton doesn't inherit from ButtonGroup props"
+    },
+    {
+      "case_id": "F17",
+      "source_candidate_id": "X009",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "distributed-flow-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "TimeSeries: misleading exception when required column check fails. <!-- This comments are hidden when you submit the issue, so you do not need to remove them! --> <!-- Please be sure to check out our contributing guidelines, https://github.com/astropy/astropy/blob/main/CONTRIBUTING.md . Please be su"
+    },
+    {
+      "case_id": "F17",
+      "source_candidate_id": "X009",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "logic-integrity-auditor",
+      "category": "visible_signal_in_code",
+      "code_signal_score": 2,
+      "evidence_signal_score": 2,
+      "evidence_summary": "TimeSeries: misleading exception when required column check fails. <!-- This comments are hidden when you submit the issue, so you do not need to remove them! --> <!-- Please be sure to check out our contributing guidelines, https://github.com/astropy/astropy/blob/main/CONTRIBUTING.md . Please be su"
+    },
+    {
+      "case_id": "F18",
+      "source_candidate_id": "X024",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "logic-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels Consider the following model: ```python from astropy.modeling import models as m from astropy.modeling.separable import separability_matrix cm = m.Linear1D(10) & m.Linear1D(5) ``` It's separability mat"
+    },
+    {
+      "case_id": "F19",
+      "source_candidate_id": "X079",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "data-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Inconsistency in double single-quote ('') management in FITS Card ### Description The management of single-quotes in FITS cards seem correct, except *sometimes* when dealing with null strings, i.e. double single quotes (`''`), which sometimes are transformed into single single quotes (`'`). E.g.: ``"
+    },
+    {
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "security-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 5,
+      "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod"
+    },
+    {
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "data-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 6,
+      "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod"
+    },
+    {
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "distributed-flow-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 6,
+      "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod"
+    },
+    {
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "logic-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 4,
+      "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod"
+    },
+    {
+      "case_id": "F21",
+      "source_candidate_id": "X005",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "data-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Use Python stdlib html.escape() to in django.utils.html.escape() Description The function django.utils.html.escape() partially duplicates the Python stdlib function html.escape(). We can replace this duplication with wider community developed version. html.escape() has been available since Python 3."
+    },
+    {
+      "case_id": "F21",
+      "source_candidate_id": "X005",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "distributed-flow-auditor",
+      "category": "visible_signal_in_code",
+      "code_signal_score": 2,
+      "evidence_signal_score": 4,
+      "evidence_summary": "Use Python stdlib html.escape() to in django.utils.html.escape() Description The function django.utils.html.escape() partially duplicates the Python stdlib function html.escape(). We can replace this duplication with wider community developed version. html.escape() has been available since Python 3."
+    },
+    {
+      "case_id": "F22",
+      "source_candidate_id": "X074",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "data-integrity-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 4,
+      "evidence_summary": "HashedFilesMixin's post_process() yields multiple times for the same file Description As part of fixing #24452, the implementation of HashedFilesMixin (used by both ManifestStaticFilesStorage and CachedStaticFilesStorage) was changed such that it performs several passes against the found files, ther"
+    },
+    {
+      "case_id": "F23",
+      "source_candidate_id": "X011",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "role": "ui-race-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "[Bug]: Datetime axis with usetex is unclear ### Bug summary The spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3. ### Code for reproduction ```python import matplotlib import matplotlib.pyplot as plt import numpy as np import pandas a"
+    },
+    {
+      "case_id": "F23",
+      "source_candidate_id": "X011",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "role": "distributed-flow-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 3,
+      "evidence_summary": "[Bug]: Datetime axis with usetex is unclear ### Bug summary The spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3. ### Code for reproduction ```python import matplotlib import matplotlib.pyplot as plt import numpy as np import pandas a"
+    },
+    {
+      "case_id": "F24",
+      "source_candidate_id": "X013",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "role": "distributed-flow-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Getting http://.example.com raises UnicodeError Attempting to get e.g. `http://.example.com` results in a `UnicodeError`. It seems like the intention so far has been to raise `InvalidUrl` instead (see e.g. [this line](https://github.com/psf/requests/blob/ca6f9af5dba09591007b15a7368bc0f006b7cc50/requ"
+    },
+    {
+      "case_id": "F24",
+      "source_candidate_id": "X013",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "role": "logic-integrity-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Getting http://.example.com raises UnicodeError Attempting to get e.g. `http://.example.com` results in a `UnicodeError`. It seems like the intention so far has been to raise `InvalidUrl` instead (see e.g. [this line](https://github.com/psf/requests/blob/ca6f9af5dba09591007b15a7368bc0f006b7cc50/requ"
+    },
+    {
+      "case_id": "F25",
+      "source_candidate_id": "X080",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "role": "resource-lifecycle-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Unicode method names cause UnicodeDecodeError for some requests in Python 2.7.2 The following example works fine: ``` files = {u'file': open(u'/usr/bin/diff', u'rb')} response = requests.request(method='POST', url=u'http://httpbin.org/post', files=files) ``` But the following example (using `method="
+    },
+    {
+      "case_id": "F26",
+      "source_candidate_id": "X085",
+      "source": "swe-bench-verified",
+      "repo": "scikit-learn/scikit-learn",
+      "role": "data-integrity-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "linear_model.RidgeClassifierCV's Parameter store_cv_values issue #### Description Parameter store_cv_values error on sklearn.linear_model.RidgeClassifierCV #### Steps/Code to Reproduce import numpy as np from sklearn import linear_model as lm #test database n = 100 x = np.random.randn(n, 30) y = np."
+    },
+    {
+      "case_id": "F27",
+      "source_candidate_id": "X022",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "role": "data-integrity-auditor",
+      "category": "weak_signal_in_code",
+      "code_signal_score": 1,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Factor with extension=True drops a factor of y-1 I guess this related (or a duplicate of?) #5786 This is from stackoverflow: https://stackoverflow.com/questions/60682765/python-sympy-factoring-polynomial-over-complex-numbers ```julia In [9]: z = expand((x-1)*(y-1)) In [10]: z Out[10]: x⋅y - x - y + "
+    },
+    {
+      "case_id": "F27",
+      "source_candidate_id": "X022",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "role": "distributed-flow-auditor",
+      "category": "no_signal_in_code_external_only",
+      "code_signal_score": 0,
+      "evidence_signal_score": 2,
+      "evidence_summary": "Factor with extension=True drops a factor of y-1 I guess this related (or a duplicate of?) #5786 This is from stackoverflow: https://stackoverflow.com/questions/60682765/python-sympy-factoring-polynomial-over-complex-numbers ```julia In [9]: z = expand((x-1)*(y-1)) In [10]: z Out[10]: x⋅y - x - y + "
+    }
+  ]
+}

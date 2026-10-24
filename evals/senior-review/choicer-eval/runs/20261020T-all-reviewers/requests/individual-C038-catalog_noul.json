@@ -1,0 +1,30 @@
+{
+  "id": "individual-C038-catalog_noul",
+  "kind": "individual",
+  "case_id": "C038",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Verify the API reference signatures and return fields against the implementation. Preserve correct information and return a clean result if the reference is current.",
+    "artifacts": [
+      {
+        "path": "docs/reference.md",
+        "content": "lookup_user(user_id: str) returns User or None. User contains id: str and email: str."
+      },
+      {
+        "path": "src/users.py",
+        "content": "from dataclasses import dataclass\n\n@dataclass\nclass User:\n    id: str\n    email: str\n\ndef lookup_user(user_id: str) -> User | None:\n    return database.get(user_id)\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift."
+      }
+    }
+  },
+  "sha256": "460a29ae93d03758eb8d2ac5415a7729d4a9d2f30a6a0e557f167b1bf9127d49"
+}

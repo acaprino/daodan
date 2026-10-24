@@ -1,0 +1,14 @@
+{
+  "id": "individual-C002-catalog_noul",
+  "request_sha256": "0035cd730b3b790f4a0accb8c488c2cde0bbaadf95d0cff39dbe54bcd111e15d",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "react-development:react-performance-optimizer": "ValueError: Option exceeds 48-token model contract"
+  },
+  "wall_seconds": 0.00018740002997219563
+}

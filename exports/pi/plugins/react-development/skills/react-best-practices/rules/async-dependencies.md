@@ -78,7 +78,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Dependency-Based Parallelization
 
-For operations with partial dependencies, use `better-all` to maximize parallelism. It automatically starts each task at the earliest possible moment.
+For partial dependencies, start independent operations with existing promises and chain dependent work when its prerequisites resolve. The optional library example below illustrates the graph; it is not a dependency recommendation. Reuse project facilities or standard promises first, and preserve failures, authorization and resource limits.
 
 **Incorrect (profile waits for config unnecessarily):**
 

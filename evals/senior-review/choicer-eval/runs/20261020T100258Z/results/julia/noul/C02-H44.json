@@ -1,0 +1,135 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H44",
+  "request_sha256": "6808ad8b37f76a1af3162a1ef929d62d8e0d373ab8319931ee96168fb46a0898",
+  "status": "error",
+  "selected": [],
+  "probabilities": null,
+  "wall_seconds": 0.008219400013331324,
+  "cpu_seconds": 0.015625,
+  "phase": "preflight",
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": 0
+  },
+  "raw_output": {
+    "answers": {}
+  },
+  "validation_warnings": [],
+  "runtime_config": {
+    "batch_size": 1,
+    "threads": 4
+  },
+  "model_session_id": "noul-2026-10-20T10:44:27.809611+00:00",
+  "catalog_validation": "complete_catalog_required",
+  "inference_attempted": false,
+  "inference_performed": false,
+  "submitted_question_ids": [],
+  "encoding": {
+    "senior-review:api-contract-auditor": {
+      "tokens": 2599,
+      "optionTokens": [
+        38,
+        36
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:chicken-egg-detector": {
+      "tokens": 2574,
+      "optionTokens": [
+        18,
+        31
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:code-auditor": {
+      "tokens": 2563,
+      "optionTokens": [
+        14,
+        24
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:data-integrity-auditor": {
+      "tokens": 2573,
+      "optionTokens": [
+        29,
+        19
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:logic-integrity-auditor": {
+      "tokens": 2595,
+      "optionTokens": [
+        38,
+        32
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "tokens": 2590,
+      "optionTokens": [
+        37,
+        28
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:security-auditor": {
+      "tokens": 2595,
+      "optionTokens": [
+        24,
+        46
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "tokens": 2589,
+      "optionTokens": [
+        39,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "testing:test-suite-auditor": {
+      "tokens": 2581,
+      "optionTokens": [
+        31,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "question_errors": {
+    "abstraction-architect:abstraction-architect-agent": "ValueError: Option exceeds 48-token model contract",
+    "platform-engineering:platform-reviewer": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "react-development:react-performance-optimizer": "ValueError: Option exceeds 48-token model contract",
+    "repo-hygiene:workspace-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:cleanup-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:distributed-flow-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "senior-review:premise-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:ui-race-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "typescript-development:type-safety-auditor": "ValueError: Option exceeds 48-token model contract"
+  },
+  "rejection_reason": "Complete catalog required; at least one requested question is unsupported.",
+  "error": "One or more exact questions are unsupported; see question_errors"
+}

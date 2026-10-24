@@ -446,6 +446,37 @@ def _host_arguments(server_args: Sequence[str], adapter: HostAdapter) -> list[st
     return [PLUGIN_ROOT_PLACEHOLDER.sub(lambda _: root_reference, arg) for arg in server_args]
 
 
+def rendered_role_text(plugin, role, registry, adapter, adapters_root=None, *, role_overrides=None) -> str:
+    """Use one resolved body for installed agents and catalog content binding."""
+    from .role_bodies import resolve_role, role_text
+    resolved = resolve_role(registry, plugin.name, role)
+    replacements = {owner: {spec.source: spec for spec in specs}
+                    for owner, specs in (role_overrides or {}).items()}
+    override = replacements.get(plugin.name, {}).get(f"role:{role}")
+    if resolved["composed"] and (override or any(
+            f"role:{part['id'].split(':')[1]}" in replacements.get(part["owner"], {}) for part in resolved["parts"])):
+        raise RenderError(f"host-specific member override needs an explicit composition binding: {plugin.name}:{role}")
+    if override is not None:
+        return _host_text(_read_text(override.root / override.replacement, override.root), adapter,
+                          operational_binding=_operational_binding(adapter, adapters_root)).rstrip() + "\n"
+    text = role_text(resolved)
+    template = _template(adapters_root, adapter.host, adapter.layout.get("role_template"))
+    if template is not None:
+        meta, body = _frontmatter(text)
+        copilot_tools = _copilot_tools(meta.get("tools")) if adapter.host == "copilot" else None
+        text = render_template(template, {
+            **_package_context(plugin, adapter.host),
+            "name": _unquote(meta.get("name", role)),
+            "description": _one_line(meta.get("description", "")),
+            "tools": "" if copilot_tools is None else f"tools: [{copilot_tools}]",
+            "permissions": _yaml_rules(opencode_permissions(_unquote(meta.get("tools", "")))),
+            "body": (_inline_role_scope(meta) if adapter.host in {"codex", "pi"} else "")
+                    + body.strip() + "\n",
+        })
+    return _host_text(text, adapter, operational_binding=_operational_binding(
+        adapter, adapters_root)).rstrip() + "\n"
+
+
 def _mcp_manifest(plugin: PluginSpec, adapter: HostAdapter) -> str:
     """The package-root manifest a host that starts declared servers reads."""
     servers = {
@@ -694,6 +725,7 @@ def render_plugin(
     overrides: Sequence[OverrideSpec] = (),
     adapters_root: Path | None = None,
     plugin_registry: Mapping[str, PluginSpec] | None = None,
+    role_overrides: Mapping[str, Sequence[OverrideSpec]] | None = None,
 ) -> RenderResult:
     """Render one neutral plugin into one host's package layout.
 
@@ -707,6 +739,12 @@ def render_plugin(
         )
 
     kernel_files = _kernel_files(plugin)
+    registry = dict(plugin_registry or {})
+    if not registry:
+        from .load import load_plugin
+        registry = {p.parent.name: load_plugin(p.parent)
+                    for p in sorted(plugin.root.parent.glob("*/plugin.toml"))}
+    registry.setdefault(plugin.name, plugin)
 
     staging_root = Path(destination)
     staging_root.mkdir(parents=True, exist_ok=True)
@@ -714,6 +752,9 @@ def render_plugin(
     context = _package_context(plugin, adapter.host)
 
     replacements = {spec.source: spec for spec in overrides}
+    effective_overrides = dict(role_overrides or {})
+    if overrides or plugin.name not in effective_overrides:
+        effective_overrides[plugin.name] = overrides
     applied: list[str] = []
 
     # A host with no per-plugin manifest declares no `plugin_manifest` path.
@@ -775,7 +816,7 @@ def render_plugin(
         markdown(reference / "host-inventory.md", inventory)
 
     if plugin.name == "senior-review":
-        from .reviewer_catalog import reviewer_catalog
+        from .reviewer_catalog import reviewer_catalog, METHOD_BINDINGS, method_body
 
         registry = dict(plugin_registry or {})
         if not registry:
@@ -784,42 +825,26 @@ def render_plugin(
                         for p in sorted(plugin.root.parent.glob("*/plugin.toml"))}
         reference = staging_root / "skills/review-preparation/references"
         _write_text(reference / "reviewer-catalog.json", json.dumps(
-            reviewer_catalog(registry, adapter.host, adapter.layout.get("roles")),
+            reviewer_catalog(registry, adapter.host, adapter.layout.get("roles"),
+                             adapter=adapter, adapters_root=adapters_root, role_overrides=effective_overrides),
             sort_keys=True, indent=2, ensure_ascii=False) + "\n")
+        _copy(Path(__file__).with_name("composition.py"),
+              staging_root / "skills/review-preparation/scripts/composition.py", Path(__file__).parent)
+        for method in METHOD_BINDINGS:
+            markdown(reference / "method-bindings" / f"{method['dimension']}.md", method_body(method))
 
     for role in plugin.components.roles:
         target = staging_root / render_path(adapter.layout["roles"], {**context, "role": role})
         override = replacements.get(f"role:{role}")
         if override is not None:
-            markdown(target, _read_text(override.root / override.replacement, override.root))
+            if role in dict(plugin.reviewer_compositions):
+                raise RenderError(f"composition override needs member closure binding: {plugin.name}:{role}")
+            _write_text(target, rendered_role_text(plugin, role, registry, adapter, adapters_root,
+                                                  role_overrides=effective_overrides))
             applied.append(override.source)
         else:
-            source = plugin.root / "roles" / f"{role}.md"
-            role_template = _template(
-                adapters_root, adapter.host, adapter.layout.get("role_template")
-            )
-            if role_template is None:
-                markdown(target, _read_text(source, plugin.root))
-            else:
-                meta, body = _frontmatter(_read_text(source, plugin.root))
-                copilot_tools = _copilot_tools(meta.get("tools")) if adapter.host == "copilot" else None
-                markdown(
-                    target,
-                    render_template(
-                        role_template,
-                        {
-                            **context,
-                            "name": meta.get("name", role),
-                            "description": _one_line(meta.get("description", "")),
-                            "tools": "" if copilot_tools is None else f"tools: [{copilot_tools}]",
-                            "permissions": _yaml_rules(
-                                opencode_permissions(meta.get("tools", ""))
-                            ),
-                            "body": (_inline_role_scope(meta) if adapter.host in {"codex", "pi"} else "")
-                                    + body.strip() + "\n",
-                        },
-                    ),
-                )
+            _write_text(target, rendered_role_text(plugin, role, registry, adapter, adapters_root,
+                                                  role_overrides=effective_overrides))
 
     for policy in plugin.components.policies:
         _copy(
@@ -860,7 +885,7 @@ def render_plugin(
             applied.append(override.source)
         elif dispatches:
             role_ids, body_bindings = _dispatch_bindings(
-                plugin, workflow, strategy, adapter, staging_root, plugin_registry, operational_binding
+                plugin, workflow, strategy, adapter, staging_root, registry, operational_binding, effective_overrides
             )
             harness = _harness_context(
                 plugin, workflow, strategy, adapter, source, context, role_ids, body_bindings,
@@ -912,12 +937,20 @@ def render_plugin(
         )
     )
 
+    core_digest = _kernel_digest(plugin, kernel_files)
+    if plugin.reviewer_compositions:
+        from .role_bodies import resolve_role
+        owners = {part["owner"] for role, _ in plugin.reviewer_compositions
+                  for part in resolve_role(registry, plugin.name, role)["parts"]}
+        closure = {owner: _kernel_digest(registry[owner]) for owner in sorted(owners)}
+        core_digest = "sha256:" + hashlib.sha256(json.dumps(
+            {"own": core_digest, "members": closure}, sort_keys=True).encode()).hexdigest()
     result = RenderResult(
         plugin=plugin.name,
         host=adapter.host,
         staging_root=staging_root,
         files=files,
-        core_digest=_kernel_digest(plugin, kernel_files),
+        core_digest=core_digest,
         harness_strategies=tuple(strategies),
         overrides=tuple(sorted(set(applied))),
     )
@@ -1008,6 +1041,7 @@ def _dispatch_bindings(
     plugin: PluginSpec, workflow: WorkflowSpec, strategy, adapter: HostAdapter,
     staging: Path, registry: Mapping[str, PluginSpec] | None,
     operational_binding: str = "",
+    role_overrides=None,
 ) -> tuple[dict[str, str], str]:
     """Bind declared external roles; inline bodies are generated resources, not components.
 
@@ -1050,8 +1084,10 @@ def _dispatch_bindings(
             bindings.append(f"- `{identity}`: read `{relative.as_posix()}` inside this package and pass its complete body verbatim.")
             continue
         relative = Path("contracts/dispatch") / owner / f"{role}.md"
-        source = provider.root / "roles" / f"{role}.md"
-        text = _read_text(source, provider.root).replace("\r\n", "\n")
+        if any(spec.source == f"role:{role}" for spec in (role_overrides or {}).get(owner, ())):
+            raise RenderError(f"inline host-specific role override needs an explicit dispatch binding: {owner}:{role}")
+        from .role_bodies import resolve_role, role_text
+        text = role_text(resolve_role(providers, owner, role))
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
         owned_skills = ", ".join(f"`{owner}:{skill}`" for skill in provider.components.skills) or "none declared"
         skill_names = []
@@ -1180,6 +1216,7 @@ def publish_plugin(
     overrides: Sequence[OverrideSpec] = (),
     adapters_root: Path | None = None,
     plugin_registry: Mapping[str, PluginSpec] | None = None,
+    role_overrides: Mapping[str, Sequence[OverrideSpec]] | None = None,
 ) -> RenderResult:
     """Render into a temporary sibling of ``live`` and publish it atomically."""
     live = Path(live)
@@ -1187,7 +1224,7 @@ def publish_plugin(
     staging = live.parent / f".{live.name}.{uuid.uuid4().hex}.staging"
     staging.mkdir()
     try:
-        result = render_plugin(plugin, adapter, staging, overrides, adapters_root, plugin_registry)
+        result = render_plugin(plugin, adapter, staging, overrides, adapters_root, plugin_registry, role_overrides)
         replace_tree(staging, live)
     finally:
         shutil.rmtree(staging, ignore_errors=True)

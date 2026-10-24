@@ -1,0 +1,3701 @@
+{
+  "decisions": [
+    {
+      "decision_id": "mock-000001",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8589647,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000002",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8589888,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000003",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.859005,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000004",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8590155,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000005",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8590245,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000006",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8590333,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000007",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.859045,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000008",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8590536,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000009",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8590624,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000010",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.859071,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000011",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8590796,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000012",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.859089,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000013",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8590977,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000014",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8591053,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000015",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.859114,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000016",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8591344,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000017",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.859144,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000018",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.859152,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000019",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.859161,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000020",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.859169,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000021",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.859177,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000022",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8591852,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000023",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8593018,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000024",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8593206,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000025",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8593314,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000026",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.859341,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000027",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8593497,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000028",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8593588,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000029",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8593671,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000030",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.859376,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000031",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8593843,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000032",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8593924,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000033",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8594012,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000034",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8594093,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000035",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8594177,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000036",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8594258,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000037",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8594341,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000038",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8594425,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000039",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.859452,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000040",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8594606,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000041",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8594694,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000042",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8594782,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000043",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8594866,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000044",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8594944,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000045",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8595736,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000046",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.859584,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000047",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8595946,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000048",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.859604,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000049",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8596137,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000050",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.859623,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000051",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8596325,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000052",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8596413,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000053",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8596509,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000054",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8596597,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000055",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.859669,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000056",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8596783,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000057",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8596873,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000058",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8596969,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000059",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8597069,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000060",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8597167,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000061",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8597257,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000062",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.859735,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000063",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.859745,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000064",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8597546,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000065",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8597639,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000066",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8597732,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000067",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8598454,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000068",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8598552,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000069",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8598642,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000070",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8598733,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000071",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8598824,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000072",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8598907,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000073",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8598998,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000074",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8599083,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000075",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8599179,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000076",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8599265,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000077",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8599353,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000078",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8599436,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000079",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8599527,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000080",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.859961,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000081",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8599699,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000082",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8599782,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000083",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8599873,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000084",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8599956,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000085",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.860005,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000086",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.860014,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000087",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8600225,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000088",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.860031,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000089",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8600981,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000090",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.860107,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000091",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8601165,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000092",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8601263,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000093",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8601353,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000094",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.860144,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000095",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8601546,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000096",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8601632,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000097",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.860172,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000098",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.860181,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000099",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.86019,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000100",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.860199,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000101",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8602083,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000102",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.860217,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000103",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8602254,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000104",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8602345,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000105",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8602436,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000106",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8602521,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000107",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8602614,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000108",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8602707,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000109",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8602798,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000110",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8602886,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000111",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8603597,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000112",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.86037,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000113",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8603804,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000114",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8603904,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000115",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8604016,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000116",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8604114,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000117",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8604214,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000118",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8604317,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000119",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8604422,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000120",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8604517,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000121",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8604622,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000122",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8604717,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000123",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8604817,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000124",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.860491,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000125",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8605006,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000126",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.86051,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000127",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8605206,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000128",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8605304,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000129",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8605409,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000130",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8605509,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000131",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.860561,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000132",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8605707,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000133",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.860641,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000134",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8606508,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000135",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.86066,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000136",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8606696,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000137",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8606787,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000138",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8606877,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000139",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8606966,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000140",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8607059,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000141",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8607152,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000142",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.860728,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000143",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8607404,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000144",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8607495,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000145",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8607588,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000146",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.860768,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000147",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8607771,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000148",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8607862,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000149",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.860795,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000150",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8608038,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000151",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8608139,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000152",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8608232,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000153",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8608322,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000154",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8608415,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000155",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8609183,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000156",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8609288,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000157",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8609402,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000158",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.86095,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000159",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8609598,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000160",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.860969,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000161",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8609784,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000162",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.860989,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000163",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8609986,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000164",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8610082,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000165",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8610184,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000166",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8610284,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000167",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.861038,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000168",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8610473,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000169",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8610568,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000170",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8610678,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000171",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8610773,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000172",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8610878,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000173",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8610978,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000174",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8611078,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000175",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8611171,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000176",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8611345,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000177",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8612115,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000178",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.861221,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000179",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8612304,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000180",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.861239,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000181",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8612473,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000182",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8612554,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000183",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8612635,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000184",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8612719,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000185",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8612795,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000186",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8612874,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000187",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8612964,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000188",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8613045,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000189",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8613126,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000190",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8613205,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000191",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.86133,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000192",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8613386,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000193",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8613462,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000194",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8613544,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000195",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8613627,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000196",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.861372,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000197",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8613806,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000198",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8613894,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000199",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8614683,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000200",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8614779,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000201",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8614874,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000202",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8614957,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000203",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8615046,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000204",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8615131,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000205",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8615222,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000206",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8615305,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000207",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8615394,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000208",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8615475,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000209",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8615563,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000210",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8615665,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000211",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8615754,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000212",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8615844,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000213",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.861593,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000214",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8616018,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000215",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8616104,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000216",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8616192,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000217",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8616292,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000218",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.861638,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000219",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8616471,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000220",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8616564,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000221",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.861742,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000222",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8617544,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000223",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8617656,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000224",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8617759,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000225",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8617866,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000226",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.8617978,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000227",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8618085,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000228",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8618195,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000229",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8618302,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000230",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8618495,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000231",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8618603,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000232",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.861871,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000233",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.861882,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000234",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.861892,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000235",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8619025,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000236",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8619134,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000237",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.861924,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000238",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8619344,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000239",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8619452,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000240",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8619564,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000241",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8619695,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000242",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.86198,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000243",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.86206,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000244",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8620725,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000245",
+      "mode": "abstain",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581767.8620842,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000246",
+      "mode": "abstain",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581767.8620958,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000247",
+      "mode": "abstain",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581767.8621068,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000248",
+      "mode": "abstain",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581767.862119,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000249",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8621304,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000250",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8621418,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000251",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8621547,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000252",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.862166,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000253",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8621771,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000254",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.862188,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000255",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8621993,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000256",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8622127,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000257",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.862225,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000258",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8622365,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000259",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8622484,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000260",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8622596,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000261",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8622715,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000262",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8622835,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000263",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8622954,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000264",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8623068,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000265",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8625968,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000266",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8626382,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000267",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8626785,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000268",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8627164,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000269",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.862754,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000270",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8627908,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000271",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8628292,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000272",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8628676,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000273",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8629053,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000274",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8629417,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000275",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8629787,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000276",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8630147,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000277",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.863051,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000278",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.863087,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000279",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.863126,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000280",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8631737,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000281",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8632348,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000282",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8632731,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000283",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.864228,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000284",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8650222,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000285",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8657916,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000286",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8665366,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000287",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.867296,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000288",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8680432,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000289",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8688192,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000290",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8696837,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000291",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.870366,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000292",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.871057,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000293",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.871739,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000294",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8723717,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000295",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8730237,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000296",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8736577,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000297",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8742895,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000298",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8750496,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000299",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8757594,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000300",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8764036,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000301",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8765368,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000302",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8765607,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000303",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8765829,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000304",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8766043,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000305",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8766253,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000306",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8766465,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000307",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8766668,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000308",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.876687,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000309",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8767102,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000310",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8767693,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000311",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.876809,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000312",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8768342,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000313",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.876856,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000314",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8768768,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000315",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8768983,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000316",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8769193,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000317",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.87694,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000318",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8769605,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000319",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8770576,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000320",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8770807,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000321",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8771026,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000322",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8771248,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000323",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8771467,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000324",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8771665,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000325",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.877187,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000326",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8772128,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000327",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8772337,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000328",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8772554,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000329",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8772757,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000330",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8772953,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000331",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8773153,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000332",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8773353,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000333",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8773558,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000334",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8773766,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000335",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.877397,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000336",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8774173,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000337",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8774836,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000338",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8774946,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000339",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8775055,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000340",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8775165,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000341",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.877527,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000342",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8775375,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000343",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8775494,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000344",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8775606,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000345",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8775713,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000346",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8775818,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000347",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8775923,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000348",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8776047,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000349",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8776145,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000350",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8776245,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000351",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8776348,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000352",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8776448,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000353",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8776548,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000354",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.877665,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000355",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.877749,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000356",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.877771,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000357",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8777926,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000358",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8779235,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000359",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8779454,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000360",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8779664,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000361",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8779874,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000362",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8780081,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000363",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.878029,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000364",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8780494,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000365",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.87807,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000366",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8780904,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000367",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.878113,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000368",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8781338,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000369",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8781793,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000370",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.878202,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000371",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.878223,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000372",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8782434,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000373",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8786535,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000374",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8789468,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000375",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.879229,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000376",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8795075,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000377",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8797894,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000378",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8801258,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000379",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8804097,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000380",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8806937,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000381",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8809857,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000382",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8812804,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000383",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8815734,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000384",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8818705,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000385",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8821754,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000386",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8824737,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000387",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8827765,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000388",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8830929,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000389",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8834314,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000390",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.883742,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000391",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8838398,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000392",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8838506,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000393",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8838596,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000394",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8838682,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000395",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8838768,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000396",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8838851,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000397",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8838935,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000398",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8839016,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000399",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8839102,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000400",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8839178,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000401",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8839266,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000402",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.883935,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000403",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8839433,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000404",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8839512,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000405",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.883959,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000406",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8839674,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000407",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8839767,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000408",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8839843,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000409",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.884048,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000410",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.8840566,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000411",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8840656,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000412",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8840735,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000413",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8840816,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000414",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8840897,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000415",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8840978,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000416",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.884106,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000417",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8841221,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000418",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8841317,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000419",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.88414,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000420",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.884148,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000421",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.884156,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000422",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8841636,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000423",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8841717,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000424",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8841803,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000425",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.884189,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000426",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8841968,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000427",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8842614,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000428",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.884271,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000429",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8842795,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000430",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.884288,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000431",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8842962,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000432",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.8843043,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000433",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8843126,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000434",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8843203,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000435",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.884328,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000436",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8843358,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000437",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.884344,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000438",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8843515,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000439",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8843598,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000440",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8843677,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000441",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.884376,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000442",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8843842,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000443",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.8843923,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000444",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8844004,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000445",
+      "mode": "abstain",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581767.8844619,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000446",
+      "mode": "abstain",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581767.884471,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000447",
+      "mode": "abstain",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581767.8844793,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000448",
+      "mode": "abstain",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581767.8844872,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000449",
+      "mode": "abstain",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581767.8844945,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000450",
+      "mode": "abstain",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581767.884502,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000451",
+      "mode": "abstain",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581767.8845098,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000452",
+      "mode": "abstain",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581767.8845174,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000453",
+      "mode": "abstain",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581767.8845248,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000454",
+      "mode": "abstain",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581767.8845322,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000455",
+      "mode": "abstain",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581767.8845417,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000456",
+      "mode": "abstain",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581767.8845494,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000457",
+      "mode": "abstain",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581767.8845572,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000458",
+      "mode": "abstain",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581767.8845649,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000459",
+      "mode": "abstain",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581767.8845735,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000460",
+      "mode": "abstain",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581767.8845816,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000461",
+      "mode": "abstain",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581767.88459,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000462",
+      "mode": "abstain",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581767.8845975,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    }
+  ],
+  "failures": []
+}

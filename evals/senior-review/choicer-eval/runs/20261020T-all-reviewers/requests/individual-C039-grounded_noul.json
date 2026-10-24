@@ -1,0 +1,38 @@
+{
+  "id": "individual-C039-grounded_noul",
+  "kind": "individual",
+  "case_id": "C039",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Audit the release migration and rollback guide against the executable deployment flow and the previous application version. Report unsupported rollback claims without editing documents or code.",
+    "artifacts": [
+      {
+        "path": "docs/release.md",
+        "content": "Release v12 renames customers to accounts. To roll back, run rollback.sh. Restoring the application image is sufficient; the database needs no rollback step."
+      },
+      {
+        "path": "migrations/0012.sql",
+        "content": "ALTER TABLE customers RENAME TO accounts;"
+      },
+      {
+        "path": "deploy/rollback.sh",
+        "content": "#!/bin/sh\nset -eu\nkubectl set image deployment/api api=example/api:v11\n"
+      },
+      {
+        "path": "releases/v11/customer-report.sql",
+        "content": "SELECT id, email FROM customers ORDER BY id;"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the requested review assess existing technical documentation against implementation for factual drift, missing coverage, stale examples, broken links, duplicated topics, or affected consumers?",
+      "criteria": {
+        "false": "The task does not assess existing technical documentation against implementation; authoring alone, voice editing, instruction-policy audits, and code-only review do not qualify.",
+        "true": "The task assesses existing technical documentation against implementation across interfaces, configuration, architecture, operations, migrations, or other technical dimensions, whether discrepancies exist or not."
+      }
+    }
+  },
+  "sha256": "a088a05a25f192e119f3a87e20fb03ca2c14fc1dbdba4bbfff31b4520ec6dadf"
+}

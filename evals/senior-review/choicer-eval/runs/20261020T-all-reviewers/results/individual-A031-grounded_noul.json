@@ -1,0 +1,39 @@
+{
+  "id": "individual-A031-grounded_noul",
+  "request_sha256": "9ab71c6d6fe67b073610cca36019647217a30a4b61099da2dc46815bbe0c11d9",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:temporal-resilience-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.0023010416205287523,
+          "true": 0.9976989583794712
+        },
+        "noul": 0.9976989583794712
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:temporal-resilience-auditor": 0.9976989583794712
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:temporal-resilience-auditor": {
+      "tokens": 179,
+      "optionTokens": [
+        27,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:temporal-resilience-auditor"
+  ],
+  "wall_seconds": 0.36976219998905435
+}

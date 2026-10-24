@@ -1,0 +1,26 @@
+{
+  "id": "individual-A041-catalog_noul",
+  "kind": "individual",
+  "case_id": "A041",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the visual spacing of the service-status page. The change contains only CSS.",
+    "artifacts": [
+      {
+        "path": "web/status.css",
+        "content": ".service-list { display: grid; gap: 1rem; }\n.service-card { padding: 1.25rem; border: 1px solid #ddd; }\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
+      }
+    }
+  },
+  "sha256": "21e794f8528b4c3bb44d92fd7904f3eab799e638ae3f9f03f6de971f2cc45b28"
+}

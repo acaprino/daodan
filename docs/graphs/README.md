@@ -82,6 +82,7 @@ Choose a question before choosing a script or schema.
 |---|---|
 | How a change is represented, ordered and recorded | [Work graph](work-graph-prototype.md) |
 | How the first graph proposer will work, and what offline execution means | [Step 0 decision (ADR-0001)](../adr/ADR-0001-work-graph-step0-llm.md) |
+| When a graph needs user clarification, and how conversations and Wayfinder connect to execution | [Conversational decisions and work graphs](../superpowers/specs/2026-10-24-conversational-decisions-and-work-graphs-design.md) |
 | How reviewer selection is evaluated, and how it relates to the wider routing design | [Choicer evaluation](choicer-eval-prototype.md) |
 | What happens when a reviewer-selection answer is missing, malformed or uncertain | [Mock Nomination](mock-nomination-prototype.md) |
 | Whether extra analysis engines can recover missing call relationships | [Resolver spike](code-graph-resolver-spike.md) |

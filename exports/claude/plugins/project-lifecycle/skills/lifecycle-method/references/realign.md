@@ -77,11 +77,11 @@ after a merge made outside the cycle, it realigns the current head.
    record of every agenda task whose branch the incoming range merged, and
    lists to the user the active records whose cited symbols the range
    changed. A range without records says so.
-2. **Map.** Load `codebase-map:map-method` and run the incremental update of
-   the bound run against the new head: changed files and symbols re-derived,
-   unaffected claims carried. Then the concept index of
-   `abstraction-architect`, through its skill, for the changed scope. Cards
-   turn stale by themselves and are rewritten only when an area is deepened.
+2. **Map.** Load `codebase-map:map-method`; incrementally update the bound run
+   at the new head, carrying unaffected claims. Invalidate affected packets;
+   retain obligations per `references/context-cycle.md`. Refresh the changed
+   scope's concept index through `abstraction-architect`'s skill. Cards become
+   stale automatically; rewrite them only when deepening an area.
 3. **Documentation.** Run the `project-knowledge:project-knowledge` drift
    audit on the documents that cite the changed paths and symbols, and apply
    the authorized corrections; `project-knowledge:readme-craft` when the

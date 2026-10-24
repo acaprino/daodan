@@ -75,9 +75,9 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Logic Integrity Defects
 
-Reference for the `logic-integrity-auditor` review dimension. These are the defect classes that become visible only once contracts, invariants, and assumptions have been mapped (see `.team-review/02-interconnect.md` produced by `semantic-interconnect-mapper`). Without that map, most findings in this taxonomy are invisible to local-only review.
+Reference for the `logic-integrity-auditor` review dimension. Derive contracts, invariants and assumptions from an interconnect map or prepared scoped semantic context, bound to the candidate with provenance. Missing or stale evidence requires re-derivation or a failed-coverage gap. Section names below are semantic anchors, not a mandatory file layout. The common evidence rules govern these pattern leads and suggested fixes.
 
-Scope: violations of contracts, invariants, domain rules, ordering, idempotency, and state machines. Distinct from pure concurrency (see `concurrency-state.md`), pure security (see `security.md`), and pure distributed-integration (see `distributed-integration.md`) -- though overlap exists at boundaries.
+Scope: violations of contracts, invariants, domain rules, ordering, idempotency, and state machines. Distinct from pure concurrency (see `concurrency-state.md`), pure security (see `security.md`), and pure distributed-integration (see `distributed-integration.md`); overlap exists at boundaries.
 
 ---
 
@@ -86,7 +86,7 @@ Scope: violations of contracts, invariants, domain rules, ordering, idempotency,
 ### L1.1 Unenforced Precondition
 - **CWE**: 573 (Improper Following of Specification)
 - **Pattern**: Function assumes input has property P (non-empty, validated, normalized, authenticated) but does not assert or verify P. Any caller path that bypasses the enforcing entry point corrupts state.
-- **Detection**: Cross-reference `.team-review/02-interconnect.md` `## Contracts -> Implicit` rows marked `unverified`; Grep for every caller of the function; verify each path enforces P.
+- **Detection**: Cross-reference contract/precondition anchors in the supplied map or scoped context; trace every relevant caller and verify its guarantee.
 - **Fix**: Add boundary validation (assert, type guard, defensive check). Prefer making the precondition impossible to violate via the type system.
 - **Difficulty**: Medium
 - **Signature**: Docstring or comment says "expects X to be Y" but no runtime check; function body crashes/misbehaves when Y is false.
@@ -307,12 +307,12 @@ Scope: violations of contracts, invariants, domain rules, ordering, idempotency,
 
 ## Detection Strategy Summary
 
-Unlike other taxonomy categories, logic-integrity defects cannot be found reliably through static analysis tools. They require **semantic context** (the `.team-review/02-interconnect.md` map) to identify. Detection workflow for `logic-integrity-auditor`:
+Use the supplied snapshot-bound interconnect map or scoped semantic context as a fallible index:
 
-1. Read `.team-review/02-interconnect.md` section by section.
-2. For each contract/invariant/assumption row, use the Detection strategy of the matching category above.
-3. Grep-heavy: trace call sites, state mutations, persistence boundaries.
-4. Findings should cite **both** the interconnect anchor that flagged the concern AND the `file:line` where the violation occurs.
+1. Confirm candidate, provenance and relevant contract/invariant/assumption anchors. Missing required context remains failed coverage.
+2. Apply the matching category to its evidence; a sparse map does not make other categories inapplicable.
+3. Trace source callers, mutators and persistence boundaries; seek counterexamples and independently derive omitted rules.
+4. Cite the used context anchor and source location. Mark independently derived rules `[MAP-GAP]`; re-derive stale premises rather than treating them as current evidence.
 
 ## Severity Calibration
 

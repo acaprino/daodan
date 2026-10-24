@@ -1,0 +1,39 @@
+{
+  "id": "individual-B036-grounded_noul",
+  "request_sha256": "e1a29cfee49978aaf7687935afb6187e8f15e22794700ba760bbaf799453c7d0",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "abstraction-architect:abstraction-architect-agent": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.00019913487480053825,
+          "true": 0.9998008651251995
+        },
+        "noul": 0.9998008651251995
+      }
+    }
+  },
+  "probabilities": {
+    "abstraction-architect:abstraction-architect-agent": 0.9998008651251995
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "tokens": 234,
+      "optionTokens": [
+        30,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "abstraction-architect:abstraction-architect-agent"
+  ],
+  "wall_seconds": 0.924829299969133
+}

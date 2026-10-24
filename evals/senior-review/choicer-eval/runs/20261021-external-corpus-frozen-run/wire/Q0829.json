@@ -1,0 +1,962 @@
+{
+  "id": "Q0829",
+  "case_id": "F33",
+  "role": "senior-review:resource-lifecycle-auditor",
+  "mode": "windowed",
+  "variant": "v2",
+  "window_id": "W001",
+  "prompt_sha256": "2f3904cd7c4b61141b38a6390af63e4aa20a2644d601b6e2c67d2371e1d4682b",
+  "prompt_tokens": 1103,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F33\n[Code Under Review]\n[H1] qemu/function-12.c:1 (character offset 0)\nstatic int xen_9pfs_connect(struct XenDevice *xendev)\n\n{\n\n    int i;\n\n    Xen9pfsDev *xen_9pdev = container_of(xendev, Xen9pfsDev, xendev);\n\n    V9fsState *s = &xen_9pdev->state;\n\n    QemuOpts *fsdev;\n\n\n\n    if (xenstore_read_fe_int(&xen_9pdev->xendev, \"num-rings\",\n\n                             &xen_9pdev->num_rings) == -1 ||\n\n        xen_9pdev->num_rings > MAX_RINGS || xen_9pdev->num_rings < 1) {\n\n        return -1;\n\n    }\n\n\n\n    xen_9pdev->rings = g_malloc0(xen_9pdev->num_rings * sizeof(Xen9pfsRing));\n\n    for (i = 0; i < xen_9pdev->num_rings; i++) {\n\n        char *str;\n\n        int ring_order;\n\n\n\n        xen_9pdev->rings[i].priv = xen_9pdev;\n\n        xen_9pdev->rings[i].evtchn = -1;\n\n        xen_9pdev->rings[i].local_port = -1;\n\n\n\n        str = g_strdup_printf(\"ring-ref%u\", i);\n\n        if (xenstore_read_fe_int(&xen_9pdev->xendev, str,\n\n                                 &xen_9pdev->rings[i].ref) == -1) {\n\n\n            goto out;\n\n        }\n\n\n        str = g_strdup_printf(\"event-channel-%u\", i);\n\n        if (xenstore_read_fe_int(&xen_9pdev->xendev, str,\n\n                                 &xen_9pdev->rings[i].evtchn) == -1) {\n\n\n            goto out;\n\n        }\n\n\n\n\n        xen_9pdev->rings[i].intf =  xengnttab_map_grant_ref(\n\n                xen_9pdev->xendev.gnttabdev,\n\n                xen_9pdev->xendev.dom,\n\n                xen_9pdev->rings[i].ref,\n\n                PROT_READ | PROT_WRITE);\n\n        if (!xen_9pdev->rings[i].intf) {\n\n            goto out;\n\n        }\n\n        ring_order = xen_9pdev->rings[i].intf->ring_order;\n\n        if (ring_order > MAX_RING_ORDER) {\n\n            goto out;\n\n        }\n\n        xen_9pdev->rings[i].ring_order = ring_order;\n\n        xen_9pdev->rings[i].data = xengnttab_map_domain_grant_refs(\n\n                xen_9pdev->xendev.gnttabdev,\n\n                (1 << ring_order),\n\n                xen_9pdev->xendev.dom,\n\n                xen_9pdev->rings[i].intf->ref,\n\n                PROT_READ | PROT_WRITE);\n\n        if (!xen_9pdev->rings[i].data) {\n\n            goto out;\n\n        }\n\n        xen_9pdev->rings[i].ring.in = xen_9pdev->rings[i].data;\n\n        xen_9pdev->rings[i].ring.out = xen_9pdev->rings[i].data +\n\n                                       XEN_FLEX_RING_SIZE(ring_order);\n\n\n\n        xen_9pdev->rings[i].bh = qemu_bh_new(xen_9pfs_bh, &xen_9pdev->rings[i]);\n\n        xen_9pdev->rings[i].out_cons = 0;\n\n        xen_9pdev->rings[i].out_size = 0;\n\n        xen_9pdev->rings[i].inprogress = false;\n\n\n\n\n\n        xen_9pdev->rings[i].evtchndev = xenevtchn_open(NULL, 0);\n\n        if (xen_9pdev->rings[i].evtchndev == NULL) {\n\n            goto out;\n\n        }\n\n        fcntl(xenevtchn_fd(xen_9pdev->rings[i].evtchndev), F_SETFD, FD_CLOEXEC);\n\n        xen_9pdev->rings[i].local_port = xenevtchn_bind_interdomain\n\n\n\n[H1] qemu/function-12.c:147 (character offset 2770)\n\nQuestion: Should the resource-lifecycle-auditor review lens be activated for acquiring or releasing system resources like DB connection pools, sockets, file handles, or listeners?\n\nOptions:\nA. Yes: activate resource-lifecycle-auditor\nB. No: do not activate resource-lifecycle-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "f4c362c4877d34608475751293f7431ff79cdc3d721d0e7e8d3b92151f0aae8c",
+  "prefix_tokens": 1010,
+  "state_id": "S052",
+  "restore": {
+    "seconds": 0.06755370000610128,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 1010,
+      "n_read": 52843264,
+      "timings": {
+        "restore_ms": 64.285
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "A",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 1103,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F33\n[Code Under Review]\n[H1] qemu/function-12.c:1 (character offset 0)\nstatic int xen_9pfs_connect(struct XenDevice *xendev)\n\n{\n\n    int i;\n\n    Xen9pfsDev *xen_9pdev = container_of(xendev, Xen9pfsDev, xendev);\n\n    V9fsState *s = &xen_9pdev->state;\n\n    QemuOpts *fsdev;\n\n\n\n    if (xenstore_read_fe_int(&xen_9pdev->xendev, \"num-rings\",\n\n                             &xen_9pdev->num_rings) == -1 ||\n\n        xen_9pdev->num_rings > MAX_RINGS || xen_9pdev->num_rings < 1) {\n\n        return -1;\n\n    }\n\n\n\n    xen_9pdev->rings = g_malloc0(xen_9pdev->num_rings * sizeof(Xen9pfsRing));\n\n    for (i = 0; i < xen_9pdev->num_rings; i++) {\n\n        char *str;\n\n        int ring_order;\n\n\n\n        xen_9pdev->rings[i].priv = xen_9pdev;\n\n        xen_9pdev->rings[i].evtchn = -1;\n\n        xen_9pdev->rings[i].local_port = -1;\n\n\n\n        str = g_strdup_printf(\"ring-ref%u\", i);\n\n        if (xenstore_read_fe_int(&xen_9pdev->xendev, str,\n\n                                 &xen_9pdev->rings[i].ref) == -1) {\n\n\n            goto out;\n\n        }\n\n\n        str = g_strdup_printf(\"event-channel-%u\", i);\n\n        if (xenstore_read_fe_int(&xen_9pdev->xendev, str,\n\n                                 &xen_9pdev->rings[i].evtchn) == -1) {\n\n\n            goto out;\n\n        }\n\n\n\n\n        xen_9pdev->rings[i].intf =  xengnttab_map_grant_ref(\n\n                xen_9pdev->xendev.gnttabdev,\n\n                xen_9pdev->xendev.dom,\n\n                xen_9pdev->rings[i].ref,\n\n                PROT_READ | PROT_WRITE);\n\n        if (!xen_9pdev->rings[i].intf) {\n\n            goto out;\n\n        }\n\n        ring_order = xen_9pdev->rings[i].intf->ring_order;\n\n        if (ring_order > MAX_RING_ORDER) {\n\n            goto out;\n\n        }\n\n        xen_9pdev->rings[i].ring_order = ring_order;\n\n        xen_9pdev->rings[i].data = xengnttab_map_domain_grant_refs(\n\n                xen_9pdev->xendev.gnttabdev,\n\n                (1 << ring_order),\n\n                xen_9pdev->xendev.dom,\n\n                xen_9pdev->rings[i].intf->ref,\n\n                PROT_READ | PROT_WRITE);\n\n        if (!xen_9pdev->rings[i].data) {\n\n            goto out;\n\n        }\n\n        xen_9pdev->rings[i].ring.in = xen_9pdev->rings[i].data;\n\n        xen_9pdev->rings[i].ring.out = xen_9pdev->rings[i].data +\n\n                                       XEN_FLEX_RING_SIZE(ring_order);\n\n\n\n        xen_9pdev->rings[i].bh = qemu_bh_new(xen_9pfs_bh, &xen_9pdev->rings[i]);\n\n        xen_9pdev->rings[i].out_cons = 0;\n\n        xen_9pdev->rings[i].out_size = 0;\n\n        xen_9pdev->rings[i].inprogress = false;\n\n\n\n\n\n        xen_9pdev->rings[i].evtchndev = xenevtchn_open(NULL, 0);\n\n        if (xen_9pdev->rings[i].evtchndev == NULL) {\n\n            goto out;\n\n        }\n\n        fcntl(xenevtchn_fd(xen_9pdev->rings[i].evtchndev), F_SETFD, FD_CLOEXEC);\n\n        xen_9pdev->rings[i].local_port = xenevtchn_bind_interdomain\n\n\n\n[H1] qemu/function-12.c:147 (character offset 2770)\n\nQuestion: Should the resource-lifecycle-auditor review lens be activated for acquiring or releasing system resources like DB connection pools, sockets, file handles, or listeners?\n\nOptions:\nA. Yes: activate resource-lifecycle-auditor\nB. No: do not activate resource-lifecycle-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 1103,
+    "timings": {
+      "cache_n": 1010,
+      "prompt_n": 93,
+      "prompt_ms": 988.048,
+      "prompt_per_token_ms": 10.624172043010752,
+      "prompt_per_second": 94.12498178226159,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 32,
+        "token": "A",
+        "bytes": [
+          65
+        ],
+        "logprob": -1.5113608837127686,
+        "top_logprobs": [
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -1.5113608837127686
+          },
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -1.525154709815979
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -2.663437604904175
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -2.8930938243865967
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.597578763961792
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.092112064361572
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -4.120126247406006
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -4.792328357696533
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -4.805297374725342
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -4.886138439178467
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -4.990494251251221
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -5.0068135261535645
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.019108295440674
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -5.0955376625061035
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -5.132680416107178
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.201588153839111
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.320897579193115
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -5.381216526031494
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -5.503385066986084
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -5.5647664070129395
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -5.575443744659424
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -5.63411283493042
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -5.7051568031311035
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.709000110626221
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -5.762924671173096
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -5.771883487701416
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -5.803513050079346
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -5.830928325653076
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.047605991363525
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.115231037139893
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -6.210925579071045
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -6.272310733795166
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.279917240142822
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.352146625518799
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.484772205352783
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -6.544959545135498
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.575015544891357
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -6.603072643280029
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -6.619866371154785
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -6.619990825653076
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -6.661777973175049
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -6.683737277984619
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -6.711839199066162
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -6.768487453460693
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -6.772494792938232
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -6.797443866729736
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -6.8409905433654785
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -6.855444431304932
+          },
+          {
+            "id": 357,
+            "token": " A",
+            "bytes": [
+              32,
+              65
+            ],
+            "logprob": -6.915977954864502
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -6.965620517730713
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.034945964813232
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.040171146392822
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -7.060781002044678
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.0687336921691895
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -7.080582141876221
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.08532190322876
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.112612247467041
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -7.174288272857666
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.234472751617432
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -7.264645099639893
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.441962718963623
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.459288120269775
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.493300914764404
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.49578332901001
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.521762371063232
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -7.567895412445068
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.5683274269104
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.5865864753723145
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.6048054695129395
+          },
+          {
+            "id": 1803,
+            "token": "AB",
+            "bytes": [
+              65,
+              66
+            ],
+            "logprob": -7.6097540855407715
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.624109745025635
+          },
+          {
+            "id": 2014,
+            "token": "An",
+            "bytes": [
+              65,
+              110
+            ],
+            "logprob": -7.62833833694458
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.713130474090576
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.716460227966309
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.750949859619141
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.756082057952881
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -7.766384601593018
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.790248394012451
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.818544864654541
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.823580265045166
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.86704683303833
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.870121955871582
+          },
+          {
+            "id": 331,
+            "token": "if",
+            "bytes": [
+              105,
+              102
+            ],
+            "logprob": -7.878520488739014
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.885617256164551
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.925846576690674
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.933173179626465
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.958741664886475
+          },
+          {
+            "id": 6844,
+            "token": "BA",
+            "bytes": [
+              66,
+              65
+            ],
+            "logprob": -8.006293296813965
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -8.008875846862793
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -8.011299133300781
+          },
+          {
+            "id": 414,
+            "token": " D",
+            "bytes": [
+              32,
+              68
+            ],
+            "logprob": -8.06176471710205
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -8.082308769226074
+          },
+          {
+            "id": 10,
+            "token": "+",
+            "bytes": [
+              43
+            ],
+            "logprob": -8.10263729095459
+          },
+          {
+            "id": 351,
+            "token": " C",
+            "bytes": [
+              32,
+              67
+            ],
+            "logprob": -8.111523628234863
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -8.12416934967041
+          },
+          {
+            "id": 2053,
+            "token": "As",
+            "bytes": [
+              65,
+              115
+            ],
+            "logprob": -8.129289627075195
+          },
+          {
+            "id": 23982,
+            "token": "Ah",
+            "bytes": [
+              65,
+              104
+            ],
+            "logprob": -8.130850791931152
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.13935375213623
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -8.15591049194336
+          },
+          {
+            "id": 5,
+            "token": "&",
+            "bytes": [
+              38
+            ],
+            "logprob": -8.195443153381348
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 1.0015975999995135,
+  "letter": "A",
+  "probabilities": {
+    "A": 0.22060954963875562,
+    "B": 0.21758739135583163,
+    "Z": 0.0013561945269771165
+  },
+  "prefix_reuse_verified": true
+}

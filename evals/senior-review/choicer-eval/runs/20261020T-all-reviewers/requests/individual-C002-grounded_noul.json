@@ -1,0 +1,26 @@
+{
+  "id": "individual-C002-grounded_noul",
+  "kind": "individual",
+  "case_id": "C002",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Assess the component effect lifecycle for leaks or stale callbacks; report no issue if the ownership and cleanup are sound.",
+    "artifacts": [
+      {
+        "path": "src/ResizeReadout.tsx",
+        "content": "import { useEffect, useState } from \"react\";\nexport function ResizeReadout() {\n  const [width, setWidth] = useState(window.innerWidth);\n  useEffect(() => {\n    const update = () => setWidth(window.innerWidth);\n    window.addEventListener(\"resize\", update);\n    return () => window.removeEventListener(\"resize\", update);\n  }, []);\n  return <output>{width}</output>;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    }
+  },
+  "sha256": "e12b06e25dba982c94a2d8023ef43dd75bf18ce327833d182281143d74bfda0b"
+}

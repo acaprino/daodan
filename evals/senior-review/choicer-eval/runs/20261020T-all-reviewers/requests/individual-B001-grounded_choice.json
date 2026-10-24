@@ -1,0 +1,34 @@
+{
+  "id": "individual-B001-grounded_choice",
+  "kind": "individual",
+  "case_id": "B001",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the member endpoint change that adds an optional display name for existing clients.",
+    "artifacts": [
+      {
+        "path": "api/member.schema.json",
+        "content": "{\"type\":\"object\",\"required\":[\"id\"],\"properties\":{\"id\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"}},\"additionalProperties\":false}"
+      },
+      {
+        "path": "api/member.ts",
+        "content": "import {memberSchema} from \"./schemas\";\nrouter.get(\"/members/:id\", validateResponse(memberSchema), async (req, res) => {\n  const member = await store.get(req.params.id);\n  const body = {id: member.id, ...(member.displayName == null ? {} : {display_name: member.displayName})};\n  res.json(body);\n});"
+      },
+      {
+        "path": "web/member.ts",
+        "content": "export type Member = {id: string; display_name?: string};\nexport const label = (m: Member) => m.display_name ?? m.id;"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    }
+  },
+  "sha256": "398ba7f22991c00d713efadba37f718b014488138fc105b85602ccc424949b21"
+}

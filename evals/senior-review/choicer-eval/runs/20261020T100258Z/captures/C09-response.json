@@ -1,0 +1,21 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H1] candidate worker/exporter.ts:5 const client = await pool.connect()",
+      "reason": "Verify the database client is released when the streamed response errors or closes early.",
+      "role": "senior-review:resource-lifecycle-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H1] candidate worker/exporter.ts:12 setInterval(async () => {",
+      "reason": "Check overlapping polls and timer shutdown for leaked connections or unhandled failures.",
+      "role": "senior-review:temporal-resilience-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

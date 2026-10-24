@@ -1,0 +1,67 @@
+{
+  "id": "python_plain",
+  "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+  "questions": {
+    "original_react": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "original_data": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "complement_react": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+        "false": "The code does not use React components, hooks, rendering or state subscriptions."
+      }
+    },
+    "property_react_literal": {
+      "type": "noul",
+      "instructions": "Does the code use React components or React hooks?"
+    },
+    "property_react_descriptive": {
+      "type": "noul",
+      "instructions": "Does the code use React components or React hooks?",
+      "criteria": {
+        "false": "The code does not use React components or React hooks.",
+        "true": "The code uses React components or React hooks."
+      }
+    },
+    "property_data_descriptive": {
+      "type": "noul",
+      "instructions": "Does the code read or write a database or cache?",
+      "criteria": {
+        "false": "The code does not read or write a database or cache.",
+        "true": "The code reads or writes a database or cache."
+      }
+    },
+    "property_stack_choice": {
+      "type": "choice",
+      "instructions": "Which kind of code is shown?",
+      "criteria": {
+        "backend": "Python database and cache access",
+        "frontend": "React user interface component"
+      }
+    },
+    "property_stack_reversed": {
+      "type": "choice",
+      "instructions": "Which kind of code is shown?",
+      "criteria": {
+        "frontend": "React user interface component",
+        "backend": "Python database and cache access"
+      }
+    }
+  },
+  "sha256": "cd3e538d04342065a6f3950f145d16d5d5c33913ae4f1e198d1feb65ceaa21b3"
+}

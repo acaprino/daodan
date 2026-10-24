@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the new balance transfer implementation. Each execute call commits independently, and multiple request workers can call it.",
+    "artifacts": [
+      {
+        "path": "src/transfers.py",
+        "content": "def transfer(db, source, destination, amount):\n    db.execute(\"UPDATE wallets SET cents = cents - %s WHERE id = %s\",\n               (amount, source))\n    db.execute(\"UPDATE wallets SET cents = cents + %s WHERE id = %s\",\n               (amount, destination))\n"
+      },
+      {
+        "path": "db/schema.sql",
+        "content": "CREATE TABLE wallets (id BIGINT PRIMARY KEY, cents BIGINT NOT NULL);\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries."
+      }
+    }
+  }
+}

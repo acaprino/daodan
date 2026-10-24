@@ -1,0 +1,30 @@
+{
+  "id": "individual-C047-grounded_choice",
+  "kind": "individual",
+  "case_id": "C047",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Check only whether the documented function signature matches current code and report factual drift. Do not assess organization, navigation, wording or presentation.",
+    "artifacts": [
+      {
+        "path": "docs/client.md",
+        "content": "connect(host: str, port: int = 443) returns Connection."
+      },
+      {
+        "path": "src/client.py",
+        "content": "def connect(host: str, port: int = 8443, *, tls: bool = True):\n    return Connection(host, port, tls=tls)\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "choice",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  },
+  "sha256": "0d5b1863f21818c4e41567860b873ba761dfe96d5dd99890a0775d0834f0abe7"
+}

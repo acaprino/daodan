@@ -1,0 +1,32 @@
+{
+  "schema": "choicer-eval/native-capture-v1",
+  "request_sha256": "2313ef7def63b431b9fa12844b0d7a7a4b054f447026c2e63f6526a4bab234b1",
+  "response": "{\n  \"mode\": \"full\",\n  \"selected\": [\n    {\n      \"trigger_line\": \"[H3] candidate jupiter-core/jupiter_core/agents/alive_agent.py:189 async def start(self):\",\n      \"reason\": \"Startup ordering and lifecycle acknowledgement gates can strand agents or publish readiness prematurely.\",\n      \"role\": \"senior-review:chicken-egg-detector\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H4] candidate jupiter-core/jupiter_core/agents/alive_agent.py:324 self._heartbeat_task = self._task_monitor.spawn(\",\n      \"reason\": \"Heartbeat scheduling, retries, and recovery timing may fail under delays or repeated failures.\",\n      \"role\": \"senior-review:temporal-resilience-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H3] candidate jupiter-core/jupiter_core/agents/alive_agent.py:224 self._registration_consumer_tag = await self.amqp_s.register_listener(\",\n      \"reason\": \"Listener, task, and lock acquisition needs complete cleanup on partial startup and shutdown.\",\n      \"role\": \"senior-review:resource-lifecycle-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H6] candidate jupiter-core/jupiter_core/agents/alive_agent.py:390 def _build_channels_data(self, include_credentials: bool = True) -> list[dict[str, Any]]:\",\n      \"reason\": \"Default credential inclusion risks sending tokens and webhook data through unintended lifecycle messages.\",\n      \"role\": \"senior-review:security-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H6] candidate jupiter-core/jupiter_core/agents/alive_agent.py:390 def _build_channels_data(self, include_credentials: bool = True) -> list[dict[str, Any]]:\",\n      \"reason\": \"The default credential flag creates a boundary case that can alter sensitive payload contents.\",\n      \"role\": \"senior-review:premise-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H4] candidate jupiter-core/jupiter_core/agents/alive_agent.py:278 await ack_round_trip(\",\n      \"reason\": \"Agent and middleware acknowledgement contracts must remain consistent across registration and lifecycle transitions.\",\n      \"role\": \"senior-review:distributed-flow-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H6] candidate jupiter-core/jupiter_core/agents/alive_agent.py:390 def _build_channels_data(self, include_credentials: bool = True) -> list[dict[str, Any]]:\",\n      \"reason\": \"Lifecycle payload shape and credential fields need consistency with their consuming contract.\",\n      \"role\": \"senior-review:api-contract-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H48] candidate jupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1874 def on_agent_removed(self, agent_id: str) -> None:\",\n      \"reason\": \"Public agent removal and identifier-based cleanup need authorization and data-access review.\",\n      \"role\": \"senior-review:security-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    }\n  ],\n  \"recommend_full_review\": false,\n  \"recommend_full_reason\": null\n}\n",
+  "response_sha256": "3bf26a5d5b1b2ba0bf11b767e646d879f9419acdbdb645325d0d8450b7e68cd1",
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  },
+  "usage": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "transport": {
+    "tool": "collaboration.spawn_agent",
+    "task_name": "/root/baseline_c02",
+    "fork_turns": "none",
+    "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C02-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation, using sequential bounded chunks if needed; do not summarize or omit hunks. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C02-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+    "loader_prompt_sha256": "28124b24fcaad4ba25b93837bac504a6540b9479efb6197a85cda5a077b0da95",
+    "effective_provider_request": null,
+    "provider_finish_reason": null,
+    "provider_api_call_count": null,
+    "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+  },
+  "limitations": [
+    "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+    "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+  ]
+}

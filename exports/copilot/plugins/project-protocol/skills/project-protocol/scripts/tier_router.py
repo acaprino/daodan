@@ -46,8 +46,8 @@ successfully completed task and not a capability measurement. The ranking depend
 the direction of the token profile, so the profile is versioned into the output and an
 undeclared profile is labelled ``assumed``.
 
-The ranking formula is deliberately not spec §2.1 rule 4's ``input + 3 * output``: that
-rule is superseded here by a workload model that prices every token category,
+The ranking uses spec §2.1 rule 4's workload model, which superseded the earlier
+``input + 3 * output`` proxy and prices every token category,
 ``cache_read`` and ``cache_write`` included. Measured on 2026-10-22 against the active
 gateway catalog the two metrics invert 10 of 231 pairwise orderings, so the shorter
 formula would reorder real candidates; the deviation is load-bearing and is recorded in

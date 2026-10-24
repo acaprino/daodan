@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Apply the approved removal list and run the listed build check.",
+    "artifacts": [
+      {
+        "path": "cleanup-approved.json",
+        "content": "{\"approved_removals\":[\"public/retired-banner.svg\"],\"verification\":\"npm run build\",\"audit_complete\":true}"
+      },
+      {
+        "path": "public/retired-banner.svg",
+        "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"><rect width=\"10\" height=\"10\" /></svg>"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    }
+  }
+}

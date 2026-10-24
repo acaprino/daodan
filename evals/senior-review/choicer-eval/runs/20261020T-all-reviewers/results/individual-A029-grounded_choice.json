@@ -1,0 +1,40 @@
+{
+  "id": "individual-A029-grounded_choice",
+  "request_sha256": "bd2d6910f984a6d1ce8abf2b7f3e2264224a5bfdf144abb942e7bfe6ce47005f",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "choice",
+        "probabilities": {
+          "false": 0.0004640393386470551,
+          "true": 0.999535960661353
+        },
+        "choice": "true",
+        "max_probability": 0.999535960661353
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:resource-lifecycle-auditor": 0.999535960661353
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:resource-lifecycle-auditor": {
+      "tokens": 186,
+      "optionTokens": [
+        28,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:resource-lifecycle-auditor"
+  ],
+  "wall_seconds": 0.35500690003391355
+}

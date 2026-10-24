@@ -1,0 +1,26 @@
+{
+  "id": "individual-A040-grounded_choice",
+  "kind": "individual",
+  "case_id": "A040",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review only whether the local report handler constructs an SQL query safely. No communication contract is changing.",
+    "artifacts": [
+      {
+        "path": "app/reports.py",
+        "content": "def report(db, request):\n    return db.execute(\"SELECT * FROM reports WHERE owner = '\" + request.args[\"owner\"] + \"'\").fetchall()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    }
+  },
+  "sha256": "2402320926f117ed9975e6dca1a00419650bc03c84ec31fc5daa1cbc4d41bbed"
+}

@@ -1,0 +1,34 @@
+{
+  "requirement": "Every failed job must reach ops with operation id and original cause within 5 minutes; completed_jobs counts only completed work. No personal payloads.",
+  "handler": {
+    "error": "ConnectionRefused",
+    "wrap": "JobError without cause",
+    "correlation": "discard operation_id at async queue"
+  },
+  "metric": {
+    "increment": "before job starts",
+    "unit": "jobs",
+    "aggregation": "sum"
+  },
+  "exporter": {
+    "buffered": true,
+    "shutdown_flush": false,
+    "buffer_storage": "volatile process memory only",
+    "durable_replay": false,
+    "sole_export_path": true,
+    "periodic_export_interval_seconds": 60,
+    "termination_after_enqueue_seconds": 1,
+    "pending_at_termination": ["job-42 failure"],
+    "termination": "discard process memory; no final export"
+  },
+  "alert": {
+    "expression": "failed_jobs > 0",
+    "window_minutes": 5,
+    "suppressed": "always",
+    "route": "ops"
+  },
+  "evidence": {
+    "configuration_only": true,
+    "claim": "ops received alert"
+  }
+}

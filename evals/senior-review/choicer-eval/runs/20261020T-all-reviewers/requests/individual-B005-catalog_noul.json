@@ -1,0 +1,30 @@
+{
+  "id": "individual-B005-catalog_noul",
+  "kind": "individual",
+  "case_id": "B005",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Check that the allocation function preserves the total quantity across bins.",
+    "artifacts": [
+      {
+        "path": "allocation.ts",
+        "content": "type Bin = {capacity: number; quantity: number};\nexport function allocate(amount: number, bins: Bin[]): number {\n  let remaining = amount;\n  for (const bin of bins) {\n    const moved = Math.min(remaining, bin.capacity - bin.quantity);\n    bin.quantity += moved; remaining -= moved;\n  }\n  return remaining;\n}"
+      },
+      {
+        "path": "design.md",
+        "content": "Allocation is an in-process calculation. The sum of the quantity increases plus the returned remainder must equal the input amount."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
+      }
+    }
+  },
+  "sha256": "443fbf77218ad7fa3bfc7acb725c0a564621b96473fa405fcae5e61537921714"
+}

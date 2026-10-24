@@ -1,0 +1,26 @@
+{
+  "id": "individual-A007-grounded_noul",
+  "kind": "individual",
+  "case_id": "A007",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Find implementation defects in this arithmetic helper and propose a correction for negative operands.",
+    "artifacts": [
+      {
+        "path": "src/quotient.py",
+        "content": "def quotient(a, b):\n    if b == 0:\n        raise ValueError(\"zero divisor\")\n    return int(a / b)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    }
+  },
+  "sha256": "9359056ccdf295512fe9435aaa28c2f16ac4f1bd9a0768b3d6d20f5ab29a7ee6"
+}

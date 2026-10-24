@@ -1,0 +1,30 @@
+{
+  "id": "individual-C023-catalog_noul",
+  "kind": "individual",
+  "case_id": "C023",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Assess only React rerender cost from the broad store subscription. The types are settled and type-soundness review is excluded from this task.",
+    "artifacts": [
+      {
+        "path": "src/ProfileBadge.tsx",
+        "content": "import { useProfile } from \"./profile-store\";\nexport function ProfileBadge() {\n  const state = useProfile();\n  return <span>{state.displayName}</span>;\n}"
+      },
+      {
+        "path": "src/profile-store.ts",
+        "content": "export type Profile = { displayName: string; unread: number };\nexport declare function useProfile(): Profile;"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
+      }
+    }
+  },
+  "sha256": "c5e7794aa25fd9b1096e7a4a80db2bfe50b4bda80dc76d0f7e1807e58f63e5ab"
+}

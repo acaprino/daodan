@@ -1,0 +1,26 @@
+{
+  "id": "individual-A031-catalog_noul",
+  "kind": "individual",
+  "case_id": "A031",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review only the dependency ordering before this application begins serving requests.",
+    "artifacts": [
+      {
+        "path": "src/bootstrap.py",
+        "content": "def start(container):\n    container.handlers = build_handlers(container.store)\n    container.store = create_store()\n    return build_application(container.handlers)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
+      }
+    }
+  },
+  "sha256": "887a604cdabc14612248c922df26569623035cbb3946783d4d00583ba679663f"
+}

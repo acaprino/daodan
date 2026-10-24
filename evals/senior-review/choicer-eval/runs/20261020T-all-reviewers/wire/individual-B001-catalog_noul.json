@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Review the member endpoint change that adds an optional display name for existing clients.",
+    "artifacts": [
+      {
+        "path": "api/member.schema.json",
+        "content": "{\"type\":\"object\",\"required\":[\"id\"],\"properties\":{\"id\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"}},\"additionalProperties\":false}"
+      },
+      {
+        "path": "api/member.ts",
+        "content": "import {memberSchema} from \"./schemas\";\nrouter.get(\"/members/:id\", validateResponse(memberSchema), async (req, res) => {\n  const member = await store.get(req.params.id);\n  const body = {id: member.id, ...(member.displayName == null ? {} : {display_name: member.displayName})};\n  res.json(body);\n});"
+      },
+      {
+        "path": "web/member.ts",
+        "content": "export type Member = {id: string; display_name?: string};\nexport const label = (m: Member) => m.display_name ?? m.id;"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
+      }
+    }
+  }
+}

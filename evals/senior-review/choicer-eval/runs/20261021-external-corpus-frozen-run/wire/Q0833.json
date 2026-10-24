@@ -1,0 +1,967 @@
+{
+  "id": "Q0833",
+  "case_id": "F33",
+  "role": "senior-review:cleanup-auditor",
+  "mode": "windowed",
+  "variant": "candidate",
+  "window_id": "W002",
+  "prompt_sha256": "a79ff8c4af40f125c0e2fbbcb355420e15d5271047a1e12fbb4c7da8b935d0fd",
+  "prompt_tokens": 627,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F33\n[Code Under Review]\n[H1] qemu/function-12.c:147 (character offset 2800)\n              (xen_9pdev->rings[i].evtchndev,\n\n                                             xendev->dom,\n\n                                             xen_9pdev->rings[i].evtchn);\n\n        if (xen_9pdev->rings[i].local_port == -1) {\n\n            xen_pv_printf(xendev, 0,\n\n                          \"xenevtchn_bind_interdomain failed port=%d\\n\",\n\n                          xen_9pdev->rings[i].evtchn);\n\n            goto out;\n\n        }\n\n        xen_pv_printf(xendev, 2, \"bind evtchn port %d\\n\", xendev->local_port);\n\n        qemu_set_fd_handler(xenevtchn_fd(xen_9pdev->rings[i].evtchndev),\n\n                xen_9pfs_evtchn_event, NULL, &xen_9pdev->rings[i]);\n\n    }\n\n\n\n    xen_9pdev->security_model = xenstore_read_be_str(xendev, \"security_model\");\n\n    xen_9pdev->path = xenstore_read_be_str(xendev, \"path\");\n\n    xen_9pdev->id = s->fsconf.fsdev_id =\n\n        g_strdup_printf(\"xen9p%d\", xendev->dev);\n\n    xen_9pdev->tag = s->fsconf.tag = xenstore_read_fe_str(xendev, \"tag\");\n\n    v9fs_register_transport(s, &xen_9p_transport);\n\n    fsdev = qemu_opts_create(qemu_find_opts(\"fsdev\"),\n\n            s->fsconf.tag,\n\n            1, NULL);\n\n    qemu_opt_set(fsdev, \"fsdriver\", \"local\", NULL);\n\n    qemu_opt_set(fsdev, \"path\", xen_9pdev->path, NULL);\n\n    qemu_opt_set(fsdev, \"security_model\", xen_9pdev->security_model, NULL);\n\n    qemu_opts_set_id(fsdev, s->fsconf.fsdev_id);\n\n    qemu_fsdev_add(fsdev);\n\n    v9fs_device_realize_common(s, NULL);\n\n\n\n    return 0;\n\n\n\nout:\n\n    xen_9pfs_free(xendev);\n\n    return -1;\n\n}\n\nQuestion: Does the supplied evidence show unused or obsolete code, dependencies or assets, or documentation that disagrees with implementation? The mere presence of comments, documentation, or a changed file does not establish this concern.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "84be800523df18c8e9c257fbf1e9e9af2cd19d3c8bf4451872ce88641671d096",
+  "prefix_tokens": 544,
+  "state_id": "S053",
+  "restore": {
+    "seconds": 0.05260409999755211,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 544,
+      "n_read": 47104008,
+      "timings": {
+        "restore_ms": 50.116
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 627,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F33\n[Code Under Review]\n[H1] qemu/function-12.c:147 (character offset 2800)\n              (xen_9pdev->rings[i].evtchndev,\n\n                                             xendev->dom,\n\n                                             xen_9pdev->rings[i].evtchn);\n\n        if (xen_9pdev->rings[i].local_port == -1) {\n\n            xen_pv_printf(xendev, 0,\n\n                          \"xenevtchn_bind_interdomain failed port=%d\\n\",\n\n                          xen_9pdev->rings[i].evtchn);\n\n            goto out;\n\n        }\n\n        xen_pv_printf(xendev, 2, \"bind evtchn port %d\\n\", xendev->local_port);\n\n        qemu_set_fd_handler(xenevtchn_fd(xen_9pdev->rings[i].evtchndev),\n\n                xen_9pfs_evtchn_event, NULL, &xen_9pdev->rings[i]);\n\n    }\n\n\n\n    xen_9pdev->security_model = xenstore_read_be_str(xendev, \"security_model\");\n\n    xen_9pdev->path = xenstore_read_be_str(xendev, \"path\");\n\n    xen_9pdev->id = s->fsconf.fsdev_id =\n\n        g_strdup_printf(\"xen9p%d\", xendev->dev);\n\n    xen_9pdev->tag = s->fsconf.tag = xenstore_read_fe_str(xendev, \"tag\");\n\n    v9fs_register_transport(s, &xen_9p_transport);\n\n    fsdev = qemu_opts_create(qemu_find_opts(\"fsdev\"),\n\n            s->fsconf.tag,\n\n            1, NULL);\n\n    qemu_opt_set(fsdev, \"fsdriver\", \"local\", NULL);\n\n    qemu_opt_set(fsdev, \"path\", xen_9pdev->path, NULL);\n\n    qemu_opt_set(fsdev, \"security_model\", xen_9pdev->security_model, NULL);\n\n    qemu_opts_set_id(fsdev, s->fsconf.fsdev_id);\n\n    qemu_fsdev_add(fsdev);\n\n    v9fs_device_realize_common(s, NULL);\n\n\n\n    return 0;\n\n\n\nout:\n\n    xen_9pfs_free(xendev);\n\n    return -1;\n\n}\n\nQuestion: Does the supplied evidence show unused or obsolete code, dependencies or assets, or documentation that disagrees with implementation? The mere presence of comments, documentation, or a changed file does not establish this concern.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 627,
+    "timings": {
+      "cache_n": 544,
+      "prompt_n": 83,
+      "prompt_ms": 590.106,
+      "prompt_per_token_ms": 7.109710843373494,
+      "prompt_per_second": 140.65269629524187,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.44925546646118164,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -0.44925546646118164
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -3.9054179191589355
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -3.95933198928833
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -4.02518892288208
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -4.0806450843811035
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -4.524549961090088
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.7830586433410645
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -4.8590617179870605
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -5.036960124969482
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -5.038821697235107
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -5.079983234405518
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -5.1837544441223145
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.415668964385986
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.499693393707275
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.6180291175842285
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -5.660871982574463
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -5.733580112457275
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.742514133453369
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -5.783365726470947
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -5.792114734649658
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -5.901186466217041
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -5.998045444488525
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -6.078888416290283
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -6.082981586456299
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.13976526260376
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.22477388381958
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -6.239462375640869
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -6.276416301727295
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -6.389989376068115
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -6.392009258270264
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -6.463073253631592
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -6.486252307891846
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.5038533210754395
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.5081257820129395
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -6.515860080718994
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -6.531254291534424
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.549063205718994
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.556434154510498
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.602728366851807
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.630396366119385
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -6.796640872955322
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -6.819735050201416
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -6.822535037994385
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -6.830047130584717
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -6.835727214813232
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -6.860897541046143
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -6.930716037750244
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -6.9733567237854
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -6.975174427032471
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.032341480255127
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.087173938751221
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -7.099558353424072
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.1575798988342285
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -7.177769184112549
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -7.193783283233643
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.234879016876221
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.300455570220947
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.319417476654053
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.326292514801025
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -7.335360050201416
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.344768047332764
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -7.353132724761963
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.382263660430908
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.385908603668213
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.412298679351807
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -7.45431661605835
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.454563617706299
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.468699932098389
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -7.482911586761475
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.490341663360596
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.497436046600342
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.506565570831299
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.534571170806885
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.575692653656006
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.581786632537842
+          },
+          {
+            "id": 1,
+            "token": "\"",
+            "bytes": [
+              34
+            ],
+            "logprob": -7.585174083709717
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.5879950523376465
+          },
+          {
+            "id": 3320,
+            "token": "Be",
+            "bytes": [
+              66,
+              101
+            ],
+            "logprob": -7.592787265777588
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.604712963104248
+          },
+          {
+            "id": 22,
+            "token": "7",
+            "bytes": [
+              55
+            ],
+            "logprob": -7.6367878913879395
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.744154453277588
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.804193019866943
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.881199359893799
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.906906604766846
+          },
+          {
+            "id": 6487,
+            "token": "none",
+            "bytes": [
+              110,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.926258563995361
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -7.976294994354248
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.983113765716553
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -8.022319793701172
+          },
+          {
+            "id": 11261,
+            "token": "BE",
+            "bytes": [
+              66,
+              69
+            ],
+            "logprob": -8.023945808410645
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -8.041574478149414
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -8.052011489868164
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.074579238891602
+          },
+          {
+            "id": 623,
+            "token": "In",
+            "bytes": [
+              73,
+              110
+            ],
+            "logprob": -8.123625755310059
+          },
+          {
+            "id": 61442,
+            "token": "\"B",
+            "bytes": [
+              34,
+              66
+            ],
+            "logprob": -8.125269889831543
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -8.143963813781738
+          },
+          {
+            "id": 4738,
+            "token": "BC",
+            "bytes": [
+              66,
+              67
+            ],
+            "logprob": -8.156525611877441
+          },
+          {
+            "id": 28,
+            "token": "=",
+            "bytes": [
+              61
+            ],
+            "logprob": -8.166925430297852
+          },
+          {
+            "id": 47507,
+            "token": "%B",
+            "bytes": [
+              37,
+              66
+            ],
+            "logprob": -8.1752290725708
+          },
+          {
+            "id": 71681,
+            "token": "Bs",
+            "bytes": [
+              66,
+              115
+            ],
+            "logprob": -8.190831184387207
+          },
+          {
+            "id": 1323,
+            "token": "be",
+            "bytes": [
+              98,
+              101
+            ],
+            "logprob": -8.215181350708008
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.6003851999994367,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.016896562427816814,
+    "B": 0.638103063938086,
+    "Z": 0.006493457645924942
+  },
+  "prefix_reuse_verified": true
+}

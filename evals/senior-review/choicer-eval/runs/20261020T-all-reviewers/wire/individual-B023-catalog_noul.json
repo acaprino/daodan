@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Write a short release announcement from the completed change notes.",
+    "artifacts": [
+      {
+        "path": "CHANGELOG.md",
+        "content": "## 2.4\n- Added CSV exports for saved searches.\n- Added a keyboard shortcut to open settings.\n- Reduced repeated notifications after reconnecting."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the task is security-specific auditing (use security-auditor).",
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
+      }
+    }
+  }
+}

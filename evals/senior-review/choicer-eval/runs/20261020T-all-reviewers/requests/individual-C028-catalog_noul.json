@@ -1,0 +1,30 @@
+{
+  "id": "individual-C028-catalog_noul",
+  "kind": "individual",
+  "case_id": "C028",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Write a new project overview for first-time users from the supplied implementation notes. No guide exists yet and no review of authored documents is requested.",
+    "artifacts": [
+      {
+        "path": "notes/product.txt",
+        "content": "The tool imports contact CSV files, deduplicates by email, and exports an address book. It runs offline."
+      },
+      {
+        "path": "src/main.py",
+        "content": "def main():\n    contacts = import_csv()\n    export_address_book(deduplicate(contacts))\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's guide method (/daodan:write-docs) to verify authored guide files."
+      }
+    }
+  },
+  "sha256": "8ebdb6a2d3054d59e17a3fd7e73735b325023d5a815b792d2bc95d1f0d53d5ff"
+}

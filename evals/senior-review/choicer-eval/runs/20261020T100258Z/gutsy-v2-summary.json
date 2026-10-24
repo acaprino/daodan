@@ -1,0 +1,293 @@
+{
+  "summary": {
+    "labeled_cases": 10,
+    "expected_role_recall": "18/23 (78.3%)",
+    "critical_recall": "4/5 (80.0%)",
+    "security_recall": "1/1 (100.0%)",
+    "data_integrity_recall": "3/4 (75.0%)",
+    "excess_activations_per_case": 2.4,
+    "mean_selected_per_case": 4.2
+  },
+  "cases": [
+    {
+      "case_id": "C01",
+      "source_case": "jupiter-cache-convergence",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "citations": {
+        "senior-review:distributed-flow-auditor": {
+          "hunk_id": "H1",
+          "file": "jupiter-common/jupiter_common/utils/backoff.py",
+          "line": 78
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H1",
+          "file": "jupiter-common/jupiter_common/utils/backoff.py",
+          "line": 78
+        }
+      },
+      "avg_query_latency_ms": 3839.2
+    },
+    {
+      "case_id": "C02",
+      "source_case": "jupiter-credential-refill",
+      "label_status": "unlabeled",
+      "expected": [],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {
+        "senior-review:temporal-resilience-auditor": {
+          "hunk_id": "H5",
+          "file": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "line": 377
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H2",
+          "file": "jupiter-core/jupiter_core/agents/alive_agent.py",
+          "line": 174
+        }
+      },
+      "avg_query_latency_ms": 3431.0
+    },
+    {
+      "case_id": "C03",
+      "source_case": "jupiter-economic-events-upsert",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {
+        "senior-review:temporal-resilience-auditor": {
+          "hunk_id": "H3",
+          "file": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "line": 114
+        },
+        "senior-review:data-integrity-auditor": {
+          "hunk_id": "H4",
+          "file": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "line": 156
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H4",
+          "file": "jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "line": 156
+        }
+      },
+      "avg_query_latency_ms": 3069.8
+    },
+    {
+      "case_id": "C04",
+      "source_case": "jupiter-market-state-tristate",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {
+        "senior-review:temporal-resilience-auditor": {
+          "hunk_id": "H3",
+          "file": "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+          "line": 2822
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H3",
+          "file": "jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py",
+          "line": 2822
+        }
+      },
+      "avg_query_latency_ms": 3750.8
+    },
+    {
+      "case_id": "C05",
+      "source_case": "jupiter-position-notice-owner",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {
+        "senior-review:security-auditor": {
+          "hunk_id": "H1",
+          "file": "jupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py",
+          "line": 1495
+        },
+        "senior-review:temporal-resilience-auditor": {
+          "hunk_id": "H1",
+          "file": "jupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py",
+          "line": 1495
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H1",
+          "file": "jupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py",
+          "line": 1495
+        }
+      },
+      "avg_query_latency_ms": 2163.5
+    },
+    {
+      "case_id": "C06",
+      "source_case": "jupiter-trade-failure-drop",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "citations": {
+        "senior-review:distributed-flow-auditor": {
+          "hunk_id": "H3",
+          "file": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "line": 83
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H3",
+          "file": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "line": 83
+        },
+        "senior-review:ui-race-auditor": {
+          "hunk_id": "H3",
+          "file": "jupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts",
+          "line": 83
+        }
+      },
+      "avg_query_latency_ms": 3210.8
+    },
+    {
+      "case_id": "C07",
+      "source_case": "jupiter-updater",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "citations": {
+        "senior-review:temporal-resilience-auditor": {
+          "hunk_id": "H4",
+          "file": "docs/06_user_interfaces/desktop/AUTO_UPDATE_SYSTEM.md",
+          "line": 182
+        },
+        "senior-review:logic-integrity-auditor": {
+          "hunk_id": "H4",
+          "file": "docs/06_user_interfaces/desktop/AUTO_UPDATE_SYSTEM.md",
+          "line": 182
+        }
+      },
+      "avg_query_latency_ms": 3306.2
+    },
+    {
+      "case_id": "C08",
+      "source_case": "synthetic-cache-stale-read",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {},
+      "avg_query_latency_ms": 1541.7
+    },
+    {
+      "case_id": "C09",
+      "source_case": "synthetic-connection-pool-leak",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "citations": {},
+      "avg_query_latency_ms": 1500.5
+    },
+    {
+      "case_id": "C10",
+      "source_case": "synthetic-payment-double-insert",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {},
+      "avg_query_latency_ms": 1524.4
+    },
+    {
+      "case_id": "C11",
+      "source_case": "synthetic-retry-storm",
+      "label_status": "labeled",
+      "expected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "citations": {},
+      "avg_query_latency_ms": 1548.3
+    }
+  ]
+}

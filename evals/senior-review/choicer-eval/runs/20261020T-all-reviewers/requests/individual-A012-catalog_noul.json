@@ -1,0 +1,26 @@
+{
+  "id": "individual-A012-catalog_noul",
+  "kind": "individual",
+  "case_id": "A012",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Improve the readability of this proposal's introduction. Review wording and tone only; implementation design is not part of this edit.",
+    "artifacts": [
+      {
+        "path": "docs/proposal.md",
+        "content": "We would like to make the editor pleasant for people who write lengthy notes. This proposal describes the experience we hope to offer.\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
+      }
+    }
+  },
+  "sha256": "1dda9250d5a45d94c4783bd75811dd02920790257c42e15b74fb2b9476aa4cf1"
+}

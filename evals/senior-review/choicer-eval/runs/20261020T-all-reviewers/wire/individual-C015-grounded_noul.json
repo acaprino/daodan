@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the intermittent test failure using the supplied attempts and fixture. Do not execute tests; distinguish test isolation, environment and product causes before suggesting a disposition.",
+    "artifacts": [
+      {
+        "path": "tests/test_notifications.py",
+        "content": "pending = []\n\ndef test_queue_empty():\n    assert pending == []\n\ndef test_enqueue():\n    pending.append(\"mail\")\n    assert pending == [\"mail\"]\n"
+      },
+      {
+        "path": "ci/attempts.txt",
+        "content": "Attempt 41: pytest --random-order-seed=7; test_enqueue PASS, test_queue_empty FAIL.\nAttempt 42: pytest --random-order-seed=9; test_queue_empty PASS, test_enqueue PASS.\nSame commit, image and dependency lock."
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    }
+  }
+}

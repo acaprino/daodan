@@ -1,0 +1,434 @@
+[
+  {
+    "id": "python_raw/original_react/noul/forward",
+    "request_sha256": "86a7135cbde8003721d52a6a4e37f0a27dced68c2e2538cf298262d33f88f070",
+    "logits": [
+      -8.96993350982666,
+      6.529625415802002
+    ],
+    "positive_description_probability": 0.9999998143790436
+  },
+  {
+    "id": "python_raw/original_react/noul/reversed",
+    "request_sha256": "6355eb0aa19d6b7ede0346b5f6a789c54b2a084b4bd013e380e1a83c9da61886",
+    "logits": [
+      5.057005882263184,
+      -8.824262619018555
+    ],
+    "positive_description_probability": 0.9999990636433883
+  },
+  {
+    "id": "python_raw/original_react/choice/forward",
+    "request_sha256": "ee10366163b915eb19487009a29ead782fda97dc32ffc86cfff6e4fd1ea63a72",
+    "logits": [
+      -9.175583839416504,
+      7.05983829498291
+    ],
+    "positive_description_probability": 0.9999999110705272
+  },
+  {
+    "id": "python_raw/original_react/choice/reversed",
+    "request_sha256": "592da344e3a3e8f92279c1ce3a427c562e62c522f94e183f1bb1059f03f14b12",
+    "logits": [
+      5.440704345703125,
+      -9.148488998413086
+    ],
+    "positive_description_probability": 0.9999995386891866
+  },
+  {
+    "id": "python_raw/property_react_descriptive/noul/forward",
+    "request_sha256": "56cdec87e72dac30e2076e45bd0969f3c1315f4967104d77465c0639d4b4e906",
+    "logits": [
+      2.1523444652557373,
+      -5.072999954223633
+    ],
+    "positive_description_probability": 0.0007273723367269416
+  },
+  {
+    "id": "python_raw/property_react_descriptive/noul/reversed",
+    "request_sha256": "896550ca275c99df038faf4e7af076f02f5ab7ec4a0f567464fcf5e8c5994600",
+    "logits": [
+      -6.310179710388184,
+      -2.028521776199341
+    ],
+    "positive_description_probability": 0.013631349299387066
+  },
+  {
+    "id": "python_raw/property_react_descriptive/choice/forward",
+    "request_sha256": "230d1f8de41b8d64e8b252a0d73347a6cc6486a81b326e8daeb6d9899ad214e7",
+    "logits": [
+      2.5861258506774902,
+      -4.718505859375
+    ],
+    "positive_description_probability": 0.0006719652694170847
+  },
+  {
+    "id": "python_raw/property_react_descriptive/choice/reversed",
+    "request_sha256": "5f0a5a532d26b20cd29951aa580c39fce06fd715713e2e506b623427b2a2132c",
+    "logits": [
+      -5.728233337402344,
+      -2.324871301651001
+    ],
+    "positive_description_probability": 0.03219055784335041
+  },
+  {
+    "id": "python_raw/property_data_descriptive/noul/forward",
+    "request_sha256": "373c8b5971df4b886b0bf876a69e435b2a0fca03bace8b9bc5542950918c3084",
+    "logits": [
+      -1.6037541627883911,
+      -5.178709983825684
+    ],
+    "positive_description_probability": 0.02725312194725518
+  },
+  {
+    "id": "python_raw/property_data_descriptive/noul/reversed",
+    "request_sha256": "f0e400275c9503e9e17cdc53524184f508efc2e1d093161f8404a4cc59221b1d",
+    "logits": [
+      -6.153865337371826,
+      -6.42703104019165
+    ],
+    "positive_description_probability": 0.5678699147096262
+  },
+  {
+    "id": "python_raw/property_data_descriptive/choice/forward",
+    "request_sha256": "7bea4189b529f5b67c16619dc62763d1b73e2192fa50da213f55f3db497cc3d7",
+    "logits": [
+      -0.7684128880500793,
+      -4.0883378982543945
+    ],
+    "positive_description_probability": 0.03489393382605447
+  },
+  {
+    "id": "python_raw/property_data_descriptive/choice/reversed",
+    "request_sha256": "d26ca5c09128a74e29ae248e680e922532d85584c15ff3d3211da256df930b14",
+    "logits": [
+      -5.502583980560303,
+      -5.139253616333008
+    ],
+    "positive_description_probability": 0.4101536184127484
+  },
+  {
+    "id": "react_raw/original_react/noul/forward",
+    "request_sha256": "4ca2bd9a895b6748321873e29b45f49dcd98ccb757cac0a436f6c160bb9895b3",
+    "logits": [
+      -7.118997097015381,
+      6.15888786315918
+    ],
+    "positive_description_probability": 0.9999982880657257
+  },
+  {
+    "id": "react_raw/original_react/noul/reversed",
+    "request_sha256": "a8df5361b665de3f96b11c78ff3d49c60af3d800d9437a89ee94b0dd12c233a4",
+    "logits": [
+      6.739883899688721,
+      -7.866245269775391
+    ],
+    "positive_description_probability": 0.9999995464360772
+  },
+  {
+    "id": "react_raw/original_react/choice/forward",
+    "request_sha256": "4e0b4f88c160ab4eacab52ed3402616576024571af93fa28d9e2819f907d9d78",
+    "logits": [
+      -6.87252950668335,
+      6.621066570281982
+    ],
+    "positive_description_probability": 0.9999986202351291
+  },
+  {
+    "id": "react_raw/original_react/choice/reversed",
+    "request_sha256": "c9bbe52cb1da4fc9500894c362cb5543809ca281eda57358fae09491e66186a8",
+    "logits": [
+      7.2528862953186035,
+      -7.80918025970459
+    ],
+    "positive_description_probability": 0.9999997125068614
+  },
+  {
+    "id": "react_raw/property_react_descriptive/noul/forward",
+    "request_sha256": "257f0c1091496e63a4716db0448b7f57d61a8eab6d5aa4cf43367e5ce074a088",
+    "logits": [
+      4.101741313934326,
+      1.338988184928894
+    ],
+    "positive_description_probability": 0.059370429241630135
+  },
+  {
+    "id": "react_raw/property_react_descriptive/noul/reversed",
+    "request_sha256": "992f034fa473de11dd22c65478c8504b4374d9b01e1fb8f3d73e534c03c23512",
+    "logits": [
+      2.14286208152771,
+      4.525598049163818
+    ],
+    "positive_description_probability": 0.0844986742269669
+  },
+  {
+    "id": "react_raw/property_react_descriptive/choice/forward",
+    "request_sha256": "eed7e6880329d2c69f7ca57dab6080921ec9877cdb23d422f4138361acd8f7cf",
+    "logits": [
+      4.724355697631836,
+      1.6304289102554321
+    ],
+    "positive_description_probability": 0.04335846529516146
+  },
+  {
+    "id": "react_raw/property_react_descriptive/choice/reversed",
+    "request_sha256": "064f554b1ed6935cdf2b4284236ffc9f17eaeb2c2b8260dfbdf229a5de66f288",
+    "logits": [
+      3.7833411693573,
+      5.169947147369385
+    ],
+    "positive_description_probability": 0.1999501459582608
+  },
+  {
+    "id": "react_raw/property_data_descriptive/noul/forward",
+    "request_sha256": "9755efc674dfc2b8c465ccf5d5b02f6986dcbf4ba8d4f0dcdef5badaf77a5dcc",
+    "logits": [
+      1.9527161121368408,
+      -2.9159722328186035
+    ],
+    "positive_description_probability": 0.00762485163496628
+  },
+  {
+    "id": "react_raw/property_data_descriptive/noul/reversed",
+    "request_sha256": "9e9eb74d0a6c5dae29a3578f4a052ba0f9e134daeec6126542274b92223c7e0a",
+    "logits": [
+      -5.544716835021973,
+      0.07252763956785202
+    ],
+    "positive_description_probability": 0.0036214798877580974
+  },
+  {
+    "id": "react_raw/property_data_descriptive/choice/forward",
+    "request_sha256": "d2edd61810b597c9685488bc14f8a853b04e109da31b442129179fce370de1a0",
+    "logits": [
+      2.5523183345794678,
+      -3.164240598678589
+    ],
+    "positive_description_probability": 0.003280220786929966
+  },
+  {
+    "id": "react_raw/property_data_descriptive/choice/reversed",
+    "request_sha256": "bbf6a1a3d7aa008e03ae76a32bcbde633f02937aecdd43785eb130553c3aeff7",
+    "logits": [
+      -6.030011177062988,
+      -0.5239893794059753
+    ],
+    "positive_description_probability": 0.004045800680764832
+  },
+  {
+    "id": "python_plain/original_react/noul/forward",
+    "request_sha256": "287d80d72e30eecc949f4b75db27c077632a41586c30adc2a82796d0c3ba94c6",
+    "logits": [
+      -10.032441139221191,
+      -8.480081558227539
+    ],
+    "positive_description_probability": 0.82525426740314
+  },
+  {
+    "id": "python_plain/original_react/noul/reversed",
+    "request_sha256": "4f2e34cb9b6fa69269639b252a352ab5497d0482c1738ad6510f5ff0d7aa1ee4",
+    "logits": [
+      -6.078478813171387,
+      -10.046881675720215
+    ],
+    "positive_description_probability": 0.9814471156311964
+  },
+  {
+    "id": "python_plain/original_react/choice/forward",
+    "request_sha256": "292596b98c88e73c098d5c21512b78cdf5f772fe4090d8bbd74cc27e2f334309",
+    "logits": [
+      -10.201630592346191,
+      -7.919103622436523
+    ],
+    "positive_description_probability": 0.9074195545440988
+  },
+  {
+    "id": "python_plain/original_react/choice/reversed",
+    "request_sha256": "4a13e74291552c676699e8a25dc155791d69191a8423517ef44c87fd129aa2e1",
+    "logits": [
+      -0.5886105895042419,
+      -9.876348495483398
+    ],
+    "positive_description_probability": 0.9999074563797085
+  },
+  {
+    "id": "python_plain/property_react_descriptive/noul/forward",
+    "request_sha256": "ccdc50937f6e985f49a0ced7dec6af29ddf0d925f846f41f367a8ae87edbd804",
+    "logits": [
+      3.582242012023926,
+      -8.411617279052734
+    ],
+    "positive_description_probability": 6.182020036750949e-06
+  },
+  {
+    "id": "python_plain/property_react_descriptive/noul/reversed",
+    "request_sha256": "692ff7570ad402182104604d95b32ae186fd8d3e69e75e71f604c5ae3ed882c4",
+    "logits": [
+      -8.266369819641113,
+      -5.003340244293213
+    ],
+    "positive_description_probability": 0.03686150005563004
+  },
+  {
+    "id": "python_plain/property_react_descriptive/choice/forward",
+    "request_sha256": "765b829c816ded116afe98c43b784cbc5acfff7549547e57578b11bc0e14f73c",
+    "logits": [
+      3.5948686599731445,
+      -8.633774757385254
+    ],
+    "positive_description_probability": 4.888386315558821e-06
+  },
+  {
+    "id": "python_plain/property_react_descriptive/choice/reversed",
+    "request_sha256": "9b6b42caa6aeb9d795a6f936fdc44cafdc79ca3f65f91f0377a2838bfc664b48",
+    "logits": [
+      -9.034446716308594,
+      -6.0161590576171875
+    ],
+    "positive_description_probability": 0.04660650222029517
+  },
+  {
+    "id": "python_plain/property_data_descriptive/noul/forward",
+    "request_sha256": "714b85dee1c356fdc8bee8330be49310bee751cf2ee97609f4ae31ba8294ae2a",
+    "logits": [
+      4.278837203979492,
+      -4.984601020812988
+    ],
+    "positive_description_probability": 9.481972990298282e-05
+  },
+  {
+    "id": "python_plain/property_data_descriptive/noul/reversed",
+    "request_sha256": "fcce9748891153581dd2da8f1d75a2dc020b6ac3f7b443607e23ad476cc316a4",
+    "logits": [
+      -4.481959342956543,
+      0.19830167293548584
+    ],
+    "positive_description_probability": 0.009191328030814754
+  },
+  {
+    "id": "python_plain/property_data_descriptive/choice/forward",
+    "request_sha256": "b1f14487ef050a6d7f33f1a3d885b2b5e38d877a7dbcff16a67de644d58b5cb2",
+    "logits": [
+      3.9124722480773926,
+      -5.152610778808594
+    ],
+    "positive_description_probability": 0.00011562034135676692
+  },
+  {
+    "id": "python_plain/property_data_descriptive/choice/reversed",
+    "request_sha256": "cdf570bfc8560b5801fd450e0fab0e45f17b240c048325bc0ca1884aeb7829fa",
+    "logits": [
+      -4.426819324493408,
+      -1.232775330543518
+    ],
+    "positive_description_probability": 0.0393904740578528
+  },
+  {
+    "id": "react_plain/original_react/noul/forward",
+    "request_sha256": "7ed510915178ebcda95b25ba0fc0dd0ec0b020842c64cee56a5a76c59dfa50b1",
+    "logits": [
+      -5.9845781326293945,
+      3.1163089275360107
+    ],
+    "positive_description_probability": 0.9998884456476417
+  },
+  {
+    "id": "react_plain/original_react/noul/reversed",
+    "request_sha256": "7ffdc263f02268a6fd36ed15b2f2ddd7fea2b39a1a809a191dd830b772bbe79c",
+    "logits": [
+      2.3147644996643066,
+      -7.569726943969727
+    ],
+    "positive_description_probability": 0.9999490437125311
+  },
+  {
+    "id": "react_plain/original_react/choice/forward",
+    "request_sha256": "4650fd2f3cd532e96b907534325b628b162c1f5fa560f401e10bdd40a681389b",
+    "logits": [
+      -6.362267017364502,
+      3.3043181896209717
+    ],
+    "positive_description_probability": 0.9999366381473511
+  },
+  {
+    "id": "react_plain/original_react/choice/reversed",
+    "request_sha256": "7df840e1dcfdd349b2834e8474d7f35051694de798c00bb76e49b9c69b80d88d",
+    "logits": [
+      2.324362277984619,
+      -7.874247074127197
+    ],
+    "positive_description_probability": 0.9999627793399612
+  },
+  {
+    "id": "react_plain/property_react_descriptive/noul/forward",
+    "request_sha256": "51172e44d11eece404c1a4833da0ebe0b3a492fbc8a2e59631fc326d9ee46c48",
+    "logits": [
+      4.667905807495117,
+      1.671204686164856
+    ],
+    "positive_description_probability": 0.04757512819719016
+  },
+  {
+    "id": "react_plain/property_react_descriptive/noul/reversed",
+    "request_sha256": "c1427aaef3a76e03fd8391af1cb296ecb673e01101aaf8060102825c6dcca2ce",
+    "logits": [
+      2.251274585723877,
+      0.06834027916193008
+    ],
+    "positive_description_probability": 0.8987065038785808
+  },
+  {
+    "id": "react_plain/property_react_descriptive/choice/forward",
+    "request_sha256": "6fc46af707b50d245df32839a05e8544d810a13bcebd5d350769739783deeb5b",
+    "logits": [
+      5.2994489669799805,
+      1.4713261127471924
+    ],
+    "positive_description_probability": 0.02128739649884118
+  },
+  {
+    "id": "react_plain/property_react_descriptive/choice/reversed",
+    "request_sha256": "9df4dff387e746dd072b77d12895b95751f28563c0d6eb4f02222299053f3e5c",
+    "logits": [
+      1.7299975156784058,
+      -0.39725807309150696
+    ],
+    "positive_description_probability": 0.8935241904214274
+  },
+  {
+    "id": "react_plain/property_data_descriptive/noul/forward",
+    "request_sha256": "63ef61b4c656cfaa5eeb08b5ce8af8c993bd45dbaa0f4bd3108056733532801d",
+    "logits": [
+      -0.555931568145752,
+      -2.7904555797576904
+    ],
+    "positive_description_probability": 0.09669277735035588
+  },
+  {
+    "id": "react_plain/property_data_descriptive/noul/reversed",
+    "request_sha256": "f57e53fffebe2c77da2f096ecb86b795e47e2729a9110f246c1e23c3b07c31d0",
+    "logits": [
+      -5.443759918212891,
+      -4.338227272033691
+    ],
+    "positive_description_probability": 0.24870467915705288
+  },
+  {
+    "id": "react_plain/property_data_descriptive/choice/forward",
+    "request_sha256": "cef28cb651d8fcd74e6756ed05b378efd9e89070555c0a2ebad9f04093b391c9",
+    "logits": [
+      -4.1052446365356445,
+      -4.364846706390381
+    ],
+    "positive_description_probability": 0.4354615307555193
+  },
+  {
+    "id": "react_plain/property_data_descriptive/choice/reversed",
+    "request_sha256": "19414fef0cc495a4a5fa84c451281605eb56996d0f7f084a3a60b9b9e0d5fa49",
+    "logits": [
+      -6.502642631530762,
+      -5.543352127075195
+    ],
+    "positive_description_probability": 0.27702027018897707
+  }
+]

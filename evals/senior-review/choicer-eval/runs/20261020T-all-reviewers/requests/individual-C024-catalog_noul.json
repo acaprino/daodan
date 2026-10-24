@@ -1,0 +1,34 @@
+{
+  "id": "individual-C024-catalog_noul",
+  "kind": "individual",
+  "case_id": "C024",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Resolve the unused-export report by tracing callers and plugin entry points. Limit the assessment to reachability; do not review TypeScript casts or strictness.",
+    "artifacts": [
+      {
+        "path": "tool-output/unused.json",
+        "content": "{\"files\":[],\"exports\":[{\"file\":\"src/report.ts\",\"name\":\"makeReport\"}]}"
+      },
+      {
+        "path": "src/report.ts",
+        "content": "export function makeReport(rows: readonly string[]): string { return rows.join(\"\\n\"); }"
+      },
+      {
+        "path": "src/registry.ts",
+        "content": "export const actions = { report: { module: \"./report\", export: \"makeReport\" } };"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
+      }
+    }
+  },
+  "sha256": "02ac3ad83e464ccf60935de62f1276995abc071498f2d9ec6a0f67657231a1e3"
+}

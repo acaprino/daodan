@@ -1,0 +1,26 @@
+{
+  "id": "individual-B023-grounded_noul",
+  "kind": "individual",
+  "case_id": "B023",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Write a short release announcement from the completed change notes.",
+    "artifacts": [
+      {
+        "path": "CHANGELOG.md",
+        "content": "## 2.4\n- Added CSV exports for saved searches.\n- Added a keyboard shortcut to open settings.\n- Reduced repeated notifications after reconnecting."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  },
+  "sha256": "5441df4356f37f313dd0a2fa1220021de0de171492f0d3a2c1661cf2a06c91bd"
+}

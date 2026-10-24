@@ -1,0 +1,95 @@
+{
+  "kind": "Historical model-input reconstruction, not a contemporaneous wire capture",
+  "derivation": "Frozen full request restricted to successfully encoded questions; submitted IDs are corroborated by the raw answer IDs and original dispatcher behavior.",
+  "source_request_sha256": "b5cf4a7a12c5fbacbdd993d0ef35e948af3477bd4cb5ecbe8576ab58510496b5",
+  "source_result_sha256": "5712af36e94c087b66c4b4d61a26f0f3b5223402274efa59e33455af2a08ce47",
+  "effective_input": {
+    "state": "[H9]\njupiter-core/jupiter_core/agents/alive_agent.py:471 \njupiter-core/jupiter_core/agents/alive_agent.py:472     def _build_heartbeat_metadata(self, broker_alias: str | None) -> dict[str, Any]:\njupiter-core/jupiter_core/agents/alive_agent.py:473         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:474         Build metadata dict for heartbeat payload.\njupiter-core/jupiter_core/agents/alive_agent.py:475 \njupiter-core/jupiter_core/agents/alive_agent.py:476         Includes all fields needed by middleware for auto-registration\njupiter-core/jupiter_core/agents/alive_agent.py:477         after middleware reboot recovery.\njupiter-core/jupiter_core/agents/alive_agent.py:478         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:479         return {\njupiter-core/jupiter_core/agents/alive_agent.py:480             \"agent_name\": self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:481             \"agent_instance_id\": self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:482             \"symbol\": self.trading_config.get_symbol(),\njupiter-core/jupiter_core/agents/alive_agent.py:483             \"timeframe\": self.trading_config.get_timeframe().name,\njupiter-core/jupiter_core/agents/alive_agent.py:484             \"direction\": self.trading_config.get_trading_direction().name,\njupiter-core/jupiter_core/agents/alive_agent.py:485             \"mode\": self.config.get_bot_mode().name,\njupiter-core/jupiter_core/agents/alive_agent.py:486             \"tenant\": self.config.get_tenant(),\njupiter-core/jupiter_core/agents/alive_agent.py:487             \"config_name\": self.config.get_config_name(),\njupiter-core/jupiter_core/agents/alive_agent.py:488             \"broker_alias\": broker_alias,\njupiter-core/jupiter_core/agents/alive_agent.py:489             \"broker_type\": self.config.get_broker_type(),\njupiter-core/jupiter_core/agents/alive_agent.py:490             \"strategy_id\": self.trading_config.get_strategy_id(),\njupiter-core/jupiter_core/agents/alive_agent.py:491             \"agent_path\": self._agent_path,\njupiter-core/jupiter_core/agents/alive_agent.py:492             # M-006 (2026-04-24 review): propagate boot_id through the heartbeat\njupiter-core/jupiter_core/agents/alive_agent.py:493             # payload so the middleware's recovery-only heartbeat auto-register\njupiter-core/jupiter_core/agents/alive_agent.py:494             # branch (heartbeat_monitor.AgentRecord creation) can store the real\njupiter-core/jupiter_core/agents/alive_agent.py:495             # process-session id. Without this, the first real registration after\njupiter-core/jupiter_core/agents/alive_agent.py:496             # a middleware reboot would see stored_boot_id=None vs incoming=\"X\"\njupiter-core/jupiter_core/agents/alive_agent.py:497             # and take `boot_ids_differ` -> full channel unregister+reregister\njupiter-core/jupiter_core/agents/alive_agent.py:498             # broadcast storm per agent per MW reboot.\njupiter-core/jupiter_core/agents/alive_agent.py:499             \"boot_id\": _PROCESS_BOOT_ID,\njupiter-core/jupiter_core/agents/alive_agent.py:500         }",
+    "questions": {
+      "senior-review:api-contract-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+          "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+        }
+      },
+      "senior-review:chicken-egg-detector": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+          "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+        }
+      },
+      "senior-review:code-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+          "false": "the task is security-specific auditing (use security-auditor)."
+        }
+      },
+      "senior-review:data-integrity-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+          "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+        }
+      },
+      "senior-review:logic-integrity-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+          "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+        }
+      },
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+          "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+        }
+      },
+      "senior-review:security-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+          "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+        }
+      },
+      "senior-review:temporal-resilience-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+          "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+        }
+      },
+      "testing:test-suite-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+          "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+        }
+      }
+    }
+  },
+  "effective_input_sha256": "723b515e3f6ea158362cc8de43f8fc024b9d8692054e0ac639837389f8c6ffbe",
+  "submitted_question_ids": [
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "testing:test-suite-auditor"
+  ]
+}

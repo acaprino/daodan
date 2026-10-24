@@ -1,0 +1,22 @@
+{
+  "requirement": "This is the complete bundler manifest for the consent page. Asset bytes are supplied build measurements for this fixture. Only logo.svg is required before consent; initial asset payload must not exceed 100000 bytes. Lazy entries load only after the named page is requested.",
+  "assets": {
+    "logo.svg": 100000,
+    "help.svg": 100000,
+    "about.svg": 100000
+  },
+  "entry": {
+    "page": "consent",
+    "eager": [
+      "logo.svg"
+    ],
+    "lazy": {
+      "help": [
+        "help.svg"
+      ],
+      "about": [
+        "about.svg"
+      ]
+    }
+  }
+}

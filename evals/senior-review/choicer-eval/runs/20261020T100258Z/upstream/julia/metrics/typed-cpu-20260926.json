@@ -1,0 +1,47 @@
+{
+  "weights_sha256": "df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72",
+  "dataset_revision": "c76749ec58bd8c3d2ea706b31c333a9059c38f90",
+  "dataset_sha256": "4f294f218ea1da27f3efef936359389c62ea4d3973a41457732990f1d31b647c",
+  "torch": "2.14.0+cpu",
+  "transformers": "5.0.0",
+  "device": "cpu",
+  "threads": 4,
+  "marker_only_head": false,
+  "encoding": {
+    "max_length": 1024,
+    "head_length": 512,
+    "strict": true
+  },
+  "original_criteria": {
+    "by_type": {
+      "choice": {
+        "count": 600,
+        "correct": 426,
+        "accuracy": 0.71
+      },
+      "noul": {
+        "count": 600,
+        "correct": 483,
+        "accuracy": 0.805
+      },
+      "score": {
+        "count": 800,
+        "correct": 542,
+        "accuracy": 0.6775
+      }
+    },
+    "elapsed_seconds": 601.7335131389846
+  },
+  "literal_noul_ablation": {
+    "by_type": {
+      "noul": {
+        "count": 600,
+        "correct": 391,
+        "accuracy": 0.6516666666666666
+      }
+    },
+    "elapsed_seconds": 170.3590434489888
+  },
+  "executed_probe_sha256": "ac274e1eff64d96d377a53ecbca2c9676b9197c78abb84744fef84c65f0d6ad1",
+  "note": "Same verified weights, pinned data and CPU FP32 settings for both passes; only noul option descriptions change. Historical CUDA BF16 totals remain separate."
+}

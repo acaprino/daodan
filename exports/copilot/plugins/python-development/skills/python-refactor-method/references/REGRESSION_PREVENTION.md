@@ -436,7 +436,7 @@ echo "=== REGRESSION CHECK COMPLETE ==="
 
 1. **ANY test failure** after a change
 2. **ANY F821/E999 flake8 error**
-3. **Performance degradation > 10%** without approval
+3. **Performance degradation beyond the approved workload budget** without approval
 4. **Behavioral change detected** (golden master mismatch)
 
 ### How to recover the failed phase

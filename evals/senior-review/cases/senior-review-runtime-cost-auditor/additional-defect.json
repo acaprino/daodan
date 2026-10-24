@@ -1,0 +1,27 @@
+{
+  "requirement": "Tenant aggregate <=10 charged units; cancellation must admit no new charged work; cost reporting must use supplied v2 tariff 2 credits per unit.",
+  "limits": {
+    "per_operation": 10,
+    "tenant_aggregate": null,
+    "concurrent_operations": 2
+  },
+  "cancel": {
+    "flag": true,
+    "next_action": "start next provider call"
+  },
+  "pricing": {
+    "version": "v1",
+    "credits_per_unit": 1,
+    "reported_invoice": 10,
+    "actual_units": "unknown"
+  },
+  "counter": {
+    "tracks": "successes",
+    "provider_charges": "started calls"
+  },
+  "alert": {
+    "defined": true,
+    "reception_evidence": null,
+    "claim": "delivered"
+  }
+}

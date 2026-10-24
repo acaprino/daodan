@@ -1,0 +1,6 @@
+{
+  "case_id": "C04",
+  "started_at": "2026-10-20T10:15:27.295893+00:00",
+  "transport": "native isolated agent; fork_turns=none; model=gpt-6-luna; effort=low",
+  "measurement_note": "Provider inference timing and token usage unavailable. Dispatch elapsed is host task wall time only."
+}

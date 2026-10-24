@@ -1,0 +1,26 @@
+{
+  "id": "individual-A010-grounded_noul",
+  "kind": "individual",
+  "case_id": "A010",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Assess only the relative urgency of these already-accepted issues using the supplied operational impact. Their diagnoses are settled for this task.",
+    "artifacts": [
+      {
+        "path": "triage/issues.md",
+        "content": "Issue 18: export fails for all 320 daily users; manual recovery takes 25 minutes.\nIssue 24: footer clips at one viewport width; all actions remain available.\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    }
+  },
+  "sha256": "efb633c645608eaad5996b4a58ddc137c656e759fe0fd8396c36977e5c7dd32c"
+}

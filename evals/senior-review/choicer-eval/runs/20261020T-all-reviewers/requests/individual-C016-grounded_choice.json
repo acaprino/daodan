@@ -1,0 +1,30 @@
+{
+  "id": "individual-C016-grounded_choice",
+  "kind": "individual",
+  "case_id": "C016",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Write the first behavioral tests for the approved slugging contract. The task is test authoring only; do not produce a suite-health assessment.",
+    "artifacts": [
+      {
+        "path": "requirements/slug.txt",
+        "content": "Convert spaces to a single hyphen, lowercase letters, and remove leading or trailing hyphens. Preserve non-ASCII letters."
+      },
+      {
+        "path": "src/slug.py",
+        "content": "def slug(text):\n    return \"-\".join(text.strip().lower().split())\n"
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    }
+  },
+  "sha256": "a3f49bbce963cec9928c78b4523d74af658484b1bbd5650d1eff8cd13f22f8d7"
+}

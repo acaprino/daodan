@@ -67,18 +67,16 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Worker brief for one micro-task
 
-The writer of a micro-task receives this brief and nothing else of the
-conversation. Fill every field from the run record; a missing field is a
-reason not to dispatch. The protocol's working discipline and the isolated
-worker contract travel with the brief, as `project-protocol:project-protocol`
-requires.
+The writer receives only this brief. Fill every field from the run record;
+missing fields block dispatch. Include the working discipline and isolated
+worker contract required by `project-protocol:project-protocol`.
 
 ```
 ## Task
 id: <task id>            wave: <wave id>            run: <run id>
 objective: <one sentence, from the record>
 examples to make pass: <EX-* ids and their text>
-invariants to keep: <INV-* ids and their text>
+invariants to keep: <INV-* ids and text; authoritative boundary contract/version, wire/errors, derived types/mocks and serialization check agreed before parallel producer/consumer work>
 rejected alternatives: <RA-* ids and their text, when they touch this task>
 
 ## Files
@@ -108,6 +106,5 @@ Return exactly one of:
 Do not widen write_set. Do not weaken the oracle. Do not retry past one attempt.
 ```
 
-Size: the brief plus its read context stays small enough for an economical
-model to hold it whole; when the context would exceed that, the task is too
-large and goes back to the plan.
+Keep brief and context within the model’s capacity; otherwise split the task
+in the plan.

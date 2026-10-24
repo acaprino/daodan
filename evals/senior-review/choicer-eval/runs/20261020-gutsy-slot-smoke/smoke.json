@@ -1,0 +1,195 @@
+{
+  "args": [
+    "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\llama-bin\\llama-server.exe",
+    "-m",
+    "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "-ngl",
+    "0",
+    "-c",
+    "1536",
+    "-t",
+    "4",
+    "-np",
+    "1",
+    "--batch-size",
+    "32",
+    "--ubatch-size",
+    "32",
+    "--cache-ram",
+    "0",
+    "--ctx-checkpoints",
+    "1",
+    "--slot-save-path",
+    "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\runs\\20261020-gutsy-slot-smoke\\slots",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "57434",
+    "--no-warmup"
+  ],
+  "records": [
+    {
+      "id": "Q0465",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 83,
+      "seconds": 0.494,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.003326591978477511
+    },
+    {
+      "id": "Q0466",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 87,
+      "seconds": 0.592,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.02017597568498175
+    },
+    {
+      "id": "Q0467",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 84,
+      "seconds": 0.628,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.003979817250780823
+    },
+    {
+      "id": "Q0468",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 89,
+      "seconds": 0.529,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.007460832496357095
+    },
+    {
+      "id": "Q0469",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 87,
+      "seconds": 0.543,
+      "letter": "A",
+      "ref_letter": "A",
+      "max_abs_prob_delta": 0.01610543646511614
+    },
+    {
+      "id": "Q0470",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 89,
+      "seconds": 0.536,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.0005459383685932594
+    },
+    {
+      "id": "Q0471",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 92,
+      "seconds": 0.546,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.007639390399315937
+    },
+    {
+      "id": "Q0472",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 87,
+      "seconds": 0.524,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.02903753159337019
+    },
+    {
+      "id": "Q0473",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 83,
+      "seconds": 0.519,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.00319604312225448
+    },
+    {
+      "id": "Q0474",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 93,
+      "seconds": 0.566,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.005100493110845372
+    },
+    {
+      "id": "Q0475",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 91,
+      "seconds": 0.559,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.011625316960205447
+    },
+    {
+      "id": "Q0476",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 93,
+      "seconds": 0.608,
+      "letter": "A",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.009995490284060826
+    },
+    {
+      "id": "Q0477",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 93,
+      "seconds": 0.655,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.005206249236006766
+    },
+    {
+      "id": "Q0478",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 86,
+      "seconds": 0.539,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.012089795197688713
+    },
+    {
+      "id": "Q0479",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 98,
+      "seconds": 0.535,
+      "letter": "A",
+      "ref_letter": "A",
+      "max_abs_prob_delta": 0.012186951772139298
+    },
+    {
+      "id": "Q0480",
+      "restored": 640,
+      "cache_n": 640,
+      "prompt_n": 93,
+      "seconds": 0.564,
+      "letter": "B",
+      "ref_letter": "B",
+      "max_abs_prob_delta": 0.0014929585775738524
+    }
+  ],
+  "peak_combined_rss": 982310912,
+  "memory_exceeded": false,
+  "monitor_error": null
+}

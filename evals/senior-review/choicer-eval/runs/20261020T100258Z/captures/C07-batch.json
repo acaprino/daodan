@@ -1,0 +1,32 @@
+{
+  "schema": "choicer-eval/native-capture-v1",
+  "request_sha256": "17b688d647d812c300745bb9af8fc3ebeecfcf9f8392590e92caebbdb7b41a7c",
+  "response": "{\n  \"mode\": \"full\",\n  \"selected\": [\n    {\n      \"trigger_line\": \"[H38] candidate jupiter-desktop/src-tauri/tauri.conf.json:54 \\\"https://jupiter-desktop-releases.s3.eu-west-1.amazonaws.com/stable/latest.json\\\"\",\n      \"reason\": \"Verify updater URL trust, artifact integrity, and the security of the privileged update path.\",\n      \"role\": \"senior-review:security-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H28] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:145 export const nextLocalMidnight = (from: Date): number =>\",\n      \"reason\": \"Check local-midnight arithmetic and date-boundary behavior, including DST transitions and postponement.\",\n      \"role\": \"senior-review:premise-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H29] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:470 schedulerTimer = setInterval(runSchedulerTick, SCHEDULER_TICK_MS)\",\n      \"reason\": \"Verify scheduler timing, delayed ticks, and restart behavior across sleep or clock changes.\",\n      \"role\": \"senior-review:temporal-resilience-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H27] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:129 let checkTimer: ReturnType<typeof setTimeout> | null = null\",\n      \"reason\": \"Check timer and updater-handle cleanup across app lifetime, retries, and overlapping flows.\",\n      \"role\": \"senior-review:resource-lifecycle-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H23] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:445 export function useUpdater(): UseUpdaterReturn {\",\n      \"reason\": \"Review updater state transitions, concurrency guards, and failure recovery as one cross-module flow.\",\n      \"role\": \"senior-review:code-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    }\n  ],\n  \"recommend_full_review\": false,\n  \"recommend_full_reason\": null\n}\n",
+  "response_sha256": "950d5f4877d76f359e1e7721f0cbcfeb5837fce4e52cba5ed9ab9bf67216d488",
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  },
+  "usage": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "transport": {
+    "tool": "collaboration.spawn_agent",
+    "task_name": "/root/baseline_c07",
+    "fork_turns": "none",
+    "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C07-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation, using sequential bounded chunks if needed; do not summarize or omit hunks. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C07-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+    "loader_prompt_sha256": "d67afcc87bd6c3e6ed3953c7dab6b1a55d32dac95ab5effba8001f6417d9cc5e",
+    "effective_provider_request": null,
+    "provider_finish_reason": null,
+    "provider_api_call_count": null,
+    "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+  },
+  "limitations": [
+    "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+    "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+  ]
+}

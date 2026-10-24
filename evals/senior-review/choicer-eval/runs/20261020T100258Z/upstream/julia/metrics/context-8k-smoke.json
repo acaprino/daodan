@@ -1,0 +1,8 @@
+{
+  "tokens": 8192,
+  "device": "cpu",
+  "elapsed_seconds": 24.356244013994,
+  "finite_logits": true,
+  "max_length": 8192,
+  "scope": "Runtime execution smoke; not long-context accuracy evaluation"
+}

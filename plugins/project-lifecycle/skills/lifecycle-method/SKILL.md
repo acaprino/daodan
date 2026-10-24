@@ -8,20 +8,19 @@ description: >
 
 # Project lifecycle
 
-Own the requested outcome and its consequences, in proportion to risk, scope
-and authorization. Load the skill `project-protocol:project-protocol` first: it owns run
-records, snapshots, verification and recovery. This skill owns decisions and
-dispatch, never detection prompts.
+Load `project-protocol:project-protocol` for records, snapshots, verification and
+recovery. Coordinate authorized outcomes and dispatch within scope; reuse detection
+owners.
 
 ## Load map
 
-Read one unit per step, in this skill, at its start.
+Read each step's named units at its start.
 
 | Operation or step | Read |
 |---|---|
 | initialization | `references/init.md` |
 | assess, the diagnosis | `references/assess.md` |
-| change, phase 1 | `references/preflight.md` |
+| change, phase 1 | `references/preflight.md`, `references/context-cycle.md` |
 | change, phases 2 and 3 | `references/interview.md` |
 | change, phases 4 and 5 | `references/waves.md`, then `references/worker-brief.md` before each dispatch |
 | change, overview | `references/change.md` |
@@ -51,7 +50,7 @@ in-scope edits, `commit` for commits, neither a push or a permanent deletion.
 
 ## Canonical methods
 
-Load only what the step needs, by name, never by path.
+Load needed owners by name, never by path.
 
 | Need | Load or dispatch |
 |---|---|
@@ -82,10 +81,9 @@ and treat two reviewers with one inherited premise as one observation.
 For an HTML view, requested or useful for navigation, the coordinator reads
 `references/human-view.md` before closing; workers keep native deliveries.
 
-`result.json` follows the protocol's envelope and references each native
-report. Validate it with the helper before claiming completion; a validated
-record is not read evidence. Reports state inventory, read and runtime
-coverage separately, the exact candidate of every check, decisions, changes,
-remaining limits and next actions. Never claim runtime coverage from source
-inspection, correctness from self-generated tests, or disk recovery from a
-quarantine move.
+Use the protocol envelope for `result.json`, referencing each native report.
+Validate before claiming completion; validation alone is no reading evidence.
+Report inventory, reading and runtime coverage separately, each check's exact
+candidate, decisions, changes, limits and next actions. Source inspection proves
+no runtime coverage; self-generated tests prove no correctness; quarantine moves
+prove no recovered disk space.

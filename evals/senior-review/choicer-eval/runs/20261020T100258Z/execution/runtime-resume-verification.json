@@ -1,0 +1,18 @@
+{
+  "tested_at": "2026-10-20T10:36:09.549371+00:00",
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "evals/senior-review/choicer-eval",
+    "-p",
+    "test_*.py"
+  ],
+  "tests_passed": 65,
+  "tests_failed": 0,
+  "preserved_result_files_verified": 23,
+  "entry_sha256": "a19e691f49a8740a7bf1b5b89e09335a7e5f9efc4b7c59f43c8878d4d0b71465"
+}

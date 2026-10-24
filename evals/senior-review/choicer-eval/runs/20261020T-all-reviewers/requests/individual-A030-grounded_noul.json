@@ -1,0 +1,26 @@
+{
+  "id": "individual-A030-grounded_noul",
+  "kind": "individual",
+  "case_id": "A030",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review cancellation and completion of the child command used to render previews.",
+    "artifacts": [
+      {
+        "path": "src/render.py",
+        "content": "import asyncio\n\nasync def render(path):\n    process = await asyncio.create_subprocess_exec(\"preview\", path)\n    try:\n        return await process.wait()\n    except asyncio.CancelledError:\n        process.terminate()\n        await process.wait()\n        raise\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  },
+  "sha256": "69b09b4514890a255a323a9824f439ab699f2109791ba2f4bb37b7b3f4d33bfa"
+}

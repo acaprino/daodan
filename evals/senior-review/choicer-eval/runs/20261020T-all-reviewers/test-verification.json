@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-20T11:36:30.051874+00:00",
+  "command": "python -B -m unittest discover -s evals/senior-review/choicer-eval -p 'test_*.py' -q",
+  "passed": 85,
+  "failed": 0,
+  "mode": "stdlib checks; no model inference",
+  "tests": {
+    "test_adaptation.py": "a5ee610bdfcba535dbef1e90e93e1ee3582d7ca7e294b3d44bec7ff9b5485dec",
+    "test_all_reviewers.py": "54e33080488afc2d8513e00af4036223a0b561148c93820692ab1cdd1a383002",
+    "test_inputs.py": "d6cc1aa32dbbd636ad49986df7f5ed2d998b16d546cddecb961bbf6343f689cc",
+    "test_llm_validation.py": "c696f8d26df9cc73a36723a582b08eacb21f7bd47fff8c11a7e94f73e0bd2e72",
+    "test_metrics.py": "813a51540fcc8173fb120f199387056135e63b674847882ecb2fa4d9172cc07a",
+    "test_runtime.py": "fd44ccf80dd3dc1591e79a4c122c5f3c57ed9959a83a72311c8cd25a54aa21e7"
+  }
+}

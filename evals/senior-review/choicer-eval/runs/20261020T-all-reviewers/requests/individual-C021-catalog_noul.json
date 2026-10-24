@@ -1,0 +1,26 @@
+{
+  "id": "individual-C021-catalog_noul",
+  "kind": "individual",
+  "case_id": "C021",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review whether adding the suspended state leaves any non-exhaustive handling in the typed account-state logic.",
+    "artifacts": [
+      {
+        "path": "src/status.ts",
+        "content": "export type Status = { kind: \"active\" } | { kind: \"closed\" } | { kind: \"suspended\"; reason: string };\nexport function mayCharge(status: Status): boolean {\n  switch (status.kind) {\n    case \"active\": return true;\n    case \"closed\": return false;\n    default: return true;\n  }\n}"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
+      }
+    }
+  },
+  "sha256": "fe30cc854c70640ec7a4d5d9653ead4f282b26418d1ed484d6f19a5de5506d03"
+}

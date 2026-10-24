@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Check only whether the documented function signature matches current code and report factual drift. Do not assess organization, navigation, wording or presentation.",
+    "artifacts": [
+      {
+        "path": "docs/client.md",
+        "content": "connect(host: str, port: int = 443) returns Connection."
+      },
+      {
+        "path": "src/client.py",
+        "content": "def connect(host: str, port: int = 8443, *, tls: bool = True):\n    return Connection(host, port, tls=tls)\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "editing prose voice (use text-humanizer).",
+        "true": "spawned by project-knowledge methods to restructure technical documentation."
+      }
+    }
+  }
+}

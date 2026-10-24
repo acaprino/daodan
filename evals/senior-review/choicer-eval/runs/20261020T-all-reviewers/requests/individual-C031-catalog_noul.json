@@ -1,0 +1,30 @@
+{
+  "id": "individual-C031-catalog_noul",
+  "kind": "individual",
+  "case_id": "C031",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Verify the repository instructions against the configured build and test commands. Report stale commands and supporting evidence without updating files.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "Use npm run verify before delivery. This executes Jest and the TypeScript compiler."
+      },
+      {
+        "path": "package.json",
+        "content": "{\"scripts\":{\"check\":\"tsc --noEmit && vitest run\"},\"devDependencies\":{\"typescript\":\"^5.9.0\",\"vitest\":\"^3.2.0\"}}"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md."
+      }
+    }
+  },
+  "sha256": "3d137e67996ca231421aab56dbbf0346480e1d326d43a4bdf897f3423ccda970"
+}

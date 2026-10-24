@@ -1,0 +1,409 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C04",
+  "hunk_id": "H3",
+  "request_sha256": "c83341a61688d08af54bd1b1cacc959c1c3fcb258bd8c755bd6f6450bde07c3b",
+  "status": "ok",
+  "selected": [
+    "platform-engineering:platform-reviewer",
+    "react-development:react-performance-optimizer",
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:cleanup-auditor",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:ui-race-auditor",
+    "testing:test-suite-auditor"
+  ],
+  "probabilities": {
+    "abstraction-architect:abstraction-architect-agent": 6.2130530038324e-05,
+    "platform-engineering:platform-reviewer": 0.999892783326978,
+    "react-development:react-performance-optimizer": 0.9999762065275305,
+    "repo-hygiene:workspace-auditor": 0.0007338072753634724,
+    "senior-review:api-contract-auditor": 0.9997668805659657,
+    "senior-review:chicken-egg-detector": 0.8582725493375502,
+    "senior-review:cleanup-auditor": 0.9973947463299969,
+    "senior-review:code-auditor": 0.7212306794360835,
+    "senior-review:data-integrity-auditor": 0.9489366983054168,
+    "senior-review:distributed-flow-auditor": 0.39511788181598523,
+    "senior-review:logic-integrity-auditor": 0.002058590290399517,
+    "senior-review:premise-auditor": 0.9992239529271869,
+    "senior-review:resource-lifecycle-auditor": 0.024502479165645037,
+    "senior-review:security-auditor": 0.8217813747204773,
+    "senior-review:temporal-resilience-auditor": 0.9945747386425143,
+    "senior-review:ui-race-auditor": 0.8819401446102351,
+    "testing:test-suite-auditor": 0.9883994483791715,
+    "typescript-development:type-safety-auditor": 0.15503305439575013
+  },
+  "wall_seconds": 9.115884299972095,
+  "cpu_seconds": 36.015625,
+  "phase": "warm",
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": 0
+  },
+  "raw_output": {
+    "answers": {
+      "abstraction-architect:abstraction-architect-agent": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9999378694699617,
+          "true": 6.2130530038324e-05
+        },
+        "noul": 6.2130530038324e-05
+      },
+      "platform-engineering:platform-reviewer": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.00010721667302210603,
+          "true": 0.999892783326978
+        },
+        "noul": 0.999892783326978
+      },
+      "react-development:react-performance-optimizer": {
+        "type": "noul",
+        "probabilities": {
+          "false": 2.3793472469491787e-05,
+          "true": 0.9999762065275305
+        },
+        "noul": 0.9999762065275305
+      },
+      "repo-hygiene:workspace-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9992661927246366,
+          "true": 0.0007338072753634724
+        },
+        "noul": 0.0007338072753634724
+      },
+      "senior-review:api-contract-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.00023311943403435544,
+          "true": 0.9997668805659657
+        },
+        "noul": 0.9997668805659657
+      },
+      "senior-review:chicken-egg-detector": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.14172745066244988,
+          "true": 0.8582725493375502
+        },
+        "noul": 0.8582725493375502
+      },
+      "senior-review:cleanup-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.0026052536700030444,
+          "true": 0.9973947463299969
+        },
+        "noul": 0.9973947463299969
+      },
+      "senior-review:code-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.27876932056391646,
+          "true": 0.7212306794360835
+        },
+        "noul": 0.7212306794360835
+      },
+      "senior-review:data-integrity-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.05106330169458303,
+          "true": 0.9489366983054168
+        },
+        "noul": 0.9489366983054168
+      },
+      "senior-review:distributed-flow-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.6048821181840147,
+          "true": 0.39511788181598523
+        },
+        "noul": 0.39511788181598523
+      },
+      "senior-review:logic-integrity-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9979414097096004,
+          "true": 0.002058590290399517
+        },
+        "noul": 0.002058590290399517
+      },
+      "senior-review:premise-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.0007760470728130815,
+          "true": 0.9992239529271869
+        },
+        "noul": 0.9992239529271869
+      },
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.975497520834355,
+          "true": 0.024502479165645037
+        },
+        "noul": 0.024502479165645037
+      },
+      "senior-review:security-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.17821862527952265,
+          "true": 0.8217813747204773
+        },
+        "noul": 0.8217813747204773
+      },
+      "senior-review:temporal-resilience-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.005425261357485648,
+          "true": 0.9945747386425143
+        },
+        "noul": 0.9945747386425143
+      },
+      "senior-review:ui-race-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.11805985538976506,
+          "true": 0.8819401446102351
+        },
+        "noul": 0.8819401446102351
+      },
+      "testing:test-suite-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.011600551620828488,
+          "true": 0.9883994483791715
+        },
+        "noul": 0.9883994483791715
+      },
+      "typescript-development:type-safety-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.8449669456042498,
+          "true": 0.15503305439575013
+        },
+        "noul": 0.15503305439575013
+      }
+    }
+  },
+  "validation_warnings": [],
+  "runtime_config": {
+    "batch_size": 1,
+    "threads": 4
+  },
+  "model_session_id": "noul-2026-10-20T10:45:37.597971+00:00",
+  "catalog_validation": "complete_catalog_required",
+  "inference_attempted": true,
+  "inference_performed": true,
+  "submitted_question_ids": [
+    "abstraction-architect:abstraction-architect-agent",
+    "platform-engineering:platform-reviewer",
+    "react-development:react-performance-optimizer",
+    "repo-hygiene:workspace-auditor",
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:cleanup-auditor",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:ui-race-auditor",
+    "testing:test-suite-auditor",
+    "typescript-development:type-safety-auditor"
+  ],
+  "encoding": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "tokens": 419,
+      "optionTokens": [
+        24,
+        26
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "platform-engineering:platform-reviewer": {
+      "tokens": 429,
+      "optionTokens": [
+        24,
+        36
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "react-development:react-performance-optimizer": {
+      "tokens": 421,
+      "optionTokens": [
+        28,
+        24
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "repo-hygiene:workspace-auditor": {
+      "tokens": 414,
+      "optionTokens": [
+        18,
+        27
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:api-contract-auditor": {
+      "tokens": 443,
+      "optionTokens": [
+        38,
+        36
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:chicken-egg-detector": {
+      "tokens": 418,
+      "optionTokens": [
+        18,
+        31
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:cleanup-auditor": {
+      "tokens": 409,
+      "optionTokens": [
+        20,
+        20
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:code-auditor": {
+      "tokens": 407,
+      "optionTokens": [
+        14,
+        24
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:data-integrity-auditor": {
+      "tokens": 417,
+      "optionTokens": [
+        29,
+        19
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:distributed-flow-auditor": {
+      "tokens": 430,
+      "optionTokens": [
+        24,
+        37
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:logic-integrity-auditor": {
+      "tokens": 417,
+      "optionTokens": [
+        21,
+        27
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:premise-auditor": {
+      "tokens": 432,
+      "optionTokens": [
+        32,
+        31
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "tokens": 434,
+      "optionTokens": [
+        37,
+        28
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:security-auditor": {
+      "tokens": 442,
+      "optionTokens": [
+        37,
+        36
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "tokens": 433,
+      "optionTokens": [
+        39,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "senior-review:ui-race-auditor": {
+      "tokens": 419,
+      "optionTokens": [
+        21,
+        29
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "testing:test-suite-auditor": {
+      "tokens": 425,
+      "optionTokens": [
+        31,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    },
+    "typescript-development:type-safety-auditor": {
+      "tokens": 430,
+      "optionTokens": [
+        32,
+        29
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "question_errors": {}
+}

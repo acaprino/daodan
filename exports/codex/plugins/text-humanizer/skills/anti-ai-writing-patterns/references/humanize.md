@@ -70,7 +70,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Humanize
 
-Remove AI writing traces from prose, articles, blog posts, documentation or any other non-code text, with the `text-humanizer` agent: detect the 24 catalogued patterns and edit them out without inventing content, with an optional self-assessed quality score. `/daodan:humanize-text` runs it with a text or a file.
+Remove AI writing traces from prose, articles, blog posts, documentation or any other non-code text, with the `text-humanizer` agent: use the 25 local patterns without inventing content, with an optional self-assessed quality score. `/daodan:humanize-text` runs it with a text or a file.
 
 **This is for text and prose. For source code readability, use `/daodan:refactor-code`.** It does not translate text.
 

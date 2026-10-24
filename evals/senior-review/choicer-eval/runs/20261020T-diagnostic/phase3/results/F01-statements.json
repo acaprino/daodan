@@ -1,0 +1,24 @@
+{
+  "id": "F01-statements",
+  "request_sha256": "d0f19099c92e2e7d2d1b688aad763ce00ef425120e363490235178a038864325",
+  "raw_output": {
+    "answers": {
+      "react": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.7074107708367562,
+          "true": 0.29258922916324387
+        },
+        "noul": 0.29258922916324387
+      },
+      "persistence": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.009778657168327959,
+          "true": 0.9902213428316721
+        },
+        "noul": 0.9902213428316721
+      }
+    }
+  }
+}

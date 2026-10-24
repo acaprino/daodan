@@ -1,0 +1,36 @@
+{
+  "impl": "julia",
+  "variant": "choice",
+  "case_id": "C04",
+  "hunk_id": "H5",
+  "request_sha256": "476e431937741a29e0da128a7882bd3607b976b0a003359d990cd2a17a878376",
+  "status": "error",
+  "selected": [],
+  "probabilities": null,
+  "wall_seconds": 0.00018800003454089165,
+  "cpu_seconds": 0.0,
+  "phase": "preflight",
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": 0
+  },
+  "raw_output": {
+    "answers": {}
+  },
+  "validation_warnings": [],
+  "runtime_config": {
+    "batch_size": 1,
+    "threads": 4
+  },
+  "model_session_id": "choice-2026-10-20T10:45:02.149229+00:00",
+  "catalog_validation": "complete_catalog_required",
+  "inference_attempted": false,
+  "inference_performed": false,
+  "submitted_question_ids": [],
+  "encoding": {},
+  "question_errors": {
+    "reviewer": "ValueError: Option exceeds 48-token model contract"
+  },
+  "rejection_reason": "Complete catalog required; at least one requested question is unsupported.",
+  "error": "One or more exact questions are unsupported; see question_errors"
+}

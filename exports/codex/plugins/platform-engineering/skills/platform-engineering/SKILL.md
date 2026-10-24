@@ -1,10 +1,8 @@
 ---
 name: platform-engineering
 description: >
-  Rulebook of MUST/DO/DON'T rules backed by real-world incident references.
-  TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri)
-  apps for security posture, architecture decisions, performance, or compliance with OWASP, Core
-  Web Vitals, and OAuth 2.1.
+  Platform mechanisms and compatibility for browser, PWA, mobile, Electron and Tauri applications.
+  TRIGGER WHEN: building or reviewing supported browsers/devices, native integration, offline lifecycle, packaging, or platform-specific trust boundaries.
 ---
 
 <daodan_host_binding host="codex">
@@ -77,51 +75,38 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-# Cross-Platform Development Rulebook
+# Platform engineering
 
-Three pillars govern every application you ship -- Security, Architecture, and Performance. Each rule is tagged with severity (MUST/DO/DON'T) and platform applicability.
+Bind advice to the application's declared target platforms, versions, distribution
+and required behavior. Read relevant source and effective configuration before
+applying a rule. Historical reference examples, numeric budgets and preferred
+technologies are leads; verify applicable version behavior and requirements before
+treating them as obligations. Missing measurements remain unknown.
 
-## Quick Platform Decision Matrix
+The autonomous `platform-reviewer` checks client platform compatibility and
+mechanisms. It reports adjacent security, generic performance or backend
+operability leads to the caller for routing through the existing review process.
+It does not claim those separate dimensions were reviewed.
 
-| Concern | SPA | PWA | Mobile | Electron | Tauri |
-|---------|-----|-----|--------|----------|-------|
-| **Auth token storage** | JS memory + httpOnly cookies | JS memory + httpOnly cookies | Platform Keychain/Keystore | OS credential store | OS credential store |
-| **OAuth flow** | Auth Code + PKCE | Auth Code + PKCE | System browser + PKCE | Standard PKCE | Standard PKCE |
-| **XSS impact** | Session hijack | + persistent SW hijack | WebView bridge access | XSS to RCE | Limited to web context |
-| **CSP** | Critical | Critical | WebViews only | Critical | Relevant |
-| **Offline strategy** | Optional | IndexedDB + Cache API + SW | Room/CoreData + sync queue | Optional | Optional |
-| **Bundle target** | <170KB compressed JS | <170KB compressed JS | <20MB APK/IPA | 80-150MB (Chromium) | <10MB total |
-| **API style** | REST or GraphQL | REST (SW caching) | GraphQL (fewer round-trips) | REST (server-side aggregation) | REST |
-| **State management** | Zustand/Redux + TanStack Query | IndexedDB + Cache API | ViewModel+StateFlow / SwiftUI | IPC + context isolation | Rust invoke commands |
+## Load references on demand
 
-## When to Load References
+Choose only sections needed for the actual mechanism:
 
-- **Security review or audit**: Load `server-validation`, `auth-tokens`, `passkeys-webauthn`, `api-security`, `xss-csp`, `secrets-management`, `platform-security`
-- **Architecture decisions**: Load `client-server-architecture`, `api-design`, `offline-first`, `infrastructure`
-- **Performance optimization**: Load `frontend-performance`, `backend-and-platform-performance`
-- **Full platform review**: Load all 13 references
-- **Platform audit as a procedure** (the platform stack audit of `/daodan:check-health`): Read `references/audit.md`, the procedure rather than a 14th rulebook reference; it detects platforms, runs the isolated `platform-reviewer` with the references above and writes the report under the run directory
+| Mechanism | References inside this skill |
+|---|---|
+| Browser/native identity and credential boundary | `auth-tokens.md`, `passkeys-webauthn.md`, `platform-security.md` |
+| Browser execution and content boundaries | `xss-csp.md`, `server-validation.md`, `api-security.md`, `secrets-management.md` |
+| Client/server and transport design | `client-server-architecture.md`, `api-design.md` |
+| Offline synchronization and caches | `offline-first.md` |
+| Platform delivery and configuration | `infrastructure.md`, `platform-security.md` |
+| Platform-specific rendering, power and resource constraints | `frontend-performance.md`, `backend-and-platform-performance.md` |
 
-## Reference Materials
+References never grant execution or mutation. Audit is read-only and does not
+run a profiling query, launch a device or exercise an application without the
+caller's corresponding authorization. State verified target/version, mechanism,
+requirement, counterevidence and coverage in findings; neither a checklist item
+nor a preferred package establishes a defect.
 
-### Security (Part 1)
-
-1. **server-validation.md** -- Server-side validation rules, trust boundaries, real-world bypass incidents
-2. **auth-tokens.md** -- Token storage per platform, OAuth 2.1 flows, JWT best practices, secure storage APIs
-3. **passkeys-webauthn.md** -- WebAuthn Level 3 / passkey patterns, server-side verification, cross-platform support, cloned-authenticator detection
-3. **api-security.md** -- Endpoint auth, rate limiting, CORS, OWASP API risks, Peloton/Parler case studies
-4. **xss-csp.md** -- XSS severity by platform, CSP directives, anti-CSRF, sanitization, British Airways incident
-5. **secrets-management.md** -- Secret exposure risks, environment variables, vault services, GitGuardian stats
-6. **platform-security.md** -- Mobile (Keychain/Keystore, cert pinning), Electron (nodeIntegration, contextIsolation, sandbox), Tauri (deny-by-default), PWA (service worker scope, Cache API risks), security headers matrix
-
-### Architecture (Part 2)
-
-7. **client-server-architecture.md** -- Thin client principle, BFF pattern, server-authoritative design
-8. **api-design.md** -- REST vs GraphQL trade-offs by platform, pagination strategies, state management per platform
-9. **offline-first.md** -- Conflict resolution strategies (LWW, CRDTs, OT), optimistic UI, sync patterns
-10. **infrastructure.md** -- Monolith-first principle, database access patterns, CI/CD pipelines per platform, observability, feature flag lifecycle
-
-### Performance (Part 3)
-
-11. **frontend-performance.md** -- Bundle size optimization, image formats and responsive loading, Core Web Vitals (LCP, INP, CLS) with business impact data
-12. **backend-and-platform-performance.md** -- API/DB performance (pagination, indexing, connection pooling), mobile battery/memory, SSR/SSG/ISR rendering strategies, CDN caching patterns
+For the targeted platform audit under `/daodan:check-health`, read
+`references/audit.md`. Inside a senior-review run, use the prepared brief and
+dispatch this plugin's reviewer once; do not start the standalone audit as well.

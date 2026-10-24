@@ -1,0 +1,37 @@
+{
+  "id": "individual-C039-grounded_noul",
+  "request_sha256": "a088a05a25f192e119f3a87e20fb03ca2c14fc1dbdba4bbfff31b4520ec6dadf",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "project-knowledge:documentation-engineer": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.99999389020909,
+          "true": 6.109790909945723e-06
+        },
+        "noul": 6.109790909945723e-06
+      }
+    }
+  },
+  "probabilities": {
+    "project-knowledge:documentation-engineer": 6.109790909945723e-06
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "project-knowledge:documentation-engineer": {
+      "tokens": 289,
+      "optionTokens": [
+        32,
+        30
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [],
+  "wall_seconds": 0.7176792000536807
+}

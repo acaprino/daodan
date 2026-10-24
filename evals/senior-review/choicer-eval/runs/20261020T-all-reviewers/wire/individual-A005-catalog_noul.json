@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review this local helper that sorts the fixed built-in color names for a documentation table.",
+    "artifacts": [
+      {
+        "path": "docs/colors.py",
+        "content": "COLORS = (\"violet\", \"amber\", \"teal\")\n\ndef color_rows():\n    return [(name, name.upper()) for name in sorted(COLORS)]\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers."
+      }
+    }
+  }
+}

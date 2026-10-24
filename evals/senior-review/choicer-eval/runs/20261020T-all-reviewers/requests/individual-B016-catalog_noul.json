@@ -1,0 +1,30 @@
+{
+  "id": "individual-B016-catalog_noul",
+  "kind": "individual",
+  "case_id": "B016",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the worker pool for duplicate reservation of queued jobs.",
+    "artifacts": [
+      {
+        "path": "worker.py",
+        "content": "async def take(queue, store):\n    job = await queue.peek()\n    if job is not None and not await store.is_reserved(job.id):\n        await store.reserve(job.id)\n        return job"
+      },
+      {
+        "path": "README.md",
+        "content": "This process consumes jobs from a broker. It has no graphical interface or browser connection."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
+      }
+    }
+  },
+  "sha256": "3822500412e0f50a664a0971dee2de91547cff0c21c4a62fff286224ee6dfb74"
+}

@@ -1,0 +1,2396 @@
+[
+  {
+    "id": "F01",
+    "source_candidate_id": "X103",
+    "source": "commitbench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "WellCommerce_WishlistBundle",
+      "revision": "0bd757116b0efaf015fc6076a1ac5d578ed6b45b",
+      "source_candidate_id": "X103",
+      "evidence_summary": "Removed unused use statements (cherry picked from commit fe<I>e8e<I>c0ee<I>de<I>a5cb4deb<I>f<I>c<I>)"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "Entity/ClientContactDetails.php",
+        "start_line": 12,
+        "end_line": 20,
+        "text": "\nnamespace WellCommerce\\Bundle\\ClientBundle\\Entity;\n\nuse WellCommerce\\Bundle\\ClientBundle\\Entity\\ContactDetails;\n\n/**\n * Class ClientContactDetails\n *\n",
+        "sha256": "a4aea7e63f0e584ed092907fa4eaa74ae90b34af0e0930d8cb4729b1d18fd0b5"
+      }
+    ]
+  },
+  {
+    "id": "F02",
+    "source_candidate_id": "X112",
+    "source": "commitbench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "WellCommerce_WishlistBundle",
+      "revision": "1f1b1030245c4cd1cec2c9fe42d0b8739854f746",
+      "source_candidate_id": "X112",
+      "evidence_summary": "Removed unused use statement in ProductDatagrid"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "src/WellCommerce/Bundle/ProductBundle/DataGrid/ProductDataGrid.php",
+        "start_line": 16,
+        "end_line": 23,
+        "text": "use WellCommerce\\Component\\DataGrid\\Column\\ColumnCollection;\nuse WellCommerce\\Component\\DataGrid\\Column\\Options\\Appearance;\nuse WellCommerce\\Component\\DataGrid\\Column\\Options\\Filter;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\DataLoadedEventHandler;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\LoadedEventHandler;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\ProcessEventHandler;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\UpdateRowEventHandler;\n",
+        "sha256": "633be53d2323a5805b393e6be9a6d3ac1992dbfb64732330a94eb38a62c128ea"
+      }
+    ]
+  },
+  {
+    "id": "F03",
+    "source_candidate_id": "X117",
+    "source": "commitbench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "openlayers_openlayers",
+      "revision": "60c5d016a6fd8661b8fad57a1bfb7b42e2a86647",
+      "source_candidate_id": "X117",
+      "evidence_summary": "Remove unused 'opaque' property from ol/source/Stamen options And set the `layer` property as mandatory."
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "src/ol/source/Stamen.js",
+        "start_line": 91,
+        "end_line": 101,
+        "text": "/**\n * @typedef {Object} Options\n * @property {number} [cacheSize=2048] Cache size.\n * @property {string} [layer] Layer.\n * @property {number} [minZoom] Minimum zoom.\n * @property {number} [maxZoom] Maximum zoom.\n * @property {boolean} [opaque] Whether the layer is opaque.\n * @property {number} [reprojectionErrorThreshold=0.5] Maximum allowed reprojection error (in pixels).\n * Higher values can increase reprojection performance, but decrease precision.\n * @property {import(\"../Tile.js\").LoadFunction} [tileLoadFunction]\n",
+        "sha256": "6bce07dafa33b34346ce2d15ccc8c61ab05020d273c8074cb207feb6fd76c4c0"
+      }
+    ]
+  },
+  {
+    "id": "F04",
+    "source_candidate_id": "X072",
+    "source": "commitbench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "tensorflow_probability",
+      "revision": "fb685ff214d15bfdb9848bddaa4666c954a9324b",
+      "source_candidate_id": "X072",
+      "evidence_summary": "sort supported dtypes in host_callback_test.py (#<I>) * sort supported dtypes in host_callback_test.py This fixes issues I ran into with running `pytest -n auto tests/host_callback_test.py` or similar. * remove unused import"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "tests/host_callback_test.py",
+        "start_line": 46,
+        "end_line": 52,
+        "text": "  if os.getenv(\"JAX_ENABLE_JIT_PRINT\", \"false\") == \"false\":\n    raise SkipTest(\"print jit not enabled yet; use JAX_ENABLE_JIT_PRINT env.\")\n\nclass _TestingOutputStream(object):\n  \"\"\"Use as `output_stream` for tests.\"\"\"\n\n",
+        "sha256": "7ae3bbe173e0bd1266fefd5bedc83fceb63fdeb06d476d22ad9371c63766c748"
+      },
+      {
+        "id": "H2",
+        "path": "tests/host_callback_test.py",
+        "start_line": 532,
+        "end_line": 539,
+        "text": "              dtype=dtype,\n              nr_args=nr_args) for nr_args in [1, 2]\n          for shape in [(), (2,), (2, 3), (2, 3, 4)]\n          for dtype in jtu.supported_dtypes()))\n  def test_jit_types(self, nr_args=2, dtype=np.int16, shape=(2,)):\n    if dtype in (np.complex64, np.complex128, np.bool_):\n      raise SkipTest(f\"id_print jit not implemented for {dtype}.\")\n",
+        "sha256": "d57ad92756bdfa2c1664d028f6e787aa8cadf4971f93db01d75ae016946cd5a0"
+      }
+    ]
+  },
+  {
+    "id": "F05",
+    "source_candidate_id": "X049",
+    "source": "devign",
+    "split": "development",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [],
+    "negative_roles": [
+      "senior-review:security-auditor"
+    ],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "32bf6550cb9cc9f487a6722fe2bfc272a93c1065",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "FFmpeg",
+      "revision": "32bf6550cb9cc9f487a6722fe2bfc272a93c1065",
+      "source_candidate_id": "X049",
+      "evidence_summary": "Devign dataset target=False"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "FFmpeg/function-3.c",
+        "start_line": 1,
+        "end_line": 232,
+        "text": "int ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,\n\n                      AVCodecContext *codec, int size, int big_endian)\n\n{\n\n    int id;\n\n    uint64_t bitrate;\n\n\n\n    if (size < 14) {\n\n        avpriv_request_sample(codec, \"wav header size < 14\");\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n\n\n    codec->codec_type  = AVMEDIA_TYPE_AUDIO;\n\n    if (!big_endian) {\n\n        id                 = avio_rl16(pb);\n\n        if (id != 0x0165) {\n\n            codec->channels    = avio_rl16(pb);\n\n            codec->sample_rate = avio_rl32(pb);\n\n            bitrate            = avio_rl32(pb) * 8LL;\n\n            codec->block_align = avio_rl16(pb);\n\n        }\n\n    } else {\n\n        id                 = avio_rb16(pb);\n\n        codec->channels    = avio_rb16(pb);\n\n        codec->sample_rate = avio_rb32(pb);\n\n        bitrate            = avio_rb32(pb) * 8LL;\n\n        codec->block_align = avio_rb16(pb);\n\n    }\n\n    if (size == 14) {  /* We're dealing with plain vanilla WAVEFORMAT */\n\n        codec->bits_per_coded_sample = 8;\n\n    } else {\n\n        if (!big_endian) {\n\n            codec->bits_per_coded_sample = avio_rl16(pb);\n\n        } else {\n\n            codec->bits_per_coded_sample = avio_rb16(pb);\n\n        }\n\n    }\n\n    if (id == 0xFFFE) {\n\n        codec->codec_tag = 0;\n\n    } else {\n\n        codec->codec_tag = id;\n\n        codec->codec_id  = ff_wav_codec_get_id(id,\n\n                                               codec->bits_per_coded_sample);\n\n    }\n\n    if (size >= 18 && id != 0x0165) {  /* We're obviously dealing with WAVEFORMATEX */\n\n        int cbSize = avio_rl16(pb); /* cbSize */\n\n        if (big_endian) {\n\n            avpriv_report_missing_feature(codec, \"WAVEFORMATEX support for RIFX files\\n\");\n\n            return AVERROR_PATCHWELCOME;\n\n        }\n\n        size  -= 18;\n\n        cbSize = FFMIN(size, cbSize);\n\n        if (cbSize >= 22 && id == 0xfffe) { /* WAVEFORMATEXTENSIBLE */\n\n            parse_waveformatex(pb, codec);\n\n            cbSize -= 22;\n\n            size   -= 22;\n\n        }\n\n        if (cbSize > 0) {\n\n            av_freep(&codec->extradata);\n\n            if (ff_get_extradata(codec, pb, cbSize) < 0)\n\n                return AVERROR(ENOMEM);\n\n            size -= cbSize;\n\n        }\n\n\n\n        /* It is possible for the chunk to contain garbage at the end */\n\n        if (size > 0)\n\n            avio_skip(pb, size);\n\n    } else if (id == 0x0165 && size >= 32) {\n\n        int nb_streams, i;\n\n\n\n        size -= 4;\n\n        av_freep(&codec->extradata);\n\n        if (ff_get_extradata(codec, pb, size) < 0)\n\n            return AVERROR(ENOMEM);\n\n        nb_streams         = AV_RL16(codec->extradata + 4);\n\n        codec->sample_rate = AV_RL32(codec->extradata + 12);\n\n        codec->channels    = 0;\n\n        bitrate            = 0;\n\n        if (size < 8 + nb_streams * 20)\n\n            return AVERROR_INVALIDDATA;\n\n        for (i = 0; i < nb_streams; i++)\n\n            codec->channels += codec->extradata[8 + i * 20 + 17];\n\n    }\n\n\n\n    if (bitrate > INT_MAX) {\n\n        if (s->error_recognition & AV_EF_EXPLODE) {\n\n            av_log(s, AV_LOG_ERROR,\n\n                   \"The bitrate %\"PRIu64\" is too large.\\n\",\n\n                    bitrate);\n\n            return AVERROR_INVALIDDATA;\n\n        } else {\n\n            av_log(s, AV_LOG_WARNING,\n\n                   \"The bitrate %\"PRIu64\" is too large, resetting to 0.\",\n\n                   bitrate);\n\n            codec->bit_rate = 0;\n\n        }\n\n    } else {\n\n        codec->bit_rate = bitrate;\n\n    }\n\n\n\n    if (codec->sample_rate <= 0) {\n\n        av_log(s, AV_LOG_ERROR,\n\n               \"Invalid sample rate: %d\\n\", codec->sample_rate);\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n    if (codec->codec_id == AV_CODEC_ID_AAC_LATM) {\n\n        /* Channels and sample_rate values are those prior to applying SBR\n\n         * and/or PS. */\n\n        codec->channels    = 0;\n\n        codec->sample_rate = 0;\n\n    }\n\n    /* override bits_per_coded_sample for G.726 */\n\n    if (codec->codec_id == AV_CODEC_ID_ADPCM_G726 && codec->sample_rate)\n\n        codec->bits_per_coded_sample = codec->bit_rate / codec->sample_rate;\n\n\n\n    return 0;\n\n}\n",
+        "sha256": "2634eaa6dba47068871b68421a8888a278fa73b7ed931cccf9697bc2c090023f"
+      }
+    ]
+  },
+  {
+    "id": "F06",
+    "source_candidate_id": "X051",
+    "source": "devign",
+    "split": "development",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [
+      "senior-review:security-auditor"
+    ],
+    "negative_roles": [],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "5ff998a233d759d0de83ea6f95c383d03d25d88e",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "FFmpeg",
+      "revision": "5ff998a233d759d0de83ea6f95c383d03d25d88e",
+      "source_candidate_id": "X051",
+      "evidence_summary": "Devign dataset target=True"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "FFmpeg/function-35.c",
+        "start_line": 1,
+        "end_line": 90,
+        "text": "static int subframe_count_exact(FlacEncodeContext *s, FlacSubframe *sub,\n\n                                int pred_order)\n\n{\n\n    int p, porder, psize;\n\n    int i, part_end;\n\n    int count = 0;\n\n\n\n    /* subframe header */\n\n    count += 8;\n\n\n\n    /* subframe */\n\n    if (sub->type == FLAC_SUBFRAME_CONSTANT) {\n\n        count += sub->obits;\n\n    } else if (sub->type == FLAC_SUBFRAME_VERBATIM) {\n\n        count += s->frame.blocksize * sub->obits;\n\n    } else {\n\n        /* warm-up samples */\n\n        count += pred_order * sub->obits;\n\n\n\n        /* LPC coefficients */\n\n        if (sub->type == FLAC_SUBFRAME_LPC)\n\n            count += 4 + 5 + pred_order * s->options.lpc_coeff_precision;\n\n\n\n        /* rice-encoded block */\n\n        count += 2;\n\n\n\n        /* partition order */\n\n        porder = sub->rc.porder;\n\n        psize  = s->frame.blocksize >> porder;\n\n        count += 4;\n\n\n\n        /* residual */\n\n        i        = pred_order;\n\n        part_end = psize;\n\n        for (p = 0; p < 1 << porder; p++) {\n\n            int k = sub->rc.params[p];\n\n            count += 4;\n\n            count += rice_count_exact(&sub->residual[i], part_end - i, k);\n\n            i = part_end;\n\n            part_end = FFMIN(s->frame.blocksize, part_end + psize);\n\n        }\n\n    }\n\n\n\n    return count;\n\n}\n",
+        "sha256": "856ac537aa92de504e1cea307ce0c29ffd992165a6e4f8fa7c82a861dde661ef"
+      }
+    ]
+  },
+  {
+    "id": "F07",
+    "source_candidate_id": "X052",
+    "source": "devign",
+    "split": "development",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [],
+    "negative_roles": [
+      "senior-review:security-auditor"
+    ],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "68f593b48433842f3407586679fe07f3e5199ab9",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "FFmpeg",
+      "revision": "68f593b48433842f3407586679fe07f3e5199ab9",
+      "source_candidate_id": "X052",
+      "evidence_summary": "Devign dataset target=False"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "FFmpeg/function-60.c",
+        "start_line": 1,
+        "end_line": 220,
+        "text": "static int mpeg1_decode_sequence(AVCodecContext *avctx, \n\n                                 UINT8 *buf, int buf_size)\n\n{\n\n    Mpeg1Context *s1 = avctx->priv_data;\n\n    MpegEncContext *s = &s1->mpeg_enc_ctx;\n\n    int width, height, i, v, j;\n\n    float aspect;\n\n\n\n    init_get_bits(&s->gb, buf, buf_size);\n\n\n\n    width = get_bits(&s->gb, 12);\n\n    height = get_bits(&s->gb, 12);\n\n    s->aspect_ratio_info= get_bits(&s->gb, 4);\n\n    if(!s->mpeg2){\n\n        aspect= mpeg1_aspect[s->aspect_ratio_info];\n\n        if(aspect!=0.0) avctx->aspect_ratio= width/(aspect*height);\n\n    }\n\n\n\n    s->frame_rate_index = get_bits(&s->gb, 4);\n\n    if (s->frame_rate_index == 0)\n\n        return -1;\n\n    s->bit_rate = get_bits(&s->gb, 18) * 400;\n\n    if (get_bits1(&s->gb) == 0) /* marker */\n\n        return -1;\n\n    if (width <= 0 || height <= 0 ||\n\n        (width % 2) != 0 || (height % 2) != 0)\n\n        return -1;\n\n    if (width != s->width ||\n\n        height != s->height) {\n\n        /* start new mpeg1 context decoding */\n\n        s->out_format = FMT_MPEG1;\n\n        if (s1->mpeg_enc_ctx_allocated) {\n\n            MPV_common_end(s);\n\n        }\n\n        s->width = width;\n\n        s->height = height;\n\n        avctx->has_b_frames= 1;\n\n        s->avctx = avctx;\n\n        avctx->width = width;\n\n        avctx->height = height;\n\n        if (s->frame_rate_index >= 9) {\n\n            /* at least give a valid frame rate (some old mpeg1 have this) */\n\n            avctx->frame_rate = 25 * FRAME_RATE_BASE;\n\n        } else {\n\n            avctx->frame_rate = frame_rate_tab[s->frame_rate_index];\n\n        }\n\n        s->frame_rate = avctx->frame_rate;\n\n        avctx->bit_rate = s->bit_rate;\n\n        \n\n        if (MPV_common_init(s) < 0)\n\n            return -1;\n\n        s1->mpeg_enc_ctx_allocated = 1;\n\n    }\n\n\n\n    skip_bits(&s->gb, 10); /* vbv_buffer_size */\n\n    skip_bits(&s->gb, 1);\n\n\n\n    /* get matrix */\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->intra_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_intra_matrix[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n    }\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"non intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->inter_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_non_intra_matrix[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n        }\n\n    }\n\n\n\n    /* we set mpeg2 parameters so that it emulates mpeg1 */\n\n    s->progressive_sequence = 1;\n\n    s->progressive_frame = 1;\n\n    s->picture_structure = PICT_FRAME;\n\n    s->frame_pred_frame_dct = 1;\n\n    s->mpeg2 = 0;\n\n    avctx->sub_id = 1; /* indicates mpeg1 */\n\n    return 0;\n\n}\n",
+        "sha256": "d6d946dba10d6a956a8d8374bdc393723a14b8e7719a9e2b2b0c1be7098b7285"
+      }
+    ]
+  },
+  {
+    "id": "F08",
+    "source_candidate_id": "X057",
+    "source": "devign",
+    "split": "development",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [
+      "senior-review:security-auditor"
+    ],
+    "negative_roles": [],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "c23acbaed40101c677dfcfbbfe0d2c230a8e8f44",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "FFmpeg",
+      "revision": "c23acbaed40101c677dfcfbbfe0d2c230a8e8f44",
+      "source_candidate_id": "X057",
+      "evidence_summary": "Devign dataset target=True"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "FFmpeg/function-121.c",
+        "start_line": 1,
+        "end_line": 40,
+        "text": "static void vc1_inv_trans_8x8_dc_c(uint8_t *dest, int linesize, DCTELEM *block)\n\n{\n\n    int i;\n\n    int dc = block[0];\n\n    const uint8_t *cm;\n\n    dc = (3 * dc +  1) >> 1;\n\n    dc = (3 * dc + 16) >> 5;\n\n    cm = ff_cropTbl + MAX_NEG_CROP + dc;\n\n    for(i = 0; i < 8; i++){\n\n        dest[0] = cm[dest[0]];\n\n        dest[1] = cm[dest[1]];\n\n        dest[2] = cm[dest[2]];\n\n        dest[3] = cm[dest[3]];\n\n        dest[4] = cm[dest[4]];\n\n        dest[5] = cm[dest[5]];\n\n        dest[6] = cm[dest[6]];\n\n        dest[7] = cm[dest[7]];\n\n        dest += linesize;\n\n    }\n\n}\n",
+        "sha256": "254490b3e42bd3413696f83f003b58c4129c17729ebe251e599b8c0bc96f540d"
+      }
+    ]
+  },
+  {
+    "id": "F09",
+    "source_candidate_id": "X058",
+    "source": "devign",
+    "split": "development",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [
+      "senior-review:security-auditor"
+    ],
+    "negative_roles": [],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "323e6fead07c75f418e4b60704a4f437bb3483b2",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "FFmpeg",
+      "revision": "323e6fead07c75f418e4b60704a4f437bb3483b2",
+      "source_candidate_id": "X058",
+      "evidence_summary": "Devign dataset target=True"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "FFmpeg/function-149.c",
+        "start_line": 1,
+        "end_line": 94,
+        "text": "static void compute_rematrixing_strategy(AC3EncodeContext *s)\n\n{\n\n    int nb_coefs;\n\n    int blk, bnd, i;\n\n    AC3Block *block, *block0;\n\n\n\n    s->num_rematrixing_bands = 4;\n\n\n\n    if (s->rematrixing & AC3_REMATRIXING_IS_STATIC)\n\n        return;\n\n\n\n    nb_coefs = FFMIN(s->nb_coefs[0], s->nb_coefs[1]);\n\n\n\n    for (blk = 0; blk < AC3_MAX_BLOCKS; blk++) {\n\n        block = &s->blocks[blk];\n\n        block->new_rematrixing_strategy = !blk;\n\n        for (bnd = 0; bnd < s->num_rematrixing_bands; bnd++) {\n\n            /* calculate calculate sum of squared coeffs for one band in one block */\n\n            int start = ff_ac3_rematrix_band_tab[bnd];\n\n            int end   = FFMIN(nb_coefs, ff_ac3_rematrix_band_tab[bnd+1]);\n\n            CoefSumType sum[4] = {0,};\n\n            for (i = start; i < end; i++) {\n\n                CoefType lt = block->mdct_coef[0][i];\n\n                CoefType rt = block->mdct_coef[1][i];\n\n                CoefType md = lt + rt;\n\n                CoefType sd = lt - rt;\n\n                sum[0] += lt * lt;\n\n                sum[1] += rt * rt;\n\n                sum[2] += md * md;\n\n                sum[3] += sd * sd;\n\n            }\n\n\n\n            /* compare sums to determine if rematrixing will be used for this band */\n\n            if (FFMIN(sum[2], sum[3]) < FFMIN(sum[0], sum[1]))\n\n                block->rematrixing_flags[bnd] = 1;\n\n            else\n\n                block->rematrixing_flags[bnd] = 0;\n\n\n\n            /* determine if new rematrixing flags will be sent */\n\n            if (blk &&\n\n                block->rematrixing_flags[bnd] != block0->rematrixing_flags[bnd]) {\n\n                block->new_rematrixing_strategy = 1;\n\n            }\n\n        }\n\n        block0 = block;\n\n    }\n\n}\n",
+        "sha256": "0a8eecf8e2926b12ef4b20cd372c9a6858de896a8add623870617037f4b2e940"
+      }
+    ]
+  },
+  {
+    "id": "F10",
+    "source_candidate_id": "X060",
+    "source": "devign",
+    "split": "development",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [],
+    "negative_roles": [
+      "senior-review:security-auditor"
+    ],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "3547f8e8f8418af0c578eba0de62ecba08e460c2",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "FFmpeg",
+      "revision": "3547f8e8f8418af0c578eba0de62ecba08e460c2",
+      "source_candidate_id": "X060",
+      "evidence_summary": "Devign dataset target=False"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "FFmpeg/function-185.c",
+        "start_line": 1,
+        "end_line": 178,
+        "text": "static int rv34_decode_mv(RV34DecContext *r, int block_type)\n\n{\n\n    MpegEncContext *s = &r->s;\n\n    GetBitContext *gb = &s->gb;\n\n    int i, j, k, l;\n\n    int mv_pos = s->mb_x * 2 + s->mb_y * 2 * s->b8_stride;\n\n    int next_bt;\n\n\n\n    memset(r->dmv, 0, sizeof(r->dmv));\n\n    for(i = 0; i < num_mvs[block_type]; i++){\n\n        r->dmv[i][0] = svq3_get_se_golomb(gb);\n\n        r->dmv[i][1] = svq3_get_se_golomb(gb);\n\n    }\n\n    switch(block_type){\n\n    case RV34_MB_TYPE_INTRA:\n\n    case RV34_MB_TYPE_INTRA16x16:\n\n        ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n        return 0;\n\n    case RV34_MB_SKIP:\n\n        if(s->pict_type == AV_PICTURE_TYPE_P){\n\n            ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n            rv34_mc_1mv (r, block_type, 0, 0, 0, 2, 2, 0);\n\n            break;\n\n        }\n\n    case RV34_MB_B_DIRECT:\n\n        //surprisingly, it uses motion scheme from next reference frame\n\n        /* wait for the current mb row to be finished */\n\n        if (HAVE_THREADS && (s->avctx->active_thread_type & FF_THREAD_FRAME))\n\n            ff_thread_await_progress(&s->next_picture_ptr->f, s->mb_y - 1, 0);\n\n\n\n        next_bt = s->next_picture_ptr->f.mb_type[s->mb_x + s->mb_y * s->mb_stride];\n\n        if(IS_INTRA(next_bt) || IS_SKIP(next_bt)){\n\n            ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n            ZERO8x2(s->current_picture_ptr->f.motion_val[1][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n        }else\n\n            for(j = 0; j < 2; j++)\n\n                for(i = 0; i < 2; i++)\n\n                    for(k = 0; k < 2; k++)\n\n                        for(l = 0; l < 2; l++)\n\n                            s->current_picture_ptr->f.motion_val[l][mv_pos + i + j*s->b8_stride][k] = calc_add_mv(r, l, s->next_picture_ptr->f.motion_val[0][mv_pos + i + j*s->b8_stride][k]);\n\n        if(!(IS_16X8(next_bt) || IS_8X16(next_bt) || IS_8X8(next_bt))) //we can use whole macroblock MC\n\n            rv34_mc_2mv(r, block_type);\n\n        else\n\n            rv34_mc_2mv_skip(r);\n\n        ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n        break;\n\n    case RV34_MB_P_16x16:\n\n    case RV34_MB_P_MIX16x16:\n\n        rv34_pred_mv(r, block_type, 0, 0);\n\n        rv34_mc_1mv (r, block_type, 0, 0, 0, 2, 2, 0);\n\n        break;\n\n    case RV34_MB_B_FORWARD:\n\n    case RV34_MB_B_BACKWARD:\n\n        r->dmv[1][0] = r->dmv[0][0];\n\n        r->dmv[1][1] = r->dmv[0][1];\n\n        if(r->rv30)\n\n            rv34_pred_mv_rv3(r, block_type, block_type == RV34_MB_B_BACKWARD);\n\n        else\n\n            rv34_pred_mv_b  (r, block_type, block_type == RV34_MB_B_BACKWARD);\n\n        rv34_mc_1mv     (r, block_type, 0, 0, 0, 2, 2, block_type == RV34_MB_B_BACKWARD);\n\n        break;\n\n    case RV34_MB_P_16x8:\n\n    case RV34_MB_P_8x16:\n\n        rv34_pred_mv(r, block_type, 0, 0);\n\n        rv34_pred_mv(r, block_type, 1 + (block_type == RV34_MB_P_16x8), 1);\n\n        if(block_type == RV34_MB_P_16x8){\n\n            rv34_mc_1mv(r, block_type, 0, 0, 0,            2, 1, 0);\n\n            rv34_mc_1mv(r, block_type, 0, 8, s->b8_stride, 2, 1, 0);\n\n        }\n\n        if(block_type == RV34_MB_P_8x16){\n\n            rv34_mc_1mv(r, block_type, 0, 0, 0, 1, 2, 0);\n\n            rv34_mc_1mv(r, block_type, 8, 0, 1, 1, 2, 0);\n\n        }\n\n        break;\n\n    case RV34_MB_B_BIDIR:\n\n        rv34_pred_mv_b  (r, block_type, 0);\n\n        rv34_pred_mv_b  (r, block_type, 1);\n\n        rv34_mc_2mv     (r, block_type);\n\n        break;\n\n    case RV34_MB_P_8x8:\n\n        for(i=0;i< 4;i++){\n\n            rv34_pred_mv(r, block_type, i, i);\n\n            rv34_mc_1mv (r, block_type, (i&1)<<3, (i&2)<<2, (i&1)+(i>>1)*s->b8_stride, 1, 1, 0);\n\n        }\n\n        break;\n\n    }\n\n\n\n    return 0;\n\n}\n",
+        "sha256": "1b7aac1893ad0c93c7147d2e039b8151b5a2cb017c6159275dd04347151231d1"
+      }
+    ]
+  },
+  {
+    "id": "F11",
+    "source_candidate_id": "X036",
+    "source": "multi-swe-bench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "java/fasterxml__jackson-databind_dataset.jsonl",
+      "scanned_rows": 4,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "fasterxml/jackson-databind",
+      "revision": "e71e1a227e796abd8a55e8135044133667d6555e",
+      "source_candidate_id": "X036",
+      "evidence_summary": "Fix #4481: allow override of `READ_UNKNOWN_ENUM_VALUES_AS_NULL`; Unable to override `DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL` with `JsonFormat.Feature.READ_UNKNOWN_ENUM_VALUES_AS_NULL`"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "release-notes/VERSION-2.x",
+        "start_line": 25,
+        "end_line": 31,
+        "text": " (fix by Joo-Hyuk K)\n#4450: Empty QName deserialized as `null`\n (reported by @winfriedgerlach)\n\n2.17.0 (12-Mar-2024)\n\n",
+        "sha256": "3803e0d3bd8dfb7be8330bc6cca34f306597f1c50cc2d0e5fae4d8554bcd6a2f"
+      },
+      {
+        "id": "H2",
+        "path": "src/main/java/com/fasterxml/jackson/databind/deser/std/EnumDeserializer.java",
+        "start_line": 486,
+        "end_line": 494,
+        "text": "\n    // @since 2.15\n    protected boolean useNullForUnknownEnum(DeserializationContext ctxt) {\n        return Boolean.TRUE.equals(_useNullForUnknownEnum)\n          || ctxt.isEnabled(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);\n    }\n\n    // @since 2.15\n",
+        "sha256": "fc4c6126f95ee054de274bbe251e022ef3b75b4c1e295450f1e92acb2010b0fb"
+      }
+    ]
+  },
+  {
+    "id": "F12",
+    "source_candidate_id": "X088",
+    "source": "multi-swe-bench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:temporal-resilience-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "go/grpc__grpc-go_dataset.jsonl",
+      "scanned_rows": 5,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "grpc/grpc-go",
+      "revision": "7c1d326729dc9b0a07135f8902ddcc050ff8ab64",
+      "source_candidate_id": "X088",
+      "evidence_summary": "dns: do not call NewServiceConfig when lookups are disabled; Re-resolution loop when service config is not supported"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "internal/resolver/dns/dns_resolver.go",
+        "start_line": 268,
+        "end_line": 275,
+        "text": "\t\t\td.retryCount = 0\n\t\t\td.t.Reset(d.freq)\n\t\t}\n\t\td.cc.NewServiceConfig(sc)\n\t\td.cc.NewAddress(result)\n\n\t\t// Sleep to prevent excessive re-resolutions. Incoming resolution requests\n",
+        "sha256": "7e387821ec56cb465557feebaaa1b69216f98362926eace8959d74f6932953cf"
+      },
+      {
+        "id": "H2",
+        "path": "resolver_conn_wrapper.go",
+        "start_line": 217,
+        "end_line": 223,
+        "text": "\t\treturn\n\t}\n\tgrpclog.Infof(\"ccResolverWrapper: got new service config: %v\", sc)\n\tscpr := parseServiceConfig(sc)\n\tif scpr.Err != nil {\n\t\tgrpclog.Warningf(\"ccResolverWrapper: error parsing service config: %v\", scpr.Err)\n",
+        "sha256": "62c2610c039d727db82d0d1e44bfc24c194c1d51261a6dcd06292ab976b73252"
+      }
+    ]
+  },
+  {
+    "id": "F13",
+    "source_candidate_id": "X089",
+    "source": "multi-swe-bench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "go/grpc__grpc-go_dataset.jsonl",
+      "scanned_rows": 7,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "grpc/grpc-go",
+      "revision": "45bd2846a34b039c5f1e69b7202f118687156b34",
+      "source_candidate_id": "X089",
+      "evidence_summary": "credentials/alts: fix panic detecting GCP environment; credentials/alts: isRunningOnGCP fatalf's if /sys/class/dmi/id/product_name does not exist"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "credentials/alts/utils.go",
+        "start_line": 83,
+        "end_line": 89,
+        "text": "// running on GCP.\nfunc isRunningOnGCP() bool {\n\tmanufacturer, err := readManufacturer()\n\tif err != nil {\n\t\tlog.Fatalf(\"failure to read manufacturer information: %v\", err)\n\t}\n",
+        "sha256": "116b891fcd9d014ad41c09dc83073fd43174cf8a675300646ad4ed0a7883ccb2"
+      }
+    ]
+  },
+  {
+    "id": "F14",
+    "source_candidate_id": "X025",
+    "source": "multi-swe-bench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:ui-race-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "ts/mui__material-ui_dataset.jsonl",
+      "scanned_rows": 1,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "mui/material-ui",
+      "revision": "553cf822f6500075d374f3e89ad04b8308cd9f47",
+      "source_candidate_id": "X025",
+      "evidence_summary": "[system] Add outlineColor to defaultSxConfig; [system] `sx` field outlineColor doesn't take the theme into account"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "packages/mui-system/src/borders.js",
+        "start_line": 12,
+        "end_line": 72,
+        "text": "  return `${value}px solid`;\n}\n\nexport const border = style({\n  prop: 'border',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderTop = style({\n  prop: 'borderTop',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderRight = style({\n  prop: 'borderRight',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderBottom = style({\n  prop: 'borderBottom',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderLeft = style({\n  prop: 'borderLeft',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderColor = style({\n  prop: 'borderColor',\n  themeKey: 'palette',\n});\n\nexport const borderTopColor = style({\n  prop: 'borderTopColor',\n  themeKey: 'palette',\n});\n\nexport const borderRightColor = style({\n  prop: 'borderRightColor',\n  themeKey: 'palette',\n});\n\nexport const borderBottomColor = style({\n  prop: 'borderBottomColor',\n  themeKey: 'palette',\n});\n\nexport const borderLeftColor = style({\n  prop: 'borderLeftColor',\n  themeKey: 'palette',\n});\n\n// false positive\n// eslint-disable-next-line react/function-component-definition\n",
+        "sha256": "c87876b211172ea4329efed3f9522ad3415ca9e8c61c6e6b8247b0087398b527"
+      },
+      {
+        "id": "H2",
+        "path": "packages/mui-system/src/borders.js",
+        "start_line": 98,
+        "end_line": 104,
+        "text": "  borderBottomColor,\n  borderLeftColor,\n  borderRadius,\n);\n\nexport default borders;\n",
+        "sha256": "7700997668bdbf8dac5c8dc06767975291a2ddd369c0bc6546cfce94456ca6ae"
+      },
+      {
+        "id": "H3",
+        "path": "packages/mui-system/src/styleFunctionSx/defaultSxConfig.js",
+        "start_line": 51,
+        "end_line": 57,
+        "text": "    themeKey: 'palette',\n  },\n\n  borderRadius: {\n    themeKey: 'shape.borderRadius',\n    style: borderRadius,\n",
+        "sha256": "929d95ecad48dc998f37bf1441b1da85b035f87fbf8158a515808d262834e781"
+      }
+    ]
+  },
+  {
+    "id": "F15",
+    "source_candidate_id": "X027",
+    "source": "multi-swe-bench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "ts/mui__material-ui_dataset.jsonl",
+      "scanned_rows": 3,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "mui/material-ui",
+      "revision": "f69997e32614d07f26782dddd0fb6f96c67c3c4d",
+      "source_candidate_id": "X027",
+      "evidence_summary": "[joy-ui][Stepper] Add new `Stepper` components; [joy-ui] Add `Stepper` component"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "docs/data/joy/pages.ts",
+        "start_line": 94,
+        "end_line": 100,
+        "text": "          { pathname: '/joy-ui/react-drawer', newFeature: true },\n          { pathname: '/joy-ui/react-link' },\n          { pathname: '/joy-ui/react-menu' },\n          { pathname: '/joy-ui/react-tabs' },\n        ],\n      },\n",
+        "sha256": "d30f801526c5eac9dc3167b9a65f9217f3b9fa28d7a3f483395d6c455510e3cf"
+      },
+      {
+        "id": "H2",
+        "path": "docs/data/joy/pagesApi.js",
+        "start_line": 61,
+        "end_line": 67,
+        "text": "  { pathname: '/joy-ui/api/slider' },\n  { pathname: '/joy-ui/api/snackbar' },\n  { pathname: '/joy-ui/api/stack' },\n  { pathname: '/joy-ui/api/svg-icon' },\n  { pathname: '/joy-ui/api/switch' },\n  { pathname: '/joy-ui/api/tab' },\n",
+        "sha256": "2171226fe48498dd99fc823c421710e537d6c1bb183d14812d17c4f29b1287b1"
+      },
+      {
+        "id": "H3",
+        "path": "docs/src/modules/components/JoyVariablesDemo.tsx",
+        "start_line": 219,
+        "end_line": 226,
+        "text": "                            tabIndex={-1}\n                            variant=\"plain\"\n                            color=\"neutral\"\n                            size=\"sm\"\n                            disabled={!sx[item.var] && sx[item.var] !== item.defaultValue}\n                            onClick={() =>\n                              setSx((prevSx) => {\n",
+        "sha256": "ba71c1ecf9dce835271fba0b91f147f8b0248a6719f9a312409c4492ebd7af51"
+      },
+      {
+        "id": "H4",
+        "path": "docs/translations/translations.json",
+        "start_line": 519,
+        "end_line": 525,
+        "text": "    \"/joy-ui/react-drawer\": \"Drawer\",\n    \"/joy-ui/react-link\": \"Link\",\n    \"/joy-ui/react-menu\": \"Menu\",\n    \"/joy-ui/react-tabs\": \"Tabs\",\n    \"/joy-ui/react-box\": \"Box\",\n    \"/joy-ui/react-grid\": \"Grid\",\n",
+        "sha256": "d418ea6a236d4df435e2a38ea3d414a470b1b9e7d270e8a5aa04a214360ff234"
+      },
+      {
+        "id": "H5",
+        "path": "packages/mui-joy/src/index.ts",
+        "start_line": 199,
+        "end_line": 205,
+        "text": "export { default as Snackbar } from './Snackbar';\nexport * from './Snackbar';\n\nexport { default as Stack } from './Stack';\nexport * from './Stack';\n\n",
+        "sha256": "dff24aa242f7961d6f2095d79d2e78cd64ee47c61b6a48cd8edbeb55a0b19892"
+      },
+      {
+        "id": "H6",
+        "path": "packages/mui-joy/src/styles/components.d.ts",
+        "start_line": 196,
+        "end_line": 202,
+        "text": "import { SliderProps, SliderOwnerState, SliderSlot } from '../Slider/SliderProps';\nimport { SnackbarProps, SnackbarOwnerState, SnackbarSlot } from '../Snackbar/SnackbarProps';\nimport { StackProps, StackSlot } from '../Stack/StackProps';\nimport { SvgIconProps, SvgIconOwnerState, SvgIconSlot } from '../SvgIcon/SvgIconProps';\nimport { SwitchProps, SwitchOwnerState, SwitchSlot } from '../Switch/SwitchProps';\nimport { TabProps, TabOwnerState, TabSlot } from '../Tab/TabProps';\n",
+        "sha256": "d4bef03d73cbfb5d5a533c9bb9906f77db88f0539b0ed83fb636be2e91ef3ebd"
+      },
+      {
+        "id": "H7",
+        "path": "packages/mui-joy/src/styles/components.d.ts",
+        "start_line": 451,
+        "end_line": 457,
+        "text": "    defaultProps?: Partial<StackProps>;\n    styleOverrides?: StyleOverrides<StackSlot, StackProps, Theme>;\n  };\n  JoySwitch?: {\n    defaultProps?: Partial<SwitchProps>;\n    styleOverrides?: StyleOverrides<SwitchSlot, SwitchOwnerState, Theme>;\n",
+        "sha256": "da46f14c58ce2cd631c7becd010cfe44fae7da684c057c37ef212d5032b082d3"
+      },
+      {
+        "id": "H8",
+        "path": "packages/mui-joy/src/styles/extendTheme.spec.ts",
+        "start_line": 59,
+        "end_line": 65,
+        "text": "import { SliderOwnerState } from '@mui/joy/Slider';\nimport { SnackbarOwnerState } from '@mui/joy/Snackbar';\nimport { StackProps } from '@mui/joy/Stack';\nimport { extendTheme } from '@mui/joy/styles';\nimport { SvgIconOwnerState } from '@mui/joy/SvgIcon';\nimport { SwitchOwnerState } from '@mui/joy/Switch';\n",
+        "sha256": "d521cd99fd7b62ce47662623264a3eeb0ffdbf9f59d0e43adb86b70fb5a8c8fe"
+      },
+      {
+        "id": "H9",
+        "path": "packages/mui-joy/src/styles/extendTheme.spec.ts",
+        "start_line": 1137,
+        "end_line": 1143,
+        "text": "        },\n      },\n    },\n    JoySvgIcon: {\n      defaultProps: {\n        fontSize: 'md',\n",
+        "sha256": "5ff426373e7819c7939a21f864d14a4258971d2b0f0c82fa1e90e4262167bad0"
+      }
+    ]
+  },
+  {
+    "id": "F16",
+    "source_candidate_id": "X086",
+    "source": "multi-swe-bench",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:ui-race-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "ts/mui__material-ui_dataset.jsonl",
+      "scanned_rows": 4,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "mui/material-ui",
+      "revision": "b6f2e488d639e42d4e2d0518a0fecc4df5167c18",
+      "source_candidate_id": "X086",
+      "evidence_summary": "[lab][LoadingButton] LoadingButton now inherits props from ButtonGroup; LoadingButton doesn't inherit from ButtonGroup props"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "docs/data/material/components/button-group/button-group.md",
+        "start_line": 1,
+        "end_line": 8,
+        "text": "---\nproductId: material-ui\ntitle: React Button Group component\ncomponents: Button, ButtonGroup\ngithubLabel: 'component: ButtonGroup'\n---\n\n",
+        "sha256": "836404177aaf82945da4d23ea0a68dcda056ec57bafd9d5529bdae0e40acd086"
+      },
+      {
+        "id": "H2",
+        "path": "docs/data/material/components/button-group/button-group.md",
+        "start_line": 47,
+        "end_line": 50,
+        "text": "You can remove the elevation with the `disableElevation` prop.\n\n{{\"demo\": \"DisableElevation.js\"}}\n",
+        "sha256": "2061619ccc6ee96a5f750ccb430aa1e9e664a18e6240b7311b2806d041da31b9"
+      },
+      {
+        "id": "H3",
+        "path": "docs/pages/material-ui/api/loading-button.json",
+        "start_line": 367,
+        "end_line": 373,
+        "text": "  \"forwardsRefTo\": \"HTMLButtonElement\",\n  \"filename\": \"/packages/mui-lab/src/LoadingButton/LoadingButton.js\",\n  \"inheritance\": { \"component\": \"Button\", \"pathname\": \"/material-ui/api/button/\" },\n  \"demos\": \"<ul><li><a href=\\\"/material-ui/react-button/\\\">Button</a></li></ul>\",\n  \"cssComponent\": false\n}\n",
+        "sha256": "bdffb01e5e391e171a1bbe21dd21bfc627d58f87c21cea1d4c72396fbb939a0b"
+      },
+      {
+        "id": "H4",
+        "path": "packages/mui-lab/src/LoadingButton/LoadingButton.d.ts",
+        "start_line": 60,
+        "end_line": 66,
+        "text": " *\n * Demos:\n *\n * - [Button](https://mui.com/material-ui/react-button/)\n *\n * API:\n",
+        "sha256": "46373e0bd232c11f9b5325551f12086f0c1c45b08e5ae81acc12ed6d82a67714"
+      },
+      {
+        "id": "H5",
+        "path": "packages/mui-lab/src/LoadingButton/LoadingButton.js",
+        "start_line": 5,
+        "end_line": 12,
+        "text": "import { unstable_composeClasses as composeClasses } from '@mui/base';\nimport { styled, useThemeProps } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\nimport CircularProgress from '@mui/material/CircularProgress';\nimport loadingButtonClasses, { getLoadingButtonUtilityClass } from './loadingButtonClasses';\n\nconst useUtilityClasses = (ownerState) => {\n",
+        "sha256": "9844ef7b31c0a2d4f3a6c4b67fea57a5fcce24ca7337e9e1084810fe4130a320"
+      },
+      {
+        "id": "H6",
+        "path": "packages/mui-lab/src/LoadingButton/LoadingButton.js",
+        "start_line": 135,
+        "end_line": 142,
+        "text": "}));\n\nconst LoadingButton = React.forwardRef(function LoadingButton(inProps, ref) {\n  const props = useThemeProps({ props: inProps, name: 'MuiLoadingButton' });\n  const {\n    children,\n    disabled = false,\n",
+        "sha256": "33b26a6f7553c2d4649b8458d25ba70d6b414d64e21290f83bfda56d72810e34"
+      },
+      {
+        "id": "H7",
+        "path": "packages/mui-material/src/ButtonGroup/index.d.ts",
+        "start_line": 2,
+        "end_line": 5,
+        "text": "export * from './ButtonGroup';\nexport { default as buttonGroupClasses } from './buttonGroupClasses';\nexport * from './buttonGroupClasses';\n",
+        "sha256": "481e67c2f5b17d018ec599d4cf7c468b893e034a72b6b9c69c3d476a18f36cb5"
+      },
+      {
+        "id": "H8",
+        "path": "packages/mui-material/src/ButtonGroup/index.js",
+        "start_line": 2,
+        "end_line": 5,
+        "text": "export { default } from './ButtonGroup';\nexport { default as buttonGroupClasses } from './buttonGroupClasses';\nexport * from './buttonGroupClasses';\n",
+        "sha256": "4136d51d8aeb4136c2dfea6e28b1d6d885bcd40fdf5977f8a8a023632d8a3e70"
+      }
+    ]
+  },
+  {
+    "id": "F17",
+    "source_candidate_id": "X009",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/astropy/astropy/commit/298ccb478e6bf092953bca67a3d29dc6c35f6752",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "astropy/astropy",
+      "revision": "298ccb478e6bf092953bca67a3d29dc6c35f6752",
+      "source_candidate_id": "X009",
+      "evidence_summary": "TimeSeries: misleading exception when required column check fails. <!-- This comments are hidden when you submit the issue, so you do not need to remove them! --> <!-- Please be sure to check out our contributing guidelines, https://github.com/astropy/astropy/blob/main/CONTRIBUTING.md . Please be su"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "astropy/timeseries/core.py",
+        "start_line": 55,
+        "end_line": 61,
+        "text": "    _required_columns_relax = False\n\n    def _check_required_columns(self):\n\n        if not self._required_columns_enabled:\n            return\n",
+        "sha256": "cdad0abaeeadd7dfea3d7105c34af6a475150b4ecc4e20b7608a6827cc52e309"
+      },
+      {
+        "id": "H2",
+        "path": "astropy/timeseries/core.py",
+        "start_line": 76,
+        "end_line": 85,
+        "text": "\n            elif self.colnames[:len(required_columns)] != required_columns:\n\n                raise ValueError(\"{} object is invalid - expected '{}' \"\n                                 \"as the first column{} but found '{}'\"\n                                 .format(self.__class__.__name__, required_columns[0], plural, self.colnames[0]))\n\n            if (self._required_columns_relax\n                    and self._required_columns == self.colnames[:len(self._required_columns)]):\n",
+        "sha256": "1189c26c557df603442d7a7dee79cdcd920c45e8936e6747049331097b288b79"
+      }
+    ]
+  },
+  {
+    "id": "F18",
+    "source_candidate_id": "X024",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/astropy/astropy/commit/d16bfe05a744909de4b27f5875fe0d4ed41ce607",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "astropy/astropy",
+      "revision": "d16bfe05a744909de4b27f5875fe0d4ed41ce607",
+      "source_candidate_id": "X024",
+      "evidence_summary": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels Consider the following model: ```python from astropy.modeling import models as m from astropy.modeling.separable import separability_matrix cm = m.Linear1D(10) & m.Linear1D(5) ``` It's separability mat"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "astropy/modeling/separable.py",
+        "start_line": 242,
+        "end_line": 249,
+        "text": "        cright = _coord_matrix(right, 'right', noutp)\n    else:\n        cright = np.zeros((noutp, right.shape[1]))\n        cright[-right.shape[0]:, -right.shape[1]:] = 1\n\n    return np.hstack([cleft, cright])\n\n",
+        "sha256": "59f999ca286c0f8a13bc28b4590c57dd60adf32271d7a3561b610ff611fc8e5f"
+      }
+    ]
+  },
+  {
+    "id": "F19",
+    "source_candidate_id": "X079",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "astropy/astropy",
+      "revision": "80c3854a5f4f4a6ab86c03d9db7854767fcd83c1",
+      "source_candidate_id": "X079",
+      "evidence_summary": "Inconsistency in double single-quote ('') management in FITS Card ### Description The management of single-quotes in FITS cards seem correct, except *sometimes* when dealing with null strings, i.e. double single quotes (`''`), which sometimes are transformed into single single quotes (`'`). E.g.: ``"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "astropy/io/fits/card.py",
+        "start_line": 66,
+        "end_line": 73,
+        "text": "    # followed by an optional comment\n    _strg = r\"\\'(?P<strg>([ -~]+?|\\'\\'|) *?)\\'(?=$|/| )\"\n    _comm_field = r\"(?P<comm_field>(?P<sepr>/ *)(?P<comm>(.|\\n)*))\"\n    _strg_comment_RE = re.compile(f\"({_strg})? *{_comm_field}?\")\n\n    # FSC commentary card string which must contain printable ASCII characters.\n    # Note: \\Z matches the end of the string without allowing newlines\n",
+        "sha256": "d1314811c37d050c590d49162d15cf8bd0244f8c37e3450df5365b3c56c9be92"
+      },
+      {
+        "id": "H2",
+        "path": "astropy/io/fits/card.py",
+        "start_line": 859,
+        "end_line": 866,
+        "text": "                    return kw, vc\n\n                value = m.group(\"strg\") or \"\"\n                value = value.rstrip().replace(\"''\", \"'\")\n                if value and value[-1] == \"&\":\n                    value = value[:-1]\n                values.append(value)\n",
+        "sha256": "76e0dcce0363fe403b2a6e5088d51e328a80a1a0875526cda3e0f8ad2f4dc6b1"
+      }
+    ]
+  },
+  {
+    "id": "F20",
+    "source_candidate_id": "X001",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/django/django/commit/b9cf764be62e77b4777b3a75ec256f6209a57671",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "django/django",
+      "revision": "b9cf764be62e77b4777b3a75ec256f6209a57671",
+      "source_candidate_id": "X001",
+      "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "django/core/validators.py",
+        "start_line": 94,
+        "end_line": 101,
+        "text": "\n    regex = _lazy_re_compile(\n        r'^(?:[a-z0-9\\.\\-\\+]*)://'  # scheme is validated separately\n        r'(?:\\S+(?::\\S*)?@)?'  # user:pass authentication\n        r'(?:' + ipv4_re + '|' + ipv6_re + '|' + host_re + ')'\n        r'(?::\\d{2,5})?'  # port\n        r'(?:[/?#][^\\s]*)?'  # resource path\n",
+        "sha256": "fa949a334340351f5d528d6493d63147e04934565c20eb0ebd1b08ab98069f11"
+      }
+    ]
+  },
+  {
+    "id": "F21",
+    "source_candidate_id": "X005",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/django/django/commit/28d5262fa3315690395f04e3619ed554dbaf725b",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "django/django",
+      "revision": "28d5262fa3315690395f04e3619ed554dbaf725b",
+      "source_candidate_id": "X005",
+      "evidence_summary": "Use Python stdlib html.escape() to in django.utils.html.escape() Description The function django.utils.html.escape() partially duplicates the Python stdlib function html.escape(). We can replace this duplication with wider community developed version. html.escape() has been available since Python 3."
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "django/utils/html.py",
+        "start_line": 1,
+        "end_line": 6,
+        "text": "\"\"\"HTML utilities suitable for global use.\"\"\"\n\nimport json\nimport re\nfrom html.parser import HTMLParser\n",
+        "sha256": "8d0ec49361b41cadc963595b0a6293ddb386d81252f341b1e1ef28212ecf426f"
+      },
+      {
+        "id": "H2",
+        "path": "django/utils/html.py",
+        "start_line": 24,
+        "end_line": 38,
+        "text": "simple_url_re = re.compile(r'^https?://\\[?\\w', re.IGNORECASE)\nsimple_url_2_re = re.compile(r'^www\\.|^(?!http)\\w[^@]+\\.(com|edu|gov|int|mil|net|org)($|/.*)$', re.IGNORECASE)\n\n_html_escapes = {\n    ord('&'): '&amp;',\n    ord('<'): '&lt;',\n    ord('>'): '&gt;',\n    ord('\"'): '&quot;',\n    ord(\"'\"): '&#39;',\n}\n\n\n@keep_lazy(str, SafeString)\ndef escape(text):\n",
+        "sha256": "f449265fbe7b4fadea1118991536c5980f0056b78caa16a3f2bfa8432a9b83f7"
+      },
+      {
+        "id": "H3",
+        "path": "django/utils/html.py",
+        "start_line": 43,
+        "end_line": 50,
+        "text": "    This may result in double-escaping. If this is a concern, use\n    conditional_escape() instead.\n    \"\"\"\n    return mark_safe(str(text).translate(_html_escapes))\n\n\n_js_escapes = {\n",
+        "sha256": "af1914940581e346e28dd71a66e992205f6fbc0ff204711c47f8184449534af1"
+      },
+      {
+        "id": "H4",
+        "path": "django/utils/html.py",
+        "start_line": 259,
+        "end_line": 274,
+        "text": "            return x\n        return '%s…' % x[:max(0, limit - 1)]\n\n    def unescape(text):\n        \"\"\"\n        If input URL is HTML-escaped, unescape it so that it can be safely fed\n        to smart_urlquote. For example:\n        http://example.com?x=1&amp;y=&lt;2&gt; => http://example.com?x=1&y=<2>\n        \"\"\"\n        return text.replace('&amp;', '&').replace('&lt;', '<').replace(\n            '&gt;', '>').replace('&quot;', '\"').replace('&#39;', \"'\")\n\n    def trim_punctuation(lead, middle, trail):\n        \"\"\"\n        Trim trailing and wrapping punctuation from `middle`. Return the items\n",
+        "sha256": "a9b5baa063de43f430480fcd738f17a3989ae8dd8310d4b16ac24aef8e389e18"
+      },
+      {
+        "id": "H5",
+        "path": "django/utils/html.py",
+        "start_line": 292,
+        "end_line": 299,
+        "text": "            # Trim trailing punctuation (after trimming wrapping punctuation,\n            # as encoded entities contain ';'). Unescape entites to avoid\n            # breaking them by removing ';'.\n            middle_unescaped = unescape(middle)\n            stripped = middle_unescaped.rstrip(TRAILING_PUNCTUATION_CHARS)\n            if middle_unescaped != stripped:\n                trail = middle[len(stripped):] + trail\n",
+        "sha256": "a36d97170c140f058c71a3c570a07a69f50773a079b7ad20648fb7ccb62acd7d"
+      },
+      {
+        "id": "H6",
+        "path": "django/utils/html.py",
+        "start_line": 329,
+        "end_line": 338,
+        "text": "            url = None\n            nofollow_attr = ' rel=\"nofollow\"' if nofollow else ''\n            if simple_url_re.match(middle):\n                url = smart_urlquote(unescape(middle))\n            elif simple_url_2_re.match(middle):\n                url = smart_urlquote('http://%s' % unescape(middle))\n            elif ':' not in middle and is_email_simple(middle):\n                local, domain = middle.rsplit('@', 1)\n                try:\n",
+        "sha256": "a64a872b0d8d7993391de6a089cac6ba8340e21707be0084b2409bd03e6fd0ee"
+      }
+    ]
+  },
+  {
+    "id": "F22",
+    "source_candidate_id": "X074",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "django/django",
+      "revision": "179ee13eb37348cd87169a198aec18fedccc8668",
+      "source_candidate_id": "X074",
+      "evidence_summary": "HashedFilesMixin's post_process() yields multiple times for the same file Description As part of fixing #24452, the implementation of HashedFilesMixin (used by both ManifestStaticFilesStorage and CachedStaticFilesStorage) was changed such that it performs several passes against the found files, ther"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "django/contrib/staticfiles/storage.py",
+        "start_line": 226,
+        "end_line": 243,
+        "text": "            path for path in paths\n            if matches_patterns(path, self._patterns)\n        ]\n        # Do a single pass first. Post-process all files once, then repeat for\n        # adjustable files.\n        for name, hashed_name, processed, _ in self._post_process(paths, adjustable_paths, hashed_files):\n            yield name, hashed_name, processed\n\n        paths = {path: paths[path] for path in adjustable_paths}\n\n        for i in range(self.max_post_process_passes):\n            substitutions = False\n            for name, hashed_name, processed, subst in self._post_process(paths, adjustable_paths, hashed_files):\n                yield name, hashed_name, processed\n                substitutions = substitutions or subst\n\n            if not substitutions:\n",
+        "sha256": "fe474acdbd8b8181168e22a302d4c58259629adaeb0026e18f2097026e6a2693"
+      },
+      {
+        "id": "H2",
+        "path": "django/contrib/staticfiles/storage.py",
+        "start_line": 248,
+        "end_line": 254,
+        "text": "        # Store the processed paths\n        self.hashed_files.update(hashed_files)\n\n    def _post_process(self, paths, adjustable_paths, hashed_files):\n        # Sort the files by directory level\n        def path_level(name):\n",
+        "sha256": "ce908f4e1a58f2568741a8c14848182b5c7b32059cad5d18c8e9bc6a347da33e"
+      }
+    ]
+  },
+  {
+    "id": "F23",
+    "source_candidate_id": "X011",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/matplotlib/matplotlib/commit/f0632c0fc7339f68e992ed63ae4cfac76cd41aad",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "matplotlib/matplotlib",
+      "revision": "f0632c0fc7339f68e992ed63ae4cfac76cd41aad",
+      "source_candidate_id": "X011",
+      "evidence_summary": "[Bug]: Datetime axis with usetex is unclear ### Bug summary The spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3. ### Code for reproduction ```python import matplotlib import matplotlib.pyplot as plt import numpy as np import pandas a"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "lib/matplotlib/dates.py",
+        "start_line": 595,
+        "end_line": 603,
+        "text": "    p = r'([a-zA-Z]+)'\n    ret_text = re.sub(p, r'}$\\1$\\\\mathdefault{', text)\n\n    # Braces ensure dashes are not spaced like binary operators.\n    ret_text = '$\\\\mathdefault{'+ret_text.replace('-', '{-}')+'}$'\n    ret_text = ret_text.replace('$\\\\mathdefault{}$', '')\n    return ret_text\n\n",
+        "sha256": "43ac00dbe2e25c66469a5009c3345d11fcf630f0a6a2415e8cf6053cc7c72481"
+      }
+    ]
+  },
+  {
+    "id": "F24",
+    "source_candidate_id": "X013",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/psf/requests/commit/39d0fdd9096f7dceccbc8f82e1eda7dd64717a8e",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "psf/requests",
+      "revision": "39d0fdd9096f7dceccbc8f82e1eda7dd64717a8e",
+      "source_candidate_id": "X013",
+      "evidence_summary": "Getting http://.example.com raises UnicodeError Attempting to get e.g. `http://.example.com` results in a `UnicodeError`. It seems like the intention so far has been to raise `InvalidUrl` instead (see e.g. [this line](https://github.com/psf/requests/blob/ca6f9af5dba09591007b15a7368bc0f006b7cc50/requ"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "requests/models.py",
+        "start_line": 403,
+        "end_line": 410,
+        "text": "                host = self._get_idna_encoded_host(host)\n            except UnicodeError:\n                raise InvalidURL('URL has an invalid label.')\n        elif host.startswith(u'*'):\n            raise InvalidURL('URL has an invalid label.')\n\n        # Carefully reconstruct the network location\n",
+        "sha256": "c7e74570f317e0d2e9aff1c4d5783c1670be0e0cff8ab39d165cef6c88b36919"
+      }
+    ]
+  },
+  {
+    "id": "F25",
+    "source_candidate_id": "X080",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:resource-lifecycle-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "psf/requests",
+      "revision": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+      "source_candidate_id": "X080",
+      "evidence_summary": "Unicode method names cause UnicodeDecodeError for some requests in Python 2.7.2 The following example works fine: ``` files = {u'file': open(u'/usr/bin/diff', u'rb')} response = requests.request(method='POST', url=u'http://httpbin.org/post', files=files) ``` But the following example (using `method="
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "requests/sessions.py",
+        "start_line": 12,
+        "end_line": 19,
+        "text": "from collections import Mapping\nfrom datetime import datetime\n\nfrom .compat import cookielib, OrderedDict, urljoin, urlparse, urlunparse\nfrom .cookies import cookiejar_from_dict, extract_cookies_to_jar, RequestsCookieJar\nfrom .models import Request, PreparedRequest\nfrom .hooks import default_hooks, dispatch_hook\n",
+        "sha256": "4c9b9e5bbf47ace99ada9daa3855ed045bc9c33cafa2005ed3a799eda6669255"
+      },
+      {
+        "id": "H2",
+        "path": "requests/sessions.py",
+        "start_line": 309,
+        "end_line": 315,
+        "text": "        :param cert: (optional) if String, path to ssl client cert file (.pem).\n            If Tuple, ('cert', 'key') pair.\n        \"\"\"\n        # Create the Request.\n        req = Request(\n            method = method.upper(),\n",
+        "sha256": "defbac7d2cc36f26c0e6b072a81ea0a231bb9169fd81cd82ea79a2ea082cf047"
+      }
+    ]
+  },
+  {
+    "id": "F26",
+    "source_candidate_id": "X085",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "scikit-learn/scikit-learn",
+      "revision": "b90661d6a46aa3619d3eec94d5281f5888add501",
+      "source_candidate_id": "X085",
+      "evidence_summary": "linear_model.RidgeClassifierCV's Parameter store_cv_values issue #### Description Parameter store_cv_values error on sklearn.linear_model.RidgeClassifierCV #### Steps/Code to Reproduce import numpy as np from sklearn import linear_model as lm #test database n = 100 x = np.random.randn(n, 30) y = np."
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "sklearn/linear_model/ridge.py",
+        "start_line": 1212,
+        "end_line": 1230,
+        "text": "\n    store_cv_values : boolean, default=False\n        Flag indicating if the cross-validation values corresponding to\n        each alpha should be stored in the `cv_values_` attribute (see\n        below). This flag is only compatible with `cv=None` (i.e. using\n        Generalized Cross-Validation).\n\n    Attributes\n    ----------\n    cv_values_ : array, shape = [n_samples, n_alphas] or \\\n        shape = [n_samples, n_targets, n_alphas], optional\n        Cross-validation values for each alpha (if `store_cv_values=True` and \\\n        `cv=None`). After `fit()` has been called, this attribute will \\\n        contain the mean squared errors (by default) or the values of the \\\n        `{loss,score}_func` function (if provided in the constructor).\n\n    coef_ : array, shape = [n_features] or [n_targets, n_features]\n        Weight vector(s).\n",
+        "sha256": "1d28fbc87233dc8b60790347b60736898b1c84af729c7532e5b036a5badab01b"
+      },
+      {
+        "id": "H2",
+        "path": "sklearn/linear_model/ridge.py",
+        "start_line": 1301,
+        "end_line": 1315,
+        "text": "        weights inversely proportional to class frequencies in the input data\n        as ``n_samples / (n_classes * np.bincount(y))``\n\n    Attributes\n    ----------\n    cv_values_ : array, shape = [n_samples, n_alphas] or \\\n    shape = [n_samples, n_responses, n_alphas], optional\n        Cross-validation values for each alpha (if `store_cv_values=True` and\n    `cv=None`). After `fit()` has been called, this attribute will contain \\\n    the mean squared errors (by default) or the values of the \\\n    `{loss,score}_func` function (if provided in the constructor).\n\n    coef_ : array, shape = [n_features] or [n_targets, n_features]\n        Weight vector(s).\n",
+        "sha256": "752085a9d25296dbff5baaa0dea76ea8d9f16ab8dcb1d557df0ca88c1d94e6fb"
+      },
+      {
+        "id": "H3",
+        "path": "sklearn/linear_model/ridge.py",
+        "start_line": 1333,
+        "end_line": 1343,
+        "text": "    advantage of the multi-variate response support in Ridge.\n    \"\"\"\n    def __init__(self, alphas=(0.1, 1.0, 10.0), fit_intercept=True,\n                 normalize=False, scoring=None, cv=None, class_weight=None):\n        super(RidgeClassifierCV, self).__init__(\n            alphas=alphas, fit_intercept=fit_intercept, normalize=normalize,\n            scoring=scoring, cv=cv)\n        self.class_weight = class_weight\n\n    def fit(self, X, y, sample_weight=None):\n",
+        "sha256": "ecfaf7a53492d7954fbc8775249046ddda2215c329d31823601d8f911850fc43"
+      }
+    ]
+  },
+  {
+    "id": "F27",
+    "source_candidate_id": "X022",
+    "source": "swe-bench-verified",
+    "split": "development",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/sympy/sympy/commit/b9179e80d2daa1bb6cba1ffe35ca9e6612e115c9",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "sympy/sympy",
+      "revision": "b9179e80d2daa1bb6cba1ffe35ca9e6612e115c9",
+      "source_candidate_id": "X022",
+      "evidence_summary": "Factor with extension=True drops a factor of y-1 I guess this related (or a duplicate of?) #5786 This is from stackoverflow: https://stackoverflow.com/questions/60682765/python-sympy-factoring-polynomial-over-complex-numbers ```julia In [9]: z = expand((x-1)*(y-1)) In [10]: z Out[10]: x⋅y - x - y + "
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "sympy/polys/factortools.py",
+        "start_line": 1147,
+        "end_line": 1154,
+        "text": "        return lc, []\n\n    f, F = dmp_sqf_part(f, u, K), f\n    s, g, r = dmp_sqf_norm(f, u, K)\n\n    factors = dmp_factor_list_include(r, u, K.dom)\n\n",
+        "sha256": "b98d330c0e93f2844c5214fcb532826055d42886cb7cb29197ec188deea2ef21"
+      }
+    ]
+  },
+  {
+    "id": "F28",
+    "source_candidate_id": "X114",
+    "source": "commitbench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:resource-lifecycle-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "Netflix-Skunkworks_historical",
+      "revision": "b7e54ffe725079975064c174538930655af47bc4",
+      "source_candidate_id": "X114",
+      "evidence_summary": "Upgraded CloudAux version to address major memory leakage problems. - Version bumped to <I>"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "historical/__about__.py",
+        "start_line": 9,
+        "end_line": 16,
+        "text": "__summary__ = (\"Historical tracking of AWS configuration data.\")\n__uri__ = \"https://github.com/Netflix-Skunkworks/historical\"\n\n__version__ = \"0.1.6\"\n\n__author__ = \"The Historical developers\"\n__email__ = \"security@netflix.com\"\n",
+        "sha256": "e22a7be506df32b6533db241957dd9eb63a5ca906d887da2d3a72625ff776a91"
+      },
+      {
+        "id": "H2",
+        "path": "setup.py",
+        "start_line": 22,
+        "end_line": 29,
+        "text": "\n\ninstall_requires = [\n    'cloudaux>=1.4.3',\n    'boto3>=1.4.4',\n    'click>=6.7',\n    'pynamodb>=3.1.0',\n",
+        "sha256": "2232ff4f0cb7db44aaf704e5ffe833e46f06bbe29bd94c61a093a7b347d1a2c1"
+      }
+    ]
+  },
+  {
+    "id": "F29",
+    "source_candidate_id": "X108",
+    "source": "commitbench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "OXID-eSales_oxideshop_ce",
+      "revision": "3375c54e6821be7d69d3d367615442271b50515f",
+      "source_candidate_id": "X108",
+      "evidence_summary": "OXDEV-<I> Remove deprecated message for $_dWeight, $_iProductsCnt and $_dItemsCnt"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "source/Application/Model/Basket.php",
+        "start_line": 26,
+        "end_line": 34,
+        "text": "     * Number of different product type in basket.\n     * The value is updated only after recalculating a basket.\n     *\n     * @deprecated since v.6.0.0 (2017-08-17); Use getProductsCount() instead.\n     *\n     * @var int\n     */\n    protected $_iProductsCnt = 0;\n",
+        "sha256": "8981ee1f8c77a702081a57b5e07bc27020fe9adc53590f674e12c6b1f3b99809"
+      },
+      {
+        "id": "H2",
+        "path": "source/Application/Model/Basket.php",
+        "start_line": 36,
+        "end_line": 44,
+        "text": "     * Number of basket items.\n     * The value is updated only after recalculating a basket.\n     *\n     * @deprecated since v.6.0.0 (2017-08-17); Use getItemsCount() instead.\n     *\n     * @var double\n     */\n    protected $_dItemsCnt = 0.0;\n",
+        "sha256": "b09f352a1cca3fb979cda1d06e0939d1e8ff61c58125d8794d9cfaebf05562ab"
+      },
+      {
+        "id": "H3",
+        "path": "source/Application/Model/Basket.php",
+        "start_line": 46,
+        "end_line": 54,
+        "text": "     * Basket weight.\n     * The value is updated only after recalculating a basket.\n     *\n     * @deprecated since v.6.0.0 (2017-08-17); Use getWeight() instead.\n     *\n     * @var double\n     */\n    protected $_dWeight = 0.0;\n",
+        "sha256": "a2442d5e41e913b341a8a913c34e3944786c780cca22d1094fb907e68a4f873c"
+      }
+    ]
+  },
+  {
+    "id": "F30",
+    "source_candidate_id": "X119",
+    "source": "commitbench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "bmcfee_pumpp",
+      "revision": "09e17a5e3d286c1afac39a760ff6f5aac9554a67",
+      "source_candidate_id": "X119",
+      "evidence_summary": "removed dead code [ci skip]"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "pumpp/feature/cqt.py",
+        "start_line": 350,
+        "end_line": 377,
+        "text": "                      channels=len(self.harmonics))\n\n    def transform_audio(self, y):\n        '''Compute the HCQT with unwrapped phase\n\n        Parameters\n        ----------\n        y : np.ndarray\n            The audio buffer\n\n        Returns\n        -------\n        data : dict\n            data['mag'] : np.ndarray, shape=(n_frames, n_bins)\n                CQT magnitude\n\n            data['dphase'] : np.ndarray, shape=(n_frames, n_bins)\n                Unwrapped phase differential\n        '''\n        data = super(HCQTPhaseDiff, self).transform_audio(y)\n        data['dphase'] = phase_diff(data.pop('phase'), self.conv)\n        return data\n\n    def transform_audio(self, y):\n        '''Compute the HCQT\n\n        Parameters\n",
+        "sha256": "5022769551b3f74ca16a5f7e3f138f2c05626349914ac42e53e8177e36701c97"
+      }
+    ]
+  },
+  {
+    "id": "F31",
+    "source_candidate_id": "X101",
+    "source": "commitbench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:resource-lifecycle-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "shopware_platform",
+      "revision": "8535dc97437038465d4fbd85bdde3d5cc95bab19",
+      "source_candidate_id": "X101",
+      "evidence_summary": "Fix memory leak in stop word filter and assign array trait"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "src/Framework/Struct/AssignArrayTrait.php",
+        "start_line": 29,
+        "end_line": 38,
+        "text": "    public function assign(array $options)\n    {\n        foreach ($options as $key => $value) {\n            $setter = 'set' . ucfirst($key);\n            try {\n                $this->$setter($value);\n            } catch (\\TypeError $error) {\n                throw $error;\n            } catch (\\Error | \\Exception $error) {\n",
+        "sha256": "9d96067912dfa570fbd9598b9eac5235e1ec5b97cf9e7355aa753708e4090be1"
+      }
+    ]
+  },
+  {
+    "id": "F32",
+    "source_candidate_id": "X116",
+    "source": "commitbench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:cleanup-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "Maxscha/commitbench",
+      "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+      "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+      "repo": "thinktomorrow_assetlibrary",
+      "revision": "4bef7c3252a250cc6385c866338f7a67ca19cba7",
+      "source_candidate_id": "X116",
+      "evidence_summary": "remove unused testhelper that caused Laravel version conflict"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "tests/TestCase.php",
+        "start_line": 28,
+        "end_line": 52,
+        "text": "        config(['app.fallback_locale' => 'nl']);\n    }\n\n    protected function disableExceptionHandling()\n    {\n        $this->app->instance(ExceptionHandler::class, new class extends Handler {\n            public function __construct()\n            {\n            }\n\n            public function report(\\Throwable $e)\n            {\n            }\n\n            public function render($request, \\Throwable $e)\n            {\n                throw $e;\n            }\n        });\n    }\n\n    protected function protectTestEnvironment()\n    {\n        if (! $this->protectTestEnvironment) {\n",
+        "sha256": "ae69c085c42c303657bb93b8fe2ce944ad0bc772e466d0ac4a386cf84e6ce723"
+      },
+      {
+        "id": "H2",
+        "path": "tests/unit/AddAssetTest.php",
+        "start_line": 192,
+        "end_line": 199,
+        "text": "    /** @test */\n    public function it_has_no_problem_with_upper_case_extentions()\n    {\n        $this->disableExceptionHandling();\n        $article = $this->getArticleWithAsset('banner', 'nl');\n\n        $image_name = json_decode($this->getBase64WithName('test.PNG'))->output->name;\n",
+        "sha256": "14e74651d48af1189b369f7ab4b138ad09b50102a50daf11e5141ccee6c54e43"
+      }
+    ]
+  },
+  {
+    "id": "F33",
+    "source_candidate_id": "X050",
+    "source": "devign",
+    "split": "verification",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [
+      "senior-review:security-auditor"
+    ],
+    "negative_roles": [],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "c0c24b95542bc1a4dc3fc6ea71475ae04fa69189",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "qemu",
+      "revision": "c0c24b95542bc1a4dc3fc6ea71475ae04fa69189",
+      "source_candidate_id": "X050",
+      "evidence_summary": "Devign dataset target=True"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "qemu/function-12.c",
+        "start_line": 1,
+        "end_line": 217,
+        "text": "static int xen_9pfs_connect(struct XenDevice *xendev)\n\n{\n\n    int i;\n\n    Xen9pfsDev *xen_9pdev = container_of(xendev, Xen9pfsDev, xendev);\n\n    V9fsState *s = &xen_9pdev->state;\n\n    QemuOpts *fsdev;\n\n\n\n    if (xenstore_read_fe_int(&xen_9pdev->xendev, \"num-rings\",\n\n                             &xen_9pdev->num_rings) == -1 ||\n\n        xen_9pdev->num_rings > MAX_RINGS || xen_9pdev->num_rings < 1) {\n\n        return -1;\n\n    }\n\n\n\n    xen_9pdev->rings = g_malloc0(xen_9pdev->num_rings * sizeof(Xen9pfsRing));\n\n    for (i = 0; i < xen_9pdev->num_rings; i++) {\n\n        char *str;\n\n        int ring_order;\n\n\n\n        xen_9pdev->rings[i].priv = xen_9pdev;\n\n        xen_9pdev->rings[i].evtchn = -1;\n\n        xen_9pdev->rings[i].local_port = -1;\n\n\n\n        str = g_strdup_printf(\"ring-ref%u\", i);\n\n        if (xenstore_read_fe_int(&xen_9pdev->xendev, str,\n\n                                 &xen_9pdev->rings[i].ref) == -1) {\n\n\n            goto out;\n\n        }\n\n\n        str = g_strdup_printf(\"event-channel-%u\", i);\n\n        if (xenstore_read_fe_int(&xen_9pdev->xendev, str,\n\n                                 &xen_9pdev->rings[i].evtchn) == -1) {\n\n\n            goto out;\n\n        }\n\n\n\n\n        xen_9pdev->rings[i].intf =  xengnttab_map_grant_ref(\n\n                xen_9pdev->xendev.gnttabdev,\n\n                xen_9pdev->xendev.dom,\n\n                xen_9pdev->rings[i].ref,\n\n                PROT_READ | PROT_WRITE);\n\n        if (!xen_9pdev->rings[i].intf) {\n\n            goto out;\n\n        }\n\n        ring_order = xen_9pdev->rings[i].intf->ring_order;\n\n        if (ring_order > MAX_RING_ORDER) {\n\n            goto out;\n\n        }\n\n        xen_9pdev->rings[i].ring_order = ring_order;\n\n        xen_9pdev->rings[i].data = xengnttab_map_domain_grant_refs(\n\n                xen_9pdev->xendev.gnttabdev,\n\n                (1 << ring_order),\n\n                xen_9pdev->xendev.dom,\n\n                xen_9pdev->rings[i].intf->ref,\n\n                PROT_READ | PROT_WRITE);\n\n        if (!xen_9pdev->rings[i].data) {\n\n            goto out;\n\n        }\n\n        xen_9pdev->rings[i].ring.in = xen_9pdev->rings[i].data;\n\n        xen_9pdev->rings[i].ring.out = xen_9pdev->rings[i].data +\n\n                                       XEN_FLEX_RING_SIZE(ring_order);\n\n\n\n        xen_9pdev->rings[i].bh = qemu_bh_new(xen_9pfs_bh, &xen_9pdev->rings[i]);\n\n        xen_9pdev->rings[i].out_cons = 0;\n\n        xen_9pdev->rings[i].out_size = 0;\n\n        xen_9pdev->rings[i].inprogress = false;\n\n\n\n\n\n        xen_9pdev->rings[i].evtchndev = xenevtchn_open(NULL, 0);\n\n        if (xen_9pdev->rings[i].evtchndev == NULL) {\n\n            goto out;\n\n        }\n\n        fcntl(xenevtchn_fd(xen_9pdev->rings[i].evtchndev), F_SETFD, FD_CLOEXEC);\n\n        xen_9pdev->rings[i].local_port = xenevtchn_bind_interdomain\n\n                                            (xen_9pdev->rings[i].evtchndev,\n\n                                             xendev->dom,\n\n                                             xen_9pdev->rings[i].evtchn);\n\n        if (xen_9pdev->rings[i].local_port == -1) {\n\n            xen_pv_printf(xendev, 0,\n\n                          \"xenevtchn_bind_interdomain failed port=%d\\n\",\n\n                          xen_9pdev->rings[i].evtchn);\n\n            goto out;\n\n        }\n\n        xen_pv_printf(xendev, 2, \"bind evtchn port %d\\n\", xendev->local_port);\n\n        qemu_set_fd_handler(xenevtchn_fd(xen_9pdev->rings[i].evtchndev),\n\n                xen_9pfs_evtchn_event, NULL, &xen_9pdev->rings[i]);\n\n    }\n\n\n\n    xen_9pdev->security_model = xenstore_read_be_str(xendev, \"security_model\");\n\n    xen_9pdev->path = xenstore_read_be_str(xendev, \"path\");\n\n    xen_9pdev->id = s->fsconf.fsdev_id =\n\n        g_strdup_printf(\"xen9p%d\", xendev->dev);\n\n    xen_9pdev->tag = s->fsconf.tag = xenstore_read_fe_str(xendev, \"tag\");\n\n    v9fs_register_transport(s, &xen_9p_transport);\n\n    fsdev = qemu_opts_create(qemu_find_opts(\"fsdev\"),\n\n            s->fsconf.tag,\n\n            1, NULL);\n\n    qemu_opt_set(fsdev, \"fsdriver\", \"local\", NULL);\n\n    qemu_opt_set(fsdev, \"path\", xen_9pdev->path, NULL);\n\n    qemu_opt_set(fsdev, \"security_model\", xen_9pdev->security_model, NULL);\n\n    qemu_opts_set_id(fsdev, s->fsconf.fsdev_id);\n\n    qemu_fsdev_add(fsdev);\n\n    v9fs_device_realize_common(s, NULL);\n\n\n\n    return 0;\n\n\n\nout:\n\n    xen_9pfs_free(xendev);\n\n    return -1;\n\n}",
+        "sha256": "3e1fc38a89c821c88527a3060b282da698f0854c31032c8cf253808420425eb7"
+      }
+    ]
+  },
+  {
+    "id": "F34",
+    "source_candidate_id": "X053",
+    "source": "devign",
+    "split": "verification",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [],
+    "negative_roles": [
+      "senior-review:security-auditor"
+    ],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "f1c52354e5bdab6983d13a4c174759c585e834b3",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "qemu",
+      "revision": "f1c52354e5bdab6983d13a4c174759c585e834b3",
+      "source_candidate_id": "X053",
+      "evidence_summary": "Devign dataset target=False"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "qemu/function-70.c",
+        "start_line": 1,
+        "end_line": 22,
+        "text": "static uint32_t drc_set_unusable(sPAPRDRConnector *drc)\n\n{\n\n    drc->allocation_state = SPAPR_DR_ALLOCATION_STATE_UNUSABLE;\n\n    if (drc->awaiting_release) {\n\n        uint32_t drc_index = spapr_drc_index(drc);\n\n        trace_spapr_drc_set_allocation_state_finalizing(drc_index);\n\n        spapr_drc_detach(drc);\n\n    }\n\n\n\n    return RTAS_OUT_SUCCESS;\n\n}\n",
+        "sha256": "50f9be4ba12425f003687d28ca42d9b673f76d839a2bb16db8b799edf551be99"
+      }
+    ]
+  },
+  {
+    "id": "F35",
+    "source_candidate_id": "X056",
+    "source": "devign",
+    "split": "verification",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [],
+    "negative_roles": [
+      "senior-review:security-auditor"
+    ],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "cf57298af5336df2aece47ef16c290a3a81457dd",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "qemu",
+      "revision": "cf57298af5336df2aece47ef16c290a3a81457dd",
+      "source_candidate_id": "X056",
+      "evidence_summary": "Devign dataset target=False"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "qemu/function-108.c",
+        "start_line": 1,
+        "end_line": 168,
+        "text": "aio_write_f(int argc, char **argv)\n\n{\n\n\tchar *p;\n\n\tint count = 0;\n\n\tint nr_iov, i, c;\n\n\tint pattern = 0xcd;\n\n\tstruct aio_ctx *ctx = calloc(1, sizeof(struct aio_ctx));\n\n\tBlockDriverAIOCB *acb;\n\n\n\n\twhile ((c = getopt(argc, argv, \"CqP:\")) != EOF) {\n\n\t\tswitch (c) {\n\n\t\tcase 'C':\n\n\t\t\tctx->Cflag = 1;\n\n\t\t\tbreak;\n\n\t\tcase 'q':\n\n\t\t\tctx->qflag = 1;\n\n\t\t\tbreak;\n\n\t\tcase 'P':\n\n\t\t\tpattern = atoi(optarg);\n\n\t\t\tbreak;\n\n\t\tdefault:\n\n\t\t\treturn command_usage(&aio_write_cmd);\n\n\t\t}\n\n\t}\n\n\n\n\tif (optind > argc - 2)\n\n\t\treturn command_usage(&aio_write_cmd);\n\n\n\n\tctx->offset = cvtnum(argv[optind]);\n\n\tif (ctx->offset < 0) {\n\n\t\tprintf(\"non-numeric length argument -- %s\\n\", argv[optind]);\n\n\t\treturn 0;\n\n\t}\n\n\toptind++;\n\n\n\n\tif (ctx->offset & 0x1ff) {\n\n\t\tprintf(\"offset %lld is not sector aligned\\n\",\n\n\t\t\t(long long)ctx->offset);\n\n\t\treturn 0;\n\n\t}\n\n\n\n\tif (count & 0x1ff) {\n\n\t\tprintf(\"count %d is not sector aligned\\n\",\n\n\t\t\tcount);\n\n\t\treturn 0;\n\n\t}\n\n\n\n\tfor (i = optind; i < argc; i++) {\n\n\t        size_t len;\n\n\n\n\t\tlen = cvtnum(argv[optind]);\n\n\t\tif (len < 0) {\n\n\t\t\tprintf(\"non-numeric length argument -- %s\\n\", argv[i]);\n\n\t\t\treturn 0;\n\n\t\t}\n\n\t\tcount += len;\n\n\t}\n\n\n\n\tnr_iov = argc - optind;\n\n\tqemu_iovec_init(&ctx->qiov, nr_iov);\n\n\tctx->buf = p = qemu_io_alloc(count, pattern);\n\n\tfor (i = 0; i < nr_iov; i++) {\n\n\t        size_t len;\n\n\n\n\t\tlen = cvtnum(argv[optind]);\n\n\t\tif (len < 0) {\n\n\t\t\tprintf(\"non-numeric length argument -- %s\\n\",\n\n\t\t\t\targv[optind]);\n\n\t\t\treturn 0;\n\n\t\t}\n\n\n\n\t\tqemu_iovec_add(&ctx->qiov, p, len);\n\n\t\tp += len;\n\n\t\toptind++;\n\n\t}\n\n\n\n\tgettimeofday(&ctx->t1, NULL);\n\n\tacb = bdrv_aio_writev(bs, ctx->offset >> 9, &ctx->qiov,\n\n\t\t\t      ctx->qiov.size >> 9, aio_write_done, ctx);\n\n\tif (!acb)\n\n\t\treturn -EIO;\n\n\n\n\treturn 0;\n\n}\n",
+        "sha256": "c7ace08a03690d76cd435bab88a24c02e0fc98245de6b0c103cd0904add79d36"
+      }
+    ]
+  },
+  {
+    "id": "F36",
+    "source_candidate_id": "X059",
+    "source": "devign",
+    "split": "verification",
+    "label_status": "adjudicated_gold",
+    "expected_roles": [],
+    "negative_roles": [
+      "senior-review:security-auditor"
+    ],
+    "label_rationale": "Devign dataset-native security target.",
+    "provenance": {
+      "dataset": "DetectVul/devign",
+      "dataset_revision": "see source_inventory.json",
+      "commit_id": "1ac157da77c863b62b1d2f467626a440d57cf17d",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "qemu",
+      "revision": "1ac157da77c863b62b1d2f467626a440d57cf17d",
+      "source_candidate_id": "X059",
+      "evidence_summary": "Devign dataset target=False"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "qemu/function-176.c",
+        "start_line": 1,
+        "end_line": 16,
+        "text": "void cpu_x86_init_mmu(CPUX86State *env)\n\n{\n\n    a20_enabled = 1;\n\n    a20_mask = 0xffffffff;\n\n\n\n    last_pg_state = -1;\n\n    cpu_x86_update_cr0(env);\n\n}\n",
+        "sha256": "745150534feb012d0a352bdd4f31cfe10a34c664cac06621b1579175a7f26b11"
+      }
+    ]
+  },
+  {
+    "id": "F37",
+    "source_candidate_id": "X043",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:security-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "java/apache__dubbo_dataset.jsonl",
+      "scanned_rows": 1,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "apache/dubbo",
+      "revision": "d0a1bd014331483c19208b831c4f6b488654a508",
+      "source_candidate_id": "X043",
+      "evidence_summary": "Fix #11767, restore the original parameter pair instead of giving default value when doing URL.parse.; Dubbo service auth failed"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "dubbo-common/src/main/java/org/apache/dubbo/common/URLStrParser.java",
+        "start_line": 278,
+        "end_line": 285,
+        "text": "            String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);\n            String value;\n            if (valueStart >= valueEnd) {\n                value = name;\n            } else {\n                value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);\n            }\n",
+        "sha256": "47dc5f4ff6c4fb504131a82da0b7dcae8870ca4a42ed494d38ea0a7e6238ff61"
+      },
+      {
+        "id": "H2",
+        "path": "dubbo-common/src/main/java/org/apache/dubbo/common/URLStrParser.java",
+        "start_line": 291,
+        "end_line": 298,
+        "text": "            String name = str.substring(nameStart, valueStart - 1);\n            String value;\n            if (valueStart >= valueEnd) {\n                value = name;\n            } else {\n                value = str.substring(valueStart, valueEnd);\n            }\n",
+        "sha256": "abe74dc8f1e1212305b9e6f2f5b122649571474fa3a18e7de912497a8c3cf775"
+      }
+    ]
+  },
+  {
+    "id": "F38",
+    "source_candidate_id": "X042",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:ui-race-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "js/sveltejs__svelte_dataset.jsonl",
+      "scanned_rows": 3,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "sveltejs/svelte",
+      "revision": "09510c8c5c0888578446781e54f2229428e21bfc",
+      "source_candidate_id": "X042",
+      "evidence_summary": "fix: correctly handle `novalidate` attribute casing; Form `novalidate` attribute doesn't render when conditional (given a value)"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "packages/svelte/src/utils.js",
+        "start_line": 196,
+        "end_line": 203,
+        "text": "\treadonly: 'readOnly',\n\tdefaultvalue: 'defaultValue',\n\tdefaultchecked: 'defaultChecked',\n\tsrcobject: 'srcObject'\n};\n\n/**\n",
+        "sha256": "9b57206b85a70c222cd295daad0fadee5f713eb4715b4ee03c3dee2ddc2715d3"
+      }
+    ]
+  },
+  {
+    "id": "F39",
+    "source_candidate_id": "X094",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:ui-race-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "js/sveltejs__svelte_dataset.jsonl",
+      "scanned_rows": 7,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "sveltejs/svelte",
+      "revision": "8a1acac084096d9c9bd15a1356d3251383e8d258",
+      "source_candidate_id": "X094",
+      "evidence_summary": "feat: allow const tag inside `svelte:boundary`; Feature Request: Support for {@const} Inside <svelte:boundary>"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "documentation/docs/03-template-syntax/09-@const.md",
+        "start_line": 11,
+        "end_line": 15,
+        "text": "{/each}\n```\n\n`{@const}` is only allowed as an immediate child of a block — `{#if ...}`, `{#each ...}`, `{#snippet ...}` and so on — or a `<Component />`.\n",
+        "sha256": "91ae6acc497eaa9befe576d2a401e6043e80492aa276703610f2acdc565f5899"
+      },
+      {
+        "id": "H2",
+        "path": "packages/svelte/src/compiler/phases/2-analyze/visitors/ConstTag.js",
+        "start_line": 24,
+        "end_line": 30,
+        "text": "\t\t\tgrand_parent?.type !== 'EachBlock' &&\n\t\t\tgrand_parent?.type !== 'AwaitBlock' &&\n\t\t\tgrand_parent?.type !== 'SnippetBlock' &&\n\t\t\t((grand_parent?.type !== 'RegularElement' && grand_parent?.type !== 'SvelteElement') ||\n\t\t\t\t!grand_parent.attributes.some((a) => a.type === 'Attribute' && a.name === 'slot')))\n\t) {\n",
+        "sha256": "597a005c28e0061ee7ee663b78d248daea3403e3b04875489b6e174d9a5b6a8e"
+      },
+      {
+        "id": "H3",
+        "path": "packages/svelte/src/compiler/phases/3-transform/client/visitors/SvelteBoundary.js",
+        "start_line": 33,
+        "end_line": 54,
+        "text": "\tconst nodes = [];\n\n\t/** @type {Statement[]} */\n\tconst snippet_statements = [];\n\n\t// Capture the `failed` implicit snippet prop\n\tfor (const child of node.fragment.nodes) {\n\t\tif (child.type === 'SnippetBlock' && child.expression.name === 'failed') {\n\t\t\t/** @type {Statement[]} */\n\t\t\tconst init = [];\n\t\t\tcontext.visit(child, { ...context.state, init });\n\t\t\tprops.properties.push(b.prop('init', child.expression, child.expression));\n\t\t\tsnippet_statements.push(...init);\n\t\t} else {\n\t\t\tnodes.push(child);\n\t\t}\n\t}\n\n\tconst block = /** @type {BlockStatement} */ (context.visit({ ...node.fragment, nodes }));\n\n\tconst boundary = b.stmt(\n",
+        "sha256": "21a7a2b5bbba6a8cd449375e85983e6a30a50aefab30fa7327b1a302e2105b03"
+      },
+      {
+        "id": "H4",
+        "path": "packages/svelte/src/compiler/phases/3-transform/client/visitors/SvelteBoundary.js",
+        "start_line": 56,
+        "end_line": 62,
+        "text": "\n\tcontext.state.template.push('<!>');\n\tcontext.state.init.push(\n\t\tsnippet_statements.length > 0 ? b.block([...snippet_statements, boundary]) : boundary\n\t);\n}\n",
+        "sha256": "daa2cd68d4bc88b7b0d5bbd79c1faf890a6b5b839f0dde8c04bb4bc72924eb28"
+      }
+    ]
+  },
+  {
+    "id": "F40",
+    "source_candidate_id": "X047",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "rust/tokio-rs__tokio_dataset.jsonl",
+      "scanned_rows": 2,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "tokio-rs/tokio",
+      "revision": "a82bdeebe9560d22a0179ae7ff8ce3986202e24d",
+      "source_candidate_id": "X047",
+      "evidence_summary": "macros: make select budget-aware; MPSC queue hangs on repeated polling"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "tokio/src/macros/select.rs",
+        "start_line": 524,
+        "end_line": 530,
+        "text": "                // supplied.\n                let start = $start;\n\n                for i in 0..BRANCHES {\n                    let branch;\n                    #[allow(clippy::modulo_one)]\n",
+        "sha256": "3785bbce9d0a8cf5d5daa86de0e7cefce64e2fc70e32fc1b2e75dc8a74db38f8"
+      },
+      {
+        "id": "H2",
+        "path": "tokio/src/macros/support.rs",
+        "start_line": 7,
+        "end_line": 13,
+        "text": "    pub fn thread_rng_n(n: u32) -> u32 {\n        crate::runtime::context::thread_rng_n(n)\n    }\n}\n\npub use std::future::{Future, IntoFuture};\n",
+        "sha256": "b2eef1a135f1e1fbb919b83bd8c0cc81923b3ef3b3b991ec98943a352e72c11b"
+      },
+      {
+        "id": "H3",
+        "path": "tokio/src/task/budget.rs",
+        "start_line": 1,
+        "end_line": 5,
+        "text": "use std::task::{ready, Poll};\n\n/// Consumes a unit of budget and returns the execution back to the Tokio\n/// runtime *if* the task's coop budget was exhausted.\n",
+        "sha256": "d2d0551d8f799933d3a63082db3e7d82056ff2fe1e64d0b8c118e30ffc2f0fd1"
+      },
+      {
+        "id": "H4",
+        "path": "tokio/src/task/budget.rs",
+        "start_line": 39,
+        "end_line": 42,
+        "text": "    })\n    .await\n}\n",
+        "sha256": "268a647ab1653f3fe9ea90d522b8496e35a62e0ccd9d67574f775fdd62cb2fdc"
+      },
+      {
+        "id": "H5",
+        "path": "tokio/src/task/mod.rs",
+        "start_line": 313,
+        "end_line": 323,
+        "text": "//! # }\n//! ```\n//!\n//! [`task::spawn_blocking`]: crate::task::spawn_blocking\n//! [`task::block_in_place`]: crate::task::block_in_place\n//! [rt-multi-thread]: ../runtime/index.html#threaded-scheduler\n//! [`task::yield_now`]: crate::task::yield_now()\n//! [`thread::yield_now`]: std::thread::yield_now\n//! [`task::unconstrained`]: crate::task::unconstrained()\n//! [`poll`]: method@std::future::Future::poll\n",
+        "sha256": "5d10069ea10a1a657af5efd78821c1aae98ea20622eebcb8f39bdb44279f1409"
+      },
+      {
+        "id": "H6",
+        "path": "tokio/src/task/mod.rs",
+        "start_line": 337,
+        "end_line": 345,
+        "text": "    mod yield_now;\n    pub use yield_now::yield_now;\n\n    mod consume_budget;\n    pub use consume_budget::consume_budget;\n\n    mod local;\n    pub use local::{spawn_local, LocalSet, LocalEnterGuard};\n",
+        "sha256": "003b17b58e30316759e1bf63bfe05bf0702906ad0da7d2fbe4efb71337dd7a2d"
+      }
+    ]
+  },
+  {
+    "id": "F41",
+    "source_candidate_id": "X048",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "rust/tokio-rs__tokio_dataset.jsonl",
+      "scanned_rows": 3,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "tokio-rs/tokio",
+      "revision": "d4178cf34924d14fca4ecf551c97b8953376f25a",
+      "source_candidate_id": "X048",
+      "evidence_summary": "io: add AsyncFd::try_io() and try_io_mut(); Add `AsyncFd::try_io`"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "tokio/src/io/async_fd.rs",
+        "start_line": 872,
+        "end_line": 878,
+        "text": "            .async_io(interest, || f(self.inner.as_mut().unwrap()))\n            .await\n    }\n}\n\nimpl<T: AsRawFd> AsRawFd for AsyncFd<T> {\n",
+        "sha256": "2061437cebc99ea0681e96af298f8dc0e442dfa1deb70c98819f9b886ed7f899"
+      }
+    ]
+  },
+  {
+    "id": "F42",
+    "source_candidate_id": "X097",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:resource-lifecycle-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "rust/tokio-rs__tokio_dataset.jsonl",
+      "scanned_rows": 10,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "tokio-rs/tokio",
+      "revision": "f80bbec28ff790d15481a29583c9b778bf0cc40e",
+      "source_candidate_id": "X097",
+      "evidence_summary": "net: implement `UnixSocket`; Expose a `bind` method on `UnixStream`"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "tokio/src/net/mod.rs",
+        "start_line": 49,
+        "end_line": 55,
+        "text": "    pub use unix::datagram::socket::UnixDatagram;\n    pub use unix::listener::UnixListener;\n    pub use unix::stream::UnixStream;\n}\n\ncfg_net_windows! {\n",
+        "sha256": "f7b9e68101dd1ee340fa37c20a084b0d56431ea654220ad9732e5d88eb2cce7b"
+      },
+      {
+        "id": "H2",
+        "path": "tokio/src/net/unix/datagram/socket.rs",
+        "start_line": 96,
+        "end_line": 102,
+        "text": "}\n\nimpl UnixDatagram {\n    /// Waits for any of the requested ready states.\n    ///\n    /// This function is usually paired with `try_recv()` or `try_send()`. It\n",
+        "sha256": "7bfaa5094387bd1bcd577931ca8a68dedc455c921073941e470a631dcc597e5f"
+      },
+      {
+        "id": "H3",
+        "path": "tokio/src/net/unix/listener.rs",
+        "start_line": 50,
+        "end_line": 56,
+        "text": "}\n\nimpl UnixListener {\n    /// Creates a new `UnixListener` bound to the specified path.\n    ///\n    /// # Panics\n",
+        "sha256": "02da191a904b16f8e363df5676d8dae0c2d85ccf490e060e2433c6b66bcd3b5b"
+      },
+      {
+        "id": "H4",
+        "path": "tokio/src/net/unix/mod.rs",
+        "start_line": 7,
+        "end_line": 13,
+        "text": "\npub(crate) mod listener;\n\nmod split;\npub use split::{ReadHalf, WriteHalf};\n\n",
+        "sha256": "ff3f6058559e0fae9057651a42fe2f559b0ca203ba7a570afed9820ef80e6fdf"
+      },
+      {
+        "id": "H5",
+        "path": "tokio/src/net/unix/stream.rs",
+        "start_line": 39,
+        "end_line": 45,
+        "text": "}\n\nimpl UnixStream {\n    /// Connects to the socket named by `path`.\n    ///\n    /// This function will create a new Unix socket and connect to the path\n",
+        "sha256": "0ea2c6f2ec34f4ca825682f25b2440c809af559ad07c5f3eb284cc9006a4b15e"
+      }
+    ]
+  },
+  {
+    "id": "F43",
+    "source_candidate_id": "X037",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "ts/vuejs__core_dataset.jsonl",
+      "scanned_rows": 1,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "vuejs/core",
+      "revision": "d0b513eb463f580e29378e43d112ff6859aa366e",
+      "source_candidate_id": "X037",
+      "evidence_summary": "fix(compiler-sfc): nested css supports atrule and comment; @ queries in scoped nested CSS lack nesting selector"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "packages/compiler-sfc/src/style/pluginScoped.ts",
+        "start_line": 233,
+        "end_line": 249,
+        "text": "\n  if (rule.nodes.some(node => node.type === 'rule')) {\n    const deep = (rule as any).__deep\n    const decls = rule.nodes.filter(node => node.type === 'decl')\n    if (!deep && decls.length) {\n      for (const decl of decls) {\n        rule.removeChild(decl)\n      }\n      const hostRule = new Rule({\n        nodes: decls,\n        selector: '&',\n      })\n      rule.prepend(hostRule)\n    }\n    shouldInject = deep\n  }\n",
+        "sha256": "770c048bc916ee2b8024011a53e8b29220e6a985ee9ae787d5e95aba35efaedc"
+      },
+      {
+        "id": "H2",
+        "path": "packages/compiler-sfc/src/style/pluginScoped.ts",
+        "start_line": 286,
+        "end_line": 291,
+        "text": "  return node.type === 'combinator' && /^\\s+$/.test(node.value)\n}\n\nscopedPlugin.postcss = true\nexport default scopedPlugin\n",
+        "sha256": "063826e8ce5de3d2dcbb14ea63890b2cc809948a540173bd5bb3e8577289b5a2"
+      }
+    ]
+  },
+  {
+    "id": "F44",
+    "source_candidate_id": "X092",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:temporal-resilience-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "ts/vuejs__core_dataset.jsonl",
+      "scanned_rows": 6,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "vuejs/core",
+      "revision": "fbc0c42bcf6dea5a6ae664223fa19d4375ca39f0",
+      "source_candidate_id": "X092",
+      "evidence_summary": "fix(compiler-sfc): skip circular tsconfig project reference (#11382); [vite] Internal server error: Maximum call stack size exceeded"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "packages/compiler-sfc/src/script/resolveType.ts",
+        "start_line": 1070,
+        "end_line": 1076,
+        "text": "  configPath: string,\n  ts: typeof TS,\n  fs: FS,\n): TS.ParsedCommandLine[] {\n  // The only case where `fs` is NOT `ts.sys` is during tests.\n  // parse config host requires an extra `readDirectory` method\n",
+        "sha256": "d9b136cf9006f9eaacb585517d244a9e7ce48f2d13080710a8f9f21c41057c39"
+      },
+      {
+        "id": "H2",
+        "path": "packages/compiler-sfc/src/script/resolveType.ts",
+        "start_line": 1089,
+        "end_line": 1103,
+        "text": "    configPath,\n  )\n  const res = [config]\n  if (config.projectReferences) {\n    for (const ref of config.projectReferences) {\n      const refPath = ts.resolveProjectReferencePath(ref)\n      if (!fs.fileExists(refPath)) {\n        continue\n      }\n      tsConfigRefMap.set(refPath, configPath)\n      res.unshift(...loadTSConfig(refPath, ts, fs))\n    }\n  }\n  return res\n",
+        "sha256": "1624570beea831010705e20742d49e9f4fec0acb58adacedcbeb0bf4dcbdecbd"
+      }
+    ]
+  },
+  {
+    "id": "F45",
+    "source_candidate_id": "X093",
+    "source": "multi-swe-bench",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+      "file": "ts/vuejs__core_dataset.jsonl",
+      "scanned_rows": 7,
+      "license": "other in the Hugging Face API response; upstream project licenses apply",
+      "repo": "vuejs/core",
+      "revision": "d7d0371e74707ee601020f67de88e091cdae2673",
+      "source_candidate_id": "X093",
+      "evidence_summary": "fix(runtime-core): ensure the job's instance is not null; Errors in `computed` bypass `onErrorCaptured`"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "packages/runtime-core/src/apiWatch.ts",
+        "start_line": 400,
+        "end_line": 407,
+        "text": "  } else {\n    // default: 'pre'\n    job.flags! |= SchedulerJobFlags.PRE\n    if (instance) job.id = instance.uid\n    scheduler = () => queueJob(job)\n  }\n  effect.scheduler = scheduler\n",
+        "sha256": "8d0584abbda2d4fe40ff22bc9ed9f878d07ea64c4721a02717fd8175950a727b"
+      }
+    ]
+  },
+  {
+    "id": "F46",
+    "source_candidate_id": "X015",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:distributed-flow-auditor",
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/pydata/xarray/commit/51ef2a66c4e0896eab7d2b03e3dfb3963e338e3c",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "pydata/xarray",
+      "revision": "51ef2a66c4e0896eab7d2b03e3dfb3963e338e3c",
+      "source_candidate_id": "X015",
+      "evidence_summary": "Naming a dimension \"method\" throws error when calling \".loc\" #### Code Sample, a copy-pastable example if possible ```python import numpy as np from xarray import DataArray empty = np.zeros((2,2)) D1 = DataArray(empty, dims=['dim1', 'dim2'], coords={'dim1':['x', 'y'], 'dim2':['a', 'b']}) D2 = DataAr"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "xarray/core/dataarray.py",
+        "start_line": 196,
+        "end_line": 203,
+        "text": "            # expand the indexer so we can handle Ellipsis\n            labels = indexing.expanded_indexer(key, self.data_array.ndim)\n            key = dict(zip(self.data_array.dims, labels))\n        return self.data_array.sel(**key)\n\n    def __setitem__(self, key, value) -> None:\n        if not utils.is_dict_like(key):\n",
+        "sha256": "d438924a3a9feb8474ab5df6a371d7b346ed67cfa30d520db56b3b1c5af99fec"
+      }
+    ]
+  },
+  {
+    "id": "F47",
+    "source_candidate_id": "X016",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/pydata/xarray/commit/6bb2b855498b5c68d7cca8cceb710365d58e6048",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "pydata/xarray",
+      "revision": "6bb2b855498b5c68d7cca8cceb710365d58e6048",
+      "source_candidate_id": "X016",
+      "evidence_summary": "`polyval` with timedelta64 coordinates produces wrong results ### What happened? I'm not sure if this is a bug or an expected breaking change, but I'm not able to reproduce the results generated by `polyval` using a timedelta64 coordinate. The results are correct in `xarray=2022.3.0`, whereas they a"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "xarray/core/computation.py",
+        "start_line": 1933,
+        "end_line": 1940,
+        "text": "    from .dataset import Dataset\n\n    def to_floatable(x: DataArray) -> DataArray:\n        if x.dtype.kind in \"mM\":\n            return x.copy(\n                data=datetime_to_numeric(\n                    x.data,\n",
+        "sha256": "2fbdbdf62dfbba01ee6ad85504d49e5a9c83387d01955350dccb59550f8bf56d"
+      },
+      {
+        "id": "H2",
+        "path": "xarray/core/computation.py",
+        "start_line": 1941,
+        "end_line": 1947,
+        "text": "                    datetime_unit=\"ns\",\n                ),\n            )\n        return x\n\n    if isinstance(data, Dataset):\n",
+        "sha256": "aa5a4a770676e18de8150beb1664d41b9486a17217580f450f02752344ebf782"
+      }
+    ]
+  },
+  {
+    "id": "F48",
+    "source_candidate_id": "X082",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "pylint-dev/pylint",
+      "revision": "1d1619ef913b99b06647d2030bddff4800abdf63",
+      "source_candidate_id": "X082",
+      "evidence_summary": "Make pylint XDG Base Directory Specification compliant I have this really annoying `.pylint.d` directory in my home folder. From what I can tell (I don't do C or C++), this directory is storing data. The problem with this is, quite simply, that data storage has a designated spot. The `$HOME/.local/s"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "pylint/config/__init__.py",
+        "start_line": 36,
+        "end_line": 42,
+        "text": "import pickle\nimport sys\n\nfrom pylint.config.configuration_mixin import ConfigurationMixIn\nfrom pylint.config.find_default_config_files import find_default_config_files\nfrom pylint.config.man_help_formatter import _ManHelpFormatter\n",
+        "sha256": "4cdd357b9ffab9c88d652563f6a56c5afcd71674f9579e0366e25ed0f194ebda"
+      },
+      {
+        "id": "H2",
+        "path": "pylint/config/__init__.py",
+        "start_line": 63,
+        "end_line": 70,
+        "text": "elif USER_HOME == \"~\":\n    PYLINT_HOME = \".pylint.d\"\nelse:\n    PYLINT_HOME = os.path.join(USER_HOME, \".pylint.d\")\n\n\ndef _get_pdata_path(base_name, recurs):\n",
+        "sha256": "30ede6a6fae1da2a13af88667d13c90e8bfebb6ad8598003e50d87728caf3a69"
+      },
+      {
+        "id": "H3",
+        "path": "setup.cfg",
+        "start_line": 42,
+        "end_line": 48,
+        "text": "[options]\npackages = find:\ninstall_requires =\n    astroid>=2.6.5,<2.7 # (You should also upgrade requirements_test_min.txt)\n    isort>=4.2.5,<6\n    mccabe>=0.6,<0.7\n",
+        "sha256": "b32869cfa98a98f75311fa471e245182e60ccdd48b984e786ce6448f2a519250"
+      },
+      {
+        "id": "H4",
+        "path": "setup.cfg",
+        "start_line": 74,
+        "end_line": 81,
+        "text": "[isort]\nmulti_line_output = 3\nline_length = 88\nknown_third_party = astroid, sphinx, isort, pytest, mccabe, six, toml\ninclude_trailing_comma = True\nskip_glob = tests/functional/**,tests/input/**,tests/extensions/data/**,tests/regrtest_data/**,tests/data/**,astroid/**,venv/**\nsrc_paths = pylint\n",
+        "sha256": "f327abab3e1a835d745fcc0c0cb62998176df6f16c97a6cb9435cdbc45867edf"
+      },
+      {
+        "id": "H5",
+        "path": "setup.cfg",
+        "start_line": 82,
+        "end_line": 88,
+        "text": "[mypy]\nscripts_are_modules = True\n\n[mypy-astroid.*]\nignore_missing_imports = True\n\n",
+        "sha256": "6b7b5e16414cedd398e0220698690e8a96797c7c884b23e4ebeecb8b527c2468"
+      }
+    ]
+  },
+  {
+    "id": "F49",
+    "source_candidate_id": "X083",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "pytest-dev/pytest",
+      "revision": "e856638ba086fcf5bebf1bebea32d5cf78de87b4",
+      "source_candidate_id": "X083",
+      "evidence_summary": "Regression in 5.2.3: pytest tries to collect random __init__.py files This was caught by our build server this morning. It seems that pytest 5.2.3 tries to import any `__init__.py` file under the current directory. (We have some package that is only used on windows and cannot be imported on linux.) "
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "src/_pytest/python.py",
+        "start_line": 251,
+        "end_line": 272,
+        "text": "    @property\n    def obj(self):\n        \"\"\"Underlying Python object.\"\"\"\n        self._mount_obj_if_needed()\n        return self._obj\n\n    @obj.setter\n    def obj(self, value):\n        self._obj = value\n\n    def _mount_obj_if_needed(self):\n        obj = getattr(self, \"_obj\", None)\n        if obj is None:\n            self._obj = obj = self._getobj()\n            # XXX evil hack\n            # used to avoid Instance collector marker duplication\n            if self._ALLOW_MARKERS:\n                self.own_markers.extend(get_unpacked_marks(obj))\n\n    def _getobj(self):\n        \"\"\"Gets the underlying Python object. May be overwritten by subclasses.\"\"\"\n",
+        "sha256": "626403584d1f29795a3f77573a0206fbffa84459bfccfe37128392f4576fe958"
+      },
+      {
+        "id": "H2",
+        "path": "src/_pytest/python.py",
+        "start_line": 432,
+        "end_line": 446,
+        "text": "class Module(nodes.File, PyCollector):\n    \"\"\" Collector for test classes and functions. \"\"\"\n\n    def __init__(self, fspath, parent=None, config=None, session=None, nodeid=None):\n        if fspath.basename == \"__init__.py\":\n            self._ALLOW_MARKERS = False\n\n        nodes.FSCollector.__init__(\n            self, fspath, parent=parent, config=config, session=session, nodeid=nodeid\n        )\n\n    def _getobj(self):\n        return self._importtestmodule()\n\n",
+        "sha256": "508ff33002104a954d8d16266a7580d37a886c613311c2c497c31e0c828698ca"
+      },
+      {
+        "id": "H3",
+        "path": "src/_pytest/python.py",
+        "start_line": 639,
+        "end_line": 646,
+        "text": "        return path in self.session._initialpaths\n\n    def collect(self):\n        self._mount_obj_if_needed()\n        this_path = self.fspath.dirpath()\n        init_module = this_path.join(\"__init__.py\")\n        if init_module.check(file=1) and path_matches_patterns(\n",
+        "sha256": "a28ed8c2bf8f1af91f9af3d1ee40e74e09442ec8c894dcaee1c7527c56f4cc4d"
+      }
+    ]
+  },
+  {
+    "id": "F50",
+    "source_candidate_id": "X008",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:data-integrity-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:logic-integrity-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/sphinx-doc/sphinx/commit/cab2d93076d0cca7c53fac885f927dde3e2a5fec",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "sphinx-doc/sphinx",
+      "revision": "cab2d93076d0cca7c53fac885f927dde3e2a5fec",
+      "source_candidate_id": "X008",
+      "evidence_summary": "Message.locations duplicate unnecessary ### Describe the bug When running `make clean; make gettext` there are times the list of locations is duplicated unnecessarily, example: ``` #: ../../manual/render/shader_nodes/vector/vector_rotate.rst:38 #: ../../manual/modeling/hair.rst:0 #: ../../manual/mod"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "sphinx/builders/gettext.py",
+        "start_line": 57,
+        "end_line": 64,
+        "text": "\n    def __iter__(self) -> Generator[Message, None, None]:\n        for message in self.messages:\n            positions = [(source, line) for source, line, uuid in self.metadata[message]]\n            uuids = [uuid for source, line, uuid in self.metadata[message]]\n            yield Message(message, positions, uuids)\n\n",
+        "sha256": "d1b2f1ebd9d35cd765ab4012e329ca7b109034162a26a79717967df77db2a2b4"
+      }
+    ]
+  },
+  {
+    "id": "F51",
+    "source_candidate_id": "X020",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:logic-integrity-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:distributed-flow-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "url": "https://github.com/sphinx-doc/sphinx/commit/31eba1a76dd485dc633cae48227b46879eda5df4",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "sphinx-doc/sphinx",
+      "revision": "31eba1a76dd485dc633cae48227b46879eda5df4",
+      "source_candidate_id": "X020",
+      "evidence_summary": "Use of literalinclude prepend results in incorrect indent formatting for code eamples ### Describe the bug Cannot determine a mechanism to use literalinclude directive with `prepend` or `append` to match code example indentation, as leading whitespace is removed. ### How to Reproduce Example of incl"
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "sphinx/directives/code.py",
+        "start_line": 224,
+        "end_line": 233,
+        "text": "                       self.start_filter,\n                       self.end_filter,\n                       self.lines_filter,\n                       self.prepend_filter,\n                       self.append_filter,\n                       self.dedent_filter]\n            lines = self.read_file(self.filename, location=location)\n            for func in filters:\n                lines = func(lines, location=location)\n",
+        "sha256": "f92bf88e3ce274022fa6851a7387fc9af7e5e39986c6b0c713386ff712a930cd"
+      }
+    ]
+  },
+  {
+    "id": "F52",
+    "source_candidate_id": "X076",
+    "source": "swe-bench-verified",
+    "split": "verification",
+    "label_status": "adjudicated_silver",
+    "expected_roles": [
+      "senior-review:temporal-resilience-auditor",
+      "senior-review:resource-lifecycle-auditor"
+    ],
+    "negative_roles": [
+      "senior-review:security-auditor",
+      "senior-review:data-integrity-auditor",
+      "senior-review:ui-race-auditor",
+      "senior-review:cleanup-auditor"
+    ],
+    "label_rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+    "provenance": {
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+      "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+      "repo": "sphinx-doc/sphinx",
+      "revision": "f30284ef926ebaf04b176f21b421e2dffc679792",
+      "source_candidate_id": "X076",
+      "evidence_summary": "linkcheck could also check local (internal) links Subject: linkcheck currently doesn't check local (internal) links, but this would be useful. <!-- Important: This is a list of issues for Sphinx, not a forum. If you'd like to post a question, please move to sphinx-users group. https://groups.google."
+    },
+    "hunks": [
+      {
+        "id": "H1",
+        "path": "sphinx/builders/linkcheck.py",
+        "start_line": 35,
+        "end_line": 41,
+        "text": "\nlogger = logging.getLogger(__name__)\n\n\nDEFAULT_REQUEST_HEADERS = {\n    'Accept': 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8',\n",
+        "sha256": "b6ff9a9f613a9732cf8ada6e08c508b86718f081848c868e7552de93fed20793"
+      },
+      {
+        "id": "H2",
+        "path": "sphinx/builders/linkcheck.py",
+        "start_line": 210,
+        "end_line": 220,
+        "text": "\n        def check() -> Tuple[str, str, int]:\n            # check for various conditions without bothering the network\n            if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):\n                return 'unchecked', '', 0\n            elif not uri.startswith(('http:', 'https:')):\n                return 'local', '', 0\n            elif uri in self.good:\n                return 'working', 'old', 0\n            elif uri in self.broken:\n",
+        "sha256": "44b39de45d681fbaf64ede096069f15513bf83aaf107228a01edca893502e20d"
+      }
+    ]
+  }
+]

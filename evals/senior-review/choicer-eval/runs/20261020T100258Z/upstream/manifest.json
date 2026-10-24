@@ -1,0 +1,217 @@
+{
+  "retrieved_at": "2026-10-20T10:03:48.547812+00:00",
+  "julia_revision": "a85b127321d580d65176c89ced8273f305745d85",
+  "edgejev_revision": "dce469472e0e6eea396256e9bf866082dcb9490b",
+  "policy": "Metadata and source only; each response capped at 200 KiB. No weights, tokenizer data, installations, or model calls.",
+  "files": [
+    {
+      "path": "julia/README.md",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/README.md",
+      "bytes": 13679,
+      "sha256": "bc46a6785ddbae32b769591841954393510b073f148aa9f7e4fced5a1bba9a81"
+    },
+    {
+      "path": "julia/pyproject.toml",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/pyproject.toml",
+      "bytes": 619,
+      "sha256": "863dcbbc79ab1b903dcc3b69d3bb6e1443ffcd025050174d33b1ef20c30ef84d"
+    },
+    {
+      "path": "julia/julia/__init__.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/__init__.py",
+      "bytes": 178,
+      "sha256": "02485eb4dd7dadd13907380d1a9c3398709bd8af54b3e0e12b3061a3ebb5c1da"
+    },
+    {
+      "path": "julia/julia/inference.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/inference.py",
+      "bytes": 4613,
+      "sha256": "79b4e716365a6e07da4580ead725d5b76d06ef3a824a3ec23738feba64704b36"
+    },
+    {
+      "path": "julia/julia/typed.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/typed.py",
+      "bytes": 2415,
+      "sha256": "ed89e66a70fcedac1339347bd8fcca69fd2cd1a31535ad0148dae42c610b544d"
+    },
+    {
+      "path": "julia/julia/data.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/data.py",
+      "bytes": 7163,
+      "sha256": "e3510fa4152ec11fa193046715991f44d7c2f85fd2488a98ef11c9d3db23da4e"
+    },
+    {
+      "path": "julia/julia/router/engine.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/router/engine.py",
+      "bytes": 11624,
+      "sha256": "91bb30987ff8626ed1610955c6fd796939a5d271e2405b73f8674ccb947eb931"
+    },
+    {
+      "path": "julia/julia/model.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/model.py",
+      "bytes": 7539,
+      "sha256": "ef2ba82fe20cdf0db7bb887e9ef075476ed08b985ce9a95be0de3e26246ecc81"
+    },
+    {
+      "path": "julia/julia/cuda.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/cuda.py",
+      "bytes": 2309,
+      "sha256": "138ab63182f25473ce3886296c47ac44e94fc50ae5270927ae4c373f7bb49137"
+    },
+    {
+      "path": "julia/julia/router/encoder.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/router/encoder.py",
+      "bytes": 1787,
+      "sha256": "df25efee2ed916d52af9c4e9c0d98e80854ca70bbfc8140f1de871f290fd3238"
+    },
+    {
+      "path": "julia/julia/router/specialize.py",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia/router/specialize.py",
+      "bytes": 1951,
+      "sha256": "4ba766a45785da0f48898143eb04e13bdf736019a8ba76b71ad84a4bfec8b2d9"
+    },
+    {
+      "path": "julia/julia_config.json",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/julia_config.json",
+      "bytes": 147,
+      "sha256": "b9b881646beeac5414eaa78b39d3fe89ff8a2c062731ad718432620f9aee6bf7"
+    },
+    {
+      "path": "julia/encoder/config.json",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/encoder/config.json",
+      "bytes": 1936,
+      "sha256": "c79cda42d42ddf777218254845ce92fb25a10dc35874be40d06abd707894523d"
+    },
+    {
+      "path": "julia/tokenizer/tokenizer_config.json",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/tokenizer/tokenizer_config.json",
+      "bytes": 652,
+      "sha256": "6b069e57db0ce0794c22547725275f22618809c4ef4249307337e651a0dfef8c"
+    },
+    {
+      "path": "julia/metrics/context-8k-smoke.json",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/metrics/context-8k-smoke.json",
+      "bytes": 201,
+      "sha256": "1c5aa2aee7946ec0070a735953ef13f31a4c1b6a03543e37df4d48c256c06eec"
+    },
+    {
+      "path": "julia/metrics/typed-cpu-20260926.json",
+      "url": "https://huggingface.co/SupersonicLabs/Julia-1/raw/a85b127321d580d65176c89ced8273f305745d85/metrics/typed-cpu-20260926.json",
+      "bytes": 1310,
+      "sha256": "5d51e84097d629cfb0f5c14d90bcbbfd467d2d25252adfb4e86ae16db083746c"
+    },
+    {
+      "path": "julia-tree.json",
+      "url": "https://huggingface.co/api/models/SupersonicLabs/Julia-1/tree/a85b127321d580d65176c89ced8273f305745d85?recursive=true&expand=false",
+      "bytes": 6977,
+      "sha256": "fa473200c991c57577c2fe9eafad05880968a4d19392ef5117f62a4f0259bc0f"
+    },
+    {
+      "path": "torch-2.14.0-pypi.json",
+      "url": "https://pypi.org/pypi/torch/2.14.0/json",
+      "bytes": 58880,
+      "sha256": "b183c06fce891dd684c1b238a76e14f5fa8f94c8ad60ef8c3f1f4a4ddd59327b"
+    },
+    {
+      "path": "transformers-5.0.0-pypi.json",
+      "url": "https://pypi.org/pypi/transformers/5.0.0/json",
+      "bytes": 45614,
+      "sha256": "013a68dff8178112491a5b795849ac54307530c9c775020e22283511846d4098"
+    },
+    {
+      "path": "edgejev/README.md",
+      "url": "https://raw.githubusercontent.com/yzfly/edgejev/dce469472e0e6eea396256e9bf866082dcb9490b/README.md",
+      "bytes": 14383,
+      "sha256": "70fbbc7c67dd12d997d479a0fea8564e630eaf709070520333a8604e71525c3b"
+    },
+    {
+      "path": "edgejev/pyproject.toml",
+      "url": "https://raw.githubusercontent.com/yzfly/edgejev/dce469472e0e6eea396256e9bf866082dcb9490b/pyproject.toml",
+      "bytes": 1996,
+      "sha256": "868dcd6b32e92cc1be9dd8d3c382a8dc270a1b0e2b85648b17f12e6e861ed4ce"
+    },
+    {
+      "path": "edgejev/edgejev/agent.py",
+      "url": "https://raw.githubusercontent.com/yzfly/edgejev/dce469472e0e6eea396256e9bf866082dcb9490b/edgejev/agent.py",
+      "bytes": 4952,
+      "sha256": "4f03b5f7fd820136277c5e895874e069cb7db9840cab0c6d0e1ad621fc5fe84d"
+    },
+    {
+      "path": "edgejev/edgejev/core/layout.py",
+      "url": "https://raw.githubusercontent.com/yzfly/edgejev/dce469472e0e6eea396256e9bf866082dcb9490b/edgejev/core/layout.py",
+      "bytes": 11871,
+      "sha256": "b9b6a3e4491c62d8ef35d504e9b43beb7af3debfd629ddb7043c00dd62c2572f"
+    },
+    {
+      "path": "edgejev/edgejev/core/render.py",
+      "url": "https://raw.githubusercontent.com/yzfly/edgejev/dce469472e0e6eea396256e9bf866082dcb9490b/edgejev/core/render.py",
+      "bytes": 2456,
+      "sha256": "ad7a4dcbd59ff06ccd53a3efa919a2b4b2c01d90f46c195e1888b33a18ce1d96"
+    },
+    {
+      "path": "edgejev/edgejev/backends/laya.py",
+      "url": "https://raw.githubusercontent.com/yzfly/edgejev/dce469472e0e6eea396256e9bf866082dcb9490b/edgejev/backends/laya.py",
+      "bytes": 718,
+      "sha256": "cf85255b0cf79ec43091608877be9e2413687f01b0f45963acab235e12b509ed"
+    }
+  ],
+  "julia_download_inventory": {
+    "full_repository_file_bytes": 612712253,
+    "weights": {
+      "type": "file",
+      "oid": "1f35b2b1161e5511fca7608b01cd76c2329b2875",
+      "size": 577189056,
+      "lfs": {
+        "oid": "df853bf7fe424420011f3d0c47a05d7341aa9eefa7fb9f203ea4aada4ad95b72",
+        "size": 577189056,
+        "pointerSize": 134
+      },
+      "xetHash": "f8b38bc14cc7cb75fca6d69084af09f1a40fc2f52d4405423e1c3062f3756013",
+      "path": "model.safetensors"
+    },
+    "tokenizer": {
+      "type": "file",
+      "oid": "56d765858ed38eaabd35cd90759cbb1f89b0baa4",
+      "size": 34363188,
+      "lfs": {
+        "oid": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+        "size": 34363188,
+        "pointerSize": 133
+      },
+      "xetHash": "8fdbdb0307b65058d3b81a88cba0082cd1bbe8e85d34295d2271d6fa85a31c7a",
+      "path": "tokenizer/tokenizer.json"
+    }
+  },
+  "local_checks": [
+    {
+      "path": "api-contract-check.json",
+      "bytes": 1597,
+      "sha256": "a0494c08aa367a87630640bb27557f6877a04d7758ce0729de3786aa6f4adf24",
+      "kind": "Source-only named API contract check with stub logits. Not a model measurement."
+    }
+  ],
+  "verified_download_sizes": {
+    "julia_weights_bytes": 577189056,
+    "julia_tokenizer_bytes": 34363188,
+    "julia_full_repository_bytes": 612712253,
+    "torch_2_14_0_cp313_windows_wheel_bytes": 124113865,
+    "transformers_5_0_0_wheel_bytes": 10142091,
+    "complete_environment_bytes": null,
+    "note": "Weights/tokenizer sizes are remote metadata, not downloaded files. Dependency wheels are remote PyPI metadata, not installed packages."
+  },
+  "runtime_constraints": {
+    "named_boolean_probability_path": "answers[question_id].probabilities.true",
+    "boolean_option_order": [
+      "false",
+      "true"
+    ],
+    "min_options": 2,
+    "max_options": 20,
+    "max_option_tokens": 48,
+    "max_sequence_tokens": 8192,
+    "selected_head_length": 512,
+    "strict_encoding_required": true,
+    "empty_criterion_supported": false,
+    "measurement_status": "not run"
+  }
+}

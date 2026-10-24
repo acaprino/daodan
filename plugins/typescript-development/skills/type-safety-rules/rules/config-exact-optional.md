@@ -24,4 +24,4 @@ const opts: RetryOpts = { retries: undefined } // accepted without the flag
 const opts: RetryOpts = {} // retries genuinely absent
 ```
 
-**Detection:** Read `tsconfig.json`: `exactOptionalPropertyTypes` absent or false is a finding, severity Medium.
+**Detection:** Resolve the effective inherited configuration; if exactOptionalPropertyTypes is disabled, seek a concrete absent/undefined mismatch or an explicit configuration requirement. Absence alone is a lead.

@@ -1,0 +1,68 @@
+{
+  "prepared_at": "2026-10-20T11:08:07.112250+00:00",
+  "purpose": "Frozen local controls for separating Julia runtime and question-design faults.",
+  "threshold": 0.5,
+  "hypotheses": [
+    "Noncomplementary role criteria force an inapplicable choice.",
+    "Abstract routing instructions fail while concrete observable-property questions discriminate.",
+    "Runtime or serialization fault also breaks official elementary controls."
+  ],
+  "interpretation": "Diagnostic examples are development controls, not an independent benchmark. Natural-language summaries are manually authored experimental representations, not measured free routing inputs. Expected answers remain separate from model submissions.",
+  "expected": {
+    "official_billing": {
+      "team": "billing"
+    },
+    "python_numbered": {
+      "original_react": false,
+      "original_data": true,
+      "complement_react": false,
+      "property_react_literal": false,
+      "property_react_descriptive": false,
+      "property_data_descriptive": true,
+      "property_stack_choice": "backend",
+      "property_stack_reversed": "backend"
+    },
+    "python_raw": {
+      "original_react": false,
+      "original_data": true,
+      "complement_react": false,
+      "property_react_literal": false,
+      "property_react_descriptive": false,
+      "property_data_descriptive": true,
+      "property_stack_choice": "backend",
+      "property_stack_reversed": "backend"
+    },
+    "react_raw": {
+      "original_react": true,
+      "original_data": false,
+      "complement_react": true,
+      "property_react_literal": true,
+      "property_react_descriptive": true,
+      "property_data_descriptive": false,
+      "property_stack_choice": "frontend",
+      "property_stack_reversed": "frontend"
+    },
+    "react_plain": {
+      "original_react": true,
+      "original_data": false,
+      "complement_react": true,
+      "property_react_literal": true,
+      "property_react_descriptive": true,
+      "property_data_descriptive": false,
+      "property_stack_choice": "frontend",
+      "property_stack_reversed": "frontend"
+    },
+    "python_plain": {
+      "original_react": false,
+      "original_data": true,
+      "complement_react": false,
+      "property_react_literal": false,
+      "property_react_descriptive": false,
+      "property_data_descriptive": true,
+      "property_stack_choice": "backend",
+      "property_stack_reversed": "backend"
+    }
+  },
+  "source_request_sha256": "d03c36f8c2165da00c910bc2e2e68b71b1e28d322edf68262be4b32b535db2cf",
+  "script_sha256": "5be1a424b997698b7090d082d78f64694d1b55adaaba72a50defc6d074e832db"
+}

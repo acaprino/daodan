@@ -1,0 +1,30 @@
+{
+  "id": "individual-A039-grounded_noul",
+  "kind": "individual",
+  "case_id": "A039",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the locale lookup between the portal and preferences services before shipping them together.",
+    "artifacts": [
+      {
+        "path": "portal/client.py",
+        "content": "def locale(http, user_id):\n    response = http.get(f\"http://preferences:8080/users/{user_id}/locale\", timeout=2)\n    response.raise_for_status()\n    return response.json()[\"locale\"]\n"
+      },
+      {
+        "path": "preferences/routes.py",
+        "content": "@app.get(\"/users/<user_id>/locale\")\ndef locale(user_id):\n    return {\"locale\": preferences_for(user_id).locale}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    }
+  },
+  "sha256": "e2be2659bf29fb3dd34eb2d84a6ee6d93bd14c19654bb5b58d5e0ca74f3c94d0"
+}

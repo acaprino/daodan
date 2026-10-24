@@ -1,0 +1,827 @@
+{
+  "selected": [
+    {
+      "id": "F01",
+      "source_candidate_id": "X103",
+      "repo": "WellCommerce_WishlistBundle",
+      "split": "development",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F02",
+      "source_candidate_id": "X112",
+      "repo": "WellCommerce_WishlistBundle",
+      "split": "development",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F03",
+      "source_candidate_id": "X117",
+      "repo": "openlayers_openlayers",
+      "split": "development",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F04",
+      "source_candidate_id": "X072",
+      "repo": "tensorflow_probability",
+      "split": "development",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F05",
+      "source_candidate_id": "X049",
+      "repo": "FFmpeg",
+      "split": "development",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ]
+    },
+    {
+      "id": "F06",
+      "source_candidate_id": "X051",
+      "repo": "FFmpeg",
+      "split": "development",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": []
+    },
+    {
+      "id": "F07",
+      "source_candidate_id": "X052",
+      "repo": "FFmpeg",
+      "split": "development",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ]
+    },
+    {
+      "id": "F08",
+      "source_candidate_id": "X057",
+      "repo": "FFmpeg",
+      "split": "development",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": []
+    },
+    {
+      "id": "F09",
+      "source_candidate_id": "X058",
+      "repo": "FFmpeg",
+      "split": "development",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": []
+    },
+    {
+      "id": "F10",
+      "source_candidate_id": "X060",
+      "repo": "FFmpeg",
+      "split": "development",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ]
+    },
+    {
+      "id": "F11",
+      "source_candidate_id": "X036",
+      "repo": "fasterxml/jackson-databind",
+      "split": "development",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F12",
+      "source_candidate_id": "X088",
+      "repo": "grpc/grpc-go",
+      "split": "development",
+      "positive_roles": [
+        "temporal-resilience-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F13",
+      "source_candidate_id": "X089",
+      "repo": "grpc/grpc-go",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F14",
+      "source_candidate_id": "X025",
+      "repo": "mui/material-ui",
+      "split": "development",
+      "positive_roles": [
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F15",
+      "source_candidate_id": "X027",
+      "repo": "mui/material-ui",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F16",
+      "source_candidate_id": "X086",
+      "repo": "mui/material-ui",
+      "split": "development",
+      "positive_roles": [
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F17",
+      "source_candidate_id": "X009",
+      "repo": "astropy/astropy",
+      "split": "development",
+      "positive_roles": [
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F18",
+      "source_candidate_id": "X024",
+      "repo": "astropy/astropy",
+      "split": "development",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F19",
+      "source_candidate_id": "X079",
+      "repo": "astropy/astropy",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F20",
+      "source_candidate_id": "X001",
+      "repo": "django/django",
+      "split": "development",
+      "positive_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F21",
+      "source_candidate_id": "X005",
+      "repo": "django/django",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F22",
+      "source_candidate_id": "X074",
+      "repo": "django/django",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F23",
+      "source_candidate_id": "X011",
+      "repo": "matplotlib/matplotlib",
+      "split": "development",
+      "positive_roles": [
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F24",
+      "source_candidate_id": "X013",
+      "repo": "psf/requests",
+      "split": "development",
+      "positive_roles": [
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F25",
+      "source_candidate_id": "X080",
+      "repo": "psf/requests",
+      "split": "development",
+      "positive_roles": [
+        "resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F26",
+      "source_candidate_id": "X085",
+      "repo": "scikit-learn/scikit-learn",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F27",
+      "source_candidate_id": "X022",
+      "repo": "sympy/sympy",
+      "split": "development",
+      "positive_roles": [
+        "data-integrity-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F28",
+      "source_candidate_id": "X114",
+      "repo": "Netflix-Skunkworks_historical",
+      "split": "verification",
+      "positive_roles": [
+        "resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F29",
+      "source_candidate_id": "X108",
+      "repo": "OXID-eSales_oxideshop_ce",
+      "split": "verification",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F30",
+      "source_candidate_id": "X119",
+      "repo": "bmcfee_pumpp",
+      "split": "verification",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F31",
+      "source_candidate_id": "X101",
+      "repo": "shopware_platform",
+      "split": "verification",
+      "positive_roles": [
+        "resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F32",
+      "source_candidate_id": "X116",
+      "repo": "thinktomorrow_assetlibrary",
+      "split": "verification",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ]
+    },
+    {
+      "id": "F33",
+      "source_candidate_id": "X050",
+      "repo": "qemu",
+      "split": "verification",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": []
+    },
+    {
+      "id": "F34",
+      "source_candidate_id": "X053",
+      "repo": "qemu",
+      "split": "verification",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ]
+    },
+    {
+      "id": "F35",
+      "source_candidate_id": "X056",
+      "repo": "qemu",
+      "split": "verification",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ]
+    },
+    {
+      "id": "F36",
+      "source_candidate_id": "X059",
+      "repo": "qemu",
+      "split": "verification",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ]
+    },
+    {
+      "id": "F37",
+      "source_candidate_id": "X043",
+      "repo": "apache/dubbo",
+      "split": "verification",
+      "positive_roles": [
+        "security-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F38",
+      "source_candidate_id": "X042",
+      "repo": "sveltejs/svelte",
+      "split": "verification",
+      "positive_roles": [
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F39",
+      "source_candidate_id": "X094",
+      "repo": "sveltejs/svelte",
+      "split": "verification",
+      "positive_roles": [
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F40",
+      "source_candidate_id": "X047",
+      "repo": "tokio-rs/tokio",
+      "split": "verification",
+      "positive_roles": [
+        "temporal-resilience-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F41",
+      "source_candidate_id": "X048",
+      "repo": "tokio-rs/tokio",
+      "split": "verification",
+      "positive_roles": [
+        "resource-lifecycle-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F42",
+      "source_candidate_id": "X097",
+      "repo": "tokio-rs/tokio",
+      "split": "verification",
+      "positive_roles": [
+        "resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F43",
+      "source_candidate_id": "X037",
+      "repo": "vuejs/core",
+      "split": "verification",
+      "positive_roles": [
+        "temporal-resilience-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F44",
+      "source_candidate_id": "X092",
+      "repo": "vuejs/core",
+      "split": "verification",
+      "positive_roles": [
+        "temporal-resilience-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F45",
+      "source_candidate_id": "X093",
+      "repo": "vuejs/core",
+      "split": "verification",
+      "positive_roles": [
+        "temporal-resilience-auditor",
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F46",
+      "source_candidate_id": "X015",
+      "repo": "pydata/xarray",
+      "split": "verification",
+      "positive_roles": [
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F47",
+      "source_candidate_id": "X016",
+      "repo": "pydata/xarray",
+      "split": "verification",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F48",
+      "source_candidate_id": "X082",
+      "repo": "pylint-dev/pylint",
+      "split": "verification",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F49",
+      "source_candidate_id": "X083",
+      "repo": "pytest-dev/pytest",
+      "split": "verification",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F50",
+      "source_candidate_id": "X008",
+      "repo": "sphinx-doc/sphinx",
+      "split": "verification",
+      "positive_roles": [
+        "data-integrity-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F51",
+      "source_candidate_id": "X020",
+      "repo": "sphinx-doc/sphinx",
+      "split": "verification",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "cleanup-auditor"
+      ]
+    },
+    {
+      "id": "F52",
+      "source_candidate_id": "X076",
+      "repo": "sphinx-doc/sphinx",
+      "split": "verification",
+      "positive_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ]
+    }
+  ],
+  "gate": {
+    "positives_at_least_6_per_lens": true,
+    "explicit_negatives_at_least_24": true,
+    "positive_projects_at_least_2_per_lens": true,
+    "cases_48_to_60": true
+  },
+  "positives": {
+    "security-auditor": 6,
+    "data-integrity-auditor": 11,
+    "temporal-resilience-auditor": 6,
+    "resource-lifecycle-auditor": 6,
+    "ui-race-auditor": 7,
+    "distributed-flow-auditor": 12,
+    "logic-integrity-auditor": 8,
+    "cleanup-auditor": 7
+  },
+  "negatives": {
+    "security-auditor": 43,
+    "data-integrity-auditor": 20,
+    "temporal-resilience-auditor": 27,
+    "resource-lifecycle-auditor": 28,
+    "ui-race-auditor": 27,
+    "distributed-flow-auditor": 12,
+    "logic-integrity-auditor": 22,
+    "cleanup-auditor": 35
+  },
+  "positive_projects": {
+    "security-auditor": 4,
+    "data-integrity-auditor": 9,
+    "temporal-resilience-auditor": 4,
+    "resource-lifecycle-auditor": 5,
+    "ui-race-auditor": 5,
+    "distributed-flow-auditor": 10,
+    "logic-integrity-auditor": 6,
+    "cleanup-auditor": 6
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-C046-grounded_noul",
+  "kind": "individual",
+  "case_id": "C046",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Humanize only the prose voice of this technical paragraph. Keep the current headings, order, navigation, diagram and paragraph boundaries exactly as they are.",
+    "artifacts": [
+      {
+        "path": "docs/cache.md",
+        "content": "# Cache\nOur robust caching mechanism seamlessly empowers the application to leverage lightning-fast reads. The default retention period is 60 seconds."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  },
+  "sha256": "55a1cfbee1883afd904cc58f75abbc1fce64c10d73c6c03a45508e2436637de1"
+}

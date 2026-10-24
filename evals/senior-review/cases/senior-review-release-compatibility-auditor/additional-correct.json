@@ -1,0 +1,33 @@
+{
+  "requirement": "Existing sessions complete during rolling deployment; v1 remains rollback-compatible. No exclusive write lock is allowed while serving.",
+  "drain": [
+    "withdraw routing",
+    "await router acknowledgement",
+    "finish in-flight sessions",
+    "stop process"
+  ],
+  "inflight_seconds": 20,
+  "grace_seconds": 30,
+  "replacement": {
+    "ready_before_drain": true
+  },
+  "migration": {
+    "active": [
+      "v1",
+      "v2"
+    ],
+    "documented_lock": "online operation; no exclusive write lock",
+    "serving": true
+  },
+  "formats": {
+    "v1_reads": [
+      "text"
+    ],
+    "v2_writes": "text while rollback allowed",
+    "rollback": "redeploy v1 with retained config"
+  },
+  "writers": {
+    "v1_omits": "new_required",
+    "schema": "nullable until v1 retired"
+  }
+}

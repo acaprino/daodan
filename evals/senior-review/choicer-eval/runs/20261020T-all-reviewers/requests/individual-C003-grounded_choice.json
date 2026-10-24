@@ -1,0 +1,30 @@
+{
+  "id": "individual-C003-grounded_choice",
+  "kind": "individual",
+  "case_id": "C003",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the React route for avoidable startup bundle cost and expensive list rendering before proposing optimizations.",
+    "artifacts": [
+      {
+        "path": "src/InventoryRoute.tsx",
+        "content": "import * as Icons from \"lucide-react\";\nexport function InventoryRoute({ rows }: { rows: { id: string; name: string }[] }) {\n  return <main><Icons.Package />{rows.map(row => <article key={row.id}>{row.name}</article>)}</main>;\n}"
+      },
+      {
+        "path": "notes/profile.txt",
+        "content": "Production sample: 12,400 inventory rows. Route bundle: 680 kB compressed. Opening the route blocks interaction for 1.4 seconds."
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "choice",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    }
+  },
+  "sha256": "f3658109b16842b44caf1747da2a4951759c4de33ae6cceb86a2bdfb4454efd1"
+}

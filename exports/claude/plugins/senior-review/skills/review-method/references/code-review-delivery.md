@@ -67,7 +67,11 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Step 5: Final Review Output
 
-Synthesize everything into the final structured review using the full template in the `senior-review:review-quality-gates` skill, file `references/code-review-output.md` (read it now). The template covers: review scope header (with intent, reviewers, verification counts), overall score, findings tables per dimension, coverage and coverage-gaps sections, pattern consistency, CLAUDE.md compliance, pre-existing issues, and the closing verdict block.
+Use the template in `references/code-review-output.md` of the
+`senior-review:review-quality-gates` skill. Include actual scope, intent, reviewers,
+verification, relevant findings, coverage/gaps, instruction compliance, preexisting
+issues and verdict. Write each finding once. Omit empty dimension sections and
+an overall score unless the caller requested a defined scoring method.
 
 The verdict is one of **Ready to merge / Ready with fixes / Not ready**, with 1-2 sentences of reasoning and a severity-ordered fix list. Under `--strict`, any Critical finding forces `Not ready`.
 

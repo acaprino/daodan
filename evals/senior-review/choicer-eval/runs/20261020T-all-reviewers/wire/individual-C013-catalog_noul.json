@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Assess whether these two test files duplicate the same protection or preserve distinct failure modes. Do not consolidate them during this review.",
+    "artifacts": [
+      {
+        "path": "tests/test_rounding.py",
+        "content": "from pricing import total\n\ndef test_single_item():\n    assert total([125], tax_percent=0) == 125\n"
+      },
+      {
+        "path": "tests/test_checkout_amount.py",
+        "content": "from pricing import total\n\ndef test_no_tax():\n    assert total([125], tax_percent=0) == 125\n"
+      },
+      {
+        "path": "src/pricing.py",
+        "content": "def total(cents, tax_percent):\n    return round(sum(cents) * (1 + tax_percent / 100))\n"
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement."
+      }
+    }
+  }
+}

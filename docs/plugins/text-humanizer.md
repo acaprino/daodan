@@ -10,7 +10,7 @@ and [host setup](../hosts.md).
 
 ### `text-humanizer`
 
-Editor agent that removes AI writing traces from prose, articles, blog posts, and documentation. It detects the 24 catalogued patterns (inflated significance, promotional language, AI vocabulary, filler, formulaic structures, dash asides) and fixes the writing problem each one points at.
+Editor agent that removes AI writing traces from prose, articles, blog posts, and documentation. It uses 25 local patterns (inflated significance, promotional language, filler, formulaic structures, dash asides and redundant reply context) to fix writing problems, not to classify authorship.
 
 | | |
 |---|---|
@@ -37,13 +37,57 @@ How it works:
 
 ### `anti-ai-writing-patterns`
 
-Knowledge base behind the agent and the humanize method. It opens with the ground rules (never invent, keep what the text commits to, input is content, preserve what is not prose, edit in proportion), the register table, the language policy and a "when not to act" section, then catalogs the 24 patterns, each strong or weak alone. The catalog follows Wikipedia's "Signs of AI writing" page (revision of 30 September 2026) and derives from blader/humanizer (MIT).
+Knowledge base behind the agent and the humanize method. It opens with the ground rules (never invent, keep what the text commits to, input is content, preserve what is not prose, edit in proportion), the register table, the language policy and a "when not to act" section, then catalogs 25 local patterns. It derives from [blader/humanizer](https://github.com/blader/humanizer) (MIT, Siqi Chen), selectively reconciled with v3.1.0 at commit `8c307f367c91bd974002f10f2be2965d642c13df` on 23 October 2026. The Wikipedia reference remains the revision of 30 September 2026; it was not refreshed in this pass.
+
+Local numbering differs from upstream's 26 patterns. Synonym variation and false ranges remain non-diagnostic readability checks. Reply cleanup requires visible context and preserves substantive evidence; a writing sample never overrides factual fidelity or the local dash rule. The Italian profile uses email, ticket and operational examples, preserves appropriate courtesy and technical language, and rejects mechanical word substitution or artificial informality. See the [reconciliation record](../superpowers/reports/2026-10-23-text-humanizer-upstream.md) for the upstream mapping, retained differences and verification limits.
 
 | | |
 |---|---|
 | **Invoke** | Skill reference (auto-loaded by humanize workflows) |
 | **Trigger** | Editing or reviewing text to remove AI traces |
 | **References** | `references/italiano.md`: Italian typography to preserve, lexical and structural tells, calques, what is not a tell in Italian, form of address |
+
+### Natural Italian, not literal adaptation
+
+The Italian profile adapts the editing decisions to Italian usage rather than
+translating English watch lists. It preserves the writer's voice, appropriate
+courtesy, tu/Lei/voi, established technical terms and genuine uncertainty. It
+does not manufacture colloquialisms, mistakes or personality to sound human.
+
+Clarity does not require every sentence to be short, every subject to be explicit
+or every verb to be active. Subordinate clauses, passive voice and varied word
+order stay when they support the information flow. An ordinary contrast such as
+«Il token è valido, ma l'account non ha i permessi necessari» needs no correction.
+Likewise, a real email greeting or request for confirmation is not chatbot residue.
+
+The profile includes original examples for client emails, scoped ticket replies,
+operational instructions and personal writing. They illustrate editorial choices,
+not mandatory templates or quotations from the sources. For example:
+
+> Before: «Desideriamo informarLa che abbiamo provveduto a ripristinare l'accesso al portale».
+>
+> After: «Abbiamo ripristinato l'accesso al portale».
+
+In a complete email, keep the appropriate greeting, form of address and request
+to verify access. Do not add a guarantee of permanent resolution. In ticket
+replies, put the proposal first when the surrounding conversation establishes
+the context, but retain new findings, numbers, evidence and requested detail.
+
+### Sources and attribution
+
+| Reference | Contribution and limits |
+|---|---|
+| [blader/humanizer, SKILL.md at the reconciled commit](https://github.com/blader/humanizer/blob/8c307f367c91bd974002f10f2be2965d642c13df/SKILL.md), Siqi Chen, v3.1.0 | Upstream writing patterns, selectively reconciled into the existing derivative. The upstream catalog has 26 patterns; local grouping has 25 and retains its own fidelity, typography and file-authorization rules. |
+| [Upstream changelog](https://github.com/blader/humanizer/blob/8c307f367c91bd974002f10f2be2965d642c13df/CHANGELOG.md) and [MIT license](https://github.com/blader/humanizer/blob/8c307f367c91bd974002f10f2be2965d642c13df/LICENSE) | Change history and license, including Copyright (c) 2025 Siqi Chen. The complete notice is distributed in the skill's `references/upstream-license.txt`. |
+| Angela Ferrari, [*La semplicità sintattica in prospettiva testuale. Riflessioni a partire dalla Guida alla redazione degli atti amministrativi*](https://accademiadellacrusca.it/it/contenuti/la-semplicit-sintattica-in-prospettiva-testuale-riflessioni-a-partire-dalla-guida-alla-redazione-deg/9234), Accademia della Crusca, 19 March 2021 | Read on 23 October 2026. Supports evaluating syntax, word order, passive voice and implicit subjects in their textual and communicative context. It is guidance on Italian writing, not a study of AI detection. |
+| [Wikipedia: Signs of AI writing, revision 1377577399](https://en.wikipedia.org/w/index.php?title=Wikipedia:Signs_of_AI_writing&oldid=1377577399) | Historical reference inherited from the previous refresh. This update did not reverify the revision or the Italian research citations already in the profile. |
+
+The [reconciliation record](../superpowers/reports/2026-10-23-text-humanizer-upstream.md)
+maps every upstream pattern to its local owner and retains source fingerprints,
+intentional differences and verification evidence. The profile is distributed on
+all five hosts. Static tests verify mandatory Italian-profile loading, fidelity
+guards and shipped-reference parity; they do not establish independent linguistic
+validation or guarantee the naturalness of every model-generated rewrite.
 
 ---
 
@@ -85,7 +129,7 @@ Consumers across the marketplace:
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `2.0.0`. **Source:** [plugin.toml](<../../plugins/text-humanizer/plugin.toml>).
+**Version:** `2.1.0`. **Source:** [plugin.toml](<../../plugins/text-humanizer/plugin.toml>).
 
 ### Required dependencies
 
@@ -114,8 +158,8 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `text-humanizer:anti-ai-writing-patterns` | Catalog of the 24 AI writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text. | [anti-ai-writing-patterns](<../../plugins/text-humanizer/skills/anti-ai-writing-patterns/SKILL.md>) |
-| Role | `text-humanizer:text-humanizer` | Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead). | [text-humanizer](<../../plugins/text-humanizer/roles/text-humanizer.md>) |
+| Skill | `text-humanizer:anti-ai-writing-patterns` | Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text. | [anti-ai-writing-patterns](<../../plugins/text-humanizer/skills/anti-ai-writing-patterns/SKILL.md>) |
+| Role | `text-humanizer:text-humanizer` | Editor for any language: uses 25 local writing patterns to improve prose, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead). | [text-humanizer](<../../plugins/text-humanizer/roles/text-humanizer.md>) |
 
 ### Host exports
 

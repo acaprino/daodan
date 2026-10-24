@@ -91,6 +91,13 @@ at a time with the host's question tool, or record it in the run's
 `questions` and close the turn. Mark each fact `observed` (the user, a log, a
 run) or `derived`.
 
+Read the failing environment's own evidence before any hypothesis: the log of
+the failing request where it failed, not a local rerun. Durations that cluster
+at a round value (30.0x s on every attempt) point to a configured timeout;
+record the value and where it is set. Evidence you cannot reach (an expired
+credential, no log access) is an open fact to obtain, never a reason to
+proceed from a local reproduction instead.
+
 ## 2. Perimeter
 
 From the stack and the named symbols, load `codebase-map:map-method` and take
@@ -112,6 +119,7 @@ hypothesis only:
 |---|---|
 | Timers, retries, scheduling, clocks | `senior-review:temporal-resilience-auditor` |
 | Persistence, transactions, caches | `senior-review:data-integrity-auditor` |
+| Statement cost, data volume, timeouts | `senior-review:sql-efficiency-auditor` |
 | Initialization order, startup | `senior-review:chicken-egg-detector` |
 | UI timing, layout, focus, scroll | `senior-review:ui-race-auditor` |
 | Handles, connections, locks, threads | `senior-review:resource-lifecycle-auditor` |
@@ -133,6 +141,14 @@ run as the one project file an investigation writes. With a suspect commit,
 the test must pass on its parent, checked in a disposable worktree under the
 run. Without a reproduction the cause stays a hypothesis, and the report says
 so.
+
+The reproduction must show the observed symptom: the same message or exception
+type and, for a timeout, the same bound, with the data volume and storage state
+that decide it (a dataset that fits in memory hides disk-bound cost). A
+different failure on a smaller or cached dataset is a second defect, recorded
+as such; it does not reproduce the first. One defect can hide another: a
+statement cancelled by a timeout never reaches its end-of-statement constraint
+checks.
 
 ## 5. Bisection and runtime evidence
 

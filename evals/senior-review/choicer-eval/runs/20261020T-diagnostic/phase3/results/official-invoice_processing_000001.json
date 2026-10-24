@@ -1,0 +1,24 @@
+{
+  "id": "official-invoice_processing_000001",
+  "request_sha256": "89ceaa0482c0759d8e30d846bfea1db40549ad81f6fa98a7f0aa67dbcdd9ae90",
+  "raw_output": {
+    "answers": {
+      "duplicate": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9999992793035601,
+          "true": 7.206964397322168e-07
+        },
+        "noul": 7.206964397322168e-07
+      },
+      "matches_order": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9999883906330526,
+          "true": 1.1609366947485906e-05
+        },
+        "noul": 1.1609366947485906e-05
+      }
+    }
+  }
+}

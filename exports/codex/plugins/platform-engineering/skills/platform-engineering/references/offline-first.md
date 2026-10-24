@@ -70,11 +70,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Offline-First Design
 
-## MUST
+For review, apply these mechanisms only to declared offline journeys and supported versions. Requirements decide authority, conflict behavior and budgets; library/pattern suggestions are not findings or installation permission.
+
+## Required design questions
 
 - **Design the data model for offline-first from the start** for PWA and mobile apps -- retrofitting is extremely difficult.
-- Treat the local store as the primary source of truth and sync to the server when connectivity returns.
-- **Implement a conflict resolution strategy before launch.** Without one, silent data corruption or loss will occur.
+- Declare which facts may be accepted locally, which require server authority, and how reconnect reconciles them. Local presence does not grant business or authorization authority.
+- For writes that may conflict, define and verify the required conflict-resolution behavior.
 - Queue writes with unique identifiers and timestamps for reconciliation -- idempotency is non-negotiable.
 
 ## Conflict Resolution Strategies
@@ -89,7 +91,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 ## DO
 
 - Use **optimistic UI updates** -- apply changes locally immediately, sync in background, reconcile later.
-- For PWAs: combine service workers + Cache API + IndexedDB + Background Sync API (Workbox simplifies this).
+- For PWAs, select supported service-worker, cache, storage and background mechanisms for the promised journey; use an existing fallback when a target lacks an API.
 - For mobile: use the Repository pattern with offline-first reads and write queues.
 
 ## DON'T

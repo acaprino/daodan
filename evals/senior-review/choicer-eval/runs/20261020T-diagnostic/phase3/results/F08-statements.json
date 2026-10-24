@@ -1,0 +1,24 @@
+{
+  "id": "F08-statements",
+  "request_sha256": "8af368ea5ef382c8b1b9d0bd9c633e4ac39ff94e3980706610b5eb2392f4e441",
+  "raw_output": {
+    "answers": {
+      "react": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.8281286048955285,
+          "true": 0.17187139510447152
+        },
+        "noul": 0.17187139510447152
+      },
+      "persistence": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.716353546750552,
+          "true": 0.2836464532494479
+        },
+        "noul": 0.2836464532494479
+      }
+    }
+  }
+}

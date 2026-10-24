@@ -1,0 +1,34 @@
+{
+  "id": "individual-B015-grounded_noul",
+  "kind": "individual",
+  "case_id": "B015",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review why the update badge should reflect the result of the toolbar check.",
+    "artifacts": [
+      {
+        "path": "useUpdate.ts",
+        "content": "export function useUpdate() {\n  const [available, setAvailable] = useState(false);\n  const check = async () => setAvailable(await bridge.checkUpdate());\n  useEffect(() => { check(); }, []);\n  return {available, check};\n}"
+      },
+      {
+        "path": "Toolbar.tsx",
+        "content": "export function Toolbar() {\n  const {check} = useUpdate();\n  return <button onClick={check}>Check for updates</button>;\n}"
+      },
+      {
+        "path": "UpdateBadge.tsx",
+        "content": "export function UpdateBadge() {\n  const {available} = useUpdate();\n  return available ? <span>Update ready</span> : null;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    }
+  },
+  "sha256": "6f3c4029af57d36a399150bba3ffeaf601f8eea021576d21283a5cc9b11f1de1"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "individual-B040-catalog_noul",
+  "kind": "individual",
+  "case_id": "B040",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review memory use in the command-line mesh converter while processing large files.",
+    "artifacts": [
+      {
+        "path": "converter.cpp",
+        "content": "#include <vector>\n#include \"mesh.hpp\"\nint main(int argc, char **argv) {\n  auto mesh = read_mesh(argv[1]);\n  std::vector<Vertex> normalized = normalize(mesh.vertices);\n  write_mesh(argv[2], normalized);\n}"
+      },
+      {
+        "path": "README.md",
+        "content": "mesh-convert is a headless C++ command-line tool. It runs in batch jobs and has no browser, mobile, or desktop application frontend."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms."
+      }
+    }
+  },
+  "sha256": "eada58ed49054125d1512f54d38cb2ab6cfd21ffe48878e16574ed00b6c2223d"
+}

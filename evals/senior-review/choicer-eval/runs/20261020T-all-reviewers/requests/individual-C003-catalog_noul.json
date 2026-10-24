@@ -1,0 +1,30 @@
+{
+  "id": "individual-C003-catalog_noul",
+  "kind": "individual",
+  "case_id": "C003",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the React route for avoidable startup bundle cost and expensive list rendering before proposing optimizations.",
+    "artifacts": [
+      {
+        "path": "src/InventoryRoute.tsx",
+        "content": "import * as Icons from \"lucide-react\";\nexport function InventoryRoute({ rows }: { rows: { id: string; name: string }[] }) {\n  return <main><Icons.Package />{rows.map(row => <article key={row.id}>{row.name}</article>)}</main>;\n}"
+      },
+      {
+        "path": "notes/profile.txt",
+        "content": "Production sample: 12,400 inventory rows. Route bundle: 680 kB compressed. Opening the route blocks interaction for 1.4 seconds."
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling."
+      }
+    }
+  },
+  "sha256": "57618103f99a60ee6a911aa53c24652b6f9792fb4216df880c4bf23b1366e3f4"
+}

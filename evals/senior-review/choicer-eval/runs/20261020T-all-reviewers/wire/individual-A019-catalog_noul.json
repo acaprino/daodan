@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review whether the search endpoint can interpret the request parameter as SQL. Limit this pass to injection exposure.",
+    "artifacts": [
+      {
+        "path": "app/search.py",
+        "content": "def search(db, request):\n    query = \"SELECT title FROM books WHERE title = '\" + request.args[\"q\"] + \"'\"\n    return db.execute(query).fetchall()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit."
+      }
+    }
+  }
+}

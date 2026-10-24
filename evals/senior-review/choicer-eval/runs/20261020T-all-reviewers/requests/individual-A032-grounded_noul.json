@@ -1,0 +1,26 @@
+{
+  "id": "individual-A032-grounded_noul",
+  "kind": "individual",
+  "case_id": "A032",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the catalog refresher that runs for the duration of a desktop session and the status text users see.",
+    "artifacts": [
+      {
+        "path": "src/refresher.js",
+        "content": "let status = \"Catalog current\";\nasync function tick() {\n  try { await refreshCatalog(); } catch (error) {}\n  setTimeout(tick, 60000);\n}\nexport const statusText = () => status;\ntick();\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      }
+    }
+  },
+  "sha256": "1edeeea7fd43d6fe5dc042c04fa0dacc06224b4985bf5bc94a81af35a970ea96"
+}

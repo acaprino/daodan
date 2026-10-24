@@ -25,4 +25,4 @@ declare interface ApiUser { id: number }
 export interface ApiUser { id: string }
 ```
 
-**Detection:** If `skipLibCheck` is true, `rg --files -g '*.d.ts' -g '!node_modules'`: each first-party `.d.ts` carrying hand-written declarations is a finding.
+**Detection:** Resolve effective configuration and inspect first-party declaration consistency and the applicable compiler lane. A declaration file alone is not a defect; establish the hidden mismatch.

@@ -1,0 +1,24 @@
+{
+  "id": "official-security_incidents_000001",
+  "request_sha256": "0c2883686756c6a6049e570242a20f49341ea10eb91d06654379a05bb1d6f79c",
+  "raw_output": {
+    "answers": {
+      "credential_compromise": {
+        "type": "noul",
+        "probabilities": {
+          "false": 7.637003212132149e-06,
+          "true": 0.9999923629967877
+        },
+        "noul": 0.9999923629967877
+      },
+      "true_positive": {
+        "type": "noul",
+        "probabilities": {
+          "false": 9.733187418500206e-08,
+          "true": 0.9999999026681258
+        },
+        "noul": 0.9999999026681258
+      }
+    }
+  }
+}

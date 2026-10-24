@@ -4,3 +4,21 @@ required = ["expected", "delivered", "failed", "barrier_satisfied"]
 
 [fields.barrier_satisfied]
 type = "boolean"
+
+[fields.jobs]
+type = "array"
+items = "object"
+# Expected job bindings are fixed before dispatch. Records and findings remain
+# in their owners' existing formats; the ledger links their outputs once.
+[fields.member_results]
+type = "array"
+items = "object"
+# Reconcile job_id, specialist_id and scope against every expected obligation.
+# Auxiliary workers and independent lenses cannot stand in for discovery.
+
+[fields.checks]
+type = "array"
+items = "object"
+# Bind each required blind-derivation, verification lens and critic to its own
+# delivery, candidate, independent input mode and evidence. Verification targets
+# refer to canonical finding IDs with their discovery job IDs.

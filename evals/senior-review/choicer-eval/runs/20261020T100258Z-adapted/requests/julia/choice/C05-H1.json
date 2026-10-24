@@ -1,0 +1,34 @@
+{
+  "impl": "julia",
+  "variant": "choice",
+  "case_id": "C05",
+  "hunk_id": "H1",
+  "state": "[H1]\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1495         \"\"\"\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1496         Handle a notification describing one position.\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1497 \njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1498         Telegram addresses recipients per agent and already filters their chats\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1499         by scope, so the delivery machinery is the same as for a broadcast: the\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1500         structured branch below renders the template and\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1501         ``_filter_chat_ids_by_scope`` decides who reads it. The routing\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1502         distinction that keeps this notification off the desktop's shared\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1503         fanout lives in the AMQP channel, which keys it by ``config_name``.\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1504         \"\"\"\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1505         enriched_metadata = dict(metadata or {})\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1506         enriched_metadata['notification_id'] = notification_id\njupiter-channel-telegram/jupiter_channel_telegram/telegram_channel_event.py:1507         enriched_metadata['notification_level'] = notification_level",
+  "questions": {
+    "reviewer": {
+      "type": "choice",
+      "instructions": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+      "criteria": {
+        "abstraction-architect:abstraction-architect-agent": "Duplicate domain logic or competing sources of truth; excludes dead code, security, and dependency cycles.",
+        "platform-engineering:platform-reviewer": "Web, mobile or desktop platform security, architecture or performance; excludes platform-independent code.",
+        "react-development:react-performance-optimizer": "React renders, state subscriptions, components or bundle performance; excludes CSS polish and native backends.",
+        "repo-hygiene:workspace-auditor": "Tracked build output, ignore gaps, scratch files or stale Git state; excludes source dead code.",
+        "senior-review:api-contract-auditor": "Declared API schemas versus implementations or API changes; excludes absent contracts and internal invariants.",
+        "senior-review:chicken-egg-detector": "Startup ordering, bootstrap, configuration or migration dependencies; excludes steady-state flows.",
+        "senior-review:cleanup-auditor": "Dead code, unused dependencies, orphan assets or stale documentation; excludes filesystem and Git tidying.",
+        "senior-review:code-auditor": "Architecture, coupling, failure paths, stale caches or code quality; excludes security-only audits.",
+        "senior-review:data-integrity-auditor": "Database writes, transactions, caches or persistence races; excludes domain-only rules and messaging.",
+        "senior-review:distributed-flow-auditor": "Cross-service flows, messaging, idempotency and compensation; excludes isolated local operations.",
+        "senior-review:logic-integrity-auditor": "Domain rules, state machines, ordering or idempotency; excludes styling and security alone.",
+        "senior-review:premise-auditor": "Code claims, defaults, thresholds, signs or business boundaries; excludes styling and map construction.",
+        "senior-review:resource-lifecycle-auditor": "Handles, sockets, connections, listeners, locks or timers need release; excludes general architecture and exploitation.",
+        "senior-review:security-auditor": "URLs, public functions, auth, permissions, ID access or secrets; excludes internal styling.",
+        "senior-review:temporal-resilience-auditor": "Retries, timers, queues, polling or workers surviving repeated failure; excludes startup and UI races.",
+        "senior-review:ui-race-auditor": "Async UI rendering, layout, scroll, focus or measurements race; excludes static styling and backend concurrency.",
+        "testing:test-suite-auditor": "Test hygiene, flakiness, redundancy, placement or layer distribution; excludes writing tests or applying quarantine.",
+        "typescript-development:type-safety-auditor": "TypeScript any, casts, boundary validation or exhaustiveness; excludes naming, React performance and dead code."
+      }
+    }
+  },
+  "request_sha256": "f046e6dc61bbce86da4bf143ad59dc67d94a935c8c0c8b351885e4b04c21d4aa"
+}

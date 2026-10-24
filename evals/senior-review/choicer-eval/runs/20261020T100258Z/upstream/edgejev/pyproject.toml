@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edgejev"
+version = "0.4.0"
+description = "离线可用的本地类型化决策：4 核 CPU 单题 15.6ms。Local & offline Jev / System One inference on CPU with ONNX + INT8, no torch at runtime"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "yzfly", email = "zphyix@gmail.com" }]
+keywords = [
+    "jev", "system-one", "typesafe-ai", "typed-decisions", "decision-model",
+    "offline", "offline-inference", "local-inference", "on-device", "edge-ai",
+    "cpu-inference", "onnx", "onnxruntime", "quantization", "int8",
+    "calibrated-probabilities", "laya", "kev", "air-gapped",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "onnxruntime>=1.17",
+    "tokenizers>=0.15",
+    "numpy>=1.20",
+    "huggingface_hub>=0.20",
+]
+
+[project.optional-dependencies]
+# 只有「把 HF checkpoint 转成 ONNX」这一步需要，转完就可以卸掉
+build = ["torch>=2.0", "transformers>=4.45", "safetensors>=0.4", "laya>=0.3.0", "onnxconverter-common>=1.14", "onnx>=1.15", "peft>=0.10"]
+# playjev 后端走 torch 运行时（Qwen3.5 的线性注意力层导不出 ONNX）
+vlm = ["torch>=2.0", "torchvision", "transformers>=4.45", "pillow", "accelerate"]
+# 训练
+train = ["torch>=2.0", "transformers>=4.45", "safetensors>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/yzfly/edgejev"
+Repository = "https://github.com/yzfly/edgejev"
+Issues = "https://github.com/yzfly/edgejev/issues"
+
+[project.scripts]
+edgejev = "edgejev.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["edgejev*"]

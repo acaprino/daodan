@@ -1,0 +1,34 @@
+{
+  "id": "individual-B031-grounded_noul",
+  "kind": "individual",
+  "case_id": "B031",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review how the renewal eligibility rule is represented in the renewal job and account screen.",
+    "artifacts": [
+      {
+        "path": "jobs/renewals.py",
+        "content": "def eligible(account):\n    return account.active and account.unpaid_days <= 7"
+      },
+      {
+        "path": "web/account.py",
+        "content": "def show_renew_button(account):\n    return account.active and account.unpaid_days < 8"
+      },
+      {
+        "path": "rules.md",
+        "content": "There is one renewal eligibility policy for all accounts. The scheduled renewal job and customer screen must make the same decision from the same account data."
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    }
+  },
+  "sha256": "d9af9e15972067324adf5fff0665ac6e918602dbfa2a95cf5251dadfb7295e46"
+}

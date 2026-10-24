@@ -120,7 +120,7 @@ K5  If the fact changes, are both expected to remain consistent?
 K6  Is there no legitimate bounded-context reason for divergence?
 ```
 
-K6 is a **hard gate** on this track. A candidate that cannot demonstrate K6 is not reported. A candidate whose context membership could not be determined is reported with `Bounded-context exception: unverified`, and `references/decision-frame.md` governs how far it may then be promoted.
+K6 is a **hard gate** on this track. A candidate that cannot demonstrate K6 is not reported. A candidate whose context membership could not be determined stays in Gaps with `Bounded-context exception: unverified`; it cannot be promoted until K6 is proven.
 
 Failing to demonstrate any of K1 through K6 means no finding. Silence is the correct output when the proof is not there.
 

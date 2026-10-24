@@ -1,0 +1,26 @@
+{
+  "id": "individual-A040-catalog_noul",
+  "kind": "individual",
+  "case_id": "A040",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review only whether the local report handler constructs an SQL query safely. No communication contract is changing.",
+    "artifacts": [
+      {
+        "path": "app/reports.py",
+        "content": "def report(db, request):\n    return db.execute(\"SELECT * FROM reports WHERE owner = '\" + request.args[\"owner\"] + \"'\").fetchall()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
+      }
+    }
+  },
+  "sha256": "eda29f9daba1c02e6b2686fb2c12ddc21a792b747de448f4298c4e3e5e40ad13"
+}

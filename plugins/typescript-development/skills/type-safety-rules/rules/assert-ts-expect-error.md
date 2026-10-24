@@ -25,4 +25,4 @@ legacyInit(options)
 legacyInit(options)
 ```
 
-**Detection:** `rg -n '@ts-ignore|@ts-nocheck' --type ts`: every hit is a finding. `rg -n '@ts-expect-error$' --type ts`: expect-error with no reason text is a lesser finding.
+**Detection:** Locate suppression directives and inspect the diagnostic, version compatibility and actual unsafe value admitted. Missing explanation is a lead, not a runtime defect by itself.

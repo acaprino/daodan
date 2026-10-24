@@ -65,106 +65,49 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-# Platform Engineering Audit
+# Platform audit
 
-Audit a codebase against the platform-engineering rulebook: a platform-level review, a cross-platform security audit, an Electron or Tauri hardening check, or an SPA, PWA, mobile, or desktop compliance review. Runs the `platform-reviewer` role on its own for targeted cross-platform audits. Shape: detect platforms, dispatch the plugin's reviewer in an isolated context, write the report.
+The platform portion of `/daodan:check-health` verifies supported browser, PWA,
+mobile, Electron and Tauri mechanisms. The same `platform-reviewer` participates
+in senior-review with its prepared inputs; never run both paths for one assignment.
 
-Caller: `/daodan:check-health`, which runs this audit when the project ships an SPA, PWA, mobile, Electron or Tauri app. Inside `/daodan:review-changes` and `/daodan:review-branch`, senior-review dispatches `platform-engineering:platform-reviewer` with inputs it prepares, not through this procedure: never run both on the same target.
+## Input and scope
 
-Not this audit: generic code quality with no platform dimension (use `/daodan:review-changes`).
+Use the caller's target, snapshot, declared platforms/versions, required behavior
+and run directory. A file, directory or diff retains that scope. Detect platforms
+from the relevant manifests, configuration and runtime entrypoints when the caller
+has not named them; distinguish installed dependencies from mechanisms actually
+used. Unknown support targets remain gaps.
 
-## Inputs
+A security, architecture or performance focus narrows platform-specific concerns.
+Generic security, performance and operational coverage belongs to the caller's
+other review dimensions; report adjacent leads without claiming their completion.
 
-- **TARGET**: what the caller passes.
-  - The project, or nothing: the project root (formerly the current directory).
-  - A path (file or directory): that path.
-  - A diff (uncommitted changes, or a commit, range or branch the caller resolved): the reviewer's target is that diff; the role accepts a PR diff, file paths, a directory or a branch name.
-  - Free text: read for the platform and focus signals below; the target stays the project root.
-- **Platforms**: signal read from the target. Default: auto-detect (Step 1) and report the detected platforms before reviewing. When the caller's text names platforms (`spa`, `pwa`, `mobile`, `electron`, `tauri`), review those.
-- **Focus**: method decision. Default: all three pillars. When the caller's text restricts the audit to `security`, `arch` (architecture) or `perf` (performance), review that pillar only.
-- **Run directory**: the caller's run directory, written `<run>` below. The report goes to `<run>/platform-review/REPORT.md`.
-- **Authorization**: none asked. The audit never edits the project (critical rule 4).
+## Execute
 
-## CRITICAL RULES
+1. Inspect effective platform configuration, native interfaces, packaging and
+   lifecycle paths. Read only reference sections required by those mechanisms;
+   verify historical advice against actual requirements and target versions.
+2. Dispatch `platform-engineering:platform-reviewer` in an isolated context through
+   the caller's declared host harness. Supply target/snapshot, detected or declared
+   platform scope, instructions, evidence, permissions and
+   `<run>/platform-review/REPORT.md`. Multiple platforms can share one assignment
+   when their implementation is shared; each supported target must be accounted for.
+3. Preserve application files. Supplied browser/device results count only for their
+   recorded build and conditions. Running a new app, device or probe requires the
+   caller's corresponding authorization and an owned disposable environment.
+4. Verify the assigned report exists and identifies examined targets, findings,
+   evidence, gaps and assigned knowledge usage. Missing delivery or required input
+   is failure, not a clean audit.
 
-1. **Detect platform first**. Scan `package.json`, `Cargo.toml`, `manifest.json`, `tauri.conf.json`, build configs to identify the platform mix. When platforms are auto-detected (the default), report the detected platforms before reviewing.
-2. **Run in parallel when multiple platforms are present**. A single repo may ship SPA + mobile + Tauri; load all applicable rulebooks.
-3. **Write output to `<run>/platform-review/REPORT.md`** for persistence.
-4. **Never auto-fix**. Report findings; user decides what to apply.
+## Output
 
-## Procedure
+Use the reviewer's compact native report at `<run>/platform-review/REPORT.md`.
+Include supported target/version, required operation, effective mechanism, source
+location, observable impact, counterevidence and correction for each finding.
+Separate static reasoning from measured behavior. Add a concise coverage/gap list
+and the actual commands/results of any authorized probes. Do not manufacture a
+compliance certificate or mandatory hardening checklist.
 
-### 1. Scope detection
-
-Read the Inputs:
-- target path (default: the project root)
-- platforms: forced by the caller's text, or left to auto-detect
-- focus: `security` | `arch` | `perf` (default: all three)
-
-Detect platforms:
-- SPA: React/Vue/Svelte + no service worker
-- PWA: `manifest.webmanifest` + service worker registered
-- Mobile: Expo / React Native, Capacitor, NativeScript, Flutter
-- Electron: `electron` in `package.json`
-- Tauri: `@tauri-apps/api` + `src-tauri/`
-
-### 2. Dispatch the agent
-
-Dispatch `platform-engineering:platform-reviewer` in its required isolated context through the host harness with the target, detected platforms, and focus. The agent loads the relevant references from `skills/platform-engineering/references/`:
-
-- Security: `server-validation.md`, `auth-tokens.md`, `passkeys-webauthn.md`, `api-security.md`, `xss-csp.md`, `secrets-management.md`, `platform-security.md`
-- Architecture: `client-server-architecture.md`, `api-design.md`, `offline-first.md`, `infrastructure.md`
-- Performance: `frontend-performance.md`, `backend-and-platform-performance.md`
-
-For Electron / Tauri specifically, the agent also loads platform-security.md for the hardening checklist (fuses, asar integrity, capabilities, allowlists).
-
-### 3. Output report
-
-`<run>/platform-review/REPORT.md`:
-
-```markdown
-# Platform Review: <target> (<date>)
-
-## Detected platforms
-- SPA | PWA | Mobile | Electron | Tauri
-
-## Summary
-- Critical issues: N
-- High: N
-- Medium: N
-
-## Findings
-
-### [CRITICAL]
-- <file:line> <issue>. Rule: <rule violated>. Fix: <fix>
-
-### [HIGH]
-- ...
-
-### [MEDIUM]
-- ...
-
-## Hardening checklist (Electron / Tauri if applicable)
-- [ ] fuses.yml configured with hardened defaults
-- [ ] asar-integrity enabled for signed releases
-- [ ] Capabilities scoped per window (Tauri)
-- [ ] CSP includes 'strict-dynamic' + nonces
-- [ ] Auto-updater signature verification
-
-## Auth posture
-- [ ] No JWT in localStorage (SPA/PWA)
-- [ ] Refresh tokens in httpOnly + Secure + SameSite=Strict cookies
-- [ ] PKCE for OAuth on SPA/Mobile/Desktop
-- [ ] Platform-native secure storage for mobile/desktop tokens
-- [ ] WebAuthn / passkeys implemented for new auth flows (recommended for 2025+)
-
-## Recommendations ordered by impact
-1. ...
-```
-
-## Synergies
-
-- Deeper per-dimension code review -> `/daodan:review-changes`, or `/daodan:review-branch` for a branch
-- Tauri-specific hardening -> `tauri-development:tauri-desktop` agent
-- React performance inside a platform context -> `/daodan:check-health`, which runs the React audit when the project has React
-- Security-specific audit only -> `senior-review:security-auditor` agent
+A report grants no fix, installation, signing, deployment or publication authority.
+The caller consolidates platform findings with other dimensions once.

@@ -1,0 +1,62 @@
+{
+  "requirements": [
+    "All contenders must share one lock for balance",
+    "Locks A/B must not admit circular wait",
+    "Published initialized payload must be visible",
+    "Filesystem guard and read must address same object",
+    "Every continuously ready worker eventually runs",
+    "Each strategy invocation must use its own requested discount: A requests 0.5 and B requests 0. Calls may overlap; latest-writer-wins shared configuration is not permitted for this per-call strategy."
+  ],
+  "locks": {
+    "path1": [
+      "A",
+      "B"
+    ],
+    "path2": [
+      "B",
+      "A"
+    ],
+    "concurrent": true
+  },
+  "balance": {
+    "lock": "new mutex per call",
+    "shared": true
+  },
+  "publication": {
+    "payload_write": "ordinary",
+    "ready_write": "relaxed atomic",
+    "reader": "relaxed ready then ordinary payload",
+    "runtime": "fixture memory model allows payload write to appear after ready"
+  },
+  "file": {
+    "sequence": [
+      "exists(path)",
+      "other actor replaces path",
+      "read(path)"
+    ],
+    "descriptor_binding": false
+  },
+  "scheduler": {
+    "ready": [
+      "high",
+      "low"
+    ],
+    "policy": "always high even when high resubmits forever"
+  },
+  "strategy": {
+    "singleton": true,
+    "flow": [
+      "A writes discount=0.5",
+      "B writes discount=0",
+      "A reads discount"
+    ],
+    "requested": {
+      "A": 0.5,
+      "B": 0
+    }
+  },
+  "retry": {
+    "two_workers": "both yield and reacquire in lockstep forever",
+    "required": "one must advance"
+  }
+}

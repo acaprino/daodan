@@ -1,0 +1,34 @@
+{
+  "id": "individual-B003-grounded_choice",
+  "kind": "individual",
+  "case_id": "B003",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the inventory event producer after adding a warehouse identifier.",
+    "artifacts": [
+      {
+        "path": "contracts/stock.schema.json",
+        "content": "{\"type\":\"object\",\"required\":[\"sku\",\"warehouse_id\",\"quantity\"],\"properties\":{\"sku\":{\"type\":\"string\"},\"warehouse_id\":{\"type\":\"string\"},\"quantity\":{\"type\":\"integer\"}}}"
+      },
+      {
+        "path": "events/publish_stock.py",
+        "content": "def publish_stock(bus, stock):\n    bus.publish(\"stock.changed\", {\n        \"sku\": stock.sku,\n        \"warehouse\": stock.warehouse_id,\n        \"quantity\": stock.quantity,\n    })"
+      },
+      {
+        "path": "contracts/channels.md",
+        "content": "`stock.changed` messages use stock.schema.json. Warehouse identifiers are stable strings."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    }
+  },
+  "sha256": "50c7b65d26f76ce93829433b5795f3f0f9bc5698af0aca2b3a7ada56b8639560"
+}

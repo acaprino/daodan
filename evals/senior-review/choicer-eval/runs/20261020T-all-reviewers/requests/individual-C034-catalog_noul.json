@@ -1,0 +1,30 @@
+{
+  "id": "individual-C034-catalog_noul",
+  "kind": "individual",
+  "case_id": "C034",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Check the public installation guide for a stale download URL. Limit the task to this user-facing page; do not inspect agent instructions.",
+    "artifacts": [
+      {
+        "path": "docs/install.md",
+        "content": "Download the CLI from https://downloads.example.org/cli/v1/ and run cli init."
+      },
+      {
+        "path": "release/links.json",
+        "content": "{\"cli\":\"https://downloads.example.org/cli/v2/\"}"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md."
+      }
+    }
+  },
+  "sha256": "78a2989b1be999902adee1903fb98ed8e114b1a7fe729d615f7b1a8b614b0e2d"
+}

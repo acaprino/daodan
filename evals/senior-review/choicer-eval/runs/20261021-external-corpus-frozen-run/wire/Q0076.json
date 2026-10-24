@@ -1,0 +1,969 @@
+{
+  "id": "Q0076",
+  "case_id": "F05",
+  "role": "senior-review:logic-integrity-auditor",
+  "mode": "windowed",
+  "variant": "v2",
+  "window_id": "W001",
+  "prompt_sha256": "2204eac636c8ece8033c4cd69bfbe5cd8bd19932f59698eb3d36d688bcc1face",
+  "prompt_tokens": 1038,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F05\n[Code Under Review]\n[H1] FFmpeg/function-3.c:1 (character offset 0)\nint ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,\n\n                      AVCodecContext *codec, int size, int big_endian)\n\n{\n\n    int id;\n\n    uint64_t bitrate;\n\n\n\n    if (size < 14) {\n\n        avpriv_request_sample(codec, \"wav header size < 14\");\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n\n\n    codec->codec_type  = AVMEDIA_TYPE_AUDIO;\n\n    if (!big_endian) {\n\n        id                 = avio_rl16(pb);\n\n        if (id != 0x0165) {\n\n            codec->channels    = avio_rl16(pb);\n\n            codec->sample_rate = avio_rl32(pb);\n\n            bitrate            = avio_rl32(pb) * 8LL;\n\n            codec->block_align = avio_rl16(pb);\n\n        }\n\n    } else {\n\n        id                 = avio_rb16(pb);\n\n        codec->channels    = avio_rb16(pb);\n\n        codec->sample_rate = avio_rb32(pb);\n\n        bitrate            = avio_rb32(pb) * 8LL;\n\n        codec->block_align = avio_rb16(pb);\n\n    }\n\n    if (size == 14) {  /* We're dealing with plain vanilla WAVEFORMAT */\n\n        codec->bits_per_coded_sample = 8;\n\n    } else {\n\n        if (!big_endian) {\n\n            codec->bits_per_coded_sample = avio_rl16(pb);\n\n        } else {\n\n            codec->bits_per_coded_sample = avio_rb16(pb);\n\n        }\n\n    }\n\n    if (id == 0xFFFE) {\n\n        codec->codec_tag = 0;\n\n    } else {\n\n        codec->codec_tag = id;\n\n        codec->codec_id  = ff_wav_codec_get_id(id,\n\n                                               codec->bits_per_coded_sample);\n\n    }\n\n    if (size >= 18 && id != 0x0165) {  /* We're obviously dealing with WAVEFORMATEX */\n\n        int cbSize = avio_rl16(pb); /* cbSize */\n\n        if (big_endian) {\n\n            avpriv_report_missing_feature(codec, \"WAVEFORMATEX support for RIFX files\\n\");\n\n            return AVERROR_PATCHWELCOME;\n\n        }\n\n        size  -= 18;\n\n        cbSize = FFMIN(size, cbSize);\n\n        if (cbSize >= 22 && id == 0xfffe) { /* WAVEFORMATEXTENSIBLE */\n\n            parse_waveformatex(pb, codec);\n\n            cbSize -= 22;\n\n            size   -= 22;\n\n        }\n\n        if (cbSize > 0) {\n\n            av_freep(&codec->extradata);\n\n            if (ff_get_extradata(codec, pb, cbSize) < 0)\n\n                return AVERROR(ENOMEM);\n\n            size -= cbSize;\n\n        }\n\n\n\n        /* It is possible for the chunk to contain garbage at the end */\n\n        if (size > 0)\n\n            avio_skip(pb, size);\n\n    } else if (id == 0x0165 && size >= 32) {\n\n        int nb_streams, i;\n\n\n\n        size -= 4;\n\n        av_freep(&codec->extradata);\n\n        if (ff_get_extradata(codec, pb, size) < 0)\n\n            return AVERROR(ENOMEM);\n\n        nb_streams         = AV_RL16(codec->extradata + 4);\n\n        codec->sample_rate = AV_RL32(codec->extradata + 12);\n\n        codec->channels    = 0;\n\n        bitrate            = 0;\n\n\n\n[H1] FFmpeg/function-3.c:155 (character offset 2771)\n        if (size < 8 + nb_str\n\nQuestion: Should the logic-integrity-auditor review lens be activated for state machines, status transitions, fallback values, recipient filtering logic, or domain invariants?\n\nOptions:\nA. Yes: activate logic-integrity-auditor\nB. No: do not activate logic-integrity-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "7aa7d4555adad26198decce11e290ab1299de0fe69d1ca5a4c7343c493d6b766",
+  "prefix_tokens": 945,
+  "state_id": "S005",
+  "restore": {
+    "seconds": 0.053972599998814985,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 945,
+      "n_read": 52042724,
+      "timings": {
+        "restore_ms": 51.545
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 1038,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F05\n[Code Under Review]\n[H1] FFmpeg/function-3.c:1 (character offset 0)\nint ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,\n\n                      AVCodecContext *codec, int size, int big_endian)\n\n{\n\n    int id;\n\n    uint64_t bitrate;\n\n\n\n    if (size < 14) {\n\n        avpriv_request_sample(codec, \"wav header size < 14\");\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n\n\n    codec->codec_type  = AVMEDIA_TYPE_AUDIO;\n\n    if (!big_endian) {\n\n        id                 = avio_rl16(pb);\n\n        if (id != 0x0165) {\n\n            codec->channels    = avio_rl16(pb);\n\n            codec->sample_rate = avio_rl32(pb);\n\n            bitrate            = avio_rl32(pb) * 8LL;\n\n            codec->block_align = avio_rl16(pb);\n\n        }\n\n    } else {\n\n        id                 = avio_rb16(pb);\n\n        codec->channels    = avio_rb16(pb);\n\n        codec->sample_rate = avio_rb32(pb);\n\n        bitrate            = avio_rb32(pb) * 8LL;\n\n        codec->block_align = avio_rb16(pb);\n\n    }\n\n    if (size == 14) {  /* We're dealing with plain vanilla WAVEFORMAT */\n\n        codec->bits_per_coded_sample = 8;\n\n    } else {\n\n        if (!big_endian) {\n\n            codec->bits_per_coded_sample = avio_rl16(pb);\n\n        } else {\n\n            codec->bits_per_coded_sample = avio_rb16(pb);\n\n        }\n\n    }\n\n    if (id == 0xFFFE) {\n\n        codec->codec_tag = 0;\n\n    } else {\n\n        codec->codec_tag = id;\n\n        codec->codec_id  = ff_wav_codec_get_id(id,\n\n                                               codec->bits_per_coded_sample);\n\n    }\n\n    if (size >= 18 && id != 0x0165) {  /* We're obviously dealing with WAVEFORMATEX */\n\n        int cbSize = avio_rl16(pb); /* cbSize */\n\n        if (big_endian) {\n\n            avpriv_report_missing_feature(codec, \"WAVEFORMATEX support for RIFX files\\n\");\n\n            return AVERROR_PATCHWELCOME;\n\n        }\n\n        size  -= 18;\n\n        cbSize = FFMIN(size, cbSize);\n\n        if (cbSize >= 22 && id == 0xfffe) { /* WAVEFORMATEXTENSIBLE */\n\n            parse_waveformatex(pb, codec);\n\n            cbSize -= 22;\n\n            size   -= 22;\n\n        }\n\n        if (cbSize > 0) {\n\n            av_freep(&codec->extradata);\n\n            if (ff_get_extradata(codec, pb, cbSize) < 0)\n\n                return AVERROR(ENOMEM);\n\n            size -= cbSize;\n\n        }\n\n\n\n        /* It is possible for the chunk to contain garbage at the end */\n\n        if (size > 0)\n\n            avio_skip(pb, size);\n\n    } else if (id == 0x0165 && size >= 32) {\n\n        int nb_streams, i;\n\n\n\n        size -= 4;\n\n        av_freep(&codec->extradata);\n\n        if (ff_get_extradata(codec, pb, size) < 0)\n\n            return AVERROR(ENOMEM);\n\n        nb_streams         = AV_RL16(codec->extradata + 4);\n\n        codec->sample_rate = AV_RL32(codec->extradata + 12);\n\n        codec->channels    = 0;\n\n        bitrate            = 0;\n\n\n\n[H1] FFmpeg/function-3.c:155 (character offset 2771)\n        if (size < 8 + nb_str\n\nQuestion: Should the logic-integrity-auditor review lens be activated for state machines, status transitions, fallback values, recipient filtering logic, or domain invariants?\n\nOptions:\nA. Yes: activate logic-integrity-auditor\nB. No: do not activate logic-integrity-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 1038,
+    "timings": {
+      "cache_n": 945,
+      "prompt_n": 93,
+      "prompt_ms": 700.549,
+      "prompt_per_token_ms": 7.532784946236559,
+      "prompt_per_second": 132.75302655488767,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -1.4245352745056152,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -1.4245352745056152
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -1.6185994148254395
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -2.885214328765869
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -2.9975905418395996
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.7678933143615723
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -4.154904842376709
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.340127468109131
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -4.591307163238525
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -4.668386936187744
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -4.751396656036377
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -5.044605731964111
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -5.130478382110596
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.16045618057251
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -5.236402988433838
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -5.24453592300415
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.25612211227417
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -5.2713236808776855
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -5.347679615020752
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -5.553530216217041
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.615189075469971
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -5.763089656829834
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -5.810745716094971
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -5.818370342254639
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -5.832093715667725
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -5.877438068389893
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -5.91335916519165
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.977432727813721
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -6.049696445465088
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -6.066155910491943
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.1604228019714355
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.195032596588135
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.237001895904541
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.34270715713501
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.374544620513916
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.4084343910217285
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -6.416422367095947
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -6.4294114112854
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.453157901763916
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -6.479406833648682
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -6.540863513946533
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -6.543447017669678
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.604447841644287
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -6.642580509185791
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -6.690104961395264
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -6.862600803375244
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.8778605461120605
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -6.9106764793396
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -6.964999675750732
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -6.96926736831665
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -6.969583988189697
+          },
+          {
+            "id": 357,
+            "token": " A",
+            "bytes": [
+              32,
+              65
+            ],
+            "logprob": -6.993327617645264
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -6.996007442474365
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -7.0127339363098145
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -7.0128254890441895
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -7.122426509857178
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.171701908111572
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.206070423126221
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.248438358306885
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.267662525177002
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.270542621612549
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.301412105560303
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -7.3152174949646
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.3267693519592285
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -7.3300089836120605
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.340057849884033
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.380350589752197
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.459608554840088
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.463005542755127
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.489842891693115
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.4924092292785645
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.499264240264893
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.504120349884033
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.54264497756958
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.572936534881592
+          },
+          {
+            "id": 331,
+            "token": "if",
+            "bytes": [
+              105,
+              102
+            ],
+            "logprob": -7.582251071929932
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.640251636505127
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.6418890953063965
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -7.651540756225586
+          },
+          {
+            "id": 2014,
+            "token": "An",
+            "bytes": [
+              65,
+              110
+            ],
+            "logprob": -7.655417442321777
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -7.658637046813965
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.693408489227295
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.71915864944458
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.725754261016846
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.725932598114014
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.742909908294678
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.756883144378662
+          },
+          {
+            "id": 1803,
+            "token": "AB",
+            "bytes": [
+              65,
+              66
+            ],
+            "logprob": -7.757731914520264
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.759873867034912
+          },
+          {
+            "id": 13,
+            "token": ".",
+            "bytes": [
+              46
+            ],
+            "logprob": -7.767928600311279
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.776981353759766
+          },
+          {
+            "id": 6844,
+            "token": "BA",
+            "bytes": [
+              66,
+              65
+            ],
+            "logprob": -7.903881549835205
+          },
+          {
+            "id": 2887,
+            "token": "do",
+            "bytes": [
+              100,
+              111
+            ],
+            "logprob": -7.906296253204346
+          },
+          {
+            "id": 10,
+            "token": "+",
+            "bytes": [
+              43
+            ],
+            "logprob": -7.911402702331543
+          },
+          {
+            "id": 248068,
+            "token": "<think>",
+            "bytes": [
+              60,
+              116,
+              104,
+              105,
+              110,
+              107,
+              62
+            ],
+            "logprob": -7.921183109283447
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.94424295425415
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -7.9567084312438965
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.964381217956543
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -7.980618476867676
+          },
+          {
+            "id": 266,
+            "token": "at",
+            "bytes": [
+              97,
+              116
+            ],
+            "logprob": -8.0230712890625
+          },
+          {
+            "id": 25,
+            "token": ":",
+            "bytes": [
+              58
+            ],
+            "logprob": -8.028252601623535
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.7140584000007948,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.19817606726115333,
+    "B": 0.24062025959811456,
+    "Z": 0.000944363241836236
+  },
+  "prefix_reuse_verified": true
+}

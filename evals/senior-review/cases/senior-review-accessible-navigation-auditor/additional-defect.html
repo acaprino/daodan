@@ -1,0 +1,8 @@
+<!-- Requirements: keyboard and screen-reader users must navigate Required steps, toggle alerts with accurate state, open and dismiss Help, and reorder the item. Focus must remain visible and return to the trigger after Help. All handlers/styles are here; no external primitives. -->
+<!doctype html><html lang="en"><title>Controls</title><style>:focus{outline:none}.hover-action{display:none}.item:hover .hover-action{display:block}</style><body>
+<nav aria-label="Required steps" aria-hidden="true"><a href="/step">Continue</a></nav>
+<button aria-pressed="false" onclick="this.dataset.enabled='true'">Enable alerts</button>
+<button id="opener" onclick="help.hidden=false">Help</button>
+<div id="help" role="dialog" aria-label="Help" hidden><p>Instructions</p><span onclick="help.hidden=true">Dismiss</span></div>
+<div class="item" draggable="true" ondragend="this.dataset.order='first'">Item<span class="hover-action" onclick="this.parentElement.dataset.order='first'">Move first</span></div>
+</body></html>

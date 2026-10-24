@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Write the first behavioral tests for the approved slugging contract. The task is test authoring only; do not produce a suite-health assessment.",
+    "artifacts": [
+      {
+        "path": "requirements/slug.txt",
+        "content": "Convert spaces to a single hyphen, lowercase letters, and remove leading or trailing hyphens. Preserve non-ASCII letters."
+      },
+      {
+        "path": "src/slug.py",
+        "content": "def slug(text):\n    return \"-\".join(text.strip().lower().split())\n"
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement."
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the completion event exchanged by the packing and customer-notification services.",
+    "artifacts": [
+      {
+        "path": "packing/events.py",
+        "content": "def publish_completion(broker, parcel):\n    broker.publish(\"parcel.packed\", {\"parcel_id\": parcel.id, \"recipient\": parcel.email})\n"
+      },
+      {
+        "path": "notifications/events.py",
+        "content": "def packed(payload):\n    send_email(payload[\"email\"], f\"Parcel {payload['parcel_id']} is packed\")\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    }
+  }
+}

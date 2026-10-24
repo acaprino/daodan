@@ -1,0 +1,23 @@
+{
+  "requirement": "Each workspace is packaged and installed independently from its own manifest; sibling dependencies are unavailable. The manifest/import/build inventories below are complete. lintkit is a build dependency invoked by npm run lint; retain the lockfile.",
+  "workspaces": {
+    "app": {
+      "dependencies": {
+        "formatkit": "1.0.0",
+        "shared": "workspace:*"
+      },
+      "source": "import {render} from \"shared\";"
+    },
+    "shared": {
+      "dependencies": {},
+      "devDependencies": {
+        "lintkit": "1.0.0"
+      },
+      "scripts": {
+        "lint": "lintkit src"
+      },
+      "source": "import {format} from \"formatkit\"; export const render = format;"
+    }
+  },
+  "lockfile": "package-lock.json"
+}

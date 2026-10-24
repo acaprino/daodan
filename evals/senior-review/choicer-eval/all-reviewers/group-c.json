@@ -1,0 +1,1224 @@
+{
+  "roles": [
+    {
+      "role_id": "react-development:react-performance-optimizer",
+      "source_path": "plugins/react-development/roles/react-performance-optimizer.md",
+      "source_sha256": "802cb1207d04f075ea75b49b03aba1d6f038b4358e16ee2c58797a44ec520a84",
+      "question": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      },
+      "adaptation_rationale": "Uses the React-layer scope boundary and detection dimensions, not invocation by a particular pipeline. Correct cleanup remains applicable when the task requests its review.",
+      "cases": [
+        {
+          "id": "C001",
+          "expected": true,
+          "state": {
+            "task": "Review why the live quote panel redraws on every store update, including updates for unrelated tickers.",
+            "artifacts": [
+              {
+                "path": "src/QuotePanel.tsx",
+                "content": "import { useQuotes } from \"./quotes\";\nexport function QuotePanel({ symbol }: { symbol: string }) {\n  const { quotes, connection } = useQuotes(s => ({ quotes: s.quotes, connection: s.connection }));\n  return <output>{quotes[symbol]?.price} ({connection})</output>;\n}"
+              },
+              {
+                "path": "src/quotes.ts",
+                "content": "import { create } from \"zustand\";\nexport const useQuotes = create<{ quotes: Record<string, { price: number }>; connection: string }>(() => ({ quotes: {}, connection: \"live\" }));"
+              }
+            ]
+          },
+          "rationale": "Fresh-object external-store selectors and broad subscriptions are explicit React performance concerns.",
+          "evidence": [
+            "plugins/react-development/roles/react-performance-optimizer.md:30-35",
+            "src/QuotePanel.tsx:3"
+          ]
+        },
+        {
+          "id": "C002",
+          "expected": true,
+          "state": {
+            "task": "Assess the component effect lifecycle for leaks or stale callbacks; report no issue if the ownership and cleanup are sound.",
+            "artifacts": [
+              {
+                "path": "src/ResizeReadout.tsx",
+                "content": "import { useEffect, useState } from \"react\";\nexport function ResizeReadout() {\n  const [width, setWidth] = useState(window.innerWidth);\n  useEffect(() => {\n    const update = () => setWidth(window.innerWidth);\n    window.addEventListener(\"resize\", update);\n    return () => window.removeEventListener(\"resize\", update);\n  }, []);\n  return <output>{width}</output>;\n}"
+              }
+            ]
+          },
+          "rationale": "The correctly paired listener is a boundary positive: effect cleanup is in scope even when no defect is apparent.",
+          "evidence": [
+            "plugins/react-development/roles/react-performance-optimizer.md:48-55",
+            "src/ResizeReadout.tsx:4-8"
+          ]
+        },
+        {
+          "id": "C003",
+          "expected": true,
+          "state": {
+            "task": "Review the React route for avoidable startup bundle cost and expensive list rendering before proposing optimizations.",
+            "artifacts": [
+              {
+                "path": "src/InventoryRoute.tsx",
+                "content": "import * as Icons from \"lucide-react\";\nexport function InventoryRoute({ rows }: { rows: { id: string; name: string }[] }) {\n  return <main><Icons.Package />{rows.map(row => <article key={row.id}>{row.name}</article>)}</main>;\n}"
+              },
+              {
+                "path": "notes/profile.txt",
+                "content": "Production sample: 12,400 inventory rows. Route bundle: 680 kB compressed. Opening the route blocks interaction for 1.4 seconds."
+              }
+            ]
+          },
+          "rationale": "Namespace imports, bundle size and large unvirtualized lists fall within the explicit React performance dimensions.",
+          "evidence": [
+            "plugins/react-development/roles/react-performance-optimizer.md:57-60",
+            "src/InventoryRoute.tsx:1-3",
+            "notes/profile.txt:1"
+          ]
+        },
+        {
+          "id": "C004",
+          "expected": false,
+          "state": {
+            "task": "Investigate only the CSS cascade that places the consent dialog below the viewport. React render behavior and component effects are outside this task.",
+            "artifacts": [
+              {
+                "path": "src/consent.css",
+                "content": ".consent-dialog { position: fixed; inset: 1rem; overflow: auto; }\n.dark > * { position: relative; top: 100vh; }"
+              },
+              {
+                "path": "src/Consent.tsx",
+                "content": "export function Consent() { return <section className=\"consent-dialog\">Privacy choices</section>; }"
+              }
+            ]
+          },
+          "rationale": "CSS/layout problems are explicitly outside this React-layer role even when a React component supplies markup.",
+          "evidence": [
+            "plugins/react-development/roles/react-performance-optimizer.md:6",
+            "plugins/react-development/roles/react-performance-optimizer.md:18",
+            "src/consent.css:1-2"
+          ]
+        },
+        {
+          "id": "C005",
+          "expected": false,
+          "state": {
+            "task": "Inspect only the Rust command handler for blocking work on the desktop runtime; the webview and its React code are not part of this review.",
+            "artifacts": [
+              {
+                "path": "src-tauri/src/import.rs",
+                "content": "#[tauri::command]\nasync fn import_archive(path: String) -> Result<usize, String> {\n    let bytes = std::fs::read(path).map_err(|e| e.to_string())?;\n    Ok(expand_archive(bytes)?.len())\n}"
+              }
+            ]
+          },
+          "rationale": "Native desktop backend work is excluded from the React role, including a Tauri application whose frontend may use React.",
+          "evidence": [
+            "plugins/react-development/roles/react-performance-optimizer.md:6",
+            "plugins/react-development/roles/react-performance-optimizer.md:18",
+            "src-tauri/src/import.rs:2-4"
+          ]
+        },
+        {
+          "id": "C006",
+          "expected": false,
+          "state": {
+            "task": "Review the command-line import parser for unsound TypeScript casts. Limit the review to input typing; there is no React UI in this package.",
+            "artifacts": [
+              {
+                "path": "cli/read-record.ts",
+                "content": "type RecordRow = { amount: number };\nexport function readRecord(text: string): RecordRow {\n  return JSON.parse(text) as RecordRow;\n}"
+              },
+              {
+                "path": "package.json",
+                "content": "{\"name\":\"ledger-import\",\"type\":\"module\",\"dependencies\":{\"commander\":\"^14.0.0\"}}"
+              }
+            ]
+          },
+          "rationale": "A TypeScript input-boundary defect without React rendering, effects or bundles does not make this role applicable.",
+          "evidence": [
+            "plugins/react-development/roles/react-performance-optimizer.md:18",
+            "cli/read-record.ts:2-3"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "repo-hygiene:workspace-auditor",
+      "source_path": "plugins/repo-hygiene/roles/workspace-auditor.md",
+      "source_sha256": "d68c5ad5e01d297a9a90e85f06fbbcd69c8550f68723b01f0510b64314f4e293",
+      "question": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      },
+      "adaptation_rationale": "Translates the filesystem/Git-only charter and permanent report-only boundary. Intentionally published generated artifacts still require assessment and can receive KEEP.",
+      "cases": [
+        {
+          "id": "C007",
+          "expected": true,
+          "state": {
+            "task": "Check the tracked generated site output and report whether it is intentional publication material or repository debris. Make no changes.",
+            "artifacts": [
+              {
+                "path": "evidence/git-ls-files.txt",
+                "content": "dist/index.html\ndist/assets/main.js\n.github/workflows/pages.yml\nCNAME"
+              },
+              {
+                "path": ".github/workflows/pages.yml",
+                "content": "name: Pages\non: [push]\njobs:\n  publish:\n    steps:\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: dist"
+              },
+              {
+                "path": "CNAME",
+                "content": "docs.example.org"
+              }
+            ]
+          },
+          "rationale": "An intentional publication convention is a boundary positive: the auditor evaluates tracked artifacts and records KEEP rather than assuming every dist file is debris.",
+          "evidence": [
+            "plugins/repo-hygiene/roles/workspace-auditor.md:41-45",
+            "evidence/git-ls-files.txt:1-4",
+            ".github/workflows/pages.yml:8"
+          ]
+        },
+        {
+          "id": "C008",
+          "expected": true,
+          "state": {
+            "task": "Audit ignore-rule completeness and breadth using the supplied Git evidence; identify rules hiding maintainable project files without editing them.",
+            "artifacts": [
+              {
+                "path": ".gitignore",
+                "content": "node_modules/\n*.json\n.cache/"
+              },
+              {
+                "path": "evidence/git-check-ignore.txt",
+                "content": ".gitignore:2:*.json package.json\n.gitignore:2:*.json config/pricing.json"
+              },
+              {
+                "path": "evidence/git-status.txt",
+                "content": "?? src/\n?? README.md"
+              }
+            ]
+          },
+          "rationale": "Ignore completeness and archaeology are explicitly filesystem/Git dimensions; no source-use interpretation is needed.",
+          "evidence": [
+            "plugins/repo-hygiene/roles/workspace-auditor.md:90-95",
+            ".gitignore:2",
+            "evidence/git-check-ignore.txt:1-2"
+          ]
+        },
+        {
+          "id": "C009",
+          "expected": true,
+          "state": {
+            "task": "Prepare a read-only inventory of auxiliary Git state that may need human review. Do not remove any stash, branch or worktree.",
+            "artifacts": [
+              {
+                "path": "evidence/git-worktree-list.txt",
+                "content": "worktree /work/main\nHEAD aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbranch refs/heads/main\n\nworktree /work/experiment\nHEAD bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nbranch refs/heads/experiment"
+              },
+              {
+                "path": "evidence/git-stash-list.txt",
+                "content": "stash@{0}: On experiment: prototype credentials form\nstash@{1}: On main: local debugging"
+              }
+            ]
+          },
+          "rationale": "Git auxiliary-state auditing is in scope even when disposition must remain report-only and age does not prove safe deletion.",
+          "evidence": [
+            "plugins/repo-hygiene/roles/workspace-auditor.md:4-5",
+            "plugins/repo-hygiene/roles/workspace-auditor.md:96",
+            "evidence/git-stash-list.txt:1-2"
+          ]
+        },
+        {
+          "id": "C010",
+          "expected": false,
+          "state": {
+            "task": "Determine whether the exported formatter is truly dead by following dynamic imports and plugin registration. Review source reachability only; do not inspect Git housekeeping.",
+            "artifacts": [
+              {
+                "path": "src/formatters.ts",
+                "content": "export function money(value: number) { return value.toFixed(2); }\nexport function percent(value: number) { return `${value * 100}%`; }"
+              },
+              {
+                "path": "src/plugins.ts",
+                "content": "export const extensions = [{ module: \"./formatters\", entry: \"percent\" }];"
+              }
+            ]
+          },
+          "rationale": "Dead-export analysis requires understanding symbols and dynamic registration, which this role explicitly assigns elsewhere.",
+          "evidence": [
+            "plugins/repo-hygiene/roles/workspace-auditor.md:23-24",
+            "plugins/repo-hygiene/roles/workspace-auditor.md:107-111",
+            "src/plugins.ts:1"
+          ]
+        },
+        {
+          "id": "C011",
+          "expected": false,
+          "state": {
+            "task": "Assess whether the date library dependency remains needed by production paths. Follow imports and runtime adapters; package removal and repository tidying are outside scope.",
+            "artifacts": [
+              {
+                "path": "package.json",
+                "content": "{\"dependencies\":{\"date-fns\":\"^4.1.0\",\"zod\":\"^4.0.0\"}}"
+              },
+              {
+                "path": "src/calendar.ts",
+                "content": "import { format } from \"date-fns\";\nexport const displayDay = (value: Date) => format(value, \"yyyy-MM-dd\");"
+              }
+            ]
+          },
+          "rationale": "Unused-dependency assessment requires source comprehension, even though the dependency is listed in a filesystem manifest.",
+          "evidence": [
+            "plugins/repo-hygiene/roles/workspace-auditor.md:6",
+            "plugins/repo-hygiene/roles/workspace-auditor.md:109-111",
+            "src/calendar.ts:1-2"
+          ]
+        },
+        {
+          "id": "C012",
+          "expected": false,
+          "state": {
+            "task": "Apply the already approved cleanup plan exactly to the two owned scratch files. The assessment is complete; do not perform a new audit or expand the list.",
+            "artifacts": [
+              {
+                "path": "maintenance/approved-removals.json",
+                "content": "{\"authorization\":\"apply\",\"owned_paths\":[\"scratch/sample.log\",\"scratch/request.txt\"],\"disposition\":\"quarantine\"}"
+              },
+              {
+                "path": "scratch/sample.log",
+                "content": "Temporary parser experiment finished."
+              },
+              {
+                "path": "scratch/request.txt",
+                "content": "GET /demo HTTP/1.1"
+              }
+            ]
+          },
+          "rationale": "Applying removals is explicitly excluded; this auditor never removes files even when another phase has authorized cleanup.",
+          "evidence": [
+            "plugins/repo-hygiene/roles/workspace-auditor.md:6",
+            "plugins/repo-hygiene/roles/workspace-auditor.md:30-31",
+            "maintenance/approved-removals.json:1"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "testing:test-suite-auditor",
+      "source_path": "plugins/testing/roles/test-suite-auditor.md",
+      "source_sha256": "f3543674b00d0a17429c798a39dc4f7e1c33deffb26007a3ba7d2b838f098d33",
+      "question": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      },
+      "adaptation_rationale": "Uses the nine suite-health dimensions and explicit preparation/failure-truth requirements. A missing suite is an applicable audit outcome, not a reason to decline selection.",
+      "cases": [
+        {
+          "id": "C013",
+          "expected": true,
+          "state": {
+            "task": "Assess whether these two test files duplicate the same protection or preserve distinct failure modes. Do not consolidate them during this review.",
+            "artifacts": [
+              {
+                "path": "tests/test_rounding.py",
+                "content": "from pricing import total\n\ndef test_single_item():\n    assert total([125], tax_percent=0) == 125\n"
+              },
+              {
+                "path": "tests/test_checkout_amount.py",
+                "content": "from pricing import total\n\ndef test_no_tax():\n    assert total([125], tax_percent=0) == 125\n"
+              },
+              {
+                "path": "src/pricing.py",
+                "content": "def total(cents, tax_percent):\n    return round(sum(cents) * (1 + tax_percent / 100))\n"
+              }
+            ]
+          },
+          "rationale": "Same-module tests need independent comparison of contracts and failure modes before declaring redundancy.",
+          "evidence": [
+            "plugins/testing/roles/test-suite-auditor.md:76-80",
+            "tests/test_rounding.py:1-4",
+            "tests/test_checkout_amount.py:1-4"
+          ]
+        },
+        {
+          "id": "C014",
+          "expected": true,
+          "state": {
+            "task": "Audit the project test setup and behavioral protection before release. The inventory below is complete; report a missing runner or suite rather than creating one.",
+            "artifacts": [
+              {
+                "path": "package.json",
+                "content": "{\"name\":\"address-normalizer\",\"scripts\":{\"build\":\"tsc\"},\"devDependencies\":{\"typescript\":\"^5.9.0\"}}"
+              },
+              {
+                "path": "inventory.txt",
+                "content": "package.json\ntsconfig.json\nsrc/normalize.ts\nREADME.md"
+              },
+              {
+                "path": "src/normalize.ts",
+                "content": "export const normalize = (text: string) => text.trim().toLowerCase();"
+              }
+            ]
+          },
+          "rationale": "The role explicitly treats missing runner, configuration or suite as an audit finding; no existing test file is required for applicability.",
+          "evidence": [
+            "plugins/testing/roles/test-suite-auditor.md:34-39",
+            "package.json:1",
+            "inventory.txt:1-4"
+          ]
+        },
+        {
+          "id": "C015",
+          "expected": true,
+          "state": {
+            "task": "Review the intermittent test failure using the supplied attempts and fixture. Do not execute tests; distinguish test isolation, environment and product causes before suggesting a disposition.",
+            "artifacts": [
+              {
+                "path": "tests/test_notifications.py",
+                "content": "pending = []\n\ndef test_queue_empty():\n    assert pending == []\n\ndef test_enqueue():\n    pending.append(\"mail\")\n    assert pending == [\"mail\"]\n"
+              },
+              {
+                "path": "ci/attempts.txt",
+                "content": "Attempt 41: pytest --random-order-seed=7; test_enqueue PASS, test_queue_empty FAIL.\nAttempt 42: pytest --random-order-seed=9; test_queue_empty PASS, test_enqueue PASS.\nSame commit, image and dependency lock."
+              }
+            ]
+          },
+          "rationale": "Failure classification and shared-state isolation are suite-health concerns; no-run mode explicitly preserves static and supplied-history assessment.",
+          "evidence": [
+            "plugins/testing/roles/test-suite-auditor.md:29-32",
+            "plugins/testing/roles/test-suite-auditor.md:70-74",
+            "tests/test_notifications.py:1-8"
+          ]
+        },
+        {
+          "id": "C016",
+          "expected": false,
+          "state": {
+            "task": "Write the first behavioral tests for the approved slugging contract. The task is test authoring only; do not produce a suite-health assessment.",
+            "artifacts": [
+              {
+                "path": "requirements/slug.txt",
+                "content": "Convert spaces to a single hyphen, lowercase letters, and remove leading or trailing hyphens. Preserve non-ASCII letters."
+              },
+              {
+                "path": "src/slug.py",
+                "content": "def slug(text):\n    return \"-\".join(text.strip().lower().split())\n"
+              }
+            ]
+          },
+          "rationale": "Writing tests is explicitly assigned to the test author rather than the suite auditor, even when the project currently has no tests.",
+          "evidence": [
+            "plugins/testing/roles/test-suite-auditor.md:6",
+            "plugins/testing/roles/test-suite-auditor.md:14",
+            "requirements/slug.txt:1"
+          ]
+        },
+        {
+          "id": "C017",
+          "expected": false,
+          "state": {
+            "task": "Implement the approved temporary quarantine entry and owner metadata for this one test. The cause investigation is complete; no new diagnosis or suite review is requested.",
+            "artifacts": [
+              {
+                "path": "maintenance/quarantine-plan.json",
+                "content": "{\"test\":\"tests/test_sync.py::test_remote_reset\",\"cause\":\"provider-sandbox-outage\",\"owner\":\"sync-team\",\"return_condition\":\"sandbox reset API restored\",\"authorized_action\":\"temporary quarantine\"}"
+              },
+              {
+                "path": "tests/test_sync.py",
+                "content": "def test_remote_reset(sandbox):\n    assert sandbox.reset() == 204\n"
+              }
+            ]
+          },
+          "rationale": "Executing quarantine is explicitly outside the auditor role; its independent assessment has already concluded.",
+          "evidence": [
+            "plugins/testing/roles/test-suite-auditor.md:6",
+            "plugins/testing/roles/test-suite-auditor.md:14",
+            "maintenance/quarantine-plan.json:1"
+          ]
+        },
+        {
+          "id": "C018",
+          "expected": false,
+          "state": {
+            "task": "Repair the integer division in the production calculation to satisfy the approved contract. Keep the existing test unchanged; test quality and suite organization are outside scope.",
+            "artifacts": [
+              {
+                "path": "src/shares.py",
+                "content": "def fraction(part, whole):\n    return part // whole\n"
+              },
+              {
+                "path": "tests/test_shares.py",
+                "content": "from shares import fraction\n\ndef test_fractional_share():\n    assert fraction(1, 4) == 0.25\n"
+              },
+              {
+                "path": "requirements/shares.txt",
+                "content": "fraction returns the real-valued ratio part / whole for a positive whole."
+              }
+            ]
+          },
+          "rationale": "A production implementation repair with a fixed independent oracle does not ask for any suite-health judgment.",
+          "evidence": [
+            "plugins/testing/roles/test-suite-auditor.md:5",
+            "plugins/testing/roles/test-suite-auditor.md:14",
+            "src/shares.py:2",
+            "requirements/shares.txt:1"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "typescript-development:type-safety-auditor",
+      "source_path": "plugins/typescript-development/roles/type-safety-auditor.md",
+      "source_sha256": "b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39",
+      "question": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      },
+      "adaptation_rationale": "Derives applicability from the type-safety charter and explicit scope guard. Does not equate the existence of a .ts file with an applicable review.",
+      "cases": [
+        {
+          "id": "C019",
+          "expected": true,
+          "state": {
+            "task": "Review whether the imported account object is trustworthy after crossing the JSON boundary and whether its declared TypeScript type is justified.",
+            "artifacts": [
+              {
+                "path": "src/accounts.ts",
+                "content": "type Account = { id: string; credit: number };\nexport function parseAccount(raw: string): Account {\n  return JSON.parse(raw) as Account;\n}\nexport const available = (account: Account) => account.credit.toFixed(2);"
+              }
+            ]
+          },
+          "rationale": "A direct assertion over unvalidated JSON is exactly a typed-ingress soundness concern.",
+          "evidence": [
+            "plugins/typescript-development/roles/type-safety-auditor.md:14",
+            "plugins/typescript-development/roles/type-safety-auditor.md:33",
+            "src/accounts.ts:2-3"
+          ]
+        },
+        {
+          "id": "C020",
+          "expected": true,
+          "state": {
+            "task": "Check the TypeScript strictness settings and decoder for sound handling of unknown input. A clean report is acceptable if the checks justify the returned type.",
+            "artifacts": [
+              {
+                "path": "tsconfig.json",
+                "content": "{\"compilerOptions\":{\"strict\":true,\"noUncheckedIndexedAccess\":true,\"exactOptionalPropertyTypes\":true}}"
+              },
+              {
+                "path": "src/port.ts",
+                "content": "export function parsePort(input: unknown): number {\n  if (typeof input !== \"number\" || !Number.isInteger(input) || input < 1 || input > 65535) {\n    throw new Error(\"invalid port\");\n  }\n  return input;\n}"
+              }
+            ]
+          },
+          "rationale": "This is a healthy boundary-positive example: explicit narrowing and strict settings still merit the requested type-safety assessment.",
+          "evidence": [
+            "plugins/typescript-development/roles/type-safety-auditor.md:19-22",
+            "plugins/typescript-development/roles/type-safety-auditor.md:31-34",
+            "src/port.ts:2-5"
+          ]
+        },
+        {
+          "id": "C021",
+          "expected": true,
+          "state": {
+            "task": "Review whether adding the suspended state leaves any non-exhaustive handling in the typed account-state logic.",
+            "artifacts": [
+              {
+                "path": "src/status.ts",
+                "content": "export type Status = { kind: \"active\" } | { kind: \"closed\" } | { kind: \"suspended\"; reason: string };\nexport function mayCharge(status: Status): boolean {\n  switch (status.kind) {\n    case \"active\": return true;\n    case \"closed\": return false;\n    default: return true;\n  }\n}"
+              }
+            ]
+          },
+          "rationale": "Handling a discriminated union after a variant addition falls within exhaustive typed-state review.",
+          "evidence": [
+            "plugins/typescript-development/roles/type-safety-auditor.md:4",
+            "plugins/typescript-development/roles/type-safety-auditor.md:56",
+            "src/status.ts:1-6"
+          ]
+        },
+        {
+          "id": "C022",
+          "expected": false,
+          "state": {
+            "task": "Suggest clearer local names for this function without assessing or changing typing, runtime behavior, or compiler configuration.",
+            "artifacts": [
+              {
+                "path": "src/display.ts",
+                "content": "export function display(x: string, n: number): string {\n  const y = x.trim();\n  return y.repeat(n);\n}"
+              }
+            ]
+          },
+          "rationale": "Naming-only work is explicitly outside the role even though the file is TypeScript.",
+          "evidence": [
+            "plugins/typescript-development/roles/type-safety-auditor.md:6",
+            "plugins/typescript-development/roles/type-safety-auditor.md:16",
+            "src/display.ts:1-3"
+          ]
+        },
+        {
+          "id": "C023",
+          "expected": false,
+          "state": {
+            "task": "Assess only React rerender cost from the broad store subscription. The types are settled and type-soundness review is excluded from this task.",
+            "artifacts": [
+              {
+                "path": "src/ProfileBadge.tsx",
+                "content": "import { useProfile } from \"./profile-store\";\nexport function ProfileBadge() {\n  const state = useProfile();\n  return <span>{state.displayName}</span>;\n}"
+              },
+              {
+                "path": "src/profile-store.ts",
+                "content": "export type Profile = { displayName: string; unread: number };\nexport declare function useProfile(): Profile;"
+              }
+            ]
+          },
+          "rationale": "The near-neighbor issue is React subscription performance, which the type-safety scope guard explicitly excludes.",
+          "evidence": [
+            "plugins/typescript-development/roles/type-safety-auditor.md:6",
+            "plugins/typescript-development/roles/type-safety-auditor.md:16",
+            "src/ProfileBadge.tsx:3"
+          ]
+        },
+        {
+          "id": "C024",
+          "expected": false,
+          "state": {
+            "task": "Resolve the unused-export report by tracing callers and plugin entry points. Limit the assessment to reachability; do not review TypeScript casts or strictness.",
+            "artifacts": [
+              {
+                "path": "tool-output/unused.json",
+                "content": "{\"files\":[],\"exports\":[{\"file\":\"src/report.ts\",\"name\":\"makeReport\"}]}"
+              },
+              {
+                "path": "src/report.ts",
+                "content": "export function makeReport(rows: readonly string[]): string { return rows.join(\"\\n\"); }"
+              },
+              {
+                "path": "src/registry.ts",
+                "content": "export const actions = { report: { module: \"./report\", export: \"makeReport\" } };"
+              }
+            ]
+          },
+          "rationale": "Dead-code reachability is expressly outside the type-safety charter, including TypeScript exports.",
+          "evidence": [
+            "plugins/typescript-development/roles/type-safety-auditor.md:6",
+            "plugins/typescript-development/roles/type-safety-auditor.md:16",
+            "src/registry.ts:1"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:guide-reviewer",
+      "source_path": "plugins/project-knowledge/roles/guide-reviewer.md",
+      "source_sha256": "c8ca15c28f3939cfd8b9a45f35430143cb403293fdcb18a97b828da81a642780",
+      "question": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      },
+      "adaptation_rationale": "Uses guide claims and reader-path review, including a single planned document. Keeps authorship, voice editing, and instruction auditing with their distinct owners.",
+      "cases": [
+        {
+          "id": "C025",
+          "expected": true,
+          "state": {
+            "task": "Review the two billing guide pages for consistent vocabulary and factual alignment with the implemented invoice states. Report corrections without editing the guides.",
+            "artifacts": [
+              {
+                "path": "docs/billing-start.md",
+                "content": "A settled invoice has been paid in full. The dashboard labels this state settled. See billing-reference.md for the state names."
+              },
+              {
+                "path": "docs/billing-reference.md",
+                "content": "Invoice states: draft, sent, paid. Use paid when the outstanding balance reaches zero."
+              },
+              {
+                "path": "src/invoice-state.ts",
+                "content": "export type InvoiceState = \"draft\" | \"sent\" | \"paid\";"
+              }
+            ]
+          },
+          "rationale": "The requested cross-document terminology and implementation comparison is the role defining guide audit.",
+          "evidence": [
+            "plugins/project-knowledge/roles/guide-reviewer.md:24-29",
+            "docs/billing-start.md:1",
+            "docs/billing-reference.md:1",
+            "src/invoice-state.ts:1"
+          ]
+        },
+        {
+          "id": "C026",
+          "expected": true,
+          "state": {
+            "task": "Review this single onboarding guide for truthful navigation and clear attribution of current behavior versus future intent. Do not assume an unimplemented roadmap promise is current behavior.",
+            "artifacts": [
+              {
+                "path": "docs/start.md",
+                "content": "Uploads accept CSV today. For the file format, see format.md. Decision 7 approves adding JSON import in a later release; it is not available yet."
+              },
+              {
+                "path": "docs/format.md",
+                "content": "Each CSV row contains email,name. The first row is a header."
+              },
+              {
+                "path": "docs/adr/007-imports.md",
+                "content": "Approved: add JSON import after the CSV release. This decision records intent, not a claim of present implementation."
+              },
+              {
+                "path": "src/imports.ts",
+                "content": "export const acceptedFormats = [\"csv\"] as const;"
+              }
+            ]
+          },
+          "rationale": "A single correct guide with explicitly attributed intent is a boundary positive; multiple reviewed guides and discovered contradictions are not required.",
+          "evidence": [
+            "plugins/project-knowledge/roles/guide-reviewer.md:24-34",
+            "docs/start.md:1",
+            "docs/adr/007-imports.md:1",
+            "src/imports.ts:1"
+          ]
+        },
+        {
+          "id": "C027",
+          "expected": true,
+          "state": {
+            "task": "Check the setup guide examples and its reader path against the checked-in configuration. Return source-backed discrepancies or missing explanations only.",
+            "artifacts": [
+              {
+                "path": "docs/setup.md",
+                "content": "Run the server and browse to http://localhost:8080. If you change the port, follow the example in advanced-setup.md."
+              },
+              {
+                "path": "config/defaults.toml",
+                "content": "[server]\nport = 9090"
+              },
+              {
+                "path": "docs/advanced-setup.md",
+                "content": "Set APP_PORT before starting the server. For example: APP_PORT=9100 ./serve."
+              }
+            ]
+          },
+          "rationale": "Truthful guide examples, configuration claims, and navigation are explicit review dimensions.",
+          "evidence": [
+            "plugins/project-knowledge/roles/guide-reviewer.md:25-26",
+            "plugins/project-knowledge/roles/guide-reviewer.md:31-34",
+            "docs/setup.md:1",
+            "config/defaults.toml:2"
+          ]
+        },
+        {
+          "id": "C028",
+          "expected": false,
+          "state": {
+            "task": "Write a new project overview for first-time users from the supplied implementation notes. No guide exists yet and no review of authored documents is requested.",
+            "artifacts": [
+              {
+                "path": "notes/product.txt",
+                "content": "The tool imports contact CSV files, deduplicates by email, and exports an address book. It runs offline."
+              },
+              {
+                "path": "src/main.py",
+                "content": "def main():\n    contacts = import_csv()\n    export_address_book(deduplicate(contacts))\n"
+              }
+            ]
+          },
+          "rationale": "Creating the first overview is an authorship task; the reviewer verifies authored guide files and defaults to audit-only.",
+          "evidence": [
+            "plugins/project-knowledge/roles/guide-reviewer.md:4-5",
+            "plugins/project-knowledge/roles/guide-reviewer.md:36-39",
+            "notes/product.txt:1"
+          ]
+        },
+        {
+          "id": "C029",
+          "expected": false,
+          "state": {
+            "task": "Rewrite only the voice of this paragraph to remove inflated language. Preserve its facts, order, links, and document structure; no factual or navigation review is requested.",
+            "artifacts": [
+              {
+                "path": "docs/intro.md",
+                "content": "Unlock a seamless journey into the powerful world of backups. Our robust tool empowers you to save a local archive and restore it later."
+              }
+            ]
+          },
+          "rationale": "Voice changes are explicitly delegated away from the guide reviewer; this task excludes the reviewer dimensions.",
+          "evidence": [
+            "plugins/project-knowledge/roles/guide-reviewer.md:31-34",
+            "docs/intro.md:1"
+          ]
+        },
+        {
+          "id": "C030",
+          "expected": false,
+          "state": {
+            "task": "Audit only the durable coding-agent instructions for unsupported claims about automatic loading and precedence. User guides are outside the requested scope.",
+            "artifacts": [
+              {
+                "path": "AGENTS.md",
+                "content": "Every nested instruction file loads automatically for every task. A link to any policy document makes that document mandatory in all sessions."
+              },
+              {
+                "path": "host/loading-evidence.txt",
+                "content": "Only the root instruction file was included in the captured prompt. No nested path was accessed."
+              }
+            ]
+          },
+          "rationale": "Durable agent loading and precedence claims are the distinct instruction auditor remit, not review of a user guide.",
+          "evidence": [
+            "plugins/project-knowledge/roles/guide-reviewer.md:4-5",
+            "plugins/project-knowledge/roles/instructions-auditor.md:25-29",
+            "AGENTS.md:1"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:instructions-auditor",
+      "source_path": "plugins/project-knowledge/roles/instructions-auditor.md",
+      "source_sha256": "87569236a71d439c9f2deec278d6afd4ff004dcce9dd9211cd5846e1f0ddeec3",
+      "question": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      },
+      "adaptation_rationale": "Grounds selection in durable instruction ownership and the native claim audit. Missing loading evidence is an applicable uncertainty to report, not proof of inapplicability.",
+      "cases": [
+        {
+          "id": "C031",
+          "expected": true,
+          "state": {
+            "task": "Verify the repository instructions against the configured build and test commands. Report stale commands and supporting evidence without updating files.",
+            "artifacts": [
+              {
+                "path": "AGENTS.md",
+                "content": "Use npm run verify before delivery. This executes Jest and the TypeScript compiler."
+              },
+              {
+                "path": "package.json",
+                "content": "{\"scripts\":{\"check\":\"tsc --noEmit && vitest run\"},\"devDependencies\":{\"typescript\":\"^5.9.0\",\"vitest\":\"^3.2.0\"}}"
+              }
+            ]
+          },
+          "rationale": "Checking instruction command and tool claims against manifests is an explicit claim-audit dimension.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:19-24",
+            "AGENTS.md:1",
+            "package.json:1"
+          ]
+        },
+        {
+          "id": "C032",
+          "expected": true,
+          "state": {
+            "task": "Audit the scoped instruction files and their claims about automatic enforcement. Treat absent runtime loading evidence as unknown, and identify what evidence would be needed.",
+            "artifacts": [
+              {
+                "path": "AGENTS.md",
+                "content": "The local policy file is always loaded automatically, and its write restriction is enforced by the runtime. See policies/agents.md."
+              },
+              {
+                "path": "packages/ui/AGENTS.md",
+                "content": "For UI files, use the component test command from package.json."
+              },
+              {
+                "path": "policies/agents.md",
+                "content": "Write only files assigned by the task owner."
+              },
+              {
+                "path": "host/observations.txt",
+                "content": "Host version recorded. No prompt capture or write-confinement probe was supplied."
+              }
+            ]
+          },
+          "rationale": "The audit covers scope and unsupported activation/enforcement claims; missing proof changes claim status rather than role applicability.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:25-29",
+            "plugins/project-knowledge/roles/instructions-auditor.md:62-64",
+            "AGENTS.md:1",
+            "host/observations.txt:1"
+          ]
+        },
+        {
+          "id": "C033",
+          "expected": true,
+          "state": {
+            "task": "Review whether the coding-agent instruction file contains transient run state or duplicated rules that should have a durable owner. Propose destinations without deleting information.",
+            "artifacts": [
+              {
+                "path": "AGENTS.md",
+                "content": "Use the existing test owner before adding another file.\nCurrent task: finish the checkout retry patch on branch retry-fix.\nTemporary evidence is in scratch/run-58.\nBefore writing tests, use the existing test owner."
+              },
+              {
+                "path": "docs/working-principles.md",
+                "content": "Test additions extend the existing owner unless a justified split is approved."
+              }
+            ]
+          },
+          "rationale": "Transient state, duplication and category ownership are explicitly part of durable instruction structure review.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:31-43",
+            "AGENTS.md:1-4",
+            "docs/working-principles.md:1"
+          ]
+        },
+        {
+          "id": "C034",
+          "expected": false,
+          "state": {
+            "task": "Check the public installation guide for a stale download URL. Limit the task to this user-facing page; do not inspect agent instructions.",
+            "artifacts": [
+              {
+                "path": "docs/install.md",
+                "content": "Download the CLI from https://downloads.example.org/cli/v1/ and run cli init."
+              },
+              {
+                "path": "release/links.json",
+                "content": "{\"cli\":\"https://downloads.example.org/cli/v2/\"}"
+              }
+            ]
+          },
+          "rationale": "A user-facing documentation discrepancy is not a durable agent-instruction audit.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:4-5",
+            "docs/install.md:1"
+          ]
+        },
+        {
+          "id": "C035",
+          "expected": false,
+          "state": {
+            "task": "Change the source timeout constant from 10 to the approved value 15 and verify the function result. Documentation and instruction maintenance are outside scope.",
+            "artifacts": [
+              {
+                "path": "src/client.py",
+                "content": "TIMEOUT_SECONDS = 10\n\ndef request_timeout():\n    return TIMEOUT_SECONDS\n"
+              },
+              {
+                "path": "requirements/network.txt",
+                "content": "Approved connection timeout: 15 seconds."
+              }
+            ]
+          },
+          "rationale": "The task is implementation work with no instruction claims, structure or destinations to audit.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:13-15",
+            "src/client.py:1-4",
+            "requirements/network.txt:1"
+          ]
+        },
+        {
+          "id": "C036",
+          "expected": false,
+          "state": {
+            "task": "Author a quick-start page for customers using the supplied steps. It should teach the product workflow, not define rules for coding agents.",
+            "artifacts": [
+              {
+                "path": "notes/customer-flow.txt",
+                "content": "1. Select a contact file.\n2. Preview duplicate emails.\n3. Confirm the merged address book.\n4. Download the result."
+              }
+            ]
+          },
+          "rationale": "New customer documentation is outside durable project-instruction ownership, even though it contains instructions in ordinary language.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:4-5",
+            "notes/customer-flow.txt:1-4"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:documentation-engineer",
+      "source_path": "plugins/project-knowledge/roles/documentation-engineer.md",
+      "source_sha256": "28b8b178d2db039b7a96916dbd353e4353937b47f982c17be0e9d1cb0f37553f",
+      "question": "Does the requested review assess existing technical documentation against implementation for factual drift, missing coverage, stale examples, broken links, duplicated topics, or affected consumers?",
+      "criteria": {
+        "false": "The task does not assess existing technical documentation against implementation; authoring alone, voice editing, instruction-policy audits, and code-only review do not qualify.",
+        "true": "The task assesses existing technical documentation against implementation across interfaces, configuration, architecture, operations, migrations, or other technical dimensions, whether discrepancies exist or not."
+      },
+      "adaptation_rationale": "Selects the independent audit mode of a dual-purpose audit and writing role. Authoring alone is excluded from this reviewer-selection benchmark; applicability does not require a discovered discrepancy.",
+      "cases": [
+        {
+          "id": "C037",
+          "expected": true,
+          "state": {
+            "task": "Audit the service configuration reference against its current defaults and environment overrides. Report drift with both document and implementation locations.",
+            "artifacts": [
+              {
+                "path": "docs/configuration.md",
+                "content": "REQUEST_TIMEOUT defaults to 30 seconds. Set RETRIES to control retry count; the default is 5."
+              },
+              {
+                "path": "src/config.py",
+                "content": "import os\nREQUEST_TIMEOUT = int(os.getenv(\"REQUEST_TIMEOUT\", \"20\"))\nMAX_RETRIES = int(os.getenv(\"MAX_RETRIES\", \"3\"))\n"
+              }
+            ]
+          },
+          "rationale": "Configuration names and default drift are within the explicit documentation dimensions and native source-backed finding requirement.",
+          "evidence": [
+            "plugins/project-knowledge/roles/documentation-engineer.md:24-33",
+            "docs/configuration.md:1",
+            "src/config.py:2-3"
+          ]
+        },
+        {
+          "id": "C038",
+          "expected": true,
+          "state": {
+            "task": "Verify the API reference signatures and return fields against the implementation. Preserve correct information and return a clean result if the reference is current.",
+            "artifacts": [
+              {
+                "path": "docs/reference.md",
+                "content": "lookup_user(user_id: str) returns User or None. User contains id: str and email: str."
+              },
+              {
+                "path": "src/users.py",
+                "content": "from dataclasses import dataclass\n\n@dataclass\nclass User:\n    id: str\n    email: str\n\ndef lookup_user(user_id: str) -> User | None:\n    return database.get(user_id)\n"
+              }
+            ]
+          },
+          "rationale": "A correct reference still requires the requested implementation-drift check; applicability is independent of whether a discrepancy exists.",
+          "evidence": [
+            "plugins/project-knowledge/roles/documentation-engineer.md:28-33",
+            "docs/reference.md:1",
+            "src/users.py:4-9"
+          ]
+        },
+        {
+          "id": "C039",
+          "expected": true,
+          "state": {
+            "task": "Audit the release migration and rollback guide against the executable deployment flow and the previous application version. Report unsupported rollback claims without editing documents or code.",
+            "artifacts": [
+              {
+                "path": "docs/release.md",
+                "content": "Release v12 renames customers to accounts. To roll back, run rollback.sh. Restoring the application image is sufficient; the database needs no rollback step."
+              },
+              {
+                "path": "migrations/0012.sql",
+                "content": "ALTER TABLE customers RENAME TO accounts;"
+              },
+              {
+                "path": "deploy/rollback.sh",
+                "content": "#!/bin/sh\nset -eu\nkubectl set image deployment/api api=example/api:v11\n"
+              },
+              {
+                "path": "releases/v11/customer-report.sql",
+                "content": "SELECT id, email FROM customers ORDER BY id;"
+              }
+            ]
+          },
+          "rationale": "Migration, deployment and affected-consumer documentation are explicit audit dimensions. The task independently checks a rollback promise across source-backed operational steps.",
+          "evidence": [
+            "plugins/project-knowledge/roles/documentation-engineer.md:24-33",
+            "docs/release.md:1",
+            "migrations/0012.sql:1",
+            "deploy/rollback.sh:3",
+            "releases/v11/customer-report.sql:1"
+          ]
+        },
+        {
+          "id": "C040",
+          "expected": false,
+          "state": {
+            "task": "Make the release announcement sound less promotional. Edit only tone and filler; do not verify technical claims or change document organization.",
+            "artifacts": [
+              {
+                "path": "communications/announcement.md",
+                "content": "We are thrilled to unveil a groundbreaking export experience that empowers teams to unlock unparalleled productivity."
+              }
+            ]
+          },
+          "rationale": "Pure voice editing outside technical factual work has no implementation drift or reference authorship mandate.",
+          "evidence": [
+            "plugins/project-knowledge/roles/documentation-engineer.md:24-33",
+            "plugins/project-knowledge/roles/documentation-engineer.md:35-42",
+            "communications/announcement.md:1"
+          ]
+        },
+        {
+          "id": "C041",
+          "expected": false,
+          "state": {
+            "task": "Audit only AGENTS.md for duplicated policy, scope precedence and claims that a runtime guard enforces file ownership. No product documentation is in scope.",
+            "artifacts": [
+              {
+                "path": "AGENTS.md",
+                "content": "Nested rules override every root rule globally. The host enforces assigned file ownership automatically.\nAlways preserve preexisting edits.\nPreserve preexisting edits in every task."
+              },
+              {
+                "path": "host/probe-summary.txt",
+                "content": "No instruction-loading or write-guard probe has been run."
+              }
+            ]
+          },
+          "rationale": "This is the separate durable-instruction audit rather than technical product-documentation drift or authorship.",
+          "evidence": [
+            "plugins/project-knowledge/roles/instructions-auditor.md:25-38",
+            "plugins/project-knowledge/roles/documentation-engineer.md:24-33",
+            "AGENTS.md:1-3"
+          ]
+        },
+        {
+          "id": "C042",
+          "expected": false,
+          "state": {
+            "task": "Review only the production request validator for accepting negative quantities. The published API reference is fixed and outside the review scope; report code defects only.",
+            "artifacts": [
+              {
+                "path": "src/order.py",
+                "content": "def validate_order(payload):\n    if not isinstance(payload[\"quantity\"], int):\n        raise ValueError(\"quantity must be an integer\")\n    return payload\n"
+              },
+              {
+                "path": "contracts/order.schema.json",
+                "content": "{\"type\":\"object\",\"properties\":{\"quantity\":{\"type\":\"integer\",\"minimum\":1}},\"required\":[\"quantity\"]}"
+              }
+            ]
+          },
+          "rationale": "A source validator versus executable schema review is a code/API-contract task; technical documentation is explicitly excluded.",
+          "evidence": [
+            "plugins/project-knowledge/roles/documentation-engineer.md:4-5",
+            "plugins/project-knowledge/roles/documentation-engineer.md:28-33",
+            "src/order.py:2-4",
+            "contracts/order.schema.json:1"
+          ]
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:doc-humanizer",
+      "source_path": "plugins/project-knowledge/roles/doc-humanizer.md",
+      "source_sha256": "284de7b45fa66a618be8647811c73ed9ab8656803db909d08f432303f97c368f",
+      "question": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      },
+      "adaptation_rationale": "Explicitly includes the structural audit mode that returns a proposal without edits. Keeps technical error verification and prose voice rewriting outside this hybrid remit.",
+      "cases": [
+        {
+          "id": "C043",
+          "expected": true,
+          "state": {
+            "task": "Audit the existing operator guide and propose a reorganization so first-time readers can complete setup before encountering the full parameter reference. Preserve every fact, table and command; do not edit documents.",
+            "artifacts": [
+              {
+                "path": "docs/operator.md",
+                "content": "# Operator guide\nCACHE_TTL: seconds before eviction; default 60.\nTo begin, create config.toml.\n| Option | Default |\n| workers | 4 |\nRun service start after saving config.toml.\nCACHE_SIZE: maximum entries; default 5000.\nFirst install the service package.\n"
+              }
+            ]
+          },
+          "rationale": "The audit independently diagnoses mixed tutorial/reference material and sequencing, then proposes a structure without applying changes.",
+          "evidence": [
+            "plugins/project-knowledge/roles/doc-humanizer.md:25-32",
+            "docs/operator.md:2-8"
+          ]
+        },
+        {
+          "id": "C044",
+          "expected": true,
+          "state": {
+            "task": "Audit only the organization of this technical guide and return a proposed navigation and heading structure. Leave the durable document untouched and preserve its factual claims.",
+            "artifacts": [
+              {
+                "path": "docs/storage.md",
+                "content": "# Storage\n## Details\n### More details\n#### Internals\n##### Before starting\nSet STORAGE_PATH to an existing directory.\nBackups use snapshot isolation.\nTo restore, stop writes and run restore.\nThe on-disk index is rebuilt after restore.\n"
+              }
+            ]
+          },
+          "rationale": "The explicit no-edit audit mode returns a proposed structure; this boundary positive does not require an editing authorization.",
+          "evidence": [
+            "plugins/project-knowledge/roles/doc-humanizer.md:25-29",
+            "plugins/project-knowledge/roles/doc-humanizer.md:38-39",
+            "docs/storage.md:2-9"
+          ]
+        },
+        {
+          "id": "C045",
+          "expected": true,
+          "state": {
+            "task": "Audit layout and progressive disclosure in this existing technical page. Propose how to separate the process explanation from the field reference and whether the diagram can be split without losing meaning. Do not edit documents.",
+            "artifacts": [
+              {
+                "path": "docs/sync.mdx",
+                "content": "# Synchronization\nThe client queues a change, uploads it, receives an acknowledgement, then removes the queue item.\n```mermaid\nflowchart LR\n A[Edit]-->B[Queue]-->C[Upload]-->D[Acknowledge]-->E[Remove]\n C-->F[Retry]-->C\n```\n| Field | Meaning |\n| revision | Server version |\n| pending | Local queue size |\nFor a first sync, press Connect and wait for pending to become zero.\n"
+              }
+            ]
+          },
+          "rationale": "Independent structure review covers diagram decomposition and separation of reference and tutorial content while preserving tables and examples.",
+          "evidence": [
+            "plugins/project-knowledge/roles/doc-humanizer.md:25-34",
+            "docs/sync.mdx:2-11"
+          ]
+        },
+        {
+          "id": "C046",
+          "expected": false,
+          "state": {
+            "task": "Humanize only the prose voice of this technical paragraph. Keep the current headings, order, navigation, diagram and paragraph boundaries exactly as they are.",
+            "artifacts": [
+              {
+                "path": "docs/cache.md",
+                "content": "# Cache\nOur robust caching mechanism seamlessly empowers the application to leverage lightning-fast reads. The default retention period is 60 seconds."
+              }
+            ]
+          },
+          "rationale": "Voice editing is explicitly delegated away from this structural role; the task prohibits organizational changes.",
+          "evidence": [
+            "plugins/project-knowledge/roles/doc-humanizer.md:5-6",
+            "plugins/project-knowledge/roles/doc-humanizer.md:35-36",
+            "docs/cache.md:1-2"
+          ]
+        },
+        {
+          "id": "C047",
+          "expected": false,
+          "state": {
+            "task": "Check only whether the documented function signature matches current code and report factual drift. Do not assess organization, navigation, wording or presentation.",
+            "artifacts": [
+              {
+                "path": "docs/client.md",
+                "content": "connect(host: str, port: int = 443) returns Connection."
+              },
+              {
+                "path": "src/client.py",
+                "content": "def connect(host: str, port: int = 8443, *, tls: bool = True):\n    return Connection(host, port, tls=tls)\n"
+              }
+            ]
+          },
+          "rationale": "This role preserves facts and routes suspected technical errors to the owning audit method; factual signature verification alone is the near-neighbor exclusion.",
+          "evidence": [
+            "plugins/project-knowledge/roles/doc-humanizer.md:31-34",
+            "docs/client.md:1",
+            "src/client.py:1"
+          ]
+        },
+        {
+          "id": "C048",
+          "expected": false,
+          "state": {
+            "task": "Write a new architecture guide from the source outline. No existing document is supplied; the requested deliverable is original technical explanation, not restructuring.",
+            "artifacts": [
+              {
+                "path": "notes/modules.txt",
+                "content": "api.py validates HTTP input. service.py applies pricing rules. repository.py writes transactions. API calls service, which calls repository."
+              },
+              {
+                "path": "src/service.py",
+                "content": "def place_order(order, repository):\n    priced = price(order)\n    return repository.save(priced)\n"
+              }
+            ]
+          },
+          "rationale": "The role works on existing technical documents and preserves their content; generating an original architecture guide is a writing mandate.",
+          "evidence": [
+            "plugins/project-knowledge/roles/doc-humanizer.md:4",
+            "plugins/project-knowledge/roles/doc-humanizer.md:25-32",
+            "notes/modules.txt:1"
+          ]
+        }
+      ]
+    }
+  ]
+}

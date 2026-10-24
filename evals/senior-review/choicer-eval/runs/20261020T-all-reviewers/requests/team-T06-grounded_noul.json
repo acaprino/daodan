@@ -1,0 +1,202 @@
+{
+  "id": "team-T06-grounded_noul",
+  "kind": "team",
+  "case_id": "T06",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the TypeScript request boundary for type safety, authorization and consistency with its published input contract. This server-side handler has no browser, database or background scheduling code.",
+    "artifacts": [
+      {
+        "path": "role-route.ts",
+        "content": "type RoleRequest = { memberId: string; role: 'reader' | 'admin' };\nexport async function setRole(request: Request, identity: { memberId: string }, directory: Directory) {\n  const body = (await request.json()) as RoleRequest;\n  directory.setRole(body.memberId, body.role);\n  return new Response('ok');\n}\n"
+      },
+      {
+        "path": "role-input.schema.json",
+        "content": "{\"type\":\"object\",\"required\":[\"memberId\",\"role\"],\"properties\":{\"memberId\":{\"type\":\"string\"},\"role\":{\"enum\":[\"reader\",\"admin\"]}},\"additionalProperties\":false}"
+      },
+      {
+        "path": "authorization.txt",
+        "content": "Only administrators may change roles. The directory is an in-memory abstraction owned elsewhere; this task concerns the request boundary and its permission checks."
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    },
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    },
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the requested review assess existing technical documentation against implementation for factual drift, missing coverage, stale examples, broken links, duplicated topics, or affected consumers?",
+      "criteria": {
+        "false": "The task does not assess existing technical documentation against implementation; authoring alone, voice editing, instruction-policy audits, and code-only review do not qualify.",
+        "true": "The task assesses existing technical documentation against implementation across interfaces, configuration, architecture, operations, migrations, or other technical dimensions, whether discrepancies exist or not."
+      }
+    },
+    "project-knowledge:guide-reviewer": {
+      "type": "noul",
+      "instructions": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      }
+    },
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the task examine dependencies that determine whether components, configuration, infrastructure, or migrations become ready during initialization or deployment?",
+      "criteria": {
+        "false": "The task concerns steady-state behavior or unrelated build and code issues, without initialization or deployment readiness dependencies.",
+        "true": "The task examines readiness dependencies, ordering, cycles, or temporal coupling during startup, bootstrap, configuration loading, discovery, or migration."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope warrant checking cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics against the source?",
+      "criteria": {
+        "false": "The scope does not concern cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics.",
+        "true": "The scope concerns cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics, even when the implementation appears consistent."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      }
+    }
+  },
+  "sha256": "9cde7569e7a2999e0569a16ee53d99be4b62f695e0d1640516e1139ccc6fb75e"
+}

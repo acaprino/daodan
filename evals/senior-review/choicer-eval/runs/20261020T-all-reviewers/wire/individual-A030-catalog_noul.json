@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review cancellation and completion of the child command used to render previews.",
+    "artifacts": [
+      {
+        "path": "src/render.py",
+        "content": "import asyncio\n\nasync def render(path):\n    process = await asyncio.create_subprocess_exec(\"preview\", path)\n    try:\n        return await process.wait()\n    except asyncio.CancelledError:\n        process.terminate()\n        await process.wait()\n        raise\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory."
+      }
+    }
+  }
+}

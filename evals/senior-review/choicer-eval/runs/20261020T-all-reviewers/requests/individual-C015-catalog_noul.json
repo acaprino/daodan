@@ -1,0 +1,30 @@
+{
+  "id": "individual-C015-catalog_noul",
+  "kind": "individual",
+  "case_id": "C015",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the intermittent test failure using the supplied attempts and fixture. Do not execute tests; distinguish test isolation, environment and product causes before suggesting a disposition.",
+    "artifacts": [
+      {
+        "path": "tests/test_notifications.py",
+        "content": "pending = []\n\ndef test_queue_empty():\n    assert pending == []\n\ndef test_enqueue():\n    pending.append(\"mail\")\n    assert pending == [\"mail\"]\n"
+      },
+      {
+        "path": "ci/attempts.txt",
+        "content": "Attempt 41: pytest --random-order-seed=7; test_enqueue PASS, test_queue_empty FAIL.\nAttempt 42: pytest --random-order-seed=9; test_queue_empty PASS, test_enqueue PASS.\nSame commit, image and dependency lock."
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement."
+      }
+    }
+  },
+  "sha256": "3a05c7fe94a99ad0ed723a8618e4b460d0202f354f5b074cfacd12eb6e8995d5"
+}

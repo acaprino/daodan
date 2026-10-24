@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Audit only the organization of this technical guide and return a proposed navigation and heading structure. Leave the durable document untouched and preserve its factual claims.",
+    "artifacts": [
+      {
+        "path": "docs/storage.md",
+        "content": "# Storage\n## Details\n### More details\n#### Internals\n##### Before starting\nSet STORAGE_PATH to an existing directory.\nBackups use snapshot isolation.\nTo restore, stop writes and run restore.\nThe on-disk index is rebuilt after restore.\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  }
+}

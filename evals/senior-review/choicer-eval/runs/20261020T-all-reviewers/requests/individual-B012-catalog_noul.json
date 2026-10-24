@@ -1,0 +1,34 @@
+{
+  "id": "individual-B012-catalog_noul",
+  "kind": "individual",
+  "case_id": "B012",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Explain why the TypeScript compilation fails after changing the path alias.",
+    "artifacts": [
+      {
+        "path": "tsconfig.json",
+        "content": "{\"compilerOptions\":{\"baseUrl\":\".\",\"paths\":{\"@shared/*\":[\"lib/*\"]}}}"
+      },
+      {
+        "path": "src/main.ts",
+        "content": "import {parse} from \"@shared/parser\";\nexport const read = (input: string) => parse(input);"
+      },
+      {
+        "path": "build.txt",
+        "content": "error TS2307: Cannot find module @shared/parser. The parser source is src/shared/parser.ts."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
+      }
+    }
+  },
+  "sha256": "060e4a423e4d21337360f8f4a29a798d70824d9eed2992601edd6a2d2db7ddd8"
+}

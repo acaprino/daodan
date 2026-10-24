@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C07",
+  "hunk_id": "H32",
+  "state": "[H32]\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:1 /**\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:2  * Ganymede React - Updater State Slice\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:3  *\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:4  * Holds the phase of the silent update flow so that every consumer sees the\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:5  * same answer: the \"Check for Updates\" menu item writes here, the update banner\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:6  * reads from here. Keeping this in component-local state would scope the result\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:7  * to whichever component ran the check, and the banner would never show.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:8  *\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:9  * The Tauri `Update` handle itself is not serializable and stays in a\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:10  * module-level ref inside `useUpdater`; only its displayable fields land here.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:11  *\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:12  * Persistence: none. The downloaded package lives in the Rust resource table of\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:13  * the current webview, so a pending update cannot outlive the process anyway.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:14  */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:15 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:16 import type { StateCreator } from 'zustand'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:17 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:18 /**\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:19  * Phases of the update flow.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:20  *\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:21  * - `idle`        nothing known, or the last attempt was abandoned\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:22  * - `checking`    a manual check is in flight\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:23  * - `downloading` package transfer in progress\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:24  * - `scheduled`   package ready, waiting for the restart window\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:25  * - `warning`     final countdown before the restart, user can act\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:26  * - `installing`  handed to the installer; the process is about to die\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:27  * - `error`       only ever reached from a user-initiated action\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:28  */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:29 export type UpdatePhase =\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:30   | 'idle'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:31   | 'checking'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:32   | 'downloading'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:33   | 'scheduled'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:34   | 'warning'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:35   | 'installing'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:36   | 'error'\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:37 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:38 export interface UpdateInfo {\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:39   version: string\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:40   date: string | null\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:41   body: string | null\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:42 }\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:43 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:44 /** Fields describing the pending update, reset together when it is abandoned. */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:45 const CLEARED_FIELDS = {\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:46   updatePhase: 'idle' as UpdatePhase,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:47   updateInfo: null as UpdateInfo | null,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:48   updateProgress: 0,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:49   updateRestartAt: null as number | null,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:50   updateSurfaced: false,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:51   updateError: null as string | null,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:52 }\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:53 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:54 export const UPDATER_INITIAL_STATE = {\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:55   ...CLEARED_FIELDS,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:56   updateAutoCheckStarted: false,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:57   updateFlowBusy: false,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:58 }\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:59 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:60 export interface UpdaterSlice {\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:61   // State\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:62   updatePhase: UpdatePhase\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:63   updateInfo: UpdateInfo | null\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:64   updateProgress: number\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:65   /** Epoch ms at which the app restarts, once one has been planned. */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:66   updateRestartAt: number | null\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:67   /**\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:68    * Whether the banner is on screen. The automatic hourly path downloads\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:69    * without surfacing anything; startup, the final countdown and any\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:70    * user-initiated action do surface.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:71    */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:72   updateSurfaced: boolean\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:73   updateError: string | null\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:74   /** Guards the app-wide automatic check loop against duplicate scheduling. */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:75   updateAutoCheckStarted: boolean\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:76   /**\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:77    * A check-and-download sequence is in flight. Phase alone cannot serialise\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:78    * the manual and automatic paths: both start from `idle` and stay there\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:79    * across their network round trip, so they would each claim the update.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:80    */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:81   updateFlowBusy: boolean\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:82 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:83   // Actions\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:84   setUpdateChecking: () => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:85   setUpdateDownloading: (info: UpdateInfo, surfaced: boolean) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:86   setUpdateProgress: (progress: number) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:87   setUpdateScheduled: (restartAt: number) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:88   /** Put back a pending update whose replacement attempt came to nothing. */\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:89   restoreScheduled: (info: UpdateInfo | null, restartAt: number, surfaced: boolean) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:90   setUpdateWarning: (restartAt: number) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:91   setUpdateInstalling: () => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:92   setUpdateIdle: () => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:93   setUpdateError: (error: string, surfaced: boolean) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:94   surfaceUpdate: () => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:95   hideUpdateBanner: () => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:96   markUpdateAutoCheckStarted: () => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:97   setUpdateFlowBusy: (busy: boolean) => void\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:98 }\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:99 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:100 export const createUpdaterSlice: StateCreator<UpdaterSlice, [], [], UpdaterSlice> = (set) => ({\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:101   ...UPDATER_INITIAL_STATE,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:102 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:103   setUpdateChecking: () => set({ updatePhase: 'checking', updateError: null }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:104 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:105   setUpdateDownloading: (info, surfaced) =>\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:106     set({\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:107       updatePhase: 'downloading',\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:108       updateInfo: info,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:109       updateProgress: 0,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:110       updateSurfaced: surfaced,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:111       updateError: null,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:112     }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:113 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:114   setUpdateProgress: (progress) => set({ updateProgress: progress }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:115 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:116   setUpdateScheduled: (restartAt) => set({ updatePhase: 'scheduled', updateRestartAt: restartAt }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:117 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:118   restoreScheduled: (info, restartAt, surfaced) =>\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:119     set({\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:120       updatePhase: 'scheduled',\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:121       updateInfo: info,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:122       updateRestartAt: restartAt,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:123       updateSurfaced: surfaced,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:124       updateProgress: 0,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:125       updateError: null,\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:126     }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:127 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:128   // The countdown is the one moment the user must not miss, so it surfaces\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:129   // regardless of how the update was found.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:130   setUpdateWarning: (restartAt) =>\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:131     set({ updatePhase: 'warning', updateRestartAt: restartAt, updateSurfaced: true }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:132 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:133   setUpdateInstalling: () => set({ updatePhase: 'installing', updateSurfaced: true }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:134 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:135   setUpdateIdle: () => set({ ...CLEARED_FIELDS }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:136 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:137   // An automatic flow keeps its failures to the log, so `surfaced` is decided\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:138   // by the caller rather than assumed here.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:139   setUpdateError: (error, surfaced) =>\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:140     set({ updatePhase: 'error', updateSurfaced: surfaced, updateError: error, updateRestartAt: null }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:141 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:142   surfaceUpdate: () => set({ updateSurfaced: true }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:143 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:144   // Hides the banner without cancelling anything: the planned restart stands.\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:145   hideUpdateBanner: () => set({ updateSurfaced: false }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:146 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:147   markUpdateAutoCheckStarted: () => set({ updateAutoCheckStarted: true }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:148 \njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:149   setUpdateFlowBusy: (busy) => set({ updateFlowBusy: busy }),\njupiter-desktop/src-react/src/store/slices/updaterSlice.ts:150 })",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "00a2e8e882894bacce3fc3eeb124c2a96ba048b11e2883ffb2eae461c651f385"
+}

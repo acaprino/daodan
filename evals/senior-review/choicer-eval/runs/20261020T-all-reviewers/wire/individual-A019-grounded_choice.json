@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review whether the search endpoint can interpret the request parameter as SQL. Limit this pass to injection exposure.",
+    "artifacts": [
+      {
+        "path": "app/search.py",
+        "content": "def search(db, request):\n    query = \"SELECT title FROM books WHERE title = '\" + request.args[\"q\"] + \"'\"\n    return db.execute(query).fetchall()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope warrant checking cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics against the source?",
+      "criteria": {
+        "false": "The scope does not concern cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics.",
+        "true": "The scope concerns cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics, even when the implementation appears consistent."
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "individual-C001-grounded_noul",
+  "request_sha256": "8a2a820f9d74c93cf0ad728ccc2ece7270a796b57b6b35cadd5a286a6bf14c26",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "react-development:react-performance-optimizer": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9925940367969693,
+          "true": 0.007405963203030767
+        },
+        "noul": 0.007405963203030767
+      }
+    }
+  },
+  "probabilities": {
+    "react-development:react-performance-optimizer": 0.007405963203030767
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "react-development:react-performance-optimizer": {
+      "tokens": 277,
+      "optionTokens": [
+        34,
+        26
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [],
+  "wall_seconds": 0.7313165999948978
+}

@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H40",
+  "state": "[H40]\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1471 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1472     async def _probe_agent_loop(self, agent_id: str) -> None:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1473         \"\"\"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1474         Background loop that sends periodic probes to a SUSPECT agent or to\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1475         a pre-RUNNING agent past the pre-RUNNING expiry timeout.\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1476 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1477         Continues until:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1478         - Agent recovers (sends heartbeat -> task is cancelled)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1479         - Agent confirmed dead (enough probe failures)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1480         - Task is cancelled externally\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1481 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1482         Args:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1483             agent_id: The agent instance ID to probe\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1484         \"\"\"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1485         # Timestamp of the last probe DELIVERED to a pre-RUNNING agent whose\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1486         # heartbeat response is still pending. Publish success only proves\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1487         # delivery -- a hung process keeps its connection (and probe queue)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1488         # open without ever consuming. Liveness for pre-RUNNING is the\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1489         # probe-RESPONSE heartbeat (it advances last_heartbeat and cancels the\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1490         # expiry in the monitor loop); a delivered-but-unanswered probe counts\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1491         # as a failure, otherwise a hung-but-connected zombie never reaches\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1492         # the probe_failures threshold and never goes DEAD.\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1493         awaiting_response_since: float | None = None\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1494 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1495         try:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1496             while True:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1497                 await asyncio.sleep(self.middleware._PROBE_INTERVAL)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1498 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1499                 # Check if agent still warrants probing: SUSPECT state, or a\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1500                 # pre-RUNNING state with an active expiry (zombie candidate).\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1501                 # NOTE: Lock intentionally omitted - dict.get() is atomic in asyncio's single-threaded\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1502                 # event loop. We only need approximate status for probe termination decision;\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1503                 # a false positive (extra probe) is harmless, and avoiding the lock here prevents\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1504                 # potential priority inversion with heartbeat processing.\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1505                 _rec = self.middleware.agents.get(agent_id)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1506                 current_status = _rec.status if _rec else None\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1507                 is_suspect = current_status == AgentStatus.SUSPECT.value\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1508                 is_expired_pre_running = (\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1509                     current_status in self._PRE_RUNNING_STATUSES\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1510                     and agent_id in self._pre_running_zombie_checks\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1511                 )\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1512                 if not (is_suspect or is_expired_pre_running):\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1513                     self._log_debug(\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1514                         f\"[PROBE] Agent {agent_id} no longer probe-eligible (status={current_status}), stopping probe\"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1515                     )\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1516                     break\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1517 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1518                 # Judge the PREVIOUS pre-RUNNING probe before sending a new one:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1519                 # one full _PROBE_INTERVAL has elapsed, ample time for the\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1520                 # immediate heartbeat response. A live agent's response would\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1521                 # have advanced last_heartbeat past the probe send time (and the\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1522                 # monitor would already be cancelling the expiry).\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1523                 if is_expired_pre_running and awaiting_response_since is not None:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1524                     last_hb = _rec.last_heartbeat if _rec else 0\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1525                     if last_hb < awaiting_response_since:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1526                         self._probe_failures[agent_id] = self._probe_failures.get(agent_id, 0) + 1\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1527                         self._log_warning(\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1528                             f\"[PROBE] Probe delivered but unanswered by pre-RUNNING agent {agent_id} \"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1529                             f\"(failures={self._probe_failures[agent_id]}/{self.middleware._PROBE_MAX_FAILURES})\"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1530                         )\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1531                 awaiting_response_since = None\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1532 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1533                 # Send probe\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1534                 probe_sent_at = time.time()\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1535                 success = await self._send_probe(agent_id)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1536 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1537                 if not success:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1538                     self._probe_failures[agent_id] = self._probe_failures.get(agent_id, 0) + 1\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1539                     self._log_warning(\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1540                         f\"[PROBE] Probe failed for agent {agent_id} \"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1541                         f\"(failures={self._probe_failures[agent_id]}/{self.middleware._PROBE_MAX_FAILURES})\"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1542                     )\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1543 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1544                     # Check if we've hit max failures (monitor_heartbeats will handle DEAD transition)\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1545                     if self._probe_failures[agent_id] >= self.middleware._PROBE_MAX_FAILURES:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1546                         self._log_warning(\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1547                             f\"[PROBE] Max probe failures reached for agent {agent_id}, \"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1548                             f\"waiting for monitor to mark as DEAD\"\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1549                         )\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1550                         # Don't break - let monitor_heartbeats handle the DEAD transition\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1551                 elif is_suspect:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1552                     # SUSPECT path: a successful publish means the probe queue is\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1553                     # alive, treat as recovery signal and reset the failure count.\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1554                     self._log_info(f\"[PROBE] Agent {agent_id} responded to probe\")\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1555                     self._probe_failures[agent_id] = 0\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1556                 else:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1557                     # Pre-RUNNING expiry path: delivery confirmed, response pending.\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1558                     # Judged at the top of the next iteration.\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1559                     awaiting_response_since = probe_sent_at\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1560 \njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1561         except asyncio.CancelledError:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1562             self._log_debug(f\"[PROBE] Probe loop cancelled for agent {agent_id}\")\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1563             raise\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1564         except Exception as e:\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1565             self._log_error(\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1566                 f\"[PROBE] Error in probe loop for agent {agent_id}\",\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1567                 exc_info=e,\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1568                 operation='probe_agent'\njupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1569             )",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "7f103311fa313f20ff398c888225cec991b70fc7ff828d425b41e33e251899b4"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-A005-grounded_choice",
+  "kind": "individual",
+  "case_id": "A005",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review this local helper that sorts the fixed built-in color names for a documentation table.",
+    "artifacts": [
+      {
+        "path": "docs/colors.py",
+        "content": "COLORS = (\"violet\", \"amber\", \"teal\")\n\ndef color_rows():\n    return [(name, name.upper()) for name in sorted(COLORS)]\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  },
+  "sha256": "f4280de03fd068ca812f24b5767252aa4130443be601ddf2016865f1dc2bf9b0"
+}

@@ -1,0 +1,52 @@
+{
+  "requirement": "Each search may examine at most 100 rows at the declared 1000000-row cardinality; inserts must write at most one identical status index. Order pages must preserve requested offset semantics.",
+  "schema": {
+    "indexes": [
+      {
+        "name": "status_a",
+        "keys": [
+          "status"
+        ]
+      },
+      {
+        "name": "status_b",
+        "keys": [
+          "status"
+        ]
+      },
+      {
+        "name": "region_day",
+        "keys": [
+          "region",
+          "day"
+        ],
+        "partial": "active=true",
+        "collation": "binary"
+      }
+    ]
+  },
+  "query": {
+    "sql": "SELECT * FROM orders WHERE day = ? AND active = false ORDER BY name COLLATE locale OFFSET 900000",
+    "frequency_per_second": 100,
+    "columns_needed": [
+      "id"
+    ],
+    "returned_columns": [
+      "id",
+      "blob"
+    ],
+    "plan": {
+      "examined_rows": 1000000,
+      "sort_rows": 1000000,
+      "used_index": null
+    }
+  },
+  "join": {
+    "sql": "orders JOIN lines USING(order_id) JOIN tags USING(order_id)",
+    "orders": 100,
+    "lines_per_order": 10,
+    "tags_per_order": 10,
+    "required": "one order total and its tag list",
+    "intermediate_rows": 10000
+  }
+}

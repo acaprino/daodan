@@ -1,0 +1,30 @@
+{
+  "id": "individual-B041-grounded_choice",
+  "kind": "individual",
+  "case_id": "B041",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Proofread the FAQ wording for clarity and consistent capitalization.",
+    "artifacts": [
+      {
+        "path": "web/package.json",
+        "content": "{\"dependencies\":{\"react\":\"19.0.0\"}}"
+      },
+      {
+        "path": "web/content/faq.md",
+        "content": "# Frequently asked questions\n## Can i change my display name?\nOpen settings, choose profile and enter a new name.\n## Where are exports?\nYour exports appear in Downloads."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "choice",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    }
+  },
+  "sha256": "0bf13f9f504fb8b4209f0c99214d50b67921a580ca9078c2fad538ad19b4ce24"
+}

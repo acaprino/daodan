@@ -1,0 +1,38 @@
+{
+  "id": "individual-C032-catalog_noul",
+  "kind": "individual",
+  "case_id": "C032",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit the scoped instruction files and their claims about automatic enforcement. Treat absent runtime loading evidence as unknown, and identify what evidence would be needed.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "The local policy file is always loaded automatically, and its write restriction is enforced by the runtime. See policies/agents.md."
+      },
+      {
+        "path": "packages/ui/AGENTS.md",
+        "content": "For UI files, use the component test command from package.json."
+      },
+      {
+        "path": "policies/agents.md",
+        "content": "Write only files assigned by the task owner."
+      },
+      {
+        "path": "host/observations.txt",
+        "content": "Host version recorded. No prompt capture or write-confinement probe was supplied."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md."
+      }
+    }
+  },
+  "sha256": "1ddce7f2f6218069617198652a12daa3f17969349a892dcc478655d644c85288"
+}

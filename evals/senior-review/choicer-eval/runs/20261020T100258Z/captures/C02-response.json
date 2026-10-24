@@ -1,0 +1,63 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H3] candidate jupiter-core/jupiter_core/agents/alive_agent.py:189 async def start(self):",
+      "reason": "Startup ordering and lifecycle acknowledgement gates can strand agents or publish readiness prematurely.",
+      "role": "senior-review:chicken-egg-detector",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H4] candidate jupiter-core/jupiter_core/agents/alive_agent.py:324 self._heartbeat_task = self._task_monitor.spawn(",
+      "reason": "Heartbeat scheduling, retries, and recovery timing may fail under delays or repeated failures.",
+      "role": "senior-review:temporal-resilience-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H3] candidate jupiter-core/jupiter_core/agents/alive_agent.py:224 self._registration_consumer_tag = await self.amqp_s.register_listener(",
+      "reason": "Listener, task, and lock acquisition needs complete cleanup on partial startup and shutdown.",
+      "role": "senior-review:resource-lifecycle-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H6] candidate jupiter-core/jupiter_core/agents/alive_agent.py:390 def _build_channels_data(self, include_credentials: bool = True) -> list[dict[str, Any]]:",
+      "reason": "Default credential inclusion risks sending tokens and webhook data through unintended lifecycle messages.",
+      "role": "senior-review:security-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H6] candidate jupiter-core/jupiter_core/agents/alive_agent.py:390 def _build_channels_data(self, include_credentials: bool = True) -> list[dict[str, Any]]:",
+      "reason": "The default credential flag creates a boundary case that can alter sensitive payload contents.",
+      "role": "senior-review:premise-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H4] candidate jupiter-core/jupiter_core/agents/alive_agent.py:278 await ack_round_trip(",
+      "reason": "Agent and middleware acknowledgement contracts must remain consistent across registration and lifecycle transitions.",
+      "role": "senior-review:distributed-flow-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H6] candidate jupiter-core/jupiter_core/agents/alive_agent.py:390 def _build_channels_data(self, include_credentials: bool = True) -> list[dict[str, Any]]:",
+      "reason": "Lifecycle payload shape and credential fields need consistency with their consuming contract.",
+      "role": "senior-review:api-contract-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H48] candidate jupiter-core/jupiter_core/middleware/heartbeat_monitor.py:1874 def on_agent_removed(self, agent_id: str) -> None:",
+      "reason": "Public agent removal and identifier-based cleanup need authorization and data-access review.",
+      "role": "senior-review:security-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

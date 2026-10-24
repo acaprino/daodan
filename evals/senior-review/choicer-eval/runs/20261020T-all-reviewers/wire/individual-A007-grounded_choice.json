@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Find implementation defects in this arithmetic helper and propose a correction for negative operands.",
+    "artifacts": [
+      {
+        "path": "src/quotient.py",
+        "content": "def quotient(a, b):\n    if b == 0:\n        raise ValueError(\"zero divisor\")\n    return int(a / b)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    }
+  }
+}

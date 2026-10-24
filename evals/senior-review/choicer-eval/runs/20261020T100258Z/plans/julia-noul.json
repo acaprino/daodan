@@ -1,0 +1,1951 @@
+{
+  "status": "prepared; no model calls",
+  "impl": "julia",
+  "variant": "noul",
+  "calls": 129,
+  "cases": 11,
+  "questions": 2322,
+  "input_characters": 1932462,
+  "provider_input_tokens": null,
+  "planning_estimate_tokens_chars_div_4": 483116,
+  "estimate_warning": "Planning heuristic only, not tokenizer counts or provider usage.",
+  "empty_criteria_questions": [
+    {
+      "case_id": "C01",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H3",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H3",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H3",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H4",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H4",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H4",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H5",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H5",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H5",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H6",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H6",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H6",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H7",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H7",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H7",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H8",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H8",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H8",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H9",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H9",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H9",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H10",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H10",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H10",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H11",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H11",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H11",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H12",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H12",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H12",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H13",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H13",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H13",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H14",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H14",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H14",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H3",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H3",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H3",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H4",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H4",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H4",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H5",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H5",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H5",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H6",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H6",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H6",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H7",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H7",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H7",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H8",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H8",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H8",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H9",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H9",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H9",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H10",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H10",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H10",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H11",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H11",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H11",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H12",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H12",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H12",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H13",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H13",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H13",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H14",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H14",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H14",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H15",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H15",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H15",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H16",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H16",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H16",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H17",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H17",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H17",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H18",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H18",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H18",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H19",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H19",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H19",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H20",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H20",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H20",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H21",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H21",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H21",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H22",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H22",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H22",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H23",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H23",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H23",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H24",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H24",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H24",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H25",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H25",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H25",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H26",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H26",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H26",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H27",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H27",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H27",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H28",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H28",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H28",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H29",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H29",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H29",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H30",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H30",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H30",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H31",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H31",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H31",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H32",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H32",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H32",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H33",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H33",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H33",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H34",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H34",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H34",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H35",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H35",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H35",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H36",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H36",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H36",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H37",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H37",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H37",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H38",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H38",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H38",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H39",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H39",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H39",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H40",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H40",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H40",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H41",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H41",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H41",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H42",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H42",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H42",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H43",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H43",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H43",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H44",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H44",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H44",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H45",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H45",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H45",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H46",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H46",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H46",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H47",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H47",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H47",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H48",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H48",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H48",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H49",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H49",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H49",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H3",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H3",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H3",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H4",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H4",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H4",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H5",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H5",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H5",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H3",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H3",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H3",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H4",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H4",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H4",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H5",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H5",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H5",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H6",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H6",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H6",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H7",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H7",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H7",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H3",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H3",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H3",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H4",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H4",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H4",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H5",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H5",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H5",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H6",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H6",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H6",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H7",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H7",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H7",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H8",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H8",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H8",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H9",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H9",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H9",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H2",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H2",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H2",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H3",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H3",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H3",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H4",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H4",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H4",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H5",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H5",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H5",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H6",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H6",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H6",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H7",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H7",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H7",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H8",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H8",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H8",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H9",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H9",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H9",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H10",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H10",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H10",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H11",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H11",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H11",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H12",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H12",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H12",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H13",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H13",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H13",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H14",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H14",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H14",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H15",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H15",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H15",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H16",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H16",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H16",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H17",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H17",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H17",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H18",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H18",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H18",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H19",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H19",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H19",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H20",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H20",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H20",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H21",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H21",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H21",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H22",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H22",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H22",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H23",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H23",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H23",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H24",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H24",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H24",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H25",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H25",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H25",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H26",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H26",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H26",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H27",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H27",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H27",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H28",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H28",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H28",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H29",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H29",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H29",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H30",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H30",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H30",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H31",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H31",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H31",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H32",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H32",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H32",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H33",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H33",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H33",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H34",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H34",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H34",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H35",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H35",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H35",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H36",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H36",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H36",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H37",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H37",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H37",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H38",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H38",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H38",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H39",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H39",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H39",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C08",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C08",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C08",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C09",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C09",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C09",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C10",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C10",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C10",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    },
+    {
+      "case_id": "C11",
+      "hunk_id": "H1",
+      "question_id": "platform-engineering:platform-reviewer"
+    },
+    {
+      "case_id": "C11",
+      "hunk_id": "H1",
+      "question_id": "senior-review:distributed-flow-auditor"
+    },
+    {
+      "case_id": "C11",
+      "hunk_id": "H1",
+      "question_id": "senior-review:ui-race-auditor"
+    }
+  ],
+  "empty_criteria_question_count": 387,
+  "empty_criteria_effect": "Julia requires nonempty rendered option descriptions. These exact questions are inadmissible; no replacement criteria are inferred."
+}

@@ -1,0 +1,1169 @@
+{
+  "scope": "Follow-up usage diagnosis; development examples, not independent routing validation.",
+  "fresh_control_rows": {
+    "raw": [
+      {
+        "id": "F01",
+        "family": {
+          "expected": "react",
+          "actual": "react",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.03444495646049645
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.10429440512129844
+        }
+      },
+      {
+        "id": "F02",
+        "family": {
+          "expected": "react",
+          "actual": "react",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.010114646559667335
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.23628490607530445
+        }
+      },
+      {
+        "id": "F03",
+        "family": {
+          "expected": "persistence",
+          "actual": "persistence",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.0033544733613388926
+        },
+        "persistence": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.01022847972821823
+        }
+      },
+      {
+        "id": "F04",
+        "family": {
+          "expected": "persistence",
+          "actual": "persistence",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.002593157705665246
+        },
+        "persistence": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.028603966119985554
+        }
+      },
+      {
+        "id": "F05",
+        "family": {
+          "expected": "computation",
+          "actual": "computation",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.00232479159953124
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.006542469208421275
+        }
+      },
+      {
+        "id": "F06",
+        "family": {
+          "expected": "computation",
+          "actual": "react",
+          "correct": false,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.007008449450143686
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.3691800340926404
+        }
+      },
+      {
+        "id": "F07",
+        "family": {
+          "expected": "computation",
+          "actual": "react",
+          "correct": false,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.13472877165647093
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.00013203187610142576
+        }
+      },
+      {
+        "id": "F08",
+        "family": {
+          "expected": "computation",
+          "actual": "react",
+          "correct": false,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.00015418479456392155
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 4.35102417620317e-05
+        }
+      }
+    ],
+    "facts": [
+      {
+        "id": "F01",
+        "family": {
+          "expected": "react",
+          "actual": "react",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": true,
+          "actual": true,
+          "correct": true,
+          "p_true": 0.9666061197721573
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.1061123346464105
+        }
+      },
+      {
+        "id": "F02",
+        "family": {
+          "expected": "react",
+          "actual": "react",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.12098488475428187
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.0004986707228647297
+        }
+      },
+      {
+        "id": "F03",
+        "family": {
+          "expected": "persistence",
+          "actual": "computation",
+          "correct": false,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.10320853290365127
+        },
+        "persistence": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.05759272563905747
+        }
+      },
+      {
+        "id": "F04",
+        "family": {
+          "expected": "persistence",
+          "actual": "persistence",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.08177169900722635
+        },
+        "persistence": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.011944551716854003
+        }
+      },
+      {
+        "id": "F05",
+        "family": {
+          "expected": "computation",
+          "actual": "computation",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.4548287362086882
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.9476734551826037
+        }
+      },
+      {
+        "id": "F06",
+        "family": {
+          "expected": "computation",
+          "actual": "computation",
+          "correct": true,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.7451706273280023
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.7006172338345705
+        }
+      },
+      {
+        "id": "F07",
+        "family": {
+          "expected": "computation",
+          "actual": "react",
+          "correct": false,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.46501450119479854
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.004825131301141313
+        }
+      },
+      {
+        "id": "F08",
+        "family": {
+          "expected": "computation",
+          "actual": "react",
+          "correct": false,
+          "p_true": null
+        },
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.14939659591147258
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.0060920878719497125
+        }
+      }
+    ],
+    "statements": [
+      {
+        "id": "F01",
+        "react": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.29258922916324387
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.9902213428316721
+        }
+      },
+      {
+        "id": "F02",
+        "react": {
+          "expected": true,
+          "actual": false,
+          "correct": false,
+          "p_true": 0.13737493440565626
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.6273471030831028
+        }
+      },
+      {
+        "id": "F03",
+        "react": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.9090456858254726
+        },
+        "persistence": {
+          "expected": true,
+          "actual": true,
+          "correct": true,
+          "p_true": 0.9999368027211898
+        }
+      },
+      {
+        "id": "F04",
+        "react": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.8127035361695278
+        },
+        "persistence": {
+          "expected": true,
+          "actual": true,
+          "correct": true,
+          "p_true": 0.9107103481018323
+        }
+      },
+      {
+        "id": "F05",
+        "react": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.5252232835567886
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.6244713466775625
+        }
+      },
+      {
+        "id": "F06",
+        "react": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.5686457765778771
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.9967913024314572
+        }
+      },
+      {
+        "id": "F07",
+        "react": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.9679516449530117
+        },
+        "persistence": {
+          "expected": false,
+          "actual": true,
+          "correct": false,
+          "p_true": 0.9889118608121226
+        }
+      },
+      {
+        "id": "F08",
+        "react": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.17187139510447152
+        },
+        "persistence": {
+          "expected": false,
+          "actual": false,
+          "correct": true,
+          "p_true": 0.2836464532494479
+        }
+      }
+    ]
+  },
+  "fresh_metrics": {
+    "raw": {
+      "family": {
+        "correct": 5,
+        "count": 8,
+        "positive_hits": 0,
+        "positive_support": 0,
+        "false_positives": 0,
+        "negative_support": 0
+      },
+      "react": {
+        "correct": 6,
+        "count": 8,
+        "positive_hits": 0,
+        "positive_support": 2,
+        "false_positives": 0,
+        "negative_support": 6
+      },
+      "persistence": {
+        "correct": 6,
+        "count": 8,
+        "positive_hits": 0,
+        "positive_support": 2,
+        "false_positives": 0,
+        "negative_support": 6
+      }
+    },
+    "facts": {
+      "family": {
+        "correct": 5,
+        "count": 8,
+        "positive_hits": 0,
+        "positive_support": 0,
+        "false_positives": 0,
+        "negative_support": 0
+      },
+      "react": {
+        "correct": 6,
+        "count": 8,
+        "positive_hits": 1,
+        "positive_support": 2,
+        "false_positives": 1,
+        "negative_support": 6
+      },
+      "persistence": {
+        "correct": 4,
+        "count": 8,
+        "positive_hits": 0,
+        "positive_support": 2,
+        "false_positives": 2,
+        "negative_support": 6
+      }
+    },
+    "statements": {
+      "family": {
+        "correct": 0,
+        "count": 0,
+        "positive_hits": 0,
+        "positive_support": 0,
+        "false_positives": 0,
+        "negative_support": 0
+      },
+      "react": {
+        "correct": 1,
+        "count": 8,
+        "positive_hits": 0,
+        "positive_support": 2,
+        "false_positives": 5,
+        "negative_support": 6
+      },
+      "persistence": {
+        "correct": 3,
+        "count": 8,
+        "positive_hits": 2,
+        "positive_support": 2,
+        "false_positives": 5,
+        "negative_support": 6
+      }
+    }
+  },
+  "published_rows": [
+    {
+      "id": "agent_trace_observability_000000",
+      "question": "needs_review",
+      "expected": false,
+      "actual": false,
+      "p_true": 2.309077931683936e-07,
+      "correct": true
+    },
+    {
+      "id": "agent_trace_observability_000001",
+      "question": "needs_review",
+      "expected": false,
+      "actual": false,
+      "p_true": 3.3167500599226492e-06,
+      "correct": true
+    },
+    {
+      "id": "agent_trace_observability_000002",
+      "question": "needs_review",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.999978337953435,
+      "correct": false
+    },
+    {
+      "id": "invoice_processing_000000",
+      "question": "duplicate",
+      "expected": false,
+      "actual": false,
+      "p_true": 8.035033829547677e-07,
+      "correct": true
+    },
+    {
+      "id": "invoice_processing_000000",
+      "question": "matches_order",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9979812234025077,
+      "correct": false
+    },
+    {
+      "id": "invoice_processing_000001",
+      "question": "duplicate",
+      "expected": false,
+      "actual": false,
+      "p_true": 7.206964397322168e-07,
+      "correct": true
+    },
+    {
+      "id": "invoice_processing_000001",
+      "question": "matches_order",
+      "expected": false,
+      "actual": false,
+      "p_true": 1.1609366947485906e-05,
+      "correct": true
+    },
+    {
+      "id": "invoice_processing_000002",
+      "question": "duplicate",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.00033162671339165934,
+      "correct": true
+    },
+    {
+      "id": "invoice_processing_000002",
+      "question": "matches_order",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9997497612366355,
+      "correct": true
+    },
+    {
+      "id": "security_incidents_000000",
+      "question": "credential_compromise",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9999398515709135,
+      "correct": true
+    },
+    {
+      "id": "security_incidents_000000",
+      "question": "true_positive",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9999683369401515,
+      "correct": true
+    },
+    {
+      "id": "security_incidents_000001",
+      "question": "credential_compromise",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9999923629967877,
+      "correct": true
+    },
+    {
+      "id": "security_incidents_000001",
+      "question": "true_positive",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9999999026681258,
+      "correct": true
+    },
+    {
+      "id": "security_incidents_000002",
+      "question": "credential_compromise",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.0005641949095522977,
+      "correct": true
+    },
+    {
+      "id": "security_incidents_000002",
+      "question": "true_positive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.2864441069437575,
+      "correct": true
+    }
+  ],
+  "published_correct": 13,
+  "published_count": 15,
+  "encoder_parity_rows": 8,
+  "encoder_max_logit_delta": 0.0,
+  "encoder_all_decisions_equal": true,
+  "phase1_rows": [
+    {
+      "input": "official_billing",
+      "question": "team",
+      "expected": "billing",
+      "actual": "billing",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "billing": 0.8544645654086148,
+        "shipping": 0.14277118677864054,
+        "access": 0.0027642478127446273
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "original_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9999191641928412,
+      "correct": false,
+      "probabilities": {
+        "false": 8.083580715876847e-05,
+        "true": 0.9999191641928412
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "original_data",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9960392282245588,
+      "correct": true,
+      "probabilities": {
+        "false": 0.00396077177544116,
+        "true": 0.9960392282245588
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "complement_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9999244184713382,
+      "correct": false,
+      "probabilities": {
+        "false": 7.558152866179854e-05,
+        "true": 0.9999244184713382
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_react_literal",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.8603158879578647,
+      "correct": false,
+      "probabilities": {
+        "false": 0.13968411204213532,
+        "true": 0.8603158879578647
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_react_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.00927111214140317,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9907288878585967,
+        "true": 0.00927111214140317
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_data_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.39913753659157897,
+      "correct": false,
+      "probabilities": {
+        "false": 0.600862463408421,
+        "true": 0.39913753659157897
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_stack_choice",
+      "expected": "backend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": false,
+      "probabilities": {
+        "backend": 0.08742825950977072,
+        "frontend": 0.9125717404902293
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_stack_reversed",
+      "expected": "backend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": false,
+      "probabilities": {
+        "frontend": 0.966962636034279,
+        "backend": 0.03303736396572106
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "original_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.82525426740314,
+      "correct": false,
+      "probabilities": {
+        "false": 0.17474573259685994,
+        "true": 0.82525426740314
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "original_data",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9926905542986642,
+      "correct": true,
+      "probabilities": {
+        "false": 0.007309445701335784,
+        "true": 0.9926905542986642
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "complement_react",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.254704618652286,
+      "correct": true,
+      "probabilities": {
+        "false": 0.745295381347714,
+        "true": 0.254704618652286
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_react_literal",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.006819266366977297,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9931807336330227,
+        "true": 0.006819266366977297
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_react_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 6.182020036750949e-06,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9999938179799632,
+        "true": 6.182020036750949e-06
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_data_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 9.481972990298282e-05,
+      "correct": false,
+      "probabilities": {
+        "false": 0.999905180270097,
+        "true": 9.481972990298282e-05
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_stack_choice",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 0.9993558467607156,
+        "frontend": 0.0006441532392843645
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_stack_reversed",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.01867492799911951,
+        "backend": 0.9813250720008804
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "original_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9999998143790436,
+      "correct": false,
+      "probabilities": {
+        "false": 1.856209564149951e-07,
+        "true": 0.9999998143790436
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "original_data",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9990557792137119,
+      "correct": true,
+      "probabilities": {
+        "false": 0.0009442207862879285,
+        "true": 0.9990557792137119
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "complement_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.5962851638107168,
+      "correct": false,
+      "probabilities": {
+        "false": 0.4037148361892832,
+        "true": 0.5962851638107168
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_react_literal",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9632069927399092,
+      "correct": false,
+      "probabilities": {
+        "false": 0.03679300726009085,
+        "true": 0.9632069927399092
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_react_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.0007273723367269416,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9992726276632731,
+        "true": 0.0007273723367269416
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_data_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.02725312194725518,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9727468780527448,
+        "true": 0.02725312194725518
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_stack_choice",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 0.9952184617731124,
+        "frontend": 0.004781538226887553
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_stack_reversed",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.011962176044317003,
+        "backend": 0.9880378239556831
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "original_react",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9998884456476417,
+      "correct": true,
+      "probabilities": {
+        "false": 0.00011155435235822639,
+        "true": 0.9998884456476417
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "original_data",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9879984250890056,
+      "correct": false,
+      "probabilities": {
+        "false": 0.01200157491099442,
+        "true": 0.9879984250890056
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "complement_react",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9323769695931121,
+      "correct": true,
+      "probabilities": {
+        "false": 0.06762303040688784,
+        "true": 0.9323769695931121
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_react_literal",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.05506151726950958,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9449384827304904,
+        "true": 0.05506151726950958
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_react_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.04757512819719016,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9524248718028098,
+        "true": 0.04757512819719016
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_data_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.09669277735035588,
+      "correct": true,
+      "probabilities": {
+        "false": 0.903307222649644,
+        "true": 0.09669277735035588
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_stack_choice",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 6.847359116051705e-06,
+        "frontend": 0.999993152640884
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_stack_reversed",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.999997186042745,
+        "backend": 2.8139572549335326e-06
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "original_react",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9999982880657257,
+      "correct": true,
+      "probabilities": {
+        "false": 1.7119342743878055e-06,
+        "true": 0.9999982880657257
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "original_data",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.4196858687429945,
+      "correct": true,
+      "probabilities": {
+        "false": 0.5803141312570055,
+        "true": 0.4196858687429945
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "complement_react",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.0278488540546523,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9721511459453477,
+        "true": 0.0278488540546523
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_react_literal",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.028128647508262147,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9718713524917378,
+        "true": 0.028128647508262147
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_react_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.059370429241630135,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9406295707583698,
+        "true": 0.059370429241630135
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_data_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.00762485163496628,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9923751483650337,
+        "true": 0.00762485163496628
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_stack_choice",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 9.714420338544454e-06,
+        "frontend": 0.9999902855796615
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_stack_reversed",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.9999944359834839,
+        "backend": 5.564016515982124e-06
+      }
+    }
+  ]
+}

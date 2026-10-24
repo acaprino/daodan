@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review retry behavior when the nightly weather import cannot reach its upstream feed.",
+    "artifacts": [
+      {
+        "path": "collector.py",
+        "content": "import time\nimport requests\ndef collect(url):\n    for delay in (1, 2, 4):\n        try:\n            response = requests.get(url, timeout=10)\n            response.raise_for_status()\n            return response.json()\n        except requests.RequestException:\n            time.sleep(delay)\n    raise RuntimeError(\"feed unavailable\")"
+      },
+      {
+        "path": "deployment.md",
+        "content": "This scheduled Python job writes an archive for research batch processing. It exposes no application API and serves no web, mobile, Electron, or Tauri client."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "choice",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    }
+  }
+}

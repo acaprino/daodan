@@ -1,0 +1,19 @@
+{
+  "scope": "Complete contract and effective behavior for one local shared-setting scenario; no additional actor, failure, dependency or hidden guard exists.",
+  "requirement": "discount is an intentionally process-wide current setting. Every read must observe the most recent completed write. Per-invocation isolation is explicitly not required. Both A and B are authorized to update it.",
+  "available_facts": {
+    "singleton": true,
+    "callers": [
+      "A",
+      "B"
+    ],
+    "flow": [
+      "A writes discount=0.5",
+      "B writes discount=0",
+      "A reads discount=0"
+    ],
+    "runtime": "Each shown read/write is atomic and sequentially consistent in this exact permitted order. No cancellation, failure, additional actor or other state exists."
+  },
+  "expected_current_value_at_A_read": 0,
+  "construction_and_ownership": "One deliberately shared singleton is the sole setting owner; all access uses the declared atomic sequentially consistent operations."
+}

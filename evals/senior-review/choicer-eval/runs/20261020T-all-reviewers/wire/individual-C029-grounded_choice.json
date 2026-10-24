@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Rewrite only the voice of this paragraph to remove inflated language. Preserve its facts, order, links, and document structure; no factual or navigation review is requested.",
+    "artifacts": [
+      {
+        "path": "docs/intro.md",
+        "content": "Unlock a seamless journey into the powerful world of backups. Our robust tool empowers you to save a local archive and restore it later."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "choice",
+      "instructions": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      }
+    }
+  }
+}

@@ -1,0 +1,3550 @@
+{
+  "failures": [],
+  "gold_counts": {
+    "gold_c_activations": 23,
+    "gold_c_cases": 11,
+    "gold_c_labeled": 10,
+    "team_required": 39,
+    "team_roles": 22,
+    "teams": 12
+  },
+  "metrics_source": "imported ../metrics.py (_role_metrics, _calibration)",
+  "mode": "abstain",
+  "runtime_identity": "mock-gutsy/v1",
+  "suite2_matches_recorded": {
+    "0.45": false,
+    "0.50": false,
+    "0.55": false,
+    "0.60": false,
+    "0.65": false
+  },
+  "suite2_threshold_only_replay": {
+    "0.45": {
+      "acceptable_teams": "0/12",
+      "mandatory_found": "0/39 (0.0%)",
+      "mean_out_of_scope_per_team": 0.0,
+      "out_of_scope_selections": 0,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/5",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer",
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:security-auditor",
+            "typescript-development:type-safety-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/3",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T08",
+          "missing": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [
+            "testing:test-suite-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/1",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "project-knowledge:documentation-engineer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        }
+      ],
+      "total_selected": 0
+    },
+    "0.50": {
+      "acceptable_teams": "0/12",
+      "mandatory_found": "0/39 (0.0%)",
+      "mean_out_of_scope_per_team": 0.0,
+      "out_of_scope_selections": 0,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/5",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer",
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:security-auditor",
+            "typescript-development:type-safety-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/3",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T08",
+          "missing": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [
+            "testing:test-suite-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/1",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "project-knowledge:documentation-engineer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        }
+      ],
+      "total_selected": 0
+    },
+    "0.55": {
+      "acceptable_teams": "0/12",
+      "mandatory_found": "0/39 (0.0%)",
+      "mean_out_of_scope_per_team": 0.0,
+      "out_of_scope_selections": 0,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/5",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer",
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:security-auditor",
+            "typescript-development:type-safety-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/3",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T08",
+          "missing": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [
+            "testing:test-suite-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/1",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "project-knowledge:documentation-engineer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        }
+      ],
+      "total_selected": 0
+    },
+    "0.60": {
+      "acceptable_teams": "0/12",
+      "mandatory_found": "0/39 (0.0%)",
+      "mean_out_of_scope_per_team": 0.0,
+      "out_of_scope_selections": 0,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/5",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer",
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:security-auditor",
+            "typescript-development:type-safety-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/3",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T08",
+          "missing": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [
+            "testing:test-suite-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/1",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "project-knowledge:documentation-engineer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        }
+      ],
+      "total_selected": 0
+    },
+    "0.65": {
+      "acceptable_teams": "0/12",
+      "mandatory_found": "0/39 (0.0%)",
+      "mean_out_of_scope_per_team": 0.0,
+      "out_of_scope_selections": 0,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/5",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer",
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:security-auditor",
+            "typescript-development:type-safety-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/3",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T08",
+          "missing": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [
+            "testing:test-suite-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/1",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "project-knowledge:documentation-engineer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/2",
+          "selected": []
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "0/4",
+          "selected": []
+        }
+      ],
+      "total_selected": 0
+    }
+  },
+  "suite3_calibration": null,
+  "suite3_per_case_selected_matches_recorded_gutsy_exact_catalog_th_0.50": false,
+  "suite3_policy_results": [
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C01",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C02",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C03",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C04",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C05",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C06",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C07",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C08",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C09",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C10",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "C11",
+      "nominated": []
+    }
+  ],
+  "suite3_role_metrics_at_0.50": {
+    "benchmark_excess_activations": 0,
+    "benchmark_excess_per_case": 0.0,
+    "critical": {
+      "senior-review:data-integrity-auditor": {
+        "false_negatives": 4,
+        "recall": 0.0,
+        "support": 4,
+        "true_positives": 0
+      },
+      "senior-review:premise-auditor": {
+        "false_negatives": 0,
+        "recall": null,
+        "support": 0,
+        "true_positives": 0
+      },
+      "senior-review:security-auditor": {
+        "false_negatives": 1,
+        "recall": 0.0,
+        "support": 1,
+        "true_positives": 0
+      }
+    },
+    "critical_overall": {
+      "false_negatives": 5,
+      "recall": 0.0,
+      "support": 5,
+      "true_positives": 0
+    },
+    "expected_role_activations": 23,
+    "expected_role_recall": 0.0,
+    "false_negatives": 23,
+    "labeled_cases": 10,
+    "matched_expected_roles": 0
+  },
+  "team_policy_results": [
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T01",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T02",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T03",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T04",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T05",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T06",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T07",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T08",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T09",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T10",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T11",
+      "nominated": []
+    },
+    {
+      "audit": {
+        "abstained": [
+          {
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:code-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:premise-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:security-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "unnormalized_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "malformed_probabilities",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "testing:test-suite-auditor",
+            "reason": "missing_answer",
+            "status": "ABSTAIN"
+          },
+          {
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "z_abstention",
+            "status": "ABSTAIN"
+          }
+        ],
+        "applied": [],
+        "discarded": [],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T12",
+      "nominated": []
+    }
+  ],
+  "team_source": {
+    "fallback_used": false,
+    "path": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\all-reviewers\\teams.json",
+    "source": "teams.json"
+  }
+}

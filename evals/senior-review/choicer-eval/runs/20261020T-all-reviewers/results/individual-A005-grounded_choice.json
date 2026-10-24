@@ -1,0 +1,40 @@
+{
+  "id": "individual-A005-grounded_choice",
+  "request_sha256": "f4280de03fd068ca812f24b5767252aa4130443be601ddf2016865f1dc2bf9b0",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:security-auditor": {
+        "type": "choice",
+        "probabilities": {
+          "false": 0.05923604763617865,
+          "true": 0.9407639523638213
+        },
+        "choice": "true",
+        "max_probability": 0.9407639523638213
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:security-auditor": 0.9407639523638213
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:security-auditor": {
+      "tokens": 175,
+      "optionTokens": [
+        23,
+        27
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:security-auditor"
+  ],
+  "wall_seconds": 1.0758442000369541
+}

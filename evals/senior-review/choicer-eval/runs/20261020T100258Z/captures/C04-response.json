@@ -1,0 +1,14 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H1] candidate jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py:2781 def _check_trading_hours(hours_str: str, utc_dt: datetime, tz_id: str = \"US/Eastern\") -> bool:",
+      "reason": "Verify timezone handling and inclusive trading-hours boundaries, including overnight and malformed segments.",
+      "role": "senior-review:premise-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

@@ -13,3 +13,21 @@ items = "contract:evidenced-finding"
 [fields.knowledge_usage]
 type = "array"
 items = "contract:knowledge-usage"
+
+[fields.job_id]
+type = "string"
+[fields.specialist_ids]
+type = "array"
+items = "string"
+[fields.scope_id]
+type = "string"
+[fields.body_sha256]
+type = "string"
+[fields.candidate]
+type = "object"
+[fields.member_results]
+type = "array"
+items = "object"
+# Exactly one per assigned specialist: specialist_id, delivered|failed status,
+# complete|incomplete coverage, findings (canonical finding IDs), gaps.
+# A failed member can satisfy the delivery barrier, never required coverage.

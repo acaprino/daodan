@@ -1,0 +1,26 @@
+{
+  "id": "individual-B020-catalog_noul",
+  "kind": "individual",
+  "case_id": "B020",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the order controller for responsibility boundaries and error handling.",
+    "artifacts": [
+      {
+        "path": "OrderController.ts",
+        "content": "export async function createOrder(req, db, mailer) {\n  const items = JSON.parse(req.body.items);\n  if (!Array.isArray(items) || items.length === 0) throw new Error(\"items required\");\n  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);\n  const order = await db.insert(\"orders\", {items, total});\n  try { await mailer.send(order); } catch (error) { console.error(error); }\n  return order;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the task is security-specific auditing (use security-auditor).",
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
+      }
+    }
+  },
+  "sha256": "85f7a8e328a3710789f7904d0743ecf2471bda1220fc12c8dc3c4c0fd525f7f6"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-A006-grounded_noul",
+  "kind": "individual",
+  "case_id": "A006",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review how password-reset tokens are created and represented in the database insert parameters.",
+    "artifacts": [
+      {
+        "path": "app/reset_tokens.py",
+        "content": "import hashlib\nimport secrets\n\ndef new_reset_token(user_id):\n    token = secrets.token_urlsafe(32)\n    digest = hashlib.sha256(token.encode(\"ascii\")).hexdigest()\n    return token, {\"user_id\": user_id, \"token_digest\": digest}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  },
+  "sha256": "6af3f0a8c95994f8156b89d98326b8b68f3706a96188e58dd879282abf91c83a"
+}

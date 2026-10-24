@@ -1,0 +1,65 @@
+{
+  "prepared_at": "2026-10-20T11:36:01.628750+00:00",
+  "threshold": 0.5,
+  "tested_lenses": [
+    "abstraction-architect:abstraction-architect-agent",
+    "platform-engineering:platform-reviewer",
+    "project-knowledge:doc-humanizer",
+    "project-knowledge:documentation-engineer",
+    "project-knowledge:guide-reviewer",
+    "project-knowledge:instructions-auditor",
+    "react-development:react-performance-optimizer",
+    "repo-hygiene:workspace-auditor",
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:cleanup-auditor",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:ui-race-auditor",
+    "testing:test-suite-auditor",
+    "typescript-development:type-safety-auditor"
+  ],
+  "individual_cases": 132,
+  "team_cases": 12,
+  "requests": 420,
+  "requested_binary_decisions": 924,
+  "variants": {
+    "catalog_noul": "Exact extracted trigger text; incompatible inputs remain failures, not negative predictions.",
+    "grounded_noul": "Independently authored applicability question with complementary short descriptions.",
+    "grounded_choice": "Same question/descriptions; categorical false/true choice independently for each lens."
+  },
+  "team_rule": "Ask every lens independently; select all with true probability >=0.5 (choice uses argmax with false first). No single-winner team constraint.",
+  "ground_truth": "Individual relevance has explicit positive and negative controls. Team required_roles are mandatory, allowed_roles are acceptable additions, and the complement is forbidden within the stated task scope. Allowed roles never count as false positives. No complete-team decision is scored from partial outputs.",
+  "limitations": "Synthetic task-plus-evidence selection controls authored before predictions. Not actual reviewer execution, production coverage, measured token savings, or proof of equivalence to exact kernel triggers. Compact criteria and fixtures share role-source knowledge; independent review checks labels before inference.",
+  "source_hashes": {
+    "capacity.json": "5e2d3967b32c17b5e10b4c75f517ec3cb2237ba48162177fb856404f6a5c7b52",
+    "group-a.json": "44d78dbef61d56e2be7792e55cfaa3073a7439f2f59d1a6e48f145adfc5ca129",
+    "group-b.json": "f1bf71a8f540a2d65cc2fc7fa25e0da48c20cb90195e5c8057fe3a91b08e8968",
+    "group-c.json": "cce97ba9cdebd6d5a8ad3114fb6a025f728b817e82104d8811cee5da337d4a1f",
+    "historical-report-link.json": "8c078be5642bb68b4cde41e4f81b1ce8dba9fa54abb27f485c85ae4419873ae3",
+    "inventory.json": "11291391fd790fb21149b73055bc7af44078fbb7496352aa34cc1d54dd56f3c9",
+    "review-group-a.json": "1a17911d16cd70bc7dc43dc28e866c089cca5bb14361e468743d0ebad309ff89",
+    "review-group-b.json": "135f6310fd08fc977ff5514858e53b92bcafa505f9861a048f69e96a7c25dca0",
+    "review-group-c.json": "d7d3110dea365b37b654ec12867a2e613b9771daca5eee0ee48266e37a995f62",
+    "runner-review.json": "645bb2f1124a3f5bd9aafb4eb86e47435c6d3935234900371ebdbd03713b9b31",
+    "team-review.json": "258a1a07717d8b06e4b9a450acda9b0c7a965e0ff23307dfe7f0aeb1b3d934de",
+    "teams.json": "d88cc541c9f4831ec745018d407a1dedafb969dc759819d508b4e0dc8f33d894"
+  },
+  "script_sha256": "00aad7cb0140fc1abe8bd1b86511f8561b86712c278e5f4455ab59c3d5eee4f0",
+  "frozen_inputs": {
+    "suite.json": "5b1daa7809ec2f554186683537778907155602d8df70d6bb728d2b117b8a5d16",
+    "catalog.json": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+    "inventory.json": "e2c79aed1335380d718aeb950b295d3b7b41f276498e696e3e5595ec7ddc1127"
+  },
+  "runtime_sources": {
+    "all_reviewers_eval.py": "00aad7cb0140fc1abe8bd1b86511f8561b86712c278e5f4455ab59c3d5eee4f0",
+    "run_eval.py": "d8b18e7e7d7b68cb6cc39b33c7359661e962c61d3502fee5094a3be033b87573",
+    "dataset.py": "d6fbd713ac791b52e0fa29f879ad0709c15bc94f6945534dd67ca2af0de06725"
+  }
+}

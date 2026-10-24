@@ -1,0 +1,29 @@
+{
+  "kind": "simulation-only",
+  "trace": [
+    {
+      "attempt": "edit:1",
+      "input_digests": {},
+      "used_units": 2
+    },
+    {
+      "attempt": "review:1",
+      "input_digests": {
+        "document": "6b04a2d3c06c055b931aab2dda2d2752a45065c94deef184c3766442d145f946"
+      },
+      "used_units": 4
+    },
+    {
+      "attempt": "barrier:1",
+      "input_digests": {
+        "document": "6b04a2d3c06c055b931aab2dda2d2752a45065c94deef184c3766442d145f946",
+        "review": "944897af0bf824f568c06f31867f2824cab7cb921aeefdcd336ef389f2611651"
+      },
+      "used_units": 6
+    }
+  ],
+  "outcome": "VERIFIED_SUCCESS",
+  "real_workers": false,
+  "real_gate_commands": false,
+  "model_calls": 0
+}

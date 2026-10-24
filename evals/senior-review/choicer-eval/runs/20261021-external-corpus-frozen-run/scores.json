@@ -1,0 +1,4324 @@
+{
+  "rows": [
+    {
+      "case_id": "F01",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.091572700024699,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F01",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "excess_partial_label_proxy": 4,
+      "abstentions": 0,
+      "seconds": 4.202389199985191,
+      "activation_evidence": [
+        {
+          "role": "senior-review:data-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0010"
+        },
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W001",
+          "response": "Q0014"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W001",
+          "response": "Q0016"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F02",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 3.9740364999888698,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0019"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F02",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:ui-race-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:ui-race-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 4.0830904000176815,
+      "activation_evidence": [
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W001",
+          "response": "Q0032"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F03",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.18429729998752,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F03",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.4100809000228764,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F04",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.372749099988141,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F04",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.496670799984713,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F05",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 10.312551000024541,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F05",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 11.207399999999325,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0092"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F06",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.668895800015889,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F06",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.5697857000050135,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F07",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 10.904615599982208,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F07",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 11.235466199956136,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0124"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0140"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F08",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.7240900000033434,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F08",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.968568899988895,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F09",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.0828332999954,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F09",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.290657999998075,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F10",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 11.103305499971611,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F10",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 11.74975689999701,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0188"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0204"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F11",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 9.482591500040144,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0211"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F11",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "matched": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 9.362702200000058,
+      "activation_evidence": [
+        {
+          "role": "senior-review:data-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0218"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0220"
+        },
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W001",
+          "response": "Q0221"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F12",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 8.390160700000706,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0243"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0247"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q0259"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F12",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 8.875806699987152,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0252"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0255"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0268"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F13",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 4.549152399995364,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0275"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F13",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:security-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:security-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 4.560353799999575,
+      "activation_evidence": [
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W001",
+          "response": "Q0286"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F14",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 9.850773099984508,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F14",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 9.563914800048224,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F15",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 56,
+      "planned_calls": 56,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 4,
+      "abstentions": 0,
+      "seconds": 32.46456110007421,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0323"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q0339"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W004",
+          "response": "Q0371"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W005",
+          "response": "Q0387"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F15",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 56,
+      "planned_calls": 56,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected_fixed": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "excess_partial_label_proxy": 6,
+      "abstentions": 0,
+      "seconds": 34.47421410004608,
+      "activation_evidence": [
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W001",
+          "response": "Q0336"
+        },
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W002",
+          "response": "Q0350"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W002",
+          "response": "Q0352"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W003",
+          "response": "Q0368"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W004",
+          "response": "Q0384"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W005",
+          "response": "Q0400"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W007",
+          "response": "Q0428"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F16",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 48,
+      "planned_calls": 48,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 31.928024700071546,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W005",
+          "response": "Q0499"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F16",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 48,
+      "planned_calls": 48,
+      "selected_model": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [
+        "senior-review:ui-race-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 32.053400099961436,
+      "activation_evidence": [
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W003",
+          "response": "Q0479"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W003",
+          "response": "Q0480"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W004",
+          "response": "Q0496"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W006",
+          "response": "Q0528"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F17",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.928773900013766,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F17",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.725065400023595,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F18",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.4665120000136085,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F18",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.977942599987728,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F19",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.927462399980868,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F19",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.5447204999945825,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F20",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.836693699966418,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0579"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F20",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.00127490000159,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F21",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.388573800009908,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F21",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.3486932999803685,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F22",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.812900799981435,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F22",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.225830900017172,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F23",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.270396100007929,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F23",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.256302800014964,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F24",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.779928499963717,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0643"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F24",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.812079099981929,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F25",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 4.387844600001699,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0659"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F25",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.59115139998903,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F26",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.33107430000382,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F26",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.430877999999211,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F27",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.499897300003795,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F27",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:ui-race-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:ui-race-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 5.018394299986539,
+      "activation_evidence": [
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W001",
+          "response": "Q0704"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F28",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 10.582973099997616,
+      "activation_evidence": [
+        {
+          "role": "senior-review:data-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0706"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0707"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q0723"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F28",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:security-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:security-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:security-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 11.014443200037931,
+      "activation_evidence": [
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W001",
+          "response": "Q0718"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F29",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.750570699965465,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F29",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:cleanup-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor"
+      ],
+      "matched": [
+        "senior-review:cleanup-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.5403711999970255,
+      "activation_evidence": [
+        {
+          "role": "senior-review:cleanup-auditor",
+          "window_id": "W001",
+          "response": "Q0745"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F30",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.063480300028459,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F30",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.676461499999277,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F31",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.978650899982313,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F31",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.3113466000068,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F32",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 9.467706899973564,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0787"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F32",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 11.418237199977739,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0796"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F33",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 11.777137299985043,
+      "activation_evidence": [
+        {
+          "role": "senior-review:data-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0818"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0819"
+        },
+        {
+          "role": "senior-review:data-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0834"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q0835"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F33",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 13.209824500008835,
+      "activation_evidence": [
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W001",
+          "response": "Q0829"
+        },
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W002",
+          "response": "Q0845"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F34",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.13611919998948,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F34",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 5.84809100003622,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0860"
+        },
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W001",
+          "response": "Q0861"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F35",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 6.2628549999935785,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0867"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F35",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 6.233255100014503,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0876"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F36",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.57090820002486,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F36",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 6.726964599991334,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0892"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F37",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "missing": [
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.165046700029052,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0899"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F37",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.952314200010733,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F38",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.136774900034652,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F38",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.007201900007203,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F39",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 24,
+      "planned_calls": 24,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 14.337685200021951,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W003",
+          "response": "Q0963"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F39",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 24,
+      "planned_calls": 24,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 15.616884999981266,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F40",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 32,
+      "planned_calls": 32,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 18.57321229997615,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F40",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 32,
+      "planned_calls": 32,
+      "selected_model": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 22.80352979998861,
+      "activation_evidence": [
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W003",
+          "response": "Q1023"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W004",
+          "response": "Q1039"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F41",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.759960599985789,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q1043"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F41",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.1104744999611285,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F42",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 40,
+      "planned_calls": 40,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 26.609027299957233,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q1059"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q1075"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W003",
+          "response": "Q1091"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W004",
+          "response": "Q1107"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W005",
+          "response": "Q1123"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F42",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 40,
+      "planned_calls": 40,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "matched": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 30.2660999999498,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q1084"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W003",
+          "response": "Q1100"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W005",
+          "response": "Q1132"
+        },
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W005",
+          "response": "Q1133"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F43",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "missing": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 5.024597800002084,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q1139"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F43",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 5.215034999986528,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F44",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 9.885126200009836,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F44",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 7.036248600008548,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F45",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 6.395503499981714,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q1171"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F45",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 5.281644300019252,
+      "activation_evidence": [
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q1183"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F46",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 4.608826799973031,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F46",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.045648899977095,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F47",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.10547399999632,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F47",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.590643099989393,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F48",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 10.067199599987362,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F48",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 10.725479399974574,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F49",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.473242199965171,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F49",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.224870100006228,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F50",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.017902699968545,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q1267"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F50",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 7.820501499983948,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F51",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [
+        "senior-review:distributed-flow-auditor"
+      ],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 7.9112590000004275,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q1283"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F51",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.7009977999696275,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F52",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 5.447539900007541,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "F52",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 6.886643000019831,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    }
+  ],
+  "prefix_mode": "slot-restore",
+  "planned_calls": 1312,
+  "observed_calls": 1312,
+  "sampled_peak_combined_rss": 972275712,
+  "server_peak_rss": 926310400
+}

@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:09af44f45a5205ed57c50f501d917b205c4d5298db7a7595652d798a4aa667c4",
+  "coreDigest": "sha256:01f43307e27414bd8c3092ed07e36558a557204fc3cba24a7dcea27d2e0dc92b",
   "harnessStrategies": {},
   "host": "claude",
   "overrides": [],
   "plugin": "project-lifecycle",
-  "version": "2.1.3"
+  "version": "2.1.4"
 }

@@ -1,0 +1,108 @@
+{
+  "impl": "julia",
+  "variant": "choice",
+  "case_id": "C06",
+  "hunk_id": "H1",
+  "request_sha256": "478ab3da754e85b0842d0dee60060efff272fb1cdf6a3ee078da682c40c9e43b",
+  "status": "ok",
+  "selected": [
+    "senior-review:cleanup-auditor"
+  ],
+  "probabilities": {
+    "abstraction-architect:abstraction-architect-agent": 2.230938631344184e-06,
+    "platform-engineering:platform-reviewer": 0.03763664534229637,
+    "react-development:react-performance-optimizer": 3.364707894758622e-05,
+    "repo-hygiene:workspace-auditor": 0.0004510121084206563,
+    "senior-review:api-contract-auditor": 8.06962073753292e-07,
+    "senior-review:chicken-egg-detector": 6.836988780825179e-07,
+    "senior-review:cleanup-auditor": 0.9613133459299391,
+    "senior-review:code-auditor": 5.086554361729609e-05,
+    "senior-review:data-integrity-auditor": 1.1128358126453682e-06,
+    "senior-review:distributed-flow-auditor": 1.040869178814449e-06,
+    "senior-review:logic-integrity-auditor": 4.5554719685798997e-07,
+    "senior-review:premise-auditor": 2.638337343311032e-06,
+    "senior-review:resource-lifecycle-auditor": 9.5842692741942e-06,
+    "senior-review:security-auditor": 6.085637096721926e-07,
+    "senior-review:temporal-resilience-auditor": 0.00048632651235689436,
+    "senior-review:ui-race-auditor": 7.901451641332568e-07,
+    "testing:test-suite-auditor": 6.92768882945353e-06,
+    "typescript-development:type-safety-auditor": 1.2776283298399115e-06
+  },
+  "wall_seconds": 1.2866399000049569,
+  "cpu_seconds": 5.0625,
+  "phase": "warm",
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": 0
+  },
+  "raw_output": {
+    "answers": {
+      "reviewer": {
+        "type": "choice",
+        "probabilities": {
+          "abstraction-architect:abstraction-architect-agent": 2.230938631344184e-06,
+          "platform-engineering:platform-reviewer": 0.03763664534229637,
+          "react-development:react-performance-optimizer": 3.364707894758622e-05,
+          "repo-hygiene:workspace-auditor": 0.0004510121084206563,
+          "senior-review:api-contract-auditor": 8.06962073753292e-07,
+          "senior-review:chicken-egg-detector": 6.836988780825179e-07,
+          "senior-review:cleanup-auditor": 0.9613133459299391,
+          "senior-review:code-auditor": 5.086554361729609e-05,
+          "senior-review:data-integrity-auditor": 1.1128358126453682e-06,
+          "senior-review:distributed-flow-auditor": 1.040869178814449e-06,
+          "senior-review:logic-integrity-auditor": 4.5554719685798997e-07,
+          "senior-review:premise-auditor": 2.638337343311032e-06,
+          "senior-review:resource-lifecycle-auditor": 9.5842692741942e-06,
+          "senior-review:security-auditor": 6.085637096721926e-07,
+          "senior-review:temporal-resilience-auditor": 0.00048632651235689436,
+          "senior-review:ui-race-auditor": 7.901451641332568e-07,
+          "testing:test-suite-auditor": 6.92768882945353e-06,
+          "typescript-development:type-safety-auditor": 1.2776283298399115e-06
+        },
+        "choice": "senior-review:cleanup-auditor",
+        "max_probability": 0.9613133459299391
+      }
+    }
+  },
+  "validation_warnings": [],
+  "runtime_config": {
+    "batch_size": 1,
+    "threads": 4
+  },
+  "model_session_id": "choice-2026-10-20T10:56:02.371998+00:00",
+  "catalog_validation": "complete_catalog_required",
+  "inference_attempted": true,
+  "inference_performed": true,
+  "submitted_question_ids": [
+    "reviewer"
+  ],
+  "encoding": {
+    "reviewer": {
+      "tokens": 684,
+      "optionTokens": [
+        19,
+        18,
+        19,
+        20,
+        17,
+        16,
+        19,
+        19,
+        18,
+        19,
+        19,
+        18,
+        20,
+        18,
+        20,
+        20,
+        20,
+        20
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "question_errors": {}
+}

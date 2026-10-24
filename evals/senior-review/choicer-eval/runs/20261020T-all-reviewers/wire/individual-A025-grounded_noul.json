@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the implementation that reads a local export file and returns its first line.",
+    "artifacts": [
+      {
+        "path": "src/preview.py",
+        "content": "from pathlib import Path\n\ndef first_line(path: Path):\n    with path.open(encoding=\"utf-8\") as stream:\n        return stream.readline().rstrip(\"\\n\")\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the reservation write path used concurrently by the web workers, together with its steady-state table definition.",
+    "artifacts": [
+      {
+        "path": "db/schema.sql",
+        "content": "CREATE TABLE reservations (\n  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  event_id BIGINT NOT NULL,\n  seat TEXT NOT NULL,\n  UNIQUE (event_id, seat)\n);\n"
+      },
+      {
+        "path": "src/reservations.py",
+        "content": "def reserve(db, event_id, seat):\n    return db.execute(\n        \"INSERT INTO reservations(event_id, seat) VALUES (%s, %s) \"\n        \"ON CONFLICT (event_id, seat) DO NOTHING RETURNING id\",\n        (event_id, seat),\n    ).fetchone()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    }
+  }
+}

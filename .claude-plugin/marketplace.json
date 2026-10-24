@@ -5,7 +5,7 @@
   ],
   "metadata": {
     "description": "Daodan: a coherent AI development harness for project changes, meaningful tests, durable knowledge and verified evidence, with independent specialists.",
-    "version": "38.8.11"
+    "version": "38.9.0"
   },
   "name": "daodan",
   "owner": {
@@ -14,7 +14,9 @@
   "plugins": [
     {
       "agents": [
-        "./agents/abstraction-architect-agent.md"
+        "./agents/abstraction-architect-agent.md",
+        "./agents/abstraction-fit-auditor.md",
+        "./agents/concept-ownership-auditor.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -29,7 +31,7 @@
         "./skills/abstraction-architect"
       ],
       "source": "./exports/claude/plugins/abstraction-architect",
-      "version": "5.0.0"
+      "version": "5.1.0"
     },
     {
       "agents": [
@@ -73,7 +75,7 @@
         "./skills/map-method"
       ],
       "source": "./exports/claude/plugins/codebase-map",
-      "version": "8.6.5"
+      "version": "8.6.6"
     },
     {
       "author": {
@@ -129,7 +131,7 @@
       "license": "MIT",
       "name": "daodan",
       "source": "./exports/claude/plugins/daodan",
-      "version": "1.1.0"
+      "version": "1.3.0"
     },
     {
       "author": {
@@ -212,6 +214,11 @@
     },
     {
       "agents": [
+        "./agents/app-distribution-auditor.md",
+        "./agents/browser-compatibility-auditor.md",
+        "./agents/desktop-bridge-auditor.md",
+        "./agents/native-lifecycle-auditor.md",
+        "./agents/offline-lifecycle-auditor.md",
         "./agents/platform-reviewer.md"
       ],
       "author": {
@@ -225,7 +232,7 @@
         "./skills/platform-engineering"
       ],
       "source": "./exports/claude/plugins/platform-engineering",
-      "version": "2.0.0"
+      "version": "2.2.0"
     },
     {
       "agents": [
@@ -294,7 +301,7 @@
         "./skills/maintainer-method"
       ],
       "source": "./exports/claude/plugins/project-lifecycle",
-      "version": "2.1.3"
+      "version": "2.1.4"
     },
     {
       "agents": [
@@ -311,12 +318,13 @@
         "./skills/project-protocol"
       ],
       "source": "./exports/claude/plugins/project-protocol",
-      "version": "1.10.1"
+      "version": "1.11.0"
     },
     {
       "agents": [
         "./agents/python-engineer.md",
-        "./agents/python-refactor-agent.md"
+        "./agents/python-refactor-agent.md",
+        "./agents/python-semantics-auditor.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -342,11 +350,15 @@
         "./skills/uv-package-manager"
       ],
       "source": "./exports/claude/plugins/python-development",
-      "version": "4.0.1"
+      "version": "4.1.0"
     },
     {
       "agents": [
-        "./agents/react-performance-optimizer.md"
+        "./agents/react-bundle-auditor.md",
+        "./agents/react-dataflow-auditor.md",
+        "./agents/react-effects-auditor.md",
+        "./agents/react-performance-optimizer.md",
+        "./agents/react-render-cost-auditor.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -359,7 +371,7 @@
         "./skills/react-best-practices"
       ],
       "source": "./exports/claude/plugins/react-development",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "agents": [
@@ -376,7 +388,7 @@
         "./skills/repo-hygiene"
       ],
       "source": "./exports/claude/plugins/repo-hygiene",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "author": {
@@ -394,18 +406,56 @@
     },
     {
       "agents": [
+        "./agents/accessibility-auditor.md",
+        "./agents/accessible-navigation-auditor.md",
+        "./agents/accessible-perception-auditor.md",
+        "./agents/ai-boundary-auditor.md",
+        "./agents/algorithmic-cost-auditor.md",
         "./agents/api-contract-auditor.md",
+        "./agents/application-reachability-auditor.md",
+        "./agents/artifact-lifecycle-auditor.md",
+        "./agents/asset-delivery-auditor.md",
+        "./agents/audit-trail-auditor.md",
+        "./agents/authorization-auditor.md",
+        "./agents/browser-security-auditor.md",
+        "./agents/cache-consistency-auditor.md",
+        "./agents/callback-authenticity-auditor.md",
+        "./agents/capacity-quota-auditor.md",
         "./agents/chicken-egg-detector.md",
         "./agents/cleanup-auditor.md",
         "./agents/code-auditor.md",
         "./agents/data-integrity-auditor.md",
+        "./agents/data-representation-auditor.md",
+        "./agents/data-retention-auditor.md",
+        "./agents/dependency-usage-auditor.md",
         "./agents/distributed-flow-auditor.md",
+        "./agents/environment-binding-auditor.md",
+        "./agents/feature-flag-auditor.md",
+        "./agents/input-validation-auditor.md",
+        "./agents/local-concurrency-auditor.md",
+        "./agents/local-correctness-auditor.md",
         "./agents/logic-integrity-auditor.md",
+        "./agents/message-delivery-auditor.md",
+        "./agents/observability-auditor.md",
+        "./agents/operability-auditor.md",
+        "./agents/performance-auditor.md",
         "./agents/premise-auditor.md",
+        "./agents/recovery-auditor.md",
+        "./agents/release-compatibility-auditor.md",
+        "./agents/remote-effect-auditor.md",
         "./agents/resource-lifecycle-auditor.md",
+        "./agents/runtime-cost-auditor.md",
+        "./agents/schema-coherence-auditor.md",
+        "./agents/secret-exposure-auditor.md",
         "./agents/security-auditor.md",
+        "./agents/service-health-auditor.md",
+        "./agents/service-resilience-auditor.md",
+        "./agents/session-delegation-auditor.md",
+        "./agents/sql-efficiency-auditor.md",
         "./agents/temporal-resilience-auditor.md",
-        "./agents/ui-race-auditor.md"
+        "./agents/transaction-integrity-auditor.md",
+        "./agents/ui-race-auditor.md",
+        "./agents/untrusted-resource-auditor.md"
       ],
       "author": {
         "name": "Alfio Caprino"
@@ -437,7 +487,7 @@
         "./skills/review-quality-gates"
       ],
       "source": "./exports/claude/plugins/senior-review",
-      "version": "16.2.1"
+      "version": "16.4.0"
     },
     {
       "author": {
@@ -455,7 +505,14 @@
     },
     {
       "agents": [
+        "./agents/ai-evaluation-auditor.md",
+        "./agents/capacity-test-auditor.md",
+        "./agents/contract-test-auditor.md",
+        "./agents/journey-protection-auditor.md",
+        "./agents/test-oracle-auditor.md",
+        "./agents/test-reliability-auditor.md",
         "./agents/test-suite-auditor.md",
+        "./agents/test-suite-structure-auditor.md",
         "./agents/test-writer.md"
       ],
       "author": {
@@ -476,7 +533,7 @@
         "./skills/test-remediation-method"
       ],
       "source": "./exports/claude/plugins/testing",
-      "version": "4.1.1"
+      "version": "4.2.0"
     },
     {
       "agents": [
@@ -486,18 +543,20 @@
         "name": "Alfio Caprino"
       },
       "dependencies": [],
-      "description": "Prose humanization toolkit: the text-humanizer editor agent removes AI writing traces from any text in any language without inventing content (24 documented patterns: inflated symbolism, promotional language, AI vocabulary, filler phrases, formulaic structures, dash-as-connector asides), register-aware (docs, business, personal) with a full Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by digital-marketing (E-E-A-T copy), project-knowledge (AI trace removal on generated docs), business (GTM deliverables), and clean-code (prose routing). Extracted from digital-marketing in marketplace 13.3.0.",
+      "description": "Prose humanization toolkit: the text-humanizer editor agent improves prose in any language without inventing content (25 local patterns, including redundant reply context), register-aware (docs, business, personal) with a natural Italian profile, backed by the anti-ai-writing-patterns knowledge base and the humanize method behind /daodan:humanize-text, with optional 5-dimension quality scoring. Self-contained leaf plugin with zero dependencies, consumed by project-knowledge and project-lifecycle, and by digital-marketing and business in Shinatama. Clean-code routes prose requests here without a required dependency. Extracted from digital-marketing in marketplace 13.3.0.",
       "license": "MIT",
       "name": "text-humanizer",
       "skills": [
         "./skills/anti-ai-writing-patterns"
       ],
       "source": "./exports/claude/plugins/text-humanizer",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "agents": [
         "./agents/type-safety-auditor.md",
+        "./agents/type-soundness-auditor.md",
+        "./agents/typed-boundary-auditor.md",
         "./agents/typescript-engineer.md"
       ],
       "author": {
@@ -517,7 +576,7 @@
         "./skills/typescript-write"
       ],
       "source": "./exports/claude/plugins/typescript-development",
-      "version": "3.1.0"
+      "version": "3.2.0"
     }
   ]
 }

@@ -1,0 +1,1978 @@
+{
+  "schema": "choicer-eval/blind-audit-packet-v1",
+  "status": "unfilled_blind_packet",
+  "instructions": [
+    "Judge each lens from the shown code windows and rubric only.",
+    "Mark judgment as applicable, not_applicable or insufficient_evidence.",
+    "Provide a line/range anchor for applicable and an exclusion reason for not_applicable.",
+    "Calibrate on J01..J08 before judging D01..D27."
+  ],
+  "decision_rules": {
+    "jupiter_rubric_gate": "Two blind readers should recover at least 9/11 Jupiter positives and activate at most 2/30 explicit negatives before the rubric is used to rebuild external labels.",
+    "external_visibility_refuted_if": "At least 50% of the 32 development positive assignments are judged applicable with defensible code anchors, while frozen-model recall on that supported subset remains near the overall 11%.",
+    "external_visibility_supported_if": "At most 35% of the 32 development positive assignments are judged applicable from code alone, and frozen-model recall is materially higher on the code-supported subset than on the remaining assignments."
+  },
+  "rubric": {
+    "security-auditor": {
+      "applies": "Controls access to accounts or private data, validates untrusted input, or handles credentials, secrets or sensitive output.",
+      "excludes": "Pure internal computation, non-security hashing/IDs, or generic error handling without a trust boundary."
+    },
+    "data-integrity-auditor": {
+      "applies": "Reads, writes, invalidates or reconciles persisted records or cached copies of external state.",
+      "excludes": "Temporary local dictionaries, sets or counters used only inside a computation."
+    },
+    "temporal-resilience-auditor": {
+      "applies": "Governs retries, timeouts, timers, polling, backoff, recovery after failure or visibility of background errors over time.",
+      "excludes": "Merely using async syntax or converting a timestamp/date value."
+    },
+    "resource-lifecycle-auditor": {
+      "applies": "Acquires, retains or releases a lock, file, connection, subscription, worker or bounded resource slot across normal, error or cancel paths.",
+      "excludes": "Ordinary value allocation, string connection URLs or plain async calls without owned resource lifecycle."
+    },
+    "ui-race-auditor": {
+      "applies": "Coordinates UI events or asynchronous results with rendered state, visibility, focus, scroll or layout.",
+      "excludes": "Backend logic, static text or styling without asynchronous UI state coordination."
+    },
+    "distributed-flow-auditor": {
+      "applies": "Publishes, receives, acknowledges or routes messages across a service/process boundary or defines producer-consumer transport contracts.",
+      "excludes": "In-process function calls or local data transformations."
+    },
+    "logic-integrity-auditor": {
+      "applies": "Enforces a domain rule, allowed state transition, ordering requirement, idempotency condition, fallback semantics or ownership invariant.",
+      "excludes": "Generic formatting, logging or numerical/date conversion without a domain invariant."
+    },
+    "cleanup-auditor": {
+      "applies": "Shows unused or obsolete code, dependencies or assets, or documentation/comments that disagree with the implementation.",
+      "excludes": "Normal code or comments with no visible obsolescence or contradiction in the supplied input."
+    }
+  },
+  "items": [
+    {
+      "blind_id": "J01",
+      "group": "J",
+      "input_sha256": "3075413ac2ee7b896947b764a90f164b8c3023d846042aeb9981b466e9d604fc",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J01\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/scope_utils.py:318 (character offset 0)\ndef filter_account_scoped_items(\n    items: list[dict[str, Any]],\n    user_scopes: list[str],\n    agents: dict[str, dict[str, Any]]\n) -> list[dict[str, Any]]:\n    \"\"\"\n    Filter account-level items (positions) by agent scope.\n\n    Account-level items (netting-mode positions) carry no agent_instance_id.\n    Visibility is derived from scope-visible agents: an item is visible when\n    its account (broker_alias:account_login) or config_name belongs to at\n    least one agent visible under the user's scope patterns.\n\n    One account belongs to exactly one gestore (domain axiom, see\n    docs/01_domains/VISIBILITY_SCOPE.md), so account granularity equals\n    gestore granularity.\n\n    Args:\n        items: List of items carrying broker_alias/account_login/config_name\n        user_scopes: List of hierarchical scope patterns from user's JWT token\n        agents: Dictionary of agent_instance_id -> agent_info\n\n    Returns:\n        Filtered list containing only items whose account is visible\n    \"\"\"\n    if not user_scopes:\n        return []\n\n    if \"*\" in user_scopes:\n        return items\n\n    visible_agents = filter_agents_by_scope(agents, user_scopes)\n\n    visible_account_keys: set[str] = set()\n    visible_config_names: set[str] = set()\n    for agent_info in visible_agents.values():\n        broker_alias = agent_info.get('broker_alias')\n        account_login = agent_info.get('account_login')\n        if broker_alias and account_login:\n            visible_account_keys.add(f\"{broker_alias}:{account_login}\")\n        config_name = agent_info.get('config_name')\n        if config_name:\n            visible_config_names.add(config_name)\n\n    visible_items = []\n    for item in items:\n        broker_alias = item.get('broker_alias')\n        account_login = item.get('account_login')\n        if broker_alias and account_login and f\"{broker_alias}:{account_login}\" in visible_account_keys:\n            visible_items.append(item)\n            continue\n        config_name = item.get('config_name')\n        if config_name and config_name in visible_config_names:\n            visible_items.append(item)\n\n    return visible_items\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J02",
+      "group": "J",
+      "input_sha256": "de5ebb1a170a3bc42dee1c8fc3d69bb44c7773914c6ba3e396f5c008d1c746d0",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J02\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/async_cache.py:91 (character offset 0)\n    async def get(self, key: str, default: T | None = None) -> T | None:\n        \"\"\"\n        Get a value from cache.\n\n        Updates hit/miss statistics for observability.\n\n        Args:\n            key: Cache key\n            default: Value to return if key not found\n\n        Returns:\n            Cached value or default if not found/expired\n        \"\"\"\n        value = await self._cache.get(key)\n        if value is not None:\n            self._hits += 1\n            return value\n        else:\n            self._misses += 1\n            return default\n\n    async def set(\n        self,\n        key: str,\n        value: Any,\n        ttl: int | None = None,\n    ) -> bool:\n        \"\"\"\n        Set a value in cache.\n\n        Args:\n            key: Cache key\n            value: Value to cache\n            ttl: TTL in seconds (uses default if None)\n\n        Returns:\n            True if set successfully\n        \"\"\"\n        effective_ttl = ttl if ttl is not None else self._default_ttl\n        return await self._cache.set(key, value, ttl=effective_ttl)\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J03",
+      "group": "J",
+      "input_sha256": "cdde8ec837b25e6dffe42b6c1705768124b93a8e712fc92b20b54d357889ac3a",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J03\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:38 (character offset 0)\nasync def ack_round_trip(\n    *,\n    publish: Callable[[str], Awaitable[None]],\n    ack_event: asyncio.Event,\n    set_pending_trace_id: Callable[[str | None], None],\n    schedule: ProgressiveSchedule,\n    label: str,\n    logger: Any = None,\n    retry_on_publish_exc: tuple[type[BaseException], ...] = (),\n    trace_id_factory: Callable[[], str] = _default_trace_id,\n) -> None:\n    \"\"\"Publish a request, wait for the ACK event, retry on timeout.\n\n    Args:\n        publish: Called with `trace_id` per attempt. Must publish the\n            request message tagged with that trace_id so the listener\n            can validate match. May raise; see `retry_on_publish_exc`.\n        ack_event: An `asyncio.Event` that the listener sets when a\n            matching ACK arrives.\n        set_pending_trace_id: Sync callable invoked with the active\n            trace_id before each publish, and with `None` in the\n            finally block. The listener consults this to enforce\n            trace_id match.\n        schedule: Per-attempt (timeout, delay) values.\n        label: Used in log lines and the exhaustion exception message\n            (e.g. \"REGISTRATION\", \"LIFECYCLE\").\n        logger: Optional BotLogger-like object for progress logs.\n        retry_on_publish_exc: Tuple of exceptions from `publish` that\n            should be treated as transient (retry instead of propagating).\n            Empty tuple = propagate every publish exception.\n        trace_id_factory: Override for trace_id generation; defaults to\n            `new_id()`.\n\n    Raises:\n        RuntimeError: ACK not received within `schedule.max_attempts`.\n        Any non-listed exception from `publish` propagates immediately.\n    \"\"\"\n    try:\n        for attempt in range(schedule.max_attempts):\n            ack_event.clear()\n            trace_id = trace_id_factory()\n            set_pending_trace_id(trace_id)\n            timeout = schedule.timeouts_s[attempt]\n\n            publish_failed = False\n            try:\n                await publish(trace_id)\n            except retry_on_publish_exc as exc:\n                publish_failed = True\n                if logger is not None:\n                    logger.warning(\n                        f\"[{label}] publish failed on attempt \"\n                        f\"{attempt + 1}/{schedule.max_attempts} \"\n                        f\"({type(exc).__name__}); will retry\",\n                    )\n\n            if not publish_failed:\n                try:\n                    await asyncio.wait_for(ack_event.wait(), timeout=timeout)\n                    if logger is not None:\n                        logger.info(\n                            f\"[{label}] ACK received on attempt {attempt + 1} \"\n                            f\"(trace_id={trace_id})\",\n                        )\n                    return\n\n\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:103 (character offset 2799)\n "
+        },
+        {
+          "window_id": "W002",
+          "text": "Case J03\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:103 (character offset 2800)\n               except TimeoutError:\n                    if logger is not None:\n                        logger.warning(\n                            f\"[{label}] ACK timeout after {timeout}s \"\n                            f\"(attempt {attempt + 1}/{schedule.max_attempts}, \"\n                            f\"trace_id={trace_id})\",\n                        )\n\n            if attempt < schedule.max_attempts - 1:\n                await asyncio.sleep(schedule.delays_s[attempt])\n\n        raise RuntimeError(\n            f\"[{label}] ACK not received after {schedule.max_attempts} attempts\"\n        )\n    finally:\n        set_pending_trace_id(None)\n        ack_event.clear()\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J04",
+      "group": "J",
+      "input_sha256": "54b880bc916f89ba8f35d742ed6cf7c57114521c157d93984ba4b080d80fda37",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J04\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/datetime_utils.py:89 (character offset 0)\ndef dt_to_unix(dt: datetime | None) -> float:\n    \"\"\"\n    Convert a datetime object to a Unix timestamp.\n\n    If the datetime is None, returns -1.\n    If the datetime is naive (without timezone information), it is interpreted as UTC.\n    If the datetime is timezone-aware, it is first converted to UTC before calculating the timestamp.\n\n    Args:\n        dt: The datetime object to convert (can be None)\n\n    Returns:\n        Unix timestamp (float), or -1 if dt is None\n    \"\"\"\n    if dt is None:\n        return -1\n    elif dt.tzinfo is None:\n        # Naive datetime: interpreted as UTC\n        return calendar.timegm(dt.timetuple())\n    else:\n        # Timezone-aware datetime: convert to UTC and obtain the timestamp\n        dt_utc = dt.astimezone(timezone.utc)\n        return int(dt_utc.timestamp())\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J05",
+      "group": "J",
+      "input_sha256": "f62c4695407e59066292a45288c0bcea8168650d9938fc2f0113ccceb91a0db5",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J05\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/circuit_breaker.py:394 (character offset 0)\n    async def _can_execute(self) -> bool:\n        \"\"\"Check if a call is allowed to execute.\"\"\"\n        await self._check_and_update_state()\n\n        if self._state == CircuitState.CLOSED:\n            return True\n\n        if self._state == CircuitState.OPEN:\n            return False\n\n        if self._state == CircuitState.HALF_OPEN:\n            return self._half_open_calls < self.breaker_config.half_open_max_calls\n\n        return False\n\n    def _release_half_open_slot(self) -> None:\n        \"\"\"Free one HALF_OPEN probe slot. Must be called under `self._lock`.\n\n        `_half_open_calls` counts IN-FLIGHT probes, not lifetime admissions:\n        every admission MUST be paired with a release on completion (success,\n        failure, or cancellation). Without the release, `half_open_max_calls`\n        admissions would exhaust the budget forever and lock the breaker in\n        HALF_OPEN with no path back to CLOSED or OPEN.\n\n        Guarded on state + counter: if the circuit bounced HALF_OPEN -> OPEN ->\n        HALF_OPEN while the probe ran, the counter was already reset and this\n        release must not underflow it.\n        \"\"\"\n        if self._state == CircuitState.HALF_OPEN and self._half_open_calls > 0:\n            self._half_open_calls -= 1\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J06",
+      "group": "J",
+      "input_sha256": "7fbaf5b1c4099e9bcd08c95473c8a22f0975f00ca80083a7ecacbe5964450e25",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J06\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/id_utils.py:71 (character offset 0)\ndef deterministic_id(value: str, length: int = 6) -> str:\n    \"\"\"\n    Generate a deterministic ID from a string.\n\n    Creates a stable, reproducible ID by hashing the input string.\n    The same input will always produce the same output ID, making\n    this ideal for agent identification that persists across restarts.\n\n    Args:\n        value: String to hash.\n        length: The desired length for the ID (default: 6)\n\n    Returns:\n        An uppercase alphanumeric ID derived from SHA-256 hash of input.\n\n    Examples:\n        >>> deterministic_id(\"config1:EXECUTOR:EURUSD:M5:LONG\")\n        'A3B9X2'\n        >>> # Same inputs always produce same output\n        >>> deterministic_id(\"a:b\") == deterministic_id(\"a:b\")\n        True\n\n    Use Cases:\n        - Agent instance IDs that survive restarts\n        - Consistent identification in logs across CloudWatch\n        - Deterministic routing key generation\n\n    Note:\n        Input is lowercased before hashing to ensure case-insensitive consistency.\n    \"\"\"\n    # SHA-256 hash produces 64 hex characters, we take first `length`\n    hash_hex = hashlib.sha256(value.lower().encode('utf-8')).hexdigest()\n\n    return hash_hex[:length].upper()"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J07",
+      "group": "J",
+      "input_sha256": "319fbe6409946e75f4c74e8460e615c0ae16ac9d294ce9cf8f81b92a8ba19581",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J07\n[Code Under Review]\n[H1] jupiter-core/jupiter_core/utils/instrumented_lock.py:149 (character offset 0)\n    async def acquire(self, holder: str | None = None) -> bool:\n        \"\"\"\n        Acquire the lock, tracking wait time.\n\n        Args:\n            holder: Optional identifier for the acquirer (for debugging)\n\n        Returns:\n            True when lock is acquired\n        \"\"\"\n        start_time = time.perf_counter()\n\n        # Record who is waiting (for debugging deadlocks)\n        waiting_holder = holder or \"unknown\"\n\n        await self._lock.acquire()\n\n        # Calculate wait time\n        wait_time_ms = (time.perf_counter() - start_time) * 1000\n\n        # Update metrics\n        self._metrics.total_acquisitions += 1\n        self._metrics.total_wait_time_ms += wait_time_ms\n        self._metrics.last_acquisition_time_ms = wait_time_ms\n        self._metrics.last_holder = waiting_holder\n        self._current_holder = waiting_holder\n\n        if wait_time_ms > self._metrics.max_wait_time_ms:\n            self._metrics.max_wait_time_ms = wait_time_ms\n\n        # Log based on wait time\n        if wait_time_ms > self.warning_threshold_ms:\n            self._metrics.contention_events += 1\n            self._log_contention(wait_time_ms, waiting_holder)\n        elif self._log_all:\n            self._log_acquisition(wait_time_ms, waiting_holder)\n\n        return True\n\n    def release(self) -> None:\n        \"\"\"Release the lock.\"\"\"\n        self._current_holder = None\n        self._lock.release()\n\n    async def __aenter__(self) -> InstrumentedLock:\n        \"\"\"Async context manager entry.\"\"\"\n        await self.acquire()\n        self._hold_start = time.perf_counter()\n        return self\n\n    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:\n        \"\"\"Async context manager exit - tracks hold duration.\"\"\"\n        if self._hold_start is not None:\n            hold_duration_ms = (time.perf_counter() - self._hold_start) * 1000\n            self._hold_start = None\n\n            # Update hold duration metrics\n            self._metrics.total_hold_time_ms += hold_duration_ms\n            self._metrics.last_hold_time_ms = hold_duration_ms\n\n            if hold_duration_ms > self._metrics.max_hold_time_ms:\n                self._metrics.max_hold_time_ms = hold_duration_ms\n\n            # Log warning if lock was held too long\n            if hold_duration_ms > self.hold_warning_threshold_ms:\n                self._metrics.long_hold_events += 1\n                self._log_long_hold(hold_duration_ms)\n\n        self.release()\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "J08",
+      "group": "J",
+      "input_sha256": "fb5842d9fde6b767ad24cb451cddce4b959c2ba41ad51d240adfa4eb9c4f802a",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case J08\n[Code Under Review]\n[H1] jupiter-core/jupiter_core/utils/log_safety.py:87 (character offset 0)\n    def redact_message(self, message: str) -> str:\n        \"\"\"\n        Redact sensitive information from a log message.\n\n        In development environment, messages are NOT redacted to aid debugging.\n        In production/staging, sensitive data is masked for security.\n\n        Args:\n            message: The log message to redact\n\n        Returns:\n            Message with sensitive data masked as ***REDACTED*** (production/staging)\n            or original message (development)\n        \"\"\"\n        if not message:\n            return message\n\n        # Skip redaction in development environment\n        if self.is_development:\n            return message\n\n        redacted = message\n\n        # Redact each sensitive pattern\n        for pattern_name, pattern in self.SENSITIVE_PATTERNS.items():\n            if pattern_name == 'connection_string':\n                # Special handling for connection strings - keep protocol but hide credentials\n                redacted = pattern.sub(r'\\1://***REDACTED***@', redacted)\n            elif pattern_name in ['credit_card', 'ssn']:\n                # Fully mask credit cards and SSNs\n                redacted = pattern.sub('***REDACTED***', redacted)\n            else:\n                redacted = pattern.sub(r'\\1=***REDACTED***', redacted)\n\n        return redacted\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D01",
+      "group": "D",
+      "input_sha256": "a4aea7e63f0e584ed092907fa4eaa74ae90b34af0e0930d8cb4729b1d18fd0b5",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D01\n[Code Under Review]\n[H1] Entity/ClientContactDetails.php:12 (character offset 0)\n\nnamespace WellCommerce\\Bundle\\ClientBundle\\Entity;\n\nuse WellCommerce\\Bundle\\ClientBundle\\Entity\\ContactDetails;\n\n/**\n * Class ClientContactDetails\n *\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D02",
+      "group": "D",
+      "input_sha256": "633be53d2323a5805b393e6be9a6d3ac1992dbfb64732330a94eb38a62c128ea",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D02\n[Code Under Review]\n[H1] src/WellCommerce/Bundle/ProductBundle/DataGrid/ProductDataGrid.php:16 (character offset 0)\nuse WellCommerce\\Component\\DataGrid\\Column\\ColumnCollection;\nuse WellCommerce\\Component\\DataGrid\\Column\\Options\\Appearance;\nuse WellCommerce\\Component\\DataGrid\\Column\\Options\\Filter;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\DataLoadedEventHandler;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\LoadedEventHandler;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\ProcessEventHandler;\nuse WellCommerce\\Component\\DataGrid\\Configuration\\EventHandler\\UpdateRowEventHandler;\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D03",
+      "group": "D",
+      "input_sha256": "6bce07dafa33b34346ce2d15ccc8c61ab05020d273c8074cb207feb6fd76c4c0",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D03\n[Code Under Review]\n[H1] src/ol/source/Stamen.js:91 (character offset 0)\n/**\n * @typedef {Object} Options\n * @property {number} [cacheSize=2048] Cache size.\n * @property {string} [layer] Layer.\n * @property {number} [minZoom] Minimum zoom.\n * @property {number} [maxZoom] Maximum zoom.\n * @property {boolean} [opaque] Whether the layer is opaque.\n * @property {number} [reprojectionErrorThreshold=0.5] Maximum allowed reprojection error (in pixels).\n * Higher values can increase reprojection performance, but decrease precision.\n * @property {import(\"../Tile.js\").LoadFunction} [tileLoadFunction]\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D04",
+      "group": "D",
+      "input_sha256": "7eae4d031f784b0a710e4eda01fae9dc68553abdd6455c6350972311832eba97",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D04\n[Code Under Review]\n[H1] tests/host_callback_test.py:46 (character offset 0)\n  if os.getenv(\"JAX_ENABLE_JIT_PRINT\", \"false\") == \"false\":\n    raise SkipTest(\"print jit not enabled yet; use JAX_ENABLE_JIT_PRINT env.\")\n\nclass _TestingOutputStream(object):\n  \"\"\"Use as `output_stream` for tests.\"\"\"\n\n\n\n[H2] tests/host_callback_test.py:532 (character offset 0)\n              dtype=dtype,\n              nr_args=nr_args) for nr_args in [1, 2]\n          for shape in [(), (2,), (2, 3), (2, 3, 4)]\n          for dtype in jtu.supported_dtypes()))\n  def test_jit_types(self, nr_args=2, dtype=np.int16, shape=(2,)):\n    if dtype in (np.complex64, np.complex128, np.bool_):\n      raise SkipTest(f\"id_print jit not implemented for {dtype}.\")\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D05",
+      "group": "D",
+      "input_sha256": "2634eaa6dba47068871b68421a8888a278fa73b7ed931cccf9697bc2c090023f",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D05\n[Code Under Review]\n[H1] FFmpeg/function-3.c:1 (character offset 0)\nint ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,\n\n                      AVCodecContext *codec, int size, int big_endian)\n\n{\n\n    int id;\n\n    uint64_t bitrate;\n\n\n\n    if (size < 14) {\n\n        avpriv_request_sample(codec, \"wav header size < 14\");\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n\n\n    codec->codec_type  = AVMEDIA_TYPE_AUDIO;\n\n    if (!big_endian) {\n\n        id                 = avio_rl16(pb);\n\n        if (id != 0x0165) {\n\n            codec->channels    = avio_rl16(pb);\n\n            codec->sample_rate = avio_rl32(pb);\n\n            bitrate            = avio_rl32(pb) * 8LL;\n\n            codec->block_align = avio_rl16(pb);\n\n        }\n\n    } else {\n\n        id                 = avio_rb16(pb);\n\n        codec->channels    = avio_rb16(pb);\n\n        codec->sample_rate = avio_rb32(pb);\n\n        bitrate            = avio_rb32(pb) * 8LL;\n\n        codec->block_align = avio_rb16(pb);\n\n    }\n\n    if (size == 14) {  /* We're dealing with plain vanilla WAVEFORMAT */\n\n        codec->bits_per_coded_sample = 8;\n\n    } else {\n\n        if (!big_endian) {\n\n            codec->bits_per_coded_sample = avio_rl16(pb);\n\n        } else {\n\n            codec->bits_per_coded_sample = avio_rb16(pb);\n\n        }\n\n    }\n\n    if (id == 0xFFFE) {\n\n        codec->codec_tag = 0;\n\n    } else {\n\n        codec->codec_tag = id;\n\n        codec->codec_id  = ff_wav_codec_get_id(id,\n\n                                               codec->bits_per_coded_sample);\n\n    }\n\n    if (size >= 18 && id != 0x0165) {  /* We're obviously dealing with WAVEFORMATEX */\n\n        int cbSize = avio_rl16(pb); /* cbSize */\n\n        if (big_endian) {\n\n            avpriv_report_missing_feature(codec, \"WAVEFORMATEX support for RIFX files\\n\");\n\n            return AVERROR_PATCHWELCOME;\n\n        }\n\n        size  -= 18;\n\n        cbSize = FFMIN(size, cbSize);\n\n        if (cbSize >= 22 && id == 0xfffe) { /* WAVEFORMATEXTENSIBLE */\n\n            parse_waveformatex(pb, codec);\n\n            cbSize -= 22;\n\n            size   -= 22;\n\n        }\n\n        if (cbSize > 0) {\n\n            av_freep(&codec->extradata);\n\n            if (ff_get_extradata(codec, pb, cbSize) < 0)\n\n                return AVERROR(ENOMEM);\n\n            size -= cbSize;\n\n        }\n\n\n\n        /* It is possible for the chunk to contain garbage at the end */\n\n        if (size > 0)\n\n            avio_skip(pb, size);\n\n    } else if (id == 0x0165 && size >= 32) {\n\n        int nb_streams, i;\n\n\n\n        size -= 4;\n\n        av_freep(&codec->extradata);\n\n        if (ff_get_extradata(codec, pb, size) < 0)\n\n            return AVERROR(ENOMEM);\n\n        nb_streams         = AV_RL16(codec->extradata + 4);\n\n        codec->sample_rate = AV_RL32(codec->extradata + 12);\n\n        codec->channels    = 0;\n\n        bitrate            = 0;\n\n\n\n[H1] FFmpeg/function-3.c:155 (character offset 2771)\n        if (size < 8 + nb_str"
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D05\n[Code Under Review]\n[H1] FFmpeg/function-3.c:155 (character offset 2800)\neams * 20)\n\n            return AVERROR_INVALIDDATA;\n\n        for (i = 0; i < nb_streams; i++)\n\n            codec->channels += codec->extradata[8 + i * 20 + 17];\n\n    }\n\n\n\n    if (bitrate > INT_MAX) {\n\n        if (s->error_recognition & AV_EF_EXPLODE) {\n\n            av_log(s, AV_LOG_ERROR,\n\n                   \"The bitrate %\"PRIu64\" is too large.\\n\",\n\n                    bitrate);\n\n            return AVERROR_INVALIDDATA;\n\n        } else {\n\n            av_log(s, AV_LOG_WARNING,\n\n                   \"The bitrate %\"PRIu64\" is too large, resetting to 0.\",\n\n                   bitrate);\n\n            codec->bit_rate = 0;\n\n        }\n\n    } else {\n\n        codec->bit_rate = bitrate;\n\n    }\n\n\n\n    if (codec->sample_rate <= 0) {\n\n        av_log(s, AV_LOG_ERROR,\n\n               \"Invalid sample rate: %d\\n\", codec->sample_rate);\n\n        return AVERROR_INVALIDDATA;\n\n    }\n\n    if (codec->codec_id == AV_CODEC_ID_AAC_LATM) {\n\n        /* Channels and sample_rate values are those prior to applying SBR\n\n         * and/or PS. */\n\n        codec->channels    = 0;\n\n        codec->sample_rate = 0;\n\n    }\n\n    /* override bits_per_coded_sample for G.726 */\n\n    if (codec->codec_id == AV_CODEC_ID_ADPCM_G726 && codec->sample_rate)\n\n        codec->bits_per_coded_sample = codec->bit_rate / codec->sample_rate;\n\n\n\n    return 0;\n\n}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D06",
+      "group": "D",
+      "input_sha256": "856ac537aa92de504e1cea307ce0c29ffd992165a6e4f8fa7c82a861dde661ef",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D06\n[Code Under Review]\n[H1] FFmpeg/function-35.c:1 (character offset 0)\nstatic int subframe_count_exact(FlacEncodeContext *s, FlacSubframe *sub,\n\n                                int pred_order)\n\n{\n\n    int p, porder, psize;\n\n    int i, part_end;\n\n    int count = 0;\n\n\n\n    /* subframe header */\n\n    count += 8;\n\n\n\n    /* subframe */\n\n    if (sub->type == FLAC_SUBFRAME_CONSTANT) {\n\n        count += sub->obits;\n\n    } else if (sub->type == FLAC_SUBFRAME_VERBATIM) {\n\n        count += s->frame.blocksize * sub->obits;\n\n    } else {\n\n        /* warm-up samples */\n\n        count += pred_order * sub->obits;\n\n\n\n        /* LPC coefficients */\n\n        if (sub->type == FLAC_SUBFRAME_LPC)\n\n            count += 4 + 5 + pred_order * s->options.lpc_coeff_precision;\n\n\n\n        /* rice-encoded block */\n\n        count += 2;\n\n\n\n        /* partition order */\n\n        porder = sub->rc.porder;\n\n        psize  = s->frame.blocksize >> porder;\n\n        count += 4;\n\n\n\n        /* residual */\n\n        i        = pred_order;\n\n        part_end = psize;\n\n        for (p = 0; p < 1 << porder; p++) {\n\n            int k = sub->rc.params[p];\n\n            count += 4;\n\n            count += rice_count_exact(&sub->residual[i], part_end - i, k);\n\n            i = part_end;\n\n            part_end = FFMIN(s->frame.blocksize, part_end + psize);\n\n        }\n\n    }\n\n\n\n    return count;\n\n}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D07",
+      "group": "D",
+      "input_sha256": "d6d946dba10d6a956a8d8374bdc393723a14b8e7719a9e2b2b0c1be7098b7285",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D07\n[Code Under Review]\n[H1] FFmpeg/function-60.c:1 (character offset 0)\nstatic int mpeg1_decode_sequence(AVCodecContext *avctx, \n\n                                 UINT8 *buf, int buf_size)\n\n{\n\n    Mpeg1Context *s1 = avctx->priv_data;\n\n    MpegEncContext *s = &s1->mpeg_enc_ctx;\n\n    int width, height, i, v, j;\n\n    float aspect;\n\n\n\n    init_get_bits(&s->gb, buf, buf_size);\n\n\n\n    width = get_bits(&s->gb, 12);\n\n    height = get_bits(&s->gb, 12);\n\n    s->aspect_ratio_info= get_bits(&s->gb, 4);\n\n    if(!s->mpeg2){\n\n        aspect= mpeg1_aspect[s->aspect_ratio_info];\n\n        if(aspect!=0.0) avctx->aspect_ratio= width/(aspect*height);\n\n    }\n\n\n\n    s->frame_rate_index = get_bits(&s->gb, 4);\n\n    if (s->frame_rate_index == 0)\n\n        return -1;\n\n    s->bit_rate = get_bits(&s->gb, 18) * 400;\n\n    if (get_bits1(&s->gb) == 0) /* marker */\n\n        return -1;\n\n    if (width <= 0 || height <= 0 ||\n\n        (width % 2) != 0 || (height % 2) != 0)\n\n        return -1;\n\n    if (width != s->width ||\n\n        height != s->height) {\n\n        /* start new mpeg1 context decoding */\n\n        s->out_format = FMT_MPEG1;\n\n        if (s1->mpeg_enc_ctx_allocated) {\n\n            MPV_common_end(s);\n\n        }\n\n        s->width = width;\n\n        s->height = height;\n\n        avctx->has_b_frames= 1;\n\n        s->avctx = avctx;\n\n        avctx->width = width;\n\n        avctx->height = height;\n\n        if (s->frame_rate_index >= 9) {\n\n            /* at least give a valid frame rate (some old mpeg1 have this) */\n\n            avctx->frame_rate = 25 * FRAME_RATE_BASE;\n\n        } else {\n\n            avctx->frame_rate = frame_rate_tab[s->frame_rate_index];\n\n        }\n\n        s->frame_rate = avctx->frame_rate;\n\n        avctx->bit_rate = s->bit_rate;\n\n        \n\n        if (MPV_common_init(s) < 0)\n\n            return -1;\n\n        s1->mpeg_enc_ctx_allocated = 1;\n\n    }\n\n\n\n    skip_bits(&s->gb, 10); /* vbv_buffer_size */\n\n    skip_bits(&s->gb, 1);\n\n\n\n    /* get matrix */\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->intra_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_intra_matrix[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n    }\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n\n\n[H1] FFmpeg/function-60.c:171 (character offset 2792)\n        "
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D07\n[Code Under Review]\n[H1] FFmpeg/function-60.c:171 (character offset 2800)\n}\n\n#ifdef DEBUG\n\n        dprintf(\"non intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->inter_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_non_intra_matrix[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n        }\n\n    }\n\n\n\n    /* we set mpeg2 parameters so that it emulates mpeg1 */\n\n    s->progressive_sequence = 1;\n\n    s->progressive_frame = 1;\n\n    s->picture_structure = PICT_FRAME;\n\n    s->frame_pred_frame_dct = 1;\n\n    s->mpeg2 = 0;\n\n    avctx->sub_id = 1; /* indicates mpeg1 */\n\n    return 0;\n\n}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D08",
+      "group": "D",
+      "input_sha256": "254490b3e42bd3413696f83f003b58c4129c17729ebe251e599b8c0bc96f540d",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D08\n[Code Under Review]\n[H1] FFmpeg/function-121.c:1 (character offset 0)\nstatic void vc1_inv_trans_8x8_dc_c(uint8_t *dest, int linesize, DCTELEM *block)\n\n{\n\n    int i;\n\n    int dc = block[0];\n\n    const uint8_t *cm;\n\n    dc = (3 * dc +  1) >> 1;\n\n    dc = (3 * dc + 16) >> 5;\n\n    cm = ff_cropTbl + MAX_NEG_CROP + dc;\n\n    for(i = 0; i < 8; i++){\n\n        dest[0] = cm[dest[0]];\n\n        dest[1] = cm[dest[1]];\n\n        dest[2] = cm[dest[2]];\n\n        dest[3] = cm[dest[3]];\n\n        dest[4] = cm[dest[4]];\n\n        dest[5] = cm[dest[5]];\n\n        dest[6] = cm[dest[6]];\n\n        dest[7] = cm[dest[7]];\n\n        dest += linesize;\n\n    }\n\n}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D09",
+      "group": "D",
+      "input_sha256": "0a8eecf8e2926b12ef4b20cd372c9a6858de896a8add623870617037f4b2e940",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D09\n[Code Under Review]\n[H1] FFmpeg/function-149.c:1 (character offset 0)\nstatic void compute_rematrixing_strategy(AC3EncodeContext *s)\n\n{\n\n    int nb_coefs;\n\n    int blk, bnd, i;\n\n    AC3Block *block, *block0;\n\n\n\n    s->num_rematrixing_bands = 4;\n\n\n\n    if (s->rematrixing & AC3_REMATRIXING_IS_STATIC)\n\n        return;\n\n\n\n    nb_coefs = FFMIN(s->nb_coefs[0], s->nb_coefs[1]);\n\n\n\n    for (blk = 0; blk < AC3_MAX_BLOCKS; blk++) {\n\n        block = &s->blocks[blk];\n\n        block->new_rematrixing_strategy = !blk;\n\n        for (bnd = 0; bnd < s->num_rematrixing_bands; bnd++) {\n\n            /* calculate calculate sum of squared coeffs for one band in one block */\n\n            int start = ff_ac3_rematrix_band_tab[bnd];\n\n            int end   = FFMIN(nb_coefs, ff_ac3_rematrix_band_tab[bnd+1]);\n\n            CoefSumType sum[4] = {0,};\n\n            for (i = start; i < end; i++) {\n\n                CoefType lt = block->mdct_coef[0][i];\n\n                CoefType rt = block->mdct_coef[1][i];\n\n                CoefType md = lt + rt;\n\n                CoefType sd = lt - rt;\n\n                sum[0] += lt * lt;\n\n                sum[1] += rt * rt;\n\n                sum[2] += md * md;\n\n                sum[3] += sd * sd;\n\n            }\n\n\n\n            /* compare sums to determine if rematrixing will be used for this band */\n\n            if (FFMIN(sum[2], sum[3]) < FFMIN(sum[0], sum[1]))\n\n                block->rematrixing_flags[bnd] = 1;\n\n            else\n\n                block->rematrixing_flags[bnd] = 0;\n\n\n\n            /* determine if new rematrixing flags will be sent */\n\n            if (blk &&\n\n                block->rematrixing_flags[bnd] != block0->rematrixing_flags[bnd]) {\n\n                block->new_rematrixing_strategy = 1;\n\n            }\n\n        }\n\n        block0 = block;\n\n    }\n\n}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D10",
+      "group": "D",
+      "input_sha256": "1b7aac1893ad0c93c7147d2e039b8151b5a2cb017c6159275dd04347151231d1",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D10\n[Code Under Review]\n[H1] FFmpeg/function-185.c:1 (character offset 0)\nstatic int rv34_decode_mv(RV34DecContext *r, int block_type)\n\n{\n\n    MpegEncContext *s = &r->s;\n\n    GetBitContext *gb = &s->gb;\n\n    int i, j, k, l;\n\n    int mv_pos = s->mb_x * 2 + s->mb_y * 2 * s->b8_stride;\n\n    int next_bt;\n\n\n\n    memset(r->dmv, 0, sizeof(r->dmv));\n\n    for(i = 0; i < num_mvs[block_type]; i++){\n\n        r->dmv[i][0] = svq3_get_se_golomb(gb);\n\n        r->dmv[i][1] = svq3_get_se_golomb(gb);\n\n    }\n\n    switch(block_type){\n\n    case RV34_MB_TYPE_INTRA:\n\n    case RV34_MB_TYPE_INTRA16x16:\n\n        ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n        return 0;\n\n    case RV34_MB_SKIP:\n\n        if(s->pict_type == AV_PICTURE_TYPE_P){\n\n            ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n            rv34_mc_1mv (r, block_type, 0, 0, 0, 2, 2, 0);\n\n            break;\n\n        }\n\n    case RV34_MB_B_DIRECT:\n\n        //surprisingly, it uses motion scheme from next reference frame\n\n        /* wait for the current mb row to be finished */\n\n        if (HAVE_THREADS && (s->avctx->active_thread_type & FF_THREAD_FRAME))\n\n            ff_thread_await_progress(&s->next_picture_ptr->f, s->mb_y - 1, 0);\n\n\n\n        next_bt = s->next_picture_ptr->f.mb_type[s->mb_x + s->mb_y * s->mb_stride];\n\n        if(IS_INTRA(next_bt) || IS_SKIP(next_bt)){\n\n            ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n            ZERO8x2(s->current_picture_ptr->f.motion_val[1][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n        }else\n\n            for(j = 0; j < 2; j++)\n\n                for(i = 0; i < 2; i++)\n\n                    for(k = 0; k < 2; k++)\n\n                        for(l = 0; l < 2; l++)\n\n                            s->current_picture_ptr->f.motion_val[l][mv_pos + i + j*s->b8_stride][k] = calc_add_mv(r, l, s->next_picture_ptr->f.motion_val[0][mv_pos + i + j*s->b8_stride][k]);\n\n        if(!(IS_16X8(next_bt) || IS_8X16(next_bt) || IS_8X8(next_bt))) //we can use whole macroblock MC\n\n            rv34_mc_2mv(r, block_type);\n\n        else\n\n            rv34_mc_2mv_skip(r);\n\n        ZERO8x2(s->current_picture_ptr->f.motion_val[0][s->mb_x * 2 + s->mb_y * 2 * s->b8_stride], s->b8_stride);\n\n        break;\n\n    case RV34_MB_P_16x16:\n\n    case RV34_MB_P_MIX16x16:\n\n        rv34_pred_mv(r, block_type, 0, 0);\n\n        rv34_mc_1mv (r, block_type, 0, 0, 0, 2, 2, 0);\n\n        break;\n\n    case RV34_MB_B_FORWARD:\n\n    case RV34_MB_B_BACKWARD:\n\n        r->dmv[1][0] = r->dmv[0][0];\n\n        r->dmv[1][1] = r->dmv[0][1];\n\n        if(r->rv30)\n\n            rv34_pred_mv_rv3(r, block_type, block_type == RV34_MB_B_BACKWARD);\n\n        else\n\n\n\n[H1] FFmpeg/function-185.c:117 (character offset 2745)\n            rv34_pred_mv_b  (r, block_type, block_type "
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D10\n[Code Under Review]\n[H1] FFmpeg/function-185.c:117 (character offset 2800)\n== RV34_MB_B_BACKWARD);\n\n        rv34_mc_1mv     (r, block_type, 0, 0, 0, 2, 2, block_type == RV34_MB_B_BACKWARD);\n\n        break;\n\n    case RV34_MB_P_16x8:\n\n    case RV34_MB_P_8x16:\n\n        rv34_pred_mv(r, block_type, 0, 0);\n\n        rv34_pred_mv(r, block_type, 1 + (block_type == RV34_MB_P_16x8), 1);\n\n        if(block_type == RV34_MB_P_16x8){\n\n            rv34_mc_1mv(r, block_type, 0, 0, 0,            2, 1, 0);\n\n            rv34_mc_1mv(r, block_type, 0, 8, s->b8_stride, 2, 1, 0);\n\n        }\n\n        if(block_type == RV34_MB_P_8x16){\n\n            rv34_mc_1mv(r, block_type, 0, 0, 0, 1, 2, 0);\n\n            rv34_mc_1mv(r, block_type, 8, 0, 1, 1, 2, 0);\n\n        }\n\n        break;\n\n    case RV34_MB_B_BIDIR:\n\n        rv34_pred_mv_b  (r, block_type, 0);\n\n        rv34_pred_mv_b  (r, block_type, 1);\n\n        rv34_mc_2mv     (r, block_type);\n\n        break;\n\n    case RV34_MB_P_8x8:\n\n        for(i=0;i< 4;i++){\n\n            rv34_pred_mv(r, block_type, i, i);\n\n            rv34_mc_1mv (r, block_type, (i&1)<<3, (i&2)<<2, (i&1)+(i>>1)*s->b8_stride, 1, 1, 0);\n\n        }\n\n        break;\n\n    }\n\n\n\n    return 0;\n\n}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D11",
+      "group": "D",
+      "input_sha256": "1f60e50aeae2c19abc5cb4834c06a8cc3982a0b78a3302c2e6fdb44d6dfd6dad",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D11\n[Code Under Review]\n[H1] release-notes/VERSION-2.x:25 (character offset 0)\n (fix by Joo-Hyuk K)\n#4450: Empty QName deserialized as `null`\n (reported by @winfriedgerlach)\n\n2.17.0 (12-Mar-2024)\n\n"
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D11\n[Code Under Review]\n[H2] src/main/java/com/fasterxml/jackson/databind/deser/std/EnumDeserializer.java:486 (character offset 0)\n\n    // @since 2.15\n    protected boolean useNullForUnknownEnum(DeserializationContext ctxt) {\n        return Boolean.TRUE.equals(_useNullForUnknownEnum)\n          || ctxt.isEnabled(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);\n    }\n\n    // @since 2.15\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D12",
+      "group": "D",
+      "input_sha256": "16c53c5019c89dd5cc510d3c283387cd73b53076ea1b73dfcf8af65714c31bdc",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D12\n[Code Under Review]\n[H1] internal/resolver/dns/dns_resolver.go:268 (character offset 0)\n\t\t\td.retryCount = 0\n\t\t\td.t.Reset(d.freq)\n\t\t}\n\t\td.cc.NewServiceConfig(sc)\n\t\td.cc.NewAddress(result)\n\n\t\t// Sleep to prevent excessive re-resolutions. Incoming resolution requests\n"
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D12\n[Code Under Review]\n[H2] resolver_conn_wrapper.go:217 (character offset 0)\n\t\treturn\n\t}\n\tgrpclog.Infof(\"ccResolverWrapper: got new service config: %v\", sc)\n\tscpr := parseServiceConfig(sc)\n\tif scpr.Err != nil {\n\t\tgrpclog.Warningf(\"ccResolverWrapper: error parsing service config: %v\", scpr.Err)\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D13",
+      "group": "D",
+      "input_sha256": "116b891fcd9d014ad41c09dc83073fd43174cf8a675300646ad4ed0a7883ccb2",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D13\n[Code Under Review]\n[H1] credentials/alts/utils.go:83 (character offset 0)\n// running on GCP.\nfunc isRunningOnGCP() bool {\n\tmanufacturer, err := readManufacturer()\n\tif err != nil {\n\t\tlog.Fatalf(\"failure to read manufacturer information: %v\", err)\n\t}\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D14",
+      "group": "D",
+      "input_sha256": "4786b66fa5812ee8ccef1612bb0a7beac7fc2973b602e37abe99a94203114547",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D14\n[Code Under Review]\n[H1] packages/mui-system/src/borders.js:12 (character offset 0)\n  return `${value}px solid`;\n}\n\nexport const border = style({\n  prop: 'border',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderTop = style({\n  prop: 'borderTop',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderRight = style({\n  prop: 'borderRight',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderBottom = style({\n  prop: 'borderBottom',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderLeft = style({\n  prop: 'borderLeft',\n  themeKey: 'borders',\n  transform: borderTransform,\n});\n\nexport const borderColor = style({\n  prop: 'borderColor',\n  themeKey: 'palette',\n});\n\nexport const borderTopColor = style({\n  prop: 'borderTopColor',\n  themeKey: 'palette',\n});\n\nexport const borderRightColor = style({\n  prop: 'borderRightColor',\n  themeKey: 'palette',\n});\n\nexport const borderBottomColor = style({\n  prop: 'borderBottomColor',\n  themeKey: 'palette',\n});\n\nexport const borderLeftColor = style({\n  prop: 'borderLeftColor',\n  themeKey: 'palette',\n});\n\n// false positive\n// eslint-disable-next-line react/function-component-definition\n\n\n[H2] packages/mui-system/src/borders.js:98 (character offset 0)\n  borderBottomColor,\n  borderLeftColor,\n  borderRadius,\n);\n\nexport default borders;\n"
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D14\n[Code Under Review]\n[H3] packages/mui-system/src/styleFunctionSx/defaultSxConfig.js:51 (character offset 0)\n    themeKey: 'palette',\n  },\n\n  borderRadius: {\n    themeKey: 'shape.borderRadius',\n    style: borderRadius,\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D15",
+      "group": "D",
+      "input_sha256": "97b42a4f9538a4deef509b8d2c276d8b6c3dcbf60b1eb7d9260e1fab546b1d13",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D15\n[Code Under Review]\n[H1] docs/data/joy/pages.ts:94 (character offset 0)\n          { pathname: '/joy-ui/react-drawer', newFeature: true },\n          { pathname: '/joy-ui/react-link' },\n          { pathname: '/joy-ui/react-menu' },\n          { pathname: '/joy-ui/react-tabs' },\n        ],\n      },\n"
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D15\n[Code Under Review]\n[H2] docs/data/joy/pagesApi.js:61 (character offset 0)\n  { pathname: '/joy-ui/api/slider' },\n  { pathname: '/joy-ui/api/snackbar' },\n  { pathname: '/joy-ui/api/stack' },\n  { pathname: '/joy-ui/api/svg-icon' },\n  { pathname: '/joy-ui/api/switch' },\n  { pathname: '/joy-ui/api/tab' },\n"
+        },
+        {
+          "window_id": "W003",
+          "text": "Case D15\n[Code Under Review]\n[H3] docs/src/modules/components/JoyVariablesDemo.tsx:219 (character offset 0)\n                            tabIndex={-1}\n                            variant=\"plain\"\n                            color=\"neutral\"\n                            size=\"sm\"\n                            disabled={!sx[item.var] && sx[item.var] !== item.defaultValue}\n                            onClick={() =>\n                              setSx((prevSx) => {\n"
+        },
+        {
+          "window_id": "W004",
+          "text": "Case D15\n[Code Under Review]\n[H4] docs/translations/translations.json:519 (character offset 0)\n    \"/joy-ui/react-drawer\": \"Drawer\",\n    \"/joy-ui/react-link\": \"Link\",\n    \"/joy-ui/react-menu\": \"Menu\",\n    \"/joy-ui/react-tabs\": \"Tabs\",\n    \"/joy-ui/react-box\": \"Box\",\n    \"/joy-ui/react-grid\": \"Grid\",\n"
+        },
+        {
+          "window_id": "W005",
+          "text": "Case D15\n[Code Under Review]\n[H5] packages/mui-joy/src/index.ts:199 (character offset 0)\nexport { default as Snackbar } from './Snackbar';\nexport * from './Snackbar';\n\nexport { default as Stack } from './Stack';\nexport * from './Stack';\n\n"
+        },
+        {
+          "window_id": "W006",
+          "text": "Case D15\n[Code Under Review]\n[H6] packages/mui-joy/src/styles/components.d.ts:196 (character offset 0)\nimport { SliderProps, SliderOwnerState, SliderSlot } from '../Slider/SliderProps';\nimport { SnackbarProps, SnackbarOwnerState, SnackbarSlot } from '../Snackbar/SnackbarProps';\nimport { StackProps, StackSlot } from '../Stack/StackProps';\nimport { SvgIconProps, SvgIconOwnerState, SvgIconSlot } from '../SvgIcon/SvgIconProps';\nimport { SwitchProps, SwitchOwnerState, SwitchSlot } from '../Switch/SwitchProps';\nimport { TabProps, TabOwnerState, TabSlot } from '../Tab/TabProps';\n\n\n[H7] packages/mui-joy/src/styles/components.d.ts:451 (character offset 0)\n    defaultProps?: Partial<StackProps>;\n    styleOverrides?: StyleOverrides<StackSlot, StackProps, Theme>;\n  };\n  JoySwitch?: {\n    defaultProps?: Partial<SwitchProps>;\n    styleOverrides?: StyleOverrides<SwitchSlot, SwitchOwnerState, Theme>;\n"
+        },
+        {
+          "window_id": "W007",
+          "text": "Case D15\n[Code Under Review]\n[H8] packages/mui-joy/src/styles/extendTheme.spec.ts:59 (character offset 0)\nimport { SliderOwnerState } from '@mui/joy/Slider';\nimport { SnackbarOwnerState } from '@mui/joy/Snackbar';\nimport { StackProps } from '@mui/joy/Stack';\nimport { extendTheme } from '@mui/joy/styles';\nimport { SvgIconOwnerState } from '@mui/joy/SvgIcon';\nimport { SwitchOwnerState } from '@mui/joy/Switch';\n\n\n[H9] packages/mui-joy/src/styles/extendTheme.spec.ts:1137 (character offset 0)\n        },\n      },\n    },\n    JoySvgIcon: {\n      defaultProps: {\n        fontSize: 'md',\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D16",
+      "group": "D",
+      "input_sha256": "d27b77687e66fa33ccc2cc6b6ae1f5868ff5a7721bc134640a62f73d6ba62b64",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D16\n[Code Under Review]\n[H1] docs/data/material/components/button-group/button-group.md:1 (character offset 0)\n---\nproductId: material-ui\ntitle: React Button Group component\ncomponents: Button, ButtonGroup\ngithubLabel: 'component: ButtonGroup'\n---\n\n\n\n[H2] docs/data/material/components/button-group/button-group.md:47 (character offset 0)\nYou can remove the elevation with the `disableElevation` prop.\n\n{{\"demo\": \"DisableElevation.js\"}}\n"
+        },
+        {
+          "window_id": "W002",
+          "text": "Case D16\n[Code Under Review]\n[H3] docs/pages/material-ui/api/loading-button.json:367 (character offset 0)\n  \"forwardsRefTo\": \"HTMLButtonElement\",\n  \"filename\": \"/packages/mui-lab/src/LoadingButton/LoadingButton.js\",\n  \"inheritance\": { \"component\": \"Button\", \"pathname\": \"/material-ui/api/button/\" },\n  \"demos\": \"<ul><li><a href=\\\"/material-ui/react-button/\\\">Button</a></li></ul>\",\n  \"cssComponent\": false\n}\n"
+        },
+        {
+          "window_id": "W003",
+          "text": "Case D16\n[Code Under Review]\n[H4] packages/mui-lab/src/LoadingButton/LoadingButton.d.ts:60 (character offset 0)\n *\n * Demos:\n *\n * - [Button](https://mui.com/material-ui/react-button/)\n *\n * API:\n"
+        },
+        {
+          "window_id": "W004",
+          "text": "Case D16\n[Code Under Review]\n[H5] packages/mui-lab/src/LoadingButton/LoadingButton.js:5 (character offset 0)\nimport { unstable_composeClasses as composeClasses } from '@mui/base';\nimport { styled, useThemeProps } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\nimport CircularProgress from '@mui/material/CircularProgress';\nimport loadingButtonClasses, { getLoadingButtonUtilityClass } from './loadingButtonClasses';\n\nconst useUtilityClasses = (ownerState) => {\n\n\n[H6] packages/mui-lab/src/LoadingButton/LoadingButton.js:135 (character offset 0)\n}));\n\nconst LoadingButton = React.forwardRef(function LoadingButton(inProps, ref) {\n  const props = useThemeProps({ props: inProps, name: 'MuiLoadingButton' });\n  const {\n    children,\n    disabled = false,\n"
+        },
+        {
+          "window_id": "W005",
+          "text": "Case D16\n[Code Under Review]\n[H7] packages/mui-material/src/ButtonGroup/index.d.ts:2 (character offset 0)\nexport * from './ButtonGroup';\nexport { default as buttonGroupClasses } from './buttonGroupClasses';\nexport * from './buttonGroupClasses';\n"
+        },
+        {
+          "window_id": "W006",
+          "text": "Case D16\n[Code Under Review]\n[H8] packages/mui-material/src/ButtonGroup/index.js:2 (character offset 0)\nexport { default } from './ButtonGroup';\nexport { default as buttonGroupClasses } from './buttonGroupClasses';\nexport * from './buttonGroupClasses';\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D17",
+      "group": "D",
+      "input_sha256": "9c080b1901679bf4e44400d2f28d78320b76e1226d582634cb6200f54d19447d",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D17\n[Code Under Review]\n[H1] astropy/timeseries/core.py:55 (character offset 0)\n    _required_columns_relax = False\n\n    def _check_required_columns(self):\n\n        if not self._required_columns_enabled:\n            return\n\n\n[H2] astropy/timeseries/core.py:76 (character offset 0)\n\n            elif self.colnames[:len(required_columns)] != required_columns:\n\n                raise ValueError(\"{} object is invalid - expected '{}' \"\n                                 \"as the first column{} but found '{}'\"\n                                 .format(self.__class__.__name__, required_columns[0], plural, self.colnames[0]))\n\n            if (self._required_columns_relax\n                    and self._required_columns == self.colnames[:len(self._required_columns)]):\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D18",
+      "group": "D",
+      "input_sha256": "59f999ca286c0f8a13bc28b4590c57dd60adf32271d7a3561b610ff611fc8e5f",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D18\n[Code Under Review]\n[H1] astropy/modeling/separable.py:242 (character offset 0)\n        cright = _coord_matrix(right, 'right', noutp)\n    else:\n        cright = np.zeros((noutp, right.shape[1]))\n        cright[-right.shape[0]:, -right.shape[1]:] = 1\n\n    return np.hstack([cleft, cright])\n\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D19",
+      "group": "D",
+      "input_sha256": "3ef386e60e4dd0d3cf38309fd9f554d3a79ed7f17ca310dc23c0f81a4eed9a51",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D19\n[Code Under Review]\n[H1] astropy/io/fits/card.py:66 (character offset 0)\n    # followed by an optional comment\n    _strg = r\"\\'(?P<strg>([ -~]+?|\\'\\'|) *?)\\'(?=$|/| )\"\n    _comm_field = r\"(?P<comm_field>(?P<sepr>/ *)(?P<comm>(.|\\n)*))\"\n    _strg_comment_RE = re.compile(f\"({_strg})? *{_comm_field}?\")\n\n    # FSC commentary card string which must contain printable ASCII characters.\n    # Note: \\Z matches the end of the string without allowing newlines\n\n\n[H2] astropy/io/fits/card.py:859 (character offset 0)\n                    return kw, vc\n\n                value = m.group(\"strg\") or \"\"\n                value = value.rstrip().replace(\"''\", \"'\")\n                if value and value[-1] == \"&\":\n                    value = value[:-1]\n                values.append(value)\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D20",
+      "group": "D",
+      "input_sha256": "fa949a334340351f5d528d6493d63147e04934565c20eb0ebd1b08ab98069f11",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D20\n[Code Under Review]\n[H1] django/core/validators.py:94 (character offset 0)\n\n    regex = _lazy_re_compile(\n        r'^(?:[a-z0-9\\.\\-\\+]*)://'  # scheme is validated separately\n        r'(?:\\S+(?::\\S*)?@)?'  # user:pass authentication\n        r'(?:' + ipv4_re + '|' + ipv6_re + '|' + host_re + ')'\n        r'(?::\\d{2,5})?'  # port\n        r'(?:[/?#][^\\s]*)?'  # resource path\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D21",
+      "group": "D",
+      "input_sha256": "b44d94de151468aa371295ea3edb6e15c79052da9f5741857ecb780094dd35f5",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D21\n[Code Under Review]\n[H1] django/utils/html.py:1 (character offset 0)\n\"\"\"HTML utilities suitable for global use.\"\"\"\n\nimport json\nimport re\nfrom html.parser import HTMLParser\n\n\n[H2] django/utils/html.py:24 (character offset 0)\nsimple_url_re = re.compile(r'^https?://\\[?\\w', re.IGNORECASE)\nsimple_url_2_re = re.compile(r'^www\\.|^(?!http)\\w[^@]+\\.(com|edu|gov|int|mil|net|org)($|/.*)$', re.IGNORECASE)\n\n_html_escapes = {\n    ord('&'): '&amp;',\n    ord('<'): '&lt;',\n    ord('>'): '&gt;',\n    ord('\"'): '&quot;',\n    ord(\"'\"): '&#39;',\n}\n\n\n@keep_lazy(str, SafeString)\ndef escape(text):\n\n\n[H3] django/utils/html.py:43 (character offset 0)\n    This may result in double-escaping. If this is a concern, use\n    conditional_escape() instead.\n    \"\"\"\n    return mark_safe(str(text).translate(_html_escapes))\n\n\n_js_escapes = {\n\n\n[H4] django/utils/html.py:259 (character offset 0)\n            return x\n        return '%s…' % x[:max(0, limit - 1)]\n\n    def unescape(text):\n        \"\"\"\n        If input URL is HTML-escaped, unescape it so that it can be safely fed\n        to smart_urlquote. For example:\n        http://example.com?x=1&amp;y=&lt;2&gt; => http://example.com?x=1&y=<2>\n        \"\"\"\n        return text.replace('&amp;', '&').replace('&lt;', '<').replace(\n            '&gt;', '>').replace('&quot;', '\"').replace('&#39;', \"'\")\n\n    def trim_punctuation(lead, middle, trail):\n        \"\"\"\n        Trim trailing and wrapping punctuation from `middle`. Return the items\n\n\n[H5] django/utils/html.py:292 (character offset 0)\n            # Trim trailing punctuation (after trimming wrapping punctuation,\n            # as encoded entities contain ';'). Unescape entites to avoid\n            # breaking them by removing ';'.\n            middle_unescaped = unescape(middle)\n            stripped = middle_unescaped.rstrip(TRAILING_PUNCTUATION_CHARS)\n            if middle_unescaped != stripped:\n                trail = middle[len(stripped):] + trail\n\n\n[H6] django/utils/html.py:329 (character offset 0)\n            url = None\n            nofollow_attr = ' rel=\"nofollow\"' if nofollow else ''\n            if simple_url_re.match(middle):\n                url = smart_urlquote(unescape(middle))\n            elif simple_url_2_re.match(middle):\n                url = smart_urlquote('http://%s' % unescape(middle))\n            elif ':' not in middle and is_email_simple(middle):\n                local, domain = middle.rsplit('@', 1)\n                try:\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D22",
+      "group": "D",
+      "input_sha256": "afb17ea24a537b15710f5ef46c02881111694e5d5ec463066cef8684a8715203",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D22\n[Code Under Review]\n[H1] django/contrib/staticfiles/storage.py:226 (character offset 0)\n            path for path in paths\n            if matches_patterns(path, self._patterns)\n        ]\n        # Do a single pass first. Post-process all files once, then repeat for\n        # adjustable files.\n        for name, hashed_name, processed, _ in self._post_process(paths, adjustable_paths, hashed_files):\n            yield name, hashed_name, processed\n\n        paths = {path: paths[path] for path in adjustable_paths}\n\n        for i in range(self.max_post_process_passes):\n            substitutions = False\n            for name, hashed_name, processed, subst in self._post_process(paths, adjustable_paths, hashed_files):\n                yield name, hashed_name, processed\n                substitutions = substitutions or subst\n\n            if not substitutions:\n\n\n[H2] django/contrib/staticfiles/storage.py:248 (character offset 0)\n        # Store the processed paths\n        self.hashed_files.update(hashed_files)\n\n    def _post_process(self, paths, adjustable_paths, hashed_files):\n        # Sort the files by directory level\n        def path_level(name):\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D23",
+      "group": "D",
+      "input_sha256": "43ac00dbe2e25c66469a5009c3345d11fcf630f0a6a2415e8cf6053cc7c72481",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D23\n[Code Under Review]\n[H1] lib/matplotlib/dates.py:595 (character offset 0)\n    p = r'([a-zA-Z]+)'\n    ret_text = re.sub(p, r'}$\\1$\\\\mathdefault{', text)\n\n    # Braces ensure dashes are not spaced like binary operators.\n    ret_text = '$\\\\mathdefault{'+ret_text.replace('-', '{-}')+'}$'\n    ret_text = ret_text.replace('$\\\\mathdefault{}$', '')\n    return ret_text\n\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D24",
+      "group": "D",
+      "input_sha256": "c7e74570f317e0d2e9aff1c4d5783c1670be0e0cff8ab39d165cef6c88b36919",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D24\n[Code Under Review]\n[H1] requests/models.py:403 (character offset 0)\n                host = self._get_idna_encoded_host(host)\n            except UnicodeError:\n                raise InvalidURL('URL has an invalid label.')\n        elif host.startswith(u'*'):\n            raise InvalidURL('URL has an invalid label.')\n\n        # Carefully reconstruct the network location\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D25",
+      "group": "D",
+      "input_sha256": "66fd10d1a52ba221c3215d1b0caf0e2878fd67551159f48912bd8950c7fe8036",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D25\n[Code Under Review]\n[H1] requests/sessions.py:12 (character offset 0)\nfrom collections import Mapping\nfrom datetime import datetime\n\nfrom .compat import cookielib, OrderedDict, urljoin, urlparse, urlunparse\nfrom .cookies import cookiejar_from_dict, extract_cookies_to_jar, RequestsCookieJar\nfrom .models import Request, PreparedRequest\nfrom .hooks import default_hooks, dispatch_hook\n\n\n[H2] requests/sessions.py:309 (character offset 0)\n        :param cert: (optional) if String, path to ssl client cert file (.pem).\n            If Tuple, ('cert', 'key') pair.\n        \"\"\"\n        # Create the Request.\n        req = Request(\n            method = method.upper(),\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D26",
+      "group": "D",
+      "input_sha256": "f20cc6c8b59a465d66269922adeea2fceb863d768b359cefbb40210342a56859",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D26\n[Code Under Review]\n[H1] sklearn/linear_model/ridge.py:1212 (character offset 0)\n\n    store_cv_values : boolean, default=False\n        Flag indicating if the cross-validation values corresponding to\n        each alpha should be stored in the `cv_values_` attribute (see\n        below). This flag is only compatible with `cv=None` (i.e. using\n        Generalized Cross-Validation).\n\n    Attributes\n    ----------\n    cv_values_ : array, shape = [n_samples, n_alphas] or \\\n        shape = [n_samples, n_targets, n_alphas], optional\n        Cross-validation values for each alpha (if `store_cv_values=True` and \\\n        `cv=None`). After `fit()` has been called, this attribute will \\\n        contain the mean squared errors (by default) or the values of the \\\n        `{loss,score}_func` function (if provided in the constructor).\n\n    coef_ : array, shape = [n_features] or [n_targets, n_features]\n        Weight vector(s).\n\n\n[H2] sklearn/linear_model/ridge.py:1301 (character offset 0)\n        weights inversely proportional to class frequencies in the input data\n        as ``n_samples / (n_classes * np.bincount(y))``\n\n    Attributes\n    ----------\n    cv_values_ : array, shape = [n_samples, n_alphas] or \\\n    shape = [n_samples, n_responses, n_alphas], optional\n        Cross-validation values for each alpha (if `store_cv_values=True` and\n    `cv=None`). After `fit()` has been called, this attribute will contain \\\n    the mean squared errors (by default) or the values of the \\\n    `{loss,score}_func` function (if provided in the constructor).\n\n    coef_ : array, shape = [n_features] or [n_targets, n_features]\n        Weight vector(s).\n\n\n[H3] sklearn/linear_model/ridge.py:1333 (character offset 0)\n    advantage of the multi-variate response support in Ridge.\n    \"\"\"\n    def __init__(self, alphas=(0.1, 1.0, 10.0), fit_intercept=True,\n                 normalize=False, scoring=None, cv=None, class_weight=None):\n        super(RidgeClassifierCV, self).__init__(\n            alphas=alphas, fit_intercept=fit_intercept, normalize=normalize,\n            scoring=scoring, cv=cv)\n        self.class_weight = class_weight\n\n    def fit(self, X, y, sample_weight=None):\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    },
+    {
+      "blind_id": "D27",
+      "group": "D",
+      "input_sha256": "b98d330c0e93f2844c5214fcb532826055d42886cb7cb29197ec188deea2ef21",
+      "windows": [
+        {
+          "window_id": "W001",
+          "text": "Case D27\n[Code Under Review]\n[H1] sympy/polys/factortools.py:1147 (character offset 0)\n        return lc, []\n\n    f, F = dmp_sqf_part(f, u, K), f\n    s, g, r = dmp_sqf_norm(f, u, K)\n\n    factors = dmp_factor_list_include(r, u, K.dom)\n\n"
+        }
+      ],
+      "slots": {
+        "security-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "data-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "temporal-resilience-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "ui-race-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "distributed-flow-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "logic-integrity-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        },
+        "cleanup-auditor": {
+          "judgment": null,
+          "confidence": null,
+          "code_anchor_or_exclusion": null
+        }
+      }
+    }
+  ]
+}

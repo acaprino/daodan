@@ -1,0 +1,27 @@
+{
+  "requirement": "EU dates use day/month/year and UTC. Stage traffic reaches stage-api with stage-key. Missing config must fail before connecting. Placeholders are case-sensitive.",
+  "deployment": {
+    "env": {
+      "DB_URL": "stage-db"
+    },
+    "template": {
+      "database": "${DB_URl}",
+      "secret": "prod-key"
+    }
+  },
+  "resolver": {
+    "unknown": "leave literal"
+  },
+  "consumer": "connect without validation",
+  "locale": {
+    "input": "03/04/2026",
+    "parser": "month/day/year",
+    "zone": "host local",
+    "effective_host_zone": "UTC+02:00",
+    "override": "none; host local resolves to the effective host zone"
+  },
+  "mesh": {
+    "environment": "stage",
+    "route": "prod-api"
+  }
+}

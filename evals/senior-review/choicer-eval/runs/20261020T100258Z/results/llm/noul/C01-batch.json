@@ -1,0 +1,62 @@
+{
+  "impl": "llm",
+  "variant": "noul",
+  "case_id": "C01",
+  "hunk_id": null,
+  "request_sha256": "6ce2771b5674504039975c350b6c88524c750d99074085bb97e83d33e4cb1109",
+  "status": "ok",
+  "selected": [
+    "senior-review:distributed-flow-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:logic-integrity-auditor"
+  ],
+  "probabilities": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "usage": null,
+  "raw_output": {
+    "schema": "choicer-eval/native-capture-v1",
+    "request_sha256": "6ce2771b5674504039975c350b6c88524c750d99074085bb97e83d33e4cb1109",
+    "response": "{\"mode\":\"full\",\"selected\":[{\"trigger_line\":\"[H3] candidate jupiter-core/jupiter_core/agents/alive_agent.py:343 self._market_observer_id = await m_state_notif.register_observer(\",\"reason\":\"Verify observer registration and cleanup preserve correct broker-scoped routing across modules.\",\"role\":\"senior-review:distributed-flow-auditor\",\"tier\":\"tier2\",\"effort\":\"medium\"},{\"trigger_line\":\"[H11] candidate jupiter-core/jupiter_core/notifiers/notifier_market_state.py:377 is_initial: bool = False\",\"reason\":\"Check the defaulted publication flag preserves correct initial-state behavior at boundary cases.\",\"role\":\"senior-review:premise-auditor\",\"tier\":\"tier2\",\"effort\":\"high\"},{\"trigger_line\":\"[H5] candidate jupiter-core/jupiter_core/agents/alive_agent.py:1009 await m_state_notif.unregister_observer(\",\"reason\":\"Verify observer state and subscription cleanup remain consistent across registration lifecycle paths.\",\"role\":\"senior-review:logic-integrity-auditor\",\"tier\":\"tier2\",\"effort\":\"high\"}],\"recommend_full_review\":false,\"recommend_full_reason\":null}\n",
+    "response_sha256": "0a3cf60549f2973baa939e5999dabda03b06fa47a99f37bdb873812e85445f0c",
+    "model": {
+      "provider": "OpenAI through Codex native subagent",
+      "requested_model": "gpt-6-luna",
+      "requested_reasoning_effort": "low",
+      "host_accepted_override": true,
+      "provider_reported_model": null
+    },
+    "usage": null,
+    "wall_seconds": null,
+    "cpu_seconds": null,
+    "phase": "unknown",
+    "transport": {
+      "tool": "collaboration.spawn_agent",
+      "task_name": "/root/baseline_c01",
+      "fork_turns": "none",
+      "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C01-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C01-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+      "loader_prompt_sha256": "e5ebf72ad96e1379520ed767b8b39b289b50b0c5c1cb525df3196fca3cd950c2",
+      "effective_provider_request": null,
+      "provider_finish_reason": null,
+      "provider_api_call_count": null,
+      "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+    },
+    "limitations": [
+      "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+      "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+    ]
+  },
+  "validation_warnings": [
+    "H3: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding.",
+    "H11: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding.",
+    "H5: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding."
+  ],
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  }
+}

@@ -82,6 +82,9 @@ Save the complete native Markdown to the caller's declared report path, or
 `report.md` in the prepared owned output root. Fill the existing template once;
 retain native details and evidence in their owned reports rather than producing
 another report layout. Account for each delivery and required verification first.
+Include only relevant dimension sections and write each finding once. Include
+an overall score only when a caller requested a defined scoring method; otherwise
+omit it, including from the PR summary. Never infer a score from finding counts.
 
 ```
 ## Code Review -- [PR title or branch name]
@@ -89,13 +92,14 @@ another report layout. Account for each delivery and required verification first
 ### Review Scope
 - **Scope:** [diff source -- e.g., origin/main..HEAD, uncommitted changes, PR #42]
 - **Intent:** [2-3 line intent summary from Step 1b]
-- **Reviewers:** code-auditor, security-auditor, dead-code, [+ conditional agents with justification]
+- **Reviewers:** [actual selected roles and their activation evidence]
 - Files reviewed: [N]
 - Lines changed: +X / -Y
 - CLAUDE.md compliance: [checked / not found]
 - Verification: X of Y findings verified (4-lens panel), Z false positives, W contested, V premise-refuted, U premise-contested{cost_guard_note}
 
-### Overall Score: X/10 (confidence: X%)
+### Overall Score (only if explicitly requested with a defined method)
+[score, method and evidence; omit when unavailable]
 
 ### Critical & High Findings
 | # | Severity | File:Line | Finding | Confidence | Fix |
@@ -255,7 +259,7 @@ mkdir -p .code-review-tmp
 cat > .code-review-tmp/temp_summary_comment.md << 'SUMMARY_EOF'
 ## Automated Code Review
 
-**Overall Score: X/10**
+**Overall Score:** [only if explicitly requested and supported; otherwise omit]
 
 [summary of critical/high findings]
 

@@ -1,0 +1,28 @@
+{
+  "evidence_kind": "supplied synthetic source/configuration packet; no device execution",
+  "supported_environment": {
+    "os_target": "Android API 35",
+    "bridge_version": "NativeBridge 3",
+    "effective_assumptions": "For this fixture only: secure_surface=true excludes the entire window from the OS capture path while preserving local display. Backup copies each application file when enabled unless its exact absolute path appears in exclude_paths. These are the complete effective rules, including deployment overrides."
+  },
+  "independent_scenarios": {
+    "screen-capture": {
+      "requirement": "The signed-in user must see the session card; its device-only credential must not appear in OS screenshots or recordings.",
+      "window": "session-window",
+      "rendered_data_class": "device-only session credential",
+      "visible": true,
+      "effective_window_settings": {"secure_surface": false},
+      "capture_path": "OS capture includes every visible window unless its secure_surface is true",
+      "alternative_protection": "none"
+    },
+    "cloud-backup": {
+      "requirement": "Session credentials must remain on this device. User preferences may and must be backed up.",
+      "application_files": {
+        "/data/app/private/session.db": "sole stored device-only session credential",
+        "/data/app/preferences.json": "ordinary user preferences"
+      },
+      "effective_backup": {"enabled": true, "destination": "cloud", "exclude_paths": []},
+      "other_copies_or_overrides": "none"
+    }
+  }
+}

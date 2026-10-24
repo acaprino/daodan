@@ -67,49 +67,44 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Verify (phase 6, and the standalone gate)
 
-Verification binds every check to an exact candidate: a lifecycle run's
-candidate, or the working tree, branch or range the user names. Load the
-protocol's snapshot and gate procedure. Record the baseline separately from
-the candidate and include uncommitted changes in the candidate fingerprint.
-A remote job on an older revision does not verify this candidate; a gate that
-needs a push needs its own authorization, otherwise it stays unavailable.
+Bind checks to the named candidate, including uncommitted content, through
+protocol snapshots/gates; retain baseline. Carry post-task obligations per
+`references/context-cycle.md`. Older remote checks cannot verify it; a
+required push needs authorization or stays unavailable.
 
 ## Checks
 
-1. The project's declared test, lint, type and build commands on the
-   candidate, through `testing:test-preparation` for runner and
-   configuration. Passing self-generated assertions alone establish no
-   oracle; record wrong-oracle evidence apart from product defects and
+1. Run declared test/lint/type/build commands on the candidate through
+   `testing:test-preparation` runner/configuration diagnosis. Self-generated
+   assertions alone establish no oracle; distinguish wrong oracle, product and
    environment failures.
-2. Every `EX-*` of the run's proposed record has a passing test on the
-   candidate and a failing one on the base; every `INV-*` is named by at
-   least one test or one review finding that confirms it holds.
-3. Instruction consequences through `project-knowledge:instructions-method`
-   when commands, setup, test policy or architecture changed: canonical and
-   generated parity, and whether the host loaded the result is a separate,
-   possibly unavailable, probe.
+2. Every proposed-record `EX-*` has a candidate-passing, base-failing test;
+   every `INV-*` has a test or review finding confirming it holds.
+3. For command/setup/test-policy/architecture changes, use
+   `project-knowledge:instructions-method` for canonical/generated parity.
+   Actual host loading is a separate, possibly unavailable probe.
 
 ## Review of the candidate (stage D)
 
-Run `senior-review:review-method` through `senior-review:review-preparation`
-with shape `branch` and stage `candidate` on the whole candidate (`base_sha`
-to the candidate head, untracked scoped files included), passing the run's
-scope, baseline and candidate.
-Preparation reads the policy from the base commit, builds the evidence pack,
-computes the roster from the candidate's signals, and grants the reachability
-lens a reproduction scratch path when the workspace is a `WORKTREE` or
-`BRANCH` owned by this run.
+Run `senior-review:review-method` through `senior-review:review-preparation`,
+shape `branch`, stage `candidate`, on `base_sha` through candidate head including
+scoped untracked files. Pass scope/baseline/candidate. Preparation reads base policy,
+builds evidence and computes the roster; the reachability lens receives reproduction
+scratch only in a run-owned `WORKTREE` or `BRANCH`.
 
-A confirmed `Critical` or `High` finding opens one remediation wave through
-`references/waves.md`, reviewed with shape `light`, then stage D again as a
-new review entry. At most two such waves; a third blocking result
-returns to the user with the finding, the attempts and the options.
+Retain validated jobs, member coverage and independent verification in the existing
+ledger. Lifecycle selects no second roster or body. Light waves use the same
+composition contract in their distinct preparation, with one discovery job.
+
+A confirmed `Critical`/`High` opens one remediation wave through
+`references/waves.md`, reviewed as `light`, then stage D as a new review entry.
+At most two waves; a third blocking result returns finding, attempts and options
+to the user.
 
 ## Result
 
-Only the owner of a finding applies its remediation; verify produces evidence
-and a result. A failed gate names the observed failure and the next action.
-Static inventory, in-depth reading and runtime exercise are reported as three
-coverage facts. Account for every expected delivery and required check before
-completing the run; an unavailable runner, missing credentials or an
-unexercised product path are declared gaps, never passed checks.
+Finding owners apply remediation; verify supplies evidence/result. A failed gate
+names observed failure and next action. Report inventory, in-depth reading and
+runtime exercise separately. Account for every expected delivery and required
+check before completion. Unavailable runners/credentials and unexercised product
+paths are gaps, never passed checks.

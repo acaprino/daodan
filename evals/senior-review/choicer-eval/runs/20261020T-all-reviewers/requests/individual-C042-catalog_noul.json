@@ -1,0 +1,30 @@
+{
+  "id": "individual-C042-catalog_noul",
+  "kind": "individual",
+  "case_id": "C042",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review only the production request validator for accepting negative quantities. The published API reference is fixed and outside the review scope; report code defects only.",
+    "artifacts": [
+      {
+        "path": "src/order.py",
+        "content": "def validate_order(payload):\n    if not isinstance(payload[\"quantity\"], int):\n        raise ValueError(\"quantity must be an integer\")\n    return payload\n"
+      },
+      {
+        "path": "contracts/order.schema.json",
+        "content": "{\"type\":\"object\",\"properties\":{\"quantity\":{\"type\":\"integer\",\"minimum\":1}},\"required\":[\"quantity\"]}"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift."
+      }
+    }
+  },
+  "sha256": "2780e839f97c41b32800525f2aa75dda2e215fac7dfa3ba1cbca004ecb0af09e"
+}

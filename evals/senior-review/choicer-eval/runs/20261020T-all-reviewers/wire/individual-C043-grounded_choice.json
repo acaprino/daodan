@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Audit the existing operator guide and propose a reorganization so first-time readers can complete setup before encountering the full parameter reference. Preserve every fact, table and command; do not edit documents.",
+    "artifacts": [
+      {
+        "path": "docs/operator.md",
+        "content": "# Operator guide\nCACHE_TTL: seconds before eviction; default 60.\nTo begin, create config.toml.\n| Option | Default |\n| workers | 4 |\nRun service start after saving config.toml.\nCACHE_SIZE: maximum entries; default 5000.\nFirst install the service package.\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "choice",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  }
+}

@@ -96,6 +96,16 @@ shapes = ["light", "branch"]
 kinds = ["changeset", "plan", "spec", "doc"]
 tiers = ["light", "small", "medium", "large"]
 required = ["id", "stage", "schema", "shape", "kind", "tier", "roster", "reasons", "verification"]
+job_required = ["id", "role", "specialist_ids", "scope_id", "input_mode", "body_sha256", "candidate", "output_path"]
+verification_levels = ["critical-high", "high-and-above", "all-above-floor"]
+# Independent check deliveries use check.kind (blind-derivation, verification,
+# critic), input_mode, independent=true and evidence. Verification also binds
+# targets [{job_id, finding_id}], lens and verdict; a premise veto cites its
+# counterexample. Every check has a separate delivery and output report; it
+# cannot consume a discovery job identity or reuse another delivery's output.
+# Historical records omit both composition fields. New records carry both;
+# empty preparation plans remain in progress and cannot satisfy completion.
+# All scoped obligations and per-member outcomes are checked before completion.
 append_only = true
 
 [loop.questions]
@@ -108,3 +118,9 @@ required = ["id", "phase", "text"]
 # every later command. Installing outside the project is a separate authorization.
 required = ["interpreter"]
 commands = ["test", "lint", "types", "build", "migrations"]
+
+[loop.environment.models]
+# Optional per-request bindings. Legacy `tiers` remains a separate consumer's data.
+schema = "daodan/task-binding/v1"
+tiers = ["tier1", "tier2", "tier3"]
+required = ["schema", "request_sha256", "models_sha256", "catalog_sha256", "tier", "model_id", "model_param", "effort", "confirmation"]

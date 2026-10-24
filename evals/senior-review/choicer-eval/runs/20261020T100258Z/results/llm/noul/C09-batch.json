@@ -1,0 +1,60 @@
+{
+  "impl": "llm",
+  "variant": "noul",
+  "case_id": "C09",
+  "hunk_id": null,
+  "request_sha256": "791a8d0180f3b1097c3f1fdbef93196dbd7bbccd31e750f56df9657b855011b0",
+  "status": "ok",
+  "selected": [
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:temporal-resilience-auditor"
+  ],
+  "probabilities": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "usage": null,
+  "raw_output": {
+    "schema": "choicer-eval/native-capture-v1",
+    "request_sha256": "791a8d0180f3b1097c3f1fdbef93196dbd7bbccd31e750f56df9657b855011b0",
+    "response": "{\n  \"mode\": \"full\",\n  \"selected\": [\n    {\n      \"trigger_line\": \"[H1] candidate worker/exporter.ts:5 const client = await pool.connect()\",\n      \"reason\": \"Verify the database client is released when the streamed response errors or closes early.\",\n      \"role\": \"senior-review:resource-lifecycle-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    },\n    {\n      \"trigger_line\": \"[H1] candidate worker/exporter.ts:12 setInterval(async () => {\",\n      \"reason\": \"Check overlapping polls and timer shutdown for leaked connections or unhandled failures.\",\n      \"role\": \"senior-review:temporal-resilience-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"medium\"\n    }\n  ],\n  \"recommend_full_review\": false,\n  \"recommend_full_reason\": null\n}",
+    "response_sha256": "6e0eebcc5cdd4b95777923016873f7cd52743accd4d15856b0ce9eda8efcab73",
+    "model": {
+      "provider": "OpenAI through Codex native subagent",
+      "requested_model": "gpt-6-luna",
+      "requested_reasoning_effort": "low",
+      "host_accepted_override": true,
+      "provider_reported_model": null
+    },
+    "usage": null,
+    "wall_seconds": null,
+    "cpu_seconds": null,
+    "phase": "unknown",
+    "transport": {
+      "tool": "collaboration.spawn_agent",
+      "task_name": "/root/baseline_c09",
+      "fork_turns": "none",
+      "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C09-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C09-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+      "loader_prompt_sha256": "680feb39a7cbaeabc0c198793f3880d29799f85dba2869f09f6b06fdc5b4dd4e",
+      "effective_provider_request": null,
+      "provider_finish_reason": null,
+      "provider_api_call_count": null,
+      "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+    },
+    "limitations": [
+      "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+      "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+    ]
+  },
+  "validation_warnings": [
+    "H1: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding.",
+    "H1: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding."
+  ],
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  }
+}

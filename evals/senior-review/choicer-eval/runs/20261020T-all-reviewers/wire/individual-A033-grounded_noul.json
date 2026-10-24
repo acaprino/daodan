@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the relative timeout budgets across these two request handlers. The task is limited to this synchronous call chain, not resident workers or retry behavior.",
+    "artifacts": [
+      {
+        "path": "gateway/settings.json",
+        "content": "{\"request_timeout_seconds\": 4, \"catalog_service\": \"http://catalog:8080\"}\n"
+      },
+      {
+        "path": "catalog/settings.json",
+        "content": "{\"request_timeout_seconds\": 12, \"database_query_timeout_seconds\": 9}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      }
+    }
+  }
+}

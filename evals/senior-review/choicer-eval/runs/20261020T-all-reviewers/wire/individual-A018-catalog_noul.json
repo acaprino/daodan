@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review reads and edits of a product title within this service, including its database and in-process cache.",
+    "artifacts": [
+      {
+        "path": "src/products.py",
+        "content": "titles = {}\n\ndef title(db, product_id):\n    if product_id not in titles:\n        titles[product_id] = db.scalar(\"SELECT title FROM products WHERE id = %s\", (product_id,))\n    return titles[product_id]\n\ndef rename(db, product_id, text):\n    db.execute(\"UPDATE products SET title = %s WHERE id = %s\", (text, product_id))\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries."
+      }
+    }
+  }
+}

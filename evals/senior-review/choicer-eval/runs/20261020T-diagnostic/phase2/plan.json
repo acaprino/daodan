@@ -1,0 +1,8 @@
+{
+  "prepared_at": "2026-10-20T11:10:57.686819+00:00",
+  "script_sha256": "4c3152a7d298d2222d0338dc4bc3e1e821360ea117cd50bd60cb9498d86ee939",
+  "scope": "Development diagnostics only; no new pilot accuracy or calibrated probabilities claimed.",
+  "type_order": "Raw low-level rows intentionally permute semantic descriptions. For reversed noul, index zero represents the positive description; these are serialization/position diagnostics, not standard typed-API true probabilities.",
+  "runtime_parity": "Compare identical rows with optimized versus original encoder.forward; no new weights.",
+  "fresh_controls": "Independently authored eight small examples frozen before inference."
+}

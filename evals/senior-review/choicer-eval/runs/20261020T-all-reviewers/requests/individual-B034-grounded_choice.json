@@ -1,0 +1,26 @@
+{
+  "id": "individual-B034-grounded_choice",
+  "kind": "individual",
+  "case_id": "B034",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the responsibilities and error handling inside this parser function.",
+    "artifacts": [
+      {
+        "path": "parse.py",
+        "content": "import json\ndef parse_and_save(text, database, logger):\n    data = json.loads(text)\n    if \"name\" not in data:\n        raise ValueError(\"name required\")\n    data[\"name\"] = data[\"name\"].strip()\n    database.insert(data)\n    logger.info(\"saved\")\n    return data"
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "choice",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    }
+  },
+  "sha256": "2a1d85dd67d2d97cffa6683ef6e00498159c49b6b429b7c7ffcf712749ab1ae4"
+}

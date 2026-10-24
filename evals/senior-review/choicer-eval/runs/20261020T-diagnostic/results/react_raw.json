@@ -1,0 +1,76 @@
+{
+  "id": "react_raw",
+  "request_sha256": "365894b00512fd78d57417b41e0855b574129bac270349b05a2371572969db7d",
+  "wall_seconds": 1.0448170999879949,
+  "model_session_id": "diagnostic-2026-10-20T11:08:11.156721+00:00",
+  "raw_output": {
+    "answers": {
+      "original_react": {
+        "type": "noul",
+        "probabilities": {
+          "false": 1.7119342743878055e-06,
+          "true": 0.9999982880657257
+        },
+        "noul": 0.9999982880657257
+      },
+      "original_data": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.5803141312570055,
+          "true": 0.4196858687429945
+        },
+        "noul": 0.4196858687429945
+      },
+      "complement_react": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9721511459453477,
+          "true": 0.0278488540546523
+        },
+        "noul": 0.0278488540546523
+      },
+      "property_react_literal": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9718713524917378,
+          "true": 0.028128647508262147
+        },
+        "noul": 0.028128647508262147
+      },
+      "property_react_descriptive": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9406295707583698,
+          "true": 0.059370429241630135
+        },
+        "noul": 0.059370429241630135
+      },
+      "property_data_descriptive": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9923751483650337,
+          "true": 0.00762485163496628
+        },
+        "noul": 0.00762485163496628
+      },
+      "property_stack_choice": {
+        "type": "choice",
+        "probabilities": {
+          "backend": 9.714420338544454e-06,
+          "frontend": 0.9999902855796615
+        },
+        "choice": "frontend",
+        "max_probability": 0.9999902855796615
+      },
+      "property_stack_reversed": {
+        "type": "choice",
+        "probabilities": {
+          "frontend": 0.9999944359834839,
+          "backend": 5.564016515982124e-06
+        },
+        "choice": "frontend",
+        "max_probability": 0.9999944359834839
+      }
+    }
+  }
+}

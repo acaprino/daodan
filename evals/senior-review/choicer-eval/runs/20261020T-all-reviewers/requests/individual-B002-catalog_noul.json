@@ -1,0 +1,26 @@
+{
+  "id": "individual-B002-catalog_noul",
+  "kind": "individual",
+  "case_id": "B002",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the search endpoint accepting a result limit and returning matches.",
+    "artifacts": [
+      {
+        "path": "app.py",
+        "content": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\napp = FastAPI()\nclass SearchRequest(BaseModel):\n    query: str\n    limit: int = Field(default=20, ge=1, le=50)\nclass Match(BaseModel):\n    id: str\n@app.post(\"/search\", response_model=list[Match])\ndef search(request: SearchRequest):\n    return [Match(id=str(i)) for i in range(request.limit)]"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
+      }
+    }
+  },
+  "sha256": "3f227d96de09b3ea2be9848574141b7148e60d40f9a681ebea7552487cff83d1"
+}

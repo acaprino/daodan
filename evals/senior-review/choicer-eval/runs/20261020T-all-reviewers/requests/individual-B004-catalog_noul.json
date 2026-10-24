@@ -1,0 +1,30 @@
+{
+  "id": "individual-B004-catalog_noul",
+  "kind": "individual",
+  "case_id": "B004",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the download handler for stream cleanup when a client disconnects.",
+    "artifacts": [
+      {
+        "path": "server/download.js",
+        "content": "import fs from \"node:fs\";\nexport function download(req, res) {\n  const stream = fs.createReadStream(\"/srv/export.csv\");\n  res.on(\"close\", () => stream.destroy());\n  stream.on(\"error\", error => res.destroy(error));\n  stream.pipe(res);\n}"
+      },
+      {
+        "path": "server/README.md",
+        "content": "This internal Express route has no OpenAPI specification, response DTO, or runtime schema. It streams the current CSV file."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
+      }
+    }
+  },
+  "sha256": "ad23aa5724d4079119a322fa6a539cde7f25474279f743244592cf5fccd50f8e"
+}

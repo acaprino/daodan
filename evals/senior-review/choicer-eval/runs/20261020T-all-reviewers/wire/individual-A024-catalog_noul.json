@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review line wrapping and whitespace in this stylesheet; no functional declarations are being changed.",
+    "artifacts": [
+      {
+        "path": "web/sidebar.css",
+        "content": ".sidebar {\n  display: grid;\n  gap: 1rem;\n  padding: 1rem;\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit."
+      }
+    }
+  }
+}

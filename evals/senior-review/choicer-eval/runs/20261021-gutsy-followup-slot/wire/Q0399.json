@@ -1,0 +1,966 @@
+{
+  "id": "Q0399",
+  "case_id": "E03",
+  "role": "senior-review:temporal-resilience-auditor",
+  "mode": "windowed",
+  "variant": "v2",
+  "window_id": "W001",
+  "prompt_sha256": "e4cea9a4964cc77d86d4967e623b673f1428f3c8841034d0b6b1a96162547e95",
+  "prompt_tokens": 808,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase E03\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:38 (character offset 0)\nasync def ack_round_trip(\n    *,\n    publish: Callable[[str], Awaitable[None]],\n    ack_event: asyncio.Event,\n    set_pending_trace_id: Callable[[str | None], None],\n    schedule: ProgressiveSchedule,\n    label: str,\n    logger: Any = None,\n    retry_on_publish_exc: tuple[type[BaseException], ...] = (),\n    trace_id_factory: Callable[[], str] = _default_trace_id,\n) -> None:\n    \"\"\"Publish a request, wait for the ACK event, retry on timeout.\n\n    Args:\n        publish: Called with `trace_id` per attempt. Must publish the\n            request message tagged with that trace_id so the listener\n            can validate match. May raise; see `retry_on_publish_exc`.\n        ack_event: An `asyncio.Event` that the listener sets when a\n            matching ACK arrives.\n        set_pending_trace_id: Sync callable invoked with the active\n            trace_id before each publish, and with `None` in the\n            finally block. The listener consults this to enforce\n            trace_id match.\n        schedule: Per-attempt (timeout, delay) values.\n        label: Used in log lines and the exhaustion exception message\n            (e.g. \"REGISTRATION\", \"LIFECYCLE\").\n        logger: Optional BotLogger-like object for progress logs.\n        retry_on_publish_exc: Tuple of exceptions from `publish` that\n            should be treated as transient (retry instead of propagating).\n            Empty tuple = propagate every publish exception.\n        trace_id_factory: Override for trace_id generation; defaults to\n            `new_id()`.\n\n    Raises:\n        RuntimeError: ACK not received within `schedule.max_attempts`.\n        Any non-listed exception from `publish` propagates immediately.\n    \"\"\"\n    try:\n        for attempt in range(schedule.max_attempts):\n            ack_event.clear()\n            trace_id = trace_id_factory()\n            set_pending_trace_id(trace_id)\n            timeout = schedule.timeouts_s[attempt]\n\n            publish_failed = False\n            try:\n                await publish(trace_id)\n            except retry_on_publish_exc as exc:\n                publish_failed = True\n                if logger is not None:\n                    logger.warning(\n                        f\"[{label}] publish failed on attempt \"\n                        f\"{attempt + 1}/{schedule.max_attempts} \"\n                        f\"({type(exc).__name__}); will retry\",\n                    )\n\n            if not publish_failed:\n                try:\n                    await asyncio.wait_for(ack_event.wait(), timeout=timeout)\n                    if logger is not None:\n                        logger.info(\n                            f\"[{label}] ACK received on attempt {attempt + 1} \"\n                            f\"(trace_id={trace_id})\",\n                        )\n                    return\n\n\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:103 (character offset 2799)\n\nQuestion: Should the temporal-resilience-auditor review lens be activated for asynchronous timing, timeouts, polling loops, retries, degraded broker connection handling, or background schedulers?\n\nOptions:\nA. Yes: activate temporal-resilience-auditor\nB. No: do not activate temporal-resilience-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "6db0208b4de53cb08c1fcbf3f07e6841144e4f953d2ee83437abe7b0343d2381",
+  "prefix_tokens": 710,
+  "state_id": "S047",
+  "restore": {
+    "seconds": 0.05843569998978637,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 710,
+      "n_read": 49148464,
+      "timings": {
+        "restore_ms": 56.405
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "A",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 808,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase E03\n[Code Under Review]\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:38 (character offset 0)\nasync def ack_round_trip(\n    *,\n    publish: Callable[[str], Awaitable[None]],\n    ack_event: asyncio.Event,\n    set_pending_trace_id: Callable[[str | None], None],\n    schedule: ProgressiveSchedule,\n    label: str,\n    logger: Any = None,\n    retry_on_publish_exc: tuple[type[BaseException], ...] = (),\n    trace_id_factory: Callable[[], str] = _default_trace_id,\n) -> None:\n    \"\"\"Publish a request, wait for the ACK event, retry on timeout.\n\n    Args:\n        publish: Called with `trace_id` per attempt. Must publish the\n            request message tagged with that trace_id so the listener\n            can validate match. May raise; see `retry_on_publish_exc`.\n        ack_event: An `asyncio.Event` that the listener sets when a\n            matching ACK arrives.\n        set_pending_trace_id: Sync callable invoked with the active\n            trace_id before each publish, and with `None` in the\n            finally block. The listener consults this to enforce\n            trace_id match.\n        schedule: Per-attempt (timeout, delay) values.\n        label: Used in log lines and the exhaustion exception message\n            (e.g. \"REGISTRATION\", \"LIFECYCLE\").\n        logger: Optional BotLogger-like object for progress logs.\n        retry_on_publish_exc: Tuple of exceptions from `publish` that\n            should be treated as transient (retry instead of propagating).\n            Empty tuple = propagate every publish exception.\n        trace_id_factory: Override for trace_id generation; defaults to\n            `new_id()`.\n\n    Raises:\n        RuntimeError: ACK not received within `schedule.max_attempts`.\n        Any non-listed exception from `publish` propagates immediately.\n    \"\"\"\n    try:\n        for attempt in range(schedule.max_attempts):\n            ack_event.clear()\n            trace_id = trace_id_factory()\n            set_pending_trace_id(trace_id)\n            timeout = schedule.timeouts_s[attempt]\n\n            publish_failed = False\n            try:\n                await publish(trace_id)\n            except retry_on_publish_exc as exc:\n                publish_failed = True\n                if logger is not None:\n                    logger.warning(\n                        f\"[{label}] publish failed on attempt \"\n                        f\"{attempt + 1}/{schedule.max_attempts} \"\n                        f\"({type(exc).__name__}); will retry\",\n                    )\n\n            if not publish_failed:\n                try:\n                    await asyncio.wait_for(ack_event.wait(), timeout=timeout)\n                    if logger is not None:\n                        logger.info(\n                            f\"[{label}] ACK received on attempt {attempt + 1} \"\n                            f\"(trace_id={trace_id})\",\n                        )\n                    return\n\n\n[H1] jupiter-common/jupiter_common/utils/ack_round_trip.py:103 (character offset 2799)\n\nQuestion: Should the temporal-resilience-auditor review lens be activated for asynchronous timing, timeouts, polling loops, retries, degraded broker connection handling, or background schedulers?\n\nOptions:\nA. Yes: activate temporal-resilience-auditor\nB. No: do not activate temporal-resilience-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 808,
+    "timings": {
+      "cache_n": 710,
+      "prompt_n": 98,
+      "prompt_ms": 745.077,
+      "prompt_per_token_ms": 7.602826530612245,
+      "prompt_per_second": 131.53002978215673,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 32,
+        "token": "A",
+        "bytes": [
+          65
+        ],
+        "logprob": -0.9012298583984375,
+        "top_logprobs": [
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -0.9012298583984375
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -2.533700942993164
+          },
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -2.614816665649414
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -2.7826366424560547
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.3340904712677
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -3.8797426223754883
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -4.308178901672363
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -4.704507827758789
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -4.760589599609375
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -4.819515228271484
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -4.821616172790527
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -4.842250823974609
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -4.9320526123046875
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -4.970208168029785
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -5.034517288208008
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.117238998413086
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.286048889160156
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -5.415742874145508
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -5.436038970947266
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -5.493875503540039
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -5.563638687133789
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.669156074523926
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -5.7370758056640625
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -5.910369873046875
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -6.006309509277344
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -6.080781936645508
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.0941619873046875
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.193892478942871
+          },
+          {
+            "id": 357,
+            "token": " A",
+            "bytes": [
+              32,
+              65
+            ],
+            "logprob": -6.274358749389648
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -6.340803146362305
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -6.364575386047363
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -6.371953964233398
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -6.423972129821777
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.4969329833984375
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.521242141723633
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -6.5380706787109375
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.640948295593262
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.658583641052246
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -6.715142250061035
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -6.726789474487305
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.75357723236084
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -6.829843521118164
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -6.9714555740356445
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -7.026363372802734
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -7.091941833496094
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -7.111085891723633
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.1730499267578125
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -7.250288963317871
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.253019332885742
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -7.265771865844727
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.293642044067383
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.294734001159668
+          },
+          {
+            "id": 2014,
+            "token": "An",
+            "bytes": [
+              65,
+              110
+            ],
+            "logprob": -7.294889450073242
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.489285469055176
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.489967346191406
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.496454238891602
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.505487442016602
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -7.545938491821289
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -7.586938858032227
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.59089469909668
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -7.614897727966309
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -7.626359939575195
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.688860893249512
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.707176208496094
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.716609954833984
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -7.751686096191406
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.781196594238281
+          },
+          {
+            "id": 2053,
+            "token": "As",
+            "bytes": [
+              65,
+              115
+            ],
+            "logprob": -7.794872283935547
+          },
+          {
+            "id": 2504,
+            "token": "Ad",
+            "bytes": [
+              65,
+              100
+            ],
+            "logprob": -7.816830635070801
+          },
+          {
+            "id": 1646,
+            "token": "AC",
+            "bytes": [
+              65,
+              67
+            ],
+            "logprob": -7.821155548095703
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.830258369445801
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.841867446899414
+          },
+          {
+            "id": 10,
+            "token": "+",
+            "bytes": [
+              43
+            ],
+            "logprob": -7.842304229736328
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -7.908664703369141
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -7.936653137207031
+          },
+          {
+            "id": 351,
+            "token": " C",
+            "bytes": [
+              32,
+              67
+            ],
+            "logprob": -7.950845718383789
+          },
+          {
+            "id": 5840,
+            "token": "AA",
+            "bytes": [
+              65,
+              65
+            ],
+            "logprob": -7.963064193725586
+          },
+          {
+            "id": 414,
+            "token": " D",
+            "bytes": [
+              32,
+              68
+            ],
+            "logprob": -7.963830947875977
+          },
+          {
+            "id": 22,
+            "token": "7",
+            "bytes": [
+              55
+            ],
+            "logprob": -7.980437278747559
+          },
+          {
+            "id": 23982,
+            "token": "Ah",
+            "bytes": [
+              65,
+              104
+            ],
+            "logprob": -7.981385231018066
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.991313934326172
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -7.996561527252197
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -8.004536628723145
+          },
+          {
+            "id": 31,
+            "token": "@",
+            "bytes": [
+              64
+            ],
+            "logprob": -8.027461051940918
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -8.031597137451172
+          },
+          {
+            "id": 331,
+            "token": "if",
+            "bytes": [
+              105,
+              102
+            ],
+            "logprob": -8.034790992736816
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -8.039501190185547
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -8.07608699798584
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -8.084726333618164
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -8.087555885314941
+          },
+          {
+            "id": 276,
+            "token": "an",
+            "bytes": [
+              97,
+              110
+            ],
+            "logprob": -8.111135482788086
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -8.115983009338379
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -8.13675308227539
+          },
+          {
+            "id": 299,
+            "token": "as",
+            "bytes": [
+              97,
+              115
+            ],
+            "logprob": -8.137259483337402
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.151044845581055
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -8.161664009094238
+          },
+          {
+            "id": 3,
+            "token": "$",
+            "bytes": [
+              36
+            ],
+            "logprob": -8.16862964630127
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -8.19676399230957
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -8.248772621154785
+          },
+          {
+            "id": 13,
+            "token": ".",
+            "bytes": [
+              46
+            ],
+            "logprob": -8.335960388183594
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.7548196999996435,
+  "letter": "A",
+  "probabilities": {
+    "A": 0.4060699439828152,
+    "B": 0.07318120409472074,
+    "Z": 0.0017088169940406943
+  },
+  "prefix_reuse_verified": true
+}

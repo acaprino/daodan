@@ -1,0 +1,30 @@
+{
+  "id": "individual-B018-catalog_noul",
+  "kind": "individual",
+  "case_id": "B018",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Check the rounding convention used to display tax in the invoice row.",
+    "artifacts": [
+      {
+        "path": "TaxRow.tsx",
+        "content": "export function TaxRow({taxCents}: {taxCents: number}) {\n  const value = (Math.round(taxCents) / 100).toFixed(2);\n  return <tr><th>Tax</th><td>{value}</td></tr>;\n}"
+      },
+      {
+        "path": "money.md",
+        "content": "taxCents is computed before rendering. The display must round to the nearest whole cent, with exact halves away from zero."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
+      }
+    }
+  },
+  "sha256": "efaa242d89568ab10869025f8fe10d442bdeaecddbb7712bb71fd660382a683f"
+}

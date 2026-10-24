@@ -107,7 +107,7 @@ function useWindowEvent(event: string, handler: (e) => void) {
 }
 ```
 
-**Alternative: use `useEffectEvent` if you're on latest React:**
+**Alternative: use `useEffectEvent` when the installed React version supports it:**
 
 ```tsx
 import { useEffectEvent } from 'react'
@@ -122,4 +122,4 @@ function useWindowEvent(event: string, handler: (e) => void) {
 }
 ```
 
-`useEffectEvent` provides a cleaner API for the same pattern: it creates a stable function reference that always calls the latest version of the handler.
+Effect Events read the latest committed values from an Effect or its subscription. Their identity is not stable; exclude them from dependencies and retain every reactive value. They cannot be passed to other components or used as general event-handler refs. See [React useEffectEvent](https://react.dev/reference/react/useEffectEvent).

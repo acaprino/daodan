@@ -1,0 +1,722 @@
+[
+  {
+    "id": "F01-facts",
+    "state": {
+      "language": "JavaScript or TypeScript",
+      "imported_modules": [
+        "react"
+      ],
+      "called_names": [
+        "setLanterns",
+        "useState"
+      ],
+      "jsx_element_names": [
+        "button"
+      ]
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "295770f205deb60b5a51631acebe657e919e33c024f7a831355b1390ee878b1a",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F01-statements",
+    "state": "import { useState } from \"react\";\n\nexport function LanternCounter() {\n  const [lanterns, setLanterns] = useState(0);\n  return (\n    <button onClick={() => setLanterns(value => value + 1)}>\n      Lanterns: {lanterns}\n    </button>\n  );\n}\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "295770f205deb60b5a51631acebe657e919e33c024f7a831355b1390ee878b1a",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F02-facts",
+    "state": {
+      "language": "JavaScript or TypeScript",
+      "imported_modules": [
+        "react"
+      ],
+      "called_names": [
+        "includes",
+        "query.toLowerCase",
+        "setQuery",
+        "useMemo",
+        "useState",
+        "value.toLowerCase",
+        "varieties.filter",
+        "visible.map"
+      ],
+      "jsx_element_names": [
+        "li",
+        "section",
+        "ul"
+      ]
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "6c39536cf8a771c8e0142056c187ed6a3a12bc3226cce396a6ebeeb33fd5c600",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F02-statements",
+    "state": "import { useMemo, useState } from \"react\";\n\nexport function OrchardPicker({ varieties }) {\n  const [query, setQuery] = useState(\"\");\n  const visible = useMemo(\n    () => varieties.filter(value => value.toLowerCase().includes(query.toLowerCase())),\n    [varieties, query]\n  );\n  return (\n    <section>\n      <input value={query} onChange={event => setQuery(event.target.value)} />\n      <ul>{visible.map(value => <li key={value}>{value}</li>)}</ul>\n    </section>\n  );\n}\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "6c39536cf8a771c8e0142056c187ed6a3a12bc3226cce396a6ebeeb33fd5c600",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F03-facts",
+    "state": {
+      "language": "Python",
+      "imported_modules": [
+        "sqlite3"
+      ],
+      "called_names": [
+        "connection.close",
+        "connection.execute",
+        "int",
+        "sqlite3.connect"
+      ],
+      "jsx_element_names": []
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "fafb046ff7f4ca927ba9c525d6af9459884a82d48d2d78a1e892a2ecac23d983",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F03-statements",
+    "state": "import sqlite3\n\n\ndef record_telescope_reading(database_path: str, magnitude: float) -> int:\n    connection = sqlite3.connect(database_path)\n    try:\n        with connection:\n            connection.execute(\n                \"CREATE TABLE IF NOT EXISTS telescope_readings \"\n                \"(id INTEGER PRIMARY KEY, magnitude REAL NOT NULL)\"\n            )\n            cursor = connection.execute(\n                \"INSERT INTO telescope_readings (magnitude) VALUES (?)\",\n                (magnitude,),\n            )\n            return int(cursor.lastrowid)\n    finally:\n        connection.close()\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "fafb046ff7f4ca927ba9c525d6af9459884a82d48d2d78a1e892a2ecac23d983",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F04-facts",
+    "state": {
+      "language": "Python",
+      "imported_modules": [
+        "json",
+        "redis"
+      ],
+      "called_names": [
+        "Redis",
+        "atlas_store.get",
+        "atlas_store.set",
+        "json.dumps",
+        "json.loads"
+      ],
+      "jsx_element_names": []
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "949a264927cca21d179bb4a5464d4a0074829f64d3b7f47e37ab19e5c256d55d",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F04-statements",
+    "state": "import json\n\nfrom redis import Redis\n\n\natlas_store = Redis(host=\"localhost\", port=6379, decode_responses=True)\n\n\ndef remember_route(route_code: str, waypoints: list[str]) -> None:\n    atlas_store.set(f\"atlas:{route_code}\", json.dumps(waypoints), ex=120)\n\n\ndef recall_route(route_code: str) -> list[str] | None:\n    encoded = atlas_store.get(f\"atlas:{route_code}\")\n    return None if encoded is None else json.loads(encoded)\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "949a264927cca21d179bb4a5464d4a0074829f64d3b7f47e37ab19e5c256d55d",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F05-facts",
+    "state": {
+      "language": "Python",
+      "imported_modules": [
+        "decimal"
+      ],
+      "called_names": [
+        "Decimal",
+        "ValueError",
+        "quantize",
+        "sum"
+      ],
+      "jsx_element_names": []
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "626801bb3ad0ed772efbc64012fc936fdc80036fbcba01d6ebdcad87ec7c82b3",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F05-statements",
+    "state": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef pottery_total(prices: list[Decimal], discount: Decimal) -> Decimal:\n    if not Decimal(\"0\") <= discount <= Decimal(\"1\"):\n        raise ValueError(\"Discount must be between zero and one\")\n    subtotal = sum(prices, start=Decimal(\"0\"))\n    return (subtotal * (Decimal(\"1\") - discount)).quantize(\n        Decimal(\"0.01\"), rounding=ROUND_HALF_UP\n    )\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "626801bb3ad0ed772efbc64012fc936fdc80036fbcba01d6ebdcad87ec7c82b3",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F06-facts",
+    "state": {
+      "language": "Python",
+      "imported_modules": [],
+      "called_names": [
+        "ValueError",
+        "len",
+        "sorted"
+      ],
+      "jsx_element_names": []
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "280df0b2b7e83b5da19bcdc6b33f251d37c251712ed44853cfa65f861243e75b",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F06-statements",
+    "state": "def ridge_median(heights: list[float]) -> float:\n    if not heights:\n        raise ValueError(\"At least one height is required\")\n    ordered = sorted(heights)\n    midpoint = len(ordered) // 2\n    if len(ordered) % 2:\n        return ordered[midpoint]\n    return (ordered[midpoint - 1] + ordered[midpoint]) / 2\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "280df0b2b7e83b5da19bcdc6b33f251d37c251712ed44853cfa65f861243e75b",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F07-facts",
+    "state": {
+      "language": "JavaScript or TypeScript",
+      "imported_modules": [],
+      "called_names": [
+        "Error",
+        "Math.max",
+        "Math.min",
+        "every"
+      ],
+      "jsx_element_names": []
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "663ee4b840548b596490569efe17ac72da1c0ff7c6362c560e8211bb75463b05",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F07-statements",
+    "state": "export function boundCompass(value: number, lower: number, upper: number): number {\n  if (![value, lower, upper].every(Number.isFinite)) {\n    throw new Error(\"Bounds and value must be finite\");\n  }\n  if (lower > upper) {\n    throw new Error(\"Lower bound exceeds upper bound\");\n  }\n  return Math.min(upper, Math.max(lower, value));\n}\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "663ee4b840548b596490569efe17ac72da1c0ff7c6362c560e8211bb75463b05",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "F08-facts",
+    "state": {
+      "language": "JavaScript or TypeScript",
+      "imported_modules": [],
+      "called_names": [
+        "Object.create"
+      ],
+      "jsx_element_names": []
+    },
+    "questions": {
+      "family": {
+        "type": "choice",
+        "instructions": "Which kind of code is shown?",
+        "criteria": {
+          "react": "React user interface component",
+          "persistence": "Database and cache access",
+          "computation": "Ordinary computation without a user interface or data storage"
+        }
+      },
+      "react": {
+        "type": "noul",
+        "instructions": "Does the code use React components or React hooks?",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "Does the code read or write a database or cache?",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "d18450287bac67ee4988b82a8b40c659adf1da53af205d42b1fa41c0cfd7e76b",
+    "transform": "source_facts; syntax only, no labels"
+  },
+  {
+    "id": "F08-statements",
+    "state": "export function pebbleFrequencies(values: readonly string[]): Record<string, number> {\n  const counts: Record<string, number> = Object.create(null);\n  for (const value of values) {\n    counts[value] = (counts[value] ?? 0) + 1;\n  }\n  return counts;\n}\n",
+    "questions": {
+      "react": {
+        "type": "noul",
+        "instructions": "The code uses React components or React hooks.",
+        "criteria": {
+          "false": "The code does not use React components or React hooks.",
+          "true": "The code uses React components or React hooks."
+        }
+      },
+      "persistence": {
+        "type": "noul",
+        "instructions": "The code reads or writes a database or cache.",
+        "criteria": {
+          "false": "The code does not read or write a database or cache.",
+          "true": "The code reads or writes a database or cache."
+        }
+      }
+    },
+    "source_sha256": "d18450287bac67ee4988b82a8b40c659adf1da53af205d42b1fa41c0cfd7e76b",
+    "transform": "Only interrogative instructions changed to declarative propositions."
+  },
+  {
+    "id": "official-agent_trace_observability_000000",
+    "state": "{\"agent\": {\"autonomy\": \"checkpointed\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Do not exceed a $50 spend on cloud resources\"], \"task\": \"Rotate the expired TLS certificate on the staging load balancer.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 32.5, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 0}}",
+    "questions": {
+      "needs_review": {
+        "criteria": {
+          "false": "No human attention is warranted.",
+          "true": "A human should inspect this run."
+        },
+        "instructions": "This trace requires human review.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-agent_trace_observability_000001",
+    "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Never disable monitoring or alerting\"], \"task\": \"Reduce the nightly report job's runtime below fifteen minutes.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 532.0, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 3}}",
+    "questions": {
+      "needs_review": {
+        "criteria": {
+          "false": "No human attention is warranted.",
+          "true": "A human should inspect this run."
+        },
+        "instructions": "This trace requires human review.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-agent_trace_observability_000002",
+    "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v3\"}, \"constraints\": [\"Do not touch customer data outside the named accounts\", \"Never modify production without an approved change ticket\", \"Never disable monitoring or alerting\"], \"task\": \"Backfill missing analytics events for the last seven days.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 763.4, \"irreversible_actions\": 0, \"steps\": 4, \"tool_errors\": 3}}",
+    "questions": {
+      "needs_review": {
+        "criteria": {
+          "false": "No human attention is warranted.",
+          "true": "A human should inspect this run."
+        },
+        "instructions": "This trace requires human review.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-invoice_processing_000000",
+    "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-01\", \"received_qty\": 5}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-2424\", \"lines\": [{\"qty\": 5, \"sku\": \"SKU-532\", \"total_usd\": 1670.45, \"unit_usd\": 334.09}], \"total_usd\": 1670.45, \"vendor\": \"Vantage Materials\"}, \"payment\": {\"days_until_due\": -9, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"overdue\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-1520\", \"lines\": [{\"qty\": 10, \"unit_usd\": 334.09}], \"total_usd\": 3340.9}, \"vendor_history\": {\"disputes_12m\": 2, \"invoices_12m\": 14, \"prior_invoice_ids\": [\"INV-2026-9279\", \"INV-2026-1434\"]}}",
+    "questions": {
+      "duplicate": {
+        "instructions": "This invoice appears to duplicate an invoice already submitted.",
+        "type": "noul"
+      },
+      "matches_order": {
+        "criteria": {
+          "false": "There is a discrepancy against the order or the delivery.",
+          "true": "Line items, quantities and amounts reconcile."
+        },
+        "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-invoice_processing_000001",
+    "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-11\", \"received_qty\": 400}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-1106\", \"lines\": [{\"qty\": 450, \"sku\": \"SKU-814\", \"total_usd\": 131836.5, \"unit_usd\": 292.97}], \"total_usd\": 131836.5, \"vendor\": \"Acme Fabrication\"}, \"payment\": {\"days_until_due\": 18, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-7924\", \"lines\": [{\"qty\": 400, \"unit_usd\": 292.97}], \"total_usd\": 117188.0}, \"vendor_history\": {\"disputes_12m\": 2, \"invoices_12m\": 10, \"prior_invoice_ids\": [\"INV-2026-6514\", \"INV-2026-2674\"]}}",
+    "questions": {
+      "duplicate": {
+        "instructions": "This invoice appears to duplicate an invoice already submitted.",
+        "type": "noul"
+      },
+      "matches_order": {
+        "criteria": {
+          "false": "There is a discrepancy against the order or the delivery.",
+          "true": "Line items, quantities and amounts reconcile."
+        },
+        "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-invoice_processing_000002",
+    "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-18\", \"received_qty\": 10}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-9785\", \"lines\": [{\"qty\": 10, \"sku\": \"SKU-487\", \"total_usd\": 1625.0, \"unit_usd\": 162.5}], \"total_usd\": 1625.0, \"vendor\": \"Northwind Components\"}, \"payment\": {\"days_until_due\": 2, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-2291\", \"lines\": [{\"qty\": 10, \"unit_usd\": 162.5}], \"total_usd\": 1625.0}, \"vendor_history\": {\"disputes_12m\": 1, \"invoices_12m\": 54, \"prior_invoice_ids\": [\"INV-2026-4150\", \"INV-2026-2139\", \"INV-2026-1750\"]}}",
+    "questions": {
+      "duplicate": {
+        "instructions": "This invoice appears to duplicate an invoice already submitted.",
+        "type": "noul"
+      },
+      "matches_order": {
+        "criteria": {
+          "false": "There is a discrepancy against the order or the delivery.",
+          "true": "Line items, quantities and amounts reconcile."
+        },
+        "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-security_incidents_000000",
+    "state": "{\"alert\": {\"description\": \"an endpoint agent matched a known signature\", \"evidence\": \"At 2026-09-15 02:17:44 UTC the endpoint agent on host WIN-01 flagged the file C:\\\\Program Files\\\\Backup\\\\backup.exe (SHA256: 3a5b9c7d…) as matching the known malware signature 'Trojan:Win32/Emotet'. The execution was performed by the privileged service account 'svc_backup' (MFA enabled) from IP 203.0.113.45, which is not listed in the known source inventory; the account's credentials were last rotated on 2026-09-01.\", \"rule\": \"malware_signature\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": false}, \"history\": {\"credential_rotation_days_ago\": 14, \"distinct_countries_30d\": 2, \"logins_30d\": 194, \"prior_alerts_90d\": 1}, \"principal\": {\"mfa_enrolled\": true, \"name\": \"adm-deploy-130\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"service_account\"}}",
+    "questions": {
+      "credential_compromise": {
+        "instructions": "The evidence indicates a credential or account has been compromised.",
+        "type": "noul"
+      },
+      "true_positive": {
+        "criteria": {
+          "false": "Benign activity, a misconfiguration, or a known false positive.",
+          "true": "The underlying behaviour is malicious or unauthorised."
+        },
+        "instructions": "This alert reflects genuinely malicious or unauthorised activity.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-security_incidents_000001",
+    "state": "{\"alert\": {\"description\": \"a security group was opened to the public internet\", \"evidence\": \"On 2026-09-14 11:03 UTC the Azure AD security group 'SG-DataLake' was modified to add the object 'Everyone' (objectId d2c9e4…), effectively opening the group to the public internet. The change was made by the privileged service account 'svc_netadmin' (MFA disabled) originating from IP 198.51.100.22, an unrecognised source, and the account's password was last changed on 2025-03-16.\", \"rule\": \"config_drift\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": false}, \"history\": {\"credential_rotation_days_ago\": 180, \"distinct_countries_30d\": 3, \"logins_30d\": 868, \"prior_alerts_90d\": 0}, \"principal\": {\"mfa_enrolled\": false, \"name\": \"svc-billing-814\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"service_account\"}}",
+    "questions": {
+      "credential_compromise": {
+        "instructions": "The evidence indicates a credential or account has been compromised.",
+        "type": "noul"
+      },
+      "true_positive": {
+        "criteria": {
+          "false": "Benign activity, a misconfiguration, or a known false positive.",
+          "true": "The underlying behaviour is malicious or unauthorised."
+        },
+        "instructions": "This alert reflects genuinely malicious or unauthorised activity.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+    "transform": "None; exact original noul questions."
+  },
+  {
+    "id": "official-security_incidents_000002",
+    "state": "{\"alert\": {\"description\": \"an account granted itself or received elevated permissions\", \"evidence\": \"At 2026-09-13 16:45 UTC the IAM policy for project 'Alpha' was updated to grant the role 'Owner' to user 'contractor_jane' (ID 112233). The modification came from an approved CI/CD runner at 10.0.5.12 (on the allowlist); the contractor's MFA‑enabled credentials were last rotated on 2026-09-10.\", \"rule\": \"privilege_escalation\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": true}, \"history\": {\"credential_rotation_days_ago\": 3, \"distinct_countries_30d\": 4, \"logins_30d\": 1995, \"prior_alerts_90d\": 0}, \"principal\": {\"mfa_enrolled\": true, \"name\": \"adm-support-227\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"contractor\"}}",
+    "questions": {
+      "credential_compromise": {
+        "instructions": "The evidence indicates a credential or account has been compromised.",
+        "type": "noul"
+      },
+      "true_positive": {
+        "criteria": {
+          "false": "Benign activity, a misconfiguration, or a known false positive.",
+          "true": "The underlying behaviour is malicious or unauthorised."
+        },
+        "instructions": "This alert reflects genuinely malicious or unauthorised activity.",
+        "type": "noul"
+      }
+    },
+    "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+    "transform": "None; exact original noul questions."
+  }
+]

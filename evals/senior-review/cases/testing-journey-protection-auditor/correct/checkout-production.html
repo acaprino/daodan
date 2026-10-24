@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><title>Checkout</title><body>
+<button id="submit" type="button">Submit</button>
+<p id="result" role="status"></p>
+<script>
+// This standalone fixture route is served as /checkout. Its in-memory order
+// service records one order on each submit, then exposes its confirmation.
+const orders = [];
+function completeOrder() {
+  orders.push({id: orders.length + 1});
+  document.getElementById('result').textContent = 'Order confirmed';
+}
+document.getElementById('submit').addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(completeOrder, completeOrder);
+});
+</script></body></html>

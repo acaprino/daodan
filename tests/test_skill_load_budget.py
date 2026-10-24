@@ -29,7 +29,7 @@ UNIT_CAPS = {
     LIFECYCLE / "references/interview.md": 400,
     LIFECYCLE / "references/waves.md": 515,
     LIFECYCLE / "references/worker-brief.md": 300,
-    LIFECYCLE / "references/verify.md": 380,
+    LIFECYCLE / "references/verify.md": 300,
     LIFECYCLE / "references/finish.md": 250,
     LIFECYCLE / "references/realign.md": 260,
     LIFECYCLE / "references/sync.md": 175,
@@ -45,10 +45,10 @@ UNIT_CAPS = {
     AUTHORING: 208,
     ADR / "SKILL.md": 430,
     ADR / "references/adr-template.md": 375,
-    REVIEW / "review-method/SKILL.md": 565,
-    REVIEW / "review-method/references/light.md": 600,
+    REVIEW / "review-method/SKILL.md": 450,
+    REVIEW / "review-method/references/light.md": 500,
     REVIEW / "investigation-method/SKILL.md": 595,
-    REVIEW / "review-preparation/SKILL.md": 525,
+    REVIEW / "review-preparation/SKILL.md": 520,
     REVIEW / "review-preparation/references/candidate-grounding.md": 1_215,
     REVIEW / "review-preparation/references/stack-dimensions.md": 650,
     REVIEW / "review-preparation/references/knowledge-bindings.md": 465,
@@ -56,7 +56,7 @@ UNIT_CAPS = {
     REVIEW / "review-quality-gates/references/context-sharing.md": 560,
     REVIEW / "review-quality-gates/references/verification-panel.md": 500,
     REVIEW / "review-preparation/references/team-review.md": 3_050,
-    REVIEW / "review-consolidation/SKILL.md": 595,
+    REVIEW / "review-consolidation/SKILL.md": 480,
 }
 
 # What one coordinator context holds at each step, beside the always-loaded
@@ -123,6 +123,13 @@ STEP_CAPS = {
     "team review: preparation and dispatch": 7_985,
     "review consolidation": 2_020,
 }
+
+
+# Count the brief after first loading it; no existing step cap increases.
+CONTEXT_BRIEF = LIFECYCLE / "references/context-cycle.md"
+UNIT_CAPS[CONTEXT_BRIEF] = 22
+STEPS = {name: (*units, CONTEXT_BRIEF) if LIFECYCLE / "SKILL.md" in units else units
+         for name, units in STEPS.items()}
 
 
 def words(path):

@@ -1,0 +1,7 @@
+{
+  "sampled_at": "2026-10-20T10:24:23.1046163Z",
+  "source": "Win32_ComputerSystem and Win32_OperatingSystem",
+  "logical_processors": 22,
+  "total_ram_bytes": 33775378432,
+  "free_physical_memory_kib": 12395892
+}

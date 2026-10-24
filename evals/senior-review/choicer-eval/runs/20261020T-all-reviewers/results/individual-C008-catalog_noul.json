@@ -1,0 +1,14 @@
+{
+  "id": "individual-C008-catalog_noul",
+  "request_sha256": "8ef99cd71caa4145f12354489d11833da7bb7deaeaa476b3962efc75c45cdeac",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "repo-hygiene:workspace-auditor": "ValueError: Option exceeds 48-token model contract"
+  },
+  "wall_seconds": 0.00021309999283403158
+}

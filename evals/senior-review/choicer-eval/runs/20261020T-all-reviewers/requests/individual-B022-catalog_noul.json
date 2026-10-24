@@ -1,0 +1,26 @@
+{
+  "id": "individual-B022-catalog_noul",
+  "kind": "individual",
+  "case_id": "B022",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit the export endpoint only for command injection and unauthorized filesystem access.",
+    "artifacts": [
+      {
+        "path": "export.js",
+        "content": "import {exec} from \"node:child_process\";\nrouter.post(\"/export\", (req, res) => {\n  exec(`tar -czf /tmp/export.tgz ${req.body.folder}`, (error) => {\n    if (error) return res.sendStatus(500);\n    res.download(\"/tmp/export.tgz\");\n  });\n});"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the task is security-specific auditing (use security-auditor).",
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
+      }
+    }
+  },
+  "sha256": "11f1506fa734dc8ef2c4da640f4f531e23581464c68be30e34af88ff4a6f78e8"
+}

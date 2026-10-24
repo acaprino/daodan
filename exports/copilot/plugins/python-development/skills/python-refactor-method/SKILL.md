@@ -121,14 +121,14 @@ Transform complex Python into clear, maintainable code while preserving correctn
 4. **Single Responsibility** -- one thing per class/function (SOLID)
 5. **Self-documenting structure** -- code = what, comments = why
 6. **Progressive disclosure** -- reveal complexity in layers
-7. **Reasonable performance** -- never sacrifice >2× without explicit approval
+7. **Required performance**: preserve the approved workload budget; compare like-for-like measurements and record unavailable evidence
 
 ## Hard constraints
 
 - **SAFETY BY DESIGN** -- mandatory migration checklists for destructive changes. CREATE → SEARCH → MIGRATE → VERIFY → only then REMOVE. NEVER remove before 100% migration verified.
 - **STATIC ANALYSIS FIRST** -- `flake8 --select=F821,E0602` (or `ruff check --select=F821`) BEFORE tests. Catches NameErrors immediately.
 - **PRESERVE BEHAVIOR** -- all existing tests pass after.
-- **NO PERF REGRESSION** -- never degrade > 2× without explicit approval.
+- **PERFORMANCE CONTRACT**: a measured violation of the approved budget requires a decision before accepting the refactor; no universal 2× or percentage threshold.
 - **NO API CHANGES** -- public APIs unchanged unless explicitly requested + documented.
 - **NO OVER-ENGINEERING** -- simple stays simple.
 - **NO MAGIC** -- no framework magic, no metaprogramming unless absolutely necessary.
@@ -241,7 +241,7 @@ ANY REGRESSION = TOTAL FAILURE.
 4. **Before/after metrics** with `scripts/measure_complexity.py` or `scripts/analyze_multi_metrics.py`.
 5. **Performance regression check** with `scripts/benchmark_changes.py` for hot paths.
 6. **Summary report** using `assets/templates/summary_template.md`.
-7. **Flag for human review** if: perf degraded > 10%, public API signatures changed, test coverage decreased, significant architectural changes.
+7. **Flag for human review** if: the agreed performance budget is violated or cannot be verified, public API signatures changed, test coverage decreased, significant architectural changes.
 
 ## Refactoring patterns (catalog summary)
 
@@ -266,9 +266,9 @@ For cognitive complexity calculation rules and reduction strategies, see `refere
 - **Constants**: `UPPERCASE_WITH_UNDERSCORES`; replace magic numbers/strings
 - **Classes**: PascalCase nouns (`UserAccount`, `PaymentProcessor`)
 
-## Anti-patterns to fix (priority order)
+## Anti-patterns to investigate (priority order)
 
-Full catalog: `references/anti-patterns.md`.
+Full catalog: `references/anti-patterns.md`. The numeric and structural signals below are leads; confirm actual cost before proposing changes.
 
 - **Critical**: script-like / procedural code with global state; God Object / God Class
 - **High**: complex nested conditionals (> 3 levels), long functions (> 30 lines), magic numbers, cryptic names, missing type hints, missing docstrings
@@ -360,7 +360,7 @@ Cannot improve algorithmic complexity (that's an algorithm change). Cannot add d
 1. **Zero regressions** -- all tests pass, behavior unchanged
 2. Golden master match for documented critical cases
 3. Complexity metrics improved (documented in summary)
-4. No perf regression > 10% (or explicit approval)
+4. Approved performance budget preserved on comparable measurements, or an explicit authorized change
 5. Documentation coverage improved
 6. Code easier for humans to understand
 7. No new security vulnerabilities

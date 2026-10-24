@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review compensation when shipment reservation fails after payment capture.",
+    "artifacts": [
+      {
+        "path": "orders/fulfill.py",
+        "content": "async def fulfill(order, payments, shipping):\n    charge = await payments.capture(order.id)\n    try:\n        return await shipping.reserve(order.id)\n    except ReservationError:\n        await payments.refund(charge.id)\n        raise"
+      },
+      {
+        "path": "orders/change.md",
+        "content": "The change is confined to orchestration after payment capture. Payment and shipment request and response contracts remain unchanged. Review retry and compensation behavior."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    }
+  }
+}

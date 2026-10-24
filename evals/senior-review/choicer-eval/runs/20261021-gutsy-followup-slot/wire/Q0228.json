@@ -1,0 +1,963 @@
+{
+  "id": "Q0228",
+  "case_id": "C07",
+  "role": "senior-review:logic-integrity-auditor",
+  "mode": "windowed",
+  "variant": "v2",
+  "window_id": "W024",
+  "prompt_sha256": "b68fc495fbe6da16ef25596061a4e992b7c85c0fe32c4a2a7990fbdad97fc746",
+  "prompt_tokens": 995,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase C07\n[Architecture Context]\nModule role: Desktop application update manager (React hooks, Redux store, UI modal).\nPeriodically polls release endpoints, downloads binary packages in the background, and manages user update install prompts.\n\n[Code Under Review]\n[H23] jupiter-desktop/src-react/src/hooks/useUpdater.ts:1 (character offset 0)\n/**\n * useUpdater Hook - Silent application updates\n *\n * Updates apply without anyone clicking anything. Two paths lead there:\n *\n * - **No session open**: an update found while the login screen is up is\n *   downloaded and installed on the spot. Nothing is lost, because nothing has\n *   started yet.\n * - **Session open**: an update is downloaded silently and applied at the next\n *   local midnight, announced five minutes ahead by a native toast plus an\n *   in-app countdown offering \"Restart now\" and \"Postpone\".\n *\n * The distinction is the authenticated state, not the elapsed time. The check\n * loop is mounted above the auth gate (see `App.tsx`) so it also runs while the\n * login screen is up, and the condition is re-read at every point where the\n * flow could still back out -- after the download and again immediately before\n * the installer is handed control -- because a session opening mid-flow must\n * demote the update to the nightly path rather than kill a live one.\n *\n * Three properties of the Tauri updater shape this design:\n *\n * 1. `download()` and `install()` are separate commands, which is what makes a\n *    silent download with a deferred restart possible at all.\n * 2. The downloaded package lives in the Rust resource table of this webview,\n *    so it never outlives the process. Nothing is resumable across runs.\n * 3. `install()` spawns the installer and then exits the process outright. It\n *    never returns, and no Tauri shutdown event fires. The NSIS `/R` flag is\n *    what brings the app back up, so there is no relaunch to perform here.\n *\n * Only active when running in Tauri desktop environment.\n */\n\n\n[H24] jupiter-desktop/src-react/src/hooks/useUpdater.ts:33 (character offset 0)\nimport { useCallback, useEffect } from 'react'\nimport { useShallow } from 'zustand/react/shallow'\nimport { isTauri } from '@/lib/tauri'\nimport { sendUrgentNativeNotification } from '@/lib/nativeNotification'\nimport { useGanymedeStore } from '@/store/useGanymedeStore'\nimport type { UpdateInfo, UpdatePhase } from '@/store/slices/updaterSlice'\n\n/** Delay before the first automatic check, so it never blocks boot. */\nconst STARTUP_CHECK_DELAY_MS = 5000\n\n\n[H25] jupiter-desktop/src-react/src/hooks/useUpdater.ts:47 (character offset 0)\n */\nconst AUTO_CHECK_INTERVAL_MS = 60 * 60 * 1000\n\n/**\n * The restart deadline is compared against the wall clock on every tick rather\n * than armed as one long timer. A timer spanning hours cannot be trusted here:\n * WebView2 throttles timers of hidden pages (the window lives in the tray most\n * of the time), and a suspended machine freezes them outright.\n */\nconst SCHEDULER_TICK_MS = 60 * 1000\n\n/** How long the user gets between the warning and the restart. */\nconst RESTART_WARNING_MS = 5 * 60 * 1000\n\n/**\n * How far past its deadline a countdown may be found before it is treated as\n * stale rather than due. Ticks are a minute apart and can be delayed, so a\n\n\n[H25] jupiter-desktop/src-react/src/hooks/useUpdater.ts:64 (character offset 667)\n * small overshoot is normal; any\n\nQuestion: Should the logic-integrity-auditor review lens be activated for state machines, status transitions, fallback values, recipient filtering logic, or domain invariants?\n\nOptions:\nA. Yes: activate logic-integrity-auditor\nB. No: do not activate logic-integrity-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "812d5cf259539d7dc7b0a018109470a69f8abf788abc009232d660bb49aa0f9f",
+  "prefix_tokens": 902,
+  "state_id": "S029",
+  "restore": {
+    "seconds": 0.07710890000453219,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 902,
+      "n_read": 51513136,
+      "timings": {
+        "restore_ms": 60.519
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "A",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 995,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase C07\n[Architecture Context]\nModule role: Desktop application update manager (React hooks, Redux store, UI modal).\nPeriodically polls release endpoints, downloads binary packages in the background, and manages user update install prompts.\n\n[Code Under Review]\n[H23] jupiter-desktop/src-react/src/hooks/useUpdater.ts:1 (character offset 0)\n/**\n * useUpdater Hook - Silent application updates\n *\n * Updates apply without anyone clicking anything. Two paths lead there:\n *\n * - **No session open**: an update found while the login screen is up is\n *   downloaded and installed on the spot. Nothing is lost, because nothing has\n *   started yet.\n * - **Session open**: an update is downloaded silently and applied at the next\n *   local midnight, announced five minutes ahead by a native toast plus an\n *   in-app countdown offering \"Restart now\" and \"Postpone\".\n *\n * The distinction is the authenticated state, not the elapsed time. The check\n * loop is mounted above the auth gate (see `App.tsx`) so it also runs while the\n * login screen is up, and the condition is re-read at every point where the\n * flow could still back out -- after the download and again immediately before\n * the installer is handed control -- because a session opening mid-flow must\n * demote the update to the nightly path rather than kill a live one.\n *\n * Three properties of the Tauri updater shape this design:\n *\n * 1. `download()` and `install()` are separate commands, which is what makes a\n *    silent download with a deferred restart possible at all.\n * 2. The downloaded package lives in the Rust resource table of this webview,\n *    so it never outlives the process. Nothing is resumable across runs.\n * 3. `install()` spawns the installer and then exits the process outright. It\n *    never returns, and no Tauri shutdown event fires. The NSIS `/R` flag is\n *    what brings the app back up, so there is no relaunch to perform here.\n *\n * Only active when running in Tauri desktop environment.\n */\n\n\n[H24] jupiter-desktop/src-react/src/hooks/useUpdater.ts:33 (character offset 0)\nimport { useCallback, useEffect } from 'react'\nimport { useShallow } from 'zustand/react/shallow'\nimport { isTauri } from '@/lib/tauri'\nimport { sendUrgentNativeNotification } from '@/lib/nativeNotification'\nimport { useGanymedeStore } from '@/store/useGanymedeStore'\nimport type { UpdateInfo, UpdatePhase } from '@/store/slices/updaterSlice'\n\n/** Delay before the first automatic check, so it never blocks boot. */\nconst STARTUP_CHECK_DELAY_MS = 5000\n\n\n[H25] jupiter-desktop/src-react/src/hooks/useUpdater.ts:47 (character offset 0)\n */\nconst AUTO_CHECK_INTERVAL_MS = 60 * 60 * 1000\n\n/**\n * The restart deadline is compared against the wall clock on every tick rather\n * than armed as one long timer. A timer spanning hours cannot be trusted here:\n * WebView2 throttles timers of hidden pages (the window lives in the tray most\n * of the time), and a suspended machine freezes them outright.\n */\nconst SCHEDULER_TICK_MS = 60 * 1000\n\n/** How long the user gets between the warning and the restart. */\nconst RESTART_WARNING_MS = 5 * 60 * 1000\n\n/**\n * How far past its deadline a countdown may be found before it is treated as\n * stale rather than due. Ticks are a minute apart and can be delayed, so a\n\n\n[H25] jupiter-desktop/src-react/src/hooks/useUpdater.ts:64 (character offset 667)\n * small overshoot is normal; any\n\nQuestion: Should the logic-integrity-auditor review lens be activated for state machines, status transitions, fallback values, recipient filtering logic, or domain invariants?\n\nOptions:\nA. Yes: activate logic-integrity-auditor\nB. No: do not activate logic-integrity-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 995,
+    "timings": {
+      "cache_n": 902,
+      "prompt_n": 93,
+      "prompt_ms": 910.951,
+      "prompt_per_token_ms": 9.795172043010753,
+      "prompt_per_second": 102.0911113770115,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 32,
+        "token": "A",
+        "bytes": [
+          65
+        ],
+        "logprob": -1.4761310815811157,
+        "top_logprobs": [
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -1.4761310815811157
+          },
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -2.041490316390991
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -2.4350314140319824
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -2.7643048763275146
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.26263689994812
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -3.705228567123413
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -3.978748083114624
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.175417423248291
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -4.563750743865967
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -4.586791515350342
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -4.641799449920654
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -4.770829677581787
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -4.8575568199157715
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -4.958085536956787
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -5.0967583656311035
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -5.13607931137085
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -5.234830379486084
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.278069019317627
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -5.298131465911865
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.36456823348999
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -5.420350551605225
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -5.43660306930542
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.528954029083252
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -5.530740261077881
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -5.584094524383545
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -5.66068696975708
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -5.7972235679626465
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -5.885298252105713
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -5.973647594451904
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.0752787590026855
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -6.207622051239014
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.262838840484619
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -6.2747111320495605
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.293187618255615
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -6.363107204437256
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.468835353851318
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.496139049530029
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -6.560612201690674
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -6.577306270599365
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -6.6900763511657715
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -6.707372188568115
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -6.754964351654053
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -6.775496959686279
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -6.783637523651123
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -6.78615140914917
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -6.847152233123779
+          },
+          {
+            "id": 357,
+            "token": " A",
+            "bytes": [
+              32,
+              65
+            ],
+            "logprob": -6.959847927093506
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -6.979293346405029
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -7.12304162979126
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -7.177107334136963
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -7.180180072784424
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.181615352630615
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.190920352935791
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -7.214417934417725
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -7.218400478363037
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -7.242721080780029
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.2817769050598145
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.286978244781494
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.30635404586792
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -7.338010311126709
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.461069583892822
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -7.523604869842529
+          },
+          {
+            "id": 2014,
+            "token": "An",
+            "bytes": [
+              65,
+              110
+            ],
+            "logprob": -7.570756435394287
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -7.571717739105225
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.711175441741943
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.730506420135498
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.741981029510498
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.7423095703125
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.743973255157471
+          },
+          {
+            "id": 1803,
+            "token": "AB",
+            "bytes": [
+              65,
+              66
+            ],
+            "logprob": -7.748887062072754
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.7578444480896
+          },
+          {
+            "id": 10,
+            "token": "+",
+            "bytes": [
+              43
+            ],
+            "logprob": -7.777956485748291
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.791417121887207
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.803645133972168
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.828310012817383
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.832601070404053
+          },
+          {
+            "id": 1646,
+            "token": "AC",
+            "bytes": [
+              65,
+              67
+            ],
+            "logprob": -7.840196132659912
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.8550944328308105
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.871375560760498
+          },
+          {
+            "id": 2504,
+            "token": "Ad",
+            "bytes": [
+              65,
+              100
+            ],
+            "logprob": -7.908593654632568
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.920568943023682
+          },
+          {
+            "id": 6844,
+            "token": "BA",
+            "bytes": [
+              66,
+              65
+            ],
+            "logprob": -7.924230098724365
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.929089546203613
+          },
+          {
+            "id": 31,
+            "token": "@",
+            "bytes": [
+              64
+            ],
+            "logprob": -7.957026958465576
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -7.9585442543029785
+          },
+          {
+            "id": 351,
+            "token": " C",
+            "bytes": [
+              32,
+              67
+            ],
+            "logprob": -7.981274127960205
+          },
+          {
+            "id": 414,
+            "token": " D",
+            "bytes": [
+              32,
+              68
+            ],
+            "logprob": -8.013968467712402
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -8.042314529418945
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -8.043464660644531
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -8.053339004516602
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -8.059269905090332
+          },
+          {
+            "id": 327,
+            "token": "ad",
+            "bytes": [
+              97,
+              100
+            ],
+            "logprob": -8.067964553833008
+          },
+          {
+            "id": 23982,
+            "token": "Ah",
+            "bytes": [
+              65,
+              104
+            ],
+            "logprob": -8.080081939697266
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -8.101710319519043
+          },
+          {
+            "id": 5840,
+            "token": "AA",
+            "bytes": [
+              65,
+              65
+            ],
+            "logprob": -8.102010726928711
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -8.122605323791504
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -8.129598617553711
+          },
+          {
+            "id": 13,
+            "token": ".",
+            "bytes": [
+              46
+            ],
+            "logprob": -8.132150650024414
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -8.13593864440918
+          },
+          {
+            "id": 276,
+            "token": "an",
+            "bytes": [
+              97,
+              110
+            ],
+            "logprob": -8.179190635681152
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.9386391000007279,
+  "letter": "A",
+  "probabilities": {
+    "A": 0.228520105929273,
+    "B": 0.1298350712872728,
+    "Z": 0.0037571502379452363
+  },
+  "prefix_reuse_verified": true
+}

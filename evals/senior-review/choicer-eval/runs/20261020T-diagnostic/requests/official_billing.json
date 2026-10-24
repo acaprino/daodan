@@ -1,0 +1,16 @@
+{
+  "id": "official_billing",
+  "state": "I was charged twice for the same order.",
+  "questions": {
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {
+        "billing": "Billing and payment disputes",
+        "shipping": "Shipping and delivery",
+        "access": "Account access and login"
+      }
+    }
+  },
+  "sha256": "15bf9b02450c832698dd931ed63307455ccb5de9ec1db7bf27164f378b650c9e"
+}

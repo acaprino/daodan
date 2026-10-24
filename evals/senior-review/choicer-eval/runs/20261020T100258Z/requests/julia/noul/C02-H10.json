@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H10",
+  "state": "[H10]\njupiter-core/jupiter_core/agents/alive_agent.py:501 \njupiter-core/jupiter_core/agents/alive_agent.py:502     async def _send_registration_request(self, registration_trace_id: str) -> None:\njupiter-core/jupiter_core/agents/alive_agent.py:503         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:504         Send registration with channel configurations to middleware.\njupiter-core/jupiter_core/agents/alive_agent.py:505 \njupiter-core/jupiter_core/agents/alive_agent.py:506         The trace_id is provided by the caller (typically `ack_round_trip`)\njupiter-core/jupiter_core/agents/alive_agent.py:507         so the publish + listener-side validation stays correlated across\njupiter-core/jupiter_core/agents/alive_agent.py:508         retries. The listener (`on_client_registration_ack`) compares the\njupiter-core/jupiter_core/agents/alive_agent.py:509         inbound ACK's trace_id against `self._pending_registration_trace_id`\njupiter-core/jupiter_core/agents/alive_agent.py:510         which the caller sets BEFORE invoking this method.\njupiter-core/jupiter_core/agents/alive_agent.py:511 \njupiter-core/jupiter_core/agents/alive_agent.py:512         Why complex channel data structure:\njupiter-core/jupiter_core/agents/alive_agent.py:513         - Each agent can use multiple channels (Telegram, REST API, etc.)\njupiter-core/jupiter_core/agents/alive_agent.py:514         - Each channel needs different config (tokens, endpoints, users)\njupiter-core/jupiter_core/agents/alive_agent.py:515         - Middleware forwards configs to appropriate channel implementations\njupiter-core/jupiter_core/agents/alive_agent.py:516         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:517         # Guard: _tracer is initialized in _do_start() before this method is called,\njupiter-core/jupiter_core/agents/alive_agent.py:518         # but add defensive check for consistency with _send_deregistration_message()\njupiter-core/jupiter_core/agents/alive_agent.py:519         # and to protect against future refactors that might call this method earlier.\njupiter-core/jupiter_core/agents/alive_agent.py:520         if not hasattr(self, '_tracer') or self._tracer is None:\njupiter-core/jupiter_core/agents/alive_agent.py:521             self.error(\"Cannot send registration - tracer not initialized (start() not called?)\")\njupiter-core/jupiter_core/agents/alive_agent.py:522             raise RuntimeError(\"Agent tracer not initialized - cannot send registration\")\njupiter-core/jupiter_core/agents/alive_agent.py:523 \njupiter-core/jupiter_core/agents/alive_agent.py:524         channels_data = self._build_channels_data()\njupiter-core/jupiter_core/agents/alive_agent.py:525         \njupiter-core/jupiter_core/agents/alive_agent.py:526         # Broker identification for multi-broker setups\njupiter-core/jupiter_core/agents/alive_agent.py:527         broker_alias = self._get_broker_alias()\njupiter-core/jupiter_core/agents/alive_agent.py:528         broker_type = self.config.get_broker_type()\njupiter-core/jupiter_core/agents/alive_agent.py:529         \njupiter-core/jupiter_core/agents/alive_agent.py:530         # Get jupiter-core package version for agent identification\njupiter-core/jupiter_core/agents/alive_agent.py:531         try:\njupiter-core/jupiter_core/agents/alive_agent.py:532             agent_version = get_package_version(\"jupiter-core\")\njupiter-core/jupiter_core/agents/alive_agent.py:533         except Exception:\njupiter-core/jupiter_core/agents/alive_agent.py:534             agent_version = \"unknown\"\njupiter-core/jupiter_core/agents/alive_agent.py:535 \njupiter-core/jupiter_core/agents/alive_agent.py:536         # Get strategy-specific version if subclass provides it (e.g., SignalGeneratorAgent)\njupiter-core/jupiter_core/agents/alive_agent.py:537         get_strategy_version = getattr(self, 'get_strategy_version', None)\njupiter-core/jupiter_core/agents/alive_agent.py:538         strategy_version = get_strategy_version() if callable(get_strategy_version) else None\njupiter-core/jupiter_core/agents/alive_agent.py:539 \njupiter-core/jupiter_core/agents/alive_agent.py:540         # Get API key from config for agent authentication (required)\njupiter-core/jupiter_core/agents/alive_agent.py:541         api_key = self.config.get_api_key()\njupiter-core/jupiter_core/agents/alive_agent.py:542 \njupiter-core/jupiter_core/agents/alive_agent.py:543         if not api_key:\njupiter-core/jupiter_core/agents/alive_agent.py:544             self.error(\njupiter-core/jupiter_core/agents/alive_agent.py:545                 \"No API key configured. Registration requires a valid api_key. \"\njupiter-core/jupiter_core/agents/alive_agent.py:546                 \"Generate one using api_key_manager.py and add it to your config.\"\njupiter-core/jupiter_core/agents/alive_agent.py:547             )\njupiter-core/jupiter_core/agents/alive_agent.py:548             raise ValueError(\njupiter-core/jupiter_core/agents/alive_agent.py:549                 \"api_key is required for agent registration. \"\njupiter-core/jupiter_core/agents/alive_agent.py:550                 \"Please generate an agent API key using api_key_manager.py and add it to your config.\"\njupiter-core/jupiter_core/agents/alive_agent.py:551             )\njupiter-core/jupiter_core/agents/alive_agent.py:552 \njupiter-core/jupiter_core/agents/alive_agent.py:553         # Check if api_key is an unresolved placeholder (e.g., ${EXECUTOR_API_KEY})\njupiter-core/jupiter_core/agents/alive_agent.py:554         if api_key.startswith('${') and api_key.endswith('}'):\njupiter-core/jupiter_core/agents/alive_agent.py:555             self.error(\njupiter-core/jupiter_core/agents/alive_agent.py:556                 f\"API key is an unresolved placeholder: {api_key}. \"\njupiter-core/jupiter_core/agents/alive_agent.py:557                 f\"Registration will fail. Set the corresponding environment variable \"\njupiter-core/jupiter_core/agents/alive_agent.py:558                 f\"(e.g., EXECUTOR_API_KEY or GENERATOR_API_KEY).\",\njupiter-core/jupiter_core/agents/alive_agent.py:559                 unresolved_api_key=api_key\njupiter-core/jupiter_core/agents/alive_agent.py:560             )\njupiter-core/jupiter_core/agents/alive_agent.py:561             raise ValueError(\njupiter-core/jupiter_core/agents/alive_agent.py:562                 f\"api_key placeholder not resolved: {api_key}. \"\njupiter-core/jupiter_core/agents/alive_agent.py:563                 f\"Ensure the environment variable is set before starting the agent.\"\njupiter-core/jupiter_core/agents/alive_agent.py:564             )\njupiter-core/jupiter_core/agents/alive_agent.py:565 \njupiter-core/jupiter_core/agents/alive_agent.py:566         self.info(\"[REGISTRATION] API key authentication enabled\")\njupiter-core/jupiter_core/agents/alive_agent.py:567 \njupiter-core/jupiter_core/agents/alive_agent.py:568         # Complete registration package with all metadata\njupiter-core/jupiter_core/agents/alive_agent.py:569         # channels field contains full channel configs per middleware expectations\njupiter-core/jupiter_core/agents/alive_agent.py:570         registration_payload = {\njupiter-core/jupiter_core/agents/alive_agent.py:571             \"agent_instance_id\": self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:572             \"mode\": self.config.get_bot_mode().name,\njupiter-core/jupiter_core/agents/alive_agent.py:573             \"channels\": channels_data,  # Full channel configurations\njupiter-core/jupiter_core/agents/alive_agent.py:574             \"broker_alias\": broker_alias,\njupiter-core/jupiter_core/agents/alive_agent.py:575             \"broker_type\": broker_type,\njupiter-core/jupiter_core/agents/alive_agent.py:576             \"agent_version\": agent_version,\njupiter-core/jupiter_core/agents/alive_agent.py:577             \"strategy_version\": strategy_version,  # Strategy-specific version (e.g., \"1.0.0\")\njupiter-core/jupiter_core/agents/alive_agent.py:578             \"api_key\": api_key,  # v5.0: API key for middleware authentication\njupiter-core/jupiter_core/agents/alive_agent.py:579             \"boot_id\": _PROCESS_BOOT_ID,  # process-session id (see module top comment)\njupiter-core/jupiter_core/agents/alive_agent.py:580         }\njupiter-core/jupiter_core/agents/alive_agent.py:581         \njupiter-core/jupiter_core/agents/alive_agent.py:582         # Log payload without sensitive fields (api_key, channel tokens)\njupiter-core/jupiter_core/agents/alive_agent.py:583         safe_payload = {k: v for k, v in registration_payload.items() if k != 'api_key'}\njupiter-core/jupiter_core/agents/alive_agent.py:584         safe_payload['api_key'] = '***redacted***'\njupiter-core/jupiter_core/agents/alive_agent.py:585         if 'channels' in safe_payload:\njupiter-core/jupiter_core/agents/alive_agent.py:586             safe_payload['channels'] = [\njupiter-core/jupiter_core/agents/alive_agent.py:587                 {**ch, 'ui_token': '***redacted***'} if 'ui_token' in ch else ch\njupiter-core/jupiter_core/agents/alive_agent.py:588                 for ch in safe_payload['channels']\njupiter-core/jupiter_core/agents/alive_agent.py:589             ]\njupiter-core/jupiter_core/agents/alive_agent.py:590         self.debug(f\"Registration payload: {safe_payload}\")\njupiter-core/jupiter_core/agents/alive_agent.py:591 \njupiter-core/jupiter_core/agents/alive_agent.py:592         # Get the user-friendly display name from config (e.g., \"Alfio EUR/USD Long\")\njupiter-core/jupiter_core/agents/alive_agent.py:593         custom_name = self.trading_config.get_agent()\njupiter-core/jupiter_core/agents/alive_agent.py:594 \njupiter-core/jupiter_core/agents/alive_agent.py:595         if custom_name:\njupiter-core/jupiter_core/agents/alive_agent.py:596             display_name = custom_name\njupiter-core/jupiter_core/agents/alive_agent.py:597         else:\njupiter-core/jupiter_core/agents/alive_agent.py:598             # Auto-generate user-friendly display name: \"Executor EUR/USD H1 Long\"\njupiter-core/jupiter_core/agents/alive_agent.py:599             mode_display = self.config.get_bot_mode().name.capitalize()  # \"Executor\" or \"Generator\"\njupiter-core/jupiter_core/agents/alive_agent.py:600             symbol_display = self.trading_config.get_symbol()  # \"EUR/USD\" or \"EURUSD\"\njupiter-core/jupiter_core/agents/alive_agent.py:601             timeframe_display = self.trading_config.get_timeframe().name  # \"H1\"\njupiter-core/jupiter_core/agents/alive_agent.py:602             direction_display = self.trading_config.get_trading_direction().name.capitalize()  # \"Long\"\njupiter-core/jupiter_core/agents/alive_agent.py:603             display_name = f\"{mode_display} {symbol_display} {timeframe_display} {direction_display}\"\njupiter-core/jupiter_core/agents/alive_agent.py:604 \njupiter-core/jupiter_core/agents/alive_agent.py:605         # Get account login from broker config (always str, broker-agnostic)\njupiter-core/jupiter_core/agents/alive_agent.py:606         broker_config = self.config.get_broker_config()\njupiter-core/jupiter_core/agents/alive_agent.py:607         account_login = None\njupiter-core/jupiter_core/agents/alive_agent.py:608         if broker_config and isinstance(broker_config, dict):\njupiter-core/jupiter_core/agents/alive_agent.py:609             account_str = broker_config.get(\"account\")\njupiter-core/jupiter_core/agents/alive_agent.py:610             if account_str:\njupiter-core/jupiter_core/agents/alive_agent.py:611                 account_login = str(account_str)\njupiter-core/jupiter_core/agents/alive_agent.py:612 \njupiter-core/jupiter_core/agents/alive_agent.py:613         # Store display_name and account_login for reuse in heartbeats (A2-H02)\njupiter-core/jupiter_core/agents/alive_agent.py:614         self._display_name = display_name\njupiter-core/jupiter_core/agents/alive_agent.py:615         self._account_login = account_login\njupiter-core/jupiter_core/agents/alive_agent.py:616 \njupiter-core/jupiter_core/agents/alive_agent.py:617         # Build message context with full sender identity (A2-H02: shared builder)\njupiter-core/jupiter_core/agents/alive_agent.py:618         message_meta_inf = self._build_message_context(include_ui_fields=True)\njupiter-core/jupiter_core/agents/alive_agent.py:619 \njupiter-core/jupiter_core/agents/alive_agent.py:620         client_registration_message = QueueMessage(\njupiter-core/jupiter_core/agents/alive_agent.py:621             sender=self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:622             payload=registration_payload,\njupiter-core/jupiter_core/agents/alive_agent.py:623             recipient=\"middleware\",\njupiter-core/jupiter_core/agents/alive_agent.py:624             context=message_meta_inf,\njupiter-core/jupiter_core/agents/alive_agent.py:625             trace_id=registration_trace_id\njupiter-core/jupiter_core/agents/alive_agent.py:626         )\njupiter-core/jupiter_core/agents/alive_agent.py:627 \njupiter-core/jupiter_core/agents/alive_agent.py:628         # Prepare registration publish details\njupiter-core/jupiter_core/agents/alive_agent.py:629         exchange_name_value = AMQPExchange.jupiter_system.name\njupiter-core/jupiter_core/agents/alive_agent.py:630         routing_key_value = RoutingKeyBuilder.middleware_registration()\njupiter-core/jupiter_core/agents/alive_agent.py:631 \njupiter-core/jupiter_core/agents/alive_agent.py:632         # v5.1: trace_id is now caller-managed via ack_round_trip's\njupiter-core/jupiter_core/agents/alive_agent.py:633         # set_pending_trace_id callback. The listener\njupiter-core/jupiter_core/agents/alive_agent.py:634         # (`on_client_registration_ack`) compares ACK.trace_id against\njupiter-core/jupiter_core/agents/alive_agent.py:635         # self._pending_registration_trace_id which the caller sets\njupiter-core/jupiter_core/agents/alive_agent.py:636         # BEFORE this method is invoked.\njupiter-core/jupiter_core/agents/alive_agent.py:637 \njupiter-core/jupiter_core/agents/alive_agent.py:638         # Build channel summary for registration log\njupiter-core/jupiter_core/agents/alive_agent.py:639         channel_summary = \", \".join([\njupiter-core/jupiter_core/agents/alive_agent.py:640             f\"{ch.get('channel_type', 'unknown')}:{ch.get('channel_id', 'N/A')}\"\njupiter-core/jupiter_core/agents/alive_agent.py:641             for ch in channels_data\njupiter-core/jupiter_core/agents/alive_agent.py:642         ]) if channels_data else \"none\"\njupiter-core/jupiter_core/agents/alive_agent.py:643 \njupiter-core/jupiter_core/agents/alive_agent.py:644         self.info(\njupiter-core/jupiter_core/agents/alive_agent.py:645             f\"[REGISTRATION] Publishing to middleware: agent_id={self.id}, \"\njupiter-core/jupiter_core/agents/alive_agent.py:646             f\"trace_id={registration_trace_id}, tenant={self.config.get_tenant()}, \"\njupiter-core/jupiter_core/agents/alive_agent.py:647             f\"channels=[{channel_summary}]\",\njupiter-core/jupiter_core/agents/alive_agent.py:648             agent_id=self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:649             trace_id=registration_trace_id,\njupiter-core/jupiter_core/agents/alive_agent.py:650             exchange=exchange_name_value,\njupiter-core/jupiter_core/agents/alive_agent.py:651             routing_key=routing_key_value,\njupiter-core/jupiter_core/agents/alive_agent.py:652             channel_count=len(channels_data),\njupiter-core/jupiter_core/agents/alive_agent.py:653             channel_types=[ch.get('channel_type') for ch in channels_data]\njupiter-core/jupiter_core/agents/alive_agent.py:654         )\njupiter-core/jupiter_core/agents/alive_agent.py:655 \njupiter-core/jupiter_core/agents/alive_agent.py:656         # Trace the registration publish operation\njupiter-core/jupiter_core/agents/alive_agent.py:657         with self._tracer.start_as_current_span(\njupiter-core/jupiter_core/agents/alive_agent.py:658             \"agent.lifecycle.registration\",\njupiter-core/jupiter_core/agents/alive_agent.py:659             kind=SpanKind.PRODUCER\njupiter-core/jupiter_core/agents/alive_agent.py:660         ) as span:\njupiter-core/jupiter_core/agents/alive_agent.py:661             span.set_attribute(\"agent.instance_id\", self.id)\njupiter-core/jupiter_core/agents/alive_agent.py:662             span.set_attribute(\"agent.name\", self.agent)\njupiter-core/jupiter_core/agents/alive_agent.py:663             span.set_attribute(\"agent.symbol\", self.trading_config.get_symbol())\njupiter-core/jupiter_core/agents/alive_agent.py:664             span.set_attribute(\"agent.timeframe\", self.trading_config.get_timeframe().name)\njupiter-core/jupiter_core/agents/alive_agent.py:665             span.set_attribute(\"agent.direction\", self.trading_config.get_trading_direction().name)\njupiter-core/jupiter_core/agents/alive_agent.py:666             span.set_attribute(\"agent.mode\", self.config.get_bot_mode().name)\njupiter-core/jupiter_core/agents/alive_agent.py:667             span.set_attribute(\"agent.trace_id\", registration_trace_id)\njupiter-core/jupiter_core/agents/alive_agent.py:668             # M-007 (2026-04-24 review): group all spans from one process-session\njupiter-core/jupiter_core/agents/alive_agent.py:669             # (5 registration retries + lifecycle + bootstrap + heartbeats) in\njupiter-core/jupiter_core/agents/alive_agent.py:670             # X-Ray/OTLP. Mirrors middleware's first-class identity use of boot_id.\njupiter-core/jupiter_core/agents/alive_agent.py:671             span.set_attribute(\"agent.boot_id\", _PROCESS_BOOT_ID)\njupiter-core/jupiter_core/agents/alive_agent.py:672             span.set_attribute(\"agent.channel_count\", len(channels_data))\njupiter-core/jupiter_core/agents/alive_agent.py:673             span.set_attribute(\"messaging.routing_key\", routing_key_value)\njupiter-core/jupiter_core/agents/alive_agent.py:674 \njupiter-core/jupiter_core/agents/alive_agent.py:675             try:\njupiter-core/jupiter_core/agents/alive_agent.py:676                 await self.amqp_s.publish_message(\njupiter-core/jupiter_core/agents/alive_agent.py:677                     exchange_name=exchange_name_value,\njupiter-core/jupiter_core/agents/alive_agent.py:678                     exchange_type=AMQPExchange.jupiter_system.exchange_type,\njupiter-core/jupiter_core/agents/alive_agent.py:679                     routing_key=routing_key_value,\njupiter-core/jupiter_core/agents/alive_agent.py:680                     message=client_registration_message\njupiter-core/jupiter_core/agents/alive_agent.py:681                 )\njupiter-core/jupiter_core/agents/alive_agent.py:682                 self.info(f\"[REGISTRATION] Message published, awaiting ACK\")\njupiter-core/jupiter_core/agents/alive_agent.py:683                 span.add_event(\"registration_published\", {\njupiter-core/jupiter_core/agents/alive_agent.py:684                     \"agent_id\": self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:685                     \"trace_id\": registration_trace_id\njupiter-core/jupiter_core/agents/alive_agent.py:686                 })\njupiter-core/jupiter_core/agents/alive_agent.py:687             except Exception as e:\njupiter-core/jupiter_core/agents/alive_agent.py:688                 self.error(f\"[REGISTRATION] Failed to publish registration message\", exc_info=e)\njupiter-core/jupiter_core/agents/alive_agent.py:689                 set_span_error(span, e, \"Registration publish failed\")\njupiter-core/jupiter_core/agents/alive_agent.py:690                 raise",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "868a61c8ee2d91f59230500c82dd163eeece17c82240fba1712b827ab1573f1e"
+}

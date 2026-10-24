@@ -1,0 +1,42 @@
+{
+  "id": "individual-B026-catalog_noul",
+  "kind": "individual",
+  "case_id": "B026",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit dependency declarations across the workspace packages before publishing them separately.",
+    "artifacts": [
+      {
+        "path": "package.json",
+        "content": "{\"private\":true,\"workspaces\":[\"packages/*\"]}"
+      },
+      {
+        "path": "packages/web/package.json",
+        "content": "{\"name\":\"web\",\"dependencies\":{\"date-fns\":\"4.1.0\"}}"
+      },
+      {
+        "path": "packages/web/index.js",
+        "content": "export const title = \"Team calendar\";"
+      },
+      {
+        "path": "packages/calendar/package.json",
+        "content": "{\"name\":\"calendar\",\"dependencies\":{}}"
+      },
+      {
+        "path": "packages/calendar/index.js",
+        "content": "import {formatISO} from \"date-fns\";\nexport const serializeDay = day => formatISO(day, {representation: \"date\"});"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit."
+      }
+    }
+  },
+  "sha256": "21bdbab64b8445d0b900c436b71a241dbf07059377d74b9d20eac102732d30f5"
+}

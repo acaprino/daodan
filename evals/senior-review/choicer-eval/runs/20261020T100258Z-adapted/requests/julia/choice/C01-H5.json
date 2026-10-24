@@ -1,0 +1,34 @@
+{
+  "impl": "julia",
+  "variant": "choice",
+  "case_id": "C01",
+  "hunk_id": "H5",
+  "state": "[H5]\njupiter-core/jupiter_core/agents/alive_agent.py:999                 self.info(\"Unregistered lifecycle ACK listener\")\njupiter-core/jupiter_core/agents/alive_agent.py:1000         except Exception as e:\njupiter-core/jupiter_core/agents/alive_agent.py:1001             self.error(f\"Error unregistering lifecycle ACK listener: {str(e)}\", exc_info=e)\njupiter-core/jupiter_core/agents/alive_agent.py:1002         # Only unregister market observer if we registered one\njupiter-core/jupiter_core/agents/alive_agent.py:1003         if self._market_observer_id:\njupiter-core/jupiter_core/agents/alive_agent.py:1004             try:\njupiter-core/jupiter_core/agents/alive_agent.py:1005                 m_state_notif = await NotifierMarketState.get_instance(self.config)\njupiter-core/jupiter_core/agents/alive_agent.py:1006                 # Get broker_alias for proper observer key\njupiter-core/jupiter_core/agents/alive_agent.py:1007                 broker_config = self.config.get_broker_config()\njupiter-core/jupiter_core/agents/alive_agent.py:1008                 broker_alias = broker_config.get(\"alias\") if broker_config and isinstance(broker_config, dict) else None\njupiter-core/jupiter_core/agents/alive_agent.py:1009                 await m_state_notif.unregister_observer(\njupiter-core/jupiter_core/agents/alive_agent.py:1010                     self.trading_config.symbol,\njupiter-core/jupiter_core/agents/alive_agent.py:1011                     self._market_observer_id,\njupiter-core/jupiter_core/agents/alive_agent.py:1012                     broker_alias=broker_alias\njupiter-core/jupiter_core/agents/alive_agent.py:1013                 )\njupiter-core/jupiter_core/agents/alive_agent.py:1014                 self._market_observer_id = None\njupiter-core/jupiter_core/agents/alive_agent.py:1015                 self.info(\"Unregistered market observer\")",
+  "questions": {
+    "reviewer": {
+      "type": "choice",
+      "instructions": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+      "criteria": {
+        "abstraction-architect:abstraction-architect-agent": "Duplicate domain logic or competing sources of truth; excludes dead code, security, and dependency cycles.",
+        "platform-engineering:platform-reviewer": "Web, mobile or desktop platform security, architecture or performance; excludes platform-independent code.",
+        "react-development:react-performance-optimizer": "React renders, state subscriptions, components or bundle performance; excludes CSS polish and native backends.",
+        "repo-hygiene:workspace-auditor": "Tracked build output, ignore gaps, scratch files or stale Git state; excludes source dead code.",
+        "senior-review:api-contract-auditor": "Declared API schemas versus implementations or API changes; excludes absent contracts and internal invariants.",
+        "senior-review:chicken-egg-detector": "Startup ordering, bootstrap, configuration or migration dependencies; excludes steady-state flows.",
+        "senior-review:cleanup-auditor": "Dead code, unused dependencies, orphan assets or stale documentation; excludes filesystem and Git tidying.",
+        "senior-review:code-auditor": "Architecture, coupling, failure paths, stale caches or code quality; excludes security-only audits.",
+        "senior-review:data-integrity-auditor": "Database writes, transactions, caches or persistence races; excludes domain-only rules and messaging.",
+        "senior-review:distributed-flow-auditor": "Cross-service flows, messaging, idempotency and compensation; excludes isolated local operations.",
+        "senior-review:logic-integrity-auditor": "Domain rules, state machines, ordering or idempotency; excludes styling and security alone.",
+        "senior-review:premise-auditor": "Code claims, defaults, thresholds, signs or business boundaries; excludes styling and map construction.",
+        "senior-review:resource-lifecycle-auditor": "Handles, sockets, connections, listeners, locks or timers need release; excludes general architecture and exploitation.",
+        "senior-review:security-auditor": "URLs, public functions, auth, permissions, ID access or secrets; excludes internal styling.",
+        "senior-review:temporal-resilience-auditor": "Retries, timers, queues, polling or workers surviving repeated failure; excludes startup and UI races.",
+        "senior-review:ui-race-auditor": "Async UI rendering, layout, scroll, focus or measurements race; excludes static styling and backend concurrency.",
+        "testing:test-suite-auditor": "Test hygiene, flakiness, redundancy, placement or layer distribution; excludes writing tests or applying quarantine.",
+        "typescript-development:type-safety-auditor": "TypeScript any, casts, boundary validation or exhaustiveness; excludes naming, React performance and dead code."
+      }
+    }
+  },
+  "request_sha256": "0d50c27700f64b69725056601a87883342843659388e1e334b1566d9765762bd"
+}

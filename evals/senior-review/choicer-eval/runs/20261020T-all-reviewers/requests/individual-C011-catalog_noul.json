@@ -1,0 +1,30 @@
+{
+  "id": "individual-C011-catalog_noul",
+  "kind": "individual",
+  "case_id": "C011",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Assess whether the date library dependency remains needed by production paths. Follow imports and runtime adapters; package removal and repository tidying are outside scope.",
+    "artifacts": [
+      {
+        "path": "package.json",
+        "content": "{\"dependencies\":{\"date-fns\":\"^4.1.0\",\"zod\":\"^4.0.0\"}}"
+      },
+      {
+        "path": "src/calendar.ts",
+        "content": "import { format } from \"date-fns\";\nexport const displayDay = (value: Date) => format(value, \"yyyy-MM-dd\");"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches."
+      }
+    }
+  },
+  "sha256": "e96865592cf0f4970730c1af35dbd3fe52386df3d18546151672ae85f0f8cbc0"
+}

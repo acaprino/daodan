@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Check the factual statements in the command guide against the parser before publication.",
+    "artifacts": [
+      {
+        "path": "docs/export.md",
+        "content": "Run export.py with --format csv or --format json. If omitted, the format is csv.\n"
+      },
+      {
+        "path": "src/export.py",
+        "content": "import argparse\n\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--format\", choices=(\"csv\", \"json\"), default=\"csv\")\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Review the relationship between input handling and the summary calculation in this single-process desktop tool.",
+    "artifacts": [
+      {
+        "path": ".team-review/02-interconnect.md",
+        "content": "## Contracts\nmean(values) accepts a nonempty sequence. show_summary is its only caller.\n"
+      },
+      {
+        "path": "src/stats.py",
+        "content": "def mean(values):\n    if not values:\n        raise ValueError(\"empty sequence\")\n    return sum(values) / len(values)\n"
+      },
+      {
+        "path": "src/summary.py",
+        "content": "from stats import mean\n\ndef show_summary(values):\n    return \"No values\" if not values else str(mean(values))\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit."
+      }
+    }
+  }
+}

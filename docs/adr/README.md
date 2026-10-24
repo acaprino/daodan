@@ -22,6 +22,7 @@ run `index`; do not edit this block by hand.
 |---|---|---|---|
 | [ADR-0001](<ADR-0001-work-graph-step0-llm.md>) | Use an LLM prompt for Step 0 work-graph proposals | `plugins/project-lifecycle/skills/lifecycle-method/**`, `plugins/project-protocol/skills/project-protocol/references/task-routing.md`, `plugins/senior-review/skills/review-preparation/**`, `evals/project-lifecycle/work-graph/**`, `work-graph-composition`, `model-routing`, `reviewer-composition`, `offline-execution` | `work-graph-step0-llm-20261023` |
 | [ADR-0002](<ADR-0002-deadly-brain.md>) | Create deadly-brain and absorb project-protocol into it | `plugins/project-protocol`, `plugins/deadly-brain`, `plugins/senior-review/skills`, `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md`, `project-protocol`, `deadly-brain`, `run-state`, `clarification`, `decision-map`, `work-graph`, `model-routing` | `conversation-2026-10-24` |
+| [ADR-0003](<ADR-0003-usage-ledger.md>) | Measure each run's tokens and cost from local host logs | `plugins/project-protocol/contracts/work.toml`, `plugins/project-protocol/skills/project-protocol/scripts/**`, `plugins/project-lifecycle/skills/lifecycle-method/references/waves.md`, `plugins/project-lifecycle/skills/lifecycle-method/references/finish.md`, `project-protocol`, `project-lifecycle`, `run-state`, `usage-ledger`, `budget`, `model-routing` | `conversation-2026-10-24` |
 
 ## Superseded
 

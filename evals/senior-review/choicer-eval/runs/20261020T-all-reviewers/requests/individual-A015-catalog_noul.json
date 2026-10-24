@@ -1,0 +1,30 @@
+{
+  "id": "individual-A015-catalog_noul",
+  "kind": "individual",
+  "case_id": "A015",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the payload contract between the dispatch and reporting services. Storage implementations are unchanged and outside scope.",
+    "artifacts": [
+      {
+        "path": "dispatch/events.py",
+        "content": "def completion_payload(job):\n    return {\"job_id\": job.id, \"elapsed_ms\": job.elapsed_ms}\n"
+      },
+      {
+        "path": "reporting/events.py",
+        "content": "def read_completion(payload):\n    return payload[\"job_id\"], payload[\"duration_ms\"]\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries."
+      }
+    }
+  },
+  "sha256": "4aad6928a85e3df6975c729909550449374d80b66fa52b2a4799152f45fd3f90"
+}

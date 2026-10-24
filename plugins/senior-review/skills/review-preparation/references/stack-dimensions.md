@@ -1,44 +1,44 @@
 # Stack dimensions
 
-Use the resolved target, relevant package configuration and exact candidate
-snapshot. Inspect the affected package in a monorepo; unrelated root dependencies
-are not an activation signal. Add these bindings to the native reviewer selection
-alongside the other dimensions: one dispatch round, one delivery ledger.
+Use candidate-grounding's basis, scope and evidence rules. Inspect the affected
+package/configuration at the candidate snapshot; unrelated monorepo dependencies
+do not activate dimensions. Resolve computed identities through these bindings:
+one dispatch round and ledger, no extra roles or clean skips for unknown signals.
 
 | Dimension ID | Automatic activation evidence | Role to dispatch |
 |---|---|---|
 | react | React in the relevant package and target includes JSX/TSX or affected React runtime | `react-development:react-performance-optimizer` |
 | typescript | Relevant TypeScript configuration and target includes TS/TSX/type contracts | `typescript-development:type-safety-auditor` |
-| platform | At least two verified frontend, backend, API-route, multiple-service or desktop-shell integration signals relevant to the target | `platform-engineering:platform-reviewer` |
+| platform | Roster evidence for browser/PWA storage, service workers, client security policy, mobile capabilities or Electron/Tauri shell integration | `platform-engineering:platform-reviewer` |
 | python | Target includes `.py` or `.pyi` files, or the relevant package declares `pyproject.toml`, `setup.py`, `uv.lock` or `requirements*.txt` | `project-protocol:isolated-worker`. Its brief says: load the `python-development:python-refactor-method` skill and load the `python-development:python-dead-code` skill in audit-only mode; read the Python tool results of the evidence pack (`references/candidate-grounding.md`); report what the tools cannot see (semantic misuse, behavior-changing complexity, idiom violations) and never restate a tool line |
 | dependencies | The candidate changes a manifest or lockfile: `pyproject.toml`, `uv.lock`, `poetry.lock`, `requirements*.txt`, `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `Cargo.toml`, `Cargo.lock`, `go.mod`, `go.sum`, `Gemfile.lock`, `composer.lock`, `pom.xml`, `build.gradle*`, `*.csproj` | `project-protocol:isolated-worker`. Its brief says: load the `dependency-audit:dependency-audit` skill read-only; run the ecosystem's own audit, outdated and license tooling on the candidate; report `TOOL-REPORTED`, `INFERRED` and `UNKNOWN` facts, never a remediation |
 
-The two rows above bind a method through the declared isolated worker rather
-than a named role, because those providers ship no review role: their value is
-the method and the tooling it names. The worker's brief carries the skill
-identities, audit-only mode, the evidence pack paths and the report path, like
-any other inline lens.
+Python/dependencies bind their methods through the declared isolated worker.
+Carry skill identities, audit-only mode, evidence-pack paths and the report
+path in its brief, as for other inline lenses.
 
-Select each dimension once. A false signal records a code-based skip reason. An
-unreadable or ambiguous signal records a coverage gap; it is not evidence of
-inapplicability. Required provider dependencies supply the roles regardless of
-selection. A matched role that cannot run is a failed delivery, never a clean skip
-or a generic substitute.
+Select each dimension once. False signals need code-based skip reasons;
+unreadable/ambiguous signals remain gaps. Required providers supply roles
+regardless of selection. An unavailable selected role is a failed delivery,
+never a skip or generic substitute.
 
-Respect team review's explicit --reviewers selection and --all override. Record
-manual selection as activation evidence, including the lack of an automatic
-signal when appropriate. Normalize legacy selectors before applying that scope:
-react-perf/react-performance select react, and ts-safety/type-safety select
-typescript. An explicit performance selector resolves to react when the relevant
-React signal is verified; otherwise it selects the existing general-performance
-dimension, with a React coverage gap if applicability is unknown. Do not dispatch
-both performance bindings for that one selector. Architecture review remains a
-separate dimension even when it shares the general code-auditor role. Record the
-requested spelling and resolved dimension in the plan.
+Composition uses the existing catalog and `required_specialists`
+with scope/evidence. Merge identical member/scope obligations only. Requirements
+and sources identify canonical specialists; unknown applicability, missing
+prerequisites and graph omissions remain gaps. Light permits one discovery;
+obligations that cannot fit stay incomplete and require branch review.
+
+Record explicit specialist requests and compare them with the computed roster;
+requests cannot remove its floor or bypass allowed dispatch. Normalize legacy
+`react-perf`/`react-performance` to `react` and `ts-safety`/`type-safety` to
+`typescript`. General performance belongs to `senior-review:performance-auditor`,
+including query and algorithm cost in a React application. React's optimizer
+retains component/render work; both may run when each is selected. Platform
+reviews client capabilities and cross-platform behavior. Service operation,
+deployment and recovery belong to `senior-review:operability-auditor`.
 
 --no-context removes shared context from these workers
-as it does from other reviewers; it does not remove the dimensions. --fast changes
-verification cost, not which applicable specialists are selected.
+as it does from other reviewers; it does not remove the dimensions. --fast can reduce optional verification work, never the required roster or gates.
 
 The canonical roles retain their own knowledge, analysis method and native output.
 Before dispatch, load review-consolidation's `references/stack-findings.md` inside
@@ -52,7 +52,8 @@ include context paths only when context is enabled. Quantitative performance
 claims need the evidence required by review-quality-gates. Missing runtime
 measurements remain gaps, not invented results.
 
-Dispatch these reviewers with the other selected dimensions in isolated contexts.
+Include these members in the validated jobs with the other selected dimensions.
+Dispatch each job once in its isolated context, preserving each member's native method.
 Do not run their standalone workflows, repeat preparation or publish another
 report. Consolidation waits for every selected reviewer to deliver or fail, and
 preserves source role, severity, evidence and premise provenance in the same native

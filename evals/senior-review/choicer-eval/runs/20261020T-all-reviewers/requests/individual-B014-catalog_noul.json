@@ -1,0 +1,26 @@
+{
+  "id": "individual-B014-catalog_noul",
+  "kind": "individual",
+  "case_id": "B014",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review keyboard focus when opening the fetched settings dialog.",
+    "artifacts": [
+      {
+        "path": "settings.js",
+        "content": "let generation = 0;\nexport async function openSettings(dialog, fetchForm) {\n  const current = ++generation;\n  const form = await fetchForm();\n  if (current !== generation) return;\n  dialog.replaceChildren(form);\n  dialog.showModal();\n  dialog.querySelector(\"input\")?.focus();\n}\nexport function closeSettings(dialog) {\n  ++generation;\n  dialog.close();\n}"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
+      }
+    }
+  },
+  "sha256": "eda520d45d0808e3f05c4f2faafa53e57ce226ef1db947c23db2d12744d4ba05"
+}

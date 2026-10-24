@@ -1,0 +1,914 @@
+{
+  "kind": "Tokenizer-only audit; state token counts exclude question and options. No inference.",
+  "hunks": [
+    {
+      "case_id": "C01",
+      "hunk_id": "H1",
+      "state_tokens": 189,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H10",
+      "state_tokens": 232,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H11",
+      "state_tokens": 277,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H12",
+      "state_tokens": 359,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H13",
+      "state_tokens": 308,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H14",
+      "state_tokens": 300,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H2",
+      "state_tokens": 247,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H3",
+      "state_tokens": 495,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H4",
+      "state_tokens": 240,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H5",
+      "state_tokens": 795,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H6",
+      "state_tokens": 216,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H7",
+      "state_tokens": 272,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H8",
+      "state_tokens": 185,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C01",
+      "hunk_id": "H9",
+      "state_tokens": 223,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H1",
+      "state_tokens": 5985,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H10",
+      "state_tokens": 7702,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H11",
+      "state_tokens": 4377,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H12",
+      "state_tokens": 3572,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H13",
+      "state_tokens": 3263,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H14",
+      "state_tokens": 1078,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H15",
+      "state_tokens": 2127,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H16",
+      "state_tokens": 1007,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H17",
+      "state_tokens": 433,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H18",
+      "state_tokens": 1612,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H19",
+      "state_tokens": 936,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H2",
+      "state_tokens": 437,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H20",
+      "state_tokens": 547,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H21",
+      "state_tokens": 2187,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H22",
+      "state_tokens": 3305,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H23",
+      "state_tokens": 1883,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H24",
+      "state_tokens": 501,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H25",
+      "state_tokens": 554,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H26",
+      "state_tokens": 759,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H27",
+      "state_tokens": 644,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H28",
+      "state_tokens": 411,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H29",
+      "state_tokens": 535,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H3",
+      "state_tokens": 552,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H30",
+      "state_tokens": 2734,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H31",
+      "state_tokens": 4415,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H32",
+      "state_tokens": 21251,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H33",
+      "state_tokens": 41219,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H34",
+      "state_tokens": 2066,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H35",
+      "state_tokens": 1315,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H36",
+      "state_tokens": 506,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H37",
+      "state_tokens": 618,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H38",
+      "state_tokens": 1200,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H39",
+      "state_tokens": 600,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H4",
+      "state_tokens": 7404,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H40",
+      "state_tokens": 4515,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H41",
+      "state_tokens": 3518,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H42",
+      "state_tokens": 2584,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H43",
+      "state_tokens": 742,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H44",
+      "state_tokens": 2502,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H45",
+      "state_tokens": 442,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H46",
+      "state_tokens": 991,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H47",
+      "state_tokens": 976,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H48",
+      "state_tokens": 494,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H49",
+      "state_tokens": 1080,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H5",
+      "state_tokens": 411,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H6",
+      "state_tokens": 2111,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H7",
+      "state_tokens": 260,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H8",
+      "state_tokens": 1063,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H9",
+      "state_tokens": 1244,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H1",
+      "state_tokens": 202,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H2",
+      "state_tokens": 911,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H3",
+      "state_tokens": 1720,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H4",
+      "state_tokens": 412,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C03",
+      "hunk_id": "H5",
+      "state_tokens": 234,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H1",
+      "state_tokens": 520,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H2",
+      "state_tokens": 443,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H3",
+      "state_tokens": 346,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H4",
+      "state_tokens": 339,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H5",
+      "state_tokens": 308,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H6",
+      "state_tokens": 993,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C04",
+      "hunk_id": "H7",
+      "state_tokens": 282,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H1",
+      "state_tokens": 549,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C05",
+      "hunk_id": "H2",
+      "state_tokens": 429,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H1",
+      "state_tokens": 305,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H2",
+      "state_tokens": 168,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H3",
+      "state_tokens": 399,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H4",
+      "state_tokens": 169,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H5",
+      "state_tokens": 244,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H6",
+      "state_tokens": 228,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H7",
+      "state_tokens": 224,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H8",
+      "state_tokens": 289,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C06",
+      "hunk_id": "H9",
+      "state_tokens": 220,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H1",
+      "state_tokens": 178,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H10",
+      "state_tokens": 224,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H11",
+      "state_tokens": 204,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H12",
+      "state_tokens": 119,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H13",
+      "state_tokens": 188,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H14",
+      "state_tokens": 155,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H15",
+      "state_tokens": 432,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H16",
+      "state_tokens": 808,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H17",
+      "state_tokens": 409,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H18",
+      "state_tokens": 538,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H19",
+      "state_tokens": 6533,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H2",
+      "state_tokens": 225,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H20",
+      "state_tokens": 6187,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H21",
+      "state_tokens": 563,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H22",
+      "state_tokens": 22647,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H23",
+      "state_tokens": 1019,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H24",
+      "state_tokens": 302,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H25",
+      "state_tokens": 1594,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H26",
+      "state_tokens": 254,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H27",
+      "state_tokens": 459,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H28",
+      "state_tokens": 10309,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H29",
+      "state_tokens": 2944,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H3",
+      "state_tokens": 516,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H30",
+      "state_tokens": 245,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H31",
+      "state_tokens": 1113,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H32",
+      "state_tokens": 4815,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H33",
+      "state_tokens": 143,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H34",
+      "state_tokens": 151,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H35",
+      "state_tokens": 223,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H36",
+      "state_tokens": 264,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H37",
+      "state_tokens": 225,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H38",
+      "state_tokens": 221,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H39",
+      "state_tokens": 308,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H4",
+      "state_tokens": 2989,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H5",
+      "state_tokens": 248,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H6",
+      "state_tokens": 649,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H7",
+      "state_tokens": 597,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H8",
+      "state_tokens": 428,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H9",
+      "state_tokens": 291,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C08",
+      "hunk_id": "H1",
+      "state_tokens": 352,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C09",
+      "hunk_id": "H1",
+      "state_tokens": 330,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C10",
+      "hunk_id": "H1",
+      "state_tokens": 297,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C11",
+      "hunk_id": "H1",
+      "state_tokens": 274,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    }
+  ],
+  "counts": {
+    "total": 129,
+    "state_above_8192": 4,
+    "state_between_4000_and_8191": 9,
+    "state_between_2000_and_3999": 13
+  }
+}

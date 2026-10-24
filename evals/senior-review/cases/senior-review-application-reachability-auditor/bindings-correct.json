@@ -1,0 +1,26 @@
+{
+  "requirement": "Complete private source inventory; stylesheet and asset globs are live. pytest consumes named seed fixture. Feature legacy is permanently disabled by approved cutover. Source excludes must not conceal owned application code.",
+  "files": {
+    "app.css": "background:url(/used.svg)",
+    "assets.js": "const images=import.meta.glob(\"./icons/*.svg\");export const load=n=>images[`./icons/${n}.svg`]();",
+    "used.svg": "used CSS image",
+    "icons/one.svg": "dynamic glob image",
+    "tests/conftest.py": "import pytest\n@pytest.fixture\ndef seed(): return 1",
+    "tests/test_app.py": "def test_app(seed): assert seed == 1",
+    "src/entry.py": "from current import run_current\nrun_current()",
+    "src/current.py": "def run_current(): return 1"
+  },
+  "config": {
+    "LEGACY": false,
+    "permanent_cutover": true
+  },
+  "scanner": {
+    "excludes": [
+      "generated/**",
+      ".venv/**"
+    ],
+    "owned_sources": [
+      "src/**"
+    ]
+  }
+}

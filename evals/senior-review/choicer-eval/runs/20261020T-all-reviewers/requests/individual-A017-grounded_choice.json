@@ -1,0 +1,26 @@
+{
+  "id": "individual-A017-grounded_choice",
+  "kind": "individual",
+  "case_id": "A017",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the alignment of an already-loaded report table in the browser. Only the stylesheet is changing.",
+    "artifacts": [
+      {
+        "path": "web/report.css",
+        "content": ".report { border-collapse: collapse; width: 100%; }\n.report td { padding: 0.5rem; }\n.report .amount { text-align: right; }\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    }
+  },
+  "sha256": "5fcb5ff7b0b476866a8cf204a6561b7df85899eae61dd19660053412e3b454f5"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-C040-catalog_noul",
+  "kind": "individual",
+  "case_id": "C040",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Make the release announcement sound less promotional. Edit only tone and filler; do not verify technical claims or change document organization.",
+    "artifacts": [
+      {
+        "path": "communications/announcement.md",
+        "content": "We are thrilled to unveil a groundbreaking export experience that empowers teams to unlock unparalleled productivity."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift."
+      }
+    }
+  },
+  "sha256": "e0b83f9e6d4d28c8b6a2f9a6a52b7c4416a6f9d0d1182cbbd40b92410546b648"
+}

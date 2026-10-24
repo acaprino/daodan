@@ -1,0 +1,58 @@
+{
+  "requirement": "After region-a loss recover every acknowledged order/blob; RPO=0, RTO=60 minutes. Failback preserves secondary writes.",
+  "backup": {
+    "orders": {
+      "time": 10,
+      "region": "region-b",
+      "blob_ids": [
+        "new"
+      ]
+    },
+    "blobs": {
+      "time": 5,
+      "region": "region-b",
+      "ids": [
+        "old"
+      ]
+    },
+    "replay": {
+      "region": "region-a"
+    },
+    "config": false,
+    "retention_hours": 1,
+    "recovery_delay_hours": 2
+  },
+  "failback": {
+    "secondary_writes": [
+      "order-z"
+    ],
+    "action": "replace with unchanged primary snapshot"
+  },
+  "exercise": {
+    "version": "old-v0",
+    "scenario": "one file deleted",
+    "minutes": 5,
+    "result": "backup upload succeeded"
+  },
+  "claim": "RPO and RTO verified",
+  "recovery_environment": {
+    "candidate_version": "candidate-v1",
+    "restore_version": "candidate-v1",
+    "schemas": "orders-v1 and blobs-v1; backups and reader use these exact compatible schemas; no transformation is required.",
+    "assets": "The orders/blob backups, replay and config=c1 are the complete disaster-sensitive inventory. Data is unencrypted; no key recovery is needed.",
+    "config_contract": "c1 supplies the only order-to-blob routing table required to read restored orders. config=true means a surviving region-b c1 backup; config=false means no surviving copy or reconstruction source. No default or alternate route exists.",
+    "identity": "restore-role survives in region-b with read/write access to surviving backups, replay and config; the reader image also survives there.",
+    "runbook": [
+      "assume restore-role",
+      "restore c1",
+      "restore order/blob snapshots",
+      "replay all surviving acknowledged records",
+      "verify every acknowledged order and blob ID from the acknowledgement manifest",
+      "start candidate-v1 reader and verify reads/writes"
+    ],
+    "retention_semantics": "At disaster time all listed snapshots are fresh at age zero; retention expires after retention_hours. No later snapshot or independent archive is produced after region-a loss. recovery_delay_hours is elapsed disaster-to-restore-start time.",
+    "replay_contract": "Surviving replay includes every acknowledged order/blob not in the snapshots; replay in region-a is destroyed by this disaster.",
+    "authority": "The secondary alone accepts writes during recovery; unchanged primary has none of those writes. Correct failback fences the old primary and replays all secondary writes before promotion.",
+    "exercise_environment": "Exercises use the declared version/scenario/result as supplied records. Matching candidate-v1 regional-loss exercise verifies recovered acknowledgement manifest and usable reads/writes; an old-v0 upload-only exercise supplies neither evidence."
+  }
+}

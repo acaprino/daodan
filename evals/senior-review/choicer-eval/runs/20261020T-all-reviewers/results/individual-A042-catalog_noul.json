@@ -1,0 +1,14 @@
+{
+  "id": "individual-A042-catalog_noul",
+  "request_sha256": "84ef6c7f47b115f38b9d8790ce9e03c0ab24c536b95cbbd458affb8a6e6aed56",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "senior-review:distributed-flow-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions"
+  },
+  "wall_seconds": 5.560001591220498e-05
+}

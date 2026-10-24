@@ -98,4 +98,4 @@ export const env = z.object({
 const db = connect(env.DATABASE_URL)
 ```
 
-**Detection:** `rg -n 'process\.env\.' --type ts --glob '!**/config*'`; hits outside the config module are findings.
+**Detection:** Locate environment reads and follow validation/conversion before typed use. Separate access sites may be safe; centralization is not the oracle.

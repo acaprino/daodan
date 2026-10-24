@@ -1,0 +1,65 @@
+{
+  "state": "[H1]\nprofiles/repo.py:1 # profiles/repo.py\nprofiles/repo.py:2 CACHE_TTL = 300\nprofiles/repo.py:3 \nprofiles/repo.py:4 async def get_profile(user_id: str) -> Profile:\nprofiles/repo.py:5     cached = await redis.get(f\"profile:{user_id}\")\nprofiles/repo.py:6     if cached:\nprofiles/repo.py:7         return Profile.parse_raw(cached)\nprofiles/repo.py:8     profile = await db.profiles.find_one({\"_id\": user_id})\nprofiles/repo.py:9     await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\nprofiles/repo.py:10     return profile\nprofiles/repo.py:11 \nprofiles/repo.py:12 async def update_email(user_id: str, email: str) -> None:\nprofiles/repo.py:13     await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\nprofiles/repo.py:14 \nprofiles/repo.py:15 async def delete_profile(user_id: str) -> None:\nprofiles/repo.py:16     await db.profiles.delete_one({\"_id\": user_id})",
+  "questions": {
+    "original_react": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "original_data": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "complement_react": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+        "false": "The code does not use React components, hooks, rendering or state subscriptions."
+      }
+    },
+    "property_react_literal": {
+      "type": "noul",
+      "instructions": "Does the code use React components or React hooks?"
+    },
+    "property_react_descriptive": {
+      "type": "noul",
+      "instructions": "Does the code use React components or React hooks?",
+      "criteria": {
+        "false": "The code does not use React components or React hooks.",
+        "true": "The code uses React components or React hooks."
+      }
+    },
+    "property_data_descriptive": {
+      "type": "noul",
+      "instructions": "Does the code read or write a database or cache?",
+      "criteria": {
+        "false": "The code does not read or write a database or cache.",
+        "true": "The code reads or writes a database or cache."
+      }
+    },
+    "property_stack_choice": {
+      "type": "choice",
+      "instructions": "Which kind of code is shown?",
+      "criteria": {
+        "backend": "Python database and cache access",
+        "frontend": "React user interface component"
+      }
+    },
+    "property_stack_reversed": {
+      "type": "choice",
+      "instructions": "Which kind of code is shown?",
+      "criteria": {
+        "frontend": "React user interface component",
+        "backend": "Python database and cache access"
+      }
+    }
+  }
+}

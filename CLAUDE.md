@@ -90,6 +90,12 @@ Working redesign: Fix the cause, never the symptom. When a defect shows that a s
 
 ## Context and output economy
 
+Mantra: write the least code and agent instructions that preserve or improve
+verified effectiveness. Design workflows and requested outputs to save tokens
+across the whole run, including preparation, tool calls, retries and verification.
+Reduce duplication and unnecessary context while preserving evidence, coverage,
+readability and every required check.
+
 Apply this discipline and economy when authoring skills, agents, tools, workflows,
 templates and specialist guidance for any language, framework or activity. Carry
 applicable obligations into the produced components through the

@@ -1,0 +1,50 @@
+{
+  "impl": "llm",
+  "variant": "noul",
+  "case_id": "C03",
+  "hunk_id": null,
+  "request_sha256": "f2761e94e7e97b7ab0cc208e3e076db5efa71a47cd41cde7b726348201dc7865",
+  "status": "error",
+  "selected": [],
+  "probabilities": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "usage": null,
+  "raw_output": {
+    "schema": "choicer-eval/native-capture-v1",
+    "request_sha256": "f2761e94e7e97b7ab0cc208e3e076db5efa71a47cd41cde7b726348201dc7865",
+    "response": "{\n  \"mode\": \"full\",\n  \"selected\": [\n    {\n      \"trigger_line\": \"[H3] candidate jupiter-core/jupiter_core/services/beanie/economic_event_repository.py:129 EconomicEventDocument.id == event.id\",\n      \"reason\": \"Verify record access by ID cannot expose or modify another user's event.\",\n      \"role\": \"senior-review:security-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H3] candidate jupiter-core/jupiter_core/services/beanie/economic_event_repository.py:121 current_version = event.version\",\n      \"reason\": \"Check optimistic-lock version increments and concurrent-update boundary behavior.\",\n      \"role\": \"senior-review:premise-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H3] candidate jupiter-core/jupiter_core/services/beanie/economic_event_repository.py:145 await event.save()\",\n      \"reason\": \"Verify repository persistence preserves entity and transaction consistency.\",\n      \"role\": \"senior-review:data-integrity-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    }\n  ],\n  \"recommend_full_review\": false,\n  \"recommend_full_reason\": null\n}\n",
+    "response_sha256": "6f427222c83d4c50cc533f8a77504988b285d66dbf543e5fbd66387aaad65bdc",
+    "model": {
+      "provider": "OpenAI through Codex native subagent",
+      "requested_model": "gpt-6-luna",
+      "requested_reasoning_effort": "low",
+      "host_accepted_override": true,
+      "provider_reported_model": null
+    },
+    "usage": null,
+    "wall_seconds": null,
+    "cpu_seconds": null,
+    "phase": "unknown",
+    "transport": {
+      "tool": "collaboration.spawn_agent",
+      "task_name": "/root/baseline_c03",
+      "fork_turns": "none",
+      "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C03-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C03-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+      "loader_prompt_sha256": "487ba58fda6351547c54ae22270d4a2c45d4fa9e29c7a8391bddb3cb58c0cd39",
+      "effective_provider_request": null,
+      "provider_finish_reason": null,
+      "provider_api_call_count": null,
+      "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+    },
+    "limitations": [
+      "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+      "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+    ]
+  },
+  "validation_warnings": [
+    "H3: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding."
+  ],
+  "error": "Citation snippet is absent at the cited line"
+}

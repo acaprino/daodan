@@ -111,7 +111,7 @@ def example():
 
 ---
 
-### Rule 2: Nesting Penalty (EXPONENTIAL)
+### Rule 2: Nesting Penalty (additive by depth)
 
 Each nested structure adds **+1 per nesting level**:
 
@@ -135,7 +135,7 @@ def nested_example():
 | 4 nested ifs | 1+2+3+4 | 10 |
 | 5 nested ifs | 1+2+3+4+5 | 15 |
 
-**Nesting is the PRIMARY ENEMY of readability.**
+A single chain sums 1 + 2 + … + n = n(n+1)/2: quadratic, not exponential. This structural metric does not itself measure comprehension or runtime cost.
 
 ---
 

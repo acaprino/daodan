@@ -1,0 +1,342 @@
+{
+  "schema": "choicer-eval/adapted-reviewers-audit-v1",
+  "adapted_reviewers_sha256": "7137d44ef2851562cac315c100cabd222c7f74f66c6b2d6fad1434f187de31bd",
+  "generator_sha256": "58e3f9bf7241ef06b9b33cccc38a925507d258903f5ff6e9b6cea8961277afbd",
+  "model_snapshot_revision": "a85b127321d580d65176c89ced8273f305745d85",
+  "tokenizer_sha256": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+  "serializer_sha256": "e3510fa4152ec11fa193046715991f44d7c2f85fd2488a98ef11c9d3db23da4e",
+  "serializer": "Installed julia.data.sequence; tokenizer only; no model weights loaded.",
+  "source_reads": [
+    {
+      "path": "evals/senior-review/choicer-eval/runs/20261020T100258Z/catalog.json",
+      "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3"
+    },
+    {
+      "path": "evals/senior-review/choicer-eval/runs/20261020T100258Z/prompts.json",
+      "sha256": "dc4d1c3e317af954b5551bc1432a8059f03d211de30cec14b704a5abc7b7f0f1"
+    },
+    {
+      "path": "evals/senior-review/choicer-eval/.cache/huggingface/hub/models--SupersonicLabs--Julia-1/snapshots/a85b127321d580d65176c89ced8273f305745d85/julia/data.py",
+      "sha256": "e3510fa4152ec11fa193046715991f44d7c2f85fd2488a98ef11c9d3db23da4e"
+    },
+    {
+      "path": "evals/senior-review/choicer-eval/.cache/huggingface/hub/models--SupersonicLabs--Julia-1/snapshots/a85b127321d580d65176c89ced8273f305745d85/tokenizer/tokenizer.json",
+      "sha256": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f"
+    },
+    {
+      "path": "plugins/platform-engineering/roles/platform-reviewer.md",
+      "sha256": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6"
+    },
+    {
+      "path": "plugins/senior-review/roles/premise-auditor.md",
+      "sha256": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39"
+    },
+    {
+      "path": "plugins/senior-review/roles/security-auditor.md",
+      "sha256": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9"
+    }
+  ],
+  "complete_reviewer_id_match": true,
+  "original_criteria_preserved_losslessly": true,
+  "original_true_preserved_exactly": 8,
+  "original_false_preserved_exactly": 9,
+  "authored_missing_false_ids": [
+    "platform-engineering:platform-reviewer",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:ui-race-auditor"
+  ],
+  "maximum_adapted_criterion_tokens": 39,
+  "maximum_choice_description_tokens": 20,
+  "binary": [
+    {
+      "id": "abstraction-architect:abstraction-architect-agent",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        24,
+        26
+      ],
+      "sequence_tokens_with_synthetic_probe": 74,
+      "state_truncated": false
+    },
+    {
+      "id": "platform-engineering:platform-reviewer",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        24,
+        36
+      ],
+      "sequence_tokens_with_synthetic_probe": 84,
+      "state_truncated": false
+    },
+    {
+      "id": "react-development:react-performance-optimizer",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        28,
+        24
+      ],
+      "sequence_tokens_with_synthetic_probe": 76,
+      "state_truncated": false
+    },
+    {
+      "id": "repo-hygiene:workspace-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        18,
+        27
+      ],
+      "sequence_tokens_with_synthetic_probe": 69,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:api-contract-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        38,
+        36
+      ],
+      "sequence_tokens_with_synthetic_probe": 98,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:chicken-egg-detector",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        18,
+        31
+      ],
+      "sequence_tokens_with_synthetic_probe": 73,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:cleanup-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        20,
+        20
+      ],
+      "sequence_tokens_with_synthetic_probe": 64,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:code-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        14,
+        24
+      ],
+      "sequence_tokens_with_synthetic_probe": 62,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:data-integrity-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        29,
+        19
+      ],
+      "sequence_tokens_with_synthetic_probe": 72,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:distributed-flow-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        24,
+        37
+      ],
+      "sequence_tokens_with_synthetic_probe": 85,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:logic-integrity-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        21,
+        27
+      ],
+      "sequence_tokens_with_synthetic_probe": 72,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:premise-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        32,
+        31
+      ],
+      "sequence_tokens_with_synthetic_probe": 87,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:resource-lifecycle-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        37,
+        28
+      ],
+      "sequence_tokens_with_synthetic_probe": 89,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:security-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        37,
+        36
+      ],
+      "sequence_tokens_with_synthetic_probe": 97,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:temporal-resilience-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        39,
+        25
+      ],
+      "sequence_tokens_with_synthetic_probe": 88,
+      "state_truncated": false
+    },
+    {
+      "id": "senior-review:ui-race-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        21,
+        29
+      ],
+      "sequence_tokens_with_synthetic_probe": 74,
+      "state_truncated": false
+    },
+    {
+      "id": "testing:test-suite-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        31,
+        25
+      ],
+      "sequence_tokens_with_synthetic_probe": 80,
+      "state_truncated": false
+    },
+    {
+      "id": "typescript-development:type-safety-auditor",
+      "strict_sequence_passed": true,
+      "option_order": [
+        "false",
+        "true"
+      ],
+      "option_tokens": [
+        32,
+        29
+      ],
+      "sequence_tokens_with_synthetic_probe": 85,
+      "state_truncated": false
+    }
+  ],
+  "choice": {
+    "strict_sequence_passed": true,
+    "question": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+    "question_tokens_including_type_prefix": 18,
+    "option_tokens": [
+      19,
+      18,
+      19,
+      20,
+      17,
+      16,
+      19,
+      19,
+      18,
+      19,
+      19,
+      18,
+      20,
+      18,
+      20,
+      20,
+      20,
+      20
+    ],
+    "option_tokens_total": 339,
+    "option_marker_tokens": 18,
+    "head_budget_tokens": 375,
+    "head_budget_limit": 512,
+    "head_budget_remaining": 137,
+    "serialization_boundary_tokens": 3,
+    "sequence_tokens_with_synthetic_probe": 380,
+    "state_truncated": false
+  },
+  "threshold": 0.5,
+  "weights_loaded": false,
+  "model_inference_calls": 0,
+  "paid_baseline_calls": 0,
+  "benchmark_data_read": false
+}

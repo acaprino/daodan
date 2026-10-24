@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Implement the approved temporary quarantine entry and owner metadata for this one test. The cause investigation is complete; no new diagnosis or suite review is requested.",
+    "artifacts": [
+      {
+        "path": "maintenance/quarantine-plan.json",
+        "content": "{\"test\":\"tests/test_sync.py::test_remote_reset\",\"cause\":\"provider-sandbox-outage\",\"owner\":\"sync-team\",\"return_condition\":\"sandbox reset API restored\",\"authorized_action\":\"temporary quarantine\"}"
+      },
+      {
+        "path": "tests/test_sync.py",
+        "content": "def test_remote_reset(sandbox):\n    assert sandbox.reset() == 204\n"
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    }
+  }
+}

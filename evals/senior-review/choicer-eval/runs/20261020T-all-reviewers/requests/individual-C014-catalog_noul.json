@@ -1,0 +1,34 @@
+{
+  "id": "individual-C014-catalog_noul",
+  "kind": "individual",
+  "case_id": "C014",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit the project test setup and behavioral protection before release. The inventory below is complete; report a missing runner or suite rather than creating one.",
+    "artifacts": [
+      {
+        "path": "package.json",
+        "content": "{\"name\":\"address-normalizer\",\"scripts\":{\"build\":\"tsc\"},\"devDependencies\":{\"typescript\":\"^5.9.0\"}}"
+      },
+      {
+        "path": "inventory.txt",
+        "content": "package.json\ntsconfig.json\nsrc/normalize.ts\nREADME.md"
+      },
+      {
+        "path": "src/normalize.ts",
+        "content": "export const normalize = (text: string) => text.trim().toLowerCase();"
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement."
+      }
+    }
+  },
+  "sha256": "4ecdb18f83c92c9b696485d6cec50244d4f933c41b49478548661963b3580a6d"
+}

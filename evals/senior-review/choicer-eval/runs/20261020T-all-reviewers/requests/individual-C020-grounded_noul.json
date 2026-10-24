@@ -1,0 +1,30 @@
+{
+  "id": "individual-C020-grounded_noul",
+  "kind": "individual",
+  "case_id": "C020",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Check the TypeScript strictness settings and decoder for sound handling of unknown input. A clean report is acceptable if the checks justify the returned type.",
+    "artifacts": [
+      {
+        "path": "tsconfig.json",
+        "content": "{\"compilerOptions\":{\"strict\":true,\"noUncheckedIndexedAccess\":true,\"exactOptionalPropertyTypes\":true}}"
+      },
+      {
+        "path": "src/port.ts",
+        "content": "export function parsePort(input: unknown): number {\n  if (typeof input !== \"number\" || !Number.isInteger(input) || input < 1 || input > 65535) {\n    throw new Error(\"invalid port\");\n  }\n  return input;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      }
+    }
+  },
+  "sha256": "fb7d7480eb743e4a182c14a55cdd2cf703e913b2a6c46b5760e96450f0aa6d11"
+}

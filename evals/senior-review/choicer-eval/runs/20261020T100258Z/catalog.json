@@ -1,0 +1,822 @@
+{
+  "schema": "choicer-eval/catalog-v1",
+  "roles": [
+    {
+      "id": "abstraction-architect:abstraction-architect-agent",
+      "source": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+      "source_sha256": "612a59a887bd514df8a40f0fd40122ef828b38f1767315b66d37cc64c000bc14",
+      "description": "Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions. TRIGGER WHEN: spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic. DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+      "description_raw": "  Structural entropy auditor for duplicated domain concepts, competing sources of truth and wrong abstractions.\n  TRIGGER WHEN: spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.\n  DO NOT TRIGGER WHEN: implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+      "do_not_trigger_when": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "5.0.0",
+      "manifest_source": {
+        "path": "plugins/abstraction-architect/plugin.toml",
+        "sha256": "75c7a4b938ce803d55839a3f8f13603c599e8706da46cf0550bf6ed6a867d6cf"
+      }
+    },
+    {
+      "id": "clean-code:clean-code-agent",
+      "source": "plugins/clean-code/roles/clean-code-agent.md",
+      "source_sha256": "c34e4c7ef90edd098c533ee242563350c1196ae50b72043ee000de9e0dd89ff7",
+      "description": "Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview. TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief. DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).",
+      "description_raw": "  Readability-only rewrite of existing source, behavior unchanged, applied from an approved preview.\n  TRIGGER WHEN: dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief.\n  DO NOT TRIGGER WHEN: a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by /daodan:refactor-code or by a coordinator running clean-code:readability-method, with a prepared brief.",
+      "do_not_trigger_when": "a user asks directly to clean up code (use /daodan:refactor-code, which prepares and approves the change), or the target is prose or text (use text-humanizer).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "3.0.0",
+      "manifest_source": {
+        "path": "plugins/clean-code/plugin.toml",
+        "sha256": "0edb204fb3d9e3e395147f92eff0d14028cf5bf227d14da7995b906ea14c3e99"
+      }
+    },
+    {
+      "id": "codebase-map:map-analyst",
+      "source": "plugins/codebase-map/roles/map-analyst.md",
+      "source_sha256": "7e4f551303453cc8fa7e2e9e86e474a8bb00124d3db720e74d843171b135b8e2",
+      "description": "Owns the declared classic Codebase Map phases in one isolated context, reading the bound snapshot and writing only its run's analysis artifacts. TRIGGER WHEN: dispatched by an analysis coordinator with a prepared classic run and resolved scope.",
+      "description_raw": "  Owns the declared classic Codebase Map phases in one isolated context, reading the bound snapshot and writing only its run's analysis artifacts.\n  TRIGGER WHEN: dispatched by an analysis coordinator with a prepared classic run and resolved scope.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by an analysis coordinator with a prepared classic run and resolved scope.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": true,
+      "plugin_version": "8.1.0",
+      "manifest_source": {
+        "path": "plugins/codebase-map/plugin.toml",
+        "sha256": "e43ee820c7779b78d8e85239c6a9682fc2dd5bf8ea5ec2ab7a895a11b47f1277"
+      }
+    },
+    {
+      "id": "codebase-map:partition-behavior-worker",
+      "source": "plugins/codebase-map/roles/partition-behavior-worker.md",
+      "source_sha256": "721aaf9394ba2f94328f6e55939a9aa918e78df41818c70bad4143695981ad84",
+      "description": "Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.",
+      "description_raw": "  Runs Flow Tracing and Semantic Understanding over one partition, reading every partition's structure and interface output so flows and contracts can cite cross-partition boundaries, and writing 03-flows.md and 04-semantics.md into its owned partition directory.\n  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "8.1.0",
+      "manifest_source": {
+        "path": "plugins/codebase-map/plugin.toml",
+        "sha256": "e43ee820c7779b78d8e85239c6a9682fc2dd5bf8ea5ec2ab7a895a11b47f1277"
+      }
+    },
+    {
+      "id": "codebase-map:partition-quality-worker",
+      "source": "plugins/codebase-map/roles/partition-quality-worker.md",
+      "source_sha256": "ee63ad5bf3a7d679ee6c9fe997c23654ddba312237c60c435d707d09e7b6bc41",
+      "description": "Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode). TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.",
+      "description_raw": "  Runs Pattern and Risk Detection plus Documentation Health over one partition, writing 05-risks.md and 06-documentation.md into its owned partition directory (05 only in lite mode).\n  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its second wave.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "8.1.0",
+      "manifest_source": {
+        "path": "plugins/codebase-map/plugin.toml",
+        "sha256": "e43ee820c7779b78d8e85239c6a9682fc2dd5bf8ea5ec2ab7a895a11b47f1277"
+      }
+    },
+    {
+      "id": "codebase-map:partition-structure-worker",
+      "source": "plugins/codebase-map/roles/partition-structure-worker.md",
+      "source_sha256": "c25e3ebdcd9c026a6f06331dd63bdcc903289822ca1c696466dffbaca82948d5",
+      "description": "Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its first wave. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.",
+      "description_raw": "  Runs Structure Extraction and Interface Analysis over one partition, writing 01-structure.md and 02-interfaces.md into its owned partition directory.\n  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its first wave.\n  DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its first wave.",
+      "do_not_trigger_when": "outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "8.1.0",
+      "manifest_source": {
+        "path": "plugins/codebase-map/plugin.toml",
+        "sha256": "e43ee820c7779b78d8e85239c6a9682fc2dd5bf8ea5ec2ab7a895a11b47f1277"
+      }
+    },
+    {
+      "id": "codebase-map:partition-synthesizer",
+      "source": "plugins/codebase-map/roles/partition-synthesizer.md",
+      "source_sha256": "9b53f1cb4f92ab1973e6ff031b55fd34f4f2c3292d0eee4179521ddb72bbb1c5",
+      "description": "Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase. DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.",
+      "description_raw": "  Consolidates per-partition Codebase Map outputs into 01..07.md in the run directory with cross-partition sections and a team-mode final report.\n  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase.\n  DO NOT TRIGGER WHEN: outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the team entry of codebase-map:map-method (/daodan:map-code) in its consolidation phase.",
+      "do_not_trigger_when": "outside that team pipeline. The classic analyze entry dispatches isolated codebase-map:map-analyst.",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "8.1.0",
+      "manifest_source": {
+        "path": "plugins/codebase-map/plugin.toml",
+        "sha256": "e43ee820c7779b78d8e85239c6a9682fc2dd5bf8ea5ec2ab7a895a11b47f1277"
+      }
+    },
+    {
+      "id": "codebase-map:semantic-interconnect-mapper",
+      "source": "plugins/codebase-map/roles/semantic-interconnect-mapper.md",
+      "source_sha256": "f5c8fea8c7aa025eedf87790f8126e4e0e5ca10ce6f9ceb80876656730a4b606",
+      "description": "Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers. TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-review's branch review (/daodan:review-branch) or by project-knowledge's guide method (/daodan:write-docs), or asked to map contracts, invariants, domain rules or integration boundaries. DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /daodan:map-code or codebase-explorer first).",
+      "description_raw": "  Phase 1b context builder mapping contracts, invariants, domain rules, call graphs and integration boundaries for downstream reviewers and doc writers.\n  TRIGGER WHEN: dispatched by the team entry of codebase-map:map-method, by senior-review's branch review (/daodan:review-branch) or by project-knowledge's guide method (/daodan:write-docs), or asked to map contracts, invariants, domain rules or integration boundaries.\n  DO NOT TRIGGER WHEN: no prior context artifact exists yet (run /daodan:map-code or codebase-explorer first).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the team entry of codebase-map:map-method, by senior-review's branch review (/daodan:review-branch) or by project-knowledge's guide method (/daodan:write-docs), or asked to map contracts, invariants, domain rules or integration boundaries.",
+      "do_not_trigger_when": "no prior context artifact exists yet (run /daodan:map-code or codebase-explorer first).",
+      "is_reviewer": false,
+      "is_review_dispatch": true,
+      "plugin_version": "8.1.0",
+      "manifest_source": {
+        "path": "plugins/codebase-map/plugin.toml",
+        "sha256": "e43ee820c7779b78d8e85239c6a9682fc2dd5bf8ea5ec2ab7a895a11b47f1277"
+      }
+    },
+    {
+      "id": "peer-review:brief-builder",
+      "source": "plugins/peer-review/roles/brief-builder.md",
+      "source_sha256": "1056cd6355b9a752401b0b59653faa1316a44dd7a99117ecab9b23b8d63bff2c",
+      "description": "Materializes a session's context and decisions into the frozen 00-brief.md that brief-mode runs put on trial. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 0b when no plan or spec file exists on disk. DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).",
+      "description_raw": "  Materializes a session's context and decisions into the frozen 00-brief.md that brief-mode runs put on trial.\n  TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 0b when no plan or spec file exists on disk.\n  DO NOT TRIGGER WHEN: a plan or spec already exists on disk (use packet-builder in Phase 1 directly).\n",
+      "description_start_line": 4,
+      "trigger_when": "spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 0b when no plan or spec file exists on disk.",
+      "do_not_trigger_when": "a plan or spec already exists on disk (use packet-builder in Phase 1 directly).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "3.0.0",
+      "manifest_source": {
+        "path": "plugins/peer-review/plugin.toml",
+        "sha256": "844bca5354b3d8592de11e2e731010268e332b2bd6912fbfda8e8c3488199def"
+      }
+    },
+    {
+      "id": "peer-review:packet-builder",
+      "source": "plugins/peer-review/roles/packet-builder.md",
+      "source_sha256": "fda2036339311cc7d38ac9aba4053488a4f4a5181d7c8b042bbc38c1cef0c090",
+      "description": "Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 1.",
+      "description_raw": "  Builds the immutable challenge packet (00-packet.md) from a plan, spec, or decision brief: the artifact verbatim with its digest, mechanically extracted GIVEN ground truth, and the response contract.\n  TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 1.\n",
+      "description_start_line": 4,
+      "trigger_when": "spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during Phase 1.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "3.0.0",
+      "manifest_source": {
+        "path": "plugins/peer-review/plugin.toml",
+        "sha256": "844bca5354b3d8592de11e2e731010268e332b2bd6912fbfda8e8c3488199def"
+      }
+    },
+    {
+      "id": "peer-review:respondent",
+      "source": "plugins/peer-review/roles/respondent.md",
+      "source_sha256": "bdb56ebd4a59d8c3910ee776ce7d12958c598b1603040832d54b604009b45f24",
+      "description": "Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator. TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during a response phase with a challenge file and a ledger to update. DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).",
+      "description_raw": "  Answers findings against the artifact with evidence from the authoritative source, a repository or a named external corpus: each falsifier checked for admissibility, each non-ACCEPT verdict carrying a locator.\n  TRIGGER WHEN: spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during a response phase with a challenge file and a ledger to update.\n  DO NOT TRIGGER WHEN: asked to judge code diffs (senior-review owns those).\n",
+      "description_start_line": 4,
+      "trigger_when": "spawned by the cross-model-peer-review review method (run by /daodan:get-second-opinion or the task cycle) during a response phase with a challenge file and a ledger to update.",
+      "do_not_trigger_when": "asked to judge code diffs (senior-review owns those).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "3.0.0",
+      "manifest_source": {
+        "path": "plugins/peer-review/plugin.toml",
+        "sha256": "844bca5354b3d8592de11e2e731010268e332b2bd6912fbfda8e8c3488199def"
+      }
+    },
+    {
+      "id": "platform-engineering:platform-reviewer",
+      "source": "plugins/platform-engineering/roles/platform-reviewer.md",
+      "source_sha256": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6",
+      "description": "Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+      "description_raw": "  Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and\n  proves them.\n  TRIGGER WHEN: dispatched by the platform audit of the platform-engineering skill (run by\n  `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and\n  `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance\n  compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+      "do_not_trigger_when": null,
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/platform-engineering/plugin.toml",
+        "sha256": "1640907bf7104aa0a041ac40d92b4354b20802a6ca37971e06f0de9deb65b301"
+      }
+    },
+    {
+      "id": "project-knowledge:codebase-explorer",
+      "source": "plugins/project-knowledge/roles/codebase-explorer.md",
+      "source_sha256": "b9cad3fc0d7640f2d4ee117ad52dce3aa0b56c9bef02a2d1bfd401c901798739",
+      "description": "Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately. TRIGGER WHEN: spawned by project-knowledge methods to gather repository context before writing or auditing docs.",
+      "description_raw": "  Prepare scoped project context and audience evidence for an identified knowledge run, preserving implemented behavior and approved intent separately.\n  TRIGGER WHEN: spawned by project-knowledge methods to gather repository context before writing or auditing docs.\n",
+      "description_start_line": 4,
+      "trigger_when": "spawned by project-knowledge methods to gather repository context before writing or auditing docs.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:doc-humanizer",
+      "source": "plugins/project-knowledge/roles/doc-humanizer.md",
+      "source_sha256": "284de7b45fa66a618be8647811c73ed9ab8656803db909d08f432303f97c368f",
+      "description": "Restructure existing technical documents for their planned readers without changing facts, code examples or author voice. TRIGGER WHEN: spawned by project-knowledge methods to restructure technical documentation. DO NOT TRIGGER WHEN: editing prose voice (use text-humanizer).",
+      "description_raw": "  Restructure existing technical documents for their planned readers without changing facts, code examples or author voice.\n  TRIGGER WHEN: spawned by project-knowledge methods to restructure technical documentation.\n  DO NOT TRIGGER WHEN: editing prose voice (use text-humanizer).\n",
+      "description_start_line": 4,
+      "trigger_when": "spawned by project-knowledge methods to restructure technical documentation.",
+      "do_not_trigger_when": "editing prose voice (use text-humanizer).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:documentation-engineer",
+      "source": "plugins/project-knowledge/roles/documentation-engineer.md",
+      "source_sha256": "28b8b178d2db039b7a96916dbd353e4353937b47f982c17be0e9d1cb0f37553f",
+      "description": "Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode. TRIGGER WHEN: dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift.",
+      "description_raw": "  Audit implementation drift across selected documentation dimensions or author scoped technical documentation; supports explicit audit-only mode.\n  TRIGGER WHEN: dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:flow-writer",
+      "source": "plugins/project-knowledge/roles/flow-writer.md",
+      "source_sha256": "50ddbe28b6a58f0d32312fd64edc7f05f85f2e0da88c5c54d563c34149c120ad",
+      "description": "Document scoped user and data flows from verified call paths and contracts. TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author user and data flow documentation.",
+      "description_raw": "  Document scoped user and data flows from verified call paths and contracts.\n  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author user and data flow documentation.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's guide method (/daodan:write-docs) to author user and data flow documentation.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:guide-reviewer",
+      "source": "plugins/project-knowledge/roles/guide-reviewer.md",
+      "source_sha256": "c8ca15c28f3939cfd8b9a45f35430143cb403293fdcb18a97b828da81a642780",
+      "description": "Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer. TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to verify authored guide files.",
+      "description_raw": "  Review planned guide files for factual contradictions, provenance, terminology and navigation; defaults to audit-only and does not become another writer.\n  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to verify authored guide files.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's guide method (/daodan:write-docs) to verify authored guide files.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:instructions-auditor",
+      "source": "plugins/project-knowledge/roles/instructions-auditor.md",
+      "source_sha256": "87569236a71d439c9f2deec278d6afd4ff004dcce9dd9211cd5846e1f0ddeec3",
+      "description": "Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files. TRIGGER WHEN: dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md.",
+      "description_raw": "  Audit durable project instruction claims, scoped destinations, references and duplication; explicit audit-only mode never edits instruction files.\n  TRIGGER WHEN: dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:onboarding-writer",
+      "source": "plugins/project-knowledge/roles/onboarding-writer.md",
+      "source_sha256": "b045fdad199b1950968b8000f555d3de0a4e066f2f3f5fa34ed5716487efc41a",
+      "description": "Write verified reader-specific onboarding and real open questions. TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author onboarding documentation.",
+      "description_raw": "  Write verified reader-specific onboarding and real open questions.\n  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author onboarding documentation.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's guide method (/daodan:write-docs) to author onboarding documentation.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:ops-writer",
+      "source": "plugins/project-knowledge/roles/ops-writer.md",
+      "source_sha256": "8e71aa656b6b51e7518a86714a93127ff4d6949746fc300c92a4b8091dba7713",
+      "description": "Own operational reference and configuration how-to, absorbing the former config writer's techniques. TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author operational and configuration documentation.",
+      "description_raw": "  Own operational reference and configuration how-to, absorbing the former config writer's techniques.\n  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author operational and configuration documentation.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's guide method (/daodan:write-docs) to author operational and configuration documentation.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:overview-writer",
+      "source": "plugins/project-knowledge/roles/overview-writer.md",
+      "source_sha256": "8873b0c18d4a776987430a3b552428440e361186b80ee0b29f9b99713be96761",
+      "description": "Explain the project and implemented features for planned audiences. TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author project overview documentation.",
+      "description_raw": "  Explain the project and implemented features for planned audiences.\n  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author project overview documentation.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's guide method (/daodan:write-docs) to author project overview documentation.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-knowledge:tech-writer",
+      "source": "plugins/project-knowledge/roles/tech-writer.md",
+      "source_sha256": "59a24c1b3a48a0c6fc41abb95863d9b9dcf3edc58af5e0a827a04ab2aa523559",
+      "description": "Document the verified stack, architecture and data model in planned files. TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author technical architecture and data-model documentation.",
+      "description_raw": "  Document the verified stack, architecture and data model in planned files.\n  TRIGGER WHEN: dispatched by project-knowledge's guide method (/daodan:write-docs) to author technical architecture and data-model documentation.\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by project-knowledge's guide method (/daodan:write-docs) to author technical architecture and data-model documentation.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/project-knowledge/plugin.toml",
+        "sha256": "175522ea72a676e321019884b30063cb8d7fc426be3f9cc218ec6ca40875c090"
+      }
+    },
+    {
+      "id": "project-protocol:isolated-worker",
+      "source": "plugins/project-protocol/roles/isolated-worker.md",
+      "source_sha256": "b9af721d265c17c8621c2cf316e5e3b85d3e6e45cd4e24e40d8396f1ed3eb6ad",
+      "description": "Isolated task worker for a coordinator-owned method. Executes the supplied concrete task within its owned scope and returns an actual evidence report.",
+      "description_raw": "  Isolated task worker for a coordinator-owned method. Executes the supplied\n  concrete task within its owned scope and returns an actual evidence report.\n",
+      "description_start_line": 4,
+      "trigger_when": null,
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "1.6.0",
+      "manifest_source": {
+        "path": "plugins/project-protocol/plugin.toml",
+        "sha256": "10edf6b70dca5e49c990cea1bf92344ec1d7c2a805b61e34f5eecc7b186cfd9e"
+      }
+    },
+    {
+      "id": "python-development:python-engineer",
+      "source": "plugins/python-development/roles/python-engineer.md",
+      "source_sha256": "a2fe664daecd5117f649e3316d687c0369c26ec8c59187442221b51fdf63e1de",
+      "description": "Hands-on Python 3.12+ engineer. Ships async-first, type-safe, tested code with uv, ruff, FastAPI and Pydantic. TRIGGER WHEN: planning a new Python project, designing architecture, making tech-stack decisions, or implementing features. DO NOT TRIGGER WHEN: the task is writing tests (use testing:test-writer) or isolated refactoring (use python-refactor-agent).",
+      "description_raw": "  Hands-on Python 3.12+ engineer. Ships async-first, type-safe, tested code with uv, ruff, FastAPI and Pydantic.\n  TRIGGER WHEN: planning a new Python project, designing architecture, making tech-stack decisions, or implementing features.\n  DO NOT TRIGGER WHEN: the task is writing tests (use testing:test-writer) or isolated refactoring (use python-refactor-agent).\n",
+      "description_start_line": 4,
+      "trigger_when": "planning a new Python project, designing architecture, making tech-stack decisions, or implementing features.",
+      "do_not_trigger_when": "the task is writing tests (use testing:test-writer) or isolated refactoring (use python-refactor-agent).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "4.0.0",
+      "manifest_source": {
+        "path": "plugins/python-development/plugin.toml",
+        "sha256": "328838c203acfb78ef12d7f9d29bc595c1e7d50afbbb7667289f274c35a2892b"
+      }
+    },
+    {
+      "id": "python-development:python-refactor-agent",
+      "source": "plugins/python-development/roles/python-refactor-agent.md",
+      "source_sha256": "8f83b9cdf4fc83d4c0e00428359260d2634c29f175576e08f13d84923ce7dee5",
+      "description": "Modernize legacy Python in place. TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings. DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use testing:test-writer).",
+      "description_raw": "  Modernize legacy Python in place.\n  TRIGGER WHEN: refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings.\n  DO NOT TRIGGER WHEN: building new features or scaffolding projects (use python-engineer), or writing test suites (use testing:test-writer).\n",
+      "description_start_line": 4,
+      "trigger_when": "refactoring code, removing dead code with vulture or ruff, optimizing imports, reducing cognitive complexity, or improving readability and docstrings.",
+      "do_not_trigger_when": "building new features or scaffolding projects (use python-engineer), or writing test suites (use testing:test-writer).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "4.0.0",
+      "manifest_source": {
+        "path": "plugins/python-development/plugin.toml",
+        "sha256": "328838c203acfb78ef12d7f9d29bc595c1e7d50afbbb7667289f274c35a2892b"
+      }
+    },
+    {
+      "id": "react-development:react-performance-optimizer",
+      "source": "plugins/react-development/roles/react-performance-optimizer.md",
+      "source_sha256": "802cb1207d04f075ea75b49b03aba1d6f038b4358e16ee2c58797a44ec520a84",
+      "description": "Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat. TRIGGER WHEN: dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "description_raw": "  Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat.\n  TRIGGER WHEN: dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.\n  DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+      "do_not_trigger_when": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/react-development/plugin.toml",
+        "sha256": "50f734aafb103d782d4952c632d7ee4dc4523ed488456ef5fad0b58491334c9a"
+      }
+    },
+    {
+      "id": "repo-hygiene:workspace-auditor",
+      "source": "plugins/repo-hygiene/roles/workspace-auditor.md",
+      "source_sha256": "d68c5ad5e01d297a9a90e85f06fbbcd69c8550f68723b01f0510b64314f4e293",
+      "description": "Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state. TRIGGER WHEN: dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches. DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+      "description_raw": "  Workspace-hygiene auditor for filesystem garbage, tracked build artifacts, .gitignore gaps, scratch directories, orphan doc-assets and git auxiliary state.\n  TRIGGER WHEN: dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.\n  DO NOT TRIGGER WHEN: source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+      "do_not_trigger_when": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/repo-hygiene/plugin.toml",
+        "sha256": "6ce0ad985f75815cc343275b9a893fceae4c274dcee365dcb1298b70875cb5a3"
+      }
+    },
+    {
+      "id": "senior-review:api-contract-auditor",
+      "source": "plugins/senior-review/roles/api-contract-auditor.md",
+      "source_sha256": "d9f8111a6682b67582f078868892684afa048dc36a02ed7f0320ee1de8426d17",
+      "description": "Auditor for drift between declared API contracts and their implementation. TRIGGER WHEN: checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes. DO NOT TRIGGER WHEN: no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+      "description_raw": "  Auditor for drift between declared API contracts and their implementation.\n  TRIGGER WHEN: checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.\n  DO NOT TRIGGER WHEN: no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+      "do_not_trigger_when": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:chicken-egg-detector",
+      "source": "plugins/senior-review/roles/chicken-egg-detector.md",
+      "source_sha256": "0c517c9d552da2a661c1f8e0be70433e58bbcc0f90b6c846667d3f4653db6506",
+      "description": "Detects the chicken-and-egg cycle where component A needs B ready while B needs A: cold-start hangs, deadlocks, hidden temporal coupling. TRIGGER WHEN: the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck. DO NOT TRIGGER WHEN: the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+      "description_raw": "  Detects the chicken-and-egg cycle where component A needs B ready while B needs A: cold-start hangs, deadlocks, hidden temporal coupling.\n  TRIGGER WHEN: the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.\n  DO NOT TRIGGER WHEN: the concern is runtime flow with no initialization phase (use distributed-flow-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+      "do_not_trigger_when": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:cleanup-auditor",
+      "source": "plugins/senior-review/roles/cleanup-auditor.md",
+      "source_sha256": "3f46c57b34faf982d4734b9de132ff4eb3d4e8e351730da7031828db1905cc97",
+      "description": "Application-hygiene auditor for dead code, orphan assets, unused dependencies, stale docs and migration/debug leftovers. TRIGGER WHEN: dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit. DO NOT TRIGGER WHEN: applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+      "description_raw": "  Application-hygiene auditor for dead code, orphan assets, unused dependencies, stale docs and migration/debug leftovers.\n  TRIGGER WHEN: dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.\n  DO NOT TRIGGER WHEN: applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+      "do_not_trigger_when": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:code-auditor",
+      "source": "plugins/senior-review/roles/code-auditor.md",
+      "source_sha256": "d4072cd6dc267138154402334ee6fc50e3f39d92e8f0a4abf289b0f0e46e3944",
+      "description": "Hunts coupling violations, broken abstractions, resource leaks, stale caches, and anti-patterns. TRIGGER WHEN: the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check. DO NOT TRIGGER WHEN: the task is security-specific auditing (use security-auditor).",
+      "description_raw": "  Hunts coupling violations, broken abstractions, resource leaks, stale caches, and anti-patterns.\n  TRIGGER WHEN: the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.\n  DO NOT TRIGGER WHEN: the task is security-specific auditing (use security-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+      "do_not_trigger_when": "the task is security-specific auditing (use security-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:data-integrity-auditor",
+      "source": "plugins/senior-review/roles/data-integrity-auditor.md",
+      "source_sha256": "3002f553c9bc1f4efacf14c0e91be3e53684659f3710fd50e9d4c602f942d192",
+      "description": "Persistence-layer reviewer for partial writes, read-modify-write races, missing DB uniqueness constraints and cache-database divergence. TRIGGER WHEN: target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries. DO NOT TRIGGER WHEN: domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+      "description_raw": "  Persistence-layer reviewer for partial writes, read-modify-write races, missing DB uniqueness constraints and cache-database divergence.\n  TRIGGER WHEN: target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.\n  DO NOT TRIGGER WHEN: domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+      "do_not_trigger_when": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:distributed-flow-auditor",
+      "source": "plugins/senior-review/roles/distributed-flow-auditor.md",
+      "source_sha256": "156b7ec5ebdba1c76fe1d9c15b4e1308af04a00c659282e87d85606db694aee8",
+      "description": "Hunts cascading timeout violations, missing idempotency, broken saga compensation, message ordering bugs, and split-brain risks. TRIGGER WHEN: the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+      "description_raw": "  Hunts cascading timeout violations, missing idempotency, broken saga compensation, message ordering bugs, and split-brain risks.\n  TRIGGER WHEN: the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.\n",
+      "description_start_line": 4,
+      "trigger_when": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+      "do_not_trigger_when": null,
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:logic-integrity-auditor",
+      "source": "plugins/senior-review/roles/logic-integrity-auditor.md",
+      "source_sha256": "e417e5fa015e53042406346798db4f1fcfca09f05dbc239aaf3cbfb14a92daab",
+      "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md. TRIGGER WHEN: Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+      "description_raw": "  Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md.\n  TRIGGER WHEN: Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.\n  DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).\n",
+      "description_start_line": 4,
+      "trigger_when": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+      "do_not_trigger_when": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:premise-auditor",
+      "source": "plugins/senior-review/roles/premise-auditor.md",
+      "source_sha256": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39",
+      "description": "Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3). TRIGGER WHEN: Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check. DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+      "description_raw": "  Derives independent code claims (Mode 1, blind to shared maps), challenges load-bearing finding premises (Mode 2, Lens 0) and checks what a plan, record or document claims about the code (Mode 3).\n  TRIGGER WHEN: Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.\n  DO NOT TRIGGER WHEN: hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).\n",
+      "description_start_line": 4,
+      "trigger_when": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+      "do_not_trigger_when": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:resource-lifecycle-auditor",
+      "source": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+      "source_sha256": "12c350b62d5eb0dfe4cec49a53cd981e12ff05ef735b205459a89c1c87f52383",
+      "description": "Reviewer for resource acquisition and release across success, error and cancellation paths: leaks, double-release, use-after-release and unbounded pools. TRIGGER WHEN: target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory. DO NOT TRIGGER WHEN: behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+      "description_raw": "  Reviewer for resource acquisition and release across success, error and cancellation paths: leaks, double-release, use-after-release and unbounded pools.\n  TRIGGER WHEN: target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.\n  DO NOT TRIGGER WHEN: behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+      "do_not_trigger_when": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:security-auditor",
+      "source": "plugins/senior-review/roles/security-auditor.md",
+      "source_sha256": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9",
+      "description": "Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+      "description_raw": "  Attacker-mindset pass over the target: assumes it is exploitable and proves it.\n  TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.\n  DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).\n",
+      "description_start_line": 4,
+      "trigger_when": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+      "do_not_trigger_when": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:temporal-resilience-auditor",
+      "source": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+      "source_sha256": "7d2783596e7e043046978f6b26756133cd681b47f8c11c7f05a3e87cef858d2b",
+      "description": "Reviewer for failure-over-time defects: missing backoff/caps, silent subsystem death, uncleared guards, notification floods and clock hazards. TRIGGER WHEN: reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs. DO NOT TRIGGER WHEN: startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+      "description_raw": "  Reviewer for failure-over-time defects: missing backoff/caps, silent subsystem death, uncleared guards, notification floods and clock hazards.\n  TRIGGER WHEN: reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.\n  DO NOT TRIGGER WHEN: startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).\n",
+      "description_start_line": 4,
+      "trigger_when": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+      "do_not_trigger_when": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "senior-review:ui-race-auditor",
+      "source": "plugins/senior-review/roles/ui-race-auditor.md",
+      "source_sha256": "e2c13d0f21b3bbf76706f7ce7433bac2b760f2c9c3e70620beb75455e99548be",
+      "description": "Framework-agnostic UI timing analyst: React, Angular, Vue, Qt, GTK, Flutter, SwiftUI, Electron, Tauri. TRIGGER WHEN: races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+      "description_raw": "  Framework-agnostic UI timing analyst: React, Angular, Vue, Qt, GTK, Flutter, SwiftUI, Electron, Tauri.\n  TRIGGER WHEN: races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.\n",
+      "description_start_line": 4,
+      "trigger_when": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+      "do_not_trigger_when": null,
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "16.0.0",
+      "manifest_source": {
+        "path": "plugins/senior-review/plugin.toml",
+        "sha256": "c7b91cb92b987905bdd81e8e056d735c0ceedc22874fcbe1862533cfed937aeb"
+      }
+    },
+    {
+      "id": "testing:test-suite-auditor",
+      "source": "plugins/testing/roles/test-suite-auditor.md",
+      "source_sha256": "f3543674b00d0a17429c798a39dc4f7e1c33deffb26007a3ba7d2b838f098d33",
+      "description": "Runs as the testing-quality dimension of senior-review's team-review and code-review variants (/daodan:review-branch), and as the engine of the audit mode of testing:test-remediation-method. TRIGGER WHEN: auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement. DO NOT TRIGGER WHEN: tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+      "description_raw": "  Runs as the testing-quality dimension of senior-review's team-review and code-review variants (/daodan:review-branch), and as the engine of the audit mode of testing:test-remediation-method.\n  TRIGGER WHEN: auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.\n  DO NOT TRIGGER WHEN: tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).\n",
+      "description_start_line": 4,
+      "trigger_when": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+      "do_not_trigger_when": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "4.0.0",
+      "manifest_source": {
+        "path": "plugins/testing/plugin.toml",
+        "sha256": "6d8e6d466061a709e99e3e28ba97012451e408a75109051774007512b218de8a"
+      }
+    },
+    {
+      "id": "testing:test-writer",
+      "source": "plugins/testing/roles/test-writer.md",
+      "source_sha256": "487b90694898d337cacfb71ecbda8ca838720a6e4771b074e9ebc0606eeeb3db",
+      "description": "Authors behavior-driven suites for existing code, or drives new ones red-green. Auto-detects the framework, and follows the test-hygiene search-before-write protocol instead of creating parallel files. TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.",
+      "description_raw": "  Authors behavior-driven suites for existing code, or drives new ones red-green. Auto-detects the framework, and follows the test-hygiene search-before-write protocol instead of creating parallel files.\n  TRIGGER WHEN: the user asks to write tests, add test coverage, or do TDD.\n",
+      "description_start_line": 4,
+      "trigger_when": "the user asks to write tests, add test coverage, or do TDD.",
+      "do_not_trigger_when": null,
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "4.0.0",
+      "manifest_source": {
+        "path": "plugins/testing/plugin.toml",
+        "sha256": "6d8e6d466061a709e99e3e28ba97012451e408a75109051774007512b218de8a"
+      }
+    },
+    {
+      "id": "text-humanizer:text-humanizer",
+      "source": "plugins/text-humanizer/roles/text-humanizer.md",
+      "source_sha256": "e82f786eb88119c14235304ebcd1cf2373470a1d221da8ecddb5bd62d9f12e50",
+      "description": "Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).",
+      "description_raw": "  Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content.\n  TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text.\n  DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text.",
+      "do_not_trigger_when": "the task involves refactoring source code (use /daodan:refactor-code instead).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "2.0.0",
+      "manifest_source": {
+        "path": "plugins/text-humanizer/plugin.toml",
+        "sha256": "ac36598a1cfd6c213ff0d76e8dfd4ec16fdd09ff5717e3302525f8f1177e892f"
+      }
+    },
+    {
+      "id": "typescript-development:type-safety-auditor",
+      "source": "plugins/typescript-development/roles/type-safety-auditor.md",
+      "source_sha256": "b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39",
+      "description": "TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling. TRIGGER WHEN: dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift. DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+      "description_raw": "  TypeScript type-safety auditor for `any` leakage, unsound casts, missing boundary validation and non-exhaustive handling.\n  TRIGGER WHEN: dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.\n  DO NOT TRIGGER WHEN: style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).\n",
+      "description_start_line": 4,
+      "trigger_when": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+      "do_not_trigger_when": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+      "is_reviewer": true,
+      "is_review_dispatch": true,
+      "plugin_version": "3.0.0",
+      "manifest_source": {
+        "path": "plugins/typescript-development/plugin.toml",
+        "sha256": "892cb40c7bc0e510034c020b67a6e7d99620ad9e7e44382db8308eac8944e28a"
+      }
+    },
+    {
+      "id": "typescript-development:typescript-engineer",
+      "source": "plugins/typescript-development/roles/typescript-engineer.md",
+      "source_sha256": "62498e16595db7ff0a5d28aeaac59c6de1b5e7fa51f8b2c4fa3c833d7a225290",
+      "description": "Hands-on TypeScript 5.x engineer. Ships strict-mode, tested code with pnpm/bun, Vite, Vitest and Zod. TRIGGER WHEN: planning a new TS project, designing architecture, making tech-stack decisions, implementing features, migrating JavaScript to TypeScript, or setting up a monorepo. DO NOT TRIGGER WHEN: the task is React-specific performance optimization (use react-development:react-performance-optimizer).",
+      "description_raw": "  Hands-on TypeScript 5.x engineer. Ships strict-mode, tested code with pnpm/bun, Vite, Vitest and Zod.\n  TRIGGER WHEN: planning a new TS project, designing architecture, making tech-stack decisions, implementing features, migrating JavaScript to TypeScript, or setting up a monorepo.\n  DO NOT TRIGGER WHEN: the task is React-specific performance optimization (use react-development:react-performance-optimizer).\n",
+      "description_start_line": 4,
+      "trigger_when": "planning a new TS project, designing architecture, making tech-stack decisions, implementing features, migrating JavaScript to TypeScript, or setting up a monorepo.",
+      "do_not_trigger_when": "the task is React-specific performance optimization (use react-development:react-performance-optimizer).",
+      "is_reviewer": false,
+      "is_review_dispatch": false,
+      "plugin_version": "3.0.0",
+      "manifest_source": {
+        "path": "plugins/typescript-development/plugin.toml",
+        "sha256": "892cb40c7bc0e510034c020b67a6e7d99620ad9e7e44382db8308eac8944e28a"
+      }
+    }
+  ],
+  "reviewer_ids": [
+    "abstraction-architect:abstraction-architect-agent",
+    "platform-engineering:platform-reviewer",
+    "react-development:react-performance-optimizer",
+    "repo-hygiene:workspace-auditor",
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:cleanup-auditor",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:ui-race-auditor",
+    "testing:test-suite-auditor",
+    "typescript-development:type-safety-auditor"
+  ],
+  "role_count": 44,
+  "reviewer_count": 18,
+  "reviewer_selection": {
+    "rule": "review-branch dispatch roles, excluding its two codebase-map evidence producers",
+    "source": {
+      "path": "plugins/daodan/workflows/review-branch.toml",
+      "sha256": "e0102e86e471e027b1c16de6fad60f9c2a9f190af33063c999708827a6070b72"
+    },
+    "excluded_producers": [
+      "codebase-map:map-analyst",
+      "codebase-map:semantic-interconnect-mapper"
+    ],
+    "dimension_source": {
+      "path": "plugins/senior-review/skills/review-method/references/team-review.md",
+      "sha256": "89383467d1ad7a34beb2021b97869407e49b75ea6322aa3b43932f1c8516bde1"
+    },
+    "why_not_all_roles": "Writers, maintainers, map producers and protocol workers are not reviewer lenses."
+  },
+  "sources": [
+    {
+      "path": "plugins/daodan/workflows/review-branch.toml",
+      "sha256": "e0102e86e471e027b1c16de6fad60f9c2a9f190af33063c999708827a6070b72"
+    }
+  ],
+  "anomalies": [
+    {
+      "kind": "missing_negative_trigger",
+      "roles": [
+        "platform-engineering:platform-reviewer",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "policy": "Preserve null; do not invent a negative criterion."
+    },
+    {
+      "kind": "missing_positive_trigger",
+      "roles": [],
+      "policy": "Preserve null; do not invent a positive criterion."
+    },
+    {
+      "kind": "spec_role_count",
+      "observed": 18,
+      "claim": "approximately 20 or 20+"
+    },
+    {
+      "kind": "current_security_trigger_differs_from_proposed_spec",
+      "policy": "Use actual role frontmatter, never the replacement proposed in spec section 3.1."
+    }
+  ]
+}

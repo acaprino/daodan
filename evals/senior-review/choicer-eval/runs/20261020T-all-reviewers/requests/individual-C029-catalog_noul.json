@@ -1,0 +1,26 @@
+{
+  "id": "individual-C029-catalog_noul",
+  "kind": "individual",
+  "case_id": "C029",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Rewrite only the voice of this paragraph to remove inflated language. Preserve its facts, order, links, and document structure; no factual or navigation review is requested.",
+    "artifacts": [
+      {
+        "path": "docs/intro.md",
+        "content": "Unlock a seamless journey into the powerful world of backups. Our robust tool empowers you to save a local archive and restore it later."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's guide method (/daodan:write-docs) to verify authored guide files."
+      }
+    }
+  },
+  "sha256": "963c31d6dc65f47d4884217f2762d77488b93c678e68b6d7dd61df35b5e738bc"
+}

@@ -1,0 +1,17 @@
+{
+  "evals/senior-review/specialist-smoke/accessibility/requirements.md": "3d6ec74b8518063cf7cac1771212a41c58d5d1bd3bbef2e5b49827688c484bbd",
+  "evals/senior-review/specialist-smoke/accessibility/result.md": "f0050157f39500de3954563284c440022d41f329845daf8ea4de6152fb3688de",
+  "evals/senior-review/specialist-smoke/accessibility/view-a.html": "435de315f68d74e7c1428f0e61f4373fd2e8ee394ca063f63f7b307e8ee9b1ec",
+  "evals/senior-review/specialist-smoke/accessibility/view-b.html": "9a87ae4a6dd2a45f9f49f667956a332c8caaea2c96066fdfcbf040caa5201151",
+  "evals/senior-review/specialist-smoke/operability/migration-a.sql": "a2ee45146445097dfe119d4dcee3db6b6ff4202306156719ebc7a7393ce82a25",
+  "evals/senior-review/specialist-smoke/operability/migration-b.sql": "321cc0eb3e40d39c78a217047cec15633ecd2abef6328ac99e6289b974f569b5",
+  "evals/senior-review/specialist-smoke/operability/requirements.md": "e039f005a0ffb7cf5098e9c312faab8d9f0f2e626b95a939b813e412d926119f",
+  "evals/senior-review/specialist-smoke/operability/result.md": "35b6b59a2feea7b6b73b97d1e8ede39939b9dfbcc70f87e0c2951119c16d5b1f",
+  "evals/senior-review/specialist-smoke/performance/access.py": "528ede9495d5e137ca89ef35da0eb8b5064b0d11d13f1c36f858712af1a36871",
+  "evals/senior-review/specialist-smoke/performance/requirements.md": "2b4faad97060d92bf68f1a03f1756beab0328bb779bdb31d1a966501f6bd096c",
+  "evals/senior-review/specialist-smoke/performance/result.md": "979d82424ba198497ce9f3c9003dff4dcb89332a9a87bd44423d4e4b3b30bbff",
+  "plugins/senior-review/roles/accessibility-auditor.md": "afa9fa49100f3ec7bd9091a15a2f2f1e3dd086b7a280a24877883e6c3ec6f2d8",
+  "plugins/senior-review/roles/operability-auditor.md": "b67ccbd9727e865247c0e9c4472640e36622ab1aaa01cfdb7687c5d17abadc9c",
+  "plugins/senior-review/roles/performance-auditor.md": "ea0714b70b1a33cc088ae341a81037699371a29fbf14bca72f6668f98c4d78d2",
+  "plugins/senior-review/skills/review-quality-gates/references/reviewer-common.md": "7d7c02a5e52b3ea626ffe02e8428fbcd4b2197594756fb997f566a448f8c447b"
+}

@@ -1,0 +1,14 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H1] candidate sync/replicator.py:3 while True:",
+      "reason": "Retries, polling delay, and unbounded awaits may cause persistent stalls or uncontrolled recovery behavior.",
+      "role": "senior-review:temporal-resilience-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

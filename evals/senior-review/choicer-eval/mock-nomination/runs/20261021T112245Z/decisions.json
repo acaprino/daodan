@@ -1,0 +1,3701 @@
+{
+  "decisions": [
+    {
+      "decision_id": "mock-000001",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6379106,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000002",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6379387,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000003",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.637956,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000004",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.637967,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000005",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.637978,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000006",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6379879,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000007",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.637998,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000008",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6380076,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000009",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6380167,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000010",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6380272,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000011",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6380365,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000012",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6380463,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000013",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6380553,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000014",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6380646,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000015",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6380734,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000016",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6380825,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000017",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6380913,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000018",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6381001,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000019",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6381097,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000020",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.638119,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000021",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6381278,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000022",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.638137,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "10e95d9f62d9b0c5f5fd49c93f6718e947aff7d5d84169545ca4cd8ca78c97a2"
+    },
+    {
+      "decision_id": "mock-000023",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6383455,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000024",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6383574,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000025",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6383674,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000026",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6383767,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000027",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6383862,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000028",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.638395,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000029",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6384044,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000030",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6384137,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000031",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6384223,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000032",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6384315,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000033",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6384401,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000034",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6384492,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000035",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.638458,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000036",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6384668,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000037",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6384754,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000038",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6384845,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000039",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6384938,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000040",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6385028,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000041",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6385121,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000042",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6385212,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000043",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6385305,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000044",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.63854,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4dd8561a174c794eba8ae19897fe3c165c987d58b67afebc7c7c07d0a7541ae1"
+    },
+    {
+      "decision_id": "mock-000045",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6386952,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000046",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.638707,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000047",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6387174,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000048",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6387281,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000049",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6387382,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000050",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6387484,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000051",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6387587,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000052",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6387684,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000053",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.638779,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000054",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.638789,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000055",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6387994,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000056",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6388102,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000057",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6388204,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000058",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6388307,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000059",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6388412,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000060",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6388512,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000061",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6388614,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000062",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6388712,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000063",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6388814,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000064",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6388917,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000065",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6389022,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000066",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6389122,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "353d3862e9dba35530080c960918f2d5612546a7d3a3201dd6eb00472f9631f0"
+    },
+    {
+      "decision_id": "mock-000067",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.639058,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000068",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.639069,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000069",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6390789,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000070",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6390884,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000071",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6390984,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000072",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6391075,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000073",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6391177,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000074",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6391275,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000075",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.639137,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000076",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.639147,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000077",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6391566,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000078",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6391664,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000079",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.639176,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000080",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6391854,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000081",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6391954,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000082",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6392055,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000083",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.639215,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000084",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.639225,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000085",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.639235,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000086",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6392448,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000087",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.639254,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000088",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6392634,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "33d1758da569364c6b5fe46bc5515df33df80bbbffb02a66576c8e2d7346baae"
+    },
+    {
+      "decision_id": "mock-000089",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6394064,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000090",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6394172,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000091",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6394267,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000092",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6394362,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000093",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6394463,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000094",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.639456,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000095",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6394684,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000096",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6394782,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000097",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6394877,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000098",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.639497,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000099",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6395066,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000100",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6395159,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000101",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6395254,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000102",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.639535,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000103",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6395438,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000104",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6395538,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000105",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6395636,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000106",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.639573,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000107",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6395826,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000108",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6395922,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000109",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6396017,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000110",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6396115,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4c3d8ff966d6549285d808d3063185a8924fc842a3b4c6128a9567042daed549"
+    },
+    {
+      "decision_id": "mock-000111",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.639757,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000112",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6397686,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000113",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6397796,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000114",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.63979,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000115",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6398134,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000116",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6398234,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000117",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.639834,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000118",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.639845,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000119",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.639855,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000120",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.639865,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000121",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6398757,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000122",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6398864,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000123",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6398962,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000124",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6399057,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000125",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6399157,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000126",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.639926,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000127",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.639936,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000128",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.639946,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000129",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6399558,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000130",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6399658,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000131",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6399758,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000132",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.639986,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f248f12f5062436ef61abbfa4b3df6992d433b79f84fe16380b899ab09b2ccd7"
+    },
+    {
+      "decision_id": "mock-000133",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6401331,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000134",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6401439,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000135",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.640154,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000136",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6401646,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000137",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6401749,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000138",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6401846,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000139",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6401951,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000140",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6402059,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000141",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6402154,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000142",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.640225,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000143",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6402352,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000144",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6402462,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000145",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.640256,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000146",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.640266,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000147",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.640276,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000148",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.640286,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000149",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.640296,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000150",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6403062,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000151",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6403162,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000152",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6403272,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000153",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6403382,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000154",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6403482,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "925e9cab63e05a127885e40dba35e28e42e6ecdbaf32ec258b1597ffbd5701d3"
+    },
+    {
+      "decision_id": "mock-000155",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6404932,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000156",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6405041,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000157",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.640514,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000158",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6405234,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000159",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.640533,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000160",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6405427,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000161",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.640552,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000162",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6405618,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000163",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.640571,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000164",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6405807,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000165",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6405907,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000166",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6406002,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000167",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.64061,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000168",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.640619,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000169",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.640629,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000170",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.640639,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000171",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6406486,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000172",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.64066,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000173",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6406696,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000174",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6406794,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000175",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.640689,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000176",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6407006,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "35d00578ea5d52d1e87bcc5bc326b602c1b071eb921539c11b2addd2c4832c55"
+    },
+    {
+      "decision_id": "mock-000177",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6408389,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000178",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6408477,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000179",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6408558,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000180",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.640864,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000181",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6408718,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000182",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.64088,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000183",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6408882,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000184",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.640896,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000185",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6409042,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000186",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6409116,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000187",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6409194,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000188",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6409276,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000189",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6409357,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000190",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6409442,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000191",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6409519,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000192",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6409624,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000193",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6409702,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000194",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.640978,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000195",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.640986,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000196",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6409955,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000197",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6410038,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000198",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6410117,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "867ec921df5adc47f64996f6db38762968711d0869768b790106cb0a19c30e8f"
+    },
+    {
+      "decision_id": "mock-000199",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6411543,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000200",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.641164,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000201",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6411724,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000202",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6411808,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000203",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6411889,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000204",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6411972,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000205",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6412055,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000206",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.641214,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000207",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6412225,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000208",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6412308,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000209",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.641239,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000210",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6412475,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000211",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6412573,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000212",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6412654,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000213",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6412737,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000214",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6412823,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000215",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6412916,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000216",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6413004,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000217",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6413088,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000218",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.641317,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000219",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.641325,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000220",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6413336,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "455c71a3066a18d5ac1e8e91452b1899a883d465ae7c9d261d37a2d8284161d4"
+    },
+    {
+      "decision_id": "mock-000221",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.641478,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000222",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.64149,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000223",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.6415007,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000224",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6415107,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000225",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6415205,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000226",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.64153,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000227",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6415403,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000228",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.641552,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000229",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6415622,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000230",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6415737,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000231",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6415837,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000232",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6415935,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000233",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.641603,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000234",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6416125,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000235",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6416225,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000236",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6416328,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000237",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.641643,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000238",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6416526,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000239",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6416624,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000240",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6416724,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000241",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6416824,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000242",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6416924,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "86a8affbb6f27ec6247eb349e380d209c2381b4745fc981bacb56a0b4f714e68"
+    },
+    {
+      "decision_id": "mock-000243",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6418495,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000244",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6418617,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000245",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:doc-humanizer",
+      "recorded_at": 1792581765.641873,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000246",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:documentation-engineer",
+      "recorded_at": 1792581765.6418836,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000247",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:guide-reviewer",
+      "recorded_at": 1792581765.6418943,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000248",
+      "mode": "gold-replay",
+      "qid": "project-knowledge:instructions-auditor",
+      "recorded_at": 1792581765.6419053,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000249",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6419165,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000250",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6419287,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000251",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6419394,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000252",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.64195,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000253",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6419604,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000254",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.641971,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000255",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6419816,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000256",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6419928,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000257",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6420047,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000258",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6420155,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000259",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6421888,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000260",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.642201,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000261",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6422122,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000262",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6422224,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000263",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6422331,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000264",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6422436,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "a141b513f2bb04e586a67ee038e769c0aa9c01f077d75a3284f4918912fca1ef"
+    },
+    {
+      "decision_id": "mock-000265",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.642443,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000266",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6425047,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000267",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6425424,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000268",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6425776,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000269",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6426117,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000270",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6426458,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000271",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6426828,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000272",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.642736,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000273",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6427855,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000274",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6428237,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000275",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6428583,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000276",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6428926,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000277",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6429265,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000278",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6429598,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000279",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.642994,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000280",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6430275,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000281",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6430614,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000282",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6430953,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "836115f1e2c8ef1d67d88c6bd14c247cc72aef2d801b5880f4338ecc9787b90f"
+    },
+    {
+      "decision_id": "mock-000283",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6441576,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000284",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6448631,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000285",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6455295,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000286",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.646208,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000287",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6468685,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000288",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6475267,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000289",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6481965,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000290",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.648857,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000291",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6495123,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000292",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6501794,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000293",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.65084,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000294",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6514997,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000295",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6521702,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000296",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6528347,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000297",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.653493,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000298",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6541567,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000299",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.654814,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000300",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6554747,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "ea40849668e9affcd01c989907a11b08cb50d9e4b97664ac32048d79827df688"
+    },
+    {
+      "decision_id": "mock-000301",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6556592,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000302",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6556835,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000303",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.655707,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000304",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.655728,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000305",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6557505,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000306",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6557717,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000307",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6557937,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000308",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6558151,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000309",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6558387,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000310",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6558597,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000311",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6558807,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000312",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6559017,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000313",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6559236,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000314",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6559443,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000315",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6559653,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000316",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6559873,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000317",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6560078,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000318",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6560292,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "d85cd6256891d1ecdc82ce8db0bbc2205e38a8d7ba61310cbe7b52efaf1b38e3"
+    },
+    {
+      "decision_id": "mock-000319",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6561656,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000320",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6561897,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000321",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6562133,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000322",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6562371,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000323",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.656259,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000324",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6562812,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000325",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6563034,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000326",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6563246,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000327",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6563487,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000328",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.656373,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000329",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6563945,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000330",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6564171,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000331",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6564388,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000332",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6564608,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000333",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6564825,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000334",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6565044,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000335",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6565275,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000336",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6565497,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "2940780208a13982f0926cf49ec1825fa3c144f943951a4568916bd8a09ddab6"
+    },
+    {
+      "decision_id": "mock-000337",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6566732,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000338",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6566854,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000339",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6566966,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000340",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6567078,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000341",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6567192,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000342",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.656731,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000343",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6567442,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000344",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6567554,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000345",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6567662,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000346",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6567771,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000347",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.656788,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000348",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.656799,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000349",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6568115,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000350",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6568222,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000351",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.656833,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000352",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6568437,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000353",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6568549,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000354",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6568658,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "dcb8577d17c935b46a06b512e091f20441e0b1b2315c6bda1111d5ca9fea073b"
+    },
+    {
+      "decision_id": "mock-000355",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.6570015,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000356",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6570256,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000357",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6570482,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000358",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.657071,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000359",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.657094,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000360",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6571176,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000361",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.65714,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000362",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.657162,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000363",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6571844,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000364",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.657206,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000365",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6572282,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000366",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.657251,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000367",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.657273,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000368",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6572967,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000369",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.657326,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000370",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6573498,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000371",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6573725,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000372",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6573946,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f1c4d903ebf17301d80aab387453665ce526ed92ea4aff72e2fe57b11580c45c"
+    },
+    {
+      "decision_id": "mock-000373",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.657839,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000374",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6581488,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000375",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6584728,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000376",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.658799,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000377",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6591034,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000378",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6594145,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000379",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6597166,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000380",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6600182,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000381",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6603334,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000382",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.660636,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000383",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6609344,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000384",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6612349,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000385",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.661542,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000386",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6618385,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000387",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6621466,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000388",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6624482,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000389",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6627483,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000390",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6630452,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "7d02020eb0d4d9f4decb3156c1d65482c81d7a0fb3236fdd6df3ab89bdb7c204"
+    },
+    {
+      "decision_id": "mock-000391",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.663184,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000392",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.663194,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000393",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6632025,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000394",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.663211,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000395",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6632192,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000396",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6632273,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000397",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6632357,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000398",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.663243,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000399",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6632507,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000400",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6632588,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000401",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6632674,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000402",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6632752,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000403",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.663283,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000404",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6632912,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000405",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6632986,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000406",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6633084,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000407",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.663318,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000408",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6633327,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "db838d79830c4d8941b2e97f83f049daf101f341e2368fa8f464497b36a3d9b6"
+    },
+    {
+      "decision_id": "mock-000409",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.66345,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000410",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6634614,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000411",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.66347,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000412",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.663478,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000413",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6634862,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000414",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6634939,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000415",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.663502,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000416",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6635103,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000417",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.663518,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000418",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6635258,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000419",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6635342,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000420",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6635423,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000421",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6635504,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000422",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6635585,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000423",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6635664,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000424",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6635742,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000425",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6635818,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000426",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6635902,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "1cb0a77b2d560198bcb7b63e2789253743bcc78172c1471f8cabfc86a7169346"
+    },
+    {
+      "decision_id": "mock-000427",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.663706,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000428",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.6637154,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000429",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.6637232,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000430",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.663731,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000431",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.663739,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000432",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.663747,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000433",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.663755,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000434",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6637626,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000435",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6637704,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000436",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.663778,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000437",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6637857,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000438",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6637933,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000439",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6638014,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000440",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6638093,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000441",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.663817,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000442",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.6638248,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000443",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6638324,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000444",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6638403,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "f8575924e0856932e6c34f26a56ca43664dccf5f43b06b84790cb1fd180c09ec"
+    },
+    {
+      "decision_id": "mock-000445",
+      "mode": "gold-replay",
+      "qid": "abstraction-architect:abstraction-architect-agent",
+      "recorded_at": 1792581765.663959,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000446",
+      "mode": "gold-replay",
+      "qid": "platform-engineering:platform-reviewer",
+      "recorded_at": 1792581765.663969,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000447",
+      "mode": "gold-replay",
+      "qid": "react-development:react-performance-optimizer",
+      "recorded_at": 1792581765.663977,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000448",
+      "mode": "gold-replay",
+      "qid": "repo-hygiene:workspace-auditor",
+      "recorded_at": 1792581765.6639845,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000449",
+      "mode": "gold-replay",
+      "qid": "senior-review:api-contract-auditor",
+      "recorded_at": 1792581765.6639922,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000450",
+      "mode": "gold-replay",
+      "qid": "senior-review:chicken-egg-detector",
+      "recorded_at": 1792581765.6639996,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000451",
+      "mode": "gold-replay",
+      "qid": "senior-review:cleanup-auditor",
+      "recorded_at": 1792581765.6640072,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000452",
+      "mode": "gold-replay",
+      "qid": "senior-review:code-auditor",
+      "recorded_at": 1792581765.6640143,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000453",
+      "mode": "gold-replay",
+      "qid": "senior-review:data-integrity-auditor",
+      "recorded_at": 1792581765.6640215,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000454",
+      "mode": "gold-replay",
+      "qid": "senior-review:distributed-flow-auditor",
+      "recorded_at": 1792581765.6640291,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000455",
+      "mode": "gold-replay",
+      "qid": "senior-review:logic-integrity-auditor",
+      "recorded_at": 1792581765.6640368,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000456",
+      "mode": "gold-replay",
+      "qid": "senior-review:premise-auditor",
+      "recorded_at": 1792581765.6640446,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000457",
+      "mode": "gold-replay",
+      "qid": "senior-review:resource-lifecycle-auditor",
+      "recorded_at": 1792581765.6640522,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000458",
+      "mode": "gold-replay",
+      "qid": "senior-review:security-auditor",
+      "recorded_at": 1792581765.6640599,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000459",
+      "mode": "gold-replay",
+      "qid": "senior-review:temporal-resilience-auditor",
+      "recorded_at": 1792581765.6640675,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000460",
+      "mode": "gold-replay",
+      "qid": "senior-review:ui-race-auditor",
+      "recorded_at": 1792581765.664075,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000461",
+      "mode": "gold-replay",
+      "qid": "testing:test-suite-auditor",
+      "recorded_at": 1792581765.6640823,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    },
+    {
+      "decision_id": "mock-000462",
+      "mode": "gold-replay",
+      "qid": "typescript-development:type-safety-auditor",
+      "recorded_at": 1792581765.6640897,
+      "runtime_identity": "mock-gutsy/v1",
+      "state_digest": "4de6176147137dc9d786f96bacee846e4632e809b0bd40d4c5ebf045d54e72ff"
+    }
+  ],
+  "failures": []
+}

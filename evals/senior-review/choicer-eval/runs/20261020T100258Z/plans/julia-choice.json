@@ -1,0 +1,12 @@
+{
+  "status": "prepared; no model calls",
+  "impl": "julia",
+  "variant": "choice",
+  "calls": 129,
+  "cases": 11,
+  "questions": 129,
+  "input_characters": 1649565,
+  "provider_input_tokens": null,
+  "planning_estimate_tokens_chars_div_4": 412392,
+  "estimate_warning": "Planning heuristic only, not tokenizer counts or provider usage."
+}

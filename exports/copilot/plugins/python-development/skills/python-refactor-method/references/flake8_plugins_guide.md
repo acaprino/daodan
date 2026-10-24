@@ -141,7 +141,7 @@ pip install flake8-unused-arguments flake8-annotations pydoclint flake8-spellche
 
 ## Gotchas
 
-- **Cognitive complexity > Cyclomatic complexity** for readability. Cyclomatic counts branches; cognitive penalizes nesting (a triple-nested `if` is exponentially worse than three sequential ones). Use `flake8-cognitive-complexity` (or ruff's `C901`).
+- **Cognitive complexity > Cyclomatic complexity** for readability. Cyclomatic counts decision paths; cognitive adds nesting penalties. Use a cognitive-specific tool for that metric; [Ruff C901](https://docs.astral.sh/ruff/rules/complex-structure/) measures McCabe cyclomatic complexity.
 - **`flake8-docstrings` checks PEP 257 compliance** but not coverage -- pair with `interrogate` for "% functions with docstrings."
 - **`flake8-bugbear B006` is the highest-value single rule** -- mutable default arg is one of the top 3 Python footguns.
 - **`tryceratops TRY003` ("avoid specifying long messages outside exception class")** is opinionated -- toggle if your team prefers inline messages.
@@ -169,7 +169,7 @@ select = [
   "B",                   # flake8-bugbear
   "SIM",                 # flake8-simplify
   "C4",                  # flake8-comprehensions
-  "C901",                # cognitive complexity (mccabe-based)
+  "C901",                # cyclomatic complexity (McCabe)
   "N",                   # pep8-naming
   "D",                   # pydocstyle
   "TRY",                 # tryceratops

@@ -1,0 +1,30 @@
+{
+  "id": "individual-B021-grounded_choice",
+  "kind": "individual",
+  "case_id": "B021",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review this change to the empty-input behavior of the average helper.",
+    "artifacts": [
+      {
+        "path": "average.py",
+        "content": "def average(values):\n    if not values:\n        return None\n    return sum(values) / len(values)"
+      },
+      {
+        "path": "requirements.md",
+        "content": "Return None for an empty finite sequence. Otherwise return its arithmetic mean."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  },
+  "sha256": "129e3c7a0ffdcd8ed56c31f2dee6899e0995a2fe78af83f8142119fc892d2b61"
+}

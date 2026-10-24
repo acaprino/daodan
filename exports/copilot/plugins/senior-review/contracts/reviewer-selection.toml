@@ -8,3 +8,13 @@ items = "contract:reviewer-binding"
 
 [fields.knowledge_selection]
 type = "string"
+
+[fields.required_specialists]
+type = "array"
+items = "object"
+# Each obligation records specialist_id, scope_id and nonempty evidence.
+[fields.jobs]
+type = "array"
+items = "object"
+# Each job binds role, members, scope, input mode, candidate, body digest and
+# output path. Validate the complete plan before appending the immutable review.

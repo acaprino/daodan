@@ -1,0 +1,40 @@
+{
+  "id": "individual-A021-grounded_choice",
+  "request_sha256": "069c7cc9cdc985c1bf7527c621b195f08a1b89ee7693daecde49fdb24f00d0e4",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:logic-integrity-auditor": {
+        "type": "choice",
+        "probabilities": {
+          "false": 0.009448913954325568,
+          "true": 0.9905510860456744
+        },
+        "choice": "true",
+        "max_probability": 0.9905510860456744
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:logic-integrity-auditor": 0.9905510860456744
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:logic-integrity-auditor": {
+      "tokens": 257,
+      "optionTokens": [
+        26,
+        31
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:logic-integrity-auditor"
+  ],
+  "wall_seconds": 0.539263500017114
+}

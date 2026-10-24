@@ -1,0 +1,30 @@
+{
+  "id": "individual-C001-grounded_noul",
+  "kind": "individual",
+  "case_id": "C001",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review why the live quote panel redraws on every store update, including updates for unrelated tickers.",
+    "artifacts": [
+      {
+        "path": "src/QuotePanel.tsx",
+        "content": "import { useQuotes } from \"./quotes\";\nexport function QuotePanel({ symbol }: { symbol: string }) {\n  const { quotes, connection } = useQuotes(s => ({ quotes: s.quotes, connection: s.connection }));\n  return <output>{quotes[symbol]?.price} ({connection})</output>;\n}"
+      },
+      {
+        "path": "src/quotes.ts",
+        "content": "import { create } from \"zustand\";\nexport const useQuotes = create<{ quotes: Record<string, { price: number }>; connection: string }>(() => ({ quotes: {}, connection: \"live\" }));"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    }
+  },
+  "sha256": "8a2a820f9d74c93cf0ad728ccc2ece7270a796b57b6b35cadd5a286a6bf14c26"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-A001-catalog_noul",
+  "kind": "individual",
+  "case_id": "A001",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the new endpoint that runs a document conversion requested by a browser client.",
+    "artifacts": [
+      {
+        "path": "app/convert.py",
+        "content": "import subprocess\nfrom flask import request\n\n@app.post(\"/convert\")\ndef convert():\n    name = request.json[\"filename\"]\n    subprocess.run(\"docconvert \" + name, shell=True, check=True)\n    return {\"accepted\": True}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers."
+      }
+    }
+  },
+  "sha256": "7778e8bf43aff61247856989291a27839ba07336dfe9ef650af589647611b238"
+}

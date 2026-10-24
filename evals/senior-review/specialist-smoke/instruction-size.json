@@ -1,0 +1,200 @@
+{
+  "measure": "whitespace-separated source words; not model tokens or run cost",
+  "baseline": "849797acbf8aaae74f23b55ce30710dc599c89bb",
+  "files": 38,
+  "before": 50706,
+  "after": 34960,
+  "reduction_percent": 31.1,
+  "rows": [
+    {
+      "path": "plugins/platform-engineering/roles/platform-reviewer.md",
+      "before_words": 1025,
+      "after_words": 928
+    },
+    {
+      "path": "plugins/platform-engineering/skills/platform-engineering/SKILL.md",
+      "before_words": 566,
+      "after_words": 285
+    },
+    {
+      "path": "plugins/platform-engineering/skills/platform-engineering/references/audit.md",
+      "before_words": 696,
+      "after_words": 325
+    },
+    {
+      "path": "plugins/react-development/roles/react-performance-optimizer.md",
+      "before_words": 1121,
+      "after_words": 1102
+    },
+    {
+      "path": "plugins/senior-review/roles/accessibility-auditor.md",
+      "before_words": 0,
+      "after_words": 826
+    },
+    {
+      "path": "plugins/senior-review/roles/api-contract-auditor.md",
+      "before_words": 1892,
+      "after_words": 852
+    },
+    {
+      "path": "plugins/senior-review/roles/chicken-egg-detector.md",
+      "before_words": 2434,
+      "after_words": 568
+    },
+    {
+      "path": "plugins/senior-review/roles/cleanup-auditor.md",
+      "before_words": 2904,
+      "after_words": 2513
+    },
+    {
+      "path": "plugins/senior-review/roles/code-auditor.md",
+      "before_words": 2411,
+      "after_words": 529
+    },
+    {
+      "path": "plugins/senior-review/roles/data-integrity-auditor.md",
+      "before_words": 1852,
+      "after_words": 954
+    },
+    {
+      "path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+      "before_words": 2278,
+      "after_words": 914
+    },
+    {
+      "path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+      "before_words": 2720,
+      "after_words": 624
+    },
+    {
+      "path": "plugins/senior-review/roles/operability-auditor.md",
+      "before_words": 0,
+      "after_words": 881
+    },
+    {
+      "path": "plugins/senior-review/roles/performance-auditor.md",
+      "before_words": 0,
+      "after_words": 882
+    },
+    {
+      "path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+      "before_words": 1705,
+      "after_words": 881
+    },
+    {
+      "path": "plugins/senior-review/roles/security-auditor.md",
+      "before_words": 1573,
+      "after_words": 1038
+    },
+    {
+      "path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+      "before_words": 2124,
+      "after_words": 937
+    },
+    {
+      "path": "plugins/senior-review/roles/ui-race-auditor.md",
+      "before_words": 2260,
+      "after_words": 540
+    },
+    {
+      "path": "plugins/senior-review/skills/review-consolidation/references/code-review.md",
+      "before_words": 1060,
+      "after_words": 1162
+    },
+    {
+      "path": "plugins/senior-review/skills/review-consolidation/references/pr-review.md",
+      "before_words": 715,
+      "after_words": 724
+    },
+    {
+      "path": "plugins/senior-review/skills/review-consolidation/references/stack-findings.md",
+      "before_words": 400,
+      "after_words": 404
+    },
+    {
+      "path": "plugins/senior-review/skills/review-consolidation/references/team-review.md",
+      "before_words": 1240,
+      "after_words": 1311
+    },
+    {
+      "path": "plugins/senior-review/skills/review-method/SKILL.md",
+      "before_words": 652,
+      "after_words": 652
+    },
+    {
+      "path": "plugins/senior-review/skills/review-method/references/code-review-delivery.md",
+      "before_words": 462,
+      "after_words": 454
+    },
+    {
+      "path": "plugins/senior-review/skills/review-method/references/code-review.md",
+      "before_words": 767,
+      "after_words": 584
+    },
+    {
+      "path": "plugins/senior-review/skills/review-method/references/pr-review.md",
+      "before_words": 713,
+      "after_words": 295
+    },
+    {
+      "path": "plugins/senior-review/skills/review-method/references/team-review.md",
+      "before_words": 1510,
+      "after_words": 1745
+    },
+    {
+      "path": "plugins/senior-review/skills/review-preparation/SKILL.md",
+      "before_words": 546,
+      "after_words": 538
+    },
+    {
+      "path": "plugins/senior-review/skills/review-preparation/references/stack-dimensions.md",
+      "before_words": 644,
+      "after_words": 632
+    },
+    {
+      "path": "plugins/senior-review/skills/review-preparation/references/team-review.md",
+      "before_words": 3474,
+      "after_words": 2745
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/SKILL.md",
+      "before_words": 926,
+      "after_words": 743
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/references/code-review-agents.md",
+      "before_words": 4249,
+      "after_words": 987
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/references/code-review-output.md",
+      "before_words": 1062,
+      "after_words": 1118
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/references/context-sharing.md",
+      "before_words": 560,
+      "after_words": 486
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/references/panel-and-critic-prompts.md",
+      "before_words": 1184,
+      "after_words": 1214
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/references/reviewer-common.md",
+      "before_words": 0,
+      "after_words": 550
+    },
+    {
+      "path": "plugins/senior-review/skills/review-quality-gates/references/verification-panel.md",
+      "before_words": 640,
+      "after_words": 467
+    },
+    {
+      "path": "plugins/testing/roles/test-suite-auditor.md",
+      "before_words": 2341,
+      "after_words": 2570
+    }
+  ]
+}

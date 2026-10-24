@@ -1,0 +1,954 @@
+{
+  "schema": "choicer-eval/team-review-v1",
+  "result": "pass_with_four_optional_set_corrections",
+  "blindness": {
+    "predictions_read": false,
+    "prediction_calls": 0,
+    "prior_benchmark_results_read": false
+  },
+  "scope": "All 12 complete team problems and all 22 role charters, before inference.",
+  "method": "Select on responsibility and task scope, not whether a defect is present. Missing maps or preparation are not treated as irrelevance. Review required, optional and complement-derived forbidden sets separately.",
+  "teams_before_sha256": "b37991000781cb252aa86b5d04c35fe96bc048f4c64bbd07a5ce2346a29aaef8",
+  "teams_after_sha256": "d88cc541c9f4831ec745018d407a1dedafb969dc759819d508b4e0dc8f33d894",
+  "source_charters": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "path": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+      "sha256": "612a59a887bd514df8a40f0fd40122ef828b38f1767315b66d37cc64c000bc14"
+    },
+    "platform-engineering:platform-reviewer": {
+      "path": "plugins/platform-engineering/roles/platform-reviewer.md",
+      "sha256": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6"
+    },
+    "project-knowledge:doc-humanizer": {
+      "path": "plugins/project-knowledge/roles/doc-humanizer.md",
+      "sha256": "284de7b45fa66a618be8647811c73ed9ab8656803db909d08f432303f97c368f"
+    },
+    "project-knowledge:documentation-engineer": {
+      "path": "plugins/project-knowledge/roles/documentation-engineer.md",
+      "sha256": "28b8b178d2db039b7a96916dbd353e4353937b47f982c17be0e9d1cb0f37553f"
+    },
+    "project-knowledge:guide-reviewer": {
+      "path": "plugins/project-knowledge/roles/guide-reviewer.md",
+      "sha256": "c8ca15c28f3939cfd8b9a45f35430143cb403293fdcb18a97b828da81a642780"
+    },
+    "project-knowledge:instructions-auditor": {
+      "path": "plugins/project-knowledge/roles/instructions-auditor.md",
+      "sha256": "87569236a71d439c9f2deec278d6afd4ff004dcce9dd9211cd5846e1f0ddeec3"
+    },
+    "react-development:react-performance-optimizer": {
+      "path": "plugins/react-development/roles/react-performance-optimizer.md",
+      "sha256": "802cb1207d04f075ea75b49b03aba1d6f038b4358e16ee2c58797a44ec520a84"
+    },
+    "repo-hygiene:workspace-auditor": {
+      "path": "plugins/repo-hygiene/roles/workspace-auditor.md",
+      "sha256": "d68c5ad5e01d297a9a90e85f06fbbcd69c8550f68723b01f0510b64314f4e293"
+    },
+    "senior-review:api-contract-auditor": {
+      "path": "plugins/senior-review/roles/api-contract-auditor.md",
+      "sha256": "d9f8111a6682b67582f078868892684afa048dc36a02ed7f0320ee1de8426d17"
+    },
+    "senior-review:chicken-egg-detector": {
+      "path": "plugins/senior-review/roles/chicken-egg-detector.md",
+      "sha256": "0c517c9d552da2a661c1f8e0be70433e58bbcc0f90b6c846667d3f4653db6506"
+    },
+    "senior-review:cleanup-auditor": {
+      "path": "plugins/senior-review/roles/cleanup-auditor.md",
+      "sha256": "3f46c57b34faf982d4734b9de132ff4eb3d4e8e351730da7031828db1905cc97"
+    },
+    "senior-review:code-auditor": {
+      "path": "plugins/senior-review/roles/code-auditor.md",
+      "sha256": "d4072cd6dc267138154402334ee6fc50e3f39d92e8f0a4abf289b0f0e46e3944"
+    },
+    "senior-review:data-integrity-auditor": {
+      "path": "plugins/senior-review/roles/data-integrity-auditor.md",
+      "sha256": "3002f553c9bc1f4efacf14c0e91be3e53684659f3710fd50e9d4c602f942d192"
+    },
+    "senior-review:distributed-flow-auditor": {
+      "path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+      "sha256": "156b7ec5ebdba1c76fe1d9c15b4e1308af04a00c659282e87d85606db694aee8"
+    },
+    "senior-review:logic-integrity-auditor": {
+      "path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+      "sha256": "e417e5fa015e53042406346798db4f1fcfca09f05dbc239aaf3cbfb14a92daab"
+    },
+    "senior-review:premise-auditor": {
+      "path": "plugins/senior-review/roles/premise-auditor.md",
+      "sha256": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39"
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+      "sha256": "12c350b62d5eb0dfe4cec49a53cd981e12ff05ef735b205459a89c1c87f52383"
+    },
+    "senior-review:security-auditor": {
+      "path": "plugins/senior-review/roles/security-auditor.md",
+      "sha256": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9"
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+      "sha256": "7d2783596e7e043046978f6b26756133cd681b47f8c11c7f05a3e87cef858d2b"
+    },
+    "senior-review:ui-race-auditor": {
+      "path": "plugins/senior-review/roles/ui-race-auditor.md",
+      "sha256": "e2c13d0f21b3bbf76706f7ce7433bac2b760f2c9c3e70620beb75455e99548be"
+    },
+    "testing:test-suite-auditor": {
+      "path": "plugins/testing/roles/test-suite-auditor.md",
+      "sha256": "f3543674b00d0a17429c798a39dc4f7e1c33deffb26007a3ba7d2b838f098d33"
+    },
+    "typescript-development:type-safety-auditor": {
+      "path": "plugins/typescript-development/roles/type-safety-auditor.md",
+      "sha256": "b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39"
+    }
+  },
+  "applied_changes": [
+    {
+      "case_id": "T01",
+      "role_id": "senior-review:api-contract-auditor",
+      "from": "allowed",
+      "to": "forbidden",
+      "reason": "The task is implementation, permission and atomic-charge review with an explicitly unchanged interface. The supplied prose describes domain obligations, not a formal API or runtime-typed contract comparison.",
+      "source_evidence": [
+        "plugins/senior-review/roles/api-contract-auditor.md:3-6",
+        "plugins/senior-review/roles/api-contract-auditor.md:24-31",
+        "plugins/senior-review/roles/api-contract-auditor.md:48"
+      ],
+      "case_evidence": [
+        "T01.state.task",
+        "purchase-contract.txt:1",
+        "purchase.py:1-5"
+      ]
+    },
+    {
+      "case_id": "T03",
+      "role_id": "senior-review:data-integrity-auditor",
+      "from": "allowed",
+      "to": "forbidden",
+      "reason": "Storage is expressly outside this change. Message shape agreement is not persistence integrity and the role explicitly excludes cross-service message flows.",
+      "source_evidence": [
+        "plugins/senior-review/roles/data-integrity-auditor.md:3-6",
+        "plugins/senior-review/roles/data-integrity-auditor.md:134-140"
+      ],
+      "case_evidence": [
+        "T03.state.task",
+        "publisher.py:1-2",
+        "consumer.py:1-2"
+      ]
+    },
+    {
+      "case_id": "T06",
+      "role_id": "senior-review:data-integrity-auditor",
+      "from": "allowed",
+      "to": "forbidden",
+      "reason": "The task explicitly excludes database code and limits the directory to an in-memory abstraction owned elsewhere. Input validation belongs to the type, API and permission lenses already present.",
+      "source_evidence": [
+        "plugins/senior-review/roles/data-integrity-auditor.md:3-6",
+        "plugins/senior-review/roles/data-integrity-auditor.md:14-24"
+      ],
+      "case_evidence": [
+        "T06.state.task",
+        "authorization.txt:1",
+        "role-route.ts:1-4"
+      ]
+    },
+    {
+      "case_id": "T09",
+      "role_id": "senior-review:temporal-resilience-auditor",
+      "from": "allowed",
+      "to": "forbidden",
+      "reason": "The only clock use is a one-shot test sleep and exact elapsed-time assertion. No recurring subsystem, retry, scheduling or failure escalation is under review; this is test timing sensitivity.",
+      "source_evidence": [
+        "plugins/senior-review/roles/temporal-resilience-auditor.md:3-6",
+        "plugins/senior-review/roles/temporal-resilience-auditor.md:14-24",
+        "plugins/testing/roles/test-suite-auditor.md:73-77"
+      ],
+      "case_evidence": [
+        "T09.state.task",
+        "tests/test_clock.py:6-9"
+      ]
+    }
+  ],
+  "case_assessments": [
+    {
+      "case_id": "T01",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "Application access control, persistent write completeness, purchase invariants, the external payment interaction and general failure paths are each stated concerns.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "Independent derivation of the exactly-once and caller-ownership propositions is a useful supplementary check."
+        },
+        {
+          "role_id": "senior-review:temporal-resilience-auditor",
+          "basis": "Retained as optional for recovery consequences of a failed order insert; repeated recovery machinery is not shown, so this is deliberately not mandatory."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "No browser/platform, type-specific, startup, test-suite, cleanup or document audit is requested. Resource acquisition ownership is not supplied.",
+      "case_evidence": [
+        "purchase.py:2-4",
+        "purchase-contract.txt:1"
+      ]
+    },
+    {
+      "case_id": "T02",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "Reconnect cadence, socket/timer ownership, the stopped-state invariant and local implementation behavior are all explicit.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "The stop and ownership propositions permit independent derivation."
+        },
+        {
+          "role_id": "abstraction-architect:abstraction-architect-agent",
+          "basis": "Retained permissively for canonical state/ownership boundaries, though the supplied single class does not show competing representations."
+        }
+      ],
+      "forbidden_roles": [
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "No persistence, API schema, service protocol, security exposure, browser, test or documentation concern is supplied.",
+      "case_evidence": [
+        "worker.py:7-13",
+        "worker-contract.txt:1"
+      ]
+    },
+    {
+      "case_id": "T03",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "senior-review:api-contract-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "Formal schema comparison, interacting producer-consumer behavior, the positive-quantity invariant and implementation review are explicitly requested.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "The integration-map claim can be independently checked against both paths."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "Storage, authentication, deployment and browser work are expressly excluded; no resource, recurring-operation, cleanup or documentation responsibility is requested.",
+      "case_evidence": [
+        "order-event.schema.json:1",
+        "publisher.py:2",
+        "consumer.py:2",
+        "integration-map.txt:1"
+      ]
+    },
+    {
+      "case_id": "T04",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "senior-review:chicken-egg-detector",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "The dependency cycle makes startup analysis essential. Two service processes and their readiness contract support integration, readiness-invariant and implementation review independently of whether a defect is found.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:resource-lifecycle-auditor",
+          "basis": "Binding a listening port introduces a resource boundary; deeper ownership work is useful but not the primary task."
+        },
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "The readiness dependency claims can be independently derived."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "Steady-state retries, browser, documentation and build work are excluded. No formal API schema, persistence semantics or separate permission issue is supplied.",
+      "case_evidence": [
+        "registry.py:2-4",
+        "settings.py:2-4",
+        "startup-map.txt:1"
+      ]
+    },
+    {
+      "case_id": "T05",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "react-development:react-performance-optimizer",
+        "senior-review:ui-race-auditor",
+        "platform-engineering:platform-reviewer",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "The task expressly requests React rendering cost, asynchronous state handling, focus/layout behavior in an evidenced SPA, and code review.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:logic-integrity-auditor",
+          "basis": "Retained for caller-visible ordering and newest-result invariants; findings that are only scheduling races remain with the UI lens."
+        },
+        {
+          "role_id": "senior-review:resource-lifecycle-auditor",
+          "basis": "The asynchronous operation spans component lifetime, making cancellation ownership a useful supplementary lens."
+        },
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "The screen contract can be independently checked against callbacks and render flow."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "The task excludes backend models and permissions and supplies no API schema, startup dependency, tests, repository residue or document maintenance target.",
+      "case_evidence": [
+        "SearchPanel.jsx:5-12",
+        "screen-contract.txt:1"
+      ]
+    },
+    {
+      "case_id": "T06",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "typescript-development:type-safety-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:security-auditor",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "Type assertions at a runtime boundary, the declared schema, authorization and handler correctness are explicit and distinct review requests.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:logic-integrity-auditor",
+          "basis": "Retained for boundary preconditions and caller/callee contract consistency; pure authorization findings remain with security."
+        },
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "The input and authorization propositions can be independently checked."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "forbidden_basis": "Browser, persistence and background scheduling are explicitly absent; no cross-service protocol, resource ownership, startup, cleanup, test or documentation task is supplied.",
+      "case_evidence": [
+        "role-route.ts:1-4",
+        "role-input.schema.json:1",
+        "authorization.txt:1"
+      ]
+    },
+    {
+      "case_id": "T07",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "required_basis": "Two active policy implementations establish cross-file ownership review, a cross-component payable-amount invariant and local arithmetic correctness.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "The same-purchase/same-price claim can be derived independently."
+        },
+        {
+          "role_id": "senior-review:cleanup-auditor",
+          "basis": "Retained as a permissive check for parallel implementation residue; both current callers are active, so removal or deadness cannot be inferred."
+        }
+      ],
+      "forbidden_roles": [
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "No storage, network, browser or documentation change is in scope; no type/schema, startup, lifetime or recurring-operation concern is stated.",
+      "case_evidence": [
+        "cart.py:1-3",
+        "invoice.py:1-4",
+        "pricing-policy.txt:1"
+      ]
+    },
+    {
+      "case_id": "T08",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "repo-hygiene:workspace-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "required_basis": "Tracked generated/scratch material requires filesystem/Git hygiene; dependency and application-asset usage requires source-informed cleanup.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:code-auditor",
+          "basis": "General code/structure checking can support usage interpretation but is not mandatory."
+        },
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "Inventory completeness and no-consumer statements benefit from independent verification."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "The task is residue auditing, with no implementation change, security review, protocol, runtime, test-suite or durable instruction/guide audit.",
+      "case_evidence": [
+        "tracked-files.txt:1-5",
+        ".gitignore:1",
+        "package.json:1",
+        "usage-inventory.txt:1"
+      ]
+    },
+    {
+      "case_id": "T09",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "testing:test-suite-auditor"
+      ],
+      "required_basis": "The task directly requests suite isolation, timing sensitivity and redundant-protection review.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:code-auditor",
+          "basis": "Local test implementation and shared-state patterns are eligible for general code review."
+        },
+        {
+          "role_id": "senior-review:premise-auditor",
+          "basis": "Independent checking of asserted protection and redundancy is useful, without presuming identical assertion shapes prove duplication."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "Production code is excluded. No recurring subsystem, application resource, public API, platform, persistence, security, cleanup application residue or document audit is requested.",
+      "case_evidence": [
+        "tests/test_clock.py:2-13"
+      ]
+    },
+    {
+      "case_id": "T10",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "project-knowledge:documentation-engineer",
+        "senior-review:premise-auditor"
+      ],
+      "required_basis": "Implementation drift and independent checking of factual command claims are expressly requested.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "project-knowledge:guide-reviewer",
+          "basis": "Factual accuracy and truthful reader instructions are an acceptable overlapping guide lens."
+        },
+        {
+          "role_id": "senior-review:cleanup-auditor",
+          "basis": "Stale documentation is within application-hygiene reporting scope, without authorizing deletion."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "Document restructuring is expressly excluded. Implementation is evidence only, not a code, security, platform, runtime, test or repository hygiene target.",
+      "case_evidence": [
+        "docs/commands.md:2",
+        "cli.py:2-4"
+      ]
+    },
+    {
+      "case_id": "T11",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "project-knowledge:instructions-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "required_basis": "Durable instruction accuracy, conflicting scopes and transient material require the instruction-specific audit; independent source checking is also expressly requested.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "project-knowledge:documentation-engineer",
+          "basis": "Instruction tooling/configuration statements can receive the broader documentation-drift lens."
+        },
+        {
+          "role_id": "project-knowledge:guide-reviewer",
+          "basis": "Retained permissively for terminology and reader-facing instruction accuracy; the instruction auditor remains the primary owner."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:doc-humanizer",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "There is no request to restructure documents, audit application code/runtime, assess tests or tidy filesystem artifacts.",
+      "case_evidence": [
+        "AGENTS.md:2-4",
+        "subproject/AGENTS.md:2",
+        "package.json:1",
+        "generator-policy.txt:1"
+      ]
+    },
+    {
+      "case_id": "T12",
+      "decision": "retain_required_and_correct_only_clear_optional_overreach",
+      "required_roles": [
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "senior-review:premise-auditor"
+      ],
+      "required_basis": "A newly authored guide is explicitly being assessed for facts, terminology, navigation, operator suitability and proposed structure, with independent code-claim checking.",
+      "acceptable_optional_roles": [
+        {
+          "role_id": "senior-review:cleanup-auditor",
+          "basis": "The stale authentication reference and obsolete factual material can receive report-only hygiene review."
+        }
+      ],
+      "forbidden_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "platform-engineering:platform-reviewer",
+        "project-knowledge:instructions-auditor",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "forbidden_basis": "Implementation is supplied only as evidence. No runtime code, test-suite, security, platform, persistence or filesystem audit is requested.",
+      "case_evidence": [
+        "docs/setup-guide.md:1-13",
+        "worker.py:1-5",
+        "project-facts.txt:1"
+      ]
+    }
+  ],
+  "unresolved_judgments": [
+    {
+      "case_id": "T01",
+      "role_id": "senior-review:temporal-resilience-auditor",
+      "decision": "retain_optional",
+      "judgment": "Recovery over time is plausible, but the snippet contains no repeated recovery machinery. Keep optional rather than requiring this role; a stricter dataset could remove it or supply retry/reconciliation evidence."
+    },
+    {
+      "case_id": "T02",
+      "role_id": "abstraction-architect:abstraction-architect-agent",
+      "decision": "retain_optional",
+      "judgment": "Resource ownership is not automatically duplicated domain ownership. The permissive optional assignment is defensible only as a structural ownership check, not because a socket has an owner. Consider removing it for a strictly evidence-minimal roster."
+    },
+    {
+      "case_id": "T04",
+      "role_id": "senior-review:logic-integrity-auditor",
+      "decision": "retain_required",
+      "judgment": "The role explicitly defers initialization cycles to the startup reviewer. Retention rests on the separate readiness postcondition, not the cycle itself. Do not count duplicate cycle findings as evidence that both were required. A stricter disjoint roster could make this optional."
+    },
+    {
+      "case_id": "T05",
+      "role_id": "senior-review:logic-integrity-auditor",
+      "decision": "retain_optional",
+      "judgment": "The screen contract admits an ordering interpretation, but purely timing-dependent findings are explicitly owned by the UI reviewer."
+    },
+    {
+      "case_id": "T06",
+      "role_id": "senior-review:logic-integrity-auditor",
+      "decision": "retain_optional",
+      "judgment": "Boundary preconditions provide a possible contract lens; pure authorization findings are explicitly delegated to security."
+    },
+    {
+      "case_id": "T07",
+      "role_id": "senior-review:cleanup-auditor",
+      "decision": "retain_optional",
+      "judgment": "The charter includes parallel implementation residue, but the case establishes active callers rather than dead code or a completed migration. Preserve optional; do not promote to required without lifecycle evidence."
+    },
+    {
+      "case_id": "T11",
+      "role_id": "project-knowledge:guide-reviewer",
+      "decision": "retain_optional",
+      "judgment": "Its normal target is an authored guide. Durable instructions overlap as reader-facing documents, but this overlap is permissive; instructions-auditor is the necessary owner."
+    }
+  ],
+  "required_coverage": [
+    {
+      "role_id": "abstraction-architect:abstraction-architect-agent",
+      "required_cases": [
+        "T07"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "platform-engineering:platform-reviewer",
+      "required_cases": [
+        "T05"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "project-knowledge:doc-humanizer",
+      "required_cases": [
+        "T12"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "project-knowledge:documentation-engineer",
+      "required_cases": [
+        "T10",
+        "T12"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "project-knowledge:guide-reviewer",
+      "required_cases": [
+        "T12"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "project-knowledge:instructions-auditor",
+      "required_cases": [
+        "T11"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "react-development:react-performance-optimizer",
+      "required_cases": [
+        "T05"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "repo-hygiene:workspace-auditor",
+      "required_cases": [
+        "T08"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:api-contract-auditor",
+      "required_cases": [
+        "T03",
+        "T06"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:chicken-egg-detector",
+      "required_cases": [
+        "T04"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:cleanup-auditor",
+      "required_cases": [
+        "T08"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:code-auditor",
+      "required_cases": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:data-integrity-auditor",
+      "required_cases": [
+        "T01"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:distributed-flow-auditor",
+      "required_cases": [
+        "T01",
+        "T03",
+        "T04"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:logic-integrity-auditor",
+      "required_cases": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T07"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:premise-auditor",
+      "required_cases": [
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:resource-lifecycle-auditor",
+      "required_cases": [
+        "T02"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:security-auditor",
+      "required_cases": [
+        "T01",
+        "T06"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:temporal-resilience-auditor",
+      "required_cases": [
+        "T02"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "senior-review:ui-race-auditor",
+      "required_cases": [
+        "T05"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "testing:test-suite-auditor",
+      "required_cases": [
+        "T09"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    },
+    {
+      "role_id": "typescript-development:type-safety-auditor",
+      "required_cases": [
+        "T06"
+      ],
+      "meaningful_coverage": true,
+      "basis": "The retained required-role rationale identifies this charter responsibility in the stated task and supplied artifacts."
+    }
+  ],
+  "checks": {
+    "case_count": 12,
+    "role_count": 22,
+    "all_roles_required_at_least_once": true,
+    "required_sets_preserved": true,
+    "state_inputs_preserved": true,
+    "optional_set_corrections": 4,
+    "full_partition_per_case": true
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "sampled_at": "2026-10-20T10:27:27.429016+00:00",
+  "source": "julia-state-capacity.json and existing saved noul result IDs",
+  "completed_hunks": 17,
+  "remaining_hunks": 112,
+  "remaining_state_token_bins": {
+    "below_2000": 87,
+    "from_2000_to_3999": 13,
+    "from_4000_to_8191": 8,
+    "at_least_8192": 4
+  },
+  "remaining_by_case": {
+    "C02": 46,
+    "C03": 5,
+    "C04": 7,
+    "C05": 2,
+    "C06": 9,
+    "C07": 39,
+    "C08": 1,
+    "C09": 1,
+    "C10": 1,
+    "C11": 1
+  },
+  "remaining_long_states": [
+    {
+      "case_id": "C02",
+      "hunk_id": "H10",
+      "state_tokens": 7702,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H11",
+      "state_tokens": 4377,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H31",
+      "state_tokens": 4415,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H32",
+      "state_tokens": 21251,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H33",
+      "state_tokens": 41219,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H4",
+      "state_tokens": 7404,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C02",
+      "hunk_id": "H40",
+      "state_tokens": 4515,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H19",
+      "state_tokens": 6533,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H20",
+      "state_tokens": 6187,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H22",
+      "state_tokens": 22647,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H28",
+      "state_tokens": 10309,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": true
+    },
+    {
+      "case_id": "C07",
+      "hunk_id": "H32",
+      "state_tokens": 4815,
+      "sequence_limit": 8192,
+      "state_alone_exceeds_sequence_limit": false
+    }
+  ],
+  "note": "State-token distribution only. Not a runtime prediction. Active unfinished hunk is included in remaining."
+}

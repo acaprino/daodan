@@ -87,12 +87,12 @@ Write `.team-review/99-consolidated.md`. Mark `phase_3_consolidation` complete.
 
 ## Phase 4b: Adversarial Verification
 
-Skip this phase if `--fast` was passed (mark `phase_4b_verification` as `skipped`). Otherwise drive the panel exactly per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md` (resolve it inside that skill's installed directory), section `## Adversarial Verification Panel`.
+Run the panel to at least the bound roster and run's required verification level. `--fast` and cost guard can reduce only optional work; missing required checks leave the review incomplete. Drive the panel per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md` (resolve it inside that skill's installed directory), section `## Adversarial Verification Panel`.
 
 1. Apply the confidence floor: select consolidated findings with confidence `>= 50%`. team-review reviewers emit confidence in their findings; if a finding lacks a score, treat it as 60% (in-band) so it is not silently skipped.
 2. Apply the selection rule from the skill:
    - If `--rigorous`, or 25 or fewer findings survive: verify all selected findings.
-   - Otherwise (more than 25 findings, no `--rigorous`): narrow to stakes + uncertainty band per the skill, and record the count of findings left `unverified (cost-guard)`.
+   - Otherwise (more than 25 findings, no `--rigorous`): preserve every required verification and narrow only additional optional findings to the skill's stakes + uncertainty band. Record those omitted as `unverified (cost-guard)`.
 3. **Lens 0 first.** For each finding to verify whose `premise_provenance` is `shared-context` or `mixed`, **or whose declared premise carries a universal or negative quantifier (`no`, `never`, `cannot`, `always`, `only`) at any provenance**, spawn lens 0 (`senior-review:premise-auditor`, mode 2, inheriting the session model) using the Lens 0 prompt from the skill, with the Codebase Map line resolved to `$XRAY_RUN_DIR`. Apply the skill's Lens 0 resolution table: a `REFUTED` verdict targeting `PREMISE` discards the finding (`filtered: premise-refuted`) without spawning lenses 1-2; targeting `SUPPORT` on `mixed` provenance strikes the shared leg and restates the finding from the surviving independent evidence before it proceeds; targeting `SUPPORT` on `shared-context` provenance discards it the same way. `UNCERTAIN` and `HOLDS` proceed to lenses 1-2, `UNCERTAIN` tagged `premise-contested`. Findings declared `independent` whose premise carries no such quantifier skip lens 0 entirely and proceed directly to lenses 1-2.
 4. For each finding that reaches this step, dispatch lenses 1 and 2 independently through the declared `project-protocol:isolated-worker` binding using the skill's complete briefs, owned scope, authorization, budget and expected report paths, then dispatch lens 3 through that same binding only for findings that survive them. All lenses inherit the session model and use the host harness's supported topology, per the skill's gated-lens rule. Substitute the finding, diff, and full file content into each prompt.
 5. Apply the survival rule from the skill: survive if `>= 2` of lenses 1-2 vote REAL; discard (`filtered`) if `>= 2` vote FALSE_POSITIVE; tie or fewer-than-2-verdicts means survive and mark `contested`. Final severity is the lens-3 vote when confirmed real, else the original.
@@ -102,12 +102,12 @@ Skip this phase if `--fast` was passed (mark `phase_4b_verification` as `skipped
 
 ## Phase 4c: Completeness Critic
 
-Skip this phase if `--fast` was passed (mark `phase_4c_critic` as `skipped`). Otherwise drive the critic exactly per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md`, section `## Completeness Critic`.
+Run the critic whenever the bound roster or run requires it. Mark this phase skipped only when it is optional and omitted by the prepared plan or `--fast`. An unavailable required critic remains incomplete. Drive the critic per the `senior-review:review-quality-gates` skill, file `references/verification-panel.md`, section `## Completeness Critic`.
 
-1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings (post-4b), `.team-review/00-scope.md`, the dimensions that ran, and the context paths (`$XRAY_RUN_DIR` and `.team-review/02-interconnect.md`, or "none" under `--no-context`).
-2. Write the critic output to `.team-review/97-coverage-gaps.md`.
-3. If the critic names a single high-risk uncovered area under `## Recommended follow-up` AND neither the cost guard nor `--fast` applies: spawn ONE targeted reviewer (the most specialized agent for that area, per the Phase 2 dimension-to-agent table) for one round, scoped to the files the critic named. Route its findings back through Phase 4 (dedup) and Phase 4b (verification). Do this at most once.
-4. If the cost guard applies, degrade to report-only: keep `97-coverage-gaps.md`, spawn no follow-up, and note the skip.
+1. Dispatch one `project-protocol:isolated-worker` critic through the host harness with the skill's critic prompt, owned scope, authorization, budget and expected report path. Record its delivered or failed outcome before closing the critic phase. Pass the verified findings (post-4b), `.team-review/00-scope.md`, the dimensions that ran, and only the actual bound context paths admitted to that task. Record missing context and prior worker exposure; `--no-context` does not relabel findings as independent.
+2. Supply reviewer report paths with completed checks, no-findings results and gaps. Write the critic output to `.team-review/97-coverage-gaps.md`.
+3. If the critic names a single high-risk uncovered area under `## Recommended follow-up`, dispatch at most one targeted round through a permitted roster role, scoped to the named files. Route its findings through Phase 4 (dedup) and required Phase 4b verification. A needed role outside the roster is a selection gap, not an implicit dispatch authorization.
+4. Cost guard or `--fast` may omit optional follow-up: preserve `97-coverage-gaps.md` and note that omission. Report-only handling does not satisfy an unmet required check or delivery; keep that coverage incomplete.
 5. Mark `phase_4c_critic` complete.
 
 ## Phase 5: Report and Cleanup

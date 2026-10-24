@@ -1,0 +1,34 @@
+{
+  "id": "individual-B009-catalog_noul",
+  "kind": "individual",
+  "case_id": "B009",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review deployment of the tenant migration on an empty installation.",
+    "artifacts": [
+      {
+        "path": "migrations/002_tenants.py",
+        "content": "def upgrade(db, directory):\n    admin = directory.get_initial_admin()\n    db.execute(\"INSERT INTO tenants(owner_id) VALUES (?)\", [admin.id])"
+      },
+      {
+        "path": "directory/start.py",
+        "content": "def start(db, server):\n    tenant = db.one(\"SELECT owner_id FROM tenants LIMIT 1\")\n    server.serve(initial_admin=tenant.owner_id)"
+      },
+      {
+        "path": "deploy.md",
+        "content": "A fresh installation starts with an empty tenants table. The directory API exposes get_initial_admin only after directory/start.py finishes; migration 002 runs before the application accepts traffic."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
+      }
+    }
+  },
+  "sha256": "739ede0a3807387d9771f72735f4cfee4b449576a10ad8cec73def99c590e130"
+}

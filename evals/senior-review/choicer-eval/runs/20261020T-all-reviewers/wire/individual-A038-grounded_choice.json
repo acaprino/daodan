@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the agreement between this service's local cache and its database after renaming a label. Other services are outside scope.",
+    "artifacts": [
+      {
+        "path": "app/labels.py",
+        "content": "cache = {}\n\ndef lookup(db, key):\n    if key not in cache:\n        cache[key] = db.scalar(\"SELECT text FROM labels WHERE id = %s\", (key,))\n    return cache[key]\n\ndef rename(db, key, text):\n    db.execute(\"UPDATE labels SET text = %s WHERE id = %s\", (text, key))\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    }
+  }
+}

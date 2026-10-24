@@ -245,6 +245,12 @@ Before Coding, Simplicity First, Surgical Changes and Goal-Driven Execution.
 instruction creation and maintenance, preserving equivalent project guidance and
 adding local rules for verification and shared ownership.
 
+[blader/humanizer](https://github.com/blader/humanizer), by Siqi Chen (MIT), is an
+upstream source for [text-humanizer](docs/plugins/text-humanizer.md). Daodan's
+existing derivative keeps local pattern numbering, fact-preservation safeguards,
+registers, an Italian language profile and its own file-editing contract. Upstream
+changes are reconciled selectively rather than replacing those local rules.
+
 ## Contributing
 
 > [!WARNING]

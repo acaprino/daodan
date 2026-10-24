@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Review how the ordinary editor and bulk editor change an article after publication.",
+    "artifacts": [
+      {
+        "path": ".team-review/02-interconnect.md",
+        "content": "## Domain Rules\nPublished articles retain their original title. Both editors mutate Article.title.\n"
+      },
+      {
+        "path": "src/editor.py",
+        "content": "def rename(article, title):\n    if article.status == \"published\":\n        raise ValueError(\"title is final\")\n    article.title = title\n"
+      },
+      {
+        "path": "src/bulk.py",
+        "content": "def replace_titles(articles, title):\n    for article in articles:\n        article.title = title\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit."
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-A028-grounded_noul",
+  "kind": "individual",
+  "case_id": "A028",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review whether this pure function computes the intended retry delays: 1, 2, 4, then at most 8 seconds. Timer creation and execution are outside the change.",
+    "artifacts": [
+      {
+        "path": "src/delay.py",
+        "content": "def delay_seconds(attempt):\n    if attempt < 0:\n        raise ValueError(\"negative attempt\")\n    return min(8, 2 ** attempt)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  },
+  "sha256": "d100917a0cc915b0b1cdae1897b48ceb0d4ec6056ce9e417d23568c6842a6638"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "individual-B036-catalog_noul",
+  "request_sha256": "bd05e5c07bc40b763a0e174014ffb003e1860a08316da90633870d4b24afe398",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "abstraction-architect:abstraction-architect-agent": "ValueError: Option exceeds 48-token model contract"
+  },
+  "wall_seconds": 0.0003350000479258597
+}

@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Compare the documented response with the handler output for the session endpoint.",
+    "artifacts": [
+      {
+        "path": "session.schema.json",
+        "content": "{\"type\":\"object\",\"required\":[\"expires_at\"],\"properties\":{\"expires_at\":{\"type\":\"string\",\"format\":\"date-time\"}}}"
+      },
+      {
+        "path": "session.py",
+        "content": "def get_session(session):\n    return {\"expires_at\": int(session.expires_at.timestamp())}"
+      },
+      {
+        "path": "api.md",
+        "content": "GET /session returns session.schema.json. The task is to verify the wire representation."
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    }
+  }
+}

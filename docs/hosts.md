@@ -245,7 +245,11 @@ The Copilot, Codex and Pi bindings remain registration instructions, not a claim
 that an installed plugin automatically starts its server. The OpenCode binding
 is adapted because registration comes from the loader.
 
-Building Daodan needs Python 3.11 or later and uses the standard library. Node is
+Building Daodan needs Python 3.11 or later and uses the standard library. The
+Codebase Map helper suite declares a harder floor of 3.12, because the Python
+grammar it parses with is the running interpreter's: its entry scripts carry a
+`requires-python` header for `uv run --script` and refuse to start below it, and
+CI runs 3.12 so the suite is exercised on a compliant interpreter. Node is
 needed to exercise the OpenCode loader tests. Runtime helpers use their documented
 executables; optional tree-sitter parsers improve Codebase Map parsing, while its tested
 fallback remains available. No Node build is required for the generated packages.

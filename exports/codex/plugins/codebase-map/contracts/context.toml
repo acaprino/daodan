@@ -47,7 +47,12 @@ publication = "Exclusive content-addressed packet and checkpoint JSON under the 
 
 [[records]]
 record_schema = "daodan/map-slice/v1"
-required = ["schema", "snapshot", "components", "edges", "gaps"]
+required = ["schema", "implementation", "input_digest", "status", "snapshot", "components", "edges", "gaps"]
+statuses = ["ok", "abstain", "unavailable"]
 snapshot_required = ["run_id", "digest", "freshness"]
 edge_required = ["from", "to", "kind", "evidence"]
 compatibility = "I1 projection; gaps and snapshot freshness remain explicit."
+request_binding = "SHA-256 of JSON with sorted keys, compact separators, ASCII escapes and no non-finite values; no trailing newline."
+projection = "Public context CLI/MCP returns map_slice_path and map_slice_sha256. File components have disjoint paths. At most 200 localized entities and 1000 confirmed calls; omissions, unsupported edge kinds and unresolved frontier remain gaps. No task precedence is inferred."
+freshness = "Source and all derivative bindings are reverified for the exact read boundary. Snapshot identity includes manifest path, artifact digest and logical digest. Consumers reverify before dependent dispatch."
+authority = "edit_candidates are proposals, disjoint from outside_boundary. Validation obligations remain open; task_complete, validation_complete and write_authorized stay false."

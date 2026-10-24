@@ -203,7 +203,7 @@ def validate_components(plugin: PluginSpec) -> list[ValidationIssue]:
     manifest = plugin.root / "plugin.toml"
     resources = [
         *(plugin.root / "roles" / f"{name}.md" for name in plugin.components.roles
-          if not _is_escaping(name)),
+          if not _is_escaping(name) and name not in dict(plugin.reviewer_compositions)),
         *(plugin.root / "policies" / f"{name}.toml" for name in plugin.components.policies
           if not _is_escaping(name)),
         *(plugin.root / "skills" / name / "SKILL.md" for name in plugin.components.skills
@@ -234,7 +234,7 @@ def validate_components(plugin: PluginSpec) -> list[ValidationIssue]:
     for name in plugin.components.roles:
         if _is_escaping(name):
             continue
-        if not (plugin.root / "roles" / f"{name}.md").is_file():
+        if name not in dict(plugin.reviewer_compositions) and not (plugin.root / "roles" / f"{name}.md").is_file():
             issues.append(
                 ValidationIssue("missing-component-file", manifest, f"roles/{name}.md")
             )
@@ -585,6 +585,12 @@ def validate_plugins(
         from .skill_catalog import validate_skill_metadata
         issues.extend(validate_skill_metadata(plugin))
         issues.extend(validate_dependencies(plugin, registry))
+        from .role_bodies import RoleBodyError, resolve_role
+        for role, _ in plugin.reviewer_compositions:
+            try:
+                resolve_role(registry, plugin.name, role)
+            except (RoleBodyError, SourcePathError, OSError, ValueError) as error:
+                issues.append(ValidationIssue("invalid-reviewer-composition", plugin.root / "plugin.toml", str(error)))
         issues.extend(validate_contract_exports(plugin, registry))
         issues.extend(validate_capabilities(plugin, capabilities))
         issues.extend(validate_mcp_servers(plugin))

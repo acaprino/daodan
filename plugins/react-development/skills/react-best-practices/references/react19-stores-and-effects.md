@@ -17,8 +17,8 @@ export default defineConfig({
 });
 ```
 
-- Automatically handles `useMemo`, `useCallback`, and `React.memo` inside React's render cycle (capturing ~30-40% of optimization opportunities).
-- **Cannot fix external store re-renders:** Zustand, Jotai, Redux, and `useSyncExternalStore` hooks evaluate `Object.is(oldSelector, newSelector)` *before* React Compiler runs. If a selector returns a new object or array reference, the store triggers a re-render regardless of React Compiler.
+- [React Compiler](https://react.dev/learn/react-compiler/introduction) memoizes suitable component work. Its presence does not establish a measured improvement or justify extra manual memoization.
+- [useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore) compares snapshots with Object.is; unchanged stores must return stable snapshots. Inspect the actual store version and selector/equality implementation before attributing rerenders.
 
 ## 2. External Store Selector Fixes (Zustand / Redux / Jotai)
 
@@ -88,7 +88,7 @@ const PriceLevel = ({ price }: { price: number }) => {
 };
 ```
 
-*(Note: Recoil was archived in Jan 2025; use Zustand for global state and Jotai for granular atom state.)*
+Reuse the installed store when it meets the contract. Verify maintenance and integration cost before recommending another package.
 
 ## 3. React 19 Concurrency and Resource APIs
 
@@ -129,12 +129,16 @@ useEffect(() => {
   return () => window.removeEventListener('focus', handler);
 }, []);
 
-// FIX 2: experimental_useEffectEvent (React 19.x experimental)
-import { experimental_useEffectEvent as useEffectEvent } from 'react';
+// FIX 2: useEffectEvent, only on a version that supports it
+import { useEffectEvent } from 'react';
 const onFocus = useEffectEvent(() => console.log(count));
 ```
 
+Effect Events read latest committed values but do not have stable identity; keep reactive dependencies. Ref or resubscription alternatives remain valid.
+
 ## 6. `useEffect` Cleanup Template
+
+The bridge example assumes the declared native API accepts and propagates cancellation. Check that contract; a signal field alone does not cancel native work.
 
 ```javascript
 useEffect(() => {
@@ -156,7 +160,5 @@ useEffect(() => {
 - **Route splitting + hover preload**: `const Settings = lazy(() => import('./pages/Settings'));` paired with `onMouseEnter={() => import('./pages/Settings')}`.
 - **Tree shaking**: Import named icons (`import { Settings } from 'lucide-react'`) and `lodash-es` functions rather than barrel/namespace imports.
 - **Vite manualChunks**: Split `vendor-react`, `vendor-charts`, and `vendor-state` in `build.rollupOptions.output.manualChunks`.
-- **TanStack Virtual**: Always provide a stable `getItemKey: (index) => items[index].id` (never array index) with `overscan: 10`.
-- **TanStack Query v5 (`gcTime` replaces `cacheTime`)**:
-  - CRUD Web Apps: `staleTime: 5 * 60 * 1000`, `gcTime: 30 * 60 * 1000`, `refetchOnWindowFocus: true`.
-  - Real-Time/Trading Apps: `staleTime: 0`, `gcTime: 5 * 60 * 1000`, `refetchOnWindowFocus: false`, `refetchOnReconnect: true`.
+- **TanStack Virtual**: Preserve item identity when insertion, reordering or state requires it. Select overscan from measured scrolling behavior; an immutable list can use index identity.
+- **TanStack Query v5**: [gcTime replaces cacheTime](https://tanstack.com/query/latest/docs/framework/react/guides/migrating-to-v5) for inactive cache retention. [Freshness and refetch settings](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults) follow required staleness, reconnect and source-update semantics. Neither real-time nor CRUD implies one universal configuration.

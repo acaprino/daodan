@@ -1,0 +1,26 @@
+{
+  "id": "individual-A007-catalog_noul",
+  "kind": "individual",
+  "case_id": "A007",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Find implementation defects in this arithmetic helper and propose a correction for negative operands.",
+    "artifacts": [
+      {
+        "path": "src/quotient.py",
+        "content": "def quotient(a, b):\n    if b == 0:\n        raise ValueError(\"zero divisor\")\n    return int(a / b)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
+      }
+    }
+  },
+  "sha256": "da5fb10635b167db8f56219efdb1304fc64379b83648cde98ec31673e6ae7098"
+}

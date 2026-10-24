@@ -1,0 +1,26 @@
+{
+  "id": "individual-C036-catalog_noul",
+  "kind": "individual",
+  "case_id": "C036",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Author a quick-start page for customers using the supplied steps. It should teach the product workflow, not define rules for coding agents.",
+    "artifacts": [
+      {
+        "path": "notes/customer-flow.txt",
+        "content": "1. Select a contact file.\n2. Preview duplicate emails.\n3. Confirm the merged address book.\n4. Download the result."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md."
+      }
+    }
+  },
+  "sha256": "761b502ed8823a98efd74350b532493574a19db2a3e26a4ac7a6ae39d7d0df76"
+}

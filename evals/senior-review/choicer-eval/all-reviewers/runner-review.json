@@ -1,0 +1,112 @@
+{
+  "result": "pass_after_fixes",
+  "scope": [
+    "inference payload integrity",
+    "false/true mapping",
+    "scoring counts",
+    "missing output handling",
+    "label leakage",
+    "cached model binding",
+    "input limits",
+    "frozen inputs and resume"
+  ],
+  "prediction_calls_made": 0,
+  "files_reviewed": [
+    {
+      "path": "evals/senior-review/choicer-eval/all_reviewers_eval.py",
+      "sha256": "00aad7cb0140fc1abe8bd1b86511f8561b86712c278e5f4455ab59c3d5eee4f0"
+    },
+    {
+      "path": "evals/senior-review/choicer-eval/test_all_reviewers.py",
+      "sha256": "54e33080488afc2d8513e00af4036223a0b561148c93820692ab1cdd1a383002"
+    },
+    {
+      "path": "evals/senior-review/choicer-eval/run_eval.py",
+      "sha256": "d8b18e7e7d7b68cb6cc39b33c7359661e962c61d3502fee5094a3be033b87573"
+    },
+    {
+      "path": "evals/senior-review/choicer-eval/dataset.py",
+      "sha256": "d6fbd713ac791b52e0fa29f879ad0709c15bc94f6945534dd67ca2af0de06725"
+    }
+  ],
+  "cached_upstream_reviewed": [
+    {
+      "path": "julia/typed.py",
+      "sha256": "ed89e66a70fcedac1339347bd8fcca69fd2cd1a31535ad0148dae42c610b544d"
+    },
+    {
+      "path": "julia/data.py",
+      "sha256": "e3510fa4152ec11fa193046715991f44d7c2f85fd2488a98ef11c9d3db23da4e"
+    },
+    {
+      "path": "julia/router/engine.py",
+      "sha256": "91bb30987ff8626ed1610955c6fd796939a5d271e2405b73f8674ccb947eb931"
+    }
+  ],
+  "findings": [
+    {
+      "id": "R001",
+      "severity": "high",
+      "problem": "Scorer-only labels could change without changing request hashes, because run/report did not enforce a digest binding for suite.json. Execution source and authored input hashes were recorded but not checked.",
+      "resolution": "The preparation plan now freezes suite, catalog, inventory, runtime source hashes and source input hashes. Preparation, execution, resume and reporting verify those bindings.",
+      "status": "fixed",
+      "tests": [
+        "test_changing_scorer_only_label_is_detected",
+        "test_source_and_runtime_drift_are_detected"
+      ]
+    },
+    {
+      "id": "R002",
+      "severity": "medium",
+      "problem": "A returned answer type different from the request could be accepted and silently interpreted as an inactive role. Categorical answers and optional noul scalar could disagree with the probabilities.",
+      "resolution": "decode_answers validates exact question coverage, requested type, finite numeric normalized probabilities, false-first categorical argmax including ties, and any returned noul scalar.",
+      "status": "fixed",
+      "tests": [
+        "test_type_mismatch_cannot_silently_become_a_negative",
+        "test_choice_must_match_argmax_and_false_first_order",
+        "test_noul_scalar_must_agree_when_present",
+        "test_nonfinite_boolean_and_unnormalized_probabilities_are_rejected"
+      ]
+    },
+    {
+      "id": "R003",
+      "severity": "medium",
+      "problem": "Resume and report trusted saved selected/probability fields after checking only the request hash, and did not require a corresponding pinned model session.",
+      "resolution": "Saved records are re-derived from complete raw output and require completed inference plus a valid model session. Resumed sessions must share the pinned revision, weight hash, strict encoding settings, and all checkpoint file hashes.",
+      "status": "fixed",
+      "tests": [
+        "test_saved_output_must_match_raw_decisions_and_model_session",
+        "test_failed_output_stays_unavailable_instead_of_scoring_partial_answers",
+        "test_resume_rejects_mixed_cached_model_files"
+      ]
+    }
+  ],
+  "confirmed_contracts": [
+    "The payload submitted to predict contains state and questions only. State has task and artifacts; expected labels, team required/allowed sets, case rationale and evidence are absent.",
+    "Cached typed.py converts question objects into state/question/type/options rows; role identifiers remain response metadata and are not model tokens.",
+    "Both variants serialize options false then true. Noul uses probability >=0.5; categorical choice uses argmax with false winning an exact tie, matching the cached implementation.",
+    "Missing question outputs invalidate the whole request. Failed individual output is unavailable rather than negative; an incomplete team is never scored.",
+    "Allowed team additions are not false positives. Missing mandatory roles and forbidden additions are independently counted.",
+    "load_julia disables downloads, pins the checkpoint revision and weight SHA-256, and records cache file hashes. All model calls are offline.",
+    "Strict encoding checks the 48-token option contract, lossless head budget and 8192-token total budget. The 22-lens team is 22 independent binary questions, not a 22-option winner selection.",
+    "Existing frozen outputs are preserved on resume; malformed or inconsistent artifacts fail closed instead of being silently regenerated."
+  ],
+  "verification": {
+    "command": "python -B -m unittest test_all_reviewers -v",
+    "passed": 17,
+    "failed": 0,
+    "model_loaded": false,
+    "inference_performed": false,
+    "initial_environment_failure": "Two temporary-directory checks initially hit the Windows sandbox default temp restriction; they now use owned, verified directories under the benchmark workspace and pass."
+  },
+  "limitations": [
+    "This review and these tests do not establish model accuracy or real reviewer effectiveness.",
+    "Hash bindings protect recorded run consistency, not a malicious actor able to replace the plan and every bound artifact.",
+    "Interrupted or corrupt artifact writes fail closed and require explicit recovery; completed outputs are not automatically discarded or rerun."
+  ],
+  "modified_files": [
+    "evals/senior-review/choicer-eval/all_reviewers_eval.py",
+    "evals/senior-review/choicer-eval/test_all_reviewers.py"
+  ],
+  "source_suite_modified": false
+}

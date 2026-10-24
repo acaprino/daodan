@@ -1,0 +1,26 @@
+{
+  "id": "individual-C036-grounded_choice",
+  "kind": "individual",
+  "case_id": "C036",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Author a quick-start page for customers using the supplied steps. It should teach the product workflow, not define rules for coding agents.",
+    "artifacts": [
+      {
+        "path": "notes/customer-flow.txt",
+        "content": "1. Select a contact file.\n2. Preview duplicate emails.\n3. Confirm the merged address book.\n4. Download the result."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      }
+    }
+  },
+  "sha256": "321a5fff1c4d7688d83bcf64f7655c865188f93918f453ff39a42c607ff6cd59"
+}

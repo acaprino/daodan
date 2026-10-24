@@ -22,7 +22,8 @@ items = "string"
 
 [fields.introduced_by_candidate]
 # True when the candidate change causes the defect. False marks a pre-existing
-# issue, reported in its own section and excluded from the verdict.
+# issue, kept distinct and excluded from a changeset verdict under its policy.
+# Content audits may include preexisting defects in the authorized scope.
 type = "boolean"
 
 [fields.evidence_class]

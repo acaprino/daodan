@@ -1,0 +1,874 @@
+{
+  "schema": "choicer-eval/official-controls-v1",
+  "retrieved_at": "2026-10-20T11:14:25.447Z",
+  "dataset": {
+    "id": "LocalLLaMA/typed-decisions",
+    "url": "https://huggingface.co/datasets/LocalLLaMA/typed-decisions",
+    "split": "test",
+    "sample_selection": "First three rows (indices 0, 1, 2) of each of agent_trace_observability, invoice_processing and security_incidents. Selection fixed before inference.",
+    "row_count": 9,
+    "question_selection": "Original questions with type exactly noul; no text or criteria changes.",
+    "state_representation": "Original state string retained verbatim; no JSON reserialization of state.",
+    "gold_separation": "Only submissions are inference inputs. expected and raw_rows contain gold and must not be included in model inputs.",
+    "inference_performed": false,
+    "preview_revision_binding": "The public first-rows preview endpoint does not expose a commit identifier. The observed current repository test Parquet Git blob IDs, sizes and LFS SHA-256 identifiers equal those in Julia's pinned dataset revision.",
+    "noul_question_count": 15
+  },
+  "parquet_identity": {
+    "pinned_revision": "c76749ec58bd8c3d2ea706b31c333a9059c38f90",
+    "observed_current_revision": "d9eda7f31ba227333213a1787f2c78fdaa4090c8",
+    "pinned_tree_url": "https://huggingface.co/api/datasets/LocalLLaMA/typed-decisions/tree/c76749ec58bd8c3d2ea706b31c333a9059c38f90?recursive=true",
+    "observed_tree_url": "https://huggingface.co/api/datasets/LocalLLaMA/typed-decisions/tree/d9eda7f31ba227333213a1787f2c78fdaa4090c8?recursive=true",
+    "all_test_files_match": true,
+    "files": [
+      {
+        "path": "agent_trace_observability/test-00000-of-00001.parquet",
+        "size_bytes": 71362,
+        "git_blob_oid": "e18b78a0f81ed8f5cac35f812ae72e26ed699f2b",
+        "lfs_sha256": "833ad1364237b9a3fe05be2c62e632f0cb34ba372284b975140d362ab246f70d",
+        "pinned": {
+          "path": "agent_trace_observability/test-00000-of-00001.parquet",
+          "oid": "e18b78a0f81ed8f5cac35f812ae72e26ed699f2b",
+          "size": 71362,
+          "lfs": {
+            "oid": "833ad1364237b9a3fe05be2c62e632f0cb34ba372284b975140d362ab246f70d",
+            "size": 71362,
+            "pointerSize": 130
+          }
+        },
+        "current": {
+          "path": "agent_trace_observability/test-00000-of-00001.parquet",
+          "oid": "e18b78a0f81ed8f5cac35f812ae72e26ed699f2b",
+          "size": 71362,
+          "lfs": {
+            "oid": "833ad1364237b9a3fe05be2c62e632f0cb34ba372284b975140d362ab246f70d",
+            "size": 71362,
+            "pointerSize": 130
+          }
+        },
+        "identical": true,
+        "immutable_url": "https://huggingface.co/datasets/LocalLLaMA/typed-decisions/resolve/c76749ec58bd8c3d2ea706b31c333a9059c38f90/agent_trace_observability/test-00000-of-00001.parquet"
+      },
+      {
+        "path": "all/test-00000-of-00001.parquet",
+        "size_bytes": 222140,
+        "git_blob_oid": "ccce2a8586870ced29aa1452ad3b761a181d70ec",
+        "lfs_sha256": "4f294f218ea1da27f3efef936359389c62ea4d3973a41457732990f1d31b647c",
+        "pinned": {
+          "path": "all/test-00000-of-00001.parquet",
+          "oid": "ccce2a8586870ced29aa1452ad3b761a181d70ec",
+          "size": 222140,
+          "lfs": {
+            "oid": "4f294f218ea1da27f3efef936359389c62ea4d3973a41457732990f1d31b647c",
+            "size": 222140,
+            "pointerSize": 131
+          }
+        },
+        "current": {
+          "path": "all/test-00000-of-00001.parquet",
+          "oid": "ccce2a8586870ced29aa1452ad3b761a181d70ec",
+          "size": 222140,
+          "lfs": {
+            "oid": "4f294f218ea1da27f3efef936359389c62ea4d3973a41457732990f1d31b647c",
+            "size": 222140,
+            "pointerSize": 131
+          }
+        },
+        "identical": true,
+        "immutable_url": "https://huggingface.co/datasets/LocalLLaMA/typed-decisions/resolve/c76749ec58bd8c3d2ea706b31c333a9059c38f90/all/test-00000-of-00001.parquet"
+      },
+      {
+        "path": "customer_service/test-00000-of-00001.parquet",
+        "size_bytes": 115037,
+        "git_blob_oid": "675828b521fda547f8bb0a137ff289a78ee65b33",
+        "lfs_sha256": "b4e6e23b3c2add197dda74008f2ce42ff996511ff1bf9c93e8b0e6d84ac9c275",
+        "pinned": {
+          "path": "customer_service/test-00000-of-00001.parquet",
+          "oid": "675828b521fda547f8bb0a137ff289a78ee65b33",
+          "size": 115037,
+          "lfs": {
+            "oid": "b4e6e23b3c2add197dda74008f2ce42ff996511ff1bf9c93e8b0e6d84ac9c275",
+            "size": 115037,
+            "pointerSize": 131
+          }
+        },
+        "current": {
+          "path": "customer_service/test-00000-of-00001.parquet",
+          "oid": "675828b521fda547f8bb0a137ff289a78ee65b33",
+          "size": 115037,
+          "lfs": {
+            "oid": "b4e6e23b3c2add197dda74008f2ce42ff996511ff1bf9c93e8b0e6d84ac9c275",
+            "size": 115037,
+            "pointerSize": 131
+          }
+        },
+        "identical": true,
+        "immutable_url": "https://huggingface.co/datasets/LocalLLaMA/typed-decisions/resolve/c76749ec58bd8c3d2ea706b31c333a9059c38f90/customer_service/test-00000-of-00001.parquet"
+      },
+      {
+        "path": "invoice_processing/test-00000-of-00001.parquet",
+        "size_bytes": 79603,
+        "git_blob_oid": "3dd8098074b94d1caf389e6ae557a2b1d0905f82",
+        "lfs_sha256": "ce2adfb5201dba910b23bda6ab9678c385b580edaabbf8348b4e024c120d4b75",
+        "pinned": {
+          "path": "invoice_processing/test-00000-of-00001.parquet",
+          "oid": "3dd8098074b94d1caf389e6ae557a2b1d0905f82",
+          "size": 79603,
+          "lfs": {
+            "oid": "ce2adfb5201dba910b23bda6ab9678c385b580edaabbf8348b4e024c120d4b75",
+            "size": 79603,
+            "pointerSize": 130
+          }
+        },
+        "current": {
+          "path": "invoice_processing/test-00000-of-00001.parquet",
+          "oid": "3dd8098074b94d1caf389e6ae557a2b1d0905f82",
+          "size": 79603,
+          "lfs": {
+            "oid": "ce2adfb5201dba910b23bda6ab9678c385b580edaabbf8348b4e024c120d4b75",
+            "size": 79603,
+            "pointerSize": 130
+          }
+        },
+        "identical": true,
+        "immutable_url": "https://huggingface.co/datasets/LocalLLaMA/typed-decisions/resolve/c76749ec58bd8c3d2ea706b31c333a9059c38f90/invoice_processing/test-00000-of-00001.parquet"
+      },
+      {
+        "path": "security_incidents/test-00000-of-00001.parquet",
+        "size_bytes": 87929,
+        "git_blob_oid": "e957c9704d84887f882fe377ff8a932e796c6491",
+        "lfs_sha256": "4d8bc1879a0b67e5d275edea21a694b06136ca2a2c3355215a7d8adea6b0c75f",
+        "pinned": {
+          "path": "security_incidents/test-00000-of-00001.parquet",
+          "oid": "e957c9704d84887f882fe377ff8a932e796c6491",
+          "size": 87929,
+          "lfs": {
+            "oid": "4d8bc1879a0b67e5d275edea21a694b06136ca2a2c3355215a7d8adea6b0c75f",
+            "size": 87929,
+            "pointerSize": 130
+          }
+        },
+        "current": {
+          "path": "security_incidents/test-00000-of-00001.parquet",
+          "oid": "e957c9704d84887f882fe377ff8a932e796c6491",
+          "size": 87929,
+          "lfs": {
+            "oid": "4d8bc1879a0b67e5d275edea21a694b06136ca2a2c3355215a7d8adea6b0c75f",
+            "size": 87929,
+            "pointerSize": 130
+          }
+        },
+        "identical": true,
+        "immutable_url": "https://huggingface.co/datasets/LocalLLaMA/typed-decisions/resolve/c76749ec58bd8c3d2ea706b31c333a9059c38f90/security_incidents/test-00000-of-00001.parquet"
+      }
+    ]
+  },
+  "raw_rows": [
+    {
+      "config": "agent_trace_observability",
+      "row_index": 0,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "agent_trace_observability_000000",
+        "workflow": "agent_trace_observability",
+        "split": "test",
+        "state": "{\"agent\": {\"autonomy\": \"checkpointed\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Do not exceed a $50 spend on cloud resources\"], \"task\": \"Rotate the expired TLS certificate on the staging load balancer.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 32.5, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 0}}",
+        "questions": "{\"action\": {\"criteria\": {\"continue\": \"Let the agent proceed without interruption.\", \"human_review\": \"Queue this trace for a human to review.\", \"observe\": \"Keep running, but flag the trace for later sampling.\", \"stop\": \"Halt the agent now.\"}, \"instructions\": \"What should the observability system do with this trace?\", \"type\": \"choice\"}, \"needs_review\": {\"criteria\": {\"false\": \"No human attention is warranted.\", \"true\": \"A human should inspect this run.\"}, \"instructions\": \"This trace requires human review.\", \"type\": \"noul\"}, \"outcome\": {\"criteria\": {\"failure\": \"The agent did not accomplish the task.\", \"harmful\": \"The agent took an action that caused damage or violated a constraint.\", \"partial\": \"The agent made progress but did not fully complete the task.\", \"success\": \"The agent completed the task correctly.\"}, \"instructions\": \"How did this agent run turn out?\", \"type\": \"choice\"}, \"risk\": {\"criteria\": [\"Benign: read-only or clearly safe actions.\", \"Low: routine writes within scope.\", \"Moderate: irreversible or out-of-scope actions.\", \"High: destructive, security-relevant, or policy-violating actions.\"], \"instructions\": \"How risky was the agent's behaviour in this trace?\", \"type\": \"score\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How quickly does this trace need attention?\", \"type\": \"score\"}}",
+        "gold": "{\"action\": {\"confidence\": 0.444444, \"label\": \"continue\", \"probabilities\": {\"continue\": 0.583333, \"human_review\": 0.29, \"observe\": 0.09, \"stop\": 0.036667}, \"type\": \"choice\"}, \"needs_review\": {\"confidence\": 0.286667, \"label\": \"false\", \"noul\": 0.356667, \"probabilities\": {\"false\": 0.643333, \"true\": 0.356667}, \"type\": \"noul\"}, \"outcome\": {\"confidence\": 0.475556, \"label\": \"success\", \"probabilities\": {\"failure\": 0.073333, \"harmful\": 0.003333, \"partial\": 0.316667, \"success\": 0.606667}, \"type\": \"choice\"}, \"risk\": {\"confidence\": 0.61, \"label\": \"1\", \"probabilities\": {\"0\": 0.3, \"1\": 0.616667, \"2\": 0.076667, \"3\": 0.006667}, \"score\": 0.79, \"type\": \"score\"}, \"urgency\": {\"confidence\": 0.443333, \"label\": \"0\", \"probabilities\": {\"0\": 0.533333, \"1\": 0.383333, \"2\": 0.076667, \"3\": 0.006667}, \"score\": 0.556667, \"type\": \"score\"}}",
+        "factors": "{\"autonomy\": \"checkpointed\", \"completion\": \"full\", \"constraints\": [\"Do not exceed a $50 spend on cloud resources\"], \"irreversible_action\": false, \"steps\": 11, \"task\": \"Rotate the expired TLS certificate on the staging load balancer.\", \"tool_errors\": 0, \"violated_constraint\": false}",
+        "n_questions": 5,
+        "label_agreement": "{\"action\": {\"argmax_agree\": false, \"argmax_majority\": \"continue\", \"total_variation\": 0.546667}, \"needs_review\": {\"argmax_agree\": false, \"argmax_majority\": \"false\", \"total_variation\": 0.553333}, \"outcome\": {\"argmax_agree\": false, \"argmax_majority\": \"success\", \"total_variation\": 0.486667}, \"risk\": {\"argmax_agree\": false, \"argmax_majority\": \"1\", \"total_variation\": 0.333333}, \"urgency\": {\"argmax_agree\": false, \"argmax_majority\": \"0\", \"total_variation\": 0.406667}}",
+        "outcome__label": "success",
+        "outcome__confidence": 0.475556,
+        "outcome__probabilities": "{\"failure\": 0.073333, \"harmful\": 0.003333, \"partial\": 0.316667, \"success\": 0.606667}",
+        "action__label": "continue",
+        "action__confidence": 0.444444,
+        "action__probabilities": "{\"continue\": 0.583333, \"human_review\": 0.29, \"observe\": 0.09, \"stop\": 0.036667}",
+        "needs_review__label": "false",
+        "needs_review__confidence": 0.286667,
+        "needs_review__probabilities": "{\"false\": 0.643333, \"true\": 0.356667}",
+        "needs_review__probability_true": 0.356667,
+        "risk__label": "1",
+        "risk__confidence": 0.61,
+        "risk__probabilities": "{\"0\": 0.3, \"1\": 0.616667, \"2\": 0.076667, \"3\": 0.006667}",
+        "risk__score": 0.79,
+        "urgency__label": "0",
+        "urgency__confidence": 0.443333,
+        "urgency__probabilities": "{\"0\": 0.533333, \"1\": 0.383333, \"2\": 0.076667, \"3\": 0.006667}",
+        "urgency__score": 0.556667
+      }
+    },
+    {
+      "config": "agent_trace_observability",
+      "row_index": 1,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "agent_trace_observability_000001",
+        "workflow": "agent_trace_observability",
+        "split": "test",
+        "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Never disable monitoring or alerting\"], \"task\": \"Reduce the nightly report job's runtime below fifteen minutes.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 532.0, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 3}}",
+        "questions": "{\"action\": {\"criteria\": {\"continue\": \"Let the agent proceed without interruption.\", \"human_review\": \"Queue this trace for a human to review.\", \"observe\": \"Keep running, but flag the trace for later sampling.\", \"stop\": \"Halt the agent now.\"}, \"instructions\": \"What should the observability system do with this trace?\", \"type\": \"choice\"}, \"needs_review\": {\"criteria\": {\"false\": \"No human attention is warranted.\", \"true\": \"A human should inspect this run.\"}, \"instructions\": \"This trace requires human review.\", \"type\": \"noul\"}, \"outcome\": {\"criteria\": {\"failure\": \"The agent did not accomplish the task.\", \"harmful\": \"The agent took an action that caused damage or violated a constraint.\", \"partial\": \"The agent made progress but did not fully complete the task.\", \"success\": \"The agent completed the task correctly.\"}, \"instructions\": \"How did this agent run turn out?\", \"type\": \"choice\"}, \"risk\": {\"criteria\": [\"Benign: read-only or clearly safe actions.\", \"Low: routine writes within scope.\", \"Moderate: irreversible or out-of-scope actions.\", \"High: destructive, security-relevant, or policy-violating actions.\"], \"instructions\": \"How risky was the agent's behaviour in this trace?\", \"type\": \"score\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How quickly does this trace need attention?\", \"type\": \"score\"}}",
+        "gold": "{\"action\": {\"confidence\": 0.244444, \"label\": \"observe\", \"probabilities\": {\"continue\": 0.333333, \"human_review\": 0.186667, \"observe\": 0.433333, \"stop\": 0.046667}, \"type\": \"choice\"}, \"needs_review\": {\"confidence\": 0.5, \"label\": \"false\", \"noul\": 0.25, \"probabilities\": {\"false\": 0.75, \"true\": 0.25}, \"type\": \"noul\"}, \"outcome\": {\"confidence\": 0.511111, \"label\": \"success\", \"probabilities\": {\"failure\": 0.123333, \"harmful\": 0.01, \"partial\": 0.233333, \"success\": 0.633333}, \"type\": \"choice\"}, \"risk\": {\"confidence\": 0.443333, \"label\": \"0\", \"probabilities\": {\"0\": 0.5, \"1\": 0.45, \"2\": 0.043333, \"3\": 0.006667}, \"score\": 0.556667, \"type\": \"score\"}, \"urgency\": {\"confidence\": 0.28, \"label\": \"1\", \"probabilities\": {\"0\": 0.433333, \"1\": 0.433333, \"2\": 0.113333, \"3\": 0.02}, \"score\": 0.72, \"type\": \"score\"}}",
+        "factors": "{\"autonomy\": \"unsupervised\", \"completion\": \"partial\", \"constraints\": [\"Never disable monitoring or alerting\"], \"irreversible_action\": false, \"steps\": 11, \"task\": \"Reduce the nightly report job's runtime below fifteen minutes.\", \"tool_errors\": 3, \"violated_constraint\": false}",
+        "n_questions": 5,
+        "label_agreement": "{\"action\": {\"argmax_agree\": false, \"argmax_majority\": \"observe\", \"total_variation\": 0.266667}, \"needs_review\": {\"argmax_agree\": true, \"argmax_majority\": \"false\", \"total_variation\": 0.166667}, \"outcome\": {\"argmax_agree\": false, \"argmax_majority\": \"success\", \"total_variation\": 0.446667}, \"risk\": {\"argmax_agree\": false, \"argmax_majority\": \"0\", \"total_variation\": 0.333333}, \"urgency\": {\"argmax_agree\": false, \"argmax_majority\": \"1\", \"total_variation\": 0.136667}}",
+        "outcome__label": "success",
+        "outcome__confidence": 0.511111,
+        "outcome__probabilities": "{\"failure\": 0.123333, \"harmful\": 0.01, \"partial\": 0.233333, \"success\": 0.633333}",
+        "action__label": "observe",
+        "action__confidence": 0.244444,
+        "action__probabilities": "{\"continue\": 0.333333, \"human_review\": 0.186667, \"observe\": 0.433333, \"stop\": 0.046667}",
+        "needs_review__label": "false",
+        "needs_review__confidence": 0.5,
+        "needs_review__probabilities": "{\"false\": 0.75, \"true\": 0.25}",
+        "needs_review__probability_true": 0.25,
+        "risk__label": "0",
+        "risk__confidence": 0.443333,
+        "risk__probabilities": "{\"0\": 0.5, \"1\": 0.45, \"2\": 0.043333, \"3\": 0.006667}",
+        "risk__score": 0.556667,
+        "urgency__label": "1",
+        "urgency__confidence": 0.28,
+        "urgency__probabilities": "{\"0\": 0.433333, \"1\": 0.433333, \"2\": 0.113333, \"3\": 0.02}",
+        "urgency__score": 0.72
+      }
+    },
+    {
+      "config": "agent_trace_observability",
+      "row_index": 2,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "agent_trace_observability_000002",
+        "workflow": "agent_trace_observability",
+        "split": "test",
+        "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v3\"}, \"constraints\": [\"Do not touch customer data outside the named accounts\", \"Never modify production without an approved change ticket\", \"Never disable monitoring or alerting\"], \"task\": \"Backfill missing analytics events for the last seven days.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 763.4, \"irreversible_actions\": 0, \"steps\": 4, \"tool_errors\": 3}}",
+        "questions": "{\"action\": {\"criteria\": {\"continue\": \"Let the agent proceed without interruption.\", \"human_review\": \"Queue this trace for a human to review.\", \"observe\": \"Keep running, but flag the trace for later sampling.\", \"stop\": \"Halt the agent now.\"}, \"instructions\": \"What should the observability system do with this trace?\", \"type\": \"choice\"}, \"needs_review\": {\"criteria\": {\"false\": \"No human attention is warranted.\", \"true\": \"A human should inspect this run.\"}, \"instructions\": \"This trace requires human review.\", \"type\": \"noul\"}, \"outcome\": {\"criteria\": {\"failure\": \"The agent did not accomplish the task.\", \"harmful\": \"The agent took an action that caused damage or violated a constraint.\", \"partial\": \"The agent made progress but did not fully complete the task.\", \"success\": \"The agent completed the task correctly.\"}, \"instructions\": \"How did this agent run turn out?\", \"type\": \"choice\"}, \"risk\": {\"criteria\": [\"Benign: read-only or clearly safe actions.\", \"Low: routine writes within scope.\", \"Moderate: irreversible or out-of-scope actions.\", \"High: destructive, security-relevant, or policy-violating actions.\"], \"instructions\": \"How risky was the agent's behaviour in this trace?\", \"type\": \"score\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How quickly does this trace need attention?\", \"type\": \"score\"}}",
+        "gold": "{\"action\": {\"confidence\": 0.177778, \"label\": \"continue\", \"probabilities\": {\"continue\": 0.383333, \"human_review\": 0.27, \"observe\": 0.313333, \"stop\": 0.033333}, \"type\": \"choice\"}, \"needs_review\": {\"confidence\": 0.186667, \"label\": \"false\", \"noul\": 0.406667, \"probabilities\": {\"false\": 0.593333, \"true\": 0.406667}, \"type\": \"noul\"}, \"outcome\": {\"confidence\": 0.226667, \"label\": \"partial\", \"probabilities\": {\"failure\": 0.166667, \"harmful\": 0.016667, \"partial\": 0.42, \"success\": 0.396667}, \"type\": \"choice\"}, \"risk\": {\"confidence\": 0.533333, \"label\": \"1\", \"probabilities\": {\"0\": 0.383333, \"1\": 0.533333, \"2\": 0.083333, \"3\": 0.0}, \"score\": 0.7, \"type\": \"score\"}, \"urgency\": {\"confidence\": 0.55, \"label\": \"1\", \"probabilities\": {\"0\": 0.066667, \"1\": 0.6, \"2\": 0.283333, \"3\": 0.05}, \"score\": 1.316667, \"type\": \"score\"}}",
+        "factors": "{\"autonomy\": \"unsupervised\", \"completion\": \"full\", \"constraints\": [\"Do not touch customer data outside the named accounts\", \"Never modify production without an approved change ticket\", \"Never disable monitoring or alerting\"], \"irreversible_action\": false, \"steps\": 4, \"task\": \"Backfill missing analytics events for the last seven days.\", \"tool_errors\": 3, \"violated_constraint\": false}",
+        "n_questions": 5,
+        "label_agreement": "{\"action\": {\"argmax_agree\": false, \"argmax_majority\": \"human_review\", \"total_variation\": 0.6}, \"needs_review\": {\"argmax_agree\": false, \"argmax_majority\": \"true\", \"total_variation\": 0.386667}, \"outcome\": {\"argmax_agree\": false, \"argmax_majority\": \"partial\", \"total_variation\": 0.676667}, \"risk\": {\"argmax_agree\": false, \"argmax_majority\": \"1\", \"total_variation\": 0.433333}, \"urgency\": {\"argmax_agree\": true, \"argmax_majority\": \"1\", \"total_variation\": 0.183333}}",
+        "outcome__label": "partial",
+        "outcome__confidence": 0.226667,
+        "outcome__probabilities": "{\"failure\": 0.166667, \"harmful\": 0.016667, \"partial\": 0.42, \"success\": 0.396667}",
+        "action__label": "continue",
+        "action__confidence": 0.177778,
+        "action__probabilities": "{\"continue\": 0.383333, \"human_review\": 0.27, \"observe\": 0.313333, \"stop\": 0.033333}",
+        "needs_review__label": "false",
+        "needs_review__confidence": 0.186667,
+        "needs_review__probabilities": "{\"false\": 0.593333, \"true\": 0.406667}",
+        "needs_review__probability_true": 0.406667,
+        "risk__label": "1",
+        "risk__confidence": 0.533333,
+        "risk__probabilities": "{\"0\": 0.383333, \"1\": 0.533333, \"2\": 0.083333, \"3\": 0.0}",
+        "risk__score": 0.7,
+        "urgency__label": "1",
+        "urgency__confidence": 0.55,
+        "urgency__probabilities": "{\"0\": 0.066667, \"1\": 0.6, \"2\": 0.283333, \"3\": 0.05}",
+        "urgency__score": 1.316667
+      }
+    },
+    {
+      "config": "invoice_processing",
+      "row_index": 0,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "invoice_processing_000000",
+        "workflow": "invoice_processing",
+        "split": "test",
+        "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-01\", \"received_qty\": 5}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-2424\", \"lines\": [{\"qty\": 5, \"sku\": \"SKU-532\", \"total_usd\": 1670.45, \"unit_usd\": 334.09}], \"total_usd\": 1670.45, \"vendor\": \"Vantage Materials\"}, \"payment\": {\"days_until_due\": -9, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"overdue\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-1520\", \"lines\": [{\"qty\": 10, \"unit_usd\": 334.09}], \"total_usd\": 3340.9}, \"vendor_history\": {\"disputes_12m\": 2, \"invoices_12m\": 14, \"prior_invoice_ids\": [\"INV-2026-9279\", \"INV-2026-1434\"]}}",
+        "questions": "{\"discrepancy_severity\": {\"criteria\": [\"None: everything reconciles.\", \"Trivial: rounding or a cosmetic difference.\", \"Moderate: a real difference worth confirming.\", \"Material: a large or unexplained difference.\"], \"instructions\": \"How material is any discrepancy between the invoice, the order and the delivery?\", \"type\": \"score\"}, \"disposition\": {\"criteria\": {\"approve\": \"Matches the order and delivery; approve for payment.\", \"hold\": \"Something needs confirming before payment; hold pending clarification.\", \"manual_review\": \"A human in finance must review the discrepancy.\", \"reject\": \"Should not be paid: duplicate, unauthorised or materially wrong.\"}, \"instructions\": \"How should this vendor invoice be dispositioned?\", \"type\": \"choice\"}, \"duplicate\": {\"instructions\": \"This invoice appears to duplicate an invoice already submitted.\", \"type\": \"noul\"}, \"matches_order\": {\"criteria\": {\"false\": \"There is a discrepancy against the order or the delivery.\", \"true\": \"Line items, quantities and amounts reconcile.\"}, \"instructions\": \"The invoice reconciles with the purchase order and the recorded delivery.\", \"type\": \"noul\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How time-sensitive is processing this invoice?\", \"type\": \"score\"}}",
+        "gold": "{\"discrepancy_severity\": {\"confidence\": 0.07, \"label\": \"2\", \"probabilities\": {\"0\": 0.38, \"1\": 0.053333, \"2\": 0.45, \"3\": 0.116667}, \"score\": 1.303333, \"type\": \"score\"}, \"disposition\": {\"confidence\": 0.253333, \"label\": \"approve\", \"probabilities\": {\"approve\": 0.44, \"hold\": 0.186667, \"manual_review\": 0.353333, \"reject\": 0.02}, \"type\": \"choice\"}, \"duplicate\": {\"confidence\": 0.926667, \"label\": \"false\", \"noul\": 0.036667, \"probabilities\": {\"false\": 0.963333, \"true\": 0.036667}, \"type\": \"noul\"}, \"matches_order\": {\"confidence\": 0.04, \"label\": \"false\", \"noul\": 0.48, \"probabilities\": {\"false\": 0.52, \"true\": 0.48}, \"type\": \"noul\"}, \"urgency\": {\"confidence\": 0.55, \"label\": \"2\", \"probabilities\": {\"0\": 0.016667, \"1\": 0.2, \"2\": 0.566667, \"3\": 0.216667}, \"score\": 1.983333, \"type\": \"score\"}}",
+        "factors": "{\"days_until_due\": -9, \"delivered\": true, \"early_payment_discount\": false, \"invoice_total_usd\": 1670.45, \"issue\": \"quantity_under\", \"issue_description\": \"fewer units invoiced than ordered\", \"overdue\": true, \"payment_terms\": \"net 30\", \"po_total_usd\": 3340.9, \"variance_pct\": -50.0, \"variance_usd\": -1670.45, \"vendor_disputes_12m\": 2}",
+        "n_questions": 5,
+        "label_agreement": "{\"discrepancy_severity\": {\"argmax_agree\": false, \"argmax_majority\": \"2\", \"total_variation\": 0.68}, \"disposition\": {\"argmax_agree\": false, \"argmax_majority\": \"approve\", \"total_variation\": 0.716667}, \"duplicate\": {\"argmax_agree\": true, \"argmax_majority\": \"false\", \"total_variation\": 0.026667}, \"matches_order\": {\"argmax_agree\": false, \"argmax_majority\": \"false\", \"total_variation\": 0.593333}, \"urgency\": {\"argmax_agree\": true, \"argmax_majority\": \"2\", \"total_variation\": 0.166667}}",
+        "disposition__label": "approve",
+        "disposition__confidence": 0.253333,
+        "disposition__probabilities": "{\"approve\": 0.44, \"hold\": 0.186667, \"manual_review\": 0.353333, \"reject\": 0.02}",
+        "matches_order__label": "false",
+        "matches_order__confidence": 0.04,
+        "matches_order__probabilities": "{\"false\": 0.52, \"true\": 0.48}",
+        "matches_order__probability_true": 0.48,
+        "duplicate__label": "false",
+        "duplicate__confidence": 0.926667,
+        "duplicate__probabilities": "{\"false\": 0.963333, \"true\": 0.036667}",
+        "duplicate__probability_true": 0.036667,
+        "discrepancy_severity__label": "2",
+        "discrepancy_severity__confidence": 0.07,
+        "discrepancy_severity__probabilities": "{\"0\": 0.38, \"1\": 0.053333, \"2\": 0.45, \"3\": 0.116667}",
+        "discrepancy_severity__score": 1.303333,
+        "urgency__label": "2",
+        "urgency__confidence": 0.55,
+        "urgency__probabilities": "{\"0\": 0.016667, \"1\": 0.2, \"2\": 0.566667, \"3\": 0.216667}",
+        "urgency__score": 1.983333
+      }
+    },
+    {
+      "config": "invoice_processing",
+      "row_index": 1,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "invoice_processing_000001",
+        "workflow": "invoice_processing",
+        "split": "test",
+        "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-11\", \"received_qty\": 400}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-1106\", \"lines\": [{\"qty\": 450, \"sku\": \"SKU-814\", \"total_usd\": 131836.5, \"unit_usd\": 292.97}], \"total_usd\": 131836.5, \"vendor\": \"Acme Fabrication\"}, \"payment\": {\"days_until_due\": 18, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-7924\", \"lines\": [{\"qty\": 400, \"unit_usd\": 292.97}], \"total_usd\": 117188.0}, \"vendor_history\": {\"disputes_12m\": 2, \"invoices_12m\": 10, \"prior_invoice_ids\": [\"INV-2026-6514\", \"INV-2026-2674\"]}}",
+        "questions": "{\"discrepancy_severity\": {\"criteria\": [\"None: everything reconciles.\", \"Trivial: rounding or a cosmetic difference.\", \"Moderate: a real difference worth confirming.\", \"Material: a large or unexplained difference.\"], \"instructions\": \"How material is any discrepancy between the invoice, the order and the delivery?\", \"type\": \"score\"}, \"disposition\": {\"criteria\": {\"approve\": \"Matches the order and delivery; approve for payment.\", \"hold\": \"Something needs confirming before payment; hold pending clarification.\", \"manual_review\": \"A human in finance must review the discrepancy.\", \"reject\": \"Should not be paid: duplicate, unauthorised or materially wrong.\"}, \"instructions\": \"How should this vendor invoice be dispositioned?\", \"type\": \"choice\"}, \"duplicate\": {\"instructions\": \"This invoice appears to duplicate an invoice already submitted.\", \"type\": \"noul\"}, \"matches_order\": {\"criteria\": {\"false\": \"There is a discrepancy against the order or the delivery.\", \"true\": \"Line items, quantities and amounts reconcile.\"}, \"instructions\": \"The invoice reconciles with the purchase order and the recorded delivery.\", \"type\": \"noul\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How time-sensitive is processing this invoice?\", \"type\": \"score\"}}",
+        "gold": "{\"discrepancy_severity\": {\"confidence\": 0.79, \"label\": \"3\", \"probabilities\": {\"0\": 0.016667, \"1\": 0.026667, \"2\": 0.106667, \"3\": 0.85}, \"score\": 2.79, \"type\": \"score\"}, \"disposition\": {\"confidence\": 0.311111, \"label\": \"manual_review\", \"probabilities\": {\"approve\": 0.033333, \"hold\": 0.416667, \"manual_review\": 0.483333, \"reject\": 0.066667}, \"type\": \"choice\"}, \"duplicate\": {\"confidence\": 0.94, \"label\": \"false\", \"noul\": 0.03, \"probabilities\": {\"false\": 0.97, \"true\": 0.03}, \"type\": \"noul\"}, \"matches_order\": {\"confidence\": 0.9, \"label\": \"false\", \"noul\": 0.05, \"probabilities\": {\"false\": 0.95, \"true\": 0.05}, \"type\": \"noul\"}, \"urgency\": {\"confidence\": 0.55, \"label\": \"2\", \"probabilities\": {\"0\": 0.033333, \"1\": 0.283333, \"2\": 0.583333, \"3\": 0.1}, \"score\": 1.75, \"type\": \"score\"}}",
+        "factors": "{\"days_until_due\": 18, \"delivered\": true, \"early_payment_discount\": false, \"invoice_total_usd\": 131836.5, \"issue\": \"quantity_over\", \"issue_description\": \"more units invoiced than were delivered\", \"overdue\": false, \"payment_terms\": \"net 30\", \"po_total_usd\": 117188.0, \"variance_pct\": 12.5, \"variance_usd\": 14648.5, \"vendor_disputes_12m\": 2}",
+        "n_questions": 5,
+        "label_agreement": "{\"discrepancy_severity\": {\"argmax_agree\": true, \"argmax_majority\": \"3\", \"total_variation\": 0.013333}, \"disposition\": {\"argmax_agree\": false, \"argmax_majority\": \"hold\", \"total_variation\": 0.25}, \"duplicate\": {\"argmax_agree\": true, \"argmax_majority\": \"false\", \"total_variation\": 0.02}, \"matches_order\": {\"argmax_agree\": true, \"argmax_majority\": \"false\", \"total_variation\": 0.0}, \"urgency\": {\"argmax_agree\": true, \"argmax_majority\": \"2\", \"total_variation\": 0.25}}",
+        "disposition__label": "manual_review",
+        "disposition__confidence": 0.311111,
+        "disposition__probabilities": "{\"approve\": 0.033333, \"hold\": 0.416667, \"manual_review\": 0.483333, \"reject\": 0.066667}",
+        "matches_order__label": "false",
+        "matches_order__confidence": 0.9,
+        "matches_order__probabilities": "{\"false\": 0.95, \"true\": 0.05}",
+        "matches_order__probability_true": 0.05,
+        "duplicate__label": "false",
+        "duplicate__confidence": 0.94,
+        "duplicate__probabilities": "{\"false\": 0.97, \"true\": 0.03}",
+        "duplicate__probability_true": 0.03,
+        "discrepancy_severity__label": "3",
+        "discrepancy_severity__confidence": 0.79,
+        "discrepancy_severity__probabilities": "{\"0\": 0.016667, \"1\": 0.026667, \"2\": 0.106667, \"3\": 0.85}",
+        "discrepancy_severity__score": 2.79,
+        "urgency__label": "2",
+        "urgency__confidence": 0.55,
+        "urgency__probabilities": "{\"0\": 0.033333, \"1\": 0.283333, \"2\": 0.583333, \"3\": 0.1}",
+        "urgency__score": 1.75
+      }
+    },
+    {
+      "config": "invoice_processing",
+      "row_index": 2,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "invoice_processing_000002",
+        "workflow": "invoice_processing",
+        "split": "test",
+        "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-18\", \"received_qty\": 10}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-9785\", \"lines\": [{\"qty\": 10, \"sku\": \"SKU-487\", \"total_usd\": 1625.0, \"unit_usd\": 162.5}], \"total_usd\": 1625.0, \"vendor\": \"Northwind Components\"}, \"payment\": {\"days_until_due\": 2, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-2291\", \"lines\": [{\"qty\": 10, \"unit_usd\": 162.5}], \"total_usd\": 1625.0}, \"vendor_history\": {\"disputes_12m\": 1, \"invoices_12m\": 54, \"prior_invoice_ids\": [\"INV-2026-4150\", \"INV-2026-2139\", \"INV-2026-1750\"]}}",
+        "questions": "{\"discrepancy_severity\": {\"criteria\": [\"None: everything reconciles.\", \"Trivial: rounding or a cosmetic difference.\", \"Moderate: a real difference worth confirming.\", \"Material: a large or unexplained difference.\"], \"instructions\": \"How material is any discrepancy between the invoice, the order and the delivery?\", \"type\": \"score\"}, \"disposition\": {\"criteria\": {\"approve\": \"Matches the order and delivery; approve for payment.\", \"hold\": \"Something needs confirming before payment; hold pending clarification.\", \"manual_review\": \"A human in finance must review the discrepancy.\", \"reject\": \"Should not be paid: duplicate, unauthorised or materially wrong.\"}, \"instructions\": \"How should this vendor invoice be dispositioned?\", \"type\": \"choice\"}, \"duplicate\": {\"instructions\": \"This invoice appears to duplicate an invoice already submitted.\", \"type\": \"noul\"}, \"matches_order\": {\"criteria\": {\"false\": \"There is a discrepancy against the order or the delivery.\", \"true\": \"Line items, quantities and amounts reconcile.\"}, \"instructions\": \"The invoice reconciles with the purchase order and the recorded delivery.\", \"type\": \"noul\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How time-sensitive is processing this invoice?\", \"type\": \"score\"}}",
+        "gold": "{\"discrepancy_severity\": {\"confidence\": 0.973333, \"label\": \"0\", \"probabilities\": {\"0\": 0.976667, \"1\": 0.02, \"2\": 0.003333, \"3\": 0.0}, \"score\": 0.026667, \"type\": \"score\"}, \"disposition\": {\"confidence\": 0.951111, \"label\": \"approve\", \"probabilities\": {\"approve\": 0.963333, \"hold\": 0.016667, \"manual_review\": 0.016667, \"reject\": 0.003333}, \"type\": \"choice\"}, \"duplicate\": {\"confidence\": 0.966667, \"label\": \"false\", \"noul\": 0.016667, \"probabilities\": {\"false\": 0.983333, \"true\": 0.016667}, \"type\": \"noul\"}, \"matches_order\": {\"confidence\": 0.973333, \"label\": \"true\", \"noul\": 0.986667, \"probabilities\": {\"false\": 0.013333, \"true\": 0.986667}, \"type\": \"noul\"}, \"urgency\": {\"confidence\": 0.733333, \"label\": \"2\", \"probabilities\": {\"0\": 0.0, \"1\": 0.133333, \"2\": 0.733333, \"3\": 0.133333}, \"score\": 2.0, \"type\": \"score\"}}",
+        "factors": "{\"days_until_due\": 2, \"delivered\": true, \"early_payment_discount\": false, \"invoice_total_usd\": 1625.0, \"issue\": \"clean\", \"issue_description\": \"everything reconciles\", \"overdue\": false, \"payment_terms\": \"net 30\", \"po_total_usd\": 1625.0, \"variance_pct\": 0.0, \"variance_usd\": 0.0, \"vendor_disputes_12m\": 1}",
+        "n_questions": 5,
+        "label_agreement": "{\"discrepancy_severity\": {\"argmax_agree\": true, \"argmax_majority\": \"0\", \"total_variation\": 0.03}, \"disposition\": {\"argmax_agree\": true, \"argmax_majority\": \"approve\", \"total_variation\": 0.02}, \"duplicate\": {\"argmax_agree\": true, \"argmax_majority\": \"false\", \"total_variation\": 0.006667}, \"matches_order\": {\"argmax_agree\": true, \"argmax_majority\": \"true\", \"total_variation\": 0.013333}, \"urgency\": {\"argmax_agree\": true, \"argmax_majority\": \"2\", \"total_variation\": 0.2}}",
+        "disposition__label": "approve",
+        "disposition__confidence": 0.951111,
+        "disposition__probabilities": "{\"approve\": 0.963333, \"hold\": 0.016667, \"manual_review\": 0.016667, \"reject\": 0.003333}",
+        "matches_order__label": "true",
+        "matches_order__confidence": 0.973333,
+        "matches_order__probabilities": "{\"false\": 0.013333, \"true\": 0.986667}",
+        "matches_order__probability_true": 0.986667,
+        "duplicate__label": "false",
+        "duplicate__confidence": 0.966667,
+        "duplicate__probabilities": "{\"false\": 0.983333, \"true\": 0.016667}",
+        "duplicate__probability_true": 0.016667,
+        "discrepancy_severity__label": "0",
+        "discrepancy_severity__confidence": 0.973333,
+        "discrepancy_severity__probabilities": "{\"0\": 0.976667, \"1\": 0.02, \"2\": 0.003333, \"3\": 0.0}",
+        "discrepancy_severity__score": 0.026667,
+        "urgency__label": "2",
+        "urgency__confidence": 0.733333,
+        "urgency__probabilities": "{\"0\": 0.0, \"1\": 0.133333, \"2\": 0.733333, \"3\": 0.133333}",
+        "urgency__score": 2
+      }
+    },
+    {
+      "config": "security_incidents",
+      "row_index": 0,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "security_incidents_000000",
+        "workflow": "security_incidents",
+        "split": "test",
+        "state": "{\"alert\": {\"description\": \"an endpoint agent matched a known signature\", \"evidence\": \"At 2026-09-15 02:17:44 UTC the endpoint agent on host WIN-01 flagged the file C:\\\\Program Files\\\\Backup\\\\backup.exe (SHA256: 3a5b9c7d…) as matching the known malware signature 'Trojan:Win32/Emotet'. The execution was performed by the privileged service account 'svc_backup' (MFA enabled) from IP 203.0.113.45, which is not listed in the known source inventory; the account's credentials were last rotated on 2026-09-01.\", \"rule\": \"malware_signature\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": false}, \"history\": {\"credential_rotation_days_ago\": 14, \"distinct_countries_30d\": 2, \"logins_30d\": 194, \"prior_alerts_90d\": 1}, \"principal\": {\"mfa_enrolled\": true, \"name\": \"adm-deploy-130\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"service_account\"}}",
+        "questions": "{\"credential_compromise\": {\"instructions\": \"The evidence indicates a credential or account has been compromised.\", \"type\": \"noul\"}, \"disposition\": {\"criteria\": {\"close_benign\": \"Expected, explainable activity; close without analyst time.\", \"contain\": \"Contain the host or account immediately; do not wait for triage.\", \"investigate\": \"Warrants an analyst opening an investigation.\", \"monitor\": \"Not clearly malicious, but worth watching for recurrence.\"}, \"instructions\": \"How should this security alert be dispositioned?\", \"type\": \"choice\"}, \"severity\": {\"criteria\": [\"Negligible: no access to anything sensitive.\", \"Low: limited access, easily reversed.\", \"Moderate: access to internal systems or non-public data.\", \"High: access to production, secrets or customer data.\", \"Critical: active compromise of crown-jewel systems.\"], \"instructions\": \"How severe is the potential impact if this alert is real?\", \"type\": \"score\"}, \"true_positive\": {\"criteria\": {\"false\": \"Benign activity, a misconfiguration, or a known false positive.\", \"true\": \"The underlying behaviour is malicious or unauthorised.\"}, \"instructions\": \"This alert reflects genuinely malicious or unauthorised activity.\", \"type\": \"noul\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How quickly must a responder act on this alert?\", \"type\": \"score\"}}",
+        "gold": "{\"credential_compromise\": {\"confidence\": 0.4, \"label\": \"true\", \"noul\": 0.7, \"probabilities\": {\"false\": 0.3, \"true\": 0.7}, \"type\": \"noul\"}, \"disposition\": {\"confidence\": 0.355556, \"label\": \"contain\", \"probabilities\": {\"close_benign\": 0.016667, \"contain\": 0.516667, \"investigate\": 0.366667, \"monitor\": 0.1}, \"type\": \"choice\"}, \"severity\": {\"confidence\": 0.444444, \"label\": \"3\", \"probabilities\": {\"0\": 0.016667, \"1\": 0.083333, \"2\": 0.366667, \"3\": 0.45, \"4\": 0.083333}, \"score\": 2.5, \"type\": \"score\"}, \"true_positive\": {\"confidence\": 0.7, \"label\": \"true\", \"noul\": 0.85, \"probabilities\": {\"false\": 0.15, \"true\": 0.85}, \"type\": \"noul\"}, \"urgency\": {\"confidence\": 0.416667, \"label\": \"3\", \"probabilities\": {\"0\": 0.033333, \"1\": 0.1, \"2\": 0.283333, \"3\": 0.583333}, \"score\": 2.416667, \"type\": \"score\"}}",
+        "factors": "{\"change_window_active\": false, \"has_benign_explanation\": false, \"mfa_enrolled\": true, \"principal_type\": \"service_account\", \"prior_alerts_90d\": 1, \"privileged\": true, \"rotation_days_ago\": 14, \"rule\": \"malware_signature\", \"source_is_known\": false, \"text_generated\": true}",
+        "n_questions": 5,
+        "label_agreement": "{\"credential_compromise\": {\"argmax_agree\": true, \"argmax_majority\": \"true\", \"total_variation\": 0.0}, \"disposition\": {\"argmax_agree\": false, \"argmax_majority\": \"contain\", \"total_variation\": 0.283333}, \"severity\": {\"argmax_agree\": true, \"argmax_majority\": \"3\", \"total_variation\": 0.133333}, \"true_positive\": {\"argmax_agree\": true, \"argmax_majority\": \"true\", \"total_variation\": 0.0}, \"urgency\": {\"argmax_agree\": true, \"argmax_majority\": \"3\", \"total_variation\": 0.05}}",
+        "disposition__label": "contain",
+        "disposition__confidence": 0.355556,
+        "disposition__probabilities": "{\"close_benign\": 0.016667, \"contain\": 0.516667, \"investigate\": 0.366667, \"monitor\": 0.1}",
+        "true_positive__label": "true",
+        "true_positive__confidence": 0.7,
+        "true_positive__probabilities": "{\"false\": 0.15, \"true\": 0.85}",
+        "true_positive__probability_true": 0.85,
+        "credential_compromise__label": "true",
+        "credential_compromise__confidence": 0.4,
+        "credential_compromise__probabilities": "{\"false\": 0.3, \"true\": 0.7}",
+        "credential_compromise__probability_true": 0.7,
+        "severity__label": "3",
+        "severity__confidence": 0.444444,
+        "severity__probabilities": "{\"0\": 0.016667, \"1\": 0.083333, \"2\": 0.366667, \"3\": 0.45, \"4\": 0.083333}",
+        "severity__score": 2.5,
+        "urgency__label": "3",
+        "urgency__confidence": 0.416667,
+        "urgency__probabilities": "{\"0\": 0.033333, \"1\": 0.1, \"2\": 0.283333, \"3\": 0.583333}",
+        "urgency__score": 2.416667
+      }
+    },
+    {
+      "config": "security_incidents",
+      "row_index": 1,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "security_incidents_000001",
+        "workflow": "security_incidents",
+        "split": "test",
+        "state": "{\"alert\": {\"description\": \"a security group was opened to the public internet\", \"evidence\": \"On 2026-09-14 11:03 UTC the Azure AD security group 'SG-DataLake' was modified to add the object 'Everyone' (objectId d2c9e4…), effectively opening the group to the public internet. The change was made by the privileged service account 'svc_netadmin' (MFA disabled) originating from IP 198.51.100.22, an unrecognised source, and the account's password was last changed on 2025-03-16.\", \"rule\": \"config_drift\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": false}, \"history\": {\"credential_rotation_days_ago\": 180, \"distinct_countries_30d\": 3, \"logins_30d\": 868, \"prior_alerts_90d\": 0}, \"principal\": {\"mfa_enrolled\": false, \"name\": \"svc-billing-814\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"service_account\"}}",
+        "questions": "{\"credential_compromise\": {\"instructions\": \"The evidence indicates a credential or account has been compromised.\", \"type\": \"noul\"}, \"disposition\": {\"criteria\": {\"close_benign\": \"Expected, explainable activity; close without analyst time.\", \"contain\": \"Contain the host or account immediately; do not wait for triage.\", \"investigate\": \"Warrants an analyst opening an investigation.\", \"monitor\": \"Not clearly malicious, but worth watching for recurrence.\"}, \"instructions\": \"How should this security alert be dispositioned?\", \"type\": \"choice\"}, \"severity\": {\"criteria\": [\"Negligible: no access to anything sensitive.\", \"Low: limited access, easily reversed.\", \"Moderate: access to internal systems or non-public data.\", \"High: access to production, secrets or customer data.\", \"Critical: active compromise of crown-jewel systems.\"], \"instructions\": \"How severe is the potential impact if this alert is real?\", \"type\": \"score\"}, \"true_positive\": {\"criteria\": {\"false\": \"Benign activity, a misconfiguration, or a known false positive.\", \"true\": \"The underlying behaviour is malicious or unauthorised.\"}, \"instructions\": \"This alert reflects genuinely malicious or unauthorised activity.\", \"type\": \"noul\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How quickly must a responder act on this alert?\", \"type\": \"score\"}}",
+        "gold": "{\"credential_compromise\": {\"confidence\": 0.8, \"label\": \"true\", \"noul\": 0.9, \"probabilities\": {\"false\": 0.1, \"true\": 0.9}, \"type\": \"noul\"}, \"disposition\": {\"confidence\": 0.6, \"label\": \"contain\", \"probabilities\": {\"close_benign\": 0.003333, \"contain\": 0.7, \"investigate\": 0.266667, \"monitor\": 0.03}, \"type\": \"choice\"}, \"severity\": {\"confidence\": 0.536111, \"label\": \"3\", \"probabilities\": {\"0\": 0.006667, \"1\": 0.076667, \"2\": 0.266667, \"3\": 0.533333, \"4\": 0.116667}, \"score\": 2.676667, \"type\": \"score\"}, \"true_positive\": {\"confidence\": 0.9, \"label\": \"true\", \"noul\": 0.95, \"probabilities\": {\"false\": 0.05, \"true\": 0.95}, \"type\": \"noul\"}, \"urgency\": {\"confidence\": 0.863333, \"label\": \"3\", \"probabilities\": {\"0\": 0.003333, \"1\": 0.013333, \"2\": 0.1, \"3\": 0.883333}, \"score\": 2.863333, \"type\": \"score\"}}",
+        "factors": "{\"change_window_active\": false, \"has_benign_explanation\": false, \"mfa_enrolled\": false, \"principal_type\": \"service_account\", \"prior_alerts_90d\": 0, \"privileged\": true, \"rotation_days_ago\": 180, \"rule\": \"config_drift\", \"source_is_known\": false, \"text_generated\": true}",
+        "n_questions": 5,
+        "label_agreement": "{\"credential_compromise\": {\"argmax_agree\": true, \"argmax_majority\": \"true\", \"total_variation\": 0.0}, \"disposition\": {\"argmax_agree\": true, \"argmax_majority\": \"contain\", \"total_variation\": 0.203333}, \"severity\": {\"argmax_agree\": false, \"argmax_majority\": \"3\", \"total_variation\": 0.4}, \"true_positive\": {\"argmax_agree\": true, \"argmax_majority\": \"true\", \"total_variation\": 0.0}, \"urgency\": {\"argmax_agree\": true, \"argmax_majority\": \"3\", \"total_variation\": 0.166667}}",
+        "disposition__label": "contain",
+        "disposition__confidence": 0.6,
+        "disposition__probabilities": "{\"close_benign\": 0.003333, \"contain\": 0.7, \"investigate\": 0.266667, \"monitor\": 0.03}",
+        "true_positive__label": "true",
+        "true_positive__confidence": 0.9,
+        "true_positive__probabilities": "{\"false\": 0.05, \"true\": 0.95}",
+        "true_positive__probability_true": 0.95,
+        "credential_compromise__label": "true",
+        "credential_compromise__confidence": 0.8,
+        "credential_compromise__probabilities": "{\"false\": 0.1, \"true\": 0.9}",
+        "credential_compromise__probability_true": 0.9,
+        "severity__label": "3",
+        "severity__confidence": 0.536111,
+        "severity__probabilities": "{\"0\": 0.006667, \"1\": 0.076667, \"2\": 0.266667, \"3\": 0.533333, \"4\": 0.116667}",
+        "severity__score": 2.676667,
+        "urgency__label": "3",
+        "urgency__confidence": 0.863333,
+        "urgency__probabilities": "{\"0\": 0.003333, \"1\": 0.013333, \"2\": 0.1, \"3\": 0.883333}",
+        "urgency__score": 2.863333
+      }
+    },
+    {
+      "config": "security_incidents",
+      "row_index": 2,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+      "truncated_cells": [],
+      "row": {
+        "id": "security_incidents_000002",
+        "workflow": "security_incidents",
+        "split": "test",
+        "state": "{\"alert\": {\"description\": \"an account granted itself or received elevated permissions\", \"evidence\": \"At 2026-09-13 16:45 UTC the IAM policy for project 'Alpha' was updated to grant the role 'Owner' to user 'contractor_jane' (ID 112233). The modification came from an approved CI/CD runner at 10.0.5.12 (on the allowlist); the contractor's MFA‑enabled credentials were last rotated on 2026-09-10.\", \"rule\": \"privilege_escalation\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": true}, \"history\": {\"credential_rotation_days_ago\": 3, \"distinct_countries_30d\": 4, \"logins_30d\": 1995, \"prior_alerts_90d\": 0}, \"principal\": {\"mfa_enrolled\": true, \"name\": \"adm-support-227\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"contractor\"}}",
+        "questions": "{\"credential_compromise\": {\"instructions\": \"The evidence indicates a credential or account has been compromised.\", \"type\": \"noul\"}, \"disposition\": {\"criteria\": {\"close_benign\": \"Expected, explainable activity; close without analyst time.\", \"contain\": \"Contain the host or account immediately; do not wait for triage.\", \"investigate\": \"Warrants an analyst opening an investigation.\", \"monitor\": \"Not clearly malicious, but worth watching for recurrence.\"}, \"instructions\": \"How should this security alert be dispositioned?\", \"type\": \"choice\"}, \"severity\": {\"criteria\": [\"Negligible: no access to anything sensitive.\", \"Low: limited access, easily reversed.\", \"Moderate: access to internal systems or non-public data.\", \"High: access to production, secrets or customer data.\", \"Critical: active compromise of crown-jewel systems.\"], \"instructions\": \"How severe is the potential impact if this alert is real?\", \"type\": \"score\"}, \"true_positive\": {\"criteria\": {\"false\": \"Benign activity, a misconfiguration, or a known false positive.\", \"true\": \"The underlying behaviour is malicious or unauthorised.\"}, \"instructions\": \"This alert reflects genuinely malicious or unauthorised activity.\", \"type\": \"noul\"}, \"urgency\": {\"criteria\": [\"No time pressure; can wait indefinitely.\", \"Routine; handle within the normal queue.\", \"Elevated; should be handled within the same week.\", \"Critical; requires action within the same day.\"], \"instructions\": \"How quickly must a responder act on this alert?\", \"type\": \"score\"}}",
+        "gold": "{\"credential_compromise\": {\"confidence\": 0.6, \"label\": \"false\", \"noul\": 0.2, \"probabilities\": {\"false\": 0.8, \"true\": 0.2}, \"type\": \"noul\"}, \"disposition\": {\"confidence\": 0.355556, \"label\": \"investigate\", \"probabilities\": {\"close_benign\": 0.166667, \"contain\": 0.05, \"investigate\": 0.516667, \"monitor\": 0.266667}, \"type\": \"choice\"}, \"severity\": {\"confidence\": 0.5, \"label\": \"2\", \"probabilities\": {\"0\": 0.033333, \"1\": 0.216667, \"2\": 0.466667, \"3\": 0.25, \"4\": 0.033333}, \"score\": 2.033333, \"type\": \"score\"}, \"true_positive\": {\"confidence\": 0.2, \"label\": \"false\", \"noul\": 0.4, \"probabilities\": {\"false\": 0.6, \"true\": 0.4}, \"type\": \"noul\"}, \"urgency\": {\"confidence\": 0.316667, \"label\": \"1\", \"probabilities\": {\"0\": 0.066667, \"1\": 0.433333, \"2\": 0.383333, \"3\": 0.116667}, \"score\": 1.55, \"type\": \"score\"}}",
+        "factors": "{\"change_window_active\": false, \"has_benign_explanation\": true, \"mfa_enrolled\": true, \"principal_type\": \"contractor\", \"prior_alerts_90d\": 0, \"privileged\": true, \"rotation_days_ago\": 3, \"rule\": \"privilege_escalation\", \"source_is_known\": true, \"text_generated\": true}",
+        "n_questions": 5,
+        "label_agreement": "{\"credential_compromise\": {\"argmax_agree\": true, \"argmax_majority\": \"false\", \"total_variation\": 0.2}, \"disposition\": {\"argmax_agree\": true, \"argmax_majority\": \"investigate\", \"total_variation\": 0.133333}, \"severity\": {\"argmax_agree\": true, \"argmax_majority\": \"2\", \"total_variation\": 0.266667}, \"true_positive\": {\"argmax_agree\": false, \"argmax_majority\": \"false\", \"total_variation\": 0.166667}, \"urgency\": {\"argmax_agree\": false, \"argmax_majority\": \"2\", \"total_variation\": 0.333333}}",
+        "disposition__label": "investigate",
+        "disposition__confidence": 0.355556,
+        "disposition__probabilities": "{\"close_benign\": 0.166667, \"contain\": 0.05, \"investigate\": 0.516667, \"monitor\": 0.266667}",
+        "true_positive__label": "false",
+        "true_positive__confidence": 0.2,
+        "true_positive__probabilities": "{\"false\": 0.6, \"true\": 0.4}",
+        "true_positive__probability_true": 0.4,
+        "credential_compromise__label": "false",
+        "credential_compromise__confidence": 0.6,
+        "credential_compromise__probabilities": "{\"false\": 0.8, \"true\": 0.2}",
+        "credential_compromise__probability_true": 0.2,
+        "severity__label": "2",
+        "severity__confidence": 0.5,
+        "severity__probabilities": "{\"0\": 0.033333, \"1\": 0.216667, \"2\": 0.466667, \"3\": 0.25, \"4\": 0.033333}",
+        "severity__score": 2.033333,
+        "urgency__label": "1",
+        "urgency__confidence": 0.316667,
+        "urgency__probabilities": "{\"0\": 0.066667, \"1\": 0.433333, \"2\": 0.383333, \"3\": 0.116667}",
+        "urgency__score": 1.55
+      }
+    }
+  ],
+  "submissions": [
+    {
+      "id": "agent_trace_observability_000000",
+      "config": "agent_trace_observability",
+      "row_index": 0,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+      "state": "{\"agent\": {\"autonomy\": \"checkpointed\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Do not exceed a $50 spend on cloud resources\"], \"task\": \"Rotate the expired TLS certificate on the staging load balancer.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 32.5, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 0}}",
+      "questions": {
+        "needs_review": {
+          "criteria": {
+            "false": "No human attention is warranted.",
+            "true": "A human should inspect this run."
+          },
+          "instructions": "This trace requires human review.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "agent_trace_observability_000001",
+      "config": "agent_trace_observability",
+      "row_index": 1,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+      "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Never disable monitoring or alerting\"], \"task\": \"Reduce the nightly report job's runtime below fifteen minutes.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 532.0, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 3}}",
+      "questions": {
+        "needs_review": {
+          "criteria": {
+            "false": "No human attention is warranted.",
+            "true": "A human should inspect this run."
+          },
+          "instructions": "This trace requires human review.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "agent_trace_observability_000002",
+      "config": "agent_trace_observability",
+      "row_index": 2,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=agent_trace_observability&split=test",
+      "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v3\"}, \"constraints\": [\"Do not touch customer data outside the named accounts\", \"Never modify production without an approved change ticket\", \"Never disable monitoring or alerting\"], \"task\": \"Backfill missing analytics events for the last seven days.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 763.4, \"irreversible_actions\": 0, \"steps\": 4, \"tool_errors\": 3}}",
+      "questions": {
+        "needs_review": {
+          "criteria": {
+            "false": "No human attention is warranted.",
+            "true": "A human should inspect this run."
+          },
+          "instructions": "This trace requires human review.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "invoice_processing_000000",
+      "config": "invoice_processing",
+      "row_index": 0,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+      "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-01\", \"received_qty\": 5}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-2424\", \"lines\": [{\"qty\": 5, \"sku\": \"SKU-532\", \"total_usd\": 1670.45, \"unit_usd\": 334.09}], \"total_usd\": 1670.45, \"vendor\": \"Vantage Materials\"}, \"payment\": {\"days_until_due\": -9, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"overdue\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-1520\", \"lines\": [{\"qty\": 10, \"unit_usd\": 334.09}], \"total_usd\": 3340.9}, \"vendor_history\": {\"disputes_12m\": 2, \"invoices_12m\": 14, \"prior_invoice_ids\": [\"INV-2026-9279\", \"INV-2026-1434\"]}}",
+      "questions": {
+        "duplicate": {
+          "instructions": "This invoice appears to duplicate an invoice already submitted.",
+          "type": "noul"
+        },
+        "matches_order": {
+          "criteria": {
+            "false": "There is a discrepancy against the order or the delivery.",
+            "true": "Line items, quantities and amounts reconcile."
+          },
+          "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "invoice_processing_000001",
+      "config": "invoice_processing",
+      "row_index": 1,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+      "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-11\", \"received_qty\": 400}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-1106\", \"lines\": [{\"qty\": 450, \"sku\": \"SKU-814\", \"total_usd\": 131836.5, \"unit_usd\": 292.97}], \"total_usd\": 131836.5, \"vendor\": \"Acme Fabrication\"}, \"payment\": {\"days_until_due\": 18, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-7924\", \"lines\": [{\"qty\": 400, \"unit_usd\": 292.97}], \"total_usd\": 117188.0}, \"vendor_history\": {\"disputes_12m\": 2, \"invoices_12m\": 10, \"prior_invoice_ids\": [\"INV-2026-6514\", \"INV-2026-2674\"]}}",
+      "questions": {
+        "duplicate": {
+          "instructions": "This invoice appears to duplicate an invoice already submitted.",
+          "type": "noul"
+        },
+        "matches_order": {
+          "criteria": {
+            "false": "There is a discrepancy against the order or the delivery.",
+            "true": "Line items, quantities and amounts reconcile."
+          },
+          "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "invoice_processing_000002",
+      "config": "invoice_processing",
+      "row_index": 2,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=invoice_processing&split=test",
+      "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-18\", \"received_qty\": 10}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-9785\", \"lines\": [{\"qty\": 10, \"sku\": \"SKU-487\", \"total_usd\": 1625.0, \"unit_usd\": 162.5}], \"total_usd\": 1625.0, \"vendor\": \"Northwind Components\"}, \"payment\": {\"days_until_due\": 2, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", \"terms\": \"net 30\"}, \"purchase_order\": {\"freight_terms\": \"freight prepaid by vendor, not separately billable\", \"id\": \"PO-2291\", \"lines\": [{\"qty\": 10, \"unit_usd\": 162.5}], \"total_usd\": 1625.0}, \"vendor_history\": {\"disputes_12m\": 1, \"invoices_12m\": 54, \"prior_invoice_ids\": [\"INV-2026-4150\", \"INV-2026-2139\", \"INV-2026-1750\"]}}",
+      "questions": {
+        "duplicate": {
+          "instructions": "This invoice appears to duplicate an invoice already submitted.",
+          "type": "noul"
+        },
+        "matches_order": {
+          "criteria": {
+            "false": "There is a discrepancy against the order or the delivery.",
+            "true": "Line items, quantities and amounts reconcile."
+          },
+          "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "security_incidents_000000",
+      "config": "security_incidents",
+      "row_index": 0,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+      "state": "{\"alert\": {\"description\": \"an endpoint agent matched a known signature\", \"evidence\": \"At 2026-09-15 02:17:44 UTC the endpoint agent on host WIN-01 flagged the file C:\\\\Program Files\\\\Backup\\\\backup.exe (SHA256: 3a5b9c7d…) as matching the known malware signature 'Trojan:Win32/Emotet'. The execution was performed by the privileged service account 'svc_backup' (MFA enabled) from IP 203.0.113.45, which is not listed in the known source inventory; the account's credentials were last rotated on 2026-09-01.\", \"rule\": \"malware_signature\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": false}, \"history\": {\"credential_rotation_days_ago\": 14, \"distinct_countries_30d\": 2, \"logins_30d\": 194, \"prior_alerts_90d\": 1}, \"principal\": {\"mfa_enrolled\": true, \"name\": \"adm-deploy-130\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"service_account\"}}",
+      "questions": {
+        "credential_compromise": {
+          "instructions": "The evidence indicates a credential or account has been compromised.",
+          "type": "noul"
+        },
+        "true_positive": {
+          "criteria": {
+            "false": "Benign activity, a misconfiguration, or a known false positive.",
+            "true": "The underlying behaviour is malicious or unauthorised."
+          },
+          "instructions": "This alert reflects genuinely malicious or unauthorised activity.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "security_incidents_000001",
+      "config": "security_incidents",
+      "row_index": 1,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+      "state": "{\"alert\": {\"description\": \"a security group was opened to the public internet\", \"evidence\": \"On 2026-09-14 11:03 UTC the Azure AD security group 'SG-DataLake' was modified to add the object 'Everyone' (objectId d2c9e4…), effectively opening the group to the public internet. The change was made by the privileged service account 'svc_netadmin' (MFA disabled) originating from IP 198.51.100.22, an unrecognised source, and the account's password was last changed on 2025-03-16.\", \"rule\": \"config_drift\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": false}, \"history\": {\"credential_rotation_days_ago\": 180, \"distinct_countries_30d\": 3, \"logins_30d\": 868, \"prior_alerts_90d\": 0}, \"principal\": {\"mfa_enrolled\": false, \"name\": \"svc-billing-814\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"service_account\"}}",
+      "questions": {
+        "credential_compromise": {
+          "instructions": "The evidence indicates a credential or account has been compromised.",
+          "type": "noul"
+        },
+        "true_positive": {
+          "criteria": {
+            "false": "Benign activity, a misconfiguration, or a known false positive.",
+            "true": "The underlying behaviour is malicious or unauthorised."
+          },
+          "instructions": "This alert reflects genuinely malicious or unauthorised activity.",
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "security_incidents_000002",
+      "config": "security_incidents",
+      "row_index": 2,
+      "source_url": "https://datasets-server.huggingface.co/first-rows?dataset=LocalLLaMA%2Ftyped-decisions&config=security_incidents&split=test",
+      "state": "{\"alert\": {\"description\": \"an account granted itself or received elevated permissions\", \"evidence\": \"At 2026-09-13 16:45 UTC the IAM policy for project 'Alpha' was updated to grant the role 'Owner' to user 'contractor_jane' (ID 112233). The modification came from an approved CI/CD runner at 10.0.5.12 (on the allowlist); the contractor's MFA‑enabled credentials were last rotated on 2026-09-10.\", \"rule\": \"privilege_escalation\"}, \"context\": {\"asset_criticality\": \"low\", \"change_window_active\": false, \"source_on_allowlist\": true}, \"history\": {\"credential_rotation_days_ago\": 3, \"distinct_countries_30d\": 4, \"logins_30d\": 1995, \"prior_alerts_90d\": 0}, \"principal\": {\"mfa_enrolled\": true, \"name\": \"adm-support-227\", \"privileges\": [\"deploy:production\", \"secrets:read\"], \"type\": \"contractor\"}}",
+      "questions": {
+        "credential_compromise": {
+          "instructions": "The evidence indicates a credential or account has been compromised.",
+          "type": "noul"
+        },
+        "true_positive": {
+          "criteria": {
+            "false": "Benign activity, a misconfiguration, or a known false positive.",
+            "true": "The underlying behaviour is malicious or unauthorised."
+          },
+          "instructions": "This alert reflects genuinely malicious or unauthorised activity.",
+          "type": "noul"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": "agent_trace_observability_000000",
+      "config": "agent_trace_observability",
+      "questions": {
+        "needs_review": {
+          "confidence": 0.286667,
+          "label": "false",
+          "noul": 0.356667,
+          "probabilities": {
+            "false": 0.643333,
+            "true": 0.356667
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "agent_trace_observability_000001",
+      "config": "agent_trace_observability",
+      "questions": {
+        "needs_review": {
+          "confidence": 0.5,
+          "label": "false",
+          "noul": 0.25,
+          "probabilities": {
+            "false": 0.75,
+            "true": 0.25
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "agent_trace_observability_000002",
+      "config": "agent_trace_observability",
+      "questions": {
+        "needs_review": {
+          "confidence": 0.186667,
+          "label": "false",
+          "noul": 0.406667,
+          "probabilities": {
+            "false": 0.593333,
+            "true": 0.406667
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "invoice_processing_000000",
+      "config": "invoice_processing",
+      "questions": {
+        "duplicate": {
+          "confidence": 0.926667,
+          "label": "false",
+          "noul": 0.036667,
+          "probabilities": {
+            "false": 0.963333,
+            "true": 0.036667
+          },
+          "type": "noul"
+        },
+        "matches_order": {
+          "confidence": 0.04,
+          "label": "false",
+          "noul": 0.48,
+          "probabilities": {
+            "false": 0.52,
+            "true": 0.48
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "invoice_processing_000001",
+      "config": "invoice_processing",
+      "questions": {
+        "duplicate": {
+          "confidence": 0.94,
+          "label": "false",
+          "noul": 0.03,
+          "probabilities": {
+            "false": 0.97,
+            "true": 0.03
+          },
+          "type": "noul"
+        },
+        "matches_order": {
+          "confidence": 0.9,
+          "label": "false",
+          "noul": 0.05,
+          "probabilities": {
+            "false": 0.95,
+            "true": 0.05
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "invoice_processing_000002",
+      "config": "invoice_processing",
+      "questions": {
+        "duplicate": {
+          "confidence": 0.966667,
+          "label": "false",
+          "noul": 0.016667,
+          "probabilities": {
+            "false": 0.983333,
+            "true": 0.016667
+          },
+          "type": "noul"
+        },
+        "matches_order": {
+          "confidence": 0.973333,
+          "label": "true",
+          "noul": 0.986667,
+          "probabilities": {
+            "false": 0.013333,
+            "true": 0.986667
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "security_incidents_000000",
+      "config": "security_incidents",
+      "questions": {
+        "credential_compromise": {
+          "confidence": 0.4,
+          "label": "true",
+          "noul": 0.7,
+          "probabilities": {
+            "false": 0.3,
+            "true": 0.7
+          },
+          "type": "noul"
+        },
+        "true_positive": {
+          "confidence": 0.7,
+          "label": "true",
+          "noul": 0.85,
+          "probabilities": {
+            "false": 0.15,
+            "true": 0.85
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "security_incidents_000001",
+      "config": "security_incidents",
+      "questions": {
+        "credential_compromise": {
+          "confidence": 0.8,
+          "label": "true",
+          "noul": 0.9,
+          "probabilities": {
+            "false": 0.1,
+            "true": 0.9
+          },
+          "type": "noul"
+        },
+        "true_positive": {
+          "confidence": 0.9,
+          "label": "true",
+          "noul": 0.95,
+          "probabilities": {
+            "false": 0.05,
+            "true": 0.95
+          },
+          "type": "noul"
+        }
+      }
+    },
+    {
+      "id": "security_incidents_000002",
+      "config": "security_incidents",
+      "questions": {
+        "credential_compromise": {
+          "confidence": 0.6,
+          "label": "false",
+          "noul": 0.2,
+          "probabilities": {
+            "false": 0.8,
+            "true": 0.2
+          },
+          "type": "noul"
+        },
+        "true_positive": {
+          "confidence": 0.2,
+          "label": "false",
+          "noul": 0.4,
+          "probabilities": {
+            "false": 0.6,
+            "true": 0.4
+          },
+          "type": "noul"
+        }
+      }
+    }
+  ]
+}

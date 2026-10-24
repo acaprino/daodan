@@ -1,0 +1,102 @@
+{
+  "sampled_at": "2026-10-20T10:30:53.3233356Z",
+  "processes": [
+    {
+      "pid": 63568,
+      "cpu_seconds": 0.03125,
+      "working_set_bytes": 20480,
+      "peak_working_set_bytes": 4415488,
+      "private_memory_bytes": 811008,
+      "paged_memory_bytes": 811008,
+      "peak_paged_memory_bytes": 884736,
+      "wmi_page_file_usage_kib": 792,
+      "wmi_peak_page_file_usage_kib": 864
+    },
+    {
+      "pid": 73184,
+      "cpu_seconds": 3449.921875,
+      "working_set_bytes": 6079782912,
+      "peak_working_set_bytes": 19316727808,
+      "private_memory_bytes": 7844233216,
+      "paged_memory_bytes": 7844233216,
+      "peak_paged_memory_bytes": 26873974784,
+      "wmi_page_file_usage_kib": 7660384,
+      "wmi_peak_page_file_usage_kib": 26244116
+    }
+  ],
+  "system_free_physical_memory_kib": 12481320,
+  "system_total_visible_memory_kib": 32983768,
+  "system_free_virtual_memory_kib": 14804960,
+  "note": "Process lifetime peaks are observed counters, not measurements tied to one particular hunk.",
+  "observed_long_hunks": [
+    {
+      "result": "C02-H1.json",
+      "wall_seconds": 284.90096870000707,
+      "cpu_seconds": 999.59375,
+      "encoded_tokens": [
+        6082,
+        6057,
+        6046,
+        6056,
+        6078,
+        6073,
+        6078,
+        6072,
+        6064
+      ],
+      "answers": 9
+    },
+    {
+      "result": "C02-H4.json",
+      "wall_seconds": 385.342479199986,
+      "cpu_seconds": 1285.53125,
+      "encoded_tokens": [
+        7501,
+        7476,
+        7465,
+        7475,
+        7497,
+        7492,
+        7497,
+        7491,
+        7483
+      ],
+      "answers": 9
+    }
+  ],
+  "source_evidence": [
+    {
+      "installed_source": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\uv\\environments-v2\\run-eval-47cf6a5eba080dac\\Lib\\site-packages\\transformers\\models\\modernbert\\modeling_modernbert.py",
+      "sha256": "83875f54a029339c62a8f5061801873d41e134b3e9abb8308b8e9b0f9f57b5dc",
+      "excerpts": [
+        {
+          "start_line": 443,
+          "end_line": 478,
+          "text": "def sdpa_attention_forward(\n    module: \"ModernBertAttention\",\n    qkv: torch.Tensor,\n    attention_mask: torch.Tensor,\n    sliding_window_mask: torch.Tensor,\n    position_ids: torch.LongTensor | None,\n    local_attention: tuple[int, int],\n    bs: int,\n    dim: int,\n    position_embeddings: torch.Tensor,\n    **_kwargs,\n) -> tuple[torch.Tensor]:\n    # qkv: [batch_size, seqlen, 3, nheads, headdim]\n    cos, sin = position_embeddings\n    query, key, value = qkv.transpose(3, 1).unbind(dim=2)\n    # query, key, value: [batch_size, heads, seq_len, head_dim]\n    query, key = apply_rotary_pos_emb(query, key, cos, sin)\n\n    if local_attention != (-1, -1):\n        attention_mask = sliding_window_mask\n\n    attn_output = (\n        F.scaled_dot_product_attention(\n            query,\n            key,\n            value,\n            dropout_p=module.attention_dropout if module.training else 0.0,\n            attn_mask=attention_mask,\n        )\n        .transpose(1, 2)\n        .contiguous()\n    )\n    attn_output = attn_output.view(bs, -1, dim)\n    return (attn_output,)\n\n"
+        },
+        {
+          "start_line": 988,
+          "end_line": 1017,
+          "text": "    def _update_attention_mask(self, attention_mask: torch.Tensor, output_attentions: bool) -> torch.Tensor:\n        if output_attentions:\n            if self.config._attn_implementation == \"sdpa\":\n                logger.warning_once(\n                    \"Outputting attentions is only supported with the 'eager' attention implementation, \"\n                    'not with \"sdpa\". Falling back to `attn_implementation=\"eager\"`.'\n                )\n                self.config._attn_implementation = \"eager\"\n            elif self.config._attn_implementation != \"eager\":\n                logger.warning_once(\n                    \"Outputting attentions is only supported with the eager attention implementation, \"\n                    f'not with {self.config._attn_implementation}. Consider setting `attn_implementation=\"eager\"`.'\n                    \" Setting `output_attentions=False`.\"\n                )\n\n        global_attention_mask = _prepare_4d_attention_mask(attention_mask, self.dtype)\n\n        # Create position indices\n        rows = torch.arange(global_attention_mask.shape[2]).unsqueeze(0)\n        # Calculate distance between positions\n        distance = torch.abs(rows - rows.T)\n\n        # Create sliding window mask (1 for positions within window, 0 outside)\n        window_mask = (\n            (distance <= self.config.local_attention // 2).unsqueeze(0).unsqueeze(0).to(attention_mask.device)\n        )\n        # Combine with existing mask\n        sliding_window_mask = global_attention_mask.masked_fill(window_mask.logical_not(), torch.finfo(self.dtype).min)\n\n        return global_attention_mask, sliding_window_mask"
+        }
+      ]
+    },
+    {
+      "installed_source": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\uv\\environments-v2\\run-eval-47cf6a5eba080dac\\Lib\\site-packages\\torch\\nn\\modules\\transformer.py",
+      "sha256": "7c02d7948a34015aa835df9bb4e1886b3ec59e84684c30765d3dc3d321d99098",
+      "excerpts": [
+        {
+          "start_line": 839,
+          "end_line": 941,
+          "text": "\n        is_fastpath_enabled = torch.backends.mha.get_fastpath_enabled()\n\n        why_not_sparsity_fast_path = \"\"\n        if not is_fastpath_enabled:\n            why_not_sparsity_fast_path = (\n                \"torch.backends.mha.get_fastpath_enabled() was not True\"\n            )\n        elif src.dim() != 3:\n            why_not_sparsity_fast_path = (\n                f\"input not batched; expected src.dim() of 3 but got {src.dim()}\"\n            )\n        elif self.training:\n            why_not_sparsity_fast_path = \"training is enabled\"\n        elif not self.self_attn.batch_first:\n            why_not_sparsity_fast_path = \"self_attn.batch_first was not True\"\n        elif self.self_attn.in_proj_bias is None:\n            why_not_sparsity_fast_path = \"self_attn was passed bias=False\"\n        elif not self.self_attn._qkv_same_embed_dim:\n            why_not_sparsity_fast_path = \"self_attn._qkv_same_embed_dim was not True\"\n        elif not self.activation_relu_or_gelu:\n            why_not_sparsity_fast_path = \"activation_relu_or_gelu was not True\"\n        elif self.norm1.eps != self.norm2.eps:\n            why_not_sparsity_fast_path = \"norm1.eps is not equal to norm2.eps\"\n        elif src.is_nested and (\n            src_key_padding_mask is not None or src_mask is not None\n        ):\n            why_not_sparsity_fast_path = \"neither src_key_padding_mask nor src_mask are not supported with NestedTensor input\"\n        elif self.self_attn.num_heads % 2 == 1:\n            why_not_sparsity_fast_path = \"num_head is odd\"\n        elif torch.is_autocast_enabled():\n            why_not_sparsity_fast_path = \"autocast is enabled\"\n        elif any(\n            len(getattr(m, \"_forward_hooks\", {}))\n            + len(getattr(m, \"_forward_pre_hooks\", {}))\n            for m in self.modules()\n        ):\n            why_not_sparsity_fast_path = \"forward pre-/hooks are attached to the module\"\n        if not why_not_sparsity_fast_path:\n            tensor_args = (\n                src,\n                self.self_attn.in_proj_weight,\n                self.self_attn.in_proj_bias,\n                self.self_attn.out_proj.weight,\n                self.self_attn.out_proj.bias,\n                self.norm1.weight,\n                self.norm1.bias,\n                self.norm2.weight,\n                self.norm2.bias,\n                self.linear1.weight,\n                self.linear1.bias,\n                self.linear2.weight,\n                self.linear2.bias,\n            )\n\n            # We have to use list comprehensions below because TorchScript does not support\n            # generator expressions.\n            _supported_device_type = [\n                \"cpu\",\n                \"cuda\",\n                \"xpu\",\n                torch.utils.backend_registration._privateuse1_backend_name,\n            ]\n            if torch.overrides.has_torch_function(tensor_args):\n                why_not_sparsity_fast_path = \"some Tensor argument has_torch_function\"\n            elif not all(\n                (x.device.type in _supported_device_type) for x in tensor_args\n            ):\n                why_not_sparsity_fast_path = (\n                    \"some Tensor argument's device is neither one of \"\n                    f\"{_supported_device_type}\"\n                )\n            elif torch.is_grad_enabled() and any(x.requires_grad for x in tensor_args):\n                why_not_sparsity_fast_path = (\n                    \"grad is enabled and at least one of query or the \"\n                    \"input/output projection weights or biases requires_grad\"\n                )\n\n            if not why_not_sparsity_fast_path:\n                merged_mask, mask_type = self.self_attn.merge_masks(\n                    src_mask, src_key_padding_mask, src\n                )\n                return torch._transformer_encoder_layer_fwd(\n                    src,\n                    self.self_attn.embed_dim,\n                    self.self_attn.num_heads,\n                    self.self_attn.in_proj_weight,\n                    self.self_attn.in_proj_bias,\n                    self.self_attn.out_proj.weight,\n                    self.self_attn.out_proj.bias,\n                    self.activation_relu_or_gelu == 2,\n                    self.norm_first,\n                    self.norm1.eps,\n                    self.norm1.weight,\n                    self.norm1.bias,\n                    self.norm2.weight,\n                    self.norm2.bias,\n                    self.linear1.weight,\n                    self.linear1.bias,\n                    self.linear2.weight,\n                    self.linear2.bias,\n                    merged_mask,\n                    mask_type,"
+        }
+      ]
+    }
+  ],
+  "diagnosis": {
+    "observed": "The process lifetime peaks are 19,316,727,808 bytes resident and 26,873,974,784 bytes in the paged/private allocation counter. The machine has 33,775,378,432 physical bytes. These are lifetime peaks, not per-hunk attribution.",
+    "source_inference": "The ModernBERT SDPA implementation constructs dense global and sliding masks over the full sequence, even for local-attention layers. The model adds two full TransformerEncoder head layers with marker_only_head=False. Nine valid questions share a padded batch, so the dense attention/mask work scales with batch and squared sequence length. Memory pressure is a plausible contributor to slow long hunks.",
+    "unknown": "No page-fault, swap-throughput or per-kernel profile was collected; the share of time attributable to paging versus computation is unknown.",
+    "changes": "No runtime, batch, thread, input, or model changes made."
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "individual-C007-catalog_noul",
+  "kind": "individual",
+  "case_id": "C007",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Check the tracked generated site output and report whether it is intentional publication material or repository debris. Make no changes.",
+    "artifacts": [
+      {
+        "path": "evidence/git-ls-files.txt",
+        "content": "dist/index.html\ndist/assets/main.js\n.github/workflows/pages.yml\nCNAME"
+      },
+      {
+        "path": ".github/workflows/pages.yml",
+        "content": "name: Pages\non: [push]\njobs:\n  publish:\n    steps:\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: dist"
+      },
+      {
+        "path": "CNAME",
+        "content": "docs.example.org"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches."
+      }
+    }
+  },
+  "sha256": "3a5e1d4e659058751cbeffca53451959316e0560fd589ce03edefb42ce40109d"
+}

@@ -92,8 +92,12 @@ Each retains its existing owner and validation boundary.
 | Reviewer composer | Propose applicable specialist identities, scopes and compatible groupings from requirements and evidence. | Resolve identities and assemble canonical specialist bodies, preserving required coverage and independent review. |
 
 The router already separates prompted classification from deterministic model
-selection. Graph proposal generation and reviewer composition remain to be
-implemented and verified. The
+selection. Canonical reviewer assembly is implemented in
+[`composition.py`](../../scripts/daodan/composition.py), under the
+[review binding method](../../plugins/senior-review/skills/review-preparation/references/composition.md).
+That assembly does not establish the prompted semantic selection or general
+graph proposal generation described here, which remain to be implemented and
+verified. It also does not prove execution on installed hosts. The
 [reviewer design](../superpowers/specs/2026-10-22-specialized-reviewers-design.md)
 continues to own specialist content: the prompt selects and groups references;
 it does not freely rewrite the specialist methods. Mandatory checks cannot be

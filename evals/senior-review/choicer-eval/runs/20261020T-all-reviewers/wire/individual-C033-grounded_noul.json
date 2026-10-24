@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review whether the coding-agent instruction file contains transient run state or duplicated rules that should have a durable owner. Propose destinations without deleting information.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "Use the existing test owner before adding another file.\nCurrent task: finish the checkout retry patch on branch retry-fix.\nTemporary evidence is in scratch/run-58.\nBefore writing tests, use the existing test owner."
+      },
+      {
+        "path": "docs/working-principles.md",
+        "content": "Test additions extend the existing owner unless a justified split is approved."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      }
+    }
+  }
+}

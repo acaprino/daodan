@@ -1,0 +1,1651 @@
+{
+  "schema": "choicer-eval/blind-reader-v1",
+  "reader_id": "reader_1",
+  "items": [
+    {
+      "blind_id": "J01",
+      "group": "J",
+      "input_sha256": "3075413ac2ee7b896947b764a90f164b8c3023d846042aeb9981b466e9d604fc",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "scope_utils.py:318 filter_account_scoped_items filters account positions using JWT user_scopes and visible agents."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Temporary local sets visible_account_keys and visible_config_names for in-memory filtering without persistence or cache."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous in-memory filtering with no retries, timeouts, timers, polling, or background error handling."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Ordinary local collection allocation with no locks, files, connections, workers, or bounded resource slots."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend scope-filtering utility with no UI event handling or rendered state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process function call filter_agents_by_scope and local list filtering without service boundary messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "scope_utils.py:318 enforces one-account-per-gestore visibility invariant and broker_alias:account_login or config_name matching rules."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Normal implementation and docstring with no visible obsolescence, dead code, or contradiction."
+        }
+      }
+    },
+    {
+      "blind_id": "J02",
+      "group": "J",
+      "input_sha256": "de5ebb1a170a3bc42dee1c8fc3d69bb44c7773914c6ba3e396f5c008d1c746d0",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Generic cache get/set wrapper with no access control, credential handling, or untrusted input boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "async_cache.py:91 get and set read and write cached entries with effective_ttl and hit/miss tracking."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Uses async/await and passes TTL parameter without implementing retry, timeout, polling, or failure recovery."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Plain async delegation to self._cache.get and self._cache.set without acquiring or releasing owned resources."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend cache wrapper with no UI events or rendered state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process async method delegation on self._cache without cross-service message routing or transport contracts."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Simple hit/miss counter increment and default TTL selection without domain invariants or state transitions."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Clean methods and docstrings with no visible obsolescence or contradiction."
+        }
+      }
+    },
+    {
+      "blind_id": "J03",
+      "group": "J",
+      "input_sha256": "cdde8ec837b25e6dffe42b6c1705768124b93a8e712fc92b20b54d357889ac3a",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal correlation trace_id generation and retry orchestration without authentication, access control, or secrets."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Coordinates transient in-memory asyncio.Event and pending trace_id callback rather than persisted or cached state."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "ack_round_trip.py:38-120 implements retry loop, per-attempt asyncio.wait_for timeouts, progressive sleep delays, and transient exception retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Resets pending trace_id callback and asyncio.Event in finally block, not a lock, connection, or bounded slot."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend async ACK coordination utility with no UI events or rendering state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "ack_round_trip.py:38 publishes trace_id-tagged request messages and awaits matching asynchronous ACK events from a listener."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "ack_round_trip.py:38 enforces trace_id ordering and correlation invariant via set_pending_trace_id before publish and cleanup in finally."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Docstring and implementation agree with no unused code or contradiction."
+        }
+      }
+    },
+    {
+      "blind_id": "J04",
+      "group": "J",
+      "input_sha256": "54b880bc916f89ba8f35d742ed6cf7c57114521c157d93984ba4b080d80fda37",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure internal datetime-to-timestamp conversion with no trust boundary, credentials, or access control."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Stateless value conversion with no persisted records or cached state."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Excludes merely converting a timestamp/date value without timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure function allocating no locks, connections, files, or bounded resource slots."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend datetime utility with no UI events or rendered state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Local in-process computation with no message publishing or transport contracts."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Excludes numerical/date conversion without a domain invariant."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Docstring says float while aware branch returns int, but no obsolete code or dead assets."
+        }
+      }
+    },
+    {
+      "blind_id": "J05",
+      "group": "J",
+      "input_sha256": "f62c4695407e59066292a45288c0bcea8168650d9938fc2f0113ccceb91a0db5",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal circuit breaker state check and counter management without credentials, access control, or untrusted input."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Updates transient in-memory circuit breaker state and probe counter rather than persisted records or external cache."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "circuit_breaker.py:394 _can_execute and _release_half_open_slot govern failure recovery probing across CLOSED, OPEN, and HALF_OPEN states."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "circuit_breaker.py:409 _release_half_open_slot releases bounded half_open_max_calls probe slots across success, failure, or cancellation paths."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend resilience primitive with no UI events or rendered state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process circuit breaker state methods with no cross-service message publishing or routing."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "circuit_breaker.py:394-424 enforces CLOSED/OPEN/HALF_OPEN state admission rules and guards _half_open_calls against underflow after state bounce."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Clear code and comments with no unused constructs or documentation contradictions."
+        }
+      }
+    },
+    {
+      "blind_id": "J06",
+      "group": "J",
+      "input_sha256": "7fbaf5b1c4099e9bcd08c95473c8a22f0975f00ca80083a7ecacbe5964450e25",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Excludes non-security hashing/IDs: deterministic_id hashes strings with SHA-256 solely for reproducible agent/log identifiers."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure stateless string hashing function with no persisted records or cache operations."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous pure function with no timers, retries, timeouts, or async recovery."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Ordinary string allocation with no locks, files, connections, or bounded resource slots."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend ID utility with no UI state or events."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process string transformation with no message transport or service boundary calls."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Generic string normalization and SHA-256 truncation without domain state transitions or invariants."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Well-documented utility with no dead code or docstring mismatch."
+        }
+      }
+    },
+    {
+      "blind_id": "J07",
+      "group": "J",
+      "input_sha256": "319fbe6409946e75f4c74e8460e615c0ae16ac9d294ce9cf8f81b92a8ba19581",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal async lock instrumentation and metrics without authentication, authorization, or sensitive data."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Updates in-memory lock timing metrics and holder attributes rather than persisted records or external caches."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Measures lock wait/hold durations and logs contention warnings without governing timeouts, retries, or failure recovery."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "instrumented_lock.py:149 acquire, release, __aenter__, and __aexit__ acquire and release an async lock across context manager paths."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend lock wrapper with no UI event or rendering coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process asyncio lock wrapper with no cross-process messaging or transport contracts."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Tracks lock holder and timing metrics without enforcing domain rules or business state transitions."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "No unused code, obsolete dependencies, or comment contradictions in the shown lock methods."
+        }
+      }
+    },
+    {
+      "blind_id": "J08",
+      "group": "J",
+      "input_sha256": "fb5842d9fde6b767ad24cb451cddce4b959c2ba41ad51d240adfa4eb9c4f802a",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "log_safety.py:87 redact_message masks credentials in connection strings, credit cards, SSNs, and secrets in log output."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Stateless string redaction transformation with no persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous regex substitution with no retries, timers, timeouts, or background tasks."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Ordinary string manipulation with no locks, handles, connections, or resource slots."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend log redaction utility with no UI state or events."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process log string transformation with no cross-service message routing."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Environment flag check (is_development) and regex masking covered by security output handling rather than domain invariants."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Implementation matches docstring with no dead code or contradictions."
+        }
+      }
+    },
+    {
+      "blind_id": "D01",
+      "group": "D",
+      "input_sha256": "a4aea7e63f0e584ed092907fa4eaa74ae90b34af0e0930d8cb4729b1d18fd0b5",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Shows only PHP namespace, use import, and class docblock header with no security mechanism."
+        },
+        "data-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Entity header only; class body and persistence mapping are not shown in the window."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Static PHP namespace and import header with no timers, retries, or async execution."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Declaration header only with no resource acquisition or release."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend PHP entity header with no UI events or state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "PHP entity header with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Class body is omitted; only namespace, import, and docblock start are visible."
+        },
+        "cleanup-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Entity/ClientContactDetails.php:12 imports ContactDetails from the exact same namespace WellCommerce\\Bundle\\ClientBundle\\Entity (redundant same-namespace use statement)."
+        }
+      }
+    },
+    {
+      "blind_id": "D02",
+      "group": "D",
+      "input_sha256": "633be53d2323a5805b393e6be9a6d3ac1992dbfb64732330a94eb38a62c128ea",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Shows only PHP DataGrid use imports with no authentication, authorization, or input validation logic."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Only import statements are shown; no record reading, writing, or caching code appears."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "PHP use statements only with no retries, timeouts, or timers."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Import declarations only with no resource handles or locks."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Server-side PHP DataGrid import header without client UI event or render state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process PHP component imports without cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Only use import lines are shown; DataGrid configuration methods are omitted."
+        },
+        "cleanup-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Only use imports are visible without the rest of the file to verify whether imported symbols are unused."
+        }
+      }
+    },
+    {
+      "blind_id": "D03",
+      "group": "D",
+      "input_sha256": "6bce07dafa33b34346ce2d15ccc8c61ab05020d273c8074cb207feb6fd76c4c0",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "JSDoc typedef for map layer options with no security boundary or sensitive data."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "JSDoc comment documenting a cacheSize option without executable cache read/write/invalidation code."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "JSDoc option comments only with no timer, retry, or timeout logic."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "JSDoc typedef comment with no resource acquisition or release."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Static JSDoc property documentation without asynchronous UI coordination code."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "JSDoc typedef with no inter-service messaging or transport contracts."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "JSDoc type definition only with no executable domain invariant."
+        },
+        "cleanup-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Only JSDoc typedef header is shown without constructor implementation to compare against documented options."
+        }
+      }
+    },
+    {
+      "blind_id": "D04",
+      "group": "D",
+      "input_sha256": "7eae4d031f784b0a710e4eda01fae9dc68553abdd6455c6350972311832eba97",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Unit test skip conditions and test helper class stub with no security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Test setup and dtype skip checks with no persisted records or state caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Parameterized test decorators and SkipTest checks without retries, timers, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "_TestingOutputStream stub has no shown resource acquisition or release methods."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Python numerical JIT test code with no UI events or rendered state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process test code with no service boundary messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Test skip guards for unsupported dtypes and env flag rather than domain logic invariants."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Test skip guards and helper class header show no dead code or contradictory comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D05",
+      "group": "D",
+      "input_sha256": "2634eaa6dba47068871b68421a8888a278fa73b7ed931cccf9697bc2c090023f",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "FFmpeg/function-3.c:1-155 parses untrusted WAV/RIFX header bytes from AVIOContext pb, validating size, cbSize, nb_streams, bitrate, and sample_rate."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory binary stream parsing into AVCodecContext struct fields without persisted store or cache reconciliation."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous binary header parser with no retries, timers, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "FFmpeg/function-3.c:95,112 frees existing codec->extradata via av_freep before reallocating with ff_get_extradata and returning on ENOMEM."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Low-level C audio demuxer parser with no UI interaction."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process binary media header parsing rather than cross-service message transport."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "FFmpeg/function-3.c:1-190 enforces WAV/WAVEFORMATEX format invariants, stream count bounds, bitrate overflow handling, and codec-specific parameter overrides."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Active C parser implementation with no visible dead code or contradictory comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D06",
+      "group": "D",
+      "input_sha256": "856ac537aa92de504e1cea307ce0c29ffd992165a6e4f8fa7c82a861dde661ef",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal FLAC encoder bit-count calculation over encoder structures with no untrusted input boundary or secrets."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure local bit-count summation over in-memory subframe structures."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous loop calculation with no timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Uses only stack integers with no dynamic allocation, locks, or handles."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "C audio encoding math function with no UI components."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process calculation with no cross-service communication."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "FFmpeg/function-35.c:1 subframe_count_exact computes exact bit counts per FLAC subframe type and partition order bounds."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Concise C function with no unused variables or contradictory comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D07",
+      "group": "D",
+      "input_sha256": "d6d946dba10d6a956a8d8374bdc393723a14b8e7719a9e2b2b0c1be7098b7285",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "FFmpeg/function-60.c:1 mpeg1_decode_sequence parses untrusted bitstream buf via get_bits, validating width, height, frame_rate_index, and quantizer matrices."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Populates in-memory decoder context fields and quantization tables from bitstream without persistent storage or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous bitstream header decoding with no timeouts, retries, or timers."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "FFmpeg/function-60.c:45-68 calls MPV_common_end(s) when mpeg_enc_ctx_allocated is set before reinitializing with MPV_common_init(s)."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "C video codec sequence header decoder with no UI state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process bitstream decoding with no inter-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "FFmpeg/function-60.c:25-70 enforces MPEG-1 sequence header constraints (even positive dimensions, marker bit, valid frame_rate_index) and context reinit rules."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Active C decoder function with standard #ifdef DEBUG tracing and no obsolete code."
+        }
+      }
+    },
+    {
+      "blind_id": "D08",
+      "group": "D",
+      "input_sha256": "254490b3e42bd3413696f83f003b58c4129c17729ebe251e599b8c0bc96f540d",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Internal VC-1 inverse transform DC loop writing 8x8 pixel block via ff_cropTbl lookup without direct untrusted input parsing."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory pixel buffer transformation with no persisted records or cache."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Tight synchronous loop over 8 rows with no timers or retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Uses stack variables and caller-supplied buffer pointers with no resource acquisition or release."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Low-level C video DSP routine with no UI coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process array math with no message routing."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Pure numerical DC scaling and crop-table clamping without domain state transitions."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Compact C DSP function with no dead code or comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D09",
+      "group": "D",
+      "input_sha256": "0a8eecf8e2926b12ef4b20cd372c9a6858de896a8add623870617037f4b2e940",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal AC-3 audio encoder rematrixing calculation over MDCT coefficients with no untrusted boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Computes in-memory rematrixing flags across encoder blocks without persistence or external cache."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous nested loops over AC3 blocks and bands with no timers or retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Stack variables and in-place struct updates with no resource lifecycle."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Low-level C audio encoder routine with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process encoder strategy computation with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "FFmpeg/function-149.c:1-60 computes band energy sums and enforces block0 comparison before setting new_rematrixing_strategy."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Normal C implementation with only a minor repeated word in comment and no dead code."
+        }
+      }
+    },
+    {
+      "blind_id": "D10",
+      "group": "D",
+      "input_sha256": "1b7aac1893ad0c93c7147d2e039b8151b5a2cb017c6159275dd04347151231d1",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "FFmpeg/function-185.c:15 reads motion vector deltas from bitstream via svq3_get_se_golomb(gb) and indexes motion_val arrays by block_type."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Updates in-memory decoder motion vector arrays for current macroblock without persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Frame-thread progress wait ff_thread_await_progress is in-process synchronization, not timeout/retry/backoff recovery."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Manipulates preallocated frame buffers with no lock, file, connection, or slot acquisition/release."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "C video decoder motion vector routine with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process video macroblock decoding with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "FFmpeg/function-185.c:18-165 enforces macroblock motion vector prediction, reference frame progress ordering, and block_type switch invariants."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Active C decoder switch statement with no dead code or contradictory comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D11",
+      "group": "D",
+      "input_sha256": "1f60e50aeae2c19abc5cb4834c06a8cc3982a0b78a3302c2e6fdb44d6dfd6dad",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Boolean feature flag helper for unknown enum deserialization with no security boundary or credentials."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Configuration helper checking READ_UNKNOWN_ENUM_VALUES_AS_NULL without reading or writing persisted records."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous boolean check with no timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Stateless boolean predicate with no resource handles."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend Jackson deserializer helper with no UI interaction."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process Jackson configuration helper without transport or routing logic."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "EnumDeserializer.java:486 useNullForUnknownEnum defines fallback precedence between per-deserializer _useNullForUnknownEnum and context feature flag."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Release note entry and helper method show no dead code or contradiction."
+        }
+      }
+    },
+    {
+      "blind_id": "D12",
+      "group": "D",
+      "input_sha256": "16c53c5019c89dd5cc510d3c283387cd73b53076ea1b73dfcf8af65714c31bdc",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal gRPC DNS resolver state reset and service config parse logging without authentication or secret handling."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Propagates resolved addresses and service config in memory without persistence or cache invalidation logic."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "dns_resolver.go:268 resets retryCount and timer d.t.Reset(d.freq) before sleeping to throttle re-resolutions."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Resets an existing timer in-place without acquiring or releasing connections, locks, or resource slots."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend Go gRPC DNS resolver with no UI state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "dns_resolver.go:268 and resolver_conn_wrapper.go:217 pass resolved service config and addresses across gRPC resolver-client transport hooks."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Snippets are truncated mid-block around service config handling, leaving state invariants incomplete."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "No unused code or contradictory comments in the shown Go fragments."
+        }
+      }
+    },
+    {
+      "blind_id": "D13",
+      "group": "D",
+      "input_sha256": "116b891fcd9d014ad41c09dc83073fd43174cf8a675300646ad4ed0a7883ccb2",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "credentials/alts/utils.go:83 isRunningOnGCP checks platform identity for ALTS credentials and calls log.Fatalf on readManufacturer error."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Reads local platform manufacturer info with no persisted records or cache state."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Calls log.Fatalf immediately on error with no retry, timeout, or recovery."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Delegates to readManufacturer() whose file/handle lifecycle is not shown in the window."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend Go credentials helper with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Local host environment check with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Function is truncated right after error check before manufacturer comparison logic is shown."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "No dead code or contradictory comments in the 7-line snippet."
+        }
+      }
+    },
+    {
+      "blind_id": "D14",
+      "group": "D",
+      "input_sha256": "4786b66fa5812ee8ccef1612bb0a7beac7fc2973b602e37abe99a94203114547",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Static CSS border style mapping definitions with no security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Static style configuration objects with no persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure synchronous style helper definitions with no timers or async logic."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Module-level constant declarations with no owned resources."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Excludes static styling without asynchronous UI state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Frontend style configuration with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Declarative theme property mappings without domain state invariants."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Standard style exports and eslint comment with no obsolete code."
+        }
+      }
+    },
+    {
+      "blind_id": "D15",
+      "group": "D",
+      "input_sha256": "97b42a4f9538a4deef509b8d2c276d8b6c3dcbf60b1eb7d9260e1fab546b1d13",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "UI docs route lists, TypeScript theme declarations, and demo button state with no security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Static navigation arrays, type definitions, and local React demo state with no persistence or cache."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "No timers, retries, timeouts, or async operations."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Type imports, static arrays, and plain React state setter with no resource handles."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "JoyVariablesDemo.tsx:219 has synchronous onClick setSx state update without asynchronous UI coordination or race risk."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Frontend docs and theme type definitions with no service boundary messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "JoyVariablesDemo.tsx:223 disabled check (!sx[item.var] and sx[item.var] !== item.defaultValue) is simple UI button state."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Consistent component exports, docs routes, and type definitions with no visible obsolescence."
+        }
+      }
+    },
+    {
+      "blind_id": "D16",
+      "group": "D",
+      "input_sha256": "d27b77687e66fa33ccc2cc6b6ae1f5868ff5a7721bc134640a62f73d6ba62b64",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Markdown docs, component barrel exports, and React forwardRef wrapper with no security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Static documentation metadata and UI component exports with no data persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "No timers, retries, or async error handling in the shown lines."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "React component imports and prop destructuring with no resource lifecycle."
+        },
+        "ui-race-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "LoadingButton.js:135 is truncated at prop destructuring before any loading state rendering coordination is shown."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "UI component exports and docs with no cross-service communication."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Barrel exports and truncated prop setup with no domain invariants."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Normal docs and component exports with no dead code or contradictions."
+        }
+      }
+    },
+    {
+      "blind_id": "D17",
+      "group": "D",
+      "input_sha256": "9c080b1901679bf4e44400d2f28d78320b76e1226d582634cb6200f54d19447d",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal Astropy TimeSeries column name validation with no trust boundary or secrets."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Checks in-memory table column names without reading or writing persisted records or caches."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous column validation check with no timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory attribute inspection with no locks, files, or connections."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Scientific Python data structure validation with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process method check with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "astropy/timeseries/core.py:55,76 _check_required_columns enforces required prefix column ordering invariants and _required_columns_relax fallback rules."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "No unused code or contradictory comments in the shown validation snippet."
+        }
+      }
+    },
+    {
+      "blind_id": "D18",
+      "group": "D",
+      "input_sha256": "59f999ca286c0f8a13bc28b4590c57dd60adf32271d7a3561b610ff611fc8e5f",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure NumPy coordinate matrix construction with no security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Allocates local NumPy array cright in memory with no persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous array slicing and hstack with no async or timing logic."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Ordinary NumPy array allocation with no owned external resources."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend mathematical modeling function with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process NumPy array computation with no messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "astropy/modeling/separable.py:242 constructs separability matrix cright and slice assignment cright[-right.shape[0]:, -right.shape[1]:] = 1."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Brief 8-line numerical snippet with no dead code or contradictions."
+        }
+      }
+    },
+    {
+      "blind_id": "D19",
+      "group": "D",
+      "input_sha256": "3ef386e60e4dd0d3cf38309fd9f554d3a79ed7f17ca310dc23c0f81a4eed9a51",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "FITS header card string regex and quote unescaping for scientific file format parsing without security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "astropy/io/fits/card.py:66,859 parses FITS card string values, stripping trailing spaces, unescaping doubled quotes, and handling ampersand continuation."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous regex compilation and string manipulation with no timers or retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory regex and string operations with no file descriptor or lock management."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "File format parser utility with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process FITS header value parsing with no cross-service communication."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "astropy/io/fits/card.py:859 enforces FITS standard string value parsing rules for quote unescaping, rstrip, and ampersand continuation."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Clear regex definitions and string parsing lines with no dead code."
+        }
+      }
+    },
+    {
+      "blind_id": "D20",
+      "group": "D",
+      "input_sha256": "fa949a334340351f5d528d6493d63147e04934565c20eb0ebd1b08ab98069f11",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "django/core/validators.py:94 defines URL validation regex matching scheme, user:pass authentication, host/IP, port, and path on untrusted input."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Compiled regex definition with no persistence or cache operations."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Regex compilation only with no timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Lazy regex compilation with no locks, files, connections, or bounded slots."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend validator regex with no UI state."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process URL validation regex with no message transport."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "django/core/validators.py:94 specifies structural URL syntax rules for credentials, IPv4/IPv6/host, port range, and path."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Concise regex definition with accurate inline comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D21",
+      "group": "D",
+      "input_sha256": "b44d94de151468aa371295ea3edb6e15c79052da9f5741857ecb780094dd35f5",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "django/utils/html.py:24-336 escapes HTML special chars via mark_safe/translate and unescapes/quotes URLs in urlize handling untrusted text."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Stateless HTML escaping and URL text transformation utilities without persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous string and regex transformations with no timers or retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure string utilities with no locks, files, or connections."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Server-side HTML string escaping utilities with no asynchronous UI state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process string sanitization utilities with no service boundary messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "django/utils/html.py:259-336 enforces entity unescaping and trailing punctuation trimming ordering when extracting and quoting URLs."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "import json and HTMLParser appear at top of file while body is truncated; no confirmed dead code."
+        }
+      }
+    },
+    {
+      "blind_id": "D22",
+      "group": "D",
+      "input_sha256": "afb17ea24a537b15710f5ef46c02881111694e5d5ec463066cef8684a8715203",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Build-time static asset filename hashing and reference substitution with no untrusted user or secret boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "django/contrib/staticfiles/storage.py:226-250 reconciles multi-pass post-processed static file paths and updates self.hashed_files mapping."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Bounded synchronous multi-pass dependency resolution loop, not temporal retry/timeout/backoff."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Generator yielding path tuples and updating dict without acquiring locks, files, or connections in shown code."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Backend staticfiles storage pipeline with no UI event coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process static asset post-processing generator with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "django/contrib/staticfiles/storage.py:226-250 enforces single initial pass followed by up to max_post_process_passes substitution convergence and directory-level ordering."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Clear generator logic and comments with no dead code."
+        }
+      }
+    },
+    {
+      "blind_id": "D23",
+      "group": "D",
+      "input_sha256": "43ac00dbe2e25c66469a5009c3345d11fcf630f0a6a2415e8cf6053cc7c72481",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Internal Matplotlib math-text string formatting for date labels with no trust boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Stateless string formatting helper with no persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Excludes date/text formatting with no timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Ordinary string replacements with no resource handles."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Static plot label string formatting without asynchronous UI state coordination."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process string helper with no cross-service communication."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Excludes generic formatting/date conversion: wraps non-letter tokens in LaTeX mathdefault braces and escapes hyphens."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Short 8-line formatting snippet with no dead code or contradiction."
+        }
+      }
+    },
+    {
+      "blind_id": "D24",
+      "group": "D",
+      "input_sha256": "c7e74570f317e0d2e9aff1c4d5783c1670be0e0cff8ab39d165cef6c88b36919",
+      "slots": {
+        "security-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "requests/models.py:403 validates untrusted URL host labels via IDNA encoding and rejects leading wildcard (*) hosts."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory URL host validation with no persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous host string validation with no timers or retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "String encoding and validation check with no resource lifecycle."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "HTTP library URL preparation logic with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "Local URL host validation prior to network call rather than message routing or transport protocol handling."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "requests/models.py:403 enforces valid IDNA host encoding and forbids leading asterisk wildcard labels during URL preparation."
+        },
+        "cleanup-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "7-line validation fragment with no dead code or contradictory comments."
+        }
+      }
+    },
+    {
+      "blind_id": "D25",
+      "group": "D",
+      "input_sha256": "66fd10d1a52ba221c3215d1b0caf0e2878fd67551159f48912bd8950c7fe8036",
+      "slots": {
+        "security-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "requests/sessions.py:12,309 imports cookie helpers and documents ssl cert parameter, but actual cert/cookie handling code is truncated."
+        },
+        "data-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Imports cookiejar helpers at line 12, but no session state persistence or cookie mutation code is shown."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Imports and Request instantiation header with no timeout or retry logic shown."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Session method is truncated at Request(method=method.upper() before connection or socket lifecycle appears."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Python HTTP client library with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Constructs a Request object at line 314, but transport dispatch is truncated."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Truncated at method = method.upper() with the rest of Request construction omitted."
+        },
+        "cleanup-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "Top-of-file imports and truncated method provide insufficient context to verify whether all imports are used."
+        }
+      }
+    },
+    {
+      "blind_id": "D26",
+      "group": "D",
+      "input_sha256": "f20cc6c8b59a465d66269922adeea2fceb863d768b359cefbb40210342a56859",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Scikit-learn RidgeClassifierCV docstrings and __init__ constructor with no security boundary."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory estimator attributes and constructor arguments with no persistence or external cache."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous ML estimator initialization with no timers, retries, or timeouts."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Plain object attribute assignment in __init__ with no owned external resources."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Machine learning library class with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process Python estimator class with no cross-service messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "sklearn/linear_model/ridge.py:1212,1301,1333 documents store_cv_values/cv_values_ compatibility invariant (cv=None) while RidgeClassifierCV.__init__ omits store_cv_values."
+        },
+        "cleanup-auditor": {
+          "judgment": "applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "sklearn/linear_model/ridge.py:1301-1340 RidgeClassifierCV docstring documents store_cv_values and cv_values_, contradicting __init__ which omits store_cv_values."
+        }
+      }
+    },
+    {
+      "blind_id": "D27",
+      "group": "D",
+      "input_sha256": "b98d330c0e93f2844c5214fcb532826055d42886cb7cb29197ec188deea2ef21",
+      "slots": {
+        "security-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Pure symbolic polynomial factorization in SymPy with no trust boundary or secrets."
+        },
+        "data-integrity-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-memory mathematical polynomial variables with no persistence or caching."
+        },
+        "temporal-resilience-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Synchronous algebraic computation with no timers or retries."
+        },
+        "resource-lifecycle-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Local variable bindings with no locks, files, or connections."
+        },
+        "ui-race-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "Symbolic math library function with no UI."
+        },
+        "distributed-flow-auditor": {
+          "judgment": "not_applicable",
+          "confidence": "high",
+          "code_anchor_or_exclusion": "In-process algebraic calls with no service boundary messaging."
+        },
+        "logic-integrity-auditor": {
+          "judgment": "applicable",
+          "confidence": "medium",
+          "code_anchor_or_exclusion": "sympy/polys/factortools.py:1147 overwrites f with dmp_sqf_part(f, u, K) while saving original polynomial in F before square-free norm factorization."
+        },
+        "cleanup-auditor": {
+          "judgment": "insufficient_evidence",
+          "confidence": "low",
+          "code_anchor_or_exclusion": "F is assigned original f on line 1149, but subsequent lines using or ignoring F are truncated."
+        }
+      }
+    }
+  ]
+}

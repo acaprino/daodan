@@ -1,0 +1,19 @@
+{
+  "evidence_kind": "supplied synthetic packaged-artifact and loader contract; no executable launch",
+  "supported_distribution": {"electron_version": "35.0.0", "os": "Windows", "architecture": "x64", "archive_integrity_support": true},
+  "requirement": "Only the original authorized application JavaScript may execute. Reject altered archives and do not select attacker-created application directories.",
+  "attacker": "May replace resources/app.asar and create resources/app; cannot change the trusted signed executable, its embedded digest, or effective fuse settings.",
+  "effective_loader_contract": "OnlyLoadAppFromAsar=true selects only resources/app.asar. Otherwise resources/app is selected first when present. EnableEmbeddedAsarIntegrityValidation=true rejects an ASAR whose digest differs from immutable binary metadata before running any of its JavaScript. That check covers ASAR only, not a selected directory. No additional ACL, signature or recovery loader blocks these paths.",
+  "independent_scenarios": {
+    "replace-archive": {
+      "binary_embedded_digest": "original-A",
+      "files_after_allowed_replacement": {"resources/app.asar": "altered-B"},
+      "effective_fuses": {"EnableEmbeddedAsarIntegrityValidation": true, "OnlyLoadAppFromAsar": true}
+    },
+    "directory-fallback": {
+      "binary_embedded_digest": "original-A",
+      "files_after_allowed_replacement": {"resources/app.asar": "original-A", "resources/app": "altered-directory-B"},
+      "effective_fuses": {"EnableEmbeddedAsarIntegrityValidation": true, "OnlyLoadAppFromAsar": true}
+    }
+  }
+}

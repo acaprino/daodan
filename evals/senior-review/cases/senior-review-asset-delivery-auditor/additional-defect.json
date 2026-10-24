@@ -1,0 +1,35 @@
+{
+  "requirement": "Consent needs no chart, and critical CSS must be discoverable with the initial document. Manifest and request dependency edges are complete; sizes are supplied build measurements.",
+  "entry": {
+    "imports": [
+      "chart-package"
+    ],
+    "required": [
+      "consent"
+    ],
+    "tree_shaking": false
+  },
+  "assets": {
+    "chart-package": {
+      "bytes": 200000,
+      "side_effects": false,
+      "used_only": "reports"
+    }
+  },
+  "requests": [
+    {
+      "resource": "consent.css",
+      "discovered_after": "await reports API"
+    },
+    {
+      "resource": "logo.svg",
+      "transferred_by": [
+        "entry",
+        "inline duplicate"
+      ]
+    }
+  ],
+  "contract": {
+    "initial_optional_bytes": 0
+  }
+}

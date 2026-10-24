@@ -144,6 +144,9 @@ criteria distinct.
 
 ## Run-state interface
 
+For model inventory, routing or dispatch/resume,
+read `references/task-routing.md`.
+
 Use `python "<plugin-root>/skills/project-protocol/scripts/run_state.py"`:
 
 ```text
@@ -208,7 +211,7 @@ A lifecycle run may carry the optional sections of the work contract's
 | `waves` | tasks with `write_set`, `oracle` (command and the failure it must produce first), `verification`, optional `resource_locks`, `produces`, `consumes` | over four files without a reasoned `granularity_exception` (six at most); two tasks of a wave sharing a file, lock or contract; a parallel wave outside `WORKTREE`; a `sealed` wave with an uncommitted task |
 | `rulings` | the worker's recorded local decisions | an update that alters or drops one |
 | `questions` | questions the host could not ask: `id`, `phase`, `text`, later `answer` | an empty answer or a repeated id |
-| `environment` | the project's `interpreter` and `commands` (test, lint, types, build, migrations) | an unknown command name |
+| `environment` | `interpreter`, `commands` (test, lint, types, build, migrations), confirmed `models.assignments` | unknown commands; malformed or unconfirmed bindings |
 | `reviews` | one entry per review (record, plan, each wave, candidate) as `review_roster.py compute` wrote it: id, stage, shape, kind, tier, roster, support, verification | a delivery naming a review whose roster and support lack its `role`; altering or dropping an entry |
 
 Check a draft plan with `plan-check --project ROOT --payload PLAN.json`

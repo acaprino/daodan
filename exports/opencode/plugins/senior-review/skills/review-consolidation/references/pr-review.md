@@ -121,7 +121,8 @@ code-based skips and missing evidence so the description states its coverage.
 | Dependencies | [Low/Med/High] | [description] |
 | Security | [Low/Med/High] | [description] |
 
-[Include any security findings from Agent B]
+[Include verified security findings from the selected reviewer, if any; an
+unselected or failed security dimension is not a clean security result.]
 
 [Include verified stack-specialist findings and their relevant risk factors]
 
@@ -131,9 +132,9 @@ code-based skips and missing evidence so the description states its coverage.
 
 ## Hygiene
 
-[Include the hygiene findings from Agent A, or "Clean". One row per finding
-with the path, what it is, and the cleanup phase that resolves it. Omit this
-section entirely when the diff is clean, rather than leaving an empty heading.]
+[Include verified hygiene findings from the selected canonical owner. One row
+per finding with its path and owning cleanup phase. Omit an empty section and
+record unselected, failed or incomplete hygiene coverage under Review Coverage.]
 
 ## Breaking Changes
 

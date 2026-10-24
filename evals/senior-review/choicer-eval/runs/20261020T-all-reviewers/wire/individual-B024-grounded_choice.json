@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Assess which module should own the delivery cutoff policy and whether its active definitions must change together.",
+    "artifacts": [
+      {
+        "path": "checkout/cutoff.py",
+        "content": "def same_day_available(hour):\n    return hour < 14"
+      },
+      {
+        "path": "fulfillment/schedule.py",
+        "content": "def ships_today(hour):\n    return hour < 14"
+      },
+      {
+        "path": "policy.md",
+        "content": "Checkout promises and fulfillment scheduling implement the same same-day delivery cutoff for the same warehouse and local timezone. Both modules are active."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  }
+}

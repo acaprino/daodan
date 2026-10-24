@@ -87,8 +87,8 @@ they are provisional until evidence-based severity calibration:
 | react-development | CRITICAL (immediate performance issue) | High |
 | react-development | IMPORTANT (before-production improvement) | Medium |
 | react-development | IMPROVEMENT (optional optimization) | Low |
-| platform-engineering | Critical (security breach, data loss or outage risk) | Critical |
-| platform-engineering | Warning (fragility or missed optimization) | Medium |
+| platform-engineering | Critical, High, Medium or Low (caller severity vocabulary) | Same severity |
+| platform-engineering | Warning (legacy native report) | Medium, subject to impact calibration |
 | typescript-development | Critical, High, Medium or Low | Same severity |
 
 Preserve the original label in native_severity when the mapping changes it. A

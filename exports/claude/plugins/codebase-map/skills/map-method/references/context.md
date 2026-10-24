@@ -163,3 +163,17 @@ inputs produce the same selection. Mandatory evidence may recur because each
 new packet must remain self-supporting; peripheral deliveries are not repeated.
 Hashes detect stale/altered records and do not grant authority. A collision never
 replaces evidence. A partial publication is recoverable evidence, not success.
+
+## Planner projection (I1)
+
+The same context CLI/MCP operation publishes `daodan/map-slice/v1`, returned as
+`map_slice_path` and `map_slice_sha256`. `map_slice.project_slice` projects the
+verified frozen scope: disjoint file components, cited confirmed calls, snapshot
+freshness, gaps and open obligations. Its envelope binds the original request;
+`scope_input_digest` and `plan_digest` bind the packet. Empty localization abstains.
+The projection caps 200 localized entities and 1000 calls with explicit omissions.
+Unsupported imports/contracts, unresolved calls and partial discovery stay gaps.
+I1 supplies evidence to planners; approved requirements and contracts determine
+task precedence. It grants no edits and closes no validation. The owning lifecycle
+method consumes these artifacts through public CLI/MCP, never provider-private
+imports, and rechecks the candidate immediately before dependent dispatch.

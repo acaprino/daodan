@@ -1,0 +1,30 @@
+{
+  "id": "individual-A037-catalog_noul",
+  "kind": "individual",
+  "case_id": "A037",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the completion event exchanged by the packing and customer-notification services.",
+    "artifacts": [
+      {
+        "path": "packing/events.py",
+        "content": "def publish_completion(broker, parcel):\n    broker.publish(\"parcel.packed\", {\"parcel_id\": parcel.id, \"recipient\": parcel.email})\n"
+      },
+      {
+        "path": "notifications/events.py",
+        "content": "def packed(payload):\n    send_email(payload[\"email\"], f\"Parcel {payload['parcel_id']} is packed\")\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
+      }
+    }
+  },
+  "sha256": "0126c75424f5698b85a8dcad24b1839e464bcc6609a339bd95180521ab1de023"
+}

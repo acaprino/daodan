@@ -1,0 +1,34 @@
+{
+  "id": "individual-B017-catalog_noul",
+  "kind": "individual",
+  "case_id": "B017",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the spacing and text contrast in the printed receipt template.",
+    "artifacts": [
+      {
+        "path": "receipt.html",
+        "content": "<article class=\"receipt\"><h1>Receipt</h1><p class=\"total\">Total: 19.50</p></article>"
+      },
+      {
+        "path": "receipt.css",
+        "content": ".receipt { color: #222; background: white; padding: 24px; }\n.total { margin-top: 16px; font-weight: bold; }"
+      },
+      {
+        "path": "rendering.md",
+        "content": "The server renders this static HTML once for printing. It includes no scripts, event handlers, delayed images, or programmatic position changes."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
+      }
+    }
+  },
+  "sha256": "fdfa2c815ae51812231d5be10f24feca2c907f1a6e90704eeab2ba7471d67e5d"
+}

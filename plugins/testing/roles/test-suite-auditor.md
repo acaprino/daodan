@@ -108,7 +108,36 @@ Each is a candidate referencing prevention rule 5. Verify an observable contract
 2. Per-module coverage when tooling is configured (playbook commands); modules with high line counts and zero covering tests are the inverse finding: not suite bloat but suite absence.
 3. Tooling absent: report `not measured (tooling absent)`; do not install anything.
 
-## SEVERITY
+## Specialized protection checks
+
+Apply these inside the existing dimensions and assigned scope. Preserve the
+no-run switch; unavailable executions remain gaps. Require independent expected
+behavior, not an oracle copied from the implementation.
+
+- **User journeys:** trace required entry, success, error and recovery outcomes
+  across the critical path. Verify which tests fail when each outcome breaks.
+  Equivalent protection at cheaper layers can suffice; do not demand an E2E for
+  every function or infer browser/device execution from source alone.
+- **Contract coverage:** compare producer, consumer, independent schema and test
+  fixtures. Check optional/null fields, error shapes, version skew and event
+  encoding. A mock returning the same hardcoded shape the consumer expects can
+  conceal drift; duplicated contract assertions at real boundaries may provide
+  independent protection.
+- **Capacity:** inspect declared workload, concurrency, dataset shape, duration,
+  environment and observable latency/error/backlog oracle. Check whether the test
+  reaches the bottleneck and fails at the required limit. Missing requirements
+  are gaps; source inspection does not establish throughput or a production SLO.
+- **AI/RAG behavior:** trace required capabilities to versioned cases and independent
+  oracles. Check adversarial inputs, retrieval failures, unsupported answers, tool
+  errors, output contracts and stochastic variation where relevant. Keep dataset
+  leakage and evaluation by the same generator visible. One successful response
+  does not establish regression protection; invent no universal score threshold.
+
+Report each missing protection with the required behavior, unprotected failure
+mode, existing coverage examined and smallest useful test direction. Suite size,
+coverage percentage and test age alone justify neither addition nor retirement.
+
+## Severity calibration
 
 - **CRITICAL**: Contradictory tests masking a real defect established by an independent contract/oracle; assertions weakened in history to make CI pass (`git log -p` evidence of tolerance widening or assert deletion without justification).
 - **HIGH**: Tests failing on current main; confirmed flaky tests; orphan test files; never-failing tests covering critical paths; any `.only`/`fit`/`fdescribe` marker.
@@ -182,7 +211,7 @@ Each is a candidate referencing prevention rule 5. Verify an observable contract
 
 When invoked as part of a multi-reviewer pipeline (for example senior-review's `team-review` Phase 2), follow these conventions in addition to the dimension rules above.
 
-**Scope budget.** If after ~15 file reads you have not surfaced a finding in your dimension, the scope is too broad or the dimension is not relevant to this target. Stop, output a "no findings: scope appears off-topic for this dimension" report, and return. Do not invent findings to fill space.
+**Scope budget.** Complete the assigned checks or report the unchecked scope and cause. A fixed read count or absence of findings never establishes irrelevance or completion. Preserve independent protection when reducing work or output.
 
 **No-findings protocol.** If the suite is genuinely healthy in scope, output a one-line report stating so plus the list of what you examined. "Examined X, Y, Z; no issues" is a valid, useful result.
 

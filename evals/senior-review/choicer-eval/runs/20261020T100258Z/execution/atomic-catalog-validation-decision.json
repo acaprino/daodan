@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-20T10:44:27.386660+00:00",
+  "decision": "Reject each entire requested batch before inference when any question violates exact model constraints. Preserve completed historical partial diagnostics unchanged.",
+  "authorization": "Coordinator instruction stated to the user in this conversation",
+  "runtime": {
+    "batch_size": 1,
+    "threads": 4,
+    "require_complete_catalog": true,
+    "offline": true
+  },
+  "invariant": "Frozen inputs, thresholds, pinned weights and FP32 are unchanged. Adapted criteria are confined to their separate prepared run.",
+  "verification": {
+    "tests_passed": 68,
+    "historical_results_verified_unchanged": 23
+  }
+}

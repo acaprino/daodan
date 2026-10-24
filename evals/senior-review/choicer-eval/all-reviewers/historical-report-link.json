@@ -1,0 +1,6 @@
+{
+  "report": "RESULTS.md",
+  "before_sha256": "88e0a1ef879465bd043715c454ab95f055a8337872bba118be09e3a0b9b9e485",
+  "after_sha256": "1431603c861da43c95953f6a466d2603ade442370161f70ce3a441ec9b3a5532",
+  "only_change": "Insert follow-up link; removing the exact insertion reproduces all previous report bytes."
+}

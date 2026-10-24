@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review this pure timestamp formatter used once to label an already-recorded event. It does not compute deadlines or schedule work.",
+    "artifacts": [
+      {
+        "path": "src/labels.py",
+        "content": "from datetime import datetime, timezone\n\ndef event_label(epoch_seconds):\n    return datetime.fromtimestamp(epoch_seconds, timezone.utc).isoformat()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      }
+    }
+  }
+}

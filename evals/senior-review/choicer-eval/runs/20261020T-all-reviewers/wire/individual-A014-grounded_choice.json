@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the transition decisions of this in-memory tutorial object. The exercise has no persistence or concurrent callers.",
+    "artifacts": [
+      {
+        "path": "tutorial/draft.py",
+        "content": "def next_status(current, action):\n    allowed = {(\"draft\", \"publish\"): \"published\",\n               (\"published\", \"archive\"): \"archived\"}\n    return allowed[(current, action)]\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    }
+  }
+}

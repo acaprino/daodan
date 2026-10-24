@@ -13,6 +13,14 @@ della prima prova dal vivo
 
 Stato: decisioni di disegno delle sezioni 1-7 **chiuse il 20 ottobre 2026**,
 con i chiarimenti di integrazione del grafo riportati qui sotto.
+Il [disegno del contesto e del perimetro del 23 ottobre](2026-10-23-code-context-and-scope-design.md)
+specifica l'integrazione Python/Jedi nei consumatori, le viste Markdown,
+la ricerca locale con embedding e l'algoritmo di selezione del contesto.
+Il relativo [piano riprendibile](../plans/2026-10-23-code-context-and-scope.md)
+separa consegne, verifiche, documentazione e commit; non dichiara già implementate
+queste estensioni. Per il DAG di lavoro conserva la regola I1/I2 della successiva
+specifica di composizione: gli archi del codice non diventano automaticamente
+precedenze fra task.
 **Disegno chiuso non significa implementazione completata.** I comportamenti
 descritti sono requisiti da costruire e verificare secondo la sezione 6.
 La sezione 8 resta un lavoro separato: confronto e possibile sostituzione del
@@ -134,6 +142,12 @@ Viene quindi introdotto il modulo dedicato
 (foglia pura, sola standard library Python), strutturato con un **driver
 specifico per ciascuno dei 5 harness**.
 
+**Precisazione del 22 ottobre 2026.** La scoperta e la proposta economica di
+`tier_router.py discover` restano distinte dalla selezione del modello per una
+richiesta, posseduta da `task_router.py` (§2.4). Le fasce economiche del primo
+non misurano la qualità e non assegnano i tier del catalogo del secondo.
+L'LLM descrive intento e complessità; il modulo Python seleziona il modello.
+
 Ogni binding seguente deve essere risolto contro lo schema degli strumenti e
 il catalogo disponibili nella sessione, registrando host, versione, meccanismo
 di dispatch, modello ed effort richiesti e realmente applicabili. Il nome
@@ -163,10 +177,23 @@ propria classe driver:
   3. Ignora per il calcolo automatico delle fasce i meta-router privi di listino
      (come `tritech-auto` che ha `cost: []`), salvo quando l'utente sceglie la
      modalità `thinking-only` proprio su `tritech-auto`.
-  4. Ordina i modelli attivi per **costo pesato**
-     $\text{score\_costo} = \text{input} + 3 \times \text{output}$ (in USD/M
-     token) e li ripartisce nelle 3 fasce (`tier1` fascia minima, `tier2` fascia
-     lavoro/Flash, `tier3` fascia superiore).
+  4. Ordina i modelli attivi per **costo stimato per invocazione**, sul profilo
+     di token dichiarato: input fresco, letture e scritture in cache e output,
+     ciascuno moltiplicato per la propria tariffa e diviso per un milione.
+     Una tariffa cache assente ricade sulla tariffa di input fresco con nota
+     esplicita; può sottostimare una scrittura. Un profilo non dichiarato è
+     etichettato `assumed`. La formula iniziale `input + 3 × output` è
+     superata: non è equivalente e non comprende la cache.
+     Con `--band-policy relative` ogni cluster cresce finché il costo non
+     supera `--max-band-ratio` volte il minimo del cluster. Il primo cluster
+     va nella fascia economica `tier1`, l'ultimo in `tier3` e gli eventuali
+     cluster interni vengono uniti in `tier2`, dichiarando che il limite di
+     rapporto può non valere nella fascia unita. I tier senza cluster restano
+     vuoti; meno di tre prezzi o costi distinti collassano la proposta, senza
+     inventare tre fasce. Un rapporto positivo inferiore a uno è rifiutato;
+     un rapporto non positivo disabilita il limite. Le soglie assolute sono
+     un'alternativa esplicita (`--band-policy absolute`, due `--band-cut` in
+     USD per invocazione). Nessuna fascia attesta capacità o qualità.
   5. **Risoluzione sicura delle `variants`**: non tutti i modelli espongono le
      stesse varianti (alcuni hanno `["none", "minimal", "low", "medium", "high",
      "xhigh", "max"]`, altri solo `["low", "medium", "high"]`, altri `[]`). La
@@ -252,9 +279,13 @@ python tier_router.py prepare-choice --mode lite|full --reviewers REVIEWERS.json
 python tier_router.py resolve --project ROOT --run-id ID --choice CHOICE.json --out RESOLVED_DISPATCH.json
 ```
 
-La configurazione confermata dall'utente durante `/daodan:init-project` viene
-salvata in `environment.models` dentro `work.json` (ed ereditata da
-`run_state.py init` nei run successivi):
+Il seguente formato illustra il binding globale legacy di `tier_router.py` in
+`environment.models.tiers`. Per il routing deterministico per richiesta si
+registrano invece inventario, capability dell'host e
+`environment.models.assignments[request_sha256]` secondo §2.4: l'intento può
+cambiare la board governante e il modello migliore anche a parità di tier.
+Il coordinatore conserva e rivalida le assegnazioni nella ripresa dello stesso
+run; `run_state.py init` non implementa l'eredità automatica tra run:
 
 ```json
 {
@@ -285,6 +316,109 @@ salvata in `environment.models` dentro `work.json` (ed ereditata da
   }
 }
 ```
+
+### 2.4 Selezione deterministica per richiesta (`task_router.py`)
+
+Il catalogo generato da `build_model_catalog.py`, sotto
+`references/model-catalog.json` della skill `project-protocol`, è la fonte
+primaria. Il router lo interseca con i modelli esposti dall'harness. Identità
+canonica (`lab/modello`), endpoint e relative tariffe sono fatti distinti: i
+prezzi dichiarati dall'harness prevalgono sui prezzi indicativi del catalogo.
+Il tier è una dichiarazione del catalogo, invariante rispetto all'effort,
+corredata da metodo e confidenza. Un prezzo non attesta qualità.
+
+Il percorso è `plan` → una chiamata del classifier da parte dell'harness →
+`assign`. Il classifier riceve la richiesta e restituisce dieci segnali
+chiusi: `work_type`, `scope`, `reasoning_depth`, `ambiguity`, `risk`,
+`domain_knowledge`, `output_volume`, `tool_use_required`, `long_context` ed
+`evidence_required`. Non restituisce un modello. JSON invalido, un segnale
+mancante o fuori enum, risposta vuota o classifier indisponibile comportano
+`tier3`, senza riparare valori. Il modulo calcola peso, override di rischio,
+gate, tier e ordinamento; la selezione non richiede LLM o rete.
+
+Le regole dichiarate sono `tier1: cheapest`, `tier2: cheapest`, `tier3: best`.
+`cheapest` usa il costo stimato sul profilo di token registrato. Per `best`
+governa la board dell'intento: `coding→code`, `agent_tool_use→agent`,
+`analysis/writing→text`, `vision→vision`, `document→document`,
+`media_generation→null`. La mappa `work_type_boards` del catalogo prevale sul
+default del plugin e l'output ne registra la provenienza in
+`governing_board_source`. Si ordina per score della sola board governante;
+una board che pubblica solo rank ordina per rank crescente ed è evidenza
+valida. Non si prende il massimo tra board. Se tutto il pool è privo di
+evidenza governante, l'eventuale ordine dichiarato del catalogo è un ripiego
+esplicitamente degradato, non una misura di qualità per quell'intento.
+
+L'intento attiva anche i gate obbligatori: `tool_use_required→tool_call`,
+`vision→input.image`, `document→input.pdf`,
+`media_generation→output.non_text`. Una capability esplicitamente assente
+respinge il modello; una capability non riportata è segnalata come ignota.
+`long_context` moltiplica per quattro la soglia del tier (8.000, 32.000 o
+128.000 token). Nessun candidato produce `no-candidate` con i gate che lo
+hanno escluso, senza inventare un modello.
+
+Per un modello non coperto l'ordine dei ripieghi è dichiarato: tier del
+catalogo → override operatore (`--tier-override`) → famiglia attestata dal
+catalogo → euristica di layer 3 → ultimo ripiego nominato. Il nome famiglia
+normalizzato deve avere almeno tre caratteri; disaccordi fra i tier dei suoi
+membri portano al più alto. Una famiglia o un'euristica attestano soltanto
+un tier: un pool composto solo da questi modelli non soddisfa `best` e
+restituisce `best-undefined` con exit 1.
+
+Nel layer 3 **solo il prezzo di input in USD per milione imposta la banda**:
+`<0.5→tier1`, `0.5≤prezzo<4→tier2`, `≥4→tier3`; prezzo non leggibile comporta
+`tier1`. La finestra può soltanto retrocedere un modello che il gate del
+tier respingerebbe comunque. I marker di nome economy e high sono registrati
+in `markers_seen` senza muovere il tier: `flash`, `mini`, `max`, `ultra` o
+`pro` non costituiscono regole. Questa è un'ipotesi di collocamento di bassa
+confidenza, separata dalla dichiarazione del catalogo e dalle fasce di costo
+per invocazione di `tier_router.py discover`. L'indicatore descrittivo
+`cost_band` del builder usa ancora `input + 3 × output`: non è il tier e non
+è la metrica di selezione dei due router.
+
+La misura registrata del layer 3 (383 modelli, revisione 2 del catalogo,
+22 ottobre 2026) dà 74,2% di corrispondenza del solo prezzo e recall tier3
+24/27. La retrocessione per `flash` era corretta 0/9 volte nei casi già
+prezzati tier2 o tier3 e abbassava il recall a 23/27; la finestra lo conserva
+a 24/27. Queste misure motivano la regola, non certificano i tier dei modelli
+sconosciuti. Un tier troppo alto costa denaro, uno troppo basso può inviare
+lavoro profondo a un modello insufficiente: collocare l'ignoto in basso
+impedisce di presentarlo come capacità alta attestata. Il fallimento del
+classifier segue invece l'escalation del **task** a tier3.
+
+Una selezione riuscita di `assign` emette `binding_proposal`, schema
+`daodan/task-binding/v1`, con digest SHA256 di richiesta, inventario e catalogo,
+revisione del catalogo, tier, `work_type`, board governante, `model_id`,
+`model_param` ed `effort`. Dopo la conferma umana il coordinatore copia la
+proposta in `environment.models.assignments[request_sha256]` aggiungendo
+`confirmation`: `confirmed: true`, `source` con la risposta effettiva o il suo
+riferimento, `host`, `model_override_supported` ed
+`effort_override_supported` rilevati al momento del consenso. Questo snapshot
+conserva il contesto dell'autorizzazione; i flag al livello di
+`environment.models` descrivono invece il supporto attuale e possono diventare
+`false` mantenendo le assegnazioni storiche.
+Il campo `tiers` legacy resta separato: un binding per una richiesta non
+riscrive la scelta globale di un tier. Una selezione fallita non produce un
+binding applicabile.
+
+`run_state.py` valida forma, digest, corrispondenza tra chiave e richiesta,
+identità/effort e presenza della fonte di conferma. Il coordinatore verifica
+che la conferma provenga dall'utente e che l'host applichi davvero modello ed
+effort. Prima del dispatch e nella ripresa confronta richiesta, inventario e
+catalogo con i digest registrati, `confirmation.host` con l'host attuale e le
+capability attuali dell'host con quelle necessarie al binding. Un'assegnazione
+storica resta evidenza quando il supporto manca, senza autorizzare il dispatch;
+un input diverso richiede una nuova proposta e una scelta diversa la propria
+conferma.
+Il router scrive la proposta e non avvia worker. Il coordinatore persiste il
+binding con `run_state.py update`, rispettando la revisione attesa.
+
+**Integrazione nei sorgenti (22 ottobre 2026).** La skill di protocollo carica
+il metodo [task-routing.md](../../../plugins/project-protocol/skills/project-protocol/references/task-routing.md),
+che prescrive inventario → `plan` → chiamata classifier → `assign` → conferma →
+registrazione → dispatch. Il [preflight di lifecycle](../../../plugins/project-lifecycle/skills/lifecycle-method/references/preflight.md)
+raggiunge quel metodo e raccoglie inventario e capability. Questi collegamenti
+e la validazione del run sono implementati nei sorgenti; restano distinte la
+rigenerazione dei package e la verifica del percorso su un host installato.
 
 ---
 
@@ -578,7 +712,7 @@ esplicitamente nel report**, mai implicite:
 
 | Linguaggio | Parser | Stato |
 |---|---|---|
-| Python | `ast` della libreria standard, interprete minimo dichiarato | **scelto su misura** (`evals/codebase-map/python-parser/`, 22.536 file). Sul codice valido tree-sitter-python coincide su 394.996 definizioni ma ne inventa 13 (`type(x).__name__ = ...` letto come alias), non copre i default PEP 696 e accetta codice invalido senza errori; LibCST coincide esattamente ma è 57 volte più lento; parso segnala errori su sintassi valida 3.10–3.14. La grammatica di `ast` segue l'interprete: sotto 3.11 quattro file misurati sono rifiutati, quindi la mappa dichiara la versione e ne impone un minimo. Sui file rotti oggi non recupera nulla: il prefisso che termina su una linea logica, tenendo solo le definizioni chiuse, recupera il 50,16% con **zero** simboli o span errati su 1.892 file, alla pari della migliore politica sicura di tree-sitter (50,95% con 869 span parziali) |
+| Python | `ast` della libreria standard, interprete minimo dichiarato | **scelto su misura** (`evals/codebase-map/python-parser/`, 22.536 file). Sul codice valido tree-sitter-python coincide su 394.996 definizioni ma ne inventa 13 (`type(x).__name__ = ...` letto come alias), non copre i default PEP 696 e accetta codice invalido senza errori; LibCST coincide esattamente ma è 57 volte più lento; parso segnala errori su sintassi valida 3.10–3.14. La grammatica di `ast` segue l'interprete: sotto 3.11 quattro file misurati sono rifiutati, quindi la mappa dichiara la versione e ne impone un minimo. La baseline sui file rotti non recuperava nulla: il prefisso chiuso poi adottato, che termina su una linea logica e tiene solo le definizioni chiuse, recupera il 50,16% con **zero** simboli o span errati su 1.892 file, alla pari della migliore politica sicura di tree-sitter (50,95% con 869 span parziali) |
 | Java, JavaScript, TypeScript/TSX, Rust, Go | tree-sitter via `tree-sitter-language-pack` o modulo per grammar | regola soddisfatta, wheel pubblicate |
 | SQL dichiarativo | grammar tree-sitter pubblicata | regola soddisfatta |
 | CSS, SCSS, LESS | tokenizer proprio | **eccezione etichettata**: alimenta `cascade_scan.py` e l'espansione Tailwind `@apply`, nati dall'incidente del 2026-09-14; rinunciarvi è una regressione di usabilità già pagata |
@@ -629,18 +763,126 @@ farebbe finta. Il corpo procedurale è dove vivono le chiamate, quindi su un
 progetto PL/pgSQL il grafo resta cieco all'interno delle funzioni: dichiararlo è
 l'unico esito onesto, e un pin nel gate segnala il giorno in cui cambia.
 
-**Stato delle misure per linguaggio.** Python e le grammar SQL/PL-SQL sono
-misurati e registrati. TypeScript, JavaScript, Rust, Go e Java sono in misura
-con l'harness `evals/codebase-map/resolver-spike/`, con la precisione verificata a
-mano sul sorgente a entrambi gli estremi di ogni arco campionato; il loro esito
-viene pubblicato accanto all'harness ed entra in questa sezione a misura
-conclusa, e nessuna decisione sul livello di risoluzione viene presa prima.
+**Esiti per linguaggio pubblicati (2026-10-22).** La rilettura dei risultati
+originali della campagna è registrata in
+[`resolver-spike/RESULTS.md`](../../../evals/codebase-map/resolver-spike/RESULTS.md),
+con identità degli artefatti, distribuzioni, configurazioni e costi. Le percentuali
+seguenti dividono gli archi `edge-call` per le posizioni campionate che il resolver
+lessicale lasciava irrisolte, escluso `unbound-name`: non misurano tutti i chiamanti
+del progetto. I candidati restano separati.
+
+| Linguaggio e workspace | Archi / posizioni | Quota campione | Quota pesata per motivo |
+|---|---:|---:|---:|
+| TypeScript, Jupiter `jupiter-desktop/src-react` | 60 / 1.000 | 6,00% | 5,52% |
+| TypeScript, Jupiter `logs-viewer-desktop` | 6 / 1.000 | 0,60% | 0,52% |
+| TypeScript, Phazly `admin-app` | 20 / 1.000 | 2,00% | 1,87% |
+| Rust, Jupiter `jupiter-desktop/src-tauri` | 204 / 949 | 21,50% | 22,44% |
+| Rust, Jupiter `logs-viewer-desktop/src-tauri` | 38 / 424 | 8,96% | 8,21% |
+| Go, `opentelemetry-go` | 466 / 1.000 | 46,60% | 45,52% |
+| Java, `commons-lang` | 288 / 1.000 | 28,80% | 26,50% |
+
+Il campionamento sceglie al massimo 25 file densi e le prime 40 posizioni per file;
+la pesatura per motivo non corregge quel bias. Rust `logs-viewer-desktop` copre tutti
+i 21 file ma soltanto 424 delle 951 posizioni, quindi non è un censimento delle
+chiamate. Go include 17 file generati su 25 e Java 23 classi di test su 25. Le 267
+conversioni Go su `type Key string` sono escluse dal conteggio degli archi.
+OP-1 e OP-2 restano aperti: i rispettivi 17 costruttori Rust e 174 metodi di
+interfaccia Go verificati non sono promossi da questa pubblicazione.
+
+JavaScript ha soltanto i gradi grezzi di 2 `edge-call` su 109 posizioni in Jupiter
+e 1 su 87 in Phazly, tutti file di configurazione o build; manca un audit di
+precisione registrato, quindi non se ne ricava un tasso generale di recupero.
+Tutte e tre le prove TypeScript dalla radice del monorepo, Phazly inclusa, hanno
+fallito la readiness: sono misure mancanti, non recupero zero. Nei tre campioni di
+package, togliere le dipendenze conserva i conteggi confermati 60/6/20 ma cambia
+candidati e attribuzione esterna. Le versioni esatte di tsserver e del suo server
+non sono registrate nei payload: manca quel pezzo di fingerprint.
+
+La precisione sulle chiamate campionate è attribuita all'audit della campagna
+originale, senza inferire copertura completa da rendering con verdetti ancora
+vuoti. Questa pubblicazione ha ricomputato i conteggi e verificato che ogni
+destinazione dei gradi d'arco dei dodici risultati LSP riusciti appartenga
+all'inventario originale: zero destinazioni esterne. È una verifica a posteriori,
+perché l'harness LSP usa ancora contenimento nel workspace e marcatori di percorso;
+l'integrazione nel prodotto deve imporre essa stessa l'appartenenza all'inventario.
+
 L'harness stesso ha dovuto essere corretto prima di poter misurare: dieci difetti,
 due dei quali lo rendevano non eseguibile e due dei quali producevano numeri
 falsi in modo plausibile (Java con il 71% delle definizioni classificate fuori dal
 workspace su un corpus che *è* il workspace, Go con zero archi da un server che
 aveva risolto il 93% delle posizioni). Un numero implausibile si indaga prima di
 scriverlo, e uno zero non si pubblica senza il meccanismo che lo spiega.
+
+**Stato di attuazione per Python (2026-10-22).** Il prerequisito è consegnato per
+Python, nelle quattro voci e nell'ordine che questa sezione prescrive:
+
+1. *Regola di risoluzione*: `resolution.py`, un solo proprietario per le due
+   implementazioni del grafo (`semantic_store._Resolver` sullo SQLite dello snapshot e
+   `semantic_index` in memoria), che risolve il metodo raggiunto attraverso la MRO
+   C3 di una gerarchia interamente nota di progetto (`instance-method`,
+   `inherited-project-method`) e il
+   callable raggiunto come attributo di un modulo importato (`module-attribute`). Un
+   attributo di istanza resta irrisolto: è un binding, non un simbolo, quindi non ha
+   nodo di arrivo. Il bersaglio di progetto è per costruzione solo ciò che
+   l'inventario dello snapshot contiene.
+
+   La verifica di ripresa ha richiesto il ridisegno della prima regola: una visita
+   in ampiezza sceglieva il metodo sbagliato nell'ereditarietà multipla. C3 conserva
+   l'ordine di Python; basi sconosciute, ridefinizioni, decoratori e assegnazioni
+   all'attributo impediscono la conferma invece di far cadere la ricerca su una base.
+   Gli stessi casi di sorgente sono verificati nei due archivi del grafo.
+2. *Convenzione di estrazione allargata*: `ParseResult.nested`, con il nome
+   qualificato dalla catena dei contenitori (`Outer.inner`, `Outer.Inner.method`),
+   per funzioni e classi annidate, definizioni sotto `if`/`try`/`with`/`for`/`while`/
+   `match` e alias `type` PEP 695. Le due liste documentate non cambiano significato,
+   quindi nessun consumatore esistente cambia comportamento.
+3. *Recupero dei file rotti*: prefisso chiuso, le sole definizioni che il prefisso
+   chiude, con la nota `recovered prefix: line N, M closed definitions` e lo stato che
+   resta `parse-error`.
+4. *Interprete minimo dichiarato*: `MINIMUM_PYTHON = (3, 12)` come dipendenza dura,
+   rifiutata all'avvio da `snapshot.py`, `analyze_file.py`, `doc_review.py` e
+   `mcp_server.py`, con header `requires-python` perché `uv run --script` provisioni
+   l'interprete conforme. La CI del repository sale a 3.12 per lo stesso motivo: una
+   suite che gira sotto il pavimento non lo esercita.
+
+Due scostamenti da questa sezione sono deliberati e vanno letti insieme ad essa.
+**Il campo `resolver` è consegnato come campo del payload di ogni riferimento più un
+archivio derivato per gli archi di engine** (`resolve_edges.py`, `engine-edges.sqlite`
+vincolato allo snapshot per digest logico e fingerprint), non come mutazione di
+`sem_references`: uno snapshot è evidenza e si apre in sola lettura, quindi gli archi
+di un engine sono un derivato vincolato, come le card, e `read_edge_store` risponde
+con il motivo invece che con le righe quando il binding non corrisponde. **L'engine è
+collegato per Python prima della pubblicazione degli esiti per linguaggio**, su
+decisione esplicita del 2026-10-22: il vocabolario dei gradi viene dalla misura e non
+è inventato, gli altri linguaggi non sono toccati, e OP-1/OP-2 restano aperti. La
+verifica aggiornata con jedi 0.20.1 sul plugin registra 6.107 chiamate Python
+irrisolte nell'inventario, 200 riferimenti selezionati e **158 richieste effettive**:
+42 callee dinamici sono esclusi dalla richiesta. Le risposte producono 2 archi
+confermati letti a entrambi gli estremi, 141 definizioni esterne e 15 irrisolti;
+latenza media 378,7 ms e p95 776,7 ms. Il report separa sonda/inizializzazione
+(4,16 s), inferenza (59,84 s) e tempo totale (68,32 s); l'estrapolazione di sola
+inferenza è 38,55 minuti, assumendo una richiesta per riferimento al costo medio
+osservato. Il campione è deterministico, ordinato per identificativo e limitato ai
+primi 200 riferimenti: non è una stima rappresentativa della popolazione, e non
+include sonda, verifica dei sorgenti, grading o scrittura. I 40 file inventariati sono verificati per
+hash prima e dopo la passata e i byte dello snapshot restano identici. Queste misure
+locali non sostituiscono la campagna né ne hanno le stesse condizioni di costo.
+Uno degli archi arriva alla dichiarazione del protocollo `LanguageAdapter.parse`, cioè a un
+contratto e non su un'implementazione: è vero, non è confrontabile con un arco su un
+corpo concreto, e il consumatore che propaga decide separatamente.
+
+La passata rifiuta sorgenti cambiati e percorsi di uscita che sovrascrivono il
+manifest o i sorgenti inventariati. La conferma richiede nome, tipo e posizione
+esatta della dichiarazione; risposte divergenti restano candidate. La selezione
+degli ambienti preferisce quelli popolati agli stub con soli strumenti di
+installazione, poi considera lo scope; il report espone interprete, numero di
+nomi importabili diretti, modalità e scelta per file. Un fallback aggiunge soltanto
+il `site-packages` selezionato. Verifiche e limiti sono registrati nella
+[consegna Python](../reports/2026-10-22-codebase-map-python-resolver-delivery.md).
+
+Non consegnato: nessun consumatore della mappa legge ancora l'archivio degli archi di
+engine; lo stato `parse-unavailable` e le eccezioni di parser etichettate restano da
+fare; nessun engine per TypeScript, JavaScript, Rust, Go o Java.
 
 ### 3.3 Il Contratto del Choicer (Regola della `trigger_line`)
 
@@ -1287,14 +1529,16 @@ proprietà dei file è ripartita in modo disgiunto:
 
 | File | Modifica |
 |---|---|
-| `plugins/project-protocol/contracts/work.toml` | Schema del DAG del Workflow: due modalità review (`lite`, `full`); locatori di evidenza, tier/effort richiesti e applicati, manifesti dei pacchetti e copertura per consegna; nodi task nelle `waves` con `difficulty`, `tier`, `effort`, `oracle_origin`, `attempts` e `fingerprint`; `environment.models`; Decision Log LLM minimo da §3.6, esteso in §8 solo per il confronto tra implementazioni |
+| `plugins/project-protocol/contracts/work.toml` | Schema del DAG del Workflow: due modalità review (`lite`, `full`); locatori di evidenza, tier/effort richiesti e applicati, manifesti dei pacchetti e copertura per consegna; nodi task nelle `waves` con `difficulty`, `tier`, `effort`, `oracle_origin`, `attempts` e `fingerprint`; `environment.models` con inventario e assegnazioni per richiesta confermate di §2.4; Decision Log LLM minimo da §3.6, esteso in §8 solo per il confronto tra implementazioni |
 | `plugins/project-protocol/contracts/review-packet.toml` (nuovo) | Contratto esportato del manifesto di §4.3.1: input espliciti, identità, snapshot, provenienza, visibilità, freschezza, limiti e consegna; metadata dichiarativi, nessun prompt |
-| `plugins/project-protocol/skills/project-protocol/scripts/tier_router.py` | Driver dei 5 harness, `discover`, `prepare-choice` da catalogo ed evidenze ricevuti, `resolve` dei soli binding supportati; nessuna scansione dei kernel a runtime né invocazione dei provider |
+| `plugins/project-protocol/skills/project-protocol/scripts/tier_router.py` | Driver dei 5 harness, `discover` con proposte economiche di §2.1, `prepare-choice` da catalogo ed evidenze ricevuti, `resolve` dei binding legacy supportati; nessuna scansione dei kernel a runtime né invocazione dei provider. Questo percorso resta distinto dalle assegnazioni per richiesta di §2.4 |
+| `plugins/project-protocol/skills/project-protocol/scripts/task_router.py` e `scripts/build_model_catalog.py` della stessa skill | Implementati nei sorgenti: catalogo generato come fonte primaria, `plan` con prompt a segnali chiusi, `assign` deterministico e `binding_proposal` per richiesta di §2.4. La chiamata del classifier e il dispatch appartengono al coordinatore; rigenerazione degli export e prova su host sono verifiche separate |
+| `plugins/project-protocol/skills/project-protocol/references/task-routing.md` e `SKILL.md` della stessa skill | Implementata nei sorgenti la sequenza inventario, classifier, selezione, conferma, registrazione e rivalidazione prima del dispatch. I tier globali legacy sono conservati separatamente dalle assegnazioni per richiesta |
 | `plugins/project-protocol/skills/project-protocol/scripts/review_roster.py` | Rimozione di regex di dominio e roster statici; `prepare`, `check-choice`, validazione dei locatori e dei prerequisiti, emissione `--emit-packets DIR` da input espliciti; riuso di `tier_router.py` per prompt e binding |
-| `plugins/project-protocol/skills/project-protocol/scripts/run_state.py` | Macchina a stati del DAG del Workflow: flag piatti, eredità dell'ambiente, validazione delle assegnazioni del Choicer e dell'ordine delle wave sugli archi ricevuti (Proiezione 1); blocco dei retry duplicati e dei gap di copertura dei chiamanti riportati dal ciclo (Proiezione 3); nessuna query della mappa o scelta semantica del tier |
+| `plugins/project-protocol/skills/project-protocol/scripts/run_state.py` | Macchina a stati del DAG del Workflow: flag piatti, validazione delle assegnazioni del Choicer e dell'ordine delle wave sugli archi ricevuti (Proiezione 1); blocco dei retry duplicati e dei gap di copertura dei chiamanti riportati dal ciclo (Proiezione 3); nessuna query della mappa o scelta semantica del tier. Implementata nei sorgenti la validazione dei binding per richiesta di §2.4; l'eredità automatica dell'ambiente tra run resta un requisito non implementato da `init` |
 | `plugins/project-lifecycle/skills/lifecycle-method/scripts/cycle_packets.py` | Orchestratore del DAG di ciclo in `project-lifecycle`: sottocomandi `preflight` (9 sonde + ricerca di ADR e di tutta la documentazione esistente che cita lo scope), `task-packet` (con `oracle_scaffold` via `ast` sulla fetta di `edit-impact`, Proiezione 2) e `post-task` (refresh incrementale mappa e controllo delta chiamanti, Proiezione 3) |
-| `plugins/project-lifecycle/skills/lifecycle-method/references/init.md` | Passo 3 esteso con la scoperta del catalogo modelli dell'host e la registrazione dei 3 Tier (`tier1`, `tier2`, `tier3`) in `environment.models` (`thinking-only`, `hybrid`, `inherit`), entro il tetto di 265 parole |
-| `plugins/project-lifecycle/skills/lifecycle-method/references/preflight.md` | Sostituzione delle 9 sonde manuali con `cycle_packets.py preflight` e abbassamento del tetto parole in `tests/test_skill_load_budget.py` |
+| `plugins/project-lifecycle/skills/lifecycle-method/references/init.md` | Passo 3 delega già il rilevamento dell'ambiente al preflight. La preparazione del routing segue §2.4: inventario e capability misurati, poi assegnazioni confermate per richiesta; nessuna registrazione automatica di tre modelli globali o eredità tra run. L'estensione esplicita del passo resta da attuare, entro il tetto di 265 parole |
+| `plugins/project-lifecycle/skills/lifecycle-method/references/preflight.md` | Implementati nei sorgenti la sonda modelli e il collegamento al metodo di routing del protocollo, con assegnazioni per richiesta e rivalidazione nella ripresa. La sostituzione delle sonde manuali con `cycle_packets.py preflight` e l'abbassamento del tetto parole in `tests/test_skill_load_budget.py` restano requisiti separati |
 | `plugins/project-lifecycle/skills/lifecycle-method/references/interview.md` | Grounding ed Stage A estesi a tutta la documentazione esistente (`docs/`, guide, `README.md`, contratti) che cita i simboli toccati, oltre agli ADR, entro il tetto di 445 parole |
 | `plugins/project-lifecycle/skills/lifecycle-method/references/waves.md` | Ordinamento del DAG `waves` (`callees -> callers` dagli archi esportati dal Grafo del Codice), assegnazione di `difficulty` e `tier#effort` per micro-task, uso di `cycle_packets.py task-packet` e controllo post-task dei chiamanti, entro il tetto di 515 parole |
 | `plugins/project-lifecycle/skills/lifecycle-method/references/worker-brief.md` | Conserva tutte le intestazioni e i codici chiusi (`OK`, `NEEDS_REPLAN`, `ORACLE_INVALID`) come template riempito da `cycle_packets.py task-packet`, entro 300 parole |

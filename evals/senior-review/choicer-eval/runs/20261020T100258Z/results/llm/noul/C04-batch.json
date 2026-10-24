@@ -1,0 +1,58 @@
+{
+  "impl": "llm",
+  "variant": "noul",
+  "case_id": "C04",
+  "hunk_id": null,
+  "request_sha256": "8be813d5daba47e378521883450849d87f224fd57aa9c39257b3bcae779f5bc6",
+  "status": "ok",
+  "selected": [
+    "senior-review:premise-auditor"
+  ],
+  "probabilities": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "usage": null,
+  "raw_output": {
+    "schema": "choicer-eval/native-capture-v1",
+    "request_sha256": "8be813d5daba47e378521883450849d87f224fd57aa9c39257b3bcae779f5bc6",
+    "response": "{\n  \"mode\": \"full\",\n  \"selected\": [\n    {\n      \"trigger_line\": \"[H1] candidate jupiter-core/jupiter_core/brokers/ibkr/ibkr_reactive_broker.py:2781 def _check_trading_hours(hours_str: str, utc_dt: datetime, tz_id: str = \\\"US/Eastern\\\") -> bool:\",\n      \"reason\": \"Verify timezone handling and inclusive trading-hours boundaries, including overnight and malformed segments.\",\n      \"role\": \"senior-review:premise-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    }\n  ],\n  \"recommend_full_review\": false,\n  \"recommend_full_reason\": null\n}\n",
+    "response_sha256": "a98eb9fb91a725b32346f9025210dbdd77cc36f345222b4a3e3f718d084d2eb7",
+    "model": {
+      "provider": "OpenAI through Codex native subagent",
+      "requested_model": "gpt-6-luna",
+      "requested_reasoning_effort": "low",
+      "host_accepted_override": true,
+      "provider_reported_model": null
+    },
+    "usage": null,
+    "wall_seconds": null,
+    "cpu_seconds": null,
+    "phase": "unknown",
+    "transport": {
+      "tool": "collaboration.spawn_agent",
+      "task_name": "/root/baseline_c04",
+      "fork_turns": "none",
+      "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C04-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C04-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+      "loader_prompt_sha256": "473370fac4bd11ae86e41029f74ca7dbbb4c68f64a0240cd7a5038ce41d1016a",
+      "effective_provider_request": null,
+      "provider_finish_reason": null,
+      "provider_api_call_count": null,
+      "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+    },
+    "limitations": [
+      "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+      "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+    ]
+  },
+  "validation_warnings": [
+    "H1: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding."
+  ],
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  }
+}

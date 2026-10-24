@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-10-20T10:09:28.386321+00:00",
+  "command": [
+    "C:\\Users\\alfio\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "test_relative_and_absolute_traversal_are_rejected (test_inputs.ConfinementTests.test_relative_and_absolute_traversal_are_rejected) ... ok\ntest_resolution_rejects_a_symlink_escape (test_inputs.ConfinementTests.test_resolution_rejects_a_symlink_escape) ... ok\ntest_write_and_freeze_only_touch_the_confined_test_directory (test_inputs.ConfinementTests.test_write_and_freeze_only_touch_the_confined_test_directory) ... ok\ntest_absent_negative_is_null_and_not_guessed (test_inputs.ExtractionTests.test_absent_negative_is_null_and_not_guessed) ... ok\ntest_catalog_is_deterministic_and_parses_all_source_roles (test_inputs.ExtractionTests.test_catalog_is_deterministic_and_parses_all_source_roles) ... ok\ntest_diff_old_side_never_includes_fixed_source (test_inputs.ExtractionTests.test_diff_old_side_never_includes_fixed_source) ... ok\ntest_unlabeled_precision_case_is_not_a_negative_example (test_inputs.ExtractionTests.test_unlabeled_precision_case_is_not_a_negative_example) ... ok\ntest_whole_module_partition_preserves_all_source_and_complete_functions (test_inputs.ExtractionTests.test_whole_module_partition_preserves_all_source_and_complete_functions) ... ok\ntest_all_three_templates_are_exact_source_slices (test_inputs.PromptInputTests.test_all_three_templates_are_exact_source_slices) ... ok\ntest_choice_uses_the_model_criteria_contract (test_inputs.PromptInputTests.test_choice_uses_the_model_criteria_contract) ... ok\ntest_forbidden_oracle_text_in_source_is_rejected (test_inputs.PromptInputTests.test_forbidden_oracle_text_in_source_is_rejected) ... ok\ntest_llm_and_local_receive_identical_numbered_hunk_text (test_inputs.PromptInputTests.test_llm_and_local_receive_identical_numbered_hunk_text) ... ok\ntest_llm_choice_cannot_silently_change_the_verbatim_prompt (test_inputs.PromptInputTests.test_llm_choice_cannot_silently_change_the_verbatim_prompt) ... ok\ntest_llm_substitution_preserves_every_other_template_character (test_inputs.PromptInputTests.test_llm_substitution_preserves_every_other_template_character) ... ok\ntest_noul_asks_every_reviewer_for_every_hunk_without_inventing_negatives (test_inputs.PromptInputTests.test_noul_asks_every_reviewer_for_every_hunk_without_inventing_negatives) ... ok\ntest_only_opaque_case_and_hunk_ids_cross_the_boundary (test_inputs.PromptInputTests.test_only_opaque_case_and_hunk_ids_cross_the_boundary) ... ok\ntest_repo_root_is_the_repository_not_evals (test_inputs.PromptInputTests.test_repo_root_is_the_repository_not_evals) ... ok\ntest_case_role_ece_matches_independent_arithmetic (test_metrics.ScoringEvidenceTests.test_case_role_ece_matches_independent_arithmetic) ... ok\ntest_choice_argmax_ties_and_union_are_distinct_from_binary_thresholds (test_metrics.ScoringEvidenceTests.test_choice_argmax_ties_and_union_are_distinct_from_binary_thresholds) ... ok\ntest_curve_covers_threshold_boundary_without_tuning (test_metrics.ScoringEvidenceTests.test_curve_covers_threshold_boundary_without_tuning) ... ok\ntest_empty_report_carries_protocol_source_anomalies_and_unknowns (test_metrics.ScoringEvidenceTests.test_empty_report_carries_protocol_source_anomalies_and_unknowns) ... ok\ntest_llm_selections_never_become_invented_confidence (test_metrics.ScoringEvidenceTests.test_llm_selections_never_become_invented_confidence) ... ok\ntest_missing_and_incomplete_predictions_are_not_negative_labels (test_metrics.ScoringEvidenceTests.test_missing_and_incomplete_predictions_are_not_negative_labels) ... ok\ntest_paired_comparison_uses_only_shared_complete_predictions (test_metrics.ScoringEvidenceTests.test_paired_comparison_uses_only_shared_complete_predictions) ... ok\ntest_partial_invalid_duplicate_and_failed_batches_stay_unavailable (test_metrics.ScoringEvidenceTests.test_partial_invalid_duplicate_and_failed_batches_stay_unavailable) ... ok\ntest_provider_unknowns_and_cold_warm_case_timings_are_preserved (test_metrics.ScoringEvidenceTests.test_provider_unknowns_and_cold_warm_case_timings_are_preserved) ... ok\ntest_threshold_is_inclusive_and_maximum_is_per_case_role (test_metrics.ScoringEvidenceTests.test_threshold_is_inclusive_and_maximum_is_per_case_role) ... ok\ntest_unlabeled_case_does_not_add_false_activation_or_premise_support (test_metrics.ScoringEvidenceTests.test_unlabeled_case_does_not_add_false_activation_or_premise_support) ... ok\ntest_warmup_does_not_add_votes_calibration_or_duplicate_cases (test_metrics.ScoringEvidenceTests.test_warmup_does_not_add_votes_calibration_or_duplicate_cases) ... ok\ntest_fabricated_citations_and_unknown_roles_are_rejected (test_runtime.LlmCaptureTests.test_fabricated_citations_and_unknown_roles_are_rejected) ... ok\ntest_import_rejects_a_capture_bound_to_another_request (test_runtime.LlmCaptureTests.test_import_rejects_a_capture_bound_to_another_request) ... ok\ntest_invalid_citation_capture_is_preserved_as_an_error (test_runtime.LlmCaptureTests.test_invalid_citation_capture_is_preserved_as_an_error) ... ok\ntest_valid_capture_keeps_unreported_telemetry_unknown (test_runtime.LlmCaptureTests.test_valid_capture_keeps_unreported_telemetry_unknown) ... ok\ntest_choice_uses_argmax_even_when_all_scores_are_below_half (test_runtime.LocalAdapterTests.test_choice_uses_argmax_even_when_all_scores_are_below_half) ... ok\ntest_first_actual_inference_is_cold_after_rejected_preflight (test_runtime.LocalAdapterTests.test_first_actual_inference_is_cold_after_rejected_preflight) ... ok\ntest_full_noul_catalog_uses_inclusive_half_probability (test_runtime.LocalAdapterTests.test_full_noul_catalog_uses_inclusive_half_probability) ... ok\ntest_invalid_model_probability_is_saved_as_error (test_runtime.LocalAdapterTests.test_invalid_model_probability_is_saved_as_error) ... ok\ntest_unsupported_questions_are_preserved_and_never_scored_as_missing_negatives (test_runtime.LocalAdapterTests.test_unsupported_questions_are_preserved_and_never_scored_as_missing_negatives) ... ok\n\n----------------------------------------------------------------------\nRan 38 tests in 0.174s\n\nOK\n",
+  "prompt_source_comparison": {
+    "TASK_TIER_CHOICER": {
+      "same_prompt": true,
+      "frozen_source_sha256": "a36faf9a2264ff87f5948e5c0a01322fb17c57a5cd94ed7b124420e22ccf56d3",
+      "current_source_sha256": "c4e58102cd1592c680cc647b5acb18bc3415b90f94fb0dc2b629223cc44733a4"
+    },
+    "REVIEWER_CHOICER": {
+      "same_prompt": true,
+      "frozen_source_sha256": "a36faf9a2264ff87f5948e5c0a01322fb17c57a5cd94ed7b124420e22ccf56d3",
+      "current_source_sha256": "c4e58102cd1592c680cc647b5acb18bc3415b90f94fb0dc2b629223cc44733a4"
+    },
+    "RETRY_TRIAGER": {
+      "same_prompt": true,
+      "frozen_source_sha256": "a36faf9a2264ff87f5948e5c0a01322fb17c57a5cd94ed7b124420e22ccf56d3",
+      "current_source_sha256": "c4e58102cd1592c680cc647b5acb18bc3415b90f94fb0dc2b629223cc44733a4"
+    }
+  },
+  "source_hashes": {
+    "dataset.py": "d6fbd713ac791b52e0fa29f879ad0709c15bc94f6945534dd67ca2af0de06725",
+    "metrics.py": "a202ff20695f3177b448700e7e47567d7988e8a487fce2686f0c4faf6c6e585b",
+    "run_eval.py": "994fcece16289e350dd62b23b57a37569c432e9dd0be4d9fe9b4249e0b28d807",
+    "test_inputs.py": "d6cc1aa32dbbd636ad49986df7f5ed2d998b16d546cddecb961bbf6343f689cc",
+    "test_metrics.py": "65cb50e3da9e9193d56fe6e8d7e410e00e78f856b307bca24b0762bb15b4dea0",
+    "test_runtime.py": "fa2dcd83596f4d43bcae975fb7aea3624611ba11d1e4a09001f985e87071cfc5"
+  },
+  "runtime_cache_exists": false,
+  "model_prediction_records": 0
+}

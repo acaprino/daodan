@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the payload contract between the dispatch and reporting services. Storage implementations are unchanged and outside scope.",
+    "artifacts": [
+      {
+        "path": "dispatch/events.py",
+        "content": "def completion_payload(job):\n    return {\"job_id\": job.id, \"elapsed_ms\": job.elapsed_ms}\n"
+      },
+      {
+        "path": "reporting/events.py",
+        "content": "def read_completion(payload):\n    return payload[\"job_id\"], payload[\"duration_ms\"]\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    }
+  }
+}

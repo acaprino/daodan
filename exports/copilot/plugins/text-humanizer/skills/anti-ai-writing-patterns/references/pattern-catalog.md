@@ -75,7 +75,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Anti-AI Writing Patterns: Detailed Catalog and Specimens
 
-On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains before/after specimens, open-point examples, and the full end-to-end report example for the 24 catalogued patterns.
+On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains before/after specimens, open-point examples, and the full end-to-end report example for the 25 local patterns. Numbering is local, not upstream's. Patterns 11 and 12 remain readability checks, not evidence of AI authorship.
 
 ## Content Patterns (1-6)
 
@@ -131,18 +131,22 @@ On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains befo
 
 ### 9. Negative Parallelisms
 - **Problem:** "Not only...but...", "It's not just about..., it's...", "Y rather than X", staged reveals ("The result? ...", "Here's the thing:"), arguing with no one ("This isn't about speed").
+- **Guard:** keep a contrast that corrects an actual misconception, an attributed objection, or two informative alternatives. A contrast split across sentences has the same test; do not remove its negative half mechanically.
 - **Before:** > It's not just about the beat riding under the vocals; it's part of the aggression and atmosphere. It's not merely a song, it's a statement.
 - **After:** > The beat under the vocals adds to the aggression and the atmosphere.
 
 ### 10. Rule of Three Overuse (**weak alone**)
+- Check paragraph-scale parallelism and repeated sentence openings as well as triads. Keep three real items and deliberate rhetorical repetition.
 - **Before:** > The event features keynote sessions, panel discussions, and networking opportunities. Attendees can expect innovation, inspiration, and industry insights.
 - **After:** > The event has keynote sessions, panel discussions, and time for networking.
 
 ### 11. Elegant Variation / Synonym Cycling (**weak alone**)
+- This is not diagnostic of AI writing. Change only variation that makes the referent unclear; ordinary synonym variation, especially in Italian, stays.
 - **Before:** > The protagonist faces many challenges. The main character must overcome obstacles. The central figure eventually triumphs. The hero returns home.
 - **After:** > The protagonist faces many challenges but eventually triumphs and returns home.
 
 ### 12. False Ranges (**weak alone**)
+- This is not diagnostic of AI writing. Keep an intelligible expression of breadth; edit only when the range obscures what is being claimed.
 - **Before:** > Our journey through the universe has taken us from the singularity of the Big Bang to the grand cosmic web, from the birth and death of stars to the enigmatic dance of dark matter.
 - **After:** > We have covered the Big Bang, the cosmic web, the life cycle of stars, and dark matter.
 
@@ -151,6 +155,7 @@ On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains befo
 ## Style, Communication, and Filler Specimens (13-24)
 
 ### 13. Em Dash and Hyphen Overuse
+- This is a punctuation pass, not a ban on compound words. Keep dictionary-required hyphens (`third-party`, `cross-functional`), technical names, ranges, dialogue, code, commands, paths and URLs. Do not apply English compound-modifier rules to Italian.
 - **Before:** > The term is primarily promoted by Dutch institutions — not by the people themselves. You don't say "Netherlands, Europe" as an address — yet this mislabeling continues — even in official documents.
 - **After:** > The term is primarily promoted by Dutch institutions, not by the people themselves. You don't say "Netherlands, Europe" as an address, yet this mislabeling continues, even in official documents.
 - **Before:** > She built the prototype in two weeks--a record for the team--and launched it to beta users immediately.
@@ -169,14 +174,32 @@ On-demand reference for `text-humanizer:anti-ai-writing-patterns`. Contains befo
 
 ### 16-24. Additional Specimens
 - **16. Title Case in Headings (**weak alone** in English, strong in Italian):** `## Strategic Negotiations And Global Partnerships` -> `## Strategic negotiations and global partnerships`.
+  Headings written only for effect should name their subject, but preserve proper names, titles and linked anchors; do not break docs links to improve a heading.
 - **17. Emojis (**weak alone**):** Strip decorative line-initial emojis (`🚀`, `💡`, `✅`).
 - **18. Curly Quotation Marks (**weak alone**):** Unify mixed curly and straight quotes within a document while preserving native language quotation marks.
-- **19. Collaborative Communication Artifacts:** Strip chatbot openings/closers ("I hope this helps", "Certainly!"), citation tokens (`:contentReference[oaicite:N]{index=N}`, `citeturn0search0`), and tracking params (`utm_source=chatgpt.com`, `utm_source=openai`, `utm_source=copilot.com`, `referrer=grok.com`).
-- **20. Knowledge-Cutoff Disclaimers:** `While specific details about the company's founding are not extensively documented in readily available sources, it appears to have been established sometime in the 1990s.` -> `The company appears to date from the 1990s.`
+- **19. Collaborative Communication Artifacts:** Strip empty chatbot openings/closers ("I hope this helps", "Certainly!"), citation tokens (`:contentReference[oaicite:N]{index=N}`, `citeturn0search0`), and tracking params (`utm_source=chatgpt.com`, `utm_source=openai`, `utm_source=copilot.com`, `referrer=grok.com`). Keep genuine greetings, thanks, sign-offs and requests for a decision in correspondence.
+- **20. Knowledge-Cutoff Disclaimers:** `While specific details about the company's founding are not extensively documented in readily available sources, it appears to have been established sometime in the 1990s.` -> `The founding date is not documented in the available sources.` Log the unsupported 1990s estimate under Open points rather than turning it into a finding.
 - **21. Sycophantic/Servile Tone:** `Great question! You're absolutely right...` -> state the relevant point directly.
 - **22. Filler Phrases (**weak alone** for wordiness; strong for meta-commentary like "In this section, we will explore"):** `"In order to achieve this goal"` -> `"To achieve this"`, `"Due to the fact that"` -> `"Because"`, `"At this point in time"` -> `"Now"`.
+  Cut needless narration of sourcing, assembly or visible layout. Keep source credits, required provenance, relevant method limitations and caveats; change history belongs in documents about change.
 - **23. Excessive Hedging:** `"It could potentially possibly be argued that the policy might have some effect"` -> `"The policy may affect outcomes"`.
-- **24. Generic Positive Conclusions:** Cut upbeat closers ("The future looks bright", "Exciting times lie ahead") and end on the last concrete fact.
+- **24. Generic Conclusions and Dramatic Closers:** Cut upbeat closers ("The future looks bright", "Exciting times lie ahead"), "That distinction matters", or a line that explains what the example already showed. Keep a new fact or consequence and any summary the user requested. `Caching cuts repeat work. That is the real win.` -> `Caching cuts repeat work.`
+
+## Replies (25)
+
+### 25. Re-explaining Shared Context
+
+Use only visible conversation or an unmistakable reply. A standalone note may need its background; when context is missing, do not guess what the reader knows. Put the answer first without losing facts, evidence, protected content or requested detail. The local fidelity contract does not adopt upstream's removal of substantive diagnostic detail from its reply example.
+
+**Visible context:** the recipient has already said to keep the general fix outside this account-specific ticket.
+
+**Before:**
+> As you noted, this ticket is account-specific, and we should keep the general fix separate. QA found six affected rows. The service is shared. I propose keeping the workaround for account A here and opening a separate ticket for the shared service fix and those six rows.
+
+**After:**
+> I propose keeping the workaround for account A here and opening a separate ticket to fix the shared service and the six affected rows found in QA.
+
+For realistic Italian examples and false-positive guards, read `italiano.md` in this reference directory.
 
 ---
 

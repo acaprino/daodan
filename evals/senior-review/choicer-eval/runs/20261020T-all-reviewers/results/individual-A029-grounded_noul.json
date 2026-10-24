@@ -1,0 +1,39 @@
+{
+  "id": "individual-A029-grounded_noul",
+  "request_sha256": "44467eb042772db7c8e85b5e377d869a5e179205191a41f0fc693b774f2d89a5",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.0007025122577919009,
+          "true": 0.9992974877422081
+        },
+        "noul": 0.9992974877422081
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:resource-lifecycle-auditor": 0.9992974877422081
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:resource-lifecycle-auditor": {
+      "tokens": 187,
+      "optionTokens": [
+        28,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:resource-lifecycle-auditor"
+  ],
+  "wall_seconds": 0.3838886999874376
+}

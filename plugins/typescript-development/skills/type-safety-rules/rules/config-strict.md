@@ -23,4 +23,4 @@ tags: config, strict
 { "compilerOptions": { "target": "ES2022", "strict": true } }
 ```
 
-**Detection:** Read `tsconfig.json` and every config it extends. Missing or false `strict` is a finding; individual `strictXxx: false` overrides are findings each.
+**Detection:** Resolve tsconfig and every inherited override. Disabled strict checks are leads; establish a reachable unsafe program or violated explicit configuration contract. An absent local flag may be inherited.

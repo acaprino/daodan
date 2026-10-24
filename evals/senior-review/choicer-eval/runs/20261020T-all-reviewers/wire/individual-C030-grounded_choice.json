@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Audit only the durable coding-agent instructions for unsupported claims about automatic loading and precedence. User guides are outside the requested scope.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "Every nested instruction file loads automatically for every task. A link to any policy document makes that document mandatory in all sessions."
+      },
+      {
+        "path": "host/loading-evidence.txt",
+        "content": "Only the root instruction file was included in the captured prompt. No nested path was accessed."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "choice",
+      "instructions": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      }
+    }
+  }
+}

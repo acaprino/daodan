@@ -102,4 +102,4 @@ function toHttpRequest(event: LambdaEvent): HttpRequest {
 handle(toHttpRequest(event).headers)
 ```
 
-**Detection:** `rg -n 'as unknown as' --type ts`. Every hit is a finding; the only acceptable ones live in test doubles, and even those deserve a comment.
+**Detection:** Locate double casts and trace admitted values to consumers. Equivalent runtime proof, explicit interop boundaries or justified doubles can be valid.

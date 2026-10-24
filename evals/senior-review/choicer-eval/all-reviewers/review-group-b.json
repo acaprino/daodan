@@ -1,0 +1,194 @@
+{
+  "schema": "choicer-eval/control-review-v1",
+  "result": "pass",
+  "reviewed_file": "evals/senior-review/choicer-eval/all-reviewers/group-b.json",
+  "reviewed_sha256": "f1bf71a8f540a2d65cc2fc7fa25e0da48c20cb90195e5c8057fe3a91b08e8968",
+  "blindness": {
+    "predictions_read": false,
+    "prediction_calls": 0
+  },
+  "source_alignment": [
+    {
+      "role_id": "senior-review:api-contract-auditor",
+      "basis": "Explicit schema or runtime DTO comparison is required; B002 correctly uses the runtime-contract exception. B004 and B006 exclude lifecycle and orchestration tasks rather than failing merely for missing preparation.",
+      "source_evidence": [
+        "plugins/senior-review/roles/api-contract-auditor.md:3-6",
+        "plugins/senior-review/roles/api-contract-auditor.md:48"
+      ]
+    },
+    {
+      "role_id": "senior-review:chicken-egg-detector",
+      "basis": "Readiness dependencies include services, local dependency construction and migrations. Correct ordering is applicable; compilation path resolution and steady-state calls are outside the remit.",
+      "source_evidence": [
+        "plugins/senior-review/roles/chicken-egg-detector.md:3-6",
+        "plugins/senior-review/roles/chicken-egg-detector.md:38-60"
+      ]
+    },
+    {
+      "role_id": "senior-review:ui-race-auditor",
+      "basis": "Async rendering/focus/layout and deterministic per-instance shared-state divergence are explicitly covered. Static CSS, pure display arithmetic and headless concurrency remain outside.",
+      "source_evidence": [
+        "plugins/senior-review/roles/ui-race-auditor.md:3-5",
+        "plugins/senior-review/roles/ui-race-auditor.md:109-115"
+      ]
+    },
+    {
+      "role_id": "senior-review:code-auditor",
+      "basis": "General correctness, local architecture and failure paths are applicable even for correct small helpers. Security-only and exclusively cross-file canonical ownership tasks preserve explicit deconfliction.",
+      "source_evidence": [
+        "plugins/senior-review/roles/code-auditor.md:3-6",
+        "plugins/senior-review/roles/code-auditor.md:18-23",
+        "plugins/senior-review/roles/code-auditor.md:96"
+      ]
+    },
+    {
+      "role_id": "senior-review:cleanup-auditor",
+      "basis": "Application assets, dependencies and compatibility residue require source comprehension. Dynamic retention is a valid positive. Applying approved removals, filesystem tracking and standalone scans are explicit exclusions.",
+      "source_evidence": [
+        "plugins/senior-review/roles/cleanup-auditor.md:3-6",
+        "plugins/senior-review/roles/cleanup-auditor.md:14-24"
+      ]
+    },
+    {
+      "role_id": "abstraction-architect:abstraction-architect-agent",
+      "basis": "Cross-file semantic ownership, prior art and abstraction fit are the remit. Correct delegation stays applicable. Local cohesion, formatting and pure formal-contract comparison do not ask that structural question.",
+      "source_evidence": [
+        "plugins/abstraction-architect/roles/abstraction-architect-agent.md:3-6",
+        "plugins/abstraction-architect/roles/abstraction-architect-agent.md:24-40"
+      ]
+    },
+    {
+      "role_id": "platform-engineering:platform-reviewer",
+      "basis": "Evidenced Electron, Android and SPA-backed API behavior support the three-pillar platform lens. Headless CLIs/jobs and pure editorial changes do not become platform audits from performance or network keywords alone.",
+      "source_evidence": [
+        "plugins/platform-engineering/roles/platform-reviewer.md:3-8",
+        "plugins/platform-engineering/roles/platform-reviewer.md:25-29",
+        "plugins/platform-engineering/roles/platform-reviewer.md:90-101"
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "role_id": "senior-review:api-contract-auditor",
+      "decision": "pass",
+      "case_ids": [
+        "B001",
+        "B002",
+        "B003",
+        "B004",
+        "B005",
+        "B006"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    },
+    {
+      "role_id": "senior-review:chicken-egg-detector",
+      "decision": "pass",
+      "case_ids": [
+        "B007",
+        "B008",
+        "B009",
+        "B010",
+        "B011",
+        "B012"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    },
+    {
+      "role_id": "senior-review:ui-race-auditor",
+      "decision": "pass",
+      "case_ids": [
+        "B013",
+        "B014",
+        "B015",
+        "B016",
+        "B017",
+        "B018"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    },
+    {
+      "role_id": "senior-review:code-auditor",
+      "decision": "pass",
+      "case_ids": [
+        "B019",
+        "B020",
+        "B021",
+        "B022",
+        "B023",
+        "B024"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    },
+    {
+      "role_id": "senior-review:cleanup-auditor",
+      "decision": "pass",
+      "case_ids": [
+        "B025",
+        "B026",
+        "B027",
+        "B028",
+        "B029",
+        "B030"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    },
+    {
+      "role_id": "abstraction-architect:abstraction-architect-agent",
+      "decision": "pass",
+      "case_ids": [
+        "B031",
+        "B032",
+        "B033",
+        "B034",
+        "B035",
+        "B036"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    },
+    {
+      "role_id": "platform-engineering:platform-reviewer",
+      "decision": "pass",
+      "case_ids": [
+        "B037",
+        "B038",
+        "B039",
+        "B040",
+        "B041",
+        "B042"
+      ],
+      "labels_preserved": true,
+      "criteria_within_30_words": true,
+      "source_hash_verified": true
+    }
+  ],
+  "changes_applied": [],
+  "checks": {
+    "roles": 7,
+    "cases": 42,
+    "positive": 21,
+    "negative": 21,
+    "unique_case_ids": true,
+    "three_positive_three_negative_per_role": true,
+    "boundary_positive_per_role": true,
+    "near_neighbor_negative_per_role": true,
+    "python_snippets_parse": true,
+    "scorer_rationale_outside_state": true
+  },
+  "notes": [
+    "No case was relabeled based on whether the shown implementation has a defect.",
+    "No preparation-only absence was used as the sole basis for an outside-scope label."
+  ]
+}

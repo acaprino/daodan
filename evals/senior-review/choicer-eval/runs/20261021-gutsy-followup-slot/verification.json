@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "phase": "complete",
+  "cases": 10,
+  "jobs": 496,
+  "source_hunks_verified": 61,
+  "source_files_verified": 29,
+  "split_path_overlap": 0,
+  "source_coverage": "all supplied hunk text reconstructs exactly",
+  "not_verified": [
+    "semantic citation relevance",
+    "independent applicability labels",
+    "production routing",
+    "full reviewer catalog"
+  ],
+  "wire_records_verified": 496,
+  "sampled_peak_combined_rss": 968966144,
+  "invalid_outputs": 0,
+  "coverage": "all planned calls delivered",
+  "prefix_mode": "slot-restore",
+  "states_verified": 53,
+  "prefix_reuse_verified": 496,
+  "server_profile": "identical to the reference except the slot directory"
+}

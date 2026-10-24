@@ -1,0 +1,30 @@
+{
+  "id": "individual-C009-catalog_noul",
+  "kind": "individual",
+  "case_id": "C009",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Prepare a read-only inventory of auxiliary Git state that may need human review. Do not remove any stash, branch or worktree.",
+    "artifacts": [
+      {
+        "path": "evidence/git-worktree-list.txt",
+        "content": "worktree /work/main\nHEAD aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbranch refs/heads/main\n\nworktree /work/experiment\nHEAD bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nbranch refs/heads/experiment"
+      },
+      {
+        "path": "evidence/git-stash-list.txt",
+        "content": "stash@{0}: On experiment: prototype credentials form\nstash@{1}: On main: local debugging"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches."
+      }
+    }
+  },
+  "sha256": "db93e4ef0705146d91ffa1399097e4ffdbe292e65e84cac30fbfda9c958832e0"
+}

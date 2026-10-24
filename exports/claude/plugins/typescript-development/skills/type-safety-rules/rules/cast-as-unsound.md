@@ -92,4 +92,4 @@ const user = UserSchema.parse(await res.json())
 sendEmail(user.email)
 ```
 
-**Detection:** `rg -n ' as [A-Z]' --type ts --glob '!*.test.*'`. Read each hit: casts of external data are findings; widening casts and `as const` are not.
+**Detection:** Read casts in context; establish that an admitted runtime value lacks the claimed shape. Existing guard/converter evidence can make an assertion safe.

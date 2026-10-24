@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review this local helper that sorts the fixed built-in color names for a documentation table.",
+    "artifacts": [
+      {
+        "path": "docs/colors.py",
+        "content": "COLORS = (\"violet\", \"amber\", \"teal\")\n\ndef color_rows():\n    return [(name, name.upper()) for name in sorted(COLORS)]\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  }
+}

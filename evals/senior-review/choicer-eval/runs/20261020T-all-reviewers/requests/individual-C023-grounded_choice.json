@@ -1,0 +1,30 @@
+{
+  "id": "individual-C023-grounded_choice",
+  "kind": "individual",
+  "case_id": "C023",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Assess only React rerender cost from the broad store subscription. The types are settled and type-soundness review is excluded from this task.",
+    "artifacts": [
+      {
+        "path": "src/ProfileBadge.tsx",
+        "content": "import { useProfile } from \"./profile-store\";\nexport function ProfileBadge() {\n  const state = useProfile();\n  return <span>{state.displayName}</span>;\n}"
+      },
+      {
+        "path": "src/profile-store.ts",
+        "content": "export type Profile = { displayName: string; unread: number };\nexport declare function useProfile(): Profile;"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      }
+    }
+  },
+  "sha256": "0d1fb4b50d3977bdc95c607bfaab1d8cec94d9897ac0e056748d11894c277424"
+}

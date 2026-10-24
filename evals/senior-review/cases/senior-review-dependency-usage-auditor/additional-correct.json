@@ -1,0 +1,21 @@
+{
+  "requirement": "Standalone package publishes with dependencies only; devDependencies are absent in runtime install. dynamic_driver is loaded by a config string. Build requires compiler. Inventory is complete.",
+  "manifest": {
+    "dependencies": {
+      "runtime_codec": "1",
+      "dynamic_driver": "1"
+    },
+    "devDependencies": {
+      "compiler": "1"
+    },
+    "scripts": {
+      "build": "compiler src"
+    }
+  },
+  "source": "import codec from \"runtime_codec\"; export const run = codec;",
+  "config": {
+    "driver_module": "dynamic_driver"
+  },
+  "loader": "import(config.driver_module)",
+  "lockfile": "package-lock.json"
+}

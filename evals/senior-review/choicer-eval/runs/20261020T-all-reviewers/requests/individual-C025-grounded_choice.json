@@ -1,0 +1,34 @@
+{
+  "id": "individual-C025-grounded_choice",
+  "kind": "individual",
+  "case_id": "C025",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the two billing guide pages for consistent vocabulary and factual alignment with the implemented invoice states. Report corrections without editing the guides.",
+    "artifacts": [
+      {
+        "path": "docs/billing-start.md",
+        "content": "A settled invoice has been paid in full. The dashboard labels this state settled. See billing-reference.md for the state names."
+      },
+      {
+        "path": "docs/billing-reference.md",
+        "content": "Invoice states: draft, sent, paid. Use paid when the outstanding balance reaches zero."
+      },
+      {
+        "path": "src/invoice-state.ts",
+        "content": "export type InvoiceState = \"draft\" | \"sent\" | \"paid\";"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "choice",
+      "instructions": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      }
+    }
+  },
+  "sha256": "3ae448e77f30f09ec8bcf8b1c70526b54b7e07bdffe62feb67b9893e6d99968a"
+}

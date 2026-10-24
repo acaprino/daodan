@@ -10,6 +10,10 @@ description: >
 
 Review-oriented rule set for hunting type-system erosion in TypeScript codebases. 20 rules across 7 categories, prioritized by blast radius. Used as the audit checklist by the `type-safety-auditor` agent and usable standalone while writing or hardening TypeScript.
 
+## Review evidence
+
+Rule examples, grep hits and priority labels nominate candidates. Promote only a reachable type/runtime mismatch or a violated explicit project contract, after checking equivalent guards and effective inherited configuration. Missing preferred syntax, schema library or config flag alone is not a defect. Use impact-based severity and the caller’s report; no universal score. See [TypeScript configuration inheritance](https://www.typescriptlang.org/tsconfig/#extends).
+
 ## Rule Categories by Priority
 
 | Priority | Category | Impact | Prefix |

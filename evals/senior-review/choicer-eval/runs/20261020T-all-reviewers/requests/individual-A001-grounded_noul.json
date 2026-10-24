@@ -1,0 +1,26 @@
+{
+  "id": "individual-A001-grounded_noul",
+  "kind": "individual",
+  "case_id": "A001",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the new endpoint that runs a document conversion requested by a browser client.",
+    "artifacts": [
+      {
+        "path": "app/convert.py",
+        "content": "import subprocess\nfrom flask import request\n\n@app.post(\"/convert\")\ndef convert():\n    name = request.json[\"filename\"]\n    subprocess.run(\"docconvert \" + name, shell=True, check=True)\n    return {\"accepted\": True}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  },
+  "sha256": "1bde6c0709001fd1bb075b024d39bed84f49684aee4c45ef6489d3f85aed4516"
+}

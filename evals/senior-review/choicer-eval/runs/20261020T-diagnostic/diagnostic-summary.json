@@ -1,0 +1,497 @@
+{
+  "rows": [
+    {
+      "input": "official_billing",
+      "question": "team",
+      "expected": "billing",
+      "actual": "billing",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "billing": 0.8544645654086148,
+        "shipping": 0.14277118677864054,
+        "access": 0.0027642478127446273
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "original_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9999191641928412,
+      "correct": false,
+      "probabilities": {
+        "false": 8.083580715876847e-05,
+        "true": 0.9999191641928412
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "original_data",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9960392282245588,
+      "correct": true,
+      "probabilities": {
+        "false": 0.00396077177544116,
+        "true": 0.9960392282245588
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "complement_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9999244184713382,
+      "correct": false,
+      "probabilities": {
+        "false": 7.558152866179854e-05,
+        "true": 0.9999244184713382
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_react_literal",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.8603158879578647,
+      "correct": false,
+      "probabilities": {
+        "false": 0.13968411204213532,
+        "true": 0.8603158879578647
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_react_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.00927111214140317,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9907288878585967,
+        "true": 0.00927111214140317
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_data_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.39913753659157897,
+      "correct": false,
+      "probabilities": {
+        "false": 0.600862463408421,
+        "true": 0.39913753659157897
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_stack_choice",
+      "expected": "backend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": false,
+      "probabilities": {
+        "backend": 0.08742825950977072,
+        "frontend": 0.9125717404902293
+      }
+    },
+    {
+      "input": "python_numbered",
+      "question": "property_stack_reversed",
+      "expected": "backend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": false,
+      "probabilities": {
+        "frontend": 0.966962636034279,
+        "backend": 0.03303736396572106
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "original_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.82525426740314,
+      "correct": false,
+      "probabilities": {
+        "false": 0.17474573259685994,
+        "true": 0.82525426740314
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "original_data",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9926905542986642,
+      "correct": true,
+      "probabilities": {
+        "false": 0.007309445701335784,
+        "true": 0.9926905542986642
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "complement_react",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.254704618652286,
+      "correct": true,
+      "probabilities": {
+        "false": 0.745295381347714,
+        "true": 0.254704618652286
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_react_literal",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.006819266366977297,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9931807336330227,
+        "true": 0.006819266366977297
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_react_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 6.182020036750949e-06,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9999938179799632,
+        "true": 6.182020036750949e-06
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_data_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 9.481972990298282e-05,
+      "correct": false,
+      "probabilities": {
+        "false": 0.999905180270097,
+        "true": 9.481972990298282e-05
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_stack_choice",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 0.9993558467607156,
+        "frontend": 0.0006441532392843645
+      }
+    },
+    {
+      "input": "python_plain",
+      "question": "property_stack_reversed",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.01867492799911951,
+        "backend": 0.9813250720008804
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "original_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9999998143790436,
+      "correct": false,
+      "probabilities": {
+        "false": 1.856209564149951e-07,
+        "true": 0.9999998143790436
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "original_data",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9990557792137119,
+      "correct": true,
+      "probabilities": {
+        "false": 0.0009442207862879285,
+        "true": 0.9990557792137119
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "complement_react",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.5962851638107168,
+      "correct": false,
+      "probabilities": {
+        "false": 0.4037148361892832,
+        "true": 0.5962851638107168
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_react_literal",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9632069927399092,
+      "correct": false,
+      "probabilities": {
+        "false": 0.03679300726009085,
+        "true": 0.9632069927399092
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_react_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.0007273723367269416,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9992726276632731,
+        "true": 0.0007273723367269416
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_data_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.02725312194725518,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9727468780527448,
+        "true": 0.02725312194725518
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_stack_choice",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 0.9952184617731124,
+        "frontend": 0.004781538226887553
+      }
+    },
+    {
+      "input": "python_raw",
+      "question": "property_stack_reversed",
+      "expected": "backend",
+      "actual": "backend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.011962176044317003,
+        "backend": 0.9880378239556831
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "original_react",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9998884456476417,
+      "correct": true,
+      "probabilities": {
+        "false": 0.00011155435235822639,
+        "true": 0.9998884456476417
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "original_data",
+      "expected": false,
+      "actual": true,
+      "p_true": 0.9879984250890056,
+      "correct": false,
+      "probabilities": {
+        "false": 0.01200157491099442,
+        "true": 0.9879984250890056
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "complement_react",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9323769695931121,
+      "correct": true,
+      "probabilities": {
+        "false": 0.06762303040688784,
+        "true": 0.9323769695931121
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_react_literal",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.05506151726950958,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9449384827304904,
+        "true": 0.05506151726950958
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_react_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.04757512819719016,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9524248718028098,
+        "true": 0.04757512819719016
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_data_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.09669277735035588,
+      "correct": true,
+      "probabilities": {
+        "false": 0.903307222649644,
+        "true": 0.09669277735035588
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_stack_choice",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 6.847359116051705e-06,
+        "frontend": 0.999993152640884
+      }
+    },
+    {
+      "input": "react_plain",
+      "question": "property_stack_reversed",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.999997186042745,
+        "backend": 2.8139572549335326e-06
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "original_react",
+      "expected": true,
+      "actual": true,
+      "p_true": 0.9999982880657257,
+      "correct": true,
+      "probabilities": {
+        "false": 1.7119342743878055e-06,
+        "true": 0.9999982880657257
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "original_data",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.4196858687429945,
+      "correct": true,
+      "probabilities": {
+        "false": 0.5803141312570055,
+        "true": 0.4196858687429945
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "complement_react",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.0278488540546523,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9721511459453477,
+        "true": 0.0278488540546523
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_react_literal",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.028128647508262147,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9718713524917378,
+        "true": 0.028128647508262147
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_react_descriptive",
+      "expected": true,
+      "actual": false,
+      "p_true": 0.059370429241630135,
+      "correct": false,
+      "probabilities": {
+        "false": 0.9406295707583698,
+        "true": 0.059370429241630135
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_data_descriptive",
+      "expected": false,
+      "actual": false,
+      "p_true": 0.00762485163496628,
+      "correct": true,
+      "probabilities": {
+        "false": 0.9923751483650337,
+        "true": 0.00762485163496628
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_stack_choice",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "backend": 9.714420338544454e-06,
+        "frontend": 0.9999902855796615
+      }
+    },
+    {
+      "input": "react_raw",
+      "question": "property_stack_reversed",
+      "expected": "frontend",
+      "actual": "frontend",
+      "p_true": null,
+      "correct": true,
+      "probabilities": {
+        "frontend": 0.9999944359834839,
+        "backend": 5.564016515982124e-06
+      }
+    }
+  ]
+}

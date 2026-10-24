@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "architecture": "JuliaDecisionModel",
+  "weight_dtype": "float32",
+  "head_layers": 2,
+  "n_act": 2,
+  "dropout": 0.1
+}

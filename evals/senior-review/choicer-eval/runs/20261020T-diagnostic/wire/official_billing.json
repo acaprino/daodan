@@ -1,0 +1,14 @@
+{
+  "state": "I was charged twice for the same order.",
+  "questions": {
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {
+        "billing": "Billing and payment disputes",
+        "shipping": "Shipping and delivery",
+        "access": "Account access and login"
+      }
+    }
+  }
+}

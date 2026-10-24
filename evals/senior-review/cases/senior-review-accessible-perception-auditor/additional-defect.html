@@ -1,0 +1,11 @@
+<!-- Requirements: consent controls remain visible at every supported viewport/zoom; instructions say press the circle icon and must have a text equivalent; media instructions require captions or transcript; required text cannot be same color as its background. Reduced-motion mode must stop animated instructions. All effective styles are inline. -->
+<!-- Complete declared media inventory: instructions.mp4 contains the required spoken steps, without burned-in/open captions, in-band captions or embedded text alternatives. There is no external transcript or other equivalent channel. These are synthetic fixture asset facts, not a playback observation. -->
+<!-- The standalone Required contrast label is an independent required readable cue, outside the consent visibility scenario. -->
+<!doctype html><html lang="en"><title>Entry</title><style>body{margin:0}.entry{position:fixed;inset:0;background:white;color:black}.entry button{color:white;background:white}body>section{display:none!important}.steps{width:100px;height:10px;overflow:hidden;font-size:32px}.moving{animation:travel 1s infinite}@keyframes travel{to{transform:translateX(500px)}}.contrast{color:white;background:white}</style><body>
+<section class="entry"><h1>Consent</h1><button>Continue</button></section>
+<button class="contrast" type="button">Required contrast label</button>
+<p class="steps">Read all these required steps before continuing.</p>
+<img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='8'/%3E%3C/svg%3E">
+<video aria-label="Required spoken instructions" src="instructions.mp4" controls></video>
+<p class="moving">Follow this required instruction</p>
+</body></html>

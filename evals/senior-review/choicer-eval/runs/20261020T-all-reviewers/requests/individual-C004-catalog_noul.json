@@ -1,0 +1,30 @@
+{
+  "id": "individual-C004-catalog_noul",
+  "kind": "individual",
+  "case_id": "C004",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Investigate only the CSS cascade that places the consent dialog below the viewport. React render behavior and component effects are outside this task.",
+    "artifacts": [
+      {
+        "path": "src/consent.css",
+        "content": ".consent-dialog { position: fixed; inset: 1rem; overflow: auto; }\n.dark > * { position: relative; top: 100vh; }"
+      },
+      {
+        "path": "src/Consent.tsx",
+        "content": "export function Consent() { return <section className=\"consent-dialog\">Privacy choices</section>; }"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling."
+      }
+    }
+  },
+  "sha256": "96ce13aaeed0f7cac8fae8c45edb33ed3ebd31db8a32a91754d1d1f53d104474"
+}

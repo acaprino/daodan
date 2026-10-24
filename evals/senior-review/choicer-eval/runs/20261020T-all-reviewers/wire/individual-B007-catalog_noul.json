@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the first-deployment sequence for the API and its database.",
+    "artifacts": [
+      {
+        "path": "compose.yaml",
+        "content": "services:\n  db:\n    image: postgres:16\n    environment: {POSTGRES_PASSWORD: local}\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n  migrate:\n    image: app:local\n    command: [\"python\", \"migrate.py\"]\n    depends_on:\n      db: {condition: service_healthy}\n  api:\n    image: app:local\n    depends_on:\n      migrate: {condition: service_completed_successfully}\n"
+      },
+      {
+        "path": "deploy.md",
+        "content": "migrate.py creates the API tables and exits zero only after committing. The API starts accepting traffic after migration completion."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "individual-A008-grounded_noul",
+  "kind": "individual",
+  "case_id": "A008",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Before combining this change with other analyses, derive from these files which paths may update a shipment's destination. Record the source-backed claims without comparing them with earlier summaries.",
+    "artifacts": [
+      {
+        "path": "src/shipping.py",
+        "content": "def change_destination(shipment, address):\n    if shipment.dispatched:\n        raise ValueError(\"already dispatched\")\n    shipment.address = address\n\ndef apply_correction(shipment, address):\n    shipment.address = address\n"
+      },
+      {
+        "path": "src/importer.py",
+        "content": "from shipping import apply_correction\n\ndef import_row(shipment, row):\n    apply_correction(shipment, row[\"address\"])\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    }
+  },
+  "sha256": "fc2b0a0a28a9d135ff98d70afba85dda20c08adc3a378edb4c6cf2cafe98d7ad"
+}

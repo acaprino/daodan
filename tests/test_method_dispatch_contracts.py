@@ -102,6 +102,39 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertNotIn("run_in_background", body)
                 self.assertNotIn("model: sonnet", body)
 
+    def test_all_review_consumers_allow_registered_specialists_and_inline_composition(self):
+        from scripts.daodan.reviewer_catalog import REVIEWER_ROLES
+        required = {f"{provider}/{role}" for provider, role in REVIEWER_ROLES}
+        for name in ("review-branch", "continue-task", "finish-task", "fix-bug",
+                     "new-feature", "refactor-code", "run-maintenance"):
+            with self.subTest(workflow=name):
+                dispatch = self.workflow("daodan", name).dispatch
+                self.assertLessEqual(required, set(dispatch.roles))
+                self.assertTrue(dispatch.inline_workers)
+                self.assertTrue(dispatch.isolated)
+
+    def test_new_reviews_always_prepare_jobs_and_never_dispatch_the_roster_again(self):
+        skills = self.registry["senior-review"].root / "skills"
+        preparation = (skills / "review-preparation/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Always, after the roster", preparation)
+        self.assertIn("references/composition.md", preparation)
+        light = (skills / "review-method/references/light.md").read_text(encoding="utf-8")
+        self.assertIn("--context", light)
+        for variant in ("code-review", "pr-review", "team-review"):
+            with self.subTest(variant=variant):
+                body = " ".join((skills / f"review-method/references/{variant}.md").read_text(encoding="utf-8").split())
+                self.assertIn("Dispatch the validated jobs" if variant != "team-review" else "Dispatch validated jobs", body)
+                self.assertNotIn("historical non-composed reviews", body)
+                self.assertNotRegex(body, r"Dispatch (?:every reviewer in|the (?:computed|prepared mechanical)) roster")
+        composition = (skills / "review-preparation/references/composition.md").read_text(encoding="utf-8")
+        self.assertIn("requires a fresh prepared entry", composition)
+        self.assertIn("Bind the worker role's", composition)
+        self.assertIn("complete actual worker role and exact", composition)
+        self.assertIn("body supplied once", composition)
+        panel = (skills / "review-quality-gates/references/panel-and-critic-prompts.md").read_text(encoding="utf-8")
+        self.assertIn("`review_basis`", panel)
+        self.assertIn("an empty diff never establishes", panel)
+
     def test_worker_briefs_do_not_override_host_dispatch_fields(self):
         # The old review-react, review-typescript and clean-code entries are the
         # owner units their replacements load since 38.0.0; every daodan entry
@@ -123,6 +156,35 @@ class MethodDispatchContractsTests(unittest.TestCase):
                 self.assertNotIn("subagent_type", body)
                 self.assertNotIn("run_in_background", body)
                 self.assertNotIn("model: sonnet", body)
+
+    def test_light_composition_prepares_member_inputs_without_branch_preparation(self):
+        skills = self.registry["senior-review"].root / "skills"
+        preparation = " ".join((skills / "review-preparation/SKILL.md").read_text(encoding="utf-8").split())
+        grounding = " ".join((skills / "review-preparation/references/candidate-grounding.md").read_text(encoding="utf-8").split())
+        composition = " ".join((skills / "review-preparation/references/composition.md").read_text(encoding="utf-8").split())
+        self.assertIn("Light loads only `references/composition.md` here", preparation)
+        self.assertNotIn("never this preparation", grounding)
+        self.assertIn("its distinct preparation and this skill's composition step", grounding)
+        self.assertIn("`testing:test-preparation`", composition)
+        self.assertIn("expanded members", composition)
+        self.assertIn("Reuse settled D1/D9", composition)
+        self.assertIn("scope and run permission", composition)
+        self.assertLess(composition.index("`testing:test-preparation`"), composition.index("Build one bindings object"))
+
+    def test_content_eligibility_and_composed_output_ownership_survive_native_briefs(self):
+        skills = self.registry["senior-review"].root / "skills"
+        light = " ".join((skills / "review-method/references/light.md").read_text(encoding="utf-8").split())
+        self.assertIn("Content reviews admit evidenced defects in the named scope, including preexisting ones.", light)
+        self.assertIn("Each eligible `Critical` or `High` finding is challenged once", light)
+        self.assertIn("`BLOCK` while a verified or contested eligible `Critical` or `High` remains", light)
+        self.assertIn("content/claims use the requested snapshot's policy", light)
+        team = (skills / "review-method/references/team-review.md").read_text(encoding="utf-8")
+        self.assertIn("job.output_path", team)
+        for old in ("findings-{dimension}.md", "findings-abstraction.md", "findings-testing.md", "findings-workspace-hygiene.md"):
+            self.assertNotIn(old, team)
+        handoff = " ".join((skills / "review-quality-gates/references/code-review-agents.md").read_text(encoding="utf-8").split())
+        self.assertNotIn("For every selected identity, dispatch its canonical registered role", handoff)
+        self.assertIn("job.output_path", handoff)
 
     def test_changed_graphs_keep_their_provider_edges_and_exported_contracts(self):
         for name in ("daodan", "react-development", "typescript-development", "clean-code", "senior-review",

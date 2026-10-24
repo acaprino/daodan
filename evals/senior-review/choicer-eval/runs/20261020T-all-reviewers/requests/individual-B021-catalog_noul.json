@@ -1,0 +1,30 @@
+{
+  "id": "individual-B021-catalog_noul",
+  "kind": "individual",
+  "case_id": "B021",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review this change to the empty-input behavior of the average helper.",
+    "artifacts": [
+      {
+        "path": "average.py",
+        "content": "def average(values):\n    if not values:\n        return None\n    return sum(values) / len(values)"
+      },
+      {
+        "path": "requirements.md",
+        "content": "Return None for an empty finite sequence. Otherwise return its arithmetic mean."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the task is security-specific auditing (use security-auditor).",
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check."
+      }
+    }
+  },
+  "sha256": "82440453de5abe1f281197c2047aff33d73c96068c94cf28c89a7a293fb1ae58"
+}

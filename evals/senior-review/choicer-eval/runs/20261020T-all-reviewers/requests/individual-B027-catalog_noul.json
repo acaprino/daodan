@@ -1,0 +1,38 @@
+{
+  "id": "individual-B027-catalog_noul",
+  "kind": "individual",
+  "case_id": "B027",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit remaining migration adapters for unused code and explain which ones should be retained.",
+    "artifacts": [
+      {
+        "path": "adapters/legacy_csv.py",
+        "content": "from registry import register\n@register(\"legacy-csv\")\nclass LegacyCsv:\n    def decode(self, text):\n        return text.split(\",\")"
+      },
+      {
+        "path": "registry.py",
+        "content": "handlers = {}\ndef register(name):\n    def add(cls):\n        handlers[name] = cls\n        return cls\n    return add"
+      },
+      {
+        "path": "loader.py",
+        "content": "import importlib\nfrom registry import handlers\nimportlib.import_module(\"adapters.legacy_csv\")\nparser = handlers[\"legacy-csv\"]()"
+      },
+      {
+        "path": "migration.md",
+        "content": "The new JSON format is deployed. Existing customer archives still contain legacy CSV and remain supported."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit."
+      }
+    }
+  },
+  "sha256": "467389d204bd8228a93da621e4054246cfb0494caa5a2aa2eee35050cd32f048"
+}

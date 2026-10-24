@@ -1,0 +1,144 @@
+{
+  "schema": "choicer-eval/historical-submissions-v1",
+  "purpose": "Make historical valid-subset model inputs explicit without altering original requested batches or saved outputs.",
+  "entries": [
+    {
+      "result": "results/julia/noul/C01-H1.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H1.json",
+      "question_count": 9,
+      "effective_input_sha256": "5a43c5577ef47b9d62a3f52c568faf7e5b10fccd81aae4e14e0efd487403f310"
+    },
+    {
+      "result": "results/julia/noul/C01-H10.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H10.json",
+      "question_count": 9,
+      "effective_input_sha256": "196eb5856609c585dd927c72c1363452c1e313556959db9b5867ff3f4e51a829"
+    },
+    {
+      "result": "results/julia/noul/C01-H11.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H11.json",
+      "question_count": 9,
+      "effective_input_sha256": "3af738966c7077ae0ced2d6c85df19f673adb4c47bad23ca9c2e81f5f16af5ef"
+    },
+    {
+      "result": "results/julia/noul/C01-H12.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H12.json",
+      "question_count": 9,
+      "effective_input_sha256": "5b1de6f2111e6a3b86e35d1fbaaeb8f8d898403eb6183282d82de4f819d93cd8"
+    },
+    {
+      "result": "results/julia/noul/C01-H13.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H13.json",
+      "question_count": 9,
+      "effective_input_sha256": "ba7fe664166399a7f9aeaf8ecd07503a956761218964ea4fdb2e1487fc41b803"
+    },
+    {
+      "result": "results/julia/noul/C01-H14.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H14.json",
+      "question_count": 9,
+      "effective_input_sha256": "4cd328c71655938a3ffc229ed9e001c25bef2e0ef35d0e7eb7e25fb8cd479c98"
+    },
+    {
+      "result": "results/julia/noul/C01-H2.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H2.json",
+      "question_count": 9,
+      "effective_input_sha256": "b8b0d761443d9c912a024dc6184244350f86f32bc8f9b2fe8a8832ad5cabf257"
+    },
+    {
+      "result": "results/julia/noul/C01-H3.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H3.json",
+      "question_count": 9,
+      "effective_input_sha256": "54cd59bfc4f5fba8ef1953baefb61dca6b3515840f2df50e0c6d6fe5bac407aa"
+    },
+    {
+      "result": "results/julia/noul/C01-H4.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H4.json",
+      "question_count": 9,
+      "effective_input_sha256": "d0825795e4665a0d07aac5faa6a3993331b634fedf147b2d79f3c7158ccac659"
+    },
+    {
+      "result": "results/julia/noul/C01-H5.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H5.json",
+      "question_count": 9,
+      "effective_input_sha256": "7292528ecb8124a6dd7a6ab8a747cc3145a061280a50fea1cadb3207db4a3463"
+    },
+    {
+      "result": "results/julia/noul/C01-H6.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H6.json",
+      "question_count": 9,
+      "effective_input_sha256": "4ab674564158ec2faf00ce0a6aabe0ec0bbeb0f072607c91512f7a9205ab2e07"
+    },
+    {
+      "result": "results/julia/noul/C01-H7.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H7.json",
+      "question_count": 9,
+      "effective_input_sha256": "1a88d643388d7af4eead0b495fa5949beaebb81ce1307ac78bb02ee907922bc4"
+    },
+    {
+      "result": "results/julia/noul/C01-H8.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H8.json",
+      "question_count": 9,
+      "effective_input_sha256": "85aaff9c81c94f77d4a550d9978f8252d4cab8e99a3fae6b232e53bdcf4a04ec"
+    },
+    {
+      "result": "results/julia/noul/C01-H9.json",
+      "reconstructed_input": "execution/historical-model-inputs/C01-H9.json",
+      "question_count": 9,
+      "effective_input_sha256": "d7f894e4bee744f16bc014f97b79e53ff18e575de5bd2cabc298ffde4ac82e75"
+    },
+    {
+      "result": "results/julia/noul/C02-H1.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H1.json",
+      "question_count": 9,
+      "effective_input_sha256": "693c022d81f56ca656dbe435820f48fedc20a94c029d494ecab020ccfb149053"
+    },
+    {
+      "result": "results/julia/noul/C02-H2.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H2.json",
+      "question_count": 9,
+      "effective_input_sha256": "fb1077da98d409100f909905326e1a918f20fc1705cfe9fe139752f2eb6a8b4d"
+    },
+    {
+      "result": "results/julia/noul/C02-H3.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H3.json",
+      "question_count": 9,
+      "effective_input_sha256": "5b7d3959b344f8f1d7a447bd98786bcd03e41bb27f1f37f301e3873fe11f0031"
+    },
+    {
+      "result": "results/julia/noul/C02-H4.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H4.json",
+      "question_count": 9,
+      "effective_input_sha256": "e04aa2f37d4e3bac99a4ab90c1aec94b022aae5e504933a19dfbf21ba56ac96a"
+    },
+    {
+      "result": "results/julia/noul/C02-H5.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H5.json",
+      "question_count": 9,
+      "effective_input_sha256": "42242bc19ffdaa81966d132479e0e3af584b76c0ac3d37f1f2609bcac5bf9952"
+    },
+    {
+      "result": "results/julia/noul/C02-H6.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H6.json",
+      "question_count": 9,
+      "effective_input_sha256": "b67737a3278415501371ac0e0ac775a1a8126169602751abbdf962f34c2498ff"
+    },
+    {
+      "result": "results/julia/noul/C02-H7.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H7.json",
+      "question_count": 9,
+      "effective_input_sha256": "1a8df6e08042b6d64a826e1df3f2a40e8886a25b5235783085970bbf184a28f8"
+    },
+    {
+      "result": "results/julia/noul/C02-H8.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H8.json",
+      "question_count": 9,
+      "effective_input_sha256": "b5fec4f87a5df96c39b2feb762cf00881a2b0b5c7780b6d9f15596e2a34e8a1c"
+    },
+    {
+      "result": "results/julia/noul/C02-H9.json",
+      "reconstructed_input": "execution/historical-model-inputs/C02-H9.json",
+      "question_count": 9,
+      "effective_input_sha256": "723b515e3f6ea158362cc8de43f8fc024b9d8692054e0ac639837389f8c6ffbe"
+    }
+  ]
+}

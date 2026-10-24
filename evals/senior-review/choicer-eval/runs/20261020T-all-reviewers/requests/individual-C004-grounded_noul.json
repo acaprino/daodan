@@ -1,0 +1,30 @@
+{
+  "id": "individual-C004-grounded_noul",
+  "kind": "individual",
+  "case_id": "C004",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Investigate only the CSS cascade that places the consent dialog below the viewport. React render behavior and component effects are outside this task.",
+    "artifacts": [
+      {
+        "path": "src/consent.css",
+        "content": ".consent-dialog { position: fixed; inset: 1rem; overflow: auto; }\n.dark > * { position: relative; top: 100vh; }"
+      },
+      {
+        "path": "src/Consent.tsx",
+        "content": "export function Consent() { return <section className=\"consent-dialog\">Privacy choices</section>; }"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    }
+  },
+  "sha256": "7c6a61e52f80d5a9070e7a9655edf3932e0113c2007534e3ac7ff24ab2557c7c"
+}

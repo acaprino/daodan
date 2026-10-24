@@ -1,0 +1,26 @@
+{
+  "id": "individual-C002-catalog_noul",
+  "kind": "individual",
+  "case_id": "C002",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Assess the component effect lifecycle for leaks or stale callbacks; report no issue if the ownership and cleanup are sound.",
+    "artifacts": [
+      {
+        "path": "src/ResizeReadout.tsx",
+        "content": "import { useEffect, useState } from \"react\";\nexport function ResizeReadout() {\n  const [width, setWidth] = useState(window.innerWidth);\n  useEffect(() => {\n    const update = () => setWidth(window.innerWidth);\n    window.addEventListener(\"resize\", update);\n    return () => window.removeEventListener(\"resize\", update);\n  }, []);\n  return <output>{width}</output>;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling."
+      }
+    }
+  },
+  "sha256": "0035cd730b3b790f4a0accb8c488c2cde0bbaadf95d0cff39dbe54bcd111e15d"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "individual-B007-grounded_choice",
+  "kind": "individual",
+  "case_id": "B007",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the first-deployment sequence for the API and its database.",
+    "artifacts": [
+      {
+        "path": "compose.yaml",
+        "content": "services:\n  db:\n    image: postgres:16\n    environment: {POSTGRES_PASSWORD: local}\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n  migrate:\n    image: app:local\n    command: [\"python\", \"migrate.py\"]\n    depends_on:\n      db: {condition: service_healthy}\n  api:\n    image: app:local\n    depends_on:\n      migrate: {condition: service_completed_successfully}\n"
+      },
+      {
+        "path": "deploy.md",
+        "content": "migrate.py creates the API tables and exits zero only after committing. The API starts accepting traffic after migration completion."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "choice",
+      "instructions": "Does the task examine dependencies that determine whether components, configuration, infrastructure, or migrations become ready during initialization or deployment?",
+      "criteria": {
+        "false": "The task concerns steady-state behavior or unrelated build and code issues, without initialization or deployment readiness dependencies.",
+        "true": "The task examines readiness dependencies, ordering, cycles, or temporal coupling during startup, bootstrap, configuration loading, discovery, or migration."
+      }
+    }
+  },
+  "sha256": "52428cc19d02741f5a6f2b174e71f7f8815a8cd1240790edcdc13ec81c1e4e63"
+}

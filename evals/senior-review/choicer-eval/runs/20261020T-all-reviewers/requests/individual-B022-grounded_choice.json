@@ -1,0 +1,26 @@
+{
+  "id": "individual-B022-grounded_choice",
+  "kind": "individual",
+  "case_id": "B022",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Audit the export endpoint only for command injection and unauthorized filesystem access.",
+    "artifacts": [
+      {
+        "path": "export.js",
+        "content": "import {exec} from \"node:child_process\";\nrouter.post(\"/export\", (req, res) => {\n  exec(`tar -czf /tmp/export.tgz ${req.body.folder}`, (error) => {\n    if (error) return res.sendStatus(500);\n    res.download(\"/tmp/export.tgz\");\n  });\n});"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  },
+  "sha256": "c6183e2e658da056a718c5cc46fdc96e09cb0d40f347041c3e0be75bed239328"
+}

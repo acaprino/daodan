@@ -1,0 +1,34 @@
+{
+  "id": "F03",
+  "request_sha256": "bbf8e986eeae2cd4bffa5163c49318dd7936dc8274369c7bb92f9dd3b1181fd8",
+  "raw_output": {
+    "answers": {
+      "family": {
+        "type": "choice",
+        "probabilities": {
+          "react": 0.3815244455361686,
+          "persistence": 0.40024697805439213,
+          "computation": 0.21822857640943938
+        },
+        "choice": "persistence",
+        "max_probability": 0.40024697805439213
+      },
+      "react": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9966455266386611,
+          "true": 0.0033544733613388926
+        },
+        "noul": 0.0033544733613388926
+      },
+      "persistence": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9897715202717818,
+          "true": 0.01022847972821823
+        },
+        "noul": 0.01022847972821823
+      }
+    }
+  }
+}

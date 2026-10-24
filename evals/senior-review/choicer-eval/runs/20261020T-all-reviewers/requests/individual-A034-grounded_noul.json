@@ -1,0 +1,26 @@
+{
+  "id": "individual-A034-grounded_noul",
+  "kind": "individual",
+  "case_id": "A034",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the retry policy used when the running application uploads a report, including what happens when every attempt fails.",
+    "artifacts": [
+      {
+        "path": "src/upload.py",
+        "content": "import asyncio\n\nasync def upload_report(send, notify):\n    for attempt in range(3):\n        try:\n            await asyncio.wait_for(send(), timeout=10)\n            return True\n        except (TimeoutError, ConnectionError):\n            if attempt < 2:\n                await asyncio.sleep(2 ** attempt)\n    notify(\"Upload failed; report remains available locally\")\n    return False\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      }
+    }
+  },
+  "sha256": "4442d7e6f379f7d626953ecab7aab69cd4dd08653d9251d3b3acd3a15e6a5fe9"
+}

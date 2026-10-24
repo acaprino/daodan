@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the window settings before shipping the desktop preferences window.",
+    "artifacts": [
+      {
+        "path": "desktop/main.ts",
+        "content": "import {BrowserWindow} from \"electron\";\nexport function preferences() {\n  return new BrowserWindow({webPreferences: {\n    nodeIntegration: false,\n    contextIsolation: true,\n    sandbox: true,\n    preload: require.resolve(\"./preferences-preload\"),\n  }});\n}"
+      },
+      {
+        "path": "desktop/preferences-preload.ts",
+        "content": "import {contextBridge, ipcRenderer} from \"electron\";\ncontextBridge.exposeInMainWorld(\"preferences\", {\n  readTheme: () => ipcRenderer.invoke(\"preferences:readTheme\"),\n});"
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    }
+  }
+}

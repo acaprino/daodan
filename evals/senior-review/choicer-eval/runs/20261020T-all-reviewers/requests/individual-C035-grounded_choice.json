@@ -1,0 +1,30 @@
+{
+  "id": "individual-C035-grounded_choice",
+  "kind": "individual",
+  "case_id": "C035",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Change the source timeout constant from 10 to the approved value 15 and verify the function result. Documentation and instruction maintenance are outside scope.",
+    "artifacts": [
+      {
+        "path": "src/client.py",
+        "content": "TIMEOUT_SECONDS = 10\n\ndef request_timeout():\n    return TIMEOUT_SECONDS\n"
+      },
+      {
+        "path": "requirements/network.txt",
+        "content": "Approved connection timeout: 15 seconds."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      }
+    }
+  },
+  "sha256": "e4d1565d0cd63012c03fdb256bafdfb30220c3a03de68f0f1d9e4dbe83406307"
+}

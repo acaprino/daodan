@@ -1,0 +1,34 @@
+{
+  "id": "individual-C018-grounded_noul",
+  "kind": "individual",
+  "case_id": "C018",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Repair the integer division in the production calculation to satisfy the approved contract. Keep the existing test unchanged; test quality and suite organization are outside scope.",
+    "artifacts": [
+      {
+        "path": "src/shares.py",
+        "content": "def fraction(part, whole):\n    return part // whole\n"
+      },
+      {
+        "path": "tests/test_shares.py",
+        "content": "from shares import fraction\n\ndef test_fractional_share():\n    assert fraction(1, 4) == 0.25\n"
+      },
+      {
+        "path": "requirements/shares.txt",
+        "content": "fraction returns the real-valued ratio part / whole for a positive whole."
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    }
+  },
+  "sha256": "0e435106afa5061810a683c1a7745b31e805b6ac6a2dea1bcc02585c1b1ee9c8"
+}

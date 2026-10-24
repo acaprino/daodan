@@ -1,0 +1,30 @@
+{
+  "id": "individual-C006-grounded_noul",
+  "kind": "individual",
+  "case_id": "C006",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the command-line import parser for unsound TypeScript casts. Limit the review to input typing; there is no React UI in this package.",
+    "artifacts": [
+      {
+        "path": "cli/read-record.ts",
+        "content": "type RecordRow = { amount: number };\nexport function readRecord(text: string): RecordRow {\n  return JSON.parse(text) as RecordRow;\n}"
+      },
+      {
+        "path": "package.json",
+        "content": "{\"name\":\"ledger-import\",\"type\":\"module\",\"dependencies\":{\"commander\":\"^14.0.0\"}}"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    }
+  },
+  "sha256": "e8346dec81bdb7e77bee97475405f8bc62abbdaaa0c4188184695709b241d1fe"
+}

@@ -1,0 +1,7 @@
+{
+  "prepared_at": "2026-10-20T11:14:51.092517+00:00",
+  "script_sha256": "d81b45a67d2d228fa59bef5dc9a40aa544b963c0fd7e6c484964a85df3bb986e",
+  "purpose": "Test structural source facts and original published Boolean questions.",
+  "interpretation": "Development controls, not a new pilot comparison. Structural cards are automatically extracted without reviewer/gold labels. They approximate a map producer's input contract; this experiment does not integrate or validate the actual Codebase Map. Published gold probabilities are annotations, not Julia predictions.",
+  "threshold": 0.5
+}

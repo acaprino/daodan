@@ -1,0 +1,106 @@
+[
+  {
+    "id": "python_raw/original_react/noul/forward",
+    "optimized_logits": [
+      -8.96993350982666,
+      6.529625415802002
+    ],
+    "original_logits": [
+      -8.96993350982666,
+      6.529625415802002
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/original_react/noul/reversed",
+    "optimized_logits": [
+      5.057005882263184,
+      -8.824262619018555
+    ],
+    "original_logits": [
+      5.057005882263184,
+      -8.824262619018555
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/original_react/choice/forward",
+    "optimized_logits": [
+      -9.175583839416504,
+      7.05983829498291
+    ],
+    "original_logits": [
+      -9.175583839416504,
+      7.05983829498291
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/original_react/choice/reversed",
+    "optimized_logits": [
+      5.440704345703125,
+      -9.148488998413086
+    ],
+    "original_logits": [
+      5.440704345703125,
+      -9.148488998413086
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/property_react_descriptive/noul/forward",
+    "optimized_logits": [
+      2.1523444652557373,
+      -5.072999954223633
+    ],
+    "original_logits": [
+      2.1523444652557373,
+      -5.072999954223633
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/property_react_descriptive/noul/reversed",
+    "optimized_logits": [
+      -6.310179710388184,
+      -2.028521776199341
+    ],
+    "original_logits": [
+      -6.310179710388184,
+      -2.028521776199341
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/property_react_descriptive/choice/forward",
+    "optimized_logits": [
+      2.5861258506774902,
+      -4.718505859375
+    ],
+    "original_logits": [
+      2.5861258506774902,
+      -4.718505859375
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  },
+  {
+    "id": "python_raw/property_react_descriptive/choice/reversed",
+    "optimized_logits": [
+      -5.728233337402344,
+      -2.324871301651001
+    ],
+    "original_logits": [
+      -5.728233337402344,
+      -2.324871301651001
+    ],
+    "max_absolute_delta": 0.0,
+    "same_argmax": true
+  }
+]

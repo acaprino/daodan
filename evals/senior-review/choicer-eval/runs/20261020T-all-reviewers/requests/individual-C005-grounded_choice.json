@@ -1,0 +1,26 @@
+{
+  "id": "individual-C005-grounded_choice",
+  "kind": "individual",
+  "case_id": "C005",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Inspect only the Rust command handler for blocking work on the desktop runtime; the webview and its React code are not part of this review.",
+    "artifacts": [
+      {
+        "path": "src-tauri/src/import.rs",
+        "content": "#[tauri::command]\nasync fn import_archive(path: String) -> Result<usize, String> {\n    let bytes = std::fs::read(path).map_err(|e| e.to_string())?;\n    Ok(expand_archive(bytes)?.len())\n}"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "choice",
+      "instructions": "Does the requested scope involve assessing or improving React rendering, store subscriptions, effect correctness, resource cleanup, or bundle performance?",
+      "criteria": {
+        "false": "The requested scope excludes React rendering, subscriptions, effects, cleanup, and bundle performance; CSS-only layout, native backend work, and unrelated language correctness do not qualify.",
+        "true": "The requested scope includes React rendering, subscriptions, effects, cleanup, or bundle performance, whether the supplied implementation is defective or correct."
+      }
+    }
+  },
+  "sha256": "99e022b6c768ba3d3e5b6ebb5e7966fbc13ba94046154dda6d3e9d3278219eae"
+}

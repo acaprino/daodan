@@ -76,14 +76,13 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Review preparation
 
-Input: `variant=code-review|team-review|pr-review`, target, original entry flags,
-output root; optionally the caller's resolved scope, baseline and candidate
-bindings. Output: resolved target and snapshot,
-native review brief, context files, reviewer selection, run identity and evidence discovery.
+Branch input: `variant=code-review|team-review|pr-review`, target, flags, output,
+optional bound scope/baseline/candidate. Output: snapshot, brief, context,
+selection, run and evidence. Light loads only `references/composition.md` here;
+its own method prepares inputs.
 
-Load the `project-protocol:project-protocol` skill for execution preflight and confined run
-records. A read-only review may use a dirty workspace: record its complete snapshot
-and preserve existing edits. Do not create a mutation authorization by reviewing.
+Load `project-protocol:project-protocol` for preflight and confined run records. Read-only reviews may use a dirty workspace: capture its complete snapshot and
+preserve edits. Review grants no mutation.
 
 The coordinator alone may perform the project-bound Codebase Map preflight
 before dispatch: move an idle legacy archive intact and write only bound
@@ -102,12 +101,14 @@ the actual candidate and leave any gate needing that comparison unavailable.
 
 | Step | Read inside this skill |
 |---|---|
-| Always, before the variant | `references/candidate-grounding.md`: target kind, policy from the base commit, ground-truth gate, evidence pack, budget and roster by kind |
+| Always, before the variant | `references/candidate-grounding.md`: target kind/basis, governing snapshot policy, ground-truth gate, evidence pack, budget and roster by kind |
 | Then | `references/<variant>.md` |
 | Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
 | Reviewer catalog | `references/reviewer-catalog.json` (compiled): reviewer identities, triggers, prerequisites, host bindings. Never scan role kernels at runtime |
+| Always, after the roster | `references/composition.md`: bind and validate specialist jobs before recording the complete review or dispatching |
 
-Execute the variant's preparation stages once. For team review Phase 1a, the
+Execute preparation once under the computed roster and support requirements.
+For team review Phase 1a, when selected, the
 coordinator executes the `codebase-map:map-method` analyze entry's preflight,
 answerable checkpoints, delivery check and publication decision, dispatching
 `codebase-map:map-analyst` in one isolated context through the consuming
@@ -117,14 +118,14 @@ second review preparation or final report owner. Required workers retain
 isolated contexts. Resolve the exact run in runs.json and never
 substitute a mirror for a missing run.
 
-Report locations are relative to the explicit review output root; a lifecycle
-run root holds scratch/context instead of a second root. Record the same
+Reports use the explicit review output root; lifecycle runs keep scratch/context
+in their run root. Record the same
 snapshot and run identity. Return missing evidence as degraded coverage.
 
 Read `references/stack-dimensions.md` to include React, TypeScript and platform
 bindings in the same reviewer selection. For team review this is part of Phase 0b,
 before presenting the plan; for code and PR review it follows scope resolution.
-Preparation selects reviewers without dispatching them. Record the activation
+Preparation never dispatches. Record the activation
 evidence or skip reason for each dimension, then pass the complete selection to
 review-method. A prepared bundle cannot imply that any selected reviewer ran.
 

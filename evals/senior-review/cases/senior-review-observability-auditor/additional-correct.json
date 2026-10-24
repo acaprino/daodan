@@ -1,0 +1,28 @@
+{
+  "requirement": "Every failed job must reach ops with operation id and original cause within 5 minutes; completed_jobs counts only completed work. No personal payloads.",
+  "handler": {
+    "error": "ConnectionRefused",
+    "wrap": "JobError with cause",
+    "correlation": "operation_id travels with async job"
+  },
+  "metric": {
+    "completed_increment": "after successful completion",
+    "accepted_increment": "on start",
+    "unit": "jobs",
+    "aggregation": "sum"
+  },
+  "exporter": {
+    "buffered": true,
+    "shutdown_flush": true
+  },
+  "alert": {
+    "expression": "failed_jobs > 0",
+    "window_minutes": 1,
+    "suppressed": "documented maintenance only",
+    "equivalent_route": "ops supervisor"
+  },
+  "evidence": {
+    "configuration_only": true,
+    "claim": "delivery unexercised"
+  }
+}

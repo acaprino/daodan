@@ -1,0 +1,189 @@
+{
+  "reviewed_file": "evals/senior-review/choicer-eval/all-reviewers/group-a.json",
+  "reviewed_sha256": "44d78dbef61d56e2be7792e55cfaa3073a7439f2f59d1a6e48f145adfc5ca129",
+  "reviewer": "group-b author, independently reviewing group-a",
+  "blind_to_predictions": true,
+  "prediction_calls_made": 0,
+  "scope": "Source-charter alignment, applicability labels, boundary examples, complementary criteria, compactness, and model-visible state separation.",
+  "result": "pass",
+  "findings": [],
+  "resolutions": [],
+  "changed_reviewed_file": false,
+  "role_checks": [
+    {
+      "role_id": "senior-review:security-auditor",
+      "source_path": "plugins/senior-review/roles/security-auditor.md",
+      "source_sha256": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9",
+      "case_ids": [
+        "A001",
+        "A002",
+        "A003",
+        "A004",
+        "A005",
+        "A006"
+      ],
+      "criteria_word_counts": {
+        "false": 18,
+        "true": 21
+      },
+      "status": "pass",
+      "assessment": "Application trust boundaries and credential operations are represented. A003 and A006 remain positive despite reasonable safeguards; infrastructure-only and presentation-only negatives match explicit exclusions."
+    },
+    {
+      "role_id": "senior-review:premise-auditor",
+      "source_path": "plugins/senior-review/roles/premise-auditor.md",
+      "source_sha256": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39",
+      "case_ids": [
+        "A007",
+        "A008",
+        "A009",
+        "A010",
+        "A011",
+        "A012"
+      ],
+      "criteria_word_counts": {
+        "false": 19,
+        "true": 18
+      },
+      "status": "pass",
+      "assessment": "All three substantive modes are represented. A009 is a correct document/source comparison. Negatives are defect hunting, settled severity triage, and prose editing, rather than missing mode prerequisites."
+    },
+    {
+      "role_id": "senior-review:data-integrity-auditor",
+      "source_path": "plugins/senior-review/roles/data-integrity-auditor.md",
+      "source_sha256": "3002f553c9bc1f4efacf14c0e91be3e53684659f3710fd50e9d4c602f942d192",
+      "case_ids": [
+        "A013",
+        "A014",
+        "A015",
+        "A016",
+        "A017",
+        "A018"
+      ],
+      "criteria_word_counts": {
+        "false": 24,
+        "true": 22
+      },
+      "status": "pass",
+      "assessment": "Steady-state constraints, transactions, and service-owned cache consistency are represented. A013 is correctly positive with a matching uniqueness constraint. Domain-only, message-contract-only, and stylesheet negatives lack persistence scope."
+    },
+    {
+      "role_id": "senior-review:logic-integrity-auditor",
+      "source_path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+      "source_sha256": "e417e5fa015e53042406346798db4f1fcfca09f05dbc239aaf3cbfb14a92daab",
+      "case_ids": [
+        "A019",
+        "A020",
+        "A021",
+        "A022",
+        "A023",
+        "A024"
+      ],
+      "criteria_word_counts": {
+        "false": 18,
+        "true": 22
+      },
+      "status": "pass",
+      "assessment": "Positive cases provide the required map and concern domain mutation paths, implicit caller contracts, or local replay. A022 is positive despite correct guards. Negatives isolate security, store enforcement, or formatting rather than treating a missing map as inapplicability."
+    },
+    {
+      "role_id": "senior-review:resource-lifecycle-auditor",
+      "source_path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+      "source_sha256": "12c350b62d5eb0dfe4cec49a53cd981e12ff05ef735b205459a89c1c87f52383",
+      "case_ids": [
+        "A025",
+        "A026",
+        "A027",
+        "A028",
+        "A029",
+        "A030"
+      ],
+      "criteria_word_counts": {
+        "false": 18,
+        "true": 20
+      },
+      "status": "pass",
+      "assessment": "Resources are actual file handles, listeners, and subprocesses. A025 and A030 preserve applicability with cleanup present. Negatives contain only bounded GC values, a pure delay calculation, or a schema constraint."
+    },
+    {
+      "role_id": "senior-review:temporal-resilience-auditor",
+      "source_path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+      "source_sha256": "7d2783596e7e043046978f6b26756133cd681b47f8c11c7f05a3e87cef858d2b",
+      "case_ids": [
+        "A031",
+        "A032",
+        "A033",
+        "A034",
+        "A035",
+        "A036"
+      ],
+      "criteria_word_counts": {
+        "false": 22,
+        "true": 20
+      },
+      "status": "pass",
+      "assessment": "Recurring refresh, capped retry escalation, and daily local-time scheduling are represented. A034 remains positive with bounded behavior. Startup-only ordering, distributed timeout budgets, and pure timestamp formatting respect explicit boundaries."
+    },
+    {
+      "role_id": "senior-review:distributed-flow-auditor",
+      "source_path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+      "source_sha256": "156b7ec5ebdba1c76fe1d9c15b4e1308af04a00c659282e87d85606db694aee8",
+      "case_ids": [
+        "A037",
+        "A038",
+        "A039",
+        "A040",
+        "A041",
+        "A042"
+      ],
+      "criteria_word_counts": {
+        "false": 25,
+        "true": 23
+      },
+      "status": "pass",
+      "assessment": "Each positive exposes producer and consumer sides of an actual service boundary. A039 remains positive despite agreeing fields. Negatives are within-service cache consistency, local injection, and static service-status styling."
+    }
+  ],
+  "references_consulted": [
+    {
+      "path": "plugins/senior-review/skills/defect-taxonomy/references/security.md",
+      "sha256": "98a35f14b56af3a4a214c6ce90f7f27153f4b618ab8ac4929f24b2a05ce7526e"
+    },
+    {
+      "path": "plugins/senior-review/skills/defect-taxonomy/references/memory-resources.md",
+      "sha256": "b0c9943406da2288c912c69ce86c265515331b8998ed08f4dd12cafbaaa9bf03"
+    },
+    {
+      "path": "plugins/senior-review/skills/defect-taxonomy/references/logic-integrity.md",
+      "sha256": "7edada88850a0559a686d3483152b40fd008101799fa264882bf8ee9cd879bc2"
+    },
+    {
+      "path": "plugins/senior-review/skills/defect-taxonomy/references/concurrency-state.md",
+      "sha256": "c3ca740c4804c95a983cc8d5876aef1762c3577d7a36c92bff4e9347a259e1c8"
+    },
+    {
+      "path": "plugins/senior-review/skills/defect-taxonomy/references/data-design-ops.md",
+      "sha256": "270e45bd58be7e41ff3087313189761123ab36ad87d59fceed65f96ace6bbaaf"
+    },
+    {
+      "path": "plugins/senior-review/skills/defect-taxonomy/references/distributed-integration.md",
+      "sha256": "46933fa110b6860cb8f63e3ac0c7c5090f0a8a295dca1880cead4691b3dfb6be"
+    }
+  ],
+  "mechanical_checks": {
+    "roles": 7,
+    "cases": 42,
+    "positive_cases": 21,
+    "negative_cases": 21,
+    "unique_ids": true,
+    "source_hashes_match": true,
+    "criteria_at_most_30_words": true,
+    "states_at_most_1500_characters": true,
+    "state_keys": [
+      "task",
+      "artifacts"
+    ],
+    "role_ids_absent_from_states": true
+  },
+  "limitations": "This is a source and fixture review, not a model accuracy result. No predictions, benchmark outputs, or prior reports were consulted."
+}

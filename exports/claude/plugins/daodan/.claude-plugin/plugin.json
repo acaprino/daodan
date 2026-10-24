@@ -5,5 +5,5 @@
   "description": "One command per intention, with no parameters: initialize, onboard, check health, brainstorm, investigate, build, fix, refactor, continue, finish, sync, review, map, document, tidy. Each command is a thin entry into the canonical method of its owner, usable alone or as a step of the task cycle.",
   "license": "MIT",
   "name": "daodan",
-  "version": "1.1.0"
+  "version": "1.3.0"
 }

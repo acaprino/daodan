@@ -68,7 +68,7 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-<!-- Generated dispatch body. Owner: repo-hygiene:workspace-auditor; version: 2.0.0; source-sha256: d68c5ad5e01d297a9a90e85f06fbbcd69c8550f68723b01f0510b64314f4e293. Edit the owner's kernel, never this resource. -->
+<!-- Generated dispatch body. Owner: repo-hygiene:workspace-auditor; version: 2.0.1; source-sha256: f453bfc486ae2121676e701c0a76b9aca12bd484322dcf00f5f3f79fd7c700bf. Edit the owner's kernel, never this resource. -->
 
 This body belongs to `repo-hygiene`. Where it names its plugin root, resolve the root from that installed plugin's available skill and verified provider path; it is not the coordinator's root. `<repo-hygiene-plugin-root>` names that owner root. Any unqualified skill load in the body belongs to `repo-hygiene`. The owning plugin's declared logical skill identities are `repo-hygiene:repo-hygiene`; these are not invented native registry strings. Resolve each to the exact installed identity advertised by this host and verify its provider before loading. Resolve an owner's helper from the skill's installed location, never from this generated resource's parent.
 
@@ -166,8 +166,9 @@ Anything the sweep surfaced that needs source comprehension, named and routed to
 
 When spawned by a pipeline rather than invoked directly:
 
-- **Scope budget.** If after roughly fifteen commands nothing has surfaced, the
-  repository is clean on this dimension. Report that, with what was examined, and stop.
+- **Scope budget.** Complete the assigned C1–C7 checks or report unexamined scope and cause.
+  A command count or absence of findings never proves cleanliness. Reuse inventory
+  evidence and keep the report concise without dropping required protection.
 - **No-findings protocol.** "Examined C1 through C7, no findings" is a useful result and
   a complete one. Report it rather than padding.
 - **Disjointness.** Your perimeter and `senior-review:cleanup-auditor`'s do not overlap

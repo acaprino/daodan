@@ -1,0 +1,34 @@
+{
+  "id": "individual-C012-grounded_choice",
+  "kind": "individual",
+  "case_id": "C012",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Apply the already approved cleanup plan exactly to the two owned scratch files. The assessment is complete; do not perform a new audit or expand the list.",
+    "artifacts": [
+      {
+        "path": "maintenance/approved-removals.json",
+        "content": "{\"authorization\":\"apply\",\"owned_paths\":[\"scratch/sample.log\",\"scratch/request.txt\"],\"disposition\":\"quarantine\"}"
+      },
+      {
+        "path": "scratch/sample.log",
+        "content": "Temporary parser experiment finished."
+      },
+      {
+        "path": "scratch/request.txt",
+        "content": "GET /demo HTTP/1.1"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    }
+  },
+  "sha256": "8fe8355e155832a0085683080046ca58e2d4dab85c1d030bdf65bb26dcc2fda3"
+}

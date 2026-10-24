@@ -1,0 +1,26 @@
+{
+  "id": "individual-A027-grounded_choice",
+  "kind": "individual",
+  "case_id": "A027",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review mounting and disposing this widget, which may be opened repeatedly in a long-lived page.",
+    "artifacts": [
+      {
+        "path": "web/width.js",
+        "content": "export function mountWidth(node) {\n  const update = () => { node.textContent = String(window.innerWidth); };\n  window.addEventListener(\"resize\", update);\n  update();\n  return () => { node.remove(); };\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  },
+  "sha256": "498e4012de85e7320845e9f61b4c2ac5a2c236584dbf95c65be939a900845065"
+}

@@ -81,9 +81,8 @@ Translate the record into micro-tasks and group them into waves. Every task
 carries `id`, `write_set`, `oracle` (command and the failure it must produce
 before the change), `verification` command, and when relevant
 `resource_locks`, `produces`, `consumes`, the `EX-*` it makes pass and the
-`INV-*` it enforces. Order callees before callers along the map's resolved
-edges. The first wave builds missing fixtures or harnesses when the oracles
-need them.
+`INV-*` it enforces. Use provider I1 per `references/context-cycle.md`; approved
+contracts determine precedence. Build missing oracle fixtures first.
 
 Run the protocol helper's `plan-check` on the draft. It refuses more than
 four files in a `write_set` without a reasoned exception, two tasks of one
@@ -106,7 +105,7 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
 
 1. Record `pre_phase_sha` and the pre-step bytes of every `write_set` file
    through the protocol helper.
-2. Dispatch the writer with the brief of `references/worker-brief.md`:
+2. Verify `task-packet` per `references/context-cycle.md`; dispatch with `references/worker-brief.md`:
    for Python dispatch `python-development:python-engineer`,
    for TypeScript and JavaScript dispatch `typescript-development:typescript-engineer`,
    for tests only dispatch `testing:test-writer`, for any
@@ -116,15 +115,14 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
    inside `write_set` and stops with `NEEDS_REPLAN` when another file must
    change; runs the verification; records a ruling for any local decision the
    record did not make; returns `OK` with the changed paths.
-3. On `OK`, confirm that the changed paths are a subset of `write_set`, run
-   the verification again in this context, and commit atomically when
-   authorized (otherwise record the candidate snapshot). The message is
-   `<type>(<area>): <task title>` with the trailer
-   `Daodan-Task: <run id> wave <n>/<m>`, so `git log` shows progress. On any other code,
-   restore the task's `write_set` from the pre-step bytes, remove files the
-   task created, touch nothing else, and record the attempt.
-   `NEEDS_REPLAN` returns to the plan with the missing file; `ORACLE_INVALID`
-   returns to the record or the test.
+3. On `OK`, confirm changed paths are inside `write_set`; rerun verification
+   here. Commit atomically when authorized; otherwise snapshot the candidate.
+   Use `<type>(<area>): <task title>` with trailer
+   `Daodan-Task: <run id> wave <n>/<m>`. At the barrier, refresh map and protocol
+   candidate; prepare `post-task` per `references/context-cycle.md`.
+   On other codes, restore owned pre-step bytes, remove only task-created
+   files, preserve everything else and record the attempt. `NEEDS_REPLAN`
+   returns missing files to planning; `ORACLE_INVALID` returns to record or test.
 
 ## Review of the wave (stage C)
 

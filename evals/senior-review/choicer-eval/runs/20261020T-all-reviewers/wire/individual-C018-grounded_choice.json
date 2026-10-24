@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Repair the integer division in the production calculation to satisfy the approved contract. Keep the existing test unchanged; test quality and suite organization are outside scope.",
+    "artifacts": [
+      {
+        "path": "src/shares.py",
+        "content": "def fraction(part, whole):\n    return part // whole\n"
+      },
+      {
+        "path": "tests/test_shares.py",
+        "content": "from shares import fraction\n\ndef test_fractional_share():\n    assert fraction(1, 4) == 0.25\n"
+      },
+      {
+        "path": "requirements/shares.txt",
+        "content": "fraction returns the real-valued ratio part / whole for a positive whole."
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    }
+  }
+}

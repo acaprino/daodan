@@ -1,0 +1,26 @@
+{
+  "id": "individual-A003-catalog_noul",
+  "kind": "individual",
+  "case_id": "A003",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the proposed route for downloading a signed-in customer's invoice.",
+    "artifacts": [
+      {
+        "path": "app/invoices.py",
+        "content": "@app.get(\"/invoices/<invoice_id>\")\n@login_required\ndef download(invoice_id):\n    invoice = invoices.get(invoice_id)\n    if invoice.owner_id != current_user.id:\n        abort(403)\n    return send_file(invoice.pdf_path)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers."
+      }
+    }
+  },
+  "sha256": "dc097cde49a2d2174379b1ae6ad38315d8daade9e30484caed4147666b53fe8f"
+}

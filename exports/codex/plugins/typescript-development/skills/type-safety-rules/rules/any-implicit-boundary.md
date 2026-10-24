@@ -96,4 +96,4 @@ const config = AppConfigSchema.parse(parsed) // throws with a precise error on d
 startServer(config.port)
 ```
 
-**Detection:** `rg -n 'JSON\.parse\(|\.json\(\)' --type ts`. Flag any hit whose result lands in a typed binding without a schema parse or guard between.
+**Detection:** Locate parsed/response values; trace effective validation, including trusted adapters outside the immediate function, before typed use. A type annotation alone does not validate foreign data.

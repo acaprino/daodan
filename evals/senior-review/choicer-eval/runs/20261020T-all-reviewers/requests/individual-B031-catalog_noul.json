@@ -1,0 +1,34 @@
+{
+  "id": "individual-B031-catalog_noul",
+  "kind": "individual",
+  "case_id": "B031",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review how the renewal eligibility rule is represented in the renewal job and account screen.",
+    "artifacts": [
+      {
+        "path": "jobs/renewals.py",
+        "content": "def eligible(account):\n    return account.active and account.unpaid_days <= 7"
+      },
+      {
+        "path": "web/account.py",
+        "content": "def show_renew_button(account):\n    return account.active and account.unpaid_days < 8"
+      },
+      {
+        "path": "rules.md",
+        "content": "There is one renewal eligibility policy for all accounts. The scheduled renewal job and customer screen must make the same decision from the same account data."
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic."
+      }
+    }
+  },
+  "sha256": "9ecc24bc1be193eef496dda2f24e4fa3ea5b255dc8489513cf7efcd4f94b1e85"
+}

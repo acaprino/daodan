@@ -100,8 +100,9 @@ Anything the sweep surfaced that needs source comprehension, named and routed to
 
 When spawned by a pipeline rather than invoked directly:
 
-- **Scope budget.** If after roughly fifteen commands nothing has surfaced, the
-  repository is clean on this dimension. Report that, with what was examined, and stop.
+- **Scope budget.** Complete the assigned C1–C7 checks or report unexamined scope and cause.
+  A command count or absence of findings never proves cleanliness. Reuse inventory
+  evidence and keep the report concise without dropping required protection.
 - **No-findings protocol.** "Examined C1 through C7, no findings" is a useful result and
   a complete one. Report it rather than padding.
 - **Disjointness.** Your perimeter and `senior-review:cleanup-auditor`'s do not overlap

@@ -1,0 +1,20 @@
+{
+  "id": "official_billing",
+  "request_sha256": "15bf9b02450c832698dd931ed63307455ccb5de9ec1db7bf27164f378b650c9e",
+  "wall_seconds": 0.13347000000067055,
+  "model_session_id": "diagnostic-2026-10-20T11:08:11.156721+00:00",
+  "raw_output": {
+    "answers": {
+      "team": {
+        "type": "choice",
+        "probabilities": {
+          "billing": 0.8544645654086148,
+          "shipping": 0.14277118677864054,
+          "access": 0.0027642478127446273
+        },
+        "choice": "billing",
+        "max_probability": 0.8544645654086148
+      }
+    }
+  }
+}

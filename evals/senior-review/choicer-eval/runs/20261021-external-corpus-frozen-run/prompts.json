@@ -1,0 +1,118 @@
+{
+  "v2": {
+    "senior-review:security-auditor": {
+      "question": "Should the security-auditor review lens be activated for user boundaries, account isolation, authorization, recipient access control, or sensitive data leaks?",
+      "options": [
+        "Yes: activate security-auditor",
+        "No: do not activate security-auditor"
+      ]
+    },
+    "senior-review:data-integrity-auditor": {
+      "question": "Should the data-integrity-auditor review lens be activated for database persistence, SQL/ORM models, partial writes, unique keys, or cache synchronization?",
+      "options": [
+        "Yes: activate data-integrity-auditor",
+        "No: do not activate data-integrity-auditor"
+      ]
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "question": "Should the temporal-resilience-auditor review lens be activated for asynchronous timing, timeouts, polling loops, retries, degraded broker connection handling, or background schedulers?",
+      "options": [
+        "Yes: activate temporal-resilience-auditor",
+        "No: do not activate temporal-resilience-auditor"
+      ]
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "question": "Should the resource-lifecycle-auditor review lens be activated for acquiring or releasing system resources like DB connection pools, sockets, file handles, or listeners?",
+      "options": [
+        "Yes: activate resource-lifecycle-auditor",
+        "No: do not activate resource-lifecycle-auditor"
+      ]
+    },
+    "senior-review:ui-race-auditor": {
+      "question": "Should the ui-race-auditor review lens be activated for UI layout, component rendering, user alert dialogs, toasts, or frontend event handling?",
+      "options": [
+        "Yes: activate ui-race-auditor",
+        "No: do not activate ui-race-auditor"
+      ]
+    },
+    "senior-review:distributed-flow-auditor": {
+      "question": "Should the distributed-flow-auditor review lens be activated for cross-service messages, AMQP/RPC queues, webhook delivery, or producer-consumer contracts?",
+      "options": [
+        "Yes: activate distributed-flow-auditor",
+        "No: do not activate distributed-flow-auditor"
+      ]
+    },
+    "senior-review:logic-integrity-auditor": {
+      "question": "Should the logic-integrity-auditor review lens be activated for state machines, status transitions, fallback values, recipient filtering logic, or domain invariants?",
+      "options": [
+        "Yes: activate logic-integrity-auditor",
+        "No: do not activate logic-integrity-auditor"
+      ]
+    },
+    "senior-review:cleanup-auditor": {
+      "question": "Should the cleanup-auditor review lens be activated for dead code, obsolete comments contradicting implementation, or orphan unused dependencies?",
+      "options": [
+        "Yes: activate cleanup-auditor",
+        "No: do not activate cleanup-auditor"
+      ]
+    }
+  },
+  "candidate": {
+    "senior-review:security-auditor": {
+      "question": "Does this code control access to accounts or private data, validate untrusted input, or handle credentials or sensitive output? Review the trust boundary even if no exploit is shown. Pure internal computation without a trust boundary is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:data-integrity-auditor": {
+      "question": "Does this code read, write, invalidate or reconcile persisted records or cached copies of external state? Include local caches whose contents must agree with a source of truth. A temporary dictionary used only for computation is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "question": "Does this code govern retries, timers, polling, recovery after failure, or whether background errors remain visible over time? Review failure and recovery behavior even if the normal path works. Merely using async syntax or converting a timestamp is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "question": "Does this code acquire, retain or release a lock, file, connection, subscription, worker or bounded resource slot? Consider success, failure and cancellation paths. Ordinary value allocation or an async call alone is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:ui-race-auditor": {
+      "question": "Does this code coordinate UI events or asynchronous results with rendered state, visibility, focus, scroll or layout? Consider whether a user action or notification can race the UI state. Static styling or text alone is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:distributed-flow-auditor": {
+      "question": "Does this code publish, receive, acknowledge or route messages across a service or process boundary, or define the contract between their producer and consumer? Pure local computation or an internal function call is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:logic-integrity-auditor": {
+      "question": "Does this code enforce a domain rule, allowed state transition, ordering requirement, idempotency condition or ownership rule across operations? Consider correctness of fallback values and terminal states. Generic formatting or numerical conversion alone is not sufficient.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    },
+    "senior-review:cleanup-auditor": {
+      "question": "Does the supplied evidence show unused or obsolete code, dependencies or assets, or documentation that disagrees with implementation? The mere presence of comments, documentation, or a changed file does not establish this concern.",
+      "options": [
+        "Yes",
+        "No"
+      ]
+    }
+  }
+}

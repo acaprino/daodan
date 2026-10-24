@@ -1,0 +1,25 @@
+{
+  "requirement": "Cohort stays stable per user; new_writer requires new_reader; turning off preserves legacy reads.",
+  "cohort": {
+    "key": "random each request"
+  },
+  "allowed": [
+    {
+      "writer": true,
+      "reader": false
+    }
+  ],
+  "writer_format": "v2",
+  "legacy_formats": [
+    "v1"
+  ],
+  "deactivate": {
+    "reader": "legacy",
+    "stored": "v2"
+  },
+  "permanent_flag": {
+    "name": "tenant_theme",
+    "age": 4,
+    "intent": "permanent customer option"
+  }
+}

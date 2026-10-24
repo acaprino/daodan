@@ -86,14 +86,15 @@ This workflow fans out over the dimensions its detection step selects. Dispatch,
 collection belong to the harness of `/daodan:review-branch`; these units own the order. What this
 workflow requires of any harness is fixed and mandatory:
 
-- every reviewer runs in its own context and never reads another reviewer's result
-- exactly the selected dimensions are dispatched, once each
-- every expected reviewer is recorded `delivered` or `failed` before anything is consolidated
+- every job runs in its own context and never reads another job's result
+- exactly the validated jobs are dispatched, once each, preserving every selected member/scope obligation
+- every expected job and member is recorded `delivered` or `failed` before anything is consolidated
 - cross-examination runs after that barrier, in fresh contexts
 - only the consolidation phase writes the final report
 
-If the host cannot run reviewers in isolated contexts, stop and say so. A review whose dimensions
-shared a context is not the artifact this workflow claims to produce.
+If the host cannot run jobs in isolated contexts, stop and say so. Compatible
+discovery members may share their validated job; independent derivation and
+verification never share discovery contexts or peer results.
 
 # Team Review (Pipeline)
 
@@ -101,12 +102,16 @@ shared a context is not the artifact this workflow claims to produce.
 |---|---|---|
 | 0 | Resolve the target (0), detect dimensions (0b), discover the evidence this review needs without reading any Codebase Map output (0c) | `.team-review/00-scope.md`, `01a-review-knowledge-leads.md` |
 | 1 | Codebase Map analysis (1a) and blind premise derivation (1c) in parallel, joined (1d), then the interconnect map (1b) | `01b-independent-claims.md`, `01-knowledge-provenance.md`, `02-interconnect.md` |
-| 2 | One isolated reviewer per selected dimension; every finding declares its load-bearing premise and its provenance | `findings-<dim>.md` |
-| 3 | Delivery barrier: every reviewer delivers findings or an explicit no-findings report | ledger |
+| 2 | One isolated worker per validated job, with canonical member checks; every finding declares its load-bearing premise and provenance | assigned job reports |
+| 3 | Delivery barrier: every job and member delivers findings or an explicit no-findings result | ledger |
 | 4 | Consolidation weighted by provenance, verification panel (4b), completeness critic (4c) | `99-consolidated.md` |
 | 5 | Report and cleanup | final report |
 
-**Raw mode**: `--no-context` runs reviewers on the target and diff only: no Phase 0c, no Phase 1, no `logic-integrity-auditor`, no `premise-auditor` in either mode.
+**Raw inputs**: `--no-context` withholds shared analytical context. It does not
+remove a selected role, required blind derivation or verification gate. Supply
+source-derived scoped semantic context when a selected logic reviewer needs it;
+if a required input cannot be supplied under the requested restriction, record
+the review as incomplete instead of silently dropping that reviewer.
 
 ## Skills to Load
 
@@ -121,10 +126,10 @@ Before starting, invoke these skills to inform the review process:
    - `<target>`: file path, directory, git diff range (e.g., `main...HEAD`), or PR number (e.g., `#123`)
    - `--reviewers`: comma-separated dimensions OR `auto` (default: `auto`)
    - `--base-branch`: base branch for diff comparison (default: `main`)
-   - `--all`: force all dimensions regardless of auto-detection
+   - `--all`: record a request for all dimensions; reconcile it with the computed roster before dispatch
    - `--deep`: run Phase 1a `codebase-map` in full mode (default: `--depth=lite`)
-   - `--no-context`: skip Phase 0c and Phase 1 entirely and run reviewers with raw code only (raw mode; `logic-integrity-auditor` and `premise-auditor` are also skipped)
-   - `--fast`: skip the verification + completeness-critic gate entirely (Phase 4b and 4c)
+   - `--no-context`: withhold shared analytical context without removing required roles or gates
+   - `--fast`: request reduced optional verification work; retain every gate required by the roster
    - `--rigorous`: verify every finding above the confidence floor, ignoring the cost-guard cap
 3. Check for existing `.team-review/state.json`:
    - If present with `status: "in_progress"`: ask user whether to resume or start fresh (archive to `.team-review-<ISO-timestamp>/`).
@@ -177,113 +182,70 @@ Before starting, invoke these skills to inform the review process:
    - **Git diff range**: `git diff {range} --name-only` to get changed files
    - **PR number**: `gh pr diff {number} --name-only` to get changed files
    - **Plan, specification or document**: the paths, symbols and contracts it names, resolved against the current tree, are the review scope; the file itself is the artifact under review
-2. Collect the full diff content for later distribution to reviewers.
+2. Collect the actual diff when the target has a comparison. For a file/directory
+   target retain the named contents and scope; never manufacture a diff, silently
+   replace it with uncommitted changes, or claim an empty diff covers the target.
+   Missing comparison or unsupported roster preparation remains an explicit gap.
 3. Collect the list of changed file paths and extensions for Phase 0b.
 4. Write `.team-review/00-scope.md` with target, files, flags. Append a `## Pre-review work tree` section containing the output of `git status --porcelain` at this moment: the Phase 5 workspace hygiene check diffs against it. Mark phase complete in `state.json`.
 
-## Phase 0b: Context Detection (when `--reviewers auto` or omitted)
+## Phase 0b: Bind the computed reviewer selection
 
-Analyze changed files and codebase to determine which review dimensions are relevant. Skip if explicit `--reviewers` list was provided.
+Use the roster produced by `references/candidate-grounding.md` for this exact
+candidate. Its `roster` supplies required coverage; validated `jobs` from
+`references/composition.md` are the dispatch units. `support` permits the
+method's separate context and verification workers. Neither this reference nor
+an example below adds an always-on reviewer, lowers a floor or creates a support
+task merely because its role is allowed. The light shape uses its own method.
 
-Include the stack dimensions from `references/stack-dimensions.md` inside this
-skill in the same selection. That reference also defines explicit reviewer scope
-and --all behavior. Present their activation evidence or skip/gap reasons with
-the other dimensions before dispatch.
+Resolve every selected identity through the compiled `reviewer-catalog.json` in
+this skill. Bind its canonical role or declared method, prerequisites, scope,
+snapshot, knowledge assignments and intermediate report path. Include the stack
+bindings from `references/stack-dimensions.md` in the same selection and ledger.
+A missing binding or prerequisite is a coverage gap or failed delivery, never
+permission to omit the selected reviewer or substitute a generalist.
 
-### Always-on dimensions (run for every review)
+The helper owns automatic activation, including additions and removals. These
+boundaries explain the new specialist signals; they are not a second selector:
 
-| Dimension | Agent | Rationale |
-|-----------|-------|-----------|
-| Security | `senior-review:security-auditor` | Vulnerabilities |
-| Architecture | `senior-review:code-auditor` | Coupling, abstractions, failure flows, pattern consistency, scoring |
-| **Logic integrity** | `senior-review:logic-integrity-auditor` | Phase 1b contracts/invariants/domain-rule violations (skip if `--no-context`) |
-| Codebase hygiene | `senior-review:cleanup-auditor` | **Full, whole-codebase** source-comprehension pass: dead code, orphan assets, phantom/unused deps with barrel/eager-bundle bloat, stale documentation, lifecycle archaeology. `code-review`/`pr-review` cover only diff-scoped dead code |
-| Workspace hygiene | `repo-hygiene:workspace-auditor` | Filesystem/Git facts without symbol reading: garbage, tracked generated artifacts, `.gitignore` completeness/archaeology, scratch/pipeline-output directories, orphan doc-assets, Git auxiliary state. Disjoint from codebase hygiene |
+| Signal in the computed roster | Canonical reviewer | Boundary |
+|---|---|---|
+| `accessibility` | `senior-review:accessibility-auditor` | Markup, effective styles, keyboard/assistive access and blocked interaction paths, including static CSS changes |
+| `performance` | `senior-review:performance-auditor` | Query/index, algorithm, cache, batch, rate-limit and capacity costs; measured claims need actual measurements |
+| `operability` | `senior-review:operability-auditor` | Health, telemetry, deployment, flags, mixed-version rollout and recovery |
+| `platform` | `platform-engineering:platform-reviewer` | Browser/PWA, mobile and desktop client capabilities, storage and sandbox boundaries |
 
-### Conditional dimensions (auto-detected from context)
+UI timing stays with `ui-race-auditor`; startup prerequisite cycles stay with
+`chicken-egg-detector`; persistent-state validity stays with
+`data-integrity-auditor`. A migration may activate several owners because data
+validity, startup order, query cost and rollout compatibility are different
+questions. Each executes its canonical mandate once in its assigned job.
 
-Check changed files and codebase. Required providers: `abstraction-architect`
-(structural entropy), `testing` (test quality), `repo-hygiene` (workspace hygiene).
-Skip only unmatched code signals; failed dispatch means degraded delivery.
+Inspect the helper's evidence against the actual target. A confirmed relevant
+specialist absent from the roster is a selection gap: preserve its source anchor
+and report the unmet requested coverage. Do not silently append an unauthorized
+role or turn the omission into an inapplicability claim. Legacy `--reviewers` and
+`--all` requests are recorded and compared with the computed set; they cannot
+remove its floor or bypass the run's allowed dispatch. Apply a caller-supplied
+valid selection through the existing preparation contract, not an invented
+roster schema or a second selection engine.
 
-| Signal | Detection rule | Dimension activated | Agent |
-|--------|---------------|---------------------|-------|
-| **UI/frontend** | `.tsx`, `.jsx`, `.vue`, `.svelte`, `.component.ts`, scroll/focus/layout manipulation | UI races | `senior-review:ui-race-auditor` |
-| **Non-React frontend** | Frontend files without React dependency | Performance | `senior-review:code-auditor` (performance dimension) |
-| **Multi-service/messaging** | API routes, message handlers, gRPC definitions, queue producers/consumers, multi-service `docker-compose.yml` | Distributed flows | `senior-review:distributed-flow-auditor` |
-| **Init/startup** | Startup, dependency injection, config bootstrap, migration runners, service registration | Circular dependencies | `senior-review:chicken-egg-detector` |
-| **Scheduled execution** | Timers, schedulers, polling, retry/reconnect, cron, queue workers, daemons, updaters, watchdogs (5b) | Temporal resilience: user-visible day-long failures | `senior-review:temporal-resilience-auditor` |
-| **Shared state** | Process-global registries, realm/module singletons, coordinator maps, per-instance copies of shared facts (5e) | Cross-instance invariants and write propagation | `senior-review:logic-integrity-auditor` plus `senior-review:code-auditor` (per-instance divergence) |
-| **Autonomous long-running loop** | Agent/step/worker/message loops in one long invocation, even without timers/schedulers (5e) | Temporal resilience: user-visible hour-long failures | `senior-review:temporal-resilience-auditor` |
-| **Persistence** | Schemas, models, ORM entities, repositories, SQL, caches, transactions (5c) | Impossible stored states | `senior-review:data-integrity-auditor` |
-| **Resource acquisition** | Files, sockets, connections, subprocesses, listeners, subscriptions, locks, tasks, timers; especially C/C++/Rust/Go or async code (5d) | Release on success, error AND cancellation | `senior-review:resource-lifecycle-auditor` |
-| **Tests** | `test_*`, `*_test.*`, `*.spec.*`, `*.test.*`, `conftest.py`, `__tests__/` | Testing quality | `testing:test-suite-auditor` |
-| **API** | `*.proto`, `openapi*.y*ml`, `swagger*`, `*.graphql`, `asyncapi*`, JSON Schema, routes, serializers, DTO/models | API contracts | `senior-review:api-contract-auditor` |
-| **Migrations** | Alembic, Django, Rails, Prisma, SQL migrations | Data migrations | `senior-review:data-integrity-auditor` (migration dimension) |
-| **Diff adding code** | Phase 0 git-range/PR/uncommitted diff adds a function, method, class, module, constant table or block over roughly five lines. Never plain file/directory targets; whole-tree work belongs to `/daodan:check-health` | Structural entropy: duplicated domain knowledge, competing sources of truth, redundant representation, duplicated/derivable state, missed unification, available prior art, abstraction fitness; seven dimensions, two evidence tracks | `abstraction-architect:abstraction-architect-agent` (mode `diff`) |
-
-### Detection implementation
-
-Run these bash commands to gather signals:
-
-```bash
-# 1. Classify changed file extensions
-echo "$CHANGED_FILES" | sed 's/.*\.//' | sort | uniq -c | sort -rn
-
-# 4. Check for multi-service / messaging patterns in diff
-echo "$DIFF_CONTENT" | grep -qiE 'rabbitmq\|amqp\|kafka\|grpc\|pubsub\|queue\|celery\|dramatiq' && echo "MESSAGING=true"
-echo "$CHANGED_FILES" | grep -qiE 'routes?\b|api/|endpoints?/|handlers?/' && echo "API_FILES=true"
-# Formal contract files. Kept separate from API_FILES on purpose: a change to
-# openapi.yaml or schema.graphql matches none of the path patterns above, and
-# it is the single strongest signal for the api-contract-auditor dimension.
-echo "$CHANGED_FILES" | grep -qiE '\.proto$|\.graphql$|\.gql$|openapi.*\.(ya?ml|json)$|swagger.*\.(ya?ml|json)$|asyncapi.*\.(ya?ml|json)$|schema.*\.json$' && echo "CONTRACT_FILES=true"
-
-# 5. Check for init/startup patterns in diff
-echo "$DIFF_CONTENT" | grep -qiE 'def main\b|if __name__|app\.on_startup|@app\.on_event|lifespan|create_app|bootstrap|init_' && echo "STARTUP=true"
-
-# 5b. Check for long-running / scheduled execution patterns (temporal resilience)
-echo "$DIFF_CONTENT" | grep -qiE 'setInterval|setTimeout|cron|schedule|\bretry|reconnect|backoff|watchdog|heartbeat|keepalive|\bpoll(ing)?\b|background.?(task|worker|job)|daemon|updater' && echo "TEMPORAL=true"
-
-# 5c. Check for persistence code (data integrity)
-echo "$DIFF_CONTENT" | grep -qiE '\btransaction\b|\bcommit\b|rollback|UPDATE |INSERT |upsert|\bunique\b|constraint|ON CONFLICT|FOR UPDATE|select_for_update|session\.add|\.objects\.|prisma\.|typeorm|sqlalchemy|redis|cache\.(get|set|del)' && echo "PERSISTENCE=true"
-
-# 5d. Check for resource acquisition (resource lifecycle)
-echo "$DIFF_CONTENT" | grep -qiE 'open\(|createReadStream|createWriteStream|\bsocket\b|getConnection|acquire|addEventListener|subscribe\(|\block\b|mutex|semaphore|new Worker|subprocess|Popen|spawn\(|go func|tokio::spawn|asyncio\.create_task|createObjectURL' && echo "RESOURCES=true"
-
-# 5e. Check for semantic long-running and shared-state patterns (lexical greps miss these)
-echo "$DIFF_CONTENT" | grep -qiE 'globalThis|Symbol\.for\(|coordinator|registry|shared\.(epoch|state|credential)' && echo "SHARED_STATE=true"
-# Read the changed loop and call sites: an agent/step/worker loop that runs for one
-# long invocation is temporal machinery even when no timer keyword appears.
-# Instantiation sites of a shared-state factory are part of the scope: multiplicity
-# decides whether per-instance divergence is reachable at all.
-echo "$DIFF_CONTENT" | grep -qiE 'while \(|for \(;;\)|step|agent.*loop|runDelegated|process.*queue' && echo "LONG_LOOP_CHECK_NEEDED=true"
-
-# 6. Check for test and migration files
-echo "$CHANGED_FILES" | grep -qiE 'test_|_test\.|\.spec\.|\.test\.|conftest|__tests__' && echo "TEST_FILES=true"
-echo "$CHANGED_FILES" | grep -qiE 'migrat|alembic|versions/' && echo "MIGRATION_FILES=true"
-```
-
-### Display detected dimensions
-
-Show always-on, detected and skipped dimensions with code evidence, reviewer
-count and the pipeline above: inline discovery; parallel map/blind derivation;
-join; interconnect; parallel reviewers; delivery barrier; consolidation,
-verification/critic; report. Include selected map depth.
-
-Skip reasons concern code, never installation. Every provider is required;
-there is no generic fallback. If dispatch fails with "Agent type not found",
-stop and report the broken install instead of silently reducing the review.
+Show one compact plan: target and snapshot, roster ID/tier, jobs and member identities
+with activation evidence, required support work, skip reasons and gaps, and the
+verification level. Context and blind-derivation phases appear only when required
+by that plan. Missing providers and dispatch failures are failed deliveries;
+unknown applicability is a gap. No install failure is a clean skip.
 
 Mark `phase_0b_detection` complete in `state.json`.
 
 ## Phase 0c: Review Evidence Discovery
 
-Runs inline in the orchestrating context on every invocation except raw mode. It discovers what evidence is relevant to this review; how the repository documents itself is the Codebase Map's discovery. **It never reads `.codebase-map/` in any form**, the mirror and earlier runs included: the Codebase Map's leads enter at the Phase 1d join and nowhere earlier.
+Runs inline before required blind derivation or context work. It collects source-derived leads even when shared analytical context is withheld. It discovers what evidence is relevant to this review; how the repository documents itself is the Codebase Map's discovery. **It never reads `.codebase-map/` in any form**, the mirror and earlier runs included: the Codebase Map's leads enter at the Phase 1d join and nowhere earlier.
 
 1. Read `CLAUDE.md`, `AGENTS.md` and equivalent project instruction files, and follow any navigation rule they state. If the project says a specific file is where to look first to find where a concept lives, open that file before opening any code. Discover the conventions from the repository itself, never from a prior Codebase Map run.
 2. Extract the concepts, domains and symbols the diff touches. Names of changed functions, classes, modules and config keys are the starting set; add the domain nouns that appear in the diff's own strings and comments.
 3. For each concept, search the project's indexes and documentation for a relevant entry, and search the tests for behaviour that encodes it.
-4. Collect runtime evidence the user or the run supplies: session logs, timing breakdowns, traces and metrics named in the request or the run record. Record their paths in the evidence pack and route latency, timing and failure-over-time hypotheses to the temporal-resilience dimension with those artifacts as declared inputs. Runtime evidence never enters by inference: an artifact nobody supplied is a recorded gap, and an assertion about observed runtime behaviour or a runtime value without one stays a gap rather than becoming a finding. A mechanism demonstrated statically from the code in scope, with its trigger and quantities labelled `derived`, remains reportable without runtime artifacts; the two evidence classes never substitute for each other. When the request is an observed runtime symptom with logs and no change to assess, stop preparation and route the work to the investigation method instead of reviewing a diff that does not carry the defect.
+4. Collect runtime evidence the user or the run supplies: session logs, timing breakdowns, traces and metrics named in the request or the run record. Record their paths in the evidence pack and route latency/cost hypotheses to performance, failure-over-time hypotheses to temporal resilience, and service diagnosis/recovery hypotheses to operability when those roles are selected, with the artifacts as declared inputs. Runtime evidence never enters by inference: an artifact nobody supplied is a recorded gap, and an assertion about observed runtime behaviour or a runtime value without one stays a gap rather than becoming a finding. A mechanism demonstrated statically from the code in scope, with its trigger and quantities labelled `derived`, remains reportable without runtime artifacts; the two evidence classes never substitute for each other. When the request is an observed runtime symptom with logs and no change to assess, stop preparation and route the work to the investigation method instead of reviewing a diff that does not carry the defect.
 5. Write `.team-review/01a-review-knowledge-leads.md`.
 
 **This file is immutable once written.** No later phase appends to it. Codebase Map's own leads are joined into a separate derived artifact in Phase 1d, precisely so that the snapshot Phase 1c consumes cannot change underneath it.
@@ -316,9 +278,17 @@ Mark `phase_0c_evidence_discovery` complete in `state.json`.
 
 ## Phase 1: Context Building
 
-The sub-phases below are listed in **execution order**, not in label order: 1a and 1c start together, 1d joins them, 1b runs last on the joined result. Nothing named here is missing.
+The sub-phases below are listed in execution order. For the complete context pipeline, 1a and 1c start together, 1d joins them, and 1b consumes the joined result. Run only the phases required by the prepared roster.
 
-Skip this phase entirely if `--no-context` was passed. Mark `phase_1a_xray`, `phase_1c_premise_audit`, `phase_1d_reconciliation`, `phase_1b_interconnect`, and `phase_0c_evidence_discovery` as `skipped` in `state.json`. Jump to Phase 2 with raw target files only.
+Follow the prepared roster: Phase 1a runs only when `codebase-map:map-analyst`
+is required support, Phase 1b only for `codebase-map:semantic-interconnect-mapper`,
+and Phase 1c only when `blind_derivation` is true. Run independent branches in
+parallel when both are required. Phase 1d joins their actual deliveries; with no
+shared derivation, retain the independent report without inventing a join input.
+Record unrequired phases as skipped. A required phase whose inputs conflict with
+`--no-context` is unavailable, not silently skipped; the review remains incomplete.
+Scoped semantic context can satisfy the logic reviewer's prerequisite without an
+interconnect-map dispatch. Preserve the blind derivation's input isolation.
 
 ### Phase 1a: Codebase Map Analysis
 
@@ -336,7 +306,7 @@ If the analysis fails or produces no output, halt the pipeline and report a brok
 
 ### Phase 1c: Independent Premise Derivation (parallel with 1a)
 
-Dispatch when Phase 1a starts, without waiting for it: this derivation must not see what the Codebase Map derived.
+When required, dispatch before reading shared analytical conclusions. Run alongside Phase 1a when that phase is required; this derivation must not see what the Codebase Map derived.
 
 1. Dispatch the `senior-review:premise-auditor` agent in its own isolated context.
 2. Prompt:
@@ -357,9 +327,9 @@ Dispatch when Phase 1a starts, without waiting for it: this derivation must not 
    anything in this prompt paraphrases a Codebase Map conclusion.
    ```
 
-3. Wait for both 1a and 1c before starting Phase 1d. Mark `phase_1c_premise_audit` complete.
+3. Account for this delivery. Wait for both 1a and 1c before starting Phase 1d when both branches are required. Mark `phase_1c_premise_audit` complete.
 
-Under raw mode (`--no-context`) this phase does not run, because there is no shared derivation for it to be independent of.
+This phase is controlled by `blind_derivation`; a context preference cannot remove it.
 
 ### Phase 1d: Knowledge Reconciliation (join)
 

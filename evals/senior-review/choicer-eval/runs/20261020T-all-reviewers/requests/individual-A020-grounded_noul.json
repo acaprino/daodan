@@ -1,0 +1,34 @@
+{
+  "id": "individual-A020-grounded_noul",
+  "kind": "individual",
+  "case_id": "A020",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review how the ordinary editor and bulk editor change an article after publication.",
+    "artifacts": [
+      {
+        "path": ".team-review/02-interconnect.md",
+        "content": "## Domain Rules\nPublished articles retain their original title. Both editors mutate Article.title.\n"
+      },
+      {
+        "path": "src/editor.py",
+        "content": "def rename(article, title):\n    if article.status == \"published\":\n        raise ValueError(\"title is final\")\n    article.title = title\n"
+      },
+      {
+        "path": "src/bulk.py",
+        "content": "def replace_titles(articles, title):\n    for article in articles:\n        article.title = title\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope warrant checking cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics against the source?",
+      "criteria": {
+        "false": "The scope does not concern cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics.",
+        "true": "The scope concerns cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics, even when the implementation appears consistent."
+      }
+    }
+  },
+  "sha256": "e2ae8d1e81d04912628727c4be487df3a1563e069becd46335ad2e0a7182eccc"
+}

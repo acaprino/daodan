@@ -49,6 +49,100 @@
                 "resource": "<package-root>/**"
               }
             ]
+          },
+          {
+            "description": "Review duplicated policies, competing authorities, redundant representations and maintained derivable state across files. TRIGGER WHEN: reviewing duplicated policies, competing authorities, redundant representations and maintained derivable state across files. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/concept-ownership-auditor.md",
+            "id": "abstraction-architect:concept-ownership-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review repeated mechanisms, bypassed canonical implementations and abstractions that impose cross-file friction. TRIGGER WHEN: reviewing repeated mechanisms, bypassed canonical implementations and abstractions that impose cross-file friction. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/abstraction-fit-auditor.md",
+            "id": "abstraction-architect:abstraction-fit-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "dependencies": [
@@ -695,9 +789,244 @@
       "platform-engineering": {
         "agents": [
           {
-            "description": "Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+            "description": "Reviews declared browser, PWA, mobile, WebView and Electron/Tauri targets for compatible APIs, lifecycle behavior and native platform mechanisms. TRIGGER WHEN: platform audit or senior-review targets client runtime boundaries, native integration, app packaging, service workers or supported browser behavior.",
             "file": "agents/platform-reviewer.md",
             "id": "platform-engineering:platform-reviewer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review required browser or WebView journeys against supported APIs, layout, input, permissions and lifecycle. TRIGGER WHEN: reviewing required browser or WebView journeys against supported APIs, layout, input, permissions and lifecycle. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/browser-compatibility-auditor.md",
+            "id": "platform-engineering:browser-compatibility-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review PWA scope, service-worker installation, offline recovery and old/new controlled-client coexistence. TRIGGER WHEN: reviewing PWA scope, service-worker installation, offline recovery and old/new controlled-client coexistence. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/offline-lifecycle-auditor.md",
+            "id": "platform-engineering:offline-lifecycle-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review native suspend, recreation, permission, external-intent and OS resource behavior against required outcomes. TRIGGER WHEN: reviewing native suspend, recreation, permission, external-intent and OS resource behavior against required outcomes. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/native-lifecycle-auditor.md",
+            "id": "platform-engineering:native-lifecycle-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review Electron or Tauri native command exposure, payloads, caller capability and window/process event contracts. TRIGGER WHEN: reviewing Electron or Tauri native command exposure, payloads, caller capability and window/process event contracts. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/desktop-bridge-auditor.md",
+            "id": "platform-engineering:desktop-bridge-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review packaged resources, target architecture, signing, update channels and verification hooks for declared distributions. TRIGGER WHEN: reviewing packaged resources, target architecture, signing, update channels and verification hooks for declared distributions. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/app-distribution-auditor.md",
+            "id": "platform-engineering:app-distribution-auditor",
             "permissions": [
               {
                 "action": "*",
@@ -745,7 +1074,7 @@
         "root": "plugins/platform-engineering",
         "skills": [
           {
-            "description": "Rulebook of MUST/DO/DONT rules backed by real-world incident references. TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri) apps for security posture, architecture decisions, performance, or compliance with OWASP, Core Web Vitals, and OAuth 2.1.",
+            "description": "Platform mechanisms and compatibility for browser, PWA, mobile, Electron and Tauri applications. TRIGGER WHEN: building or reviewing supported browsers/devices, native integration, offline lifecycle, packaging, or platform-specific trust boundaries.",
             "file": "skills/platform-engineering/SKILL.md",
             "id": "platform-engineering:platform-engineering",
             "name": "platform-engineering"
@@ -1447,6 +1776,53 @@
                 "resource": "<package-root>/**"
               }
             ]
+          },
+          {
+            "description": "Review Python default evaluation, binding, short-circuit, return, exception and side-effect behavior against required outcomes. TRIGGER WHEN: reviewing Python default evaluation, binding, short-circuit, return, exception and side-effect behavior against required outcomes. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/python-semantics-auditor.md",
+            "id": "python-development:python-semantics-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "dependencies": [
@@ -1529,6 +1905,194 @@
             "description": "Measure first, then cut wasted React 19 component work, store re-renders and bundle bloat. TRIGGER WHEN: dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling. DO NOT TRIGGER WHEN: CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
             "file": "agents/react-performance-optimizer.md",
             "id": "react-development:react-performance-optimizer",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review React effect dependencies, current callbacks, repeated actions and deterministic subscription cleanup. TRIGGER WHEN: reviewing React effect dependencies, current callbacks, repeated actions and deterministic subscription cleanup. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/react-effects-auditor.md",
+            "id": "react-development:react-effects-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review React subscriptions, component identity, hydration and avoidable render or main-thread work with causal evidence. TRIGGER WHEN: reviewing React subscriptions, component identity, hydration and avoidable render or main-thread work with causal evidence. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/react-render-cost-auditor.md",
+            "id": "react-development:react-render-cost-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review eager dependency reachability, code splitting, resource hints and optional feature delivery against the actual build. TRIGGER WHEN: reviewing eager dependency reachability, code splitting, resource hints and optional feature delivery against the actual build. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/react-bundle-auditor.md",
+            "id": "react-development:react-bundle-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review request dependency graphs, server/client transfer, request isolation and cache freshness in React applications. TRIGGER WHEN: reviewing request dependency graphs, server/client transfer, request isolation and cache freshness in React applications. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/react-dataflow-auditor.md",
+            "id": "react-development:react-dataflow-auditor",
             "permissions": [
               {
                 "action": "*",
@@ -1657,9 +2221,9 @@
       "senior-review": {
         "agents": [
           {
-            "description": "Auditor for drift between declared API contracts and their implementation. TRIGGER WHEN: checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes. DO NOT TRIGGER WHEN: no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
-            "file": "agents/api-contract-auditor.md",
-            "id": "senior-review:api-contract-auditor",
+            "description": "Reviews whether supported users can perceive, navigate and complete critical UI journeys, including assistive interaction and static layout rules that block entry. TRIGGER WHEN: target contains interactive UI, forms, navigation, dialogs, visual feedback, accessibility requirements or styles affecting critical user paths. DO NOT TRIGGER WHEN: target has no user-facing surface; async ordering alone belongs to UI race, and unsupported runtime mechanisms belong to platform.",
+            "file": "agents/accessibility-auditor.md",
+            "id": "senior-review:accessibility-auditor",
             "permissions": [
               {
                 "action": "*",
@@ -1668,6 +2232,11 @@
               },
               {
                 "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
                 "effect": "allow",
                 "resource": "*"
               },
@@ -1699,7 +2268,54 @@
             ]
           },
           {
-            "description": "Detects the chicken-and-egg cycle where component A needs B ready while B needs A: cold-start hangs, deadlocks, hidden temporal coupling. TRIGGER WHEN: the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck. DO NOT TRIGGER WHEN: the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+            "description": "Reviewer for drift and compatibility across declared APIs, runtime validators, clients, message schemas and structured AI outputs. TRIGGER WHEN: checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, DTOs, runtime validation, AMQP payloads or AI/tool schemas against producers and consumers. DO NOT TRIGGER WHEN: the question concerns delivery timing, remote compensation or domain invariants without a boundary contract.",
+            "file": "agents/api-contract-auditor.md",
+            "id": "senior-review:api-contract-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds startup cycles, unavailable bootstrap prerequisites and initialization ordering defects. TRIGGER WHEN: startup ordering, initialization, bootstrap or config loading, service discovery, readiness before traffic, seed data or migration dependencies are in scope. DO NOT TRIGGER WHEN: the concern is steady-state retries, distributed runtime flows or compatibility of coexisting release versions without an initialization dependency.",
             "file": "agents/chicken-egg-detector.md",
             "id": "senior-review:chicken-egg-detector",
             "permissions": [
@@ -1793,7 +2409,7 @@
             ]
           },
           {
-            "description": "Hunts coupling violations, broken abstractions, resource leaks, stale caches, and anti-patterns. TRIGGER WHEN: the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check. DO NOT TRIGGER WHEN: the task is security-specific auditing (use security-auditor).",
+            "description": "Reviews local correctness, failure paths, state ownership and concrete boundary misuse. TRIGGER WHEN: a code review, light changeset review, edge-case analysis or local correctness check is requested. DO NOT TRIGGER WHEN: the assignment exclusively concerns a specialized dimension already assigned to its canonical reviewer.",
             "file": "agents/code-auditor.md",
             "id": "senior-review:code-auditor",
             "permissions": [
@@ -1840,7 +2456,7 @@
             ]
           },
           {
-            "description": "Persistence-layer reviewer for partial writes, read-modify-write races, missing DB uniqueness constraints and cache-database divergence. TRIGGER WHEN: target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries. DO NOT TRIGGER WHEN: domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+            "description": "Reviewer for persistent invariants, SQL transactions and constraints, concurrent writes, cache consistency, representation and retention. TRIGGER WHEN: target touches schemas, models, ORM entities, repositories, raw SQL, caches, transaction boundaries, data transformations or retention and deletion paths. DO NOT TRIGGER WHEN: the question concerns domain rules without persistence, query cost alone or cross-service delivery and compensation.",
             "file": "agents/data-integrity-auditor.md",
             "id": "senior-review:data-integrity-auditor",
             "permissions": [
@@ -1887,7 +2503,7 @@
             ]
           },
           {
-            "description": "Hunts cascading timeout violations, missing idempotency, broken saga compensation, message ordering bugs, and split-brain risks. TRIGGER WHEN: the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+            "description": "Reviewer for cross-boundary failure, deadlines, delivery, ordering, duplicate effects and compensation. TRIGGER WHEN: the target calls external services, spans services or agents, publishes or consumes messages, uses AMQP, handles payment webhooks or coordinates remote effects. DO NOT TRIGGER WHEN: the question concerns only local persistence, a local timer or schema drift without a cross-boundary failure consequence.",
             "file": "agents/distributed-flow-auditor.md",
             "id": "senior-review:distributed-flow-auditor",
             "permissions": [
@@ -1934,9 +2550,103 @@
             ]
           },
           {
-            "description": "Cross-component reviewer for ordering, idempotency, state machines, terminal states and domain invariants in .team-review/02-interconnect.md, or in a scoped semantic context when no interconnect map exists. TRIGGER WHEN: Phase 2 of senior-reviews branch review (/daodan:review-branch) runs, a lite review supplies a scoped semantic context, or asked for a logic, contract or invariant audit. DO NOT TRIGGER WHEN: style/lint review (use code-auditor), security-only review (use security-auditor), or neither an interconnect map nor a scoped semantic context is supplied (report the missing prerequisite; in team review, semantic-interconnect-mapper can build the map).",
+            "description": "Cross-component reviewer for domain invariants, ordering, idempotency and terminal states. TRIGGER WHEN: branch review supplies an interconnect map, a review supplies scoped semantic context, or a domain contract/invariant audit is requested. DO NOT TRIGGER WHEN: neither an interconnect map nor scoped semantic context is supplied; report that missing prerequisite.",
             "file": "agents/logic-integrity-auditor.md",
             "id": "senior-review:logic-integrity-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews whether operators can detect failures, release compatible versions and recover service and data under declared operational requirements. TRIGGER WHEN: target changes error reporting, logs, probes, alerts, deployment, schema rollout, feature flags, environment configuration or backup and restore. DO NOT TRIGGER WHEN: only bootstrap cycles, local retry behavior or native client compatibility is at issue; use startup, temporal resilience or platform reviewers.",
+            "file": "agents/operability-auditor.md",
+            "id": "senior-review:operability-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews avoidable work amplification, query cost, hot paths, capacity controls and billable resource consumption against evidenced workloads and requirements. TRIGGER WHEN: target changes queries, bulk processing, rendering or asset delivery, queues, concurrency limits, expensive external calls or cost controls. DO NOT TRIGGER WHEN: only resource release, data correctness or security abuse is at issue; use their owners unless a distinct work or capacity defect is evidenced.",
+            "file": "agents/performance-auditor.md",
+            "id": "senior-review:performance-auditor",
             "permissions": [
               {
                 "action": "*",
@@ -2028,7 +2738,7 @@
             ]
           },
           {
-            "description": "Reviewer for resource acquisition and release across success, error and cancellation paths: leaks, double-release, use-after-release and unbounded pools. TRIGGER WHEN: target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory. DO NOT TRIGGER WHEN: behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+            "description": "Reviewer for acquisition, ownership and release across success, error and cancellation, including pools and task lifetimes. TRIGGER WHEN: target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, tasks, threads, timers or native/GPU resources. DO NOT TRIGGER WHEN: the question concerns only retry behavior over time, concurrency ordering, query cost or general architecture.",
             "file": "agents/resource-lifecycle-auditor.md",
             "id": "senior-review:resource-lifecycle-auditor",
             "permissions": [
@@ -2075,7 +2785,7 @@
             ]
           },
           {
-            "description": "Attacker-mindset pass over the target: assumes it is exploitable and proves it. TRIGGER WHEN: the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers; the target exposes URLs, routes or functions to untrusted callers; code reads or returns data by a caller-supplied ID (IDOR / data theft); code checks permissions, roles or ownership; or code creates, verifies or destroys logins and sessions. DO NOT TRIGGER WHEN: the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+            "description": "Reviewer for exploitable trust-boundary failures in identity, input, secrets and privileged effects. TRIGGER WHEN: reviewing security, authentication, authorization, RLS, caller-supplied ID access, permissions, roles, logins and sessions, untrusted inputs, signed URLs, uploads, webhooks, secrets or AI tool boundaries. DO NOT TRIGGER WHEN: the concern is general correctness, dependency inventory or platform compatibility without a reachable security consequence.",
             "file": "agents/security-auditor.md",
             "id": "senior-review:security-auditor",
             "permissions": [
@@ -2122,7 +2832,7 @@
             ]
           },
           {
-            "description": "Reviewer for failure-over-time defects: missing backoff/caps, silent subsystem death, uncleared guards, notification floods and clock hazards. TRIGGER WHEN: reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs. DO NOT TRIGGER WHEN: startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+            "description": "Reviewer for failure over time: stalled jobs, retry amplification, uncleared guards, silent subsystem death and clock hazards. TRIGGER WHEN: reviewing timers, schedulers, polling, retry/reconnect, background jobs, queues, resident workers, deadlines, watchdogs or restart recovery. DO NOT TRIGGER WHEN: the question concerns bootstrap ordering, cross-service deadline chains or UI rendering races.",
             "file": "agents/temporal-resilience-auditor.md",
             "id": "senior-review:temporal-resilience-auditor",
             "permissions": [
@@ -2169,9 +2879,1654 @@
             ]
           },
           {
-            "description": "Framework-agnostic UI timing analyst: React, Angular, Vue, Qt, GTK, Flutter, SwiftUI, Electron, Tauri. TRIGGER WHEN: races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+            "description": "Finds observable timing failures between asynchronous data, rendering, layout and user interaction. TRIGGER WHEN: async updates, stale responses or closures, scroll/focus/resize operations, virtualized content or cross-component UI state are in scope. DO NOT TRIGGER WHEN: the issue is static accessibility or CSS reachability without a timing cause.",
             "file": "agents/ui-race-auditor.md",
             "id": "senior-review:ui-race-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds object, tenant, operation and privilege authorization bypasses. TRIGGER WHEN: reviewing caller-supplied IDs, RLS, IAM, permission policies, privileged fields, list/export/batch/admin routes and file access. DO NOT TRIGGER WHEN: credential issuance or session lifetime without an object/operation permission question.",
+            "file": "agents/authorization-auditor.md",
+            "id": "senior-review:authorization-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds failures in credential identity, session lifetime and delegated authority. TRIGGER WHEN: reviewing login, token issuance/verification, password storage, refresh/logout/revocation, signed URLs and service identity. DO NOT TRIGGER WHEN: object permissions, callback signatures or general data encryption without credential authority.",
+            "file": "agents/session-delegation-auditor.md",
+            "id": "senior-review:session-delegation-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds disclosure of usable secrets and failures of cryptographic confidentiality or key lifetime. TRIGGER WHEN: reviewing credentials, key management, encryption, sensitive comparisons, source/configuration, bundles, logs, errors and build artifacts. DO NOT TRIGGER WHEN: public identifiers, placeholders or numeric precision without protected data or cryptographic guarantees.",
+            "file": "agents/secret-exposure-auditor.md",
+            "id": "senior-review:secret-exposure-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds untrusted values interpreted as executable syntax or work beyond effective input limits. TRIGGER WHEN: reviewing parsers, normalization, validation, queries, shell commands, templates, eval, deserialization and adversarial size/depth. DO NOT TRIGGER WHEN: browser interpretation, resource destinations or domain eligibility without input-to-sink validation.",
+            "file": "agents/input-validation-auditor.md",
+            "id": "senior-review:input-validation-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds file, upload and outbound-request confinement bypasses. TRIGGER WHEN: reviewing caller-controlled paths, archives, filenames, uploads/downloads, URLs, redirects, renderers and network destinations. DO NOT TRIGGER WHEN: ordinary object grants or local paths without untrusted control over the resolved resource.",
+            "file": "agents/untrusted-resource-auditor.md",
+            "id": "senior-review:untrusted-resource-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds browser trust-boundary failures in markup, authenticated mutations and cross-origin access. TRIGGER WHEN: reviewing rendering/DOM sinks, cookies, CSRF, CORS, CSP, transport and edge response policy. DO NOT TRIGGER WHEN: platform compatibility or static usability without a browser security boundary.",
+            "file": "agents/browser-security-auditor.md",
+            "id": "senior-review:browser-security-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds forged or stale callbacks accepted as authentic events. TRIGGER WHEN: reviewing signed webhooks, provider callbacks, signature middleware, timestamp/replay windows and callback key selection. DO NOT TRIGGER WHEN: authentic delivery retries, duplicate effects or schema drift without authenticity failure.",
+            "file": "agents/callback-authenticity-auditor.md",
+            "id": "senior-review:callback-authenticity-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds untrusted AI context or model output acquiring unauthorized authority. TRIGGER WHEN: reviewing prompts, retrieved documents, memory, tool results, model-selected destinations and tool invocation. DO NOT TRIGGER WHEN: model quality or output shape without an unauthorized authority/effect path.",
+            "file": "agents/ai-boundary-auditor.md",
+            "id": "senior-review:ai-boundary-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds missing attribution or tampering in required audit records. TRIGGER WHEN: reviewing sensitive actions, privileged changes, required failed attempts, audit sinks, log framing and audit access controls. DO NOT TRIGGER WHEN: diagnostic observability without an approved audit obligation.",
+            "file": "agents/audit-trail-auditor.md",
+            "id": "senior-review:audit-trail-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds persistent invariants broken by transaction boundaries, concurrent writes or replay. TRIGGER WHEN: reviewing schemas, constraints, ORM mappings, repository writes, imports, isolation, upserts, deduplication or offline conflict reconciliation. DO NOT TRIGGER WHEN: query cost, wire schema or remote effects without a local persistent invariant.",
+            "file": "agents/transaction-integrity-auditor.md",
+            "id": "senior-review:transaction-integrity-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds disagreement between the representations of one persistent object: applied DDL, ORM declarations, handwritten SQL, procedures, triggers and views. TRIGGER WHEN: reviewing migrations, schema files, ORM models or entities, repository SQL, database functions, procedures, triggers, views or a constraint added to an existing table. DO NOT TRIGGER WHEN: the question is the meaning of stored values, transaction atomicity, query cost or mixed-version rollout without a representation mismatch.",
+            "file": "agents/schema-coherence-auditor.md",
+            "id": "senior-review:schema-coherence-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds stale or incorrectly scoped derived reads beyond the consistency contract. TRIGGER WHEN: reviewing caches, replicas, indexes, projections, invalidation, read-your-writes and access/deletion propagation. DO NOT TRIGGER WHEN: cache throughput or storage retention without a derived-read consistency question.",
+            "file": "agents/cache-consistency-auditor.md",
+            "id": "senior-review:cache-consistency-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds meaning lost in persisted values, pagination and data conversions. TRIGGER WHEN: reviewing money/ranges, timezones/dates, NULL/defaults, enum/JSON versions, cursors, migrations and backfills. DO NOT TRIGGER WHEN: wire-only compatibility or rollout order without persisted meaning or data conversion.",
+            "file": "agents/data-representation-auditor.md",
+            "id": "senior-review:data-representation-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds deletion and expiry paths that violate approved retention obligations. TRIGGER WHEN: reviewing data-class policies, deletion requests, expiry jobs, copies/derivatives, backup restore, replay and legal-hold exceptions. DO NOT TRIGGER WHEN: no approved retention policy applies; report unavailable required policy as a gap.",
+            "file": "agents/data-retention-auditor.md",
+            "id": "senior-review:data-retention-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds broker work lost, duplicated or misordered against its delivery contract. TRIGGER WHEN: reviewing publishers/consumers, AMQP topology, confirms, acknowledgements, replay, prefetch, DLQ/redrive and partition offsets. DO NOT TRIGGER WHEN: local-only work or payload schema without transport delivery/ordering semantics.",
+            "file": "agents/message-delivery-auditor.md",
+            "id": "senior-review:message-delivery-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds remote effects repeated, falsely acknowledged or left unreconciled after failures. TRIGGER WHEN: reviewing external mutations, payments, outbox/inbox, sagas, idempotency, leases/fencing, leadership and distributed commit. DO NOT TRIGGER WHEN: local transactions or broker transport without a remote effect or coordination guarantee.",
+            "file": "agents/remote-effect-auditor.md",
+            "id": "senior-review:remote-effect-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Finds cross-service failures that violate deadlines, retry budgets or recovery isolation. TRIGGER WHEN: reviewing HTTP/gRPC/service calls, remote timeouts/cancellation, mesh/client retries, circuit breakers, bulkheads and half-open connections. DO NOT TRIGGER WHEN: local scheduling or ownership without cross-boundary failure or budget obligations.",
+            "file": "agents/service-resilience-auditor.md",
+            "id": "senior-review:service-resilience-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews database work amplification and effective access paths against the workload. TRIGGER WHEN: queries, ORM collections, joins, indexes or storage pagination are in scope. DO NOT TRIGGER WHEN: only transaction or stored-value correctness is at issue.",
+            "file": "agents/sql-efficiency-auditor.md",
+            "id": "senior-review:sql-efficiency-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews input-dependent computation, peak allocation and blocking work. TRIGGER WHEN: loops, parsing, copies, recursion, rendering or hot-path scheduling are in scope. DO NOT TRIGGER WHEN: only resource release or admission limits are at issue.",
+            "file": "agents/algorithmic-cost-auditor.md",
+            "id": "senior-review:algorithmic-cost-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews redundant asset and bundle delivery on required request paths. TRIGGER WHEN: bundles, eager imports, glob loading, images, fonts or critical request chains are in scope. DO NOT TRIGGER WHEN: only unused-source reachability or rendered interaction correctness is at issue.",
+            "file": "agents/asset-delivery-auditor.md",
+            "id": "senior-review:asset-delivery-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews admission, aggregate limits and backpressure under legitimate or adversarial workloads. TRIGGER WHEN: queues, workers, quotas, authentication-attempt limits, replicas, fan-out, cache expiry or concurrency limits are in scope. DO NOT TRIGGER WHEN: only a leak or recovery correctness is at issue.",
+            "file": "agents/capacity-quota-auditor.md",
+            "id": "senior-review:capacity-quota-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews billable work attribution and enforcement of declared spending limits. TRIGGER WHEN: provider calls/tokens, compute, egress, storage, logs or budget controls are in scope. DO NOT TRIGGER WHEN: only unpriced compute efficiency or signal delivery is at issue.",
+            "file": "agents/runtime-cost-auditor.md",
+            "id": "senior-review:runtime-cost-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews whether operational failures produce usable signals and reach the intended receiver. TRIGGER WHEN: error handling, telemetry, correlation, metrics, exporters or alerts are in scope. DO NOT TRIGGER WHEN: only audit authenticity, data exposure or serving capability is at issue.",
+            "file": "agents/observability-auditor.md",
+            "id": "senior-review:observability-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews steady-state readiness and liveness against useful serving capability. TRIGGER WHEN: probes, watchdogs, degraded operation or health-based routing are in scope. DO NOT TRIGGER WHEN: only startup prerequisites or release ordering are at issue.",
+            "file": "agents/service-health-auditor.md",
+            "id": "senior-review:service-health-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews coexistence, continuity and rollback across supported releases. TRIGGER WHEN: rolling deployment, schema/backfill, artifact promotion, drain or versioned formats are in scope. DO NOT TRIGGER WHEN: only steady-state health or disaster recovery is at issue.",
+            "file": "agents/release-compatibility-auditor.md",
+            "id": "senior-review:release-compatibility-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews resolved environment configuration and routing to the intended resources. TRIGGER WHEN: deployment variables, configuration layers, artifact promotion, endpoints or mesh routing are in scope. DO NOT TRIGGER WHEN: only domain values or authentication security are at issue.",
+            "file": "agents/environment-binding-auditor.md",
+            "id": "senior-review:environment-binding-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews flag state transitions, fallback and coexistence across supported configurations. TRIGGER WHEN: feature defaults, providers, cohorts, interacting flags or deactivation are in scope. DO NOT TRIGGER WHEN: only flag age or branch style is questioned without a failing state.",
+            "file": "agents/feature-flag-auditor.md",
+            "id": "senior-review:feature-flag-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews recoverable assets and restoration into usable service after the declared disaster. TRIGGER WHEN: backups, restore/runbooks, failover, failure domains or recovery objectives are in scope. DO NOT TRIGGER WHEN: only ordinary rollback compatibility or backup vendor preference is at issue.",
+            "file": "agents/recovery-auditor.md",
+            "id": "senior-review:recovery-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews semantic and keyboard access to required interactive journeys. TRIGGER WHEN: controls, forms, menus, dialogs, focus or navigation are in scope. DO NOT TRIGGER WHEN: only perceptual presentation or asynchronous ordering is at issue.",
+            "file": "agents/accessible-navigation-auditor.md",
+            "id": "senior-review:accessible-navigation-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews perceptible information, feedback and effective layout on required UI journeys. TRIGGER WHEN: labels, validation, async status, media, themes, layout or critical-entry styles are in scope. DO NOT TRIGGER WHEN: only keyboard sequencing or a timing-dependent UI race is at issue.",
+            "file": "agents/accessible-perception-auditor.md",
+            "id": "senior-review:accessible-perception-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews local values, control flow, state ownership and returned outcomes. TRIGGER WHEN: branches, arithmetic, conversions, errors, local interfaces or instance state are in scope. DO NOT TRIGGER WHEN: only an independently assigned domain mechanism is at issue.",
+            "file": "agents/local-correctness-auditor.md",
+            "id": "senior-review:local-correctness-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews interleavings and publication of local shared state. TRIGGER WHEN: shared memory, locks, reentrancy, cancellation or concurrent initialization are in scope. DO NOT TRIGGER WHEN: only database concurrency or UI render ordering is at issue.",
+            "file": "agents/local-concurrency-auditor.md",
+            "id": "senior-review:local-concurrency-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews whether application symbols and assets retain a legitimate consumer. TRIGGER WHEN: unused code, exports, barrels, assets or retired entry points are under audit. DO NOT TRIGGER WHEN: only filesystem tidiness, historical intent or dependency risk is at issue.",
+            "file": "agents/application-reachability-auditor.md",
+            "id": "senior-review:application-reachability-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews actual dependency consumers and declaration ownership per package. TRIGGER WHEN: workspace manifests, runtime/build dependencies or unused packages are under audit. DO NOT TRIGGER WHEN: only vulnerability, license or dependency version risk is at issue.",
+            "file": "agents/dependency-usage-auditor.md",
+            "id": "senior-review:dependency-usage-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Reviews documentary and migration artifacts against current intent and lifecycle. TRIGGER WHEN: stale references, rebrand residue, old plans, backups or migration leftovers are under audit. DO NOT TRIGGER WHEN: only filesystem state or test-suite retirement is at issue.",
+            "file": "agents/artifact-lifecycle-auditor.md",
+            "id": "senior-review:artifact-lifecycle-auditor",
             "permissions": [
               {
                 "action": "*",
@@ -2382,6 +4737,335 @@
                 "resource": "<package-root>/**"
               }
             ]
+          },
+          {
+            "description": "Review test ownership, layer fitness, retired behavior, disabled collection and duplicate failure-mode protection. TRIGGER WHEN: reviewing test ownership, layer fitness, retired behavior, disabled collection and duplicate failure-mode protection. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/test-suite-structure-auditor.md",
+            "id": "testing:test-suite-structure-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review contradictory, implementation-coupled or vacuous assertions against independent product requirements. TRIGGER WHEN: reviewing contradictory, implementation-coupled or vacuous assertions against independent product requirements. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/test-oracle-auditor.md",
+            "id": "testing:test-oracle-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review runner viability, isolation, intermittent failures and trustworthy timing or coverage evidence. TRIGGER WHEN: reviewing runner viability, isolation, intermittent failures and trustworthy timing or coverage evidence. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/test-reliability-auditor.md",
+            "id": "testing:test-reliability-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review whether tests protect required entry, success, failure and recovery outcomes through the critical journey. TRIGGER WHEN: reviewing whether tests protect required entry, success, failure and recovery outcomes through the critical journey. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/journey-protection-auditor.md",
+            "id": "testing:journey-protection-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review whether producer and consumer contract tests detect real wire, schema, error and version drift. TRIGGER WHEN: reviewing whether producer and consumer contract tests detect real wire, schema, error and version drift. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/contract-test-auditor.md",
+            "id": "testing:contract-test-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review workload, bottleneck reachability and latency, error or backlog assertions against declared capacity requirements. TRIGGER WHEN: reviewing workload, bottleneck reachability and latency, error or backlog assertions against declared capacity requirements. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/capacity-test-auditor.md",
+            "id": "testing:capacity-test-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review AI or retrieval evaluation cases, independent oracles, leakage and stochastic coverage against required capabilities. TRIGGER WHEN: reviewing AI or retrieval evaluation cases, independent oracles, leakage and stochastic coverage against required capabilities. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/ai-evaluation-auditor.md",
+            "id": "testing:ai-evaluation-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "dependencies": [
@@ -2413,7 +5097,7 @@
       "text-humanizer": {
         "agents": [
           {
-            "description": "Editor for any language: detects the 24 catalogued patterns and rewrites them out, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).",
+            "description": "Editor for any language: uses 25 local writing patterns to improve prose, never inventing content. TRIGGER WHEN: dispatched by the humanize method of anti-ai-writing-patterns (/daodan:humanize-text) or by another coordinator, text sounds AI-generated and needs humanization, or the user asks to humanize prose/text. DO NOT TRIGGER WHEN: the task involves refactoring source code (use /daodan:refactor-code instead).",
             "file": "agents/text-humanizer.md",
             "id": "text-humanizer:text-humanizer",
             "permissions": [
@@ -2448,7 +5132,7 @@
         "root": "plugins/text-humanizer",
         "skills": [
           {
-            "description": "Catalog of the 24 AI writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
+            "description": "Catalog of 25 local writing patterns, ground rules against invented content, register table and language policy. TRIGGER WHEN: editing or reviewing prose to remove AI traces, or when asked to humanize text.",
             "file": "skills/anti-ai-writing-patterns/SKILL.md",
             "id": "text-humanizer:anti-ai-writing-patterns",
             "name": "anti-ai-writing-patterns"
@@ -2545,6 +5229,100 @@
                 "resource": "<package-root>/**"
               }
             ]
+          },
+          {
+            "description": "Review unsafe type escapes, assertions, generic contracts, exhaustiveness and effective compiler checks. TRIGGER WHEN: reviewing unsafe type escapes, assertions, generic contracts, exhaustiveness and effective compiler checks. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/type-soundness-auditor.md",
+            "id": "typescript-development:type-soundness-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
+          },
+          {
+            "description": "Review HTTP, queue, storage and environment values before untrusted runtime data is treated as a TypeScript type. TRIGGER WHEN: reviewing HTTP, queue, storage and environment values before untrusted runtime data is treated as a TypeScript type. DO NOT TRIGGER WHEN: implementing changes or applying remediation.",
+            "file": "agents/typed-boundary-auditor.md",
+            "id": "typescript-development:typed-boundary-auditor",
+            "permissions": [
+              {
+                "action": "*",
+                "effect": "deny",
+                "resource": "*"
+              },
+              {
+                "action": "read",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "edit",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "glob",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "grep",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "shell",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "skill",
+                "effect": "allow",
+                "resource": "*"
+              },
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "dependencies": [
@@ -2591,5 +5369,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "38.8.11"
+  "version": "38.9.0"
 }

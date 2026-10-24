@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review only the production request validator for accepting negative quantities. The published API reference is fixed and outside the review scope; report code defects only.",
+    "artifacts": [
+      {
+        "path": "src/order.py",
+        "content": "def validate_order(payload):\n    if not isinstance(payload[\"quantity\"], int):\n        raise ValueError(\"quantity must be an integer\")\n    return payload\n"
+      },
+      {
+        "path": "contracts/order.schema.json",
+        "content": "{\"type\":\"object\",\"properties\":{\"quantity\":{\"type\":\"integer\",\"minimum\":1}},\"required\":[\"quantity\"]}"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "choice",
+      "instructions": "Does the requested review assess existing technical documentation against implementation for factual drift, missing coverage, stale examples, broken links, duplicated topics, or affected consumers?",
+      "criteria": {
+        "false": "The task does not assess existing technical documentation against implementation; authoring alone, voice editing, instruction-policy audits, and code-only review do not qualify.",
+        "true": "The task assesses existing technical documentation against implementation across interfaces, configuration, architecture, operations, migrations, or other technical dimensions, whether discrepancies exist or not."
+      }
+    }
+  }
+}

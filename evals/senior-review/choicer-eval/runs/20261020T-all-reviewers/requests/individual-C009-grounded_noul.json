@@ -1,0 +1,30 @@
+{
+  "id": "individual-C009-grounded_noul",
+  "kind": "individual",
+  "case_id": "C009",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Prepare a read-only inventory of auxiliary Git state that may need human review. Do not remove any stash, branch or worktree.",
+    "artifacts": [
+      {
+        "path": "evidence/git-worktree-list.txt",
+        "content": "worktree /work/main\nHEAD aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbranch refs/heads/main\n\nworktree /work/experiment\nHEAD bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nbranch refs/heads/experiment"
+      },
+      {
+        "path": "evidence/git-stash-list.txt",
+        "content": "stash@{0}: On experiment: prototype credentials form\nstash@{1}: On main: local debugging"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    }
+  },
+  "sha256": "b981f3ded24ce140d0ce0303f668706fa91a707a7a176409397b4bdc1e5814ae"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "individual-B041-catalog_noul",
+  "request_sha256": "2b42d2055647547e158143706c312027f6010b8b765e51846fc8a6cd12e6f10e",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "platform-engineering:platform-reviewer": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions"
+  },
+  "wall_seconds": 5.319999763742089e-05
+}

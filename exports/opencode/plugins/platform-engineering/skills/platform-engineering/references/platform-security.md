@@ -71,6 +71,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Platform-Specific Security
 
+Review evidence governs these implementation recommendations: establish the supported version, effective configuration, trust boundary and required outcome before retaining a finding. Historical incidents and default/example settings are leads, not proof about the current target. Check current official documentation for version-dependent behavior; do not install or execute examples during review.
+
 ## Mobile Security
 
 ### MUST
@@ -142,8 +144,8 @@ await flipFuses(
 
 ### asar Integrity
 
-- **Enable `EnableEmbeddedAsarIntegrityValidation` + `OnlyLoadAppFromAsar` fuses.** Together they require the app to load from a signed asar archive whose SHA-256 hash is embedded in the Electron binary -- an attacker cannot replace `app.asar` without invalidating the signature.
-- Available on macOS and Windows (Electron 30+); Linux support is in progress.
+- **Enable `EnableEmbeddedAsarIntegrityValidation` + `OnlyLoadAppFromAsar` fuses.** They bind runtime archive verification to the packaged header hash and constrain app search paths; preserve the separate executable-signing and packaging trust assumptions.
+- [Electron ASAR integrity](https://www.electronjs.org/docs/latest/tutorial/asar-integrity) documents macOS support from 16 and Windows support from 30. Verify the actual Electron/asar versions, platform and packaging hooks.
 - Without asar integrity, an attacker with filesystem write access can swap `app.asar` with a malicious version (e.g., adding a keylogger) -- code signing on the installer does NOT prevent post-install tampering.
 - electron-builder integration: set `"asarIntegrity": true` in `build` config; it calculates hashes at build time.
 
@@ -158,19 +160,17 @@ await flipFuses(
 
 ### MUST
 
-- **Keep exposed commands minimal.** Tauri's deny-by-default capability system means the frontend can only invoke explicitly exposed Rust commands. Fundamentally more secure than Electron's model.
+- **Keep exposed commands minimal.** Verify the registered commands, permissions and window-scoped capability bindings for the installed Tauri version. A framework choice alone does not prove the application’s security.
 
-### Tauri Advantages
+### Tauri trust boundaries
 
-- No bundled Node.js (no supply chain attacks via npm)
-- Rust memory safety (no buffer overflows)
-- Compiled binaries (~3MB vs Electron's ~85MB+) harder to reverse-engineer
+Inspect frontend/build dependencies, native plugins, sidecars and unsafe/foreign code as applicable. No framework eliminates supply-chain or memory-safety risk; package size is not a security guarantee. See [Tauri security](https://v2.tauri.app/security/).
 
 ## PWA Security
 
 ### MUST
 
-- **Serve everything over HTTPS** -- service workers only function on HTTPS.
+- **Use a supported secure context.** Production service workers require HTTPS; browsers also allow designated trustworthy local origins such as localhost. See [service-worker setup](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers).
 - Limit service worker scope to the narrowest necessary path.
 - Never cache sensitive data (auth tokens, PII) in the Cache API -- it persists and is accessible to any script on the origin.
   - TU Wien research: since the Cache API is accessible from the entire origin, malicious scripts can achieve persistent person-in-the-middle capabilities against cached content, bypassing security headers including CSP.
@@ -180,7 +180,7 @@ await flipFuses(
 - Implement cache versioning and expiration.
 - Use SRI for all third-party scripts.
 - Validate data before caching to prevent cache poisoning.
-- Implement forced service worker update mechanisms.
+- Verify worker updates preserve the required old/new controlled-client journeys; forced activation is not universally correct.
 
 ## Security Headers Matrix
 

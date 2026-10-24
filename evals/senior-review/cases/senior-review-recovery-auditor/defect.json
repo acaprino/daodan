@@ -1,0 +1,31 @@
+{
+  "requirement": "Regional loss destroys region-a. Recovery must restore readable encrypted orders in region-b. Ciphertext requires key k1; no alternative decryptor exists. The asset list is complete; backup upload is not a restore exercise.",
+  "assets": {
+    "orders": {
+      "backup_region": "region-b",
+      "key": "k1"
+    },
+    "k1": {
+      "only_region": "region-a"
+    }
+  },
+  "runbook": [
+    "download orders backup",
+    "decrypt with k1",
+    "start reader"
+  ],
+  "evidence": [
+    "backup uploaded"
+  ],
+  "recovery_environment": {
+    "candidate_version": "candidate-v1",
+    "restore_version": "candidate-v1",
+    "backup_schema": "orders-v1",
+    "reader_schema": "orders-v1",
+    "reader_and_config": "Immutable reader image and non-secret configuration already survive in region-b; no external dependency is needed beyond listed orders/k1.",
+    "identity": "restore-role is preprovisioned in region-b and authorized to read surviving orders and recover any surviving k1. Missing k1 cannot be recreated from ciphertext.",
+    "validation": "After decryption, compare restored order IDs/count with the backup manifest and read every restored order through candidate-v1.",
+    "failure_domain": "All reader/config/identity dependencies survive region-a loss. The listed orders and key are the complete disaster-sensitive assets.",
+    "objectives": "Readable restored orders are required; no numeric RPO/RTO is declared for this independent scenario."
+  }
+}

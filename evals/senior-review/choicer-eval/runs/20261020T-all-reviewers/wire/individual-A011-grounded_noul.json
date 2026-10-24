@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Check whether the proposition supporting this finding holds across the provided entry points.",
+    "artifacts": [
+      {
+        "path": "review/note.md",
+        "content": "Finding: an unreviewed draft cannot be published. This rests on the proposition that every publication path calls validate_review before changing status.\n"
+      },
+      {
+        "path": "src/publish.py",
+        "content": "def publish(draft):\n    validate_review(draft)\n    draft.status = \"published\"\n\ndef import_published(draft):\n    draft.status = \"published\"\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      }
+    }
+  }
+}

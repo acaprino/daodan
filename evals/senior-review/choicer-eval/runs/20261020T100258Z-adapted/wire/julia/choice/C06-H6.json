@@ -1,0 +1,30 @@
+{
+  "source_request_sha256": "1cfebbfc139484b5a4573f4eb7cbd0a0f7094c636fe5b16236ddf2b03a100c31",
+  "state": "[H6]\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:500 \njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:501       console.log('[TradeEvents] Processing trade_state_update:', innerEventType)\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:502 \njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:503       // Queue event if still initializing. Normalize+wrap to the shape the\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:504       // drain consumes so the queued event is not dropped as invalid.\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:505       if (store.isTradeCacheInitializing) {",
+  "questions": {
+    "reviewer": {
+      "type": "choice",
+      "instructions": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+      "criteria": {
+        "abstraction-architect:abstraction-architect-agent": "Duplicate domain logic or competing sources of truth; excludes dead code, security, and dependency cycles.",
+        "platform-engineering:platform-reviewer": "Web, mobile or desktop platform security, architecture or performance; excludes platform-independent code.",
+        "react-development:react-performance-optimizer": "React renders, state subscriptions, components or bundle performance; excludes CSS polish and native backends.",
+        "repo-hygiene:workspace-auditor": "Tracked build output, ignore gaps, scratch files or stale Git state; excludes source dead code.",
+        "senior-review:api-contract-auditor": "Declared API schemas versus implementations or API changes; excludes absent contracts and internal invariants.",
+        "senior-review:chicken-egg-detector": "Startup ordering, bootstrap, configuration or migration dependencies; excludes steady-state flows.",
+        "senior-review:cleanup-auditor": "Dead code, unused dependencies, orphan assets or stale documentation; excludes filesystem and Git tidying.",
+        "senior-review:code-auditor": "Architecture, coupling, failure paths, stale caches or code quality; excludes security-only audits.",
+        "senior-review:data-integrity-auditor": "Database writes, transactions, caches or persistence races; excludes domain-only rules and messaging.",
+        "senior-review:distributed-flow-auditor": "Cross-service flows, messaging, idempotency and compensation; excludes isolated local operations.",
+        "senior-review:logic-integrity-auditor": "Domain rules, state machines, ordering or idempotency; excludes styling and security alone.",
+        "senior-review:premise-auditor": "Code claims, defaults, thresholds, signs or business boundaries; excludes styling and map construction.",
+        "senior-review:resource-lifecycle-auditor": "Handles, sockets, connections, listeners, locks or timers need release; excludes general architecture and exploitation.",
+        "senior-review:security-auditor": "URLs, public functions, auth, permissions, ID access or secrets; excludes internal styling.",
+        "senior-review:temporal-resilience-auditor": "Retries, timers, queues, polling or workers surviving repeated failure; excludes startup and UI races.",
+        "senior-review:ui-race-auditor": "Async UI rendering, layout, scroll, focus or measurements race; excludes static styling and backend concurrency.",
+        "testing:test-suite-auditor": "Test hygiene, flakiness, redundancy, placement or layer distribution; excludes writing tests or applying quarantine.",
+        "typescript-development:type-safety-auditor": "TypeScript any, casts, boundary validation or exhaustiveness; excludes naming, React performance and dead code."
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "individual-B028-catalog_noul",
+  "kind": "individual",
+  "case_id": "B028",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review repository tracking rules so generated build output stays out of Git.",
+    "artifacts": [
+      {
+        "path": ".gitignore",
+        "content": "node_modules/\n"
+      },
+      {
+        "path": "build.md",
+        "content": "The bundler writes dist/ on every build. All dist files are reproducible and have no hand-maintained content."
+      },
+      {
+        "path": "tracked-files.txt",
+        "content": "dist/app.js\ndist/app.js.map\npackage.json\nsrc/app.ts"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code).",
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit."
+      }
+    }
+  },
+  "sha256": "222d4b06448b7aae6ee927eca8c53a2d04b715b5f251d4cedef7752fad6935d8"
+}

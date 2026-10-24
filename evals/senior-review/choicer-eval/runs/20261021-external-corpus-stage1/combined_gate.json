@@ -1,0 +1,27 @@
+{
+  "schema": "choicer-eval/external-combined-gate-v1",
+  "status": "combined_pool_plus_fill_gate",
+  "gate_passed": true,
+  "rules": {
+    "positives_at_least_6_per_lens": true,
+    "explicit_negatives_at_least_24": true,
+    "positive_projects_at_least_2_per_lens": true,
+    "adjudicated_candidates_at_least_48": true
+  },
+  "adjudicated_candidates": 77,
+  "counts": {
+    "security-auditor": {"positives": 8, "negatives": 62, "positive_projects": 4},
+    "data-integrity-auditor": {"positives": 13, "negatives": 31, "positive_projects": 9},
+    "temporal-resilience-auditor": {"positives": 6, "negatives": 43, "positive_projects": 4},
+    "resource-lifecycle-auditor": {"positives": 6, "negatives": 45, "positive_projects": 5},
+    "ui-race-auditor": {"positives": 11, "negatives": 40, "positive_projects": 6},
+    "distributed-flow-auditor": {"positives": 30, "negatives": 12, "positive_projects": 15},
+    "logic-integrity-auditor": {"positives": 8, "negatives": 33, "positive_projects": 6},
+    "cleanup-auditor": {"positives": 7, "negatives": 56, "positive_projects": 6}
+  },
+  "notes": [
+    "Counts combine adjudicated_candidates.json and fill_candidates.json adjudicated entries.",
+    "Distributed-flow remains overrepresented and must be down-selected before freezing.",
+    "This gate does not freeze labels or authorize a model run."
+  ]
+}

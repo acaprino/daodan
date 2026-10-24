@@ -96,4 +96,4 @@ if (!first) return renderEmpty()
 render(first.id)
 ```
 
-**Detection:** Read `tsconfig.json`: `noUncheckedIndexedAccess` absent or false is a finding. It is not part of `strict`, so check it explicitly.
+**Detection:** Resolve effective noUncheckedIndexedAccess (not implied by strict), then trace an actually absent index value to unsafe use. An effective guard or required key invariant can refute the candidate.

@@ -1,0 +1,95 @@
+{
+  "kind": "Historical model-input reconstruction, not a contemporaneous wire capture",
+  "derivation": "Frozen full request restricted to successfully encoded questions; submitted IDs are corroborated by the raw answer IDs and original dispatcher behavior.",
+  "source_request_sha256": "02e40cd5492cecfeaef2f7d0a03b234683ad825c0f848c0bd2bd5ae7f055266f",
+  "source_result_sha256": "c9fdc4580846301949f94c827bc4f6e6db74e5e4803c598f4df051f392a2ab02",
+  "effective_input": {
+    "state": "[H8]\njupiter-core/jupiter_core/agents/alive_agent.py:444 \njupiter-core/jupiter_core/agents/alive_agent.py:445     def _build_message_context(self, *, include_ui_fields: bool = False) -> MessageContext:\njupiter-core/jupiter_core/agents/alive_agent.py:446         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:447         Build MessageContext with sender identity for AMQP messages.\njupiter-core/jupiter_core/agents/alive_agent.py:448 \njupiter-core/jupiter_core/agents/alive_agent.py:449         Used by registration, heartbeat, and deregistration to ensure\njupiter-core/jupiter_core/agents/alive_agent.py:450         consistent sender identity across all lifecycle messages.\njupiter-core/jupiter_core/agents/alive_agent.py:451 \njupiter-core/jupiter_core/agents/alive_agent.py:452         Args:\njupiter-core/jupiter_core/agents/alive_agent.py:453             include_ui_fields: Include display_name, strategy_id, account_login\njupiter-core/jupiter_core/agents/alive_agent.py:454                              (needed for registration and heartbeat, not deregistration)\njupiter-core/jupiter_core/agents/alive_agent.py:455         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:456         kwargs: dict[str, Any] = {\njupiter-core/jupiter_core/agents/alive_agent.py:457             'agent_instance_id': self.id,\njupiter-core/jupiter_core/agents/alive_agent.py:458             'agent_name': self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:459             'mode': self.config.get_bot_mode(),\njupiter-core/jupiter_core/agents/alive_agent.py:460             'tenant': self.config.get_tenant(),\njupiter-core/jupiter_core/agents/alive_agent.py:461             'config_name': self.config.get_config_name(),\njupiter-core/jupiter_core/agents/alive_agent.py:462             'symbol': self.trading_config.get_symbol(),\njupiter-core/jupiter_core/agents/alive_agent.py:463             'timeframe': self.trading_config.get_timeframe(),\njupiter-core/jupiter_core/agents/alive_agent.py:464             'direction': self.trading_config.get_trading_direction(),\njupiter-core/jupiter_core/agents/alive_agent.py:465         }\njupiter-core/jupiter_core/agents/alive_agent.py:466         if include_ui_fields:\njupiter-core/jupiter_core/agents/alive_agent.py:467             kwargs['strategy_id'] = self.trading_config.get_strategy_id()\njupiter-core/jupiter_core/agents/alive_agent.py:468             kwargs['display_name'] = self._display_name\njupiter-core/jupiter_core/agents/alive_agent.py:469             kwargs['account_login'] = self._account_login\njupiter-core/jupiter_core/agents/alive_agent.py:470         return MessageContext(**kwargs)",
+    "questions": {
+      "senior-review:api-contract-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+          "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+        }
+      },
+      "senior-review:chicken-egg-detector": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+          "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+        }
+      },
+      "senior-review:code-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+          "false": "the task is security-specific auditing (use security-auditor)."
+        }
+      },
+      "senior-review:data-integrity-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+          "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+        }
+      },
+      "senior-review:logic-integrity-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+          "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+        }
+      },
+      "senior-review:resource-lifecycle-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+          "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+        }
+      },
+      "senior-review:security-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+          "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+        }
+      },
+      "senior-review:temporal-resilience-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+          "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+        }
+      },
+      "testing:test-suite-auditor": {
+        "type": "noul",
+        "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+        "criteria": {
+          "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+          "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+        }
+      }
+    }
+  },
+  "effective_input_sha256": "b5fec4f87a5df96c39b2feb762cf00881a2b0b5c7780b6d9f15596e2a34e8a1c",
+  "submitted_question_ids": [
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "testing:test-suite-auditor"
+  ]
+}

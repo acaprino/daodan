@@ -1,0 +1,26 @@
+{
+  "id": "individual-A004-grounded_choice",
+  "kind": "individual",
+  "case_id": "A004",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the focus visibility and spacing of the sign-in button. Only these style declarations are changing.",
+    "artifacts": [
+      {
+        "path": "web/signin.css",
+        "content": ".signin-button { padding: 0.75rem 1rem; }\n.signin-button:focus-visible {\n  outline: 3px solid #185abc;\n  outline-offset: 3px;\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  },
+  "sha256": "ff5a0e4ee4e09ab75c131a44817e62e32889a9031072fd191ce1431f0de91bc3"
+}

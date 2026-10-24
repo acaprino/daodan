@@ -1,0 +1,30 @@
+{
+  "id": "individual-C048-grounded_noul",
+  "kind": "individual",
+  "case_id": "C048",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Write a new architecture guide from the source outline. No existing document is supplied; the requested deliverable is original technical explanation, not restructuring.",
+    "artifacts": [
+      {
+        "path": "notes/modules.txt",
+        "content": "api.py validates HTTP input. service.py applies pricing rules. repository.py writes transactions. API calls service, which calls repository."
+      },
+      {
+        "path": "src/service.py",
+        "content": "def place_order(order, repository):\n    priced = price(order)\n    return repository.save(priced)\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the requested task assess or reorganize the structure of existing technical documents for their readers while preserving facts, examples, tables and voice?",
+      "criteria": {
+        "false": "The task neither assesses nor reorganizes existing technical-document structure; prose voice, factual drift alone, and original authorship do not qualify.",
+        "true": "The task assesses or improves existing technical-document organization, navigation, hierarchy, diagrams, jargon explanation, or progressive disclosure without changing underlying facts or voice."
+      }
+    }
+  },
+  "sha256": "3b41bc0680fb323108eb79c762ad3438e9c445e52ae90227847a6606607b66c3"
+}

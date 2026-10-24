@@ -1,0 +1,30 @@
+{
+  "id": "individual-C048-catalog_noul",
+  "kind": "individual",
+  "case_id": "C048",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Write a new architecture guide from the source outline. No existing document is supplied; the requested deliverable is original technical explanation, not restructuring.",
+    "artifacts": [
+      {
+        "path": "notes/modules.txt",
+        "content": "api.py validates HTTP input. service.py applies pricing rules. repository.py writes transactions. API calls service, which calls repository."
+      },
+      {
+        "path": "src/service.py",
+        "content": "def place_order(order, repository):\n    priced = price(order)\n    return repository.save(priced)\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "editing prose voice (use text-humanizer).",
+        "true": "spawned by project-knowledge methods to restructure technical documentation."
+      }
+    }
+  },
+  "sha256": "cd1029af27e8eb232d5154e9c324e80f509e23d211354dbf3cbf77831daf0329"
+}

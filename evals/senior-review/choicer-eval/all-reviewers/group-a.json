@@ -1,0 +1,790 @@
+{
+  "roles": [
+    {
+      "role_id": "senior-review:security-auditor",
+      "source_path": "plugins/senior-review/roles/security-auditor.md",
+      "source_sha256": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9",
+      "question": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      },
+      "adaptation_rationale": "The role description and security.md sections 6.3, 6.6 and 6.7 supply the remit. The question asks applicability, not whether exploitation has already been proved. Infrastructure-only and presentation-only work remain outside this application lens.",
+      "cases": [
+        {
+          "id": "A001",
+          "expected": true,
+          "state": {
+            "task": "Review the new endpoint that runs a document conversion requested by a browser client.",
+            "artifacts": [
+              {
+                "path": "app/convert.py",
+                "content": "import subprocess\nfrom flask import request\n\n@app.post(\"/convert\")\ndef convert():\n    name = request.json[\"filename\"]\n    subprocess.run(\"docconvert \" + name, shell=True, check=True)\n    return {\"accepted\": True}\n"
+              }
+            ]
+          },
+          "rationale": "External input reaches a shell command. Application injection exposure makes this reviewer warranted.",
+          "evidence": "app/convert.py:4-7"
+        },
+        {
+          "id": "A002",
+          "expected": false,
+          "state": {
+            "task": "Review the network rule limiting database access to the application subnet. Only the infrastructure rule is in scope.",
+            "artifacts": [
+              {
+                "path": "infra/database.tf",
+                "content": "resource \"aws_security_group_rule\" \"database_ingress\" {\n  type              = \"ingress\"\n  protocol          = \"tcp\"\n  from_port         = 5432\n  to_port           = 5432\n  cidr_blocks       = [\"10.20.4.0/24\"]\n  security_group_id = aws_security_group.database.id\n}\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: network security belongs to the infrastructure lens explicitly excluded by this role; no application boundary is under review.",
+          "evidence": "infra/database.tf:1-8; task scope"
+        },
+        {
+          "id": "A003",
+          "expected": true,
+          "state": {
+            "task": "Review the proposed route for downloading a signed-in customer's invoice.",
+            "artifacts": [
+              {
+                "path": "app/invoices.py",
+                "content": "@app.get(\"/invoices/<invoice_id>\")\n@login_required\ndef download(invoice_id):\n    invoice = invoices.get(invoice_id)\n    if invoice.owner_id != current_user.id:\n        abort(403)\n    return send_file(invoice.pdf_path)\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: authentication and per-object authorization warrant scrutiny although the shown ownership guard is appropriate.",
+          "evidence": "app/invoices.py:1-7"
+        },
+        {
+          "id": "A004",
+          "expected": false,
+          "state": {
+            "task": "Review the focus visibility and spacing of the sign-in button. Only these style declarations are changing.",
+            "artifacts": [
+              {
+                "path": "web/signin.css",
+                "content": ".signin-button { padding: 0.75rem 1rem; }\n.signin-button:focus-visible {\n  outline: 3px solid #185abc;\n  outline-offset: 3px;\n}\n"
+              }
+            ]
+          },
+          "rationale": "The name refers to authentication, but the scoped work is visual styling with no access-control or data-handling behavior.",
+          "evidence": "web/signin.css:1-5"
+        },
+        {
+          "id": "A005",
+          "expected": false,
+          "state": {
+            "task": "Review this local helper that sorts the fixed built-in color names for a documentation table.",
+            "artifacts": [
+              {
+                "path": "docs/colors.py",
+                "content": "COLORS = (\"violet\", \"amber\", \"teal\")\n\ndef color_rows():\n    return [(name, name.upper()) for name in sorted(COLORS)]\n"
+              }
+            ]
+          },
+          "rationale": "The finite built-in data transformation has no attacker input, sensitive information or security operation in scope.",
+          "evidence": "docs/colors.py:1-4"
+        },
+        {
+          "id": "A006",
+          "expected": true,
+          "state": {
+            "task": "Review how password-reset tokens are created and represented in the database insert parameters.",
+            "artifacts": [
+              {
+                "path": "app/reset_tokens.py",
+                "content": "import hashlib\nimport secrets\n\ndef new_reset_token(user_id):\n    token = secrets.token_urlsafe(32)\n    digest = hashlib.sha256(token.encode(\"ascii\")).hexdigest()\n    return token, {\"user_id\": user_id, \"token_digest\": digest}\n"
+              }
+            ]
+          },
+          "rationale": "Security-sensitive token generation and token storage representation are within the role even without an obvious defect.",
+          "evidence": "app/reset_tokens.py:4-7"
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:premise-auditor",
+      "source_path": "plugins/senior-review/roles/premise-auditor.md",
+      "source_sha256": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39",
+      "question": "Given the task and artifacts, is independent derivation of code claims, falsification of a finding's load-bearing proposition, or checking a plan, specification or document against source part of the requested work?",
+      "criteria": {
+        "false": "The requested work involves neither independent code-claim derivation, finding-premise challenge nor checking a plan, specification or document against source.",
+        "true": "The requested work involves independent code-claim derivation, finding-premise challenge or checking a plan, specification or document against source."
+      },
+      "adaptation_rationale": "The three modes become three ordinary task intentions without command or dispatch terminology. Mode-specific input restrictions remain execution requirements. Ordinary bug hunting, editorial review and severity assessment do not become premise checking merely because source is present.",
+      "cases": [
+        {
+          "id": "A007",
+          "expected": false,
+          "state": {
+            "task": "Find implementation defects in this arithmetic helper and propose a correction for negative operands.",
+            "artifacts": [
+              {
+                "path": "src/quotient.py",
+                "content": "def quotient(a, b):\n    if b == 0:\n        raise ValueError(\"zero divisor\")\n    return int(a / b)\n"
+              }
+            ]
+          },
+          "rationale": "This requests ordinary defect hunting, explicitly excluded by the role; no independent claim derivation or claim-checking assignment is supplied.",
+          "evidence": "task scope; src/quotient.py:1-4"
+        },
+        {
+          "id": "A008",
+          "expected": true,
+          "state": {
+            "task": "Before combining this change with other analyses, derive from these files which paths may update a shipment's destination. Record the source-backed claims without comparing them with earlier summaries.",
+            "artifacts": [
+              {
+                "path": "src/shipping.py",
+                "content": "def change_destination(shipment, address):\n    if shipment.dispatched:\n        raise ValueError(\"already dispatched\")\n    shipment.address = address\n\ndef apply_correction(shipment, address):\n    shipment.address = address\n"
+              },
+              {
+                "path": "src/importer.py",
+                "content": "from shipping import apply_correction\n\ndef import_row(shipment, row):\n    apply_correction(shipment, row[\"address\"])\n"
+              }
+            ]
+          },
+          "rationale": "The task asks independent derivation and examination of multiple mutation paths, corresponding to the first mode without supplying shared conclusions.",
+          "evidence": "task scope; src/shipping.py:1-7; src/importer.py:1-4"
+        },
+        {
+          "id": "A009",
+          "expected": true,
+          "state": {
+            "task": "Check the factual statements in the command guide against the parser before publication.",
+            "artifacts": [
+              {
+                "path": "docs/export.md",
+                "content": "Run export.py with --format csv or --format json. If omitted, the format is csv.\n"
+              },
+              {
+                "path": "src/export.py",
+                "content": "import argparse\n\nparser = argparse.ArgumentParser()\nparser.add_argument(\"--format\", choices=(\"csv\", \"json\"), default=\"csv\")\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: the guide appears consistent with the parser, but checking its code claims still warrants this reviewer.",
+          "evidence": "docs/export.md:1; src/export.py:3-4"
+        },
+        {
+          "id": "A010",
+          "expected": false,
+          "state": {
+            "task": "Assess only the relative urgency of these already-accepted issues using the supplied operational impact. Their diagnoses are settled for this task.",
+            "artifacts": [
+              {
+                "path": "triage/issues.md",
+                "content": "Issue 18: export fails for all 320 daily users; manual recovery takes 25 minutes.\nIssue 24: footer clips at one viewport width; all actions remain available.\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: assessing severity and prioritization is explicitly outside a premise challenge. The task does not reopen the propositions.",
+          "evidence": "task scope; triage/issues.md:1-2"
+        },
+        {
+          "id": "A011",
+          "expected": true,
+          "state": {
+            "task": "Check whether the proposition supporting this finding holds across the provided entry points.",
+            "artifacts": [
+              {
+                "path": "review/note.md",
+                "content": "Finding: an unreviewed draft cannot be published. This rests on the proposition that every publication path calls validate_review before changing status.\n"
+              },
+              {
+                "path": "src/publish.py",
+                "content": "def publish(draft):\n    validate_review(draft)\n    draft.status = \"published\"\n\ndef import_published(draft):\n    draft.status = \"published\"\n"
+              }
+            ]
+          },
+          "rationale": "The assignment supplies a specific falsifiable proposition and alternate paths to inspect, matching the adversarial premise challenge.",
+          "evidence": "review/note.md:1; src/publish.py:1-6"
+        },
+        {
+          "id": "A012",
+          "expected": false,
+          "state": {
+            "task": "Improve the readability of this proposal's introduction. Review wording and tone only; implementation design is not part of this edit.",
+            "artifacts": [
+              {
+                "path": "docs/proposal.md",
+                "content": "We would like to make the editor pleasant for people who write lengthy notes. This proposal describes the experience we hope to offer.\n"
+              }
+            ]
+          },
+          "rationale": "Editorial work on an aspirational introduction asserts no current code behavior and falls outside the document claim-checking mode.",
+          "evidence": "task scope; docs/proposal.md:1"
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:data-integrity-auditor",
+      "source_path": "plugins/senior-review/roles/data-integrity-auditor.md",
+      "source_sha256": "3002f553c9bc1f4efacf14c0e91be3e53684659f3710fd50e9d4c602f942d192",
+      "question": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      },
+      "adaptation_rationale": "The question preserves the persistence-semantics remit, using data-design-ops.md sections 12.3 through 12.7 and the role's enforcement-gap distinctions. Correct constraints remain applicable; domain-only rules and cross-service message contracts do not substitute for persistence concerns.",
+      "cases": [
+        {
+          "id": "A013",
+          "expected": true,
+          "state": {
+            "task": "Review the reservation write path used concurrently by the web workers, together with its steady-state table definition.",
+            "artifacts": [
+              {
+                "path": "db/schema.sql",
+                "content": "CREATE TABLE reservations (\n  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  event_id BIGINT NOT NULL,\n  seat TEXT NOT NULL,\n  UNIQUE (event_id, seat)\n);\n"
+              },
+              {
+                "path": "src/reservations.py",
+                "content": "def reserve(db, event_id, seat):\n    return db.execute(\n        \"INSERT INTO reservations(event_id, seat) VALUES (%s, %s) \"\n        \"ON CONFLICT (event_id, seat) DO NOTHING RETURNING id\",\n        (event_id, seat),\n    ).fetchone()\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: a matching uniqueness constraint and conflict handling may be correct, yet concurrent insert enforcement is squarely within the lens.",
+          "evidence": "db/schema.sql:1-6; src/reservations.py:1-6"
+        },
+        {
+          "id": "A014",
+          "expected": false,
+          "state": {
+            "task": "Review the transition decisions of this in-memory tutorial object. The exercise has no persistence or concurrent callers.",
+            "artifacts": [
+              {
+                "path": "tutorial/draft.py",
+                "content": "def next_status(current, action):\n    allowed = {(\"draft\", \"publish\"): \"published\",\n               (\"published\", \"archive\"): \"archived\"}\n    return allowed[(current, action)]\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: this is a domain state machine with no store whose guarantees could be checked.",
+          "evidence": "task scope; tutorial/draft.py:1-4"
+        },
+        {
+          "id": "A015",
+          "expected": false,
+          "state": {
+            "task": "Review the payload contract between the dispatch and reporting services. Storage implementations are unchanged and outside scope.",
+            "artifacts": [
+              {
+                "path": "dispatch/events.py",
+                "content": "def completion_payload(job):\n    return {\"job_id\": job.id, \"elapsed_ms\": job.elapsed_ms}\n"
+              },
+              {
+                "path": "reporting/events.py",
+                "content": "def read_completion(payload):\n    return payload[\"job_id\"], payload[\"duration_ms\"]\n"
+              }
+            ]
+          },
+          "rationale": "Producer-consumer message agreement belongs to cross-service flow review; the supplied scope contains no persistence semantics.",
+          "evidence": "dispatch/events.py:1-2; reporting/events.py:1-2; task scope"
+        },
+        {
+          "id": "A016",
+          "expected": true,
+          "state": {
+            "task": "Review the new balance transfer implementation. Each execute call commits independently, and multiple request workers can call it.",
+            "artifacts": [
+              {
+                "path": "src/transfers.py",
+                "content": "def transfer(db, source, destination, amount):\n    db.execute(\"UPDATE wallets SET cents = cents - %s WHERE id = %s\",\n               (amount, source))\n    db.execute(\"UPDATE wallets SET cents = cents + %s WHERE id = %s\",\n               (amount, destination))\n"
+              },
+              {
+                "path": "db/schema.sql",
+                "content": "CREATE TABLE wallets (id BIGINT PRIMARY KEY, cents BIGINT NOT NULL);\n"
+              }
+            ]
+          },
+          "rationale": "A multi-write persistent operation with independent commits requires checking transaction completeness and possible intermediate states.",
+          "evidence": "task commit semantics; src/transfers.py:1-5; db/schema.sql:1"
+        },
+        {
+          "id": "A017",
+          "expected": false,
+          "state": {
+            "task": "Review the alignment of an already-loaded report table in the browser. Only the stylesheet is changing.",
+            "artifacts": [
+              {
+                "path": "web/report.css",
+                "content": ".report { border-collapse: collapse; width: 100%; }\n.report td { padding: 0.5rem; }\n.report .amount { text-align: right; }\n"
+              }
+            ]
+          },
+          "rationale": "Rendering existing values does not review their persistence, representation at a storage boundary or consistency.",
+          "evidence": "web/report.css:1-3"
+        },
+        {
+          "id": "A018",
+          "expected": true,
+          "state": {
+            "task": "Review reads and edits of a product title within this service, including its database and in-process cache.",
+            "artifacts": [
+              {
+                "path": "src/products.py",
+                "content": "titles = {}\n\ndef title(db, product_id):\n    if product_id not in titles:\n        titles[product_id] = db.scalar(\"SELECT title FROM products WHERE id = %s\", (product_id,))\n    return titles[product_id]\n\ndef rename(db, product_id, text):\n    db.execute(\"UPDATE products SET title = %s WHERE id = %s\", (text, product_id))\n"
+              }
+            ]
+          },
+          "rationale": "Read and write paths span a service-owned database and cache, making divergence and invalidation relevant.",
+          "evidence": "src/products.py:1-9"
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:logic-integrity-auditor",
+      "source_path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+      "source_sha256": "e417e5fa015e53042406346798db4f1fcfca09f05dbc239aaf3cbfb14a92daab",
+      "question": "Given the task and artifacts, does the scope warrant checking cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics against the source?",
+      "criteria": {
+        "false": "The scope does not concern cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics.",
+        "true": "The scope concerns cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics, even when the implementation appears consistent."
+      },
+      "adaptation_rationale": "The question expresses the role's substantive remit rather than a command phase. Positives supply its required interconnect map. Missing preparation is not used as a negative label. The map remains a hypothesis to verify, following logic-integrity.md and the shared-context provenance rule.",
+      "cases": [
+        {
+          "id": "A019",
+          "expected": false,
+          "state": {
+            "task": "Review whether the search endpoint can interpret the request parameter as SQL. Limit this pass to injection exposure.",
+            "artifacts": [
+              {
+                "path": "app/search.py",
+                "content": "def search(db, request):\n    query = \"SELECT title FROM books WHERE title = '\" + request.args[\"q\"] + \"'\"\n    return db.execute(query).fetchall()\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: a trust-boundary defect is explicitly assigned to security, even though the endpoint also has a caller and callee.",
+          "evidence": "task scope; app/search.py:1-3"
+        },
+        {
+          "id": "A020",
+          "expected": true,
+          "state": {
+            "task": "Review how the ordinary editor and bulk editor change an article after publication.",
+            "artifacts": [
+              {
+                "path": ".team-review/02-interconnect.md",
+                "content": "## Domain Rules\nPublished articles retain their original title. Both editors mutate Article.title.\n"
+              },
+              {
+                "path": "src/editor.py",
+                "content": "def rename(article, title):\n    if article.status == \"published\":\n        raise ValueError(\"title is final\")\n    article.title = title\n"
+              },
+              {
+                "path": "src/bulk.py",
+                "content": "def replace_titles(articles, title):\n    for article in articles:\n        article.title = title\n"
+              }
+            ]
+          },
+          "rationale": "Multiple mutation paths need comparison against a terminal-state domain rule. The supplied map provides the required context.",
+          "evidence": ".team-review/02-interconnect.md:1-2; src/editor.py:1-4; src/bulk.py:1-3"
+        },
+        {
+          "id": "A021",
+          "expected": false,
+          "state": {
+            "task": "Review only the database guarantee preventing duplicate registrations during simultaneous inserts. Registration policy and application transitions are outside scope.",
+            "artifacts": [
+              {
+                "path": "db/registrations.sql",
+                "content": "CREATE TABLE registrations (\n  id BIGINT PRIMARY KEY,\n  event_id BIGINT NOT NULL,\n  email TEXT NOT NULL\n);\n"
+              },
+              {
+                "path": "src/store.py",
+                "content": "def add(db, event_id, email):\n    db.execute(\"INSERT INTO registrations(event_id, email) VALUES (%s, %s)\",\n               (event_id, email))\n"
+              }
+            ]
+          },
+          "rationale": "The requested concern is a storage-level concurrent enforcement gap, assigned to data integrity rather than domain-rule semantics.",
+          "evidence": "task scope; db/registrations.sql:1-5; src/store.py:1-3"
+        },
+        {
+          "id": "A022",
+          "expected": true,
+          "state": {
+            "task": "Review the relationship between input handling and the summary calculation in this single-process desktop tool.",
+            "artifacts": [
+              {
+                "path": ".team-review/02-interconnect.md",
+                "content": "## Contracts\nmean(values) accepts a nonempty sequence. show_summary is its only caller.\n"
+              },
+              {
+                "path": "src/stats.py",
+                "content": "def mean(values):\n    if not values:\n        raise ValueError(\"empty sequence\")\n    return sum(values) / len(values)\n"
+              },
+              {
+                "path": "src/summary.py",
+                "content": "from stats import mean\n\ndef show_summary(values):\n    return \"No values\" if not values else str(mean(values))\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: the caller and callee appear to enforce the precondition correctly, but their implicit contract is still within this reviewer's remit.",
+          "evidence": ".team-review/02-interconnect.md:1-2; src/stats.py:1-4; src/summary.py:1-4"
+        },
+        {
+          "id": "A023",
+          "expected": true,
+          "state": {
+            "task": "Review how a local workflow handles replay of a completed step. Everything shown runs within one process and mutates an in-memory session.",
+            "artifacts": [
+              {
+                "path": ".team-review/02-interconnect.md",
+                "content": "## Invariants\nA completed step contributes its points at most once per session.\n## Integration Hot-Spots\nresume_step can replay the last step after an interruption.\n"
+              },
+              {
+                "path": "src/steps.py",
+                "content": "def complete(session, step):\n    session.points += step.points\n    session.completed.add(step.id)\n\ndef resume_step(session, step):\n    complete(session, step)\n"
+              }
+            ]
+          },
+          "rationale": "Within-process replay and an at-most-once domain invariant are explicitly owned by this lens rather than distributed flow analysis.",
+          "evidence": ".team-review/02-interconnect.md:1-4; src/steps.py:1-6"
+        },
+        {
+          "id": "A024",
+          "expected": false,
+          "state": {
+            "task": "Review line wrapping and whitespace in this stylesheet; no functional declarations are being changed.",
+            "artifacts": [
+              {
+                "path": "web/sidebar.css",
+                "content": ".sidebar {\n  display: grid;\n  gap: 1rem;\n  padding: 1rem;\n}\n"
+              }
+            ]
+          },
+          "rationale": "Formatting-only work supplies no domain rule, contract or state-transition concern.",
+          "evidence": "task scope; web/sidebar.css:1-5"
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:resource-lifecycle-auditor",
+      "source_path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+      "source_sha256": "12c350b62d5eb0dfe4cec49a53cd981e12ff05ef735b205459a89c1c87f52383",
+      "question": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      },
+      "adaptation_rationale": "The acquisition and three-exit ownership model is retained from the role and memory-resources.md. Structurally correct cleanup remains an applicability positive. Ordinary garbage-collected temporaries and concerns confined to scheduling policy are outside this lens.",
+      "cases": [
+        {
+          "id": "A025",
+          "expected": true,
+          "state": {
+            "task": "Review the implementation that reads a local export file and returns its first line.",
+            "artifacts": [
+              {
+                "path": "src/preview.py",
+                "content": "from pathlib import Path\n\ndef first_line(path: Path):\n    with path.open(encoding=\"utf-8\") as stream:\n        return stream.readline().rstrip(\"\\n\")\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: the context manager appears to release the file correctly, but acquisition and release are still present and warrant this lens.",
+          "evidence": "src/preview.py:3-5"
+        },
+        {
+          "id": "A026",
+          "expected": false,
+          "state": {
+            "task": "Review allocation overhead in this pure transformation of a bounded tuple. The result is returned directly and nothing is retained elsewhere.",
+            "artifacts": [
+              {
+                "path": "src/labels.py",
+                "content": "def labels(values):\n    return tuple(str(value).upper() for value in values)\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: short-lived garbage-collected strings and tuples are performance concerns, not ownership of manually released resources or retained references.",
+          "evidence": "task scope; src/labels.py:1-2"
+        },
+        {
+          "id": "A027",
+          "expected": true,
+          "state": {
+            "task": "Review mounting and disposing this widget, which may be opened repeatedly in a long-lived page.",
+            "artifacts": [
+              {
+                "path": "web/width.js",
+                "content": "export function mountWidth(node) {\n  const update = () => { node.textContent = String(window.innerWidth); };\n  window.addEventListener(\"resize\", update);\n  update();\n  return () => { node.remove(); };\n}\n"
+              }
+            ]
+          },
+          "rationale": "A long-lived emitter retains a callback attached by a short-lived widget, making listener ownership and disposal relevant.",
+          "evidence": "web/width.js:1-6"
+        },
+        {
+          "id": "A028",
+          "expected": false,
+          "state": {
+            "task": "Review whether this pure function computes the intended retry delays: 1, 2, 4, then at most 8 seconds. Timer creation and execution are outside the change.",
+            "artifacts": [
+              {
+                "path": "src/delay.py",
+                "content": "def delay_seconds(attempt):\n    if attempt < 0:\n        raise ValueError(\"negative attempt\")\n    return min(8, 2 ** attempt)\n"
+              }
+            ]
+          },
+          "rationale": "The calculation selects a retry duration but neither acquires nor retains a timer or task. Retry policy is a neighboring concern.",
+          "evidence": "task scope; src/delay.py:1-4"
+        },
+        {
+          "id": "A029",
+          "expected": false,
+          "state": {
+            "task": "Review the steady-state uniqueness constraint in this schema. Connection management is outside scope.",
+            "artifacts": [
+              {
+                "path": "db/rooms.sql",
+                "content": "CREATE TABLE rooms (\n  id BIGINT PRIMARY KEY,\n  building_id BIGINT NOT NULL,\n  name TEXT NOT NULL,\n  UNIQUE (building_id, name)\n);\n"
+              }
+            ]
+          },
+          "rationale": "Schema integrity does not itself acquire a database connection or define an ownership/release path.",
+          "evidence": "task scope; db/rooms.sql:1-6"
+        },
+        {
+          "id": "A030",
+          "expected": true,
+          "state": {
+            "task": "Review cancellation and completion of the child command used to render previews.",
+            "artifacts": [
+              {
+                "path": "src/render.py",
+                "content": "import asyncio\n\nasync def render(path):\n    process = await asyncio.create_subprocess_exec(\"preview\", path)\n    try:\n        return await process.wait()\n    except asyncio.CancelledError:\n        process.terminate()\n        await process.wait()\n        raise\n"
+              }
+            ]
+          },
+          "rationale": "The function owns a subprocess and must account for completion and cancellation. The cleanup attempt does not remove applicability.",
+          "evidence": "src/render.py:3-10"
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:temporal-resilience-auditor",
+      "source_path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+      "source_sha256": "7d2783596e7e043046978f6b26756133cd681b47f8c11c7f05a3e87cef858d2b",
+      "question": "Given the task and artifacts, does the scope concern continued operation after startup: recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time?",
+      "criteria": {
+        "false": "The scope does not concern continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time.",
+        "true": "The scope concerns continued operation after startup, recurring work, retries, recovery, failure escalation or scheduling and clock behavior over time."
+      },
+      "adaptation_rationale": "The role's first, repeated and permanent-failure horizons become an applicability question. concurrency-state.md and the role's clock hazards support the examples. Startup-only ordering, pure timestamp formatting and cross-service timeout budgets retain their separate owners.",
+      "cases": [
+        {
+          "id": "A031",
+          "expected": false,
+          "state": {
+            "task": "Review only the dependency ordering before this application begins serving requests.",
+            "artifacts": [
+              {
+                "path": "src/bootstrap.py",
+                "content": "def start(container):\n    container.handlers = build_handlers(container.store)\n    container.store = create_store()\n    return build_application(container.handlers)\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: initialization ordering is expressly outside this role, whose scope begins after startup.",
+          "evidence": "task scope; src/bootstrap.py:1-4"
+        },
+        {
+          "id": "A032",
+          "expected": true,
+          "state": {
+            "task": "Review the catalog refresher that runs for the duration of a desktop session and the status text users see.",
+            "artifacts": [
+              {
+                "path": "src/refresher.js",
+                "content": "let status = \"Catalog current\";\nasync function tick() {\n  try { await refreshCatalog(); } catch (error) {}\n  setTimeout(tick, 60000);\n}\nexport const statusText = () => status;\ntick();\n"
+              }
+            ]
+          },
+          "rationale": "Recurring failures and the continuing user-visible status require analysis over repeated attempts, including silent degradation.",
+          "evidence": "src/refresher.js:1-7"
+        },
+        {
+          "id": "A033",
+          "expected": false,
+          "state": {
+            "task": "Review the relative timeout budgets across these two request handlers. The task is limited to this synchronous call chain, not resident workers or retry behavior.",
+            "artifacts": [
+              {
+                "path": "gateway/settings.json",
+                "content": "{\"request_timeout_seconds\": 4, \"catalog_service\": \"http://catalog:8080\"}\n"
+              },
+              {
+                "path": "catalog/settings.json",
+                "content": "{\"request_timeout_seconds\": 12, \"database_query_timeout_seconds\": 9}\n"
+              }
+            ]
+          },
+          "rationale": "Timeout chains across services are explicitly assigned to distributed flow review; no local recurring machinery is in this scope.",
+          "evidence": "gateway/settings.json:1; catalog/settings.json:1; task scope"
+        },
+        {
+          "id": "A034",
+          "expected": true,
+          "state": {
+            "task": "Review the retry policy used when the running application uploads a report, including what happens when every attempt fails.",
+            "artifacts": [
+              {
+                "path": "src/upload.py",
+                "content": "import asyncio\n\nasync def upload_report(send, notify):\n    for attempt in range(3):\n        try:\n            await asyncio.wait_for(send(), timeout=10)\n            return True\n        except (TimeoutError, ConnectionError):\n            if attempt < 2:\n                await asyncio.sleep(2 ** attempt)\n    notify(\"Upload failed; report remains available locally\")\n    return False\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: bounded attempts, bounded waits and an explicit final notification may be correct, but repeated failure and terminal escalation are exactly this lens.",
+          "evidence": "src/upload.py:3-12"
+        },
+        {
+          "id": "A035",
+          "expected": false,
+          "state": {
+            "task": "Review this pure timestamp formatter used once to label an already-recorded event. It does not compute deadlines or schedule work.",
+            "artifacts": [
+              {
+                "path": "src/labels.py",
+                "content": "from datetime import datetime, timezone\n\ndef event_label(epoch_seconds):\n    return datetime.fromtimestamp(epoch_seconds, timezone.utc).isoformat()\n"
+              }
+            ]
+          },
+          "rationale": "Clock-related vocabulary alone does not make a formatter a scheduling, recovery or recurring-operation concern.",
+          "evidence": "task scope; src/labels.py:1-4"
+        },
+        {
+          "id": "A036",
+          "expected": true,
+          "state": {
+            "task": "Review a reminder that should fire at 09:00 local time each day while the process remains running.",
+            "artifacts": [
+              {
+                "path": "src/reminders.py",
+                "content": "from datetime import datetime, timedelta\nfrom zoneinfo import ZoneInfo\n\ndef next_run(previous_epoch):\n    return previous_epoch + timedelta(days=1).total_seconds()\n\nfirst = datetime(2027, 3, 27, 9, tzinfo=ZoneInfo(\"Europe/Rome\")).timestamp()\n"
+              }
+            ]
+          },
+          "rationale": "A recurring local-time schedule crosses clock and DST boundaries, making time-axis behavior relevant even without retry machinery.",
+          "evidence": "task recurrence requirement; src/reminders.py:1-7"
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:distributed-flow-auditor",
+      "source_path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+      "source_sha256": "156b7ec5ebdba1c76fe1d9c15b4e1308af04a00c659282e87d85606db694aee8",
+      "question": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      },
+      "adaptation_rationale": "The role body requires producer and consumer evidence and distinguishes cross-boundary behavior from single-service defects. distributed-integration.md sections 9 and 10 ground the cases. Correct, simple service contracts remain applicable without requiring a distributed-systems bug.",
+      "cases": [
+        {
+          "id": "A037",
+          "expected": true,
+          "state": {
+            "task": "Review the completion event exchanged by the packing and customer-notification services.",
+            "artifacts": [
+              {
+                "path": "packing/events.py",
+                "content": "def publish_completion(broker, parcel):\n    broker.publish(\"parcel.packed\", {\"parcel_id\": parcel.id, \"recipient\": parcel.email})\n"
+              },
+              {
+                "path": "notifications/events.py",
+                "content": "def packed(payload):\n    send_email(payload[\"email\"], f\"Parcel {payload['parcel_id']} is packed\")\n"
+              }
+            ]
+          },
+          "rationale": "The event producer and consumer make different assumptions about the payload, a cross-service contract concern.",
+          "evidence": "packing/events.py:1-2; notifications/events.py:1-2"
+        },
+        {
+          "id": "A038",
+          "expected": false,
+          "state": {
+            "task": "Review the agreement between this service's local cache and its database after renaming a label. Other services are outside scope.",
+            "artifacts": [
+              {
+                "path": "app/labels.py",
+                "content": "cache = {}\n\ndef lookup(db, key):\n    if key not in cache:\n        cache[key] = db.scalar(\"SELECT text FROM labels WHERE id = %s\", (key,))\n    return cache[key]\n\ndef rename(db, key, text):\n    db.execute(\"UPDATE labels SET text = %s WHERE id = %s\", (text, key))\n"
+              }
+            ]
+          },
+          "rationale": "Near-neighbor negative: consistency between a database and cache within one service belongs to data integrity, not cross-service flow analysis.",
+          "evidence": "task scope; app/labels.py:1-9"
+        },
+        {
+          "id": "A039",
+          "expected": true,
+          "state": {
+            "task": "Review the locale lookup between the portal and preferences services before shipping them together.",
+            "artifacts": [
+              {
+                "path": "portal/client.py",
+                "content": "def locale(http, user_id):\n    response = http.get(f\"http://preferences:8080/users/{user_id}/locale\", timeout=2)\n    response.raise_for_status()\n    return response.json()[\"locale\"]\n"
+              },
+              {
+                "path": "preferences/routes.py",
+                "content": "@app.get(\"/users/<user_id>/locale\")\ndef locale(user_id):\n    return {\"locale\": preferences_for(user_id).locale}\n"
+              }
+            ]
+          },
+          "rationale": "Boundary positive: the simple response contract appears consistent, but checking both services' assumptions still warrants the reviewer.",
+          "evidence": "portal/client.py:1-4; preferences/routes.py:1-3"
+        },
+        {
+          "id": "A040",
+          "expected": false,
+          "state": {
+            "task": "Review only whether the local report handler constructs an SQL query safely. No communication contract is changing.",
+            "artifacts": [
+              {
+                "path": "app/reports.py",
+                "content": "def report(db, request):\n    return db.execute(\"SELECT * FROM reports WHERE owner = '\" + request.args[\"owner\"] + \"'\").fetchall()\n"
+              }
+            ]
+          },
+          "rationale": "Injection inside one handler is explicitly outside the cross-boundary remit and belongs to application security.",
+          "evidence": "task scope; app/reports.py:1-2"
+        },
+        {
+          "id": "A041",
+          "expected": false,
+          "state": {
+            "task": "Review the visual spacing of the service-status page. The change contains only CSS.",
+            "artifacts": [
+              {
+                "path": "web/status.css",
+                "content": ".service-list { display: grid; gap: 1rem; }\n.service-card { padding: 1.25rem; border: 1px solid #ddd; }\n"
+              }
+            ]
+          },
+          "rationale": "Mentioning services in UI names does not create a communication-boundary concern in the scoped stylesheet.",
+          "evidence": "task scope; web/status.css:1-2"
+        },
+        {
+          "id": "A042",
+          "expected": true,
+          "state": {
+            "task": "Review the payment request across checkout and billing, including the caller's retry after a timeout.",
+            "artifacts": [
+              {
+                "path": "checkout/pay.py",
+                "content": "def pay(http, order):\n    for attempt in range(2):\n        try:\n            return http.post(\"http://billing:8080/charge\", json={\"order_id\": order.id, \"cents\": order.cents}, timeout=3)\n        except TimeoutError:\n            if attempt == 1:\n                raise\n"
+              },
+              {
+                "path": "billing/routes.py",
+                "content": "@app.post(\"/charge\")\ndef charge():\n    payment = processor.charge(request.json[\"cents\"])\n    return {\"payment_id\": payment.id}\n"
+              }
+            ]
+          },
+          "rationale": "The caller may repeat an operation whose consumer creates a charge each time. Applicability depends on their combined retry and side-effect contract.",
+          "evidence": "checkout/pay.py:1-7; billing/routes.py:1-4"
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,34 @@
+{
+  "id": "individual-B012-grounded_noul",
+  "kind": "individual",
+  "case_id": "B012",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Explain why the TypeScript compilation fails after changing the path alias.",
+    "artifacts": [
+      {
+        "path": "tsconfig.json",
+        "content": "{\"compilerOptions\":{\"baseUrl\":\".\",\"paths\":{\"@shared/*\":[\"lib/*\"]}}}"
+      },
+      {
+        "path": "src/main.ts",
+        "content": "import {parse} from \"@shared/parser\";\nexport const read = (input: string) => parse(input);"
+      },
+      {
+        "path": "build.txt",
+        "content": "error TS2307: Cannot find module @shared/parser. The parser source is src/shared/parser.ts."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the task examine dependencies that determine whether components, configuration, infrastructure, or migrations become ready during initialization or deployment?",
+      "criteria": {
+        "false": "The task concerns steady-state behavior or unrelated build and code issues, without initialization or deployment readiness dependencies.",
+        "true": "The task examines readiness dependencies, ordering, cycles, or temporal coupling during startup, bootstrap, configuration loading, discovery, or migration."
+      }
+    }
+  },
+  "sha256": "92b3db26ab9835de0efc1289d55a9c41e9b902fa66a4228580ecfc7d859ea2dd"
+}

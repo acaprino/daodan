@@ -71,8 +71,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Phase 1: preflight and workspace
 
-Probe before asking. Every fact below is recorded in the run's `workspace`
-and `preflight` sections; nothing here edits project files.
+Probe before asking; record facts in `workspace` and `preflight`.
+Do not edit project files.
 
 ## Probes
 
@@ -80,21 +80,21 @@ and `preflight` sections; nothing here edits project files.
 |---|---|---|
 | Providers | the host's plugin inventory | every plugin the `daodan` entry requires, transitively, active; a missing one stops here with the host's enable or install command |
 | Environment | `.venv`, `uv`, `npm`, the loop block's commands | `environment`: the interpreter and runners every command uses; installing outside the project needs explicit authorization |
+| Models | `project-protocol:project-protocol`, `references/task-routing.md` | `environment.models`: inventory, host support, confirmed per-request assignments |
 | Repository and head | `git rev-parse --show-toplevel`, `git rev-parse HEAD` | `base_sha` candidate |
 | Working tree | `git status --porcelain=v2 --branch` | staged, unstaged and untracked paths; conflict markers (`u` rows); current branch |
 | Interrupted operation | presence of `MERGE_HEAD`, `rebase-merge` or `rebase-apply` under the git directory | blocks the phase |
 | Upstream distance | `git fetch --prune`, then `git rev-list --left-right --count HEAD...@{upstream}` | ahead and behind counts; never a blind pull |
-| Map freshness | `codebase-map:map-method`: `snapshot.py diff --verify` on the scope against the current tree | stale paths; triggers an incremental update before the interview |
+| Map context | `codebase-map:map-method`; `references/context-cycle.md` preflight | verify freshness, refresh stale scope, freeze base, packet and I1 before interview |
 | Test baseline | the project's declared test command on the scope's tests | `GREEN`; `KNOWN_RED` with the failure fingerprint the user accepted; `UNKNOWN_RED` |
 | Migrations | the project's migration status command when one is declared | `ALIGNED`, `PENDING`, `DIVERGED`, `UNKNOWN` or `NOT_APPLICABLE` |
 
-Baseline fingerprint: the sorted failing test identifiers, hashed; the same
-fingerprint later is the same known failure, a different one is unknown.
+Hash sorted failing test identifiers: an unchanged fingerprint identifies the
+known failure; a changed one is unknown.
 
 ## Workspace mode
 
-Present the probes in one screen and ask the user once, with a recommended
-default:
+Present probes on one screen; ask once with a recommended default:
 
 | Mode | Recommend when | Consequence |
 |---|---|---|

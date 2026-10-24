@@ -1,0 +1,1624 @@
+{
+  "schema": "choicer-eval/external-adjudication-v1",
+  "status": "stage2_conservative_adjudication_not_frozen",
+  "gate": {
+    "positives_at_least_6_per_lens": false,
+    "explicit_negatives_at_least_24": true,
+    "positive_projects_at_least_2_per_lens": false,
+    "adjudicated_candidates_at_least_48": true
+  },
+  "gate_passed": false,
+  "positive_counts": {
+    "security-auditor": 8,
+    "data-integrity-auditor": 5,
+    "temporal-resilience-auditor": 2,
+    "resource-lifecycle-auditor": 1,
+    "ui-race-auditor": 5,
+    "distributed-flow-auditor": 30,
+    "logic-integrity-auditor": 8,
+    "cleanup-auditor": 1
+  },
+  "negative_counts": {
+    "security-auditor": 36,
+    "data-integrity-auditor": 15,
+    "temporal-resilience-auditor": 25,
+    "resource-lifecycle-auditor": 25,
+    "ui-race-auditor": 23,
+    "distributed-flow-auditor": 3,
+    "logic-integrity-auditor": 17,
+    "cleanup-auditor": 35
+  },
+  "positive_projects": {
+    "security-auditor": 4,
+    "data-integrity-auditor": 4,
+    "temporal-resilience-auditor": 2,
+    "resource-lifecycle-auditor": 1,
+    "ui-race-auditor": 5,
+    "distributed-flow-auditor": 15,
+    "logic-integrity-auditor": 6,
+    "cleanup-auditor": 1
+  },
+  "candidates": [
+    {
+      "id": "X001",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "temporal-resilience-auditor",
+        "ui-race-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 5,
+        "data-integrity-auditor": 6,
+        "temporal-resilience-auditor": 1,
+        "ui-race-auditor": 2,
+        "distributed-flow-auditor": 6,
+        "logic-integrity-auditor": 4
+      }
+    },
+    {
+      "id": "X002",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "temporal-resilience-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "temporal-resilience-auditor": 1,
+        "distributed-flow-auditor": 3
+      }
+    },
+    {
+      "id": "X003",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "temporal-resilience-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 3,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X004",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 4,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X005",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "data-integrity-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 1,
+        "data-integrity-auditor": 2,
+        "temporal-resilience-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 4
+      }
+    },
+    {
+      "id": "X006",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ],
+      "unknown_roles": [
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "cleanup-auditor": 1
+      }
+    },
+    {
+      "id": "X007",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X008",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "data-integrity-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 2,
+        "ui-race-auditor": 2,
+        "distributed-flow-auditor": 2
+      }
+    },
+    {
+      "id": "X009",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 1,
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 2
+      }
+    },
+    {
+      "id": "X010",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 3,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X011",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "ui-race-auditor": 2,
+        "distributed-flow-auditor": 3,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X012",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "security-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 1,
+        "distributed-flow-auditor": 3
+      }
+    },
+    {
+      "id": "X013",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 2
+      }
+    },
+    {
+      "id": "X014",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 2
+      }
+    },
+    {
+      "id": "X015",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 2
+      }
+    },
+    {
+      "id": "X016",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "temporal-resilience-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 1,
+        "logic-integrity-auditor": 3
+      }
+    },
+    {
+      "id": "X017",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X018",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X019",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X020",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "logic-integrity-auditor": 2
+      }
+    },
+    {
+      "id": "X021",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X022",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "data-integrity-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 2,
+        "temporal-resilience-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 2
+      }
+    },
+    {
+      "id": "X023",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X024",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "logic-integrity-auditor": 2
+      }
+    },
+    {
+      "id": "X025",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "ui-race-auditor": 3,
+        "distributed-flow-auditor": 1,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X026",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "temporal-resilience-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X027",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 2,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X028",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 3,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X029",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 3
+      }
+    },
+    {
+      "id": "X030",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 4,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X031",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X032",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "temporal-resilience-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 5
+      }
+    },
+    {
+      "id": "X033",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "distributed-flow-auditor": 3
+      }
+    },
+    {
+      "id": "X034",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "temporal-resilience-auditor": 1,
+        "distributed-flow-auditor": 1,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X035",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "temporal-resilience-auditor": 1,
+        "distributed-flow-auditor": 2
+      }
+    },
+    {
+      "id": "X036",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "distributed-flow-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 1,
+        "logic-integrity-auditor": 2
+      }
+    },
+    {
+      "id": "X037",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "temporal-resilience-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "temporal-resilience-auditor": 2,
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X038",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "security-auditor",
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 1,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X039",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "ui-race-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "temporal-resilience-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "temporal-resilience-auditor": 1,
+        "ui-race-auditor": 2,
+        "distributed-flow-auditor": 3,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X040",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "ui-race-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 2,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X041",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "ui-race-auditor": 1,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X042",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "ui-race-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "distributed-flow-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "temporal-resilience-auditor": 1,
+        "resource-lifecycle-auditor": 2,
+        "ui-race-auditor": 2,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X043",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "security-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "resource-lifecycle-auditor",
+        "logic-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 2,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 4,
+        "logic-integrity-auditor": 1
+      }
+    },
+    {
+      "id": "X044",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "security-auditor": 1,
+        "data-integrity-auditor": 1,
+        "distributed-flow-auditor": 2
+      }
+    },
+    {
+      "id": "X045",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {}
+    },
+    {
+      "id": "X046",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 1,
+        "logic-integrity-auditor": 1,
+        "cleanup-auditor": 1
+      }
+    },
+    {
+      "id": "X047",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "temporal-resilience-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "resource-lifecycle-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "data-integrity-auditor": 1,
+        "temporal-resilience-auditor": 2,
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 2
+      }
+    },
+    {
+      "id": "X048",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "resource-lifecycle-auditor",
+        "distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "ui-race-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "unknown_roles": [],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 2,
+        "distributed-flow-auditor": 4
+      }
+    },
+    {
+      "id": "X049",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X050",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X051",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X052",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X053",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X054",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X055",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X056",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X057",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X058",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [
+        "security-auditor"
+      ],
+      "negative_roles": [],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X059",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X060",
+      "label_status": "adjudicated_gold",
+      "positive_roles": [],
+      "negative_roles": [
+        "security-auditor"
+      ],
+      "unknown_roles": [
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Devign dataset-native security target."
+    },
+    {
+      "id": "X061",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X062",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {}
+    },
+    {
+      "id": "X063",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {}
+    },
+    {
+      "id": "X064",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 1,
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X065",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 1
+      }
+    },
+    {
+      "id": "X066",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "cleanup-auditor": 1
+      }
+    },
+    {
+      "id": "X067",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "distributed-flow-auditor": 1
+      }
+    },
+    {
+      "id": "X068",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "cleanup-auditor": 1
+      }
+    },
+    {
+      "id": "X069",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {}
+    },
+    {
+      "id": "X070",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "resource-lifecycle-auditor": 1
+      }
+    },
+    {
+      "id": "X071",
+      "label_status": "needs_manual_adjudication",
+      "positive_roles": [],
+      "negative_roles": [],
+      "unknown_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor",
+        "cleanup-auditor"
+      ],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "cleanup-auditor": 1
+      }
+    },
+    {
+      "id": "X072",
+      "label_status": "adjudicated_silver",
+      "positive_roles": [
+        "cleanup-auditor"
+      ],
+      "negative_roles": [
+        "security-auditor",
+        "data-integrity-auditor",
+        "temporal-resilience-auditor",
+        "resource-lifecycle-auditor",
+        "ui-race-auditor",
+        "distributed-flow-auditor",
+        "logic-integrity-auditor"
+      ],
+      "unknown_roles": [],
+      "rationale": "Accepted positives require at least two external-evidence signal terms. Explicit negatives require an accepted positive scope and no external-evidence signal for that lens.",
+      "evidence_signal_scores": {
+        "cleanup-auditor": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "individual-A011-catalog_noul",
+  "kind": "individual",
+  "case_id": "A011",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Check whether the proposition supporting this finding holds across the provided entry points.",
+    "artifacts": [
+      {
+        "path": "review/note.md",
+        "content": "Finding: an unreviewed draft cannot be published. This rests on the proposition that every publication path calls validate_review before changing status.\n"
+      },
+      {
+        "path": "src/publish.py",
+        "content": "def publish(draft):\n    validate_review(draft)\n    draft.status = \"published\"\n\ndef import_published(draft):\n    draft.status = \"published\"\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
+      }
+    }
+  },
+  "sha256": "f14ed297e27cac623308fb32f00ccfa3954a81986c1f29fce11e8b9bb5b1312b"
+}

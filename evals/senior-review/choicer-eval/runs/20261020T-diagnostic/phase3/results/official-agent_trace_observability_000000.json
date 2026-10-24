@@ -1,0 +1,16 @@
+{
+  "id": "official-agent_trace_observability_000000",
+  "request_sha256": "9c33042bcaa28fec7797c5c10b9596c5051c75239666eeed49c06018373e3630",
+  "raw_output": {
+    "answers": {
+      "needs_review": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.9999997690922069,
+          "true": 2.309077931683936e-07
+        },
+        "noul": 2.309077931683936e-07
+      }
+    }
+  }
+}

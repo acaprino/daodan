@@ -1,0 +1,32 @@
+{
+  "requirement": "Existing sessions complete during rolling deployment; v1 remains rollback-compatible. No exclusive write lock is allowed while serving.",
+  "drain": [
+    "terminate",
+    "stop process",
+    "withdraw routing"
+  ],
+  "inflight_seconds": 20,
+  "grace_seconds": 0,
+  "replacement": {
+    "ready_after_termination": true
+  },
+  "migration": {
+    "active": [
+      "v1",
+      "v2"
+    ],
+    "documented_lock": "exclusive until backfill completes",
+    "serving": true
+  },
+  "formats": {
+    "v1_reads": [
+      "text"
+    ],
+    "v2_writes": "binary-only",
+    "rollback": "redeploy v1 only"
+  },
+  "writers": {
+    "v1_omits": "new_required",
+    "schema": "new_required NOT NULL without default"
+  }
+}

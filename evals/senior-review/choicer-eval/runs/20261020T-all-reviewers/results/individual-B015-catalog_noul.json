@@ -1,0 +1,14 @@
+{
+  "id": "individual-B015-catalog_noul",
+  "request_sha256": "6d6480bfc9fb658c366fe0c6cd696db17ff7abe2f98207896653b6c6fbfc3121",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "senior-review:ui-race-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions"
+  },
+  "wall_seconds": 8.129997877404094e-05
+}

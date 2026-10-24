@@ -1,0 +1,453 @@
+{
+  "recorded_at": "2026-10-20T11:35:54.515987+00:00",
+  "valid_questions": 852,
+  "max_tokens": 404,
+  "failures": [
+    {
+      "request": "individual-A007-catalog_noul",
+      "role": "senior-review:premise-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-A008-catalog_noul",
+      "role": "senior-review:premise-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-A009-catalog_noul",
+      "role": "senior-review:premise-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-A010-catalog_noul",
+      "role": "senior-review:premise-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-A011-catalog_noul",
+      "role": "senior-review:premise-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-A012-catalog_noul",
+      "role": "senior-review:premise-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-A037-catalog_noul",
+      "role": "senior-review:distributed-flow-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-A038-catalog_noul",
+      "role": "senior-review:distributed-flow-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-A039-catalog_noul",
+      "role": "senior-review:distributed-flow-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-A040-catalog_noul",
+      "role": "senior-review:distributed-flow-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-A041-catalog_noul",
+      "role": "senior-review:distributed-flow-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-A042-catalog_noul",
+      "role": "senior-review:distributed-flow-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-B013-catalog_noul",
+      "role": "senior-review:ui-race-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B014-catalog_noul",
+      "role": "senior-review:ui-race-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B015-catalog_noul",
+      "role": "senior-review:ui-race-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B016-catalog_noul",
+      "role": "senior-review:ui-race-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B017-catalog_noul",
+      "role": "senior-review:ui-race-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B018-catalog_noul",
+      "role": "senior-review:ui-race-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B025-catalog_noul",
+      "role": "senior-review:cleanup-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B026-catalog_noul",
+      "role": "senior-review:cleanup-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B027-catalog_noul",
+      "role": "senior-review:cleanup-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B028-catalog_noul",
+      "role": "senior-review:cleanup-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B029-catalog_noul",
+      "role": "senior-review:cleanup-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B030-catalog_noul",
+      "role": "senior-review:cleanup-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B031-catalog_noul",
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B032-catalog_noul",
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B033-catalog_noul",
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B034-catalog_noul",
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B035-catalog_noul",
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B036-catalog_noul",
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B037-catalog_noul",
+      "role": "platform-engineering:platform-reviewer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B038-catalog_noul",
+      "role": "platform-engineering:platform-reviewer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B039-catalog_noul",
+      "role": "platform-engineering:platform-reviewer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B040-catalog_noul",
+      "role": "platform-engineering:platform-reviewer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B041-catalog_noul",
+      "role": "platform-engineering:platform-reviewer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-B042-catalog_noul",
+      "role": "platform-engineering:platform-reviewer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C001-catalog_noul",
+      "role": "react-development:react-performance-optimizer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C002-catalog_noul",
+      "role": "react-development:react-performance-optimizer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C003-catalog_noul",
+      "role": "react-development:react-performance-optimizer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C004-catalog_noul",
+      "role": "react-development:react-performance-optimizer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C005-catalog_noul",
+      "role": "react-development:react-performance-optimizer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C006-catalog_noul",
+      "role": "react-development:react-performance-optimizer",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C007-catalog_noul",
+      "role": "repo-hygiene:workspace-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C008-catalog_noul",
+      "role": "repo-hygiene:workspace-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C009-catalog_noul",
+      "role": "repo-hygiene:workspace-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C010-catalog_noul",
+      "role": "repo-hygiene:workspace-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C011-catalog_noul",
+      "role": "repo-hygiene:workspace-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C012-catalog_noul",
+      "role": "repo-hygiene:workspace-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C019-catalog_noul",
+      "role": "typescript-development:type-safety-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C020-catalog_noul",
+      "role": "typescript-development:type-safety-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C021-catalog_noul",
+      "role": "typescript-development:type-safety-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C022-catalog_noul",
+      "role": "typescript-development:type-safety-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C023-catalog_noul",
+      "role": "typescript-development:type-safety-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C024-catalog_noul",
+      "role": "typescript-development:type-safety-auditor",
+      "variant": "catalog_noul",
+      "error": "Option exceeds 48-token model contract"
+    },
+    {
+      "request": "individual-C025-catalog_noul",
+      "role": "project-knowledge:guide-reviewer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C026-catalog_noul",
+      "role": "project-knowledge:guide-reviewer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C027-catalog_noul",
+      "role": "project-knowledge:guide-reviewer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C028-catalog_noul",
+      "role": "project-knowledge:guide-reviewer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C029-catalog_noul",
+      "role": "project-knowledge:guide-reviewer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C030-catalog_noul",
+      "role": "project-knowledge:guide-reviewer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C031-catalog_noul",
+      "role": "project-knowledge:instructions-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C032-catalog_noul",
+      "role": "project-knowledge:instructions-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C033-catalog_noul",
+      "role": "project-knowledge:instructions-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C034-catalog_noul",
+      "role": "project-knowledge:instructions-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C035-catalog_noul",
+      "role": "project-knowledge:instructions-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C036-catalog_noul",
+      "role": "project-knowledge:instructions-auditor",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C037-catalog_noul",
+      "role": "project-knowledge:documentation-engineer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C038-catalog_noul",
+      "role": "project-knowledge:documentation-engineer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C039-catalog_noul",
+      "role": "project-knowledge:documentation-engineer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C040-catalog_noul",
+      "role": "project-knowledge:documentation-engineer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C041-catalog_noul",
+      "role": "project-knowledge:documentation-engineer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    },
+    {
+      "request": "individual-C042-catalog_noul",
+      "role": "project-knowledge:documentation-engineer",
+      "variant": "catalog_noul",
+      "error": "Empty criterion"
+    }
+  ],
+  "weights_loaded": false,
+  "source_hashes": {
+    "group-a.json": "44d78dbef61d56e2be7792e55cfaa3073a7439f2f59d1a6e48f145adfc5ca129",
+    "group-b.json": "f1bf71a8f540a2d65cc2fc7fa25e0da48c20cb90195e5c8057fe3a91b08e8968",
+    "group-c.json": "cce97ba9cdebd6d5a8ad3114fb6a025f728b817e82104d8811cee5da337d4a1f",
+    "historical-report-link.json": "8c078be5642bb68b4cde41e4f81b1ce8dba9fa54abb27f485c85ae4419873ae3",
+    "inventory.json": "11291391fd790fb21149b73055bc7af44078fbb7496352aa34cc1d54dd56f3c9",
+    "review-group-a.json": "1a17911d16cd70bc7dc43dc28e866c089cca5bb14361e468743d0ebad309ff89",
+    "review-group-b.json": "135f6310fd08fc977ff5514858e53b92bcafa505f9861a048f69e96a7c25dca0",
+    "review-group-c.json": "d7d3110dea365b37b654ec12867a2e613b9771daca5eee0ee48266e37a995f62",
+    "runner-review.json": "645bb2f1124a3f5bd9aafb4eb86e47435c6d3935234900371ebdbd03713b9b31",
+    "team-review.json": "258a1a07717d8b06e4b9a450acda9b0c7a965e0ff23307dfe7f0aeb1b3d934de",
+    "teams.json": "d88cc541c9f4831ec745018d407a1dedafb969dc759819d508b4e0dc8f33d894"
+  }
+}

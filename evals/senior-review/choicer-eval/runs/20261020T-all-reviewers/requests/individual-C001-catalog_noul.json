@@ -1,0 +1,30 @@
+{
+  "id": "individual-C001-catalog_noul",
+  "kind": "individual",
+  "case_id": "C001",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review why the live quote panel redraws on every store update, including updates for unrelated tickers.",
+    "artifacts": [
+      {
+        "path": "src/QuotePanel.tsx",
+        "content": "import { useQuotes } from \"./quotes\";\nexport function QuotePanel({ symbol }: { symbol: string }) {\n  const { quotes, connection } = useQuotes(s => ({ quotes: s.quotes, connection: s.connection }));\n  return <output>{quotes[symbol]?.price} ({connection})</output>;\n}"
+      },
+      {
+        "path": "src/quotes.ts",
+        "content": "import { create } from \"zustand\";\nexport const useQuotes = create<{ quotes: Record<string, { price: number }>; connection: string }>(() => ({ quotes: {}, connection: \"live\" }));"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling."
+      }
+    }
+  },
+  "sha256": "331310a796b15f67d0d272fc1a3f29f0e29caaeba3771e3d578469dd58c6575f"
+}

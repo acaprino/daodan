@@ -1,0 +1,14 @@
+{
+  "id": "individual-C026-catalog_noul",
+  "request_sha256": "9042f615c533fa83d30a576206f4c8f27fd28dc6f15451ea96636a50fdf06b4b",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "project-knowledge:guide-reviewer": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions"
+  },
+  "wall_seconds": 3.509997623041272e-05
+}

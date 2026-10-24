@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the visual spacing of the service-status page. The change contains only CSS.",
+    "artifacts": [
+      {
+        "path": "web/status.css",
+        "content": ".service-list { display: grid; gap: 1rem; }\n.service-card { padding: 1.25rem; border: 1px solid #ddd; }\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    }
+  }
+}

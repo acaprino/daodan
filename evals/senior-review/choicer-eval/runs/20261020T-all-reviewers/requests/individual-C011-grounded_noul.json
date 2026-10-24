@@ -1,0 +1,30 @@
+{
+  "id": "individual-C011-grounded_noul",
+  "kind": "individual",
+  "case_id": "C011",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Assess whether the date library dependency remains needed by production paths. Follow imports and runtime adapters; package removal and repository tidying are outside scope.",
+    "artifacts": [
+      {
+        "path": "package.json",
+        "content": "{\"dependencies\":{\"date-fns\":\"^4.1.0\",\"zod\":\"^4.0.0\"}}"
+      },
+      {
+        "path": "src/calendar.ts",
+        "content": "import { format } from \"date-fns\";\nexport const displayDay = (value: Date) => format(value, \"yyyy-MM-dd\");"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    }
+  },
+  "sha256": "c221c05709d1f15fff83553445c7389731318ff636aced67a18fb71de06f9cef"
+}

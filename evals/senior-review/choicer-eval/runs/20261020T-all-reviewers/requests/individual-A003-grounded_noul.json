@@ -1,0 +1,26 @@
+{
+  "id": "individual-A003-grounded_noul",
+  "kind": "individual",
+  "case_id": "A003",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the proposed route for downloading a signed-in customer's invoice.",
+    "artifacts": [
+      {
+        "path": "app/invoices.py",
+        "content": "@app.get(\"/invoices/<invoice_id>\")\n@login_required\ndef download(invoice_id):\n    invoice = invoices.get(invoice_id)\n    if invoice.owner_id != current_user.id:\n        abort(403)\n    return send_file(invoice.pdf_path)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  },
+  "sha256": "263159c44d9e273516a1da48b0a354af10ff9d940d334e84e469cdf4cf65f52d"
+}

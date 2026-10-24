@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the search endpoint accepting a result limit and returning matches.",
+    "artifacts": [
+      {
+        "path": "app.py",
+        "content": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\napp = FastAPI()\nclass SearchRequest(BaseModel):\n    query: str\n    limit: int = Field(default=20, ge=1, le=50)\nclass Match(BaseModel):\n    id: str\n@app.post(\"/search\", response_model=list[Match])\ndef search(request: SearchRequest):\n    return [Match(id=str(i)) for i in range(request.limit)]"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    }
+  }
+}

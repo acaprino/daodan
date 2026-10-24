@@ -1,0 +1,26 @@
+{
+  "id": "individual-C046-catalog_noul",
+  "kind": "individual",
+  "case_id": "C046",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Humanize only the prose voice of this technical paragraph. Keep the current headings, order, navigation, diagram and paragraph boundaries exactly as they are.",
+    "artifacts": [
+      {
+        "path": "docs/cache.md",
+        "content": "# Cache\nOur robust caching mechanism seamlessly empowers the application to leverage lightning-fast reads. The default retention period is 60 seconds."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "editing prose voice (use text-humanizer).",
+        "true": "spawned by project-knowledge methods to restructure technical documentation."
+      }
+    }
+  },
+  "sha256": "5d2e9b061d46c85b3d4a6705d38ab8852cd68b83681dad23e52c05219c99a53d"
+}

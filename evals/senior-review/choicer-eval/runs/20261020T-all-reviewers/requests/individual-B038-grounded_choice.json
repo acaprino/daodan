@@ -1,0 +1,30 @@
+{
+  "id": "individual-B038-grounded_choice",
+  "kind": "individual",
+  "case_id": "B038",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review how the Android application saves the refresh token after login.",
+    "artifacts": [
+      {
+        "path": "app/src/main/AndroidManifest.xml",
+        "content": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"><application android:label=\"Field Notes\" /></manifest>"
+      },
+      {
+        "path": "app/src/main/java/SessionStore.kt",
+        "content": "class SessionStore(context: Context) {\n    private val preferences = context.getSharedPreferences(\"session\", Context.MODE_PRIVATE)\n    fun saveRefreshToken(token: String) {\n        preferences.edit().putString(\"refresh_token\", token).apply()\n    }\n}"
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "choice",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    }
+  },
+  "sha256": "74f071bdcfd7195bfbd0f083fdc22c0d2be8f5a5db8fece7c6f7ee8456d221bb"
+}

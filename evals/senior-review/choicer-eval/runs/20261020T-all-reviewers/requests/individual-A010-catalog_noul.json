@@ -1,0 +1,26 @@
+{
+  "id": "individual-A010-catalog_noul",
+  "kind": "individual",
+  "case_id": "A010",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Assess only the relative urgency of these already-accepted issues using the supplied operational impact. Their diagnoses are settled for this task.",
+    "artifacts": [
+      {
+        "path": "triage/issues.md",
+        "content": "Issue 18: export fails for all 320 daily users; manual recovery takes 25 minutes.\nIssue 24: footer clips at one viewport width; all actions remain available.\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper).",
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check."
+      }
+    }
+  },
+  "sha256": "ec76b060f54de76ccd31034eed94874e3979ee4ebbf077f9e3a12e4e941d6a88"
+}

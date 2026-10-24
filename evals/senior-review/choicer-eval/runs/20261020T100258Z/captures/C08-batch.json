@@ -1,0 +1,32 @@
+{
+  "schema": "choicer-eval/native-capture-v1",
+  "request_sha256": "5cb183bbbb1916e909e96fac1c63f0354fba5a6f3b968241ee93c938880ef3d7",
+  "response": "{\"mode\":\"full\",\"selected\":[{\"trigger_line\":\"[H1] candidate profiles/repo.py:5 cached = await redis.get(f\\\"profile:{user_id}\\\")\",\"reason\":\"User-keyed cache and database access may expose another user's profile without authorization checks.\",\"role\":\"senior-review:security-auditor\",\"tier\":\"tier2\",\"effort\":\"high\"},{\"trigger_line\":\"[H1] candidate profiles/repo.py:9 await redis.set(f\\\"profile:{user_id}\\\", profile.json(), ex=CACHE_TTL)\",\"reason\":\"Cache expiry and profile updates may leave stale email data available after a write.\",\"role\":\"senior-review:temporal-resilience-auditor\",\"tier\":\"tier2\",\"effort\":\"medium\"},{\"trigger_line\":\"[H1] candidate profiles/repo.py:12 async def update_email(user_id: str, email: str) -> None:\",\"reason\":\"Profile reads, cache writes, email updates, and deletion span modules and may leave inconsistent cached state.\",\"role\":\"senior-review:distributed-flow-auditor\",\"tier\":\"tier2\",\"effort\":\"medium\"}],\"recommend_full_review\":false,\"recommend_full_reason\":null}\n",
+  "response_sha256": "d166414af741887006452e4c620aa09ebf959dedd129536f61a5576092897c1f",
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  },
+  "usage": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "transport": {
+    "tool": "collaboration.spawn_agent",
+    "task_name": "/root/baseline_c08",
+    "fork_turns": "none",
+    "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C08-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C08-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+    "loader_prompt_sha256": "55afc3190264c5390703ca14c127e501f33601fed07833b5f9a5fdfdd8ee3e46",
+    "effective_provider_request": null,
+    "provider_finish_reason": null,
+    "provider_api_call_count": null,
+    "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+  },
+  "limitations": [
+    "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+    "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+  ]
+}

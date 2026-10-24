@@ -60,6 +60,12 @@ The work graph is a simulated prototype. The reference sections retain the four
 boundary interfaces, real and mocked implementations, and open integration points,
 including the duplicated routing policy.
 
+The [code context implementation plan](superpowers/plans/2026-10-23-code-context-and-scope.md)
+connects semantic Markdown, Jedi graph evidence and local retrieval through a
+progressive scope-selection algorithm. It records planned checkpoints, checks,
+documentation updates and intermediate commits; implementation status remains
+separate from the design.
+
 ## Installation and migration
 
 - [Main README](../README.md): introduction and installation.

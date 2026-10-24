@@ -1,0 +1,26 @@
+{
+  "id": "individual-C022-grounded_choice",
+  "kind": "individual",
+  "case_id": "C022",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Suggest clearer local names for this function without assessing or changing typing, runtime behavior, or compiler configuration.",
+    "artifacts": [
+      {
+        "path": "src/display.ts",
+        "content": "export function display(x: string, n: number): string {\n  const y = x.trim();\n  return y.repeat(n);\n}"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      }
+    }
+  },
+  "sha256": "9b28a60f2b9615106a93cd09e4656793399b6ebe8b51a2284151f526fae63fcf"
+}

@@ -1,0 +1,1434 @@
+{
+  "rows": [
+    {
+      "case_id": "C01",
+      "split": "historical",
+      "mode": "truncated",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 50.832958599999984,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W000",
+          "response": "Q0003"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W000",
+          "response": "Q0004"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "C01",
+      "split": "historical",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 24,
+      "planned_calls": 24,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 102.91872110000986,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0011"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0012"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0015"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q0019"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0020"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W003",
+          "response": "Q0027"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W003",
+          "response": "Q0028"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W003",
+          "response": "Q0031"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "C07",
+      "split": "historical",
+      "mode": "truncated",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [
+        "senior-review:cleanup-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 57.11917170000015,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W000",
+          "response": "Q0036"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W000",
+          "response": "Q0039"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "C07",
+      "split": "historical",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 312,
+      "planned_calls": 312,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "selected_fixed": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "selected": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "matched": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "missing": [
+        "senior-review:cleanup-auditor"
+      ],
+      "expected": [
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative": [],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 4,
+      "abstentions": 0,
+      "seconds": 1387.1316842999877,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0044"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0047"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W001",
+          "response": "Q0048"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W002",
+          "response": "Q0052"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W002",
+          "response": "Q0055"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W002",
+          "response": "Q0056"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W003",
+          "response": "Q0060"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W003",
+          "response": "Q0063"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W003",
+          "response": "Q0064"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W004",
+          "response": "Q0067"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W004",
+          "response": "Q0068"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W004",
+          "response": "Q0071"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W004",
+          "response": "Q0072"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W005",
+          "response": "Q0076"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W005",
+          "response": "Q0079"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W006",
+          "response": "Q0087"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W006",
+          "response": "Q0088"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W007",
+          "response": "Q0095"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W007",
+          "response": "Q0096"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W008",
+          "response": "Q0100"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W008",
+          "response": "Q0103"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W008",
+          "response": "Q0104"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W009",
+          "response": "Q0108"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W009",
+          "response": "Q0111"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W009",
+          "response": "Q0112"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W010",
+          "response": "Q0119"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W010",
+          "response": "Q0120"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W011",
+          "response": "Q0124"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W011",
+          "response": "Q0127"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W011",
+          "response": "Q0128"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W012",
+          "response": "Q0132"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W012",
+          "response": "Q0135"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W012",
+          "response": "Q0136"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W013",
+          "response": "Q0140"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W013",
+          "response": "Q0143"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W014",
+          "response": "Q0148"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W014",
+          "response": "Q0151"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W015",
+          "response": "Q0156"
+        },
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W015",
+          "response": "Q0158"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W015",
+          "response": "Q0159"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W016",
+          "response": "Q0164"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W016",
+          "response": "Q0167"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W016",
+          "response": "Q0168"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W017",
+          "response": "Q0172"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W017",
+          "response": "Q0175"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W017",
+          "response": "Q0176"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W018",
+          "response": "Q0180"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W018",
+          "response": "Q0183"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W018",
+          "response": "Q0184"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W019",
+          "response": "Q0188"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W019",
+          "response": "Q0191"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W020",
+          "response": "Q0196"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W020",
+          "response": "Q0199"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W021",
+          "response": "Q0204"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W021",
+          "response": "Q0207"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W022",
+          "response": "Q0212"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W022",
+          "response": "Q0215"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W023",
+          "response": "Q0220"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W023",
+          "response": "Q0223"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W024",
+          "response": "Q0228"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W024",
+          "response": "Q0231"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W024",
+          "response": "Q0232"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W025",
+          "response": "Q0236"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W025",
+          "response": "Q0239"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W025",
+          "response": "Q0240"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W026",
+          "response": "Q0244"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W026",
+          "response": "Q0247"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W027",
+          "response": "Q0252"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W027",
+          "response": "Q0255"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W028",
+          "response": "Q0260"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W028",
+          "response": "Q0263"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W029",
+          "response": "Q0268"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W029",
+          "response": "Q0271"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W029",
+          "response": "Q0272"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W030",
+          "response": "Q0276"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W030",
+          "response": "Q0279"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W031",
+          "response": "Q0284"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W031",
+          "response": "Q0287"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W031",
+          "response": "Q0288"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W032",
+          "response": "Q0292"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W032",
+          "response": "Q0295"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W032",
+          "response": "Q0296"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W033",
+          "response": "Q0300"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W033",
+          "response": "Q0303"
+        },
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W034",
+          "response": "Q0308"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W034",
+          "response": "Q0311"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W035",
+          "response": "Q0319"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W035",
+          "response": "Q0320"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W036",
+          "response": "Q0327"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W036",
+          "response": "Q0328"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W037",
+          "response": "Q0335"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W037",
+          "response": "Q0336"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W038",
+          "response": "Q0343"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W038",
+          "response": "Q0344"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W039",
+          "response": "Q0351"
+        },
+        {
+          "role": "senior-review:ui-race-auditor",
+          "window_id": "W039",
+          "response": "Q0352"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E01",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 26.50829960000192,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E01",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 25.660533899997972,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E02",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor"
+      ],
+      "matched": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 16.66865460000554,
+      "activation_evidence": [
+        {
+          "role": "senior-review:data-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0370"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E02",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 3,
+      "abstentions": 0,
+      "seconds": 16.874526800005697,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0380"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0383"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E03",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 43.85038550000172,
+      "activation_evidence": [
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W001",
+          "response": "Q0387"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0391"
+        },
+        {
+          "role": "senior-review:distributed-flow-auditor",
+          "window_id": "W002",
+          "response": "Q0403"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W002",
+          "response": "Q0407"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E03",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 16,
+      "planned_calls": 16,
+      "selected_model": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "expected": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 46.536018200007675,
+      "activation_evidence": [
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0399"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W002",
+          "response": "Q0415"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E04",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 19.833903100006864,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E04",
+      "split": "development",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 16.03077659999326,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E05",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "matched": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "missing": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 20.272785599998315,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0436"
+        },
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W001",
+          "response": "Q0437"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E05",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 20.003506900000502,
+      "activation_evidence": [
+        {
+          "role": "senior-review:logic-integrity-auditor",
+          "window_id": "W001",
+          "response": "Q0444"
+        },
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W001",
+          "response": "Q0445"
+        },
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0447"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E06",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 20.277350400003343,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E06",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor"
+      ],
+      "matched": [],
+      "missing": [],
+      "expected": [],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 19.01292580000154,
+      "activation_evidence": [],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E07",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "matched": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 29.805786699991586,
+      "activation_evidence": [
+        {
+          "role": "senior-review:resource-lifecycle-auditor",
+          "window_id": "W001",
+          "response": "Q0469"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E07",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "matched": [],
+      "missing": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "expected": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 2,
+      "abstentions": 0,
+      "seconds": 28.757906500006357,
+      "activation_evidence": [
+        {
+          "role": "senior-review:temporal-resilience-auditor",
+          "window_id": "W001",
+          "response": "Q0479"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E08",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "candidate",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:security-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:security-auditor"
+      ],
+      "matched": [
+        "senior-review:security-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 16.908094799993705,
+      "activation_evidence": [
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W001",
+          "response": "Q0486"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    },
+    {
+      "case_id": "E08",
+      "split": "verification",
+      "mode": "windowed",
+      "variant": "v2",
+      "complete": true,
+      "calls": 8,
+      "planned_calls": 8,
+      "selected_model": [
+        "senior-review:security-auditor"
+      ],
+      "selected_fixed": [
+        "senior-review:code-auditor"
+      ],
+      "selected": [
+        "senior-review:code-auditor",
+        "senior-review:security-auditor"
+      ],
+      "matched": [
+        "senior-review:security-auditor"
+      ],
+      "missing": [],
+      "expected": [
+        "senior-review:security-auditor"
+      ],
+      "negative": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_activations": [],
+      "excess_partial_label_proxy": 1,
+      "abstentions": 0,
+      "seconds": 17.7786758000002,
+      "activation_evidence": [
+        {
+          "role": "senior-review:security-auditor",
+          "window_id": "W001",
+          "response": "Q0494"
+        }
+      ],
+      "evidence_note": "Activation windows are locators, not validated defect citations."
+    }
+  ],
+  "planned_calls": 496,
+  "observed_calls": 496,
+  "sampled_peak_combined_rss": 977641472,
+  "server_peak_rss": 924270592
+}

@@ -1,0 +1,33 @@
+{
+  "state": {
+    "task": "Review performance of the new activity endpoint used by the browser dashboard.",
+    "artifacts": [
+      {
+        "path": "web/package.json",
+        "content": "{\"name\":\"dashboard\",\"dependencies\":{\"react\":\"19.0.0\",\"react-dom\":\"19.0.0\"}}"
+      },
+      {
+        "path": "web/src/App.tsx",
+        "content": "export function App() {\n  const {data} = useQuery({queryKey: [\"activity\"], queryFn: () => fetch(\"/api/activity\").then(r => r.json())});\n  return <ActivityList items={data ?? []} />;\n}"
+      },
+      {
+        "path": "api/activity.py",
+        "content": "def activity(db, user):\n    return db.query(\"SELECT * FROM activity WHERE user_id = ? ORDER BY created_at DESC\", [user.id])"
+      },
+      {
+        "path": "web/README.md",
+        "content": "The dashboard is a client-rendered single-page application. Each account may accumulate several million activity records."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "choice",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    }
+  }
+}

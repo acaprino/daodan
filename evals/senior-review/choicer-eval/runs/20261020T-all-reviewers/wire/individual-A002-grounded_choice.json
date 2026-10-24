@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the network rule limiting database access to the application subnet. Only the infrastructure rule is in scope.",
+    "artifacts": [
+      {
+        "path": "infra/database.tf",
+        "content": "resource \"aws_security_group_rule\" \"database_ingress\" {\n  type              = \"ingress\"\n  protocol          = \"tcp\"\n  from_port         = 5432\n  to_port           = 5432\n  cidr_blocks       = [\"10.20.4.0/24\"]\n  security_group_id = aws_security_group.database.id\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and supplied artifacts, does the scoped work warrant examining application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior?",
+      "criteria": {
+        "false": "The scoped work does not concern application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior.",
+        "true": "The scoped work concerns application trust boundaries, access controls, sensitive information, cryptography or exploitable application behavior, even when safeguards appear correct."
+      }
+    }
+  }
+}

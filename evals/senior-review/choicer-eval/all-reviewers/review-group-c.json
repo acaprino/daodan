@@ -1,0 +1,49 @@
+{
+  "schema": "choicer-eval/fixture-review-v1",
+  "reviewer": "/root",
+  "author": "/root/reviewer_inventory",
+  "scope": "Eight roles and 48 controls in group-c.json",
+  "review_phase": "Before model inference and before freezing the suite",
+  "status": "accepted_after_corrections",
+  "source_reading": [
+    "plugins/react-development/roles/react-performance-optimizer.md",
+    "plugins/repo-hygiene/roles/workspace-auditor.md",
+    "plugins/testing/roles/test-suite-auditor.md",
+    "plugins/typescript-development/roles/type-safety-auditor.md",
+    "plugins/project-knowledge/roles/guide-reviewer.md",
+    "plugins/project-knowledge/roles/instructions-auditor.md",
+    "plugins/project-knowledge/roles/documentation-engineer.md",
+    "plugins/project-knowledge/roles/doc-humanizer.md"
+  ],
+  "decisions": [
+    {
+      "id": "C039",
+      "issue": "The initial positive requested original documentation authorship rather than a review.",
+      "resolution": "Replaced by an implementation-grounded migration and rollback documentation audit. Scoped the dual-purpose documentation-engineer question to its audit mode."
+    },
+    {
+      "id": "C043,C045",
+      "issue": "The initial requests included applying document restructuring.",
+      "resolution": "Changed to structure-audit proposals that preserve the existing documents. The evidence and structural relevance remain unchanged."
+    },
+    {
+      "id": "C002,C007,C020,C026,C038",
+      "issue": "Healthy or intentional implementations could be confused with negative applicability.",
+      "resolution": "Retained positive labels: requested review dimensions apply even when the appropriate finding is no issue or KEEP."
+    },
+    {
+      "id": "C014,C015,C032",
+      "issue": "Missing runner, unavailable execution, or absent host-enforcement evidence could be confused with inapplicability.",
+      "resolution": "Retained positive labels: the charter explicitly supports reporting these gaps."
+    }
+  ],
+  "checks": {
+    "applicability_not_defect_presence": "pass",
+    "three_positive_three_negative_per_role": "pass",
+    "near_neighbor_exclusions_follow_role_scope": "pass",
+    "model_state_excludes_expected_labels_and_role_ids": "pass",
+    "predictions_consulted": false
+  },
+  "accepted_group_sha256": "cce97ba9cdebd6d5a8ad3114fb6a025f728b817e82104d8811cee5da337d4a1f",
+  "limitations": "Synthetic tasks often state their scope explicitly. This validates elementary contextual applicability, not implicit selection from arbitrary production diffs."
+}

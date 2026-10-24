@@ -1,12 +1,12 @@
 schema = "daodan/v1"
 name = "project-protocol"
-version = "1.10.1"
+version = "1.11.0"
 description = "Shared working discipline and isolated-worker briefs, canonical operational records, snapshot-bound verification, safe phase recovery and stdlib run-state helpers for Daodan project work."
 license = "MIT"
 
 [capabilities]
 required = ["repository.read", "repository.write", "shell.execute"]
-optional = []
+optional = ["network.fetch"]
 
 [dependencies]
 required = []

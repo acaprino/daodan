@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the worker pool for duplicate reservation of queued jobs.",
+    "artifacts": [
+      {
+        "path": "worker.py",
+        "content": "async def take(queue, store):\n    job = await queue.peek()\n    if job is not None and not await store.is_reserved(job.id):\n        await store.reserve(job.id)\n        return job"
+      },
+      {
+        "path": "README.md",
+        "content": "This process consumes jobs from a broker. It has no graphical interface or browser connection."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "choice",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    }
+  }
+}

@@ -1,0 +1,3163 @@
+{
+  "schema": "choicer-eval/external-label-packet-v1",
+  "status": "stage2_adjudication_packet_not_frozen_labels",
+  "rules": [
+    "Only gold_positive and gold_negative may enter a frozen benchmark without adjudication.",
+    "proposed_positive_silver and proposed_positive_weak require evidence adjudication.",
+    "candidate_negative_from_absence is not an explicit negative until adjudicated.",
+    "Unknown lenses remain omitted from scoring."
+  ],
+  "counts_by_role": {
+    "security-auditor": {
+      "proposed_positive_silver": 3,
+      "candidate_negative_from_absence": 50,
+      "unknown_below_threshold": 6,
+      "proposed_positive_weak": 1,
+      "gold_negative": 6,
+      "gold_positive": 6
+    },
+    "data-integrity-auditor": {
+      "proposed_positive_silver": 15,
+      "unknown_below_threshold": 21,
+      "candidate_negative_from_absence": 24,
+      "unknown": 12
+    },
+    "temporal-resilience-auditor": {
+      "unknown_below_threshold": 18,
+      "candidate_negative_from_absence": 37,
+      "proposed_positive_silver": 5,
+      "unknown": 12
+    },
+    "resource-lifecycle-auditor": {
+      "candidate_negative_from_absence": 47,
+      "proposed_positive_silver": 2,
+      "unknown_below_threshold": 7,
+      "unknown": 12,
+      "proposed_positive_weak": 4
+    },
+    "ui-race-auditor": {
+      "unknown_below_threshold": 14,
+      "proposed_positive_silver": 13,
+      "candidate_negative_from_absence": 33,
+      "unknown": 12
+    },
+    "distributed-flow-auditor": {
+      "proposed_positive_silver": 44,
+      "unknown_below_threshold": 6,
+      "candidate_negative_from_absence": 7,
+      "unknown": 12,
+      "proposed_positive_weak": 3
+    },
+    "logic-integrity-auditor": {
+      "proposed_positive_silver": 17,
+      "candidate_negative_from_absence": 28,
+      "unknown_below_threshold": 15,
+      "unknown": 12
+    },
+    "cleanup-auditor": {
+      "candidate_negative_from_absence": 50,
+      "unknown_below_threshold": 6,
+      "unknown": 12,
+      "proposed_positive_weak": 3,
+      "proposed_positive_silver": 1
+    }
+  },
+  "candidates": [
+    {
+      "id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod",
+      "decisions": {
+        "security-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 5; adjudicate from label evidence."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 6; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 2 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 6; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X002",
+      "source": "swe-bench-verified",
+      "repo": "pytest-dev/pytest",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Pytest 6: Dynamically adding xfail marker in test no longer ignores failure <!-- Thanks for submitting an issue! Here's a quick checklist for what to provide: --> ## Description With pytest 5.x, we can dynamically add an xfail to a test `request` object using `request.node.add_marker(mark)` (see exa",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 7; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        }
+      }
+    },
+    {
+      "id": "X003",
+      "source": "swe-bench-verified",
+      "repo": "sphinx-doc/sphinx",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Inconsistent behaviour with type alias documentation (not overwriting all the default messages, just some) **Describe the bug** Hello, I have 3 muiltiline docstrings for type aliases (using the next-line `\"\"\"` documentation syntax). For 1 one them the docstring is correctly shown in the rendered HTM",
+      "decisions": {
+        "security-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X004",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Optimize .delete() to use only required fields. Description Hi! We're in the process of upgrading our Django 1.11 installation from Python 2.7 to Python 3.6, however are hitting an unexpected UnicodeDecodeError during a .delete() run by our daily data purging management command. STR: Have an existin",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 5; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X005",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Use Python stdlib html.escape() to in django.utils.html.escape() Description The function django.utils.html.escape() partially duplicates the Python stdlib function html.escape(). We can replace this duplication with wider community developed version. html.escape() has been available since Python 3.",
+      "decisions": {
+        "security-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X006",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "[Bug]: Confusing deprecation warning when empty data passed to axis with category units ### Bug summary I'm seeing a `MatplotlibDeprecationWarning` when using calling axes methods on empty data structures for axes that are using string unit converters. I think this is either a false alarm or a non-a",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        }
+      }
+    },
+    {
+      "id": "X007",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "AnnotationBbox gid not passed to renderer Hi, I'm creating matplotlib figures that contain images using AnnotationBbox (following the examples here https://matplotlib.org/stable/gallery/text_labels_and_annotations/demo_annotation_box.html) and my aim is to set the artist gid associated with each ima",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X008",
+      "source": "swe-bench-verified",
+      "repo": "sphinx-doc/sphinx",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Message.locations duplicate unnecessary ### Describe the bug When running `make clean; make gettext` there are times the list of locations is duplicated unnecessarily, example: ``` #: ../../manual/render/shader_nodes/vector/vector_rotate.rst:38 #: ../../manual/modeling/hair.rst:0 #: ../../manual/mod",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X009",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "TimeSeries: misleading exception when required column check fails. <!-- This comments are hidden when you submit the issue, so you do not need to remove them! --> <!-- Please be sure to check out our contributing guidelines, https://github.com/astropy/astropy/blob/main/CONTRIBUTING.md . Please be su",
+      "decisions": {
+        "security-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X010",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "A direct approach to ITRS to Observed transformations that stays within the ITRS. <!-- This comments are hidden when you submit the issue, so you do not need to remove them! --> <!-- Please be sure to check out our contributing guidelines, https://github.com/astropy/astropy/blob/main/CONTRIBUTING.md",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X011",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "[Bug]: Datetime axis with usetex is unclear ### Bug summary The spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3. ### Code for reproduction ```python import matplotlib import matplotlib.pyplot as plt import numpy as np import pandas a",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X012",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "quote qop options in Digest Auth Based on RFC2617 (http://tools.ietf.org/html/rfc2617), the value of 'qop-options' directive should be quoted with double quotes: ``` qop-options This directive is optional, but is made so only for backward compatibility with RFC 2069 [6]; it SHOULD be used by all imp",
+      "decisions": {
+        "security-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X013",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Getting http://.example.com raises UnicodeError Attempting to get e.g. `http://.example.com` results in a `UnicodeError`. It seems like the intention so far has been to raise `InvalidUrl` instead (see e.g. [this line](https://github.com/psf/requests/blob/ca6f9af5dba09591007b15a7368bc0f006b7cc50/requ",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X014",
+      "source": "swe-bench-verified",
+      "repo": "pydata/xarray",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "DataArray.integrate has a 'dim' arg, but Dataset.integrate has a 'coord' arg This is just a minor gripe but I think it should be fixed. The API syntax is inconsistent: ```python ds.differentiate(coord='x') da.differentiate(coord='x') ds.integrate(coord='x') da.integrate(dim='x') # why dim?? ``` It s",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X015",
+      "source": "swe-bench-verified",
+      "repo": "pydata/xarray",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Naming a dimension \"method\" throws error when calling \".loc\" #### Code Sample, a copy-pastable example if possible ```python import numpy as np from xarray import DataArray empty = np.zeros((2,2)) D1 = DataArray(empty, dims=['dim1', 'dim2'], coords={'dim1':['x', 'y'], 'dim2':['a', 'b']}) D2 = DataAr",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X016",
+      "source": "swe-bench-verified",
+      "repo": "pydata/xarray",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "`polyval` with timedelta64 coordinates produces wrong results ### What happened? I'm not sure if this is a bug or an expected breaking change, but I'm not able to reproduce the results generated by `polyval` using a timedelta64 coordinate. The results are correct in `xarray=2022.3.0`, whereas they a",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X017",
+      "source": "swe-bench-verified",
+      "repo": "pylint-dev/pylint",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "`--recursive=y` ignores `ignore-paths` ### Bug description When running recursively, it seems `ignore-paths` in my settings in pyproject.toml is completely ignored ### Configuration ```ini [tool.pylint.MASTER] ignore-paths = [ # Auto generated \"^src/gen/.*$\", ] ``` ### Command used ```shell pylint -",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        }
+      }
+    },
+    {
+      "id": "X018",
+      "source": "swe-bench-verified",
+      "repo": "pylint-dev/pylint",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "bad-names-rgxs mangles regular expressions with commas ### Bug description Since pylint splits on commas in this option, instead of taking a list of strings, if there are any commas in the regular expression, the result is mangled before being parsed. The config below demonstrates this clearly by ca",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X019",
+      "source": "swe-bench-verified",
+      "repo": "pytest-dev/pytest",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "caplog.get_records and caplog.clear conflict # Description `caplog.get_records()` gets decoupled from actual caplog records when `caplog.clear()` is called. As a result, after `caplog.clear()` is called, `caplog.get_records()` is frozen: it does not get cleared, nor does it get new records. During t",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X020",
+      "source": "swe-bench-verified",
+      "repo": "sphinx-doc/sphinx",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Use of literalinclude prepend results in incorrect indent formatting for code eamples ### Describe the bug Cannot determine a mechanism to use literalinclude directive with `prepend` or `append` to match code example indentation, as leading whitespace is removed. ### How to Reproduce Example of incl",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X021",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Matrix determinant raises Invalid NaN comparison with particular symbolic entries >>> from sympy import * >>> from sympy.abc import a >>> f = lambda n: det(Matrix([[i + a*j for i in range(n)] for j in range(n)])) >>> f(1) 0 >>> f(2) -a >>> f(3) 2*a*(a + 2) + 2*a*(2*a + 1) - 3*a*(2*a + 2) >>> f(4) 0 ",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X022",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Factor with extension=True drops a factor of y-1 I guess this related (or a duplicate of?) #5786 This is from stackoverflow: https://stackoverflow.com/questions/60682765/python-sympy-factoring-polynomial-over-complex-numbers ```julia In [9]: z = expand((x-1)*(y-1)) In [10]: z Out[10]: x⋅y - x - y + ",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X023",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "`PolyElement.as_expr()` not accepting symbols The method `PolyElement.as_expr()` https://github.com/sympy/sympy/blob/193e3825645d93c73e31cdceb6d742cc6919624d/sympy/polys/rings.py#L618-L624 is supposed to let you set the symbols you want to use, but, as it stands, either you pass the wrong number of ",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X024",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels Consider the following model: ```python from astropy.modeling import models as m from astropy.modeling.separable import separability_matrix cm = m.Linear1D(10) & m.Linear1D(5) ``` It's separability mat",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X025",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "language": "typescript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "[system] Add outlineColor to defaultSxConfig; [system] `sx` field outlineColor doesn't take the theme into account",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X026",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "language": "typescript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "[material-ui][Rating] Fix the hover highlighting for spaced icons; Can't get correct position after changing spacing of icons in <Rating /> component in v5.",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X027",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "language": "typescript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "[joy-ui][Stepper] Add new `Stepper` components; [joy-ui] Add `Stepper` component",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 5; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X028",
+      "source": "multi-swe-bench",
+      "repo": "axios/axios",
+      "language": "javascript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "fix(adapters): improved adapters loading logic to have clear error messages;; Tests No Longer Passing since Upgrading to v1.5.0",
+      "decisions": {
+        "security-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 5; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X029",
+      "source": "multi-swe-bench",
+      "repo": "axios/axios",
+      "language": "javascript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "fix(utils): make isFormData detection logic stricter to avoid unnecessary calling of the `toString` method on the target;; Uploading large files > 512 MB fails",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X030",
+      "source": "multi-swe-bench",
+      "repo": "axios/axios",
+      "language": "javascript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Fixed handling of array values for AxiosHeaders;; [1.0.0] Set-Cookie header in a response interceptor is not an array anymore",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X031",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "language": "go",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "rls: Manually implement equality of key builder maps.; rls: Do not use `cmp` package in non-test code",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X032",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "language": "go",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "balancer/base: consider an empty address list an error; dns + round_robin not updating address list in v1.26",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 9; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X033",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "language": "go",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "grpclb: support explicit fallback signal; Support explicit fallback in grpclb",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 7; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X034",
+      "source": "multi-swe-bench",
+      "repo": "fasterxml/jackson-databind",
+      "language": "java",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Prioritize constructor parameter over field if both are annotated with `@JsonAnySetter`, to fix #4634; `@JsonAnySetter` not working when annotated on both constructor parameter & field",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X035",
+      "source": "multi-swe-bench",
+      "repo": "fasterxml/jackson-databind",
+      "language": "java",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Fix #4443: detect `Iterable` as `IterationType`; (reverted) Add `Iterable<T>` as recognized `IterationType` instance (along with `Iterable`, `Stream`)",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X036",
+      "source": "multi-swe-bench",
+      "repo": "fasterxml/jackson-databind",
+      "language": "java",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Fix #4481: allow override of `READ_UNKNOWN_ENUM_VALUES_AS_NULL`; Unable to override `DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL` with `JsonFormat.Feature.READ_UNKNOWN_ENUM_VALUES_AS_NULL`",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X037",
+      "source": "multi-swe-bench",
+      "repo": "vuejs/core",
+      "language": "typescript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "fix(compiler-sfc): nested css supports atrule and comment; @ queries in scoped nested CSS lack nesting selector",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X038",
+      "source": "multi-swe-bench",
+      "repo": "vuejs/core",
+      "language": "typescript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "feat(compiler-sfc): correct scoped injection for nesting selector; CSS nesting inserts attribute selector at every level",
+      "decisions": {
+        "security-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        }
+      }
+    },
+    {
+      "id": "X039",
+      "source": "multi-swe-bench",
+      "repo": "vuejs/core",
+      "language": "typescript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "fix(reactivity): pass oldValue to computed getter; [3.5.0+] Previous values from computed are always undefined",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X040",
+      "source": "multi-swe-bench",
+      "repo": "sveltejs/svelte",
+      "language": "javascript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "fix: disallow $state/$derived in const tags; `$derived` and `$derived.by` in `{@const}` tags results in obscure error message",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X041",
+      "source": "multi-swe-bench",
+      "repo": "sveltejs/svelte",
+      "language": "javascript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "fix: add check for is attribute; Different behavior for custom elements that extends builtin element.",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X042",
+      "source": "multi-swe-bench",
+      "repo": "sveltejs/svelte",
+      "language": "javascript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "fix: correctly handle `novalidate` attribute casing; Form `novalidate` attribute doesn't render when conditional (given a value)",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X043",
+      "source": "multi-swe-bench",
+      "repo": "apache/dubbo",
+      "language": "java",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Fix #11767, restore the original parameter pair instead of giving default value when doing URL.parse.; Dubbo service auth failed",
+      "decisions": {
+        "security-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 8; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X044",
+      "source": "multi-swe-bench",
+      "repo": "apache/dubbo",
+      "language": "java",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Fix PojoUtils support localdatetime,lcaldate,localtime serializable and deserialize; The generalized call does not support the serialization and deserialization of LocalTime, LocalDate & LocalDateTime",
+      "decisions": {
+        "security-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "data-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X045",
+      "source": "multi-swe-bench",
+      "repo": "apache/dubbo",
+      "language": "java",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Fix ReflectUtils not support generic call with Future; Unable to refer interface with CompletableFuture<T>",
+      "decisions": {
+        "security-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X046",
+      "source": "multi-swe-bench",
+      "repo": "tokio-rs/tokio",
+      "language": "rust",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "chore: use [lints] to address unexpected_cfgs lint; Use `[lints.rust.unexpected_cfgs.check-cfg]` instead of hacky check-cfg workaround",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        }
+      }
+    },
+    {
+      "id": "X047",
+      "source": "multi-swe-bench",
+      "repo": "tokio-rs/tokio",
+      "language": "rust",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "macros: make select budget-aware; MPSC queue hangs on repeated polling",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 3; adjudicate from label evidence."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "cleanup-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        }
+      }
+    },
+    {
+      "id": "X048",
+      "source": "multi-swe-bench",
+      "repo": "tokio-rs/tokio",
+      "language": "rust",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "io: add AsyncFd::try_io() and try_io_mut(); Add `AsyncFd::try_io`",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 4; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X049",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "language": "c",
+      "split_proposal": "development",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=False",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_negative",
+          "reason": "Dataset-native non-vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X050",
+      "source": "devign",
+      "repo": "qemu",
+      "language": "c",
+      "split_proposal": "verification",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=True",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_positive",
+          "reason": "Dataset-native vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X051",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "language": "c",
+      "split_proposal": "development",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=True",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_positive",
+          "reason": "Dataset-native vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X052",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "language": "c",
+      "split_proposal": "development",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=False",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_negative",
+          "reason": "Dataset-native non-vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X053",
+      "source": "devign",
+      "repo": "qemu",
+      "language": "c",
+      "split_proposal": "verification",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=False",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_negative",
+          "reason": "Dataset-native non-vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X054",
+      "source": "devign",
+      "repo": "qemu",
+      "language": "c",
+      "split_proposal": "verification",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=True",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_positive",
+          "reason": "Dataset-native vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X055",
+      "source": "devign",
+      "repo": "qemu",
+      "language": "c",
+      "split_proposal": "verification",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=True",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_positive",
+          "reason": "Dataset-native vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X056",
+      "source": "devign",
+      "repo": "qemu",
+      "language": "c",
+      "split_proposal": "verification",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=False",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_negative",
+          "reason": "Dataset-native non-vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X057",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "language": "c",
+      "split_proposal": "development",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=True",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_positive",
+          "reason": "Dataset-native vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X058",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "language": "c",
+      "split_proposal": "development",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=True",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_positive",
+          "reason": "Dataset-native vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X059",
+      "source": "devign",
+      "repo": "qemu",
+      "language": "c",
+      "split_proposal": "verification",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=False",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_negative",
+          "reason": "Dataset-native non-vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X060",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "language": "c",
+      "split_proposal": "development",
+      "label_status": "gold",
+      "evidence_summary": "Devign dataset target=False",
+      "decisions": {
+        "security-auditor": {
+          "status": "gold_negative",
+          "reason": "Dataset-native non-vulnerable target."
+        },
+        "data-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "temporal-resilience-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "ui-race-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "logic-integrity-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        },
+        "cleanup-auditor": {
+          "status": "unknown",
+          "reason": "Devign labels only the security lens."
+        }
+      }
+    },
+    {
+      "id": "X061",
+      "source": "commitbench",
+      "repo": "RedHatInsights_insights-core",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "no longer needlessly processing api output",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X062",
+      "source": "commitbench",
+      "repo": "workhorsy_py-cpuinfo",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Updated the asm code runner to free memory when done with it.",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X063",
+      "source": "commitbench",
+      "repo": "structured-log_structured-log",
+      "language": "javascript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Added the serilog.event() function.",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X064",
+      "source": "commitbench",
+      "repo": "terraform-providers_terraform-provider-openstack",
+      "language": "go",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Use env var OS_POOL_NAME as default for pool attribute To have the same behaviour for openstack_networking_floatingip_v2 and openstack_compute_foatingip_v2.",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X065",
+      "source": "commitbench",
+      "repo": "trec-kba_streamcorpus-pipeline",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "adding a __main__ block for testing the matching regex",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X066",
+      "source": "commitbench",
+      "repo": "biocommons_hgvs",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "removed long-deprecated seq method",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        }
+      }
+    },
+    {
+      "id": "X067",
+      "source": "commitbench",
+      "repo": "heroku_cli",
+      "language": "javascript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Merge pull request #<I> from heroku/warning-rework trusted-ips: Aligning the error messaging with Dashboard",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X068",
+      "source": "commitbench",
+      "repo": "vibornoff_webcrypto-shim",
+      "language": "javascript",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Fix for Safari <I>.x (technical preview) Safari <I> has deprecated webkitSubtle and added subtle",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        }
+      }
+    },
+    {
+      "id": "X069",
+      "source": "commitbench",
+      "repo": "angr_angr",
+      "language": "python",
+      "split_proposal": "verification",
+      "label_status": "silver",
+      "evidence_summary": "Lint the code - pylint seems to have trouble supporting type hints.",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X070",
+      "source": "commitbench",
+      "repo": "backtrader_backtrader",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Extra plotting defaults to lineiterator to simplify plotting code Added plotforce to force plotting of an indicator which relies on non-plotted/plottable data/clock sources",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        }
+      }
+    },
+    {
+      "id": "X071",
+      "source": "commitbench",
+      "repo": "STRML_react-router-component",
+      "language": "javascript",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "Remove replaceState (deprecated, all attrs are provided)",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "proposed_positive_weak",
+          "reason": "Source signal score 1; adjudicate from label evidence."
+        }
+      }
+    },
+    {
+      "id": "X072",
+      "source": "commitbench",
+      "repo": "tensorflow_probability",
+      "language": "python",
+      "split_proposal": "development",
+      "label_status": "silver",
+      "evidence_summary": "sort supported dtypes in host_callback_test.py (#<I>) * sort supported dtypes in host_callback_test.py This fixes issues I ran into with running `pytest -n auto tests/host_callback_test.py` or similar. * remove unused import",
+      "decisions": {
+        "security-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "data-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "temporal-resilience-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "resource-lifecycle-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "ui-race-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "distributed-flow-auditor": {
+          "status": "unknown_below_threshold",
+          "reason": "Source signal score 1 below the proposal threshold."
+        },
+        "logic-integrity-auditor": {
+          "status": "candidate_negative_from_absence",
+          "reason": "No source signal; not usable as an explicit negative until adjudicated."
+        },
+        "cleanup-auditor": {
+          "status": "proposed_positive_silver",
+          "reason": "Source signal score 2; adjudicate from label evidence."
+        }
+      }
+    }
+  ]
+}

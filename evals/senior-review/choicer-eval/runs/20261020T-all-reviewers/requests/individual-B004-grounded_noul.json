@@ -1,0 +1,30 @@
+{
+  "id": "individual-B004-grounded_noul",
+  "kind": "individual",
+  "case_id": "B004",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the download handler for stream cleanup when a client disconnects.",
+    "artifacts": [
+      {
+        "path": "server/download.js",
+        "content": "import fs from \"node:fs\";\nexport function download(req, res) {\n  const stream = fs.createReadStream(\"/srv/export.csv\");\n  res.on(\"close\", () => stream.destroy());\n  stream.on(\"error\", error => res.destroy(error));\n  stream.pipe(res);\n}"
+      },
+      {
+        "path": "server/README.md",
+        "content": "This internal Express route has no OpenAPI specification, response DTO, or runtime schema. It streams the current CSV file."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    }
+  },
+  "sha256": "b97840178ca6826c4885014ee04c804a6904bcca18f8f4cb8b66c7968733ec3a"
+}

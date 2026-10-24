@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STACK_ROLES = {"react-development/react-performance-optimizer", "typescript-development/type-safety-auditor", "platform-engineering/platform-reviewer"}
 CORE_ROLES = {
     "code-review": {f"senior-review/{name}" for name in ("code-auditor", "security-auditor", "ui-race-auditor", "temporal-resilience-auditor", "data-integrity-auditor", "resource-lifecycle-auditor", "premise-auditor")} | {"testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent"},
-    "team-review": {f"senior-review/{name}" for name in ("api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor")} | {"repo-hygiene/workspace-auditor", "testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent", "codebase-map/map-analyst", "codebase-map/semantic-interconnect-mapper"},
+    "team-review": {f"senior-review/{name}" for name in ("accessibility-auditor", "api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "operability-auditor", "performance-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor")} | {"repo-hygiene/workspace-auditor", "testing/test-suite-auditor", "abstraction-architect/abstraction-architect-agent", "codebase-map/map-analyst", "codebase-map/semantic-interconnect-mapper"},
     "pr-review": {f"senior-review/{name}" for name in ("code-auditor", "security-auditor", "premise-auditor")},
 }
 # Since 38.0.0 every command is a workflow of the `daodan` entry plugin. The light
@@ -73,9 +73,13 @@ def assert_working_discipline(case, text):
             r"(?i)ask|clarif",
         ),
         "simplicity": (
-            r"(?i)simplest[^.]*design[^.]*satisfies approved requirements",
-            r"(?i)add no speculative[^.]*features",
-            r"(?i)abstractions",
+            r"^Choose the simplest design that satisfies approved requirements and existing contracts\.",
+            r"(?:^|(?<=\. ))Prefer, in order, suitable project code and conventions, platform or standard-library facilities, dependencies already available, then the least new code\.",
+            r"(?:^|(?<=\. ))Explain an exception when an earlier option cannot meet the requirement or is more complex overall\.",
+            r"(?:^|(?<=\. ))Reuse existing owners; add no speculative features, abstractions or configuration\.",
+            r"(?:^|(?<=\. ))Preserve boundary validation, data-loss prevention, security and accessibility\.",
+            r"(?:^|(?<=\. ))Before recommending or adopting a dependency, verify maintenance and support status, fit, compatibility, license, security and total integration cost using current official sources\.",
+            r"(?:^|(?<=\. ))Disclose unverified status; do not recommend discontinued or unverified libraries by default\.",
         ),
         "scope": (
             r"(?i)limit edits[^.]*task[^.]*owned files",
@@ -154,10 +158,40 @@ def assert_delegated_writer(case, role):
 
 
 class HarnessDomainOwnershipTests(unittest.TestCase):
-    def test_reversed_speculation_rule_cannot_satisfy_working_discipline(self):
+    def test_weakened_simplicity_rules_cannot_satisfy_working_discipline(self):
         protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
-        mutation = protocol.replace("add no speculative features", "add speculative features", 1)
-        self.assertNotEqual(mutation, protocol)
+        # Mutate operative obligations independently; retaining the other terms
+        # must not excuse a reversed preference, lost safeguard or weaker gate.
+        mutations = (
+            (" and existing contracts", ""),
+            ("Prefer, in order, suitable project code and conventions, platform or standard-library facilities, dependencies already available, then the least new code.",
+             "Prefer, in order, the least new code, dependencies already available, platform or standard-library facilities, then suitable project code and conventions."),
+            ("Explain an exception when an earlier option cannot meet the requirement or is more complex overall.", "Exceptions need no explanation."),
+            ("Reuse existing owners", "Replace existing owners"),
+            ("add no speculative features", "add speculative features"),
+            ("abstractions or configuration", "abstractions"),
+            ("Preserve boundary validation", "Do not preserve boundary validation"),
+            ("data-loss prevention, ", ""),
+            ("security and accessibility", "security"),
+            ("Before recommending or adopting a dependency, verify", "After recommending or adopting a dependency, verify"),
+            ("maintenance and support status, ", ""),
+            ("current official sources", "any available sources"),
+            ("Disclose unverified status", "Hide unverified status"),
+            ("do not recommend discontinued or unverified libraries", "recommend discontinued or unverified libraries"),
+        )
+        for original, replacement in mutations:
+            with self.subTest(obligation=original):
+                self.assertIn(original, working_paragraphs(self, protocol)["simplicity"])
+                mutation = protocol.replace(original, replacement, 1)
+                self.assertNotEqual(mutation, protocol)
+                with self.assertRaises(AssertionError):
+                    assert_working_discipline(self, mutation)
+
+    def test_unrelated_mentions_cannot_replace_simplicity_obligations(self):
+        protocol = (ROOT / "plugins/project-protocol/skills/project-protocol/SKILL.md").read_text(encoding="utf-8")
+        obligation = "Preserve boundary validation, data-loss prevention, security and accessibility."
+        self.assertIn(obligation, working_paragraphs(self, protocol)["simplicity"])
+        mutation = protocol.replace(obligation, "", 1) + "\n## Historical note\n\n" + obligation + "\n"
 
         with self.assertRaises(AssertionError):
             assert_working_discipline(self, mutation)
@@ -327,6 +361,9 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
         # shape and the candidate with the branch shape; assess is check-health;
         # the knowledge guide and maintain entries are both write-docs.
         cases = {
+            (ENTRY, "continue-task"): BRANCH_ROLES,
+            (ENTRY, "refactor-code"): BRANCH_ROLES,
+            (ENTRY, "run-maintenance"): BRANCH_ROLES,
             (ENTRY, "new-feature"): BRANCH_ROLES | {"testing/test-writer", "project-knowledge/instructions-auditor", "clean-code/clean-code-agent"},
             (ENTRY, "fix-bug"): BRANCH_ROLES | {"clean-code/clean-code-agent"},
             (ENTRY, "finish-task"): BRANCH_ROLES,
@@ -448,13 +485,17 @@ class HarnessDomainOwnershipTests(unittest.TestCase):
                         self.assertNotIn('action: "subagent"', text.split("\n---\n", 1)[0])
 
     def test_composed_inventory_binds_methods_without_copying_their_schedule(self):
+        from scripts.daodan.reviewer_catalog import REVIEWER_ROLES
         self.assertFalse(manifest("senior-review")["components"].get("workflows"))
         self.assertIn("project-protocol", manifest("senior-review")["dependencies"]["required"])
         for entry, roles in REVIEW_ENTRIES.items():
             with self.subTest(entry=entry):
                 sidecar = tomllib.loads((ROOT / "plugins" / ENTRY / "workflows" / f"{entry}.toml").read_text(encoding="utf-8"))
                 dispatch = sidecar["dispatch"]
-                self.assertEqual(set(dispatch["roles"]), roles)
+                # Branch preparation may select any registered focused reviewer;
+                # the light entry still declares only its two native defaults.
+                expected = roles | {f"{owner}/{role}" for owner, role in REVIEWER_ROLES} if entry == "review-branch" else roles
+                self.assertEqual(set(dispatch["roles"]), expected)
                 self.assertTrue(dispatch["isolated"])
                 self.assertIs(dispatch["inline_workers"], True)
                 for provider in ("project-protocol", "senior-review"):

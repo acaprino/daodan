@@ -96,4 +96,4 @@ channel.consume('orders', (raw: unknown) => {
 })
 ```
 
-**Detection:** `rg -n 'consume\(|subscribe\(|on\(.message' --type ts`; flag handlers whose parameter is a domain type with no parse in the body.
+**Detection:** Trace messages from delivery through the actual adapter/handler guard and invalid-input path. A typed handler is valid if its binding proves prior validation.

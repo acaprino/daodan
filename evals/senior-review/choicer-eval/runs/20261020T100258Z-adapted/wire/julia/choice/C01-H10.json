@@ -1,0 +1,30 @@
+{
+  "source_request_sha256": "c3c7e8f02632580d4650f17bbe4694d655eaf0afa651a4c2d142e05ee3776617",
+  "state": "[H10]\njupiter-core/jupiter_core/notifiers/notifier_market_state.py:358             except Exception as e:\njupiter-core/jupiter_core/notifiers/notifier_market_state.py:359                 self.error(f\"Observer callback failed for {observer_key}/{observer_id}\", exc_info=e)\njupiter-core/jupiter_core/notifiers/notifier_market_state.py:360 \njupiter-core/jupiter_core/notifiers/notifier_market_state.py:361     # =========================================================================\njupiter-core/jupiter_core/notifiers/notifier_market_state.py:362     # AMQP PUBLICATION\njupiter-core/jupiter_core/notifiers/notifier_market_state.py:363     # =========================================================================",
+  "questions": {
+    "reviewer": {
+      "type": "choice",
+      "instructions": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+      "criteria": {
+        "abstraction-architect:abstraction-architect-agent": "Duplicate domain logic or competing sources of truth; excludes dead code, security, and dependency cycles.",
+        "platform-engineering:platform-reviewer": "Web, mobile or desktop platform security, architecture or performance; excludes platform-independent code.",
+        "react-development:react-performance-optimizer": "React renders, state subscriptions, components or bundle performance; excludes CSS polish and native backends.",
+        "repo-hygiene:workspace-auditor": "Tracked build output, ignore gaps, scratch files or stale Git state; excludes source dead code.",
+        "senior-review:api-contract-auditor": "Declared API schemas versus implementations or API changes; excludes absent contracts and internal invariants.",
+        "senior-review:chicken-egg-detector": "Startup ordering, bootstrap, configuration or migration dependencies; excludes steady-state flows.",
+        "senior-review:cleanup-auditor": "Dead code, unused dependencies, orphan assets or stale documentation; excludes filesystem and Git tidying.",
+        "senior-review:code-auditor": "Architecture, coupling, failure paths, stale caches or code quality; excludes security-only audits.",
+        "senior-review:data-integrity-auditor": "Database writes, transactions, caches or persistence races; excludes domain-only rules and messaging.",
+        "senior-review:distributed-flow-auditor": "Cross-service flows, messaging, idempotency and compensation; excludes isolated local operations.",
+        "senior-review:logic-integrity-auditor": "Domain rules, state machines, ordering or idempotency; excludes styling and security alone.",
+        "senior-review:premise-auditor": "Code claims, defaults, thresholds, signs or business boundaries; excludes styling and map construction.",
+        "senior-review:resource-lifecycle-auditor": "Handles, sockets, connections, listeners, locks or timers need release; excludes general architecture and exploitation.",
+        "senior-review:security-auditor": "URLs, public functions, auth, permissions, ID access or secrets; excludes internal styling.",
+        "senior-review:temporal-resilience-auditor": "Retries, timers, queues, polling or workers surviving repeated failure; excludes startup and UI races.",
+        "senior-review:ui-race-auditor": "Async UI rendering, layout, scroll, focus or measurements race; excludes static styling and backend concurrency.",
+        "testing:test-suite-auditor": "Test hygiene, flakiness, redundancy, placement or layer distribution; excludes writing tests or applying quarantine.",
+        "typescript-development:type-safety-auditor": "TypeScript any, casts, boundary validation or exhaustiveness; excludes naming, React performance and dead code."
+      }
+    }
+  }
+}

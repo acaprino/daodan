@@ -1,0 +1,530 @@
+[
+  {
+    "id": "python_raw/original_react/noul/forward",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_raw/original_react/noul/reversed",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_raw/original_react/choice/forward",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_raw/original_react/choice/reversed",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_raw/property_react_descriptive/noul/forward",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_raw/property_react_descriptive/noul/reversed",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_raw/property_react_descriptive/choice/forward",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_raw/property_react_descriptive/choice/reversed",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_raw/property_data_descriptive/noul/forward",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_raw/property_data_descriptive/noul/reversed",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_raw/property_data_descriptive/choice/forward",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_raw/property_data_descriptive/choice/reversed",
+    "state": "# profiles/repo.py\nCACHE_TTL = 300\n\nasync def get_profile(user_id: str) -> Profile:\n    cached = await redis.get(f\"profile:{user_id}\")\n    if cached:\n        return Profile.parse_raw(cached)\n    profile = await db.profiles.find_one({\"_id\": user_id})\n    await redis.set(f\"profile:{user_id}\", profile.json(), ex=CACHE_TTL)\n    return profile\n\nasync def update_email(user_id: str, email: str) -> None:\n    await db.profiles.update_one({\"_id\": user_id}, {\"$set\": {\"email\": email}})\n\nasync def delete_profile(user_id: str) -> None:\n    await db.profiles.delete_one({\"_id\": user_id})\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_raw/original_react/noul/forward",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_raw/original_react/noul/reversed",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_raw/original_react/choice/forward",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_raw/original_react/choice/reversed",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_raw/property_react_descriptive/noul/forward",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_raw/property_react_descriptive/noul/reversed",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_raw/property_react_descriptive/choice/forward",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_raw/property_react_descriptive/choice/reversed",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_raw/property_data_descriptive/noul/forward",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_raw/property_data_descriptive/noul/reversed",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_raw/property_data_descriptive/choice/forward",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_raw/property_data_descriptive/choice/reversed",
+    "state": "import { useState } from 'react';\nexport function Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>{count}</button>;\n}\n",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_plain/original_react/noul/forward",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_plain/original_react/noul/reversed",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_plain/original_react/choice/forward",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_plain/original_react/choice/reversed",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_plain/property_react_descriptive/noul/forward",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_plain/property_react_descriptive/noul/reversed",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_plain/property_react_descriptive/choice/forward",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_plain/property_react_descriptive/choice/reversed",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_plain/property_data_descriptive/noul/forward",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_plain/property_data_descriptive/noul/reversed",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "python_plain/property_data_descriptive/choice/forward",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "python_plain/property_data_descriptive/choice/reversed",
+    "state": "This Python file defines asynchronous functions get_profile, update_email and delete_profile. get_profile reads a profile from Redis or MongoDB and writes it to Redis with a 300-second expiry. update_email and delete_profile write to MongoDB. The file contains no React components or browser UI.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_plain/original_react/noul/forward",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_plain/original_react/noul/reversed",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_plain/original_react/choice/forward",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_plain/original_react/choice/reversed",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "options": [
+      "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+      "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_plain/property_react_descriptive/noul/forward",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_plain/property_react_descriptive/noul/reversed",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_plain/property_react_descriptive/choice/forward",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code does not use React components or React hooks.",
+      "The code uses React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_plain/property_react_descriptive/choice/reversed",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code use React components or React hooks?",
+    "options": [
+      "The code uses React components or React hooks.",
+      "The code does not use React components or React hooks."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_plain/property_data_descriptive/noul/forward",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_plain/property_data_descriptive/noul/reversed",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "noul",
+    "semantic_true_index": 0
+  },
+  {
+    "id": "react_plain/property_data_descriptive/choice/forward",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code does not read or write a database or cache.",
+      "The code reads or writes a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 1
+  },
+  {
+    "id": "react_plain/property_data_descriptive/choice/reversed",
+    "state": "This file defines a React Counter component using useState and a button click handler.",
+    "question": "Does the code read or write a database or cache?",
+    "options": [
+      "The code reads or writes a database or cache.",
+      "The code does not read or write a database or cache."
+    ],
+    "type": "choice",
+    "semantic_true_index": 0
+  }
+]

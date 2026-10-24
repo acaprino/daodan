@@ -1,0 +1,126 @@
+{
+  "interpretation": "Exploratory reference across different reviewer criteria; not a same-catalog A/B test.",
+  "paired_case_ids": [
+    "C01",
+    "C04",
+    "C05",
+    "C06",
+    "C09",
+    "C10",
+    "C11"
+  ],
+  "baseline_metrics": {
+    "labeled_cases": 7,
+    "expected_role_activations": 16,
+    "matched_expected_roles": 4,
+    "false_negatives": 12,
+    "expected_role_recall": 0.25,
+    "benchmark_excess_activations": 6,
+    "benchmark_excess_per_case": 0.8571428571428571,
+    "critical": {
+      "senior-review:security-auditor": {
+        "support": 1,
+        "true_positives": 0,
+        "false_negatives": 1,
+        "recall": 0.0
+      },
+      "senior-review:premise-auditor": {
+        "support": 0,
+        "true_positives": 0,
+        "false_negatives": 0,
+        "recall": null
+      },
+      "senior-review:data-integrity-auditor": {
+        "support": 2,
+        "true_positives": 1,
+        "false_negatives": 1,
+        "recall": 0.5
+      }
+    },
+    "critical_overall": {
+      "support": 3,
+      "true_positives": 1,
+      "false_negatives": 2,
+      "recall": 0.3333333333333333
+    }
+  },
+  "adapted_metrics": {
+    "labeled_cases": 7,
+    "expected_role_activations": 16,
+    "matched_expected_roles": 12,
+    "false_negatives": 4,
+    "expected_role_recall": 0.75,
+    "benchmark_excess_activations": 89,
+    "benchmark_excess_per_case": 12.714285714285714,
+    "critical": {
+      "senior-review:security-auditor": {
+        "support": 1,
+        "true_positives": 1,
+        "false_negatives": 0,
+        "recall": 1.0
+      },
+      "senior-review:premise-auditor": {
+        "support": 0,
+        "true_positives": 0,
+        "false_negatives": 0,
+        "recall": null
+      },
+      "senior-review:data-integrity-auditor": {
+        "support": 2,
+        "true_positives": 2,
+        "false_negatives": 0,
+        "recall": 1.0
+      }
+    },
+    "critical_overall": {
+      "support": 3,
+      "true_positives": 3,
+      "false_negatives": 0,
+      "recall": 1.0
+    }
+  },
+  "agreement": [
+    {
+      "case_id": "C01",
+      "exact": false,
+      "jaccard": 0.17647058823529413
+    },
+    {
+      "case_id": "C04",
+      "exact": false,
+      "jaccard": 0.0625
+    },
+    {
+      "case_id": "C05",
+      "exact": false,
+      "jaccard": 0.0
+    },
+    {
+      "case_id": "C06",
+      "exact": false,
+      "jaccard": 0.0
+    },
+    {
+      "case_id": "C09",
+      "exact": false,
+      "jaccard": 0.06666666666666667
+    },
+    {
+      "case_id": "C10",
+      "exact": false,
+      "jaccard": 0.14285714285714285
+    },
+    {
+      "case_id": "C11",
+      "exact": false,
+      "jaccard": 0.0
+    }
+  ],
+  "exact_agreement_rate": 0.0,
+  "mean_jaccard": 0.06407062825130053,
+  "matched_adapted_llm_calls": 0,
+  "source_scores_sha256": {
+    "runs\\20261020T100258Z": "915bc73a4bb2c2d22b149b822a49f9f6306200cdd23b181e9fb8bb9d1c35cad4",
+    "runs\\20261020T100258Z-adapted": "89dcc90342b3b21fd726f9c8834de0ff077180723dd8075b40dfb074a898e249"
+  }
+}

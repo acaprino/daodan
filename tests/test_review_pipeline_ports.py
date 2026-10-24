@@ -68,19 +68,21 @@ OUTCOMES = (
 
 #: What the preparation unit requires of any harness, one line per obligation.
 EXECUTION_REQUIREMENTS = (
-    "every reviewer runs in its own context and never reads another reviewer's result",
-    "exactly the selected dimensions are dispatched, once each",
-    "every expected reviewer is recorded `delivered` or `failed` before anything is consolidated",
+    "every job runs in its own context and never reads another job's result",
+    "exactly the validated jobs are dispatched, once each, preserving every selected member/scope obligation",
+    "every expected job and member is recorded `delivered` or `failed` before anything is consolidated",
     "cross-examination runs after that barrier, in fresh contexts",
     "only the consolidation phase writes the final report",
 )
 
-ISOLATION = ("dispatch the **most specialized agent** from the table below, "
-             "each reviewer in its own isolated context.")
+ISOLATION = ("Dispatch every validated job exactly once under preparation's "
+             "`references/composition.md`, using its bound worker role and canonical member "
+             "bodies in an isolated context.")
 BARRIER = "Hold the delivery barrier: wait until every dispatched reviewer is recorded `delivered` or `failed`."
 GATE = ("consolidation does not start until every spawned reviewer has either delivered "
         "its findings file or delivered an explicit no-findings report.")
-EXPECTED_SET = "The dispatched reviewers are the expected set that Phase 3's delivery barrier waits on."
+EXPECTED_SET = ("The validated jobs and their member/scope obligations are the expected set that "
+                "Phase 3's delivery barrier waits on.")
 CONSOLIDATED = "Write `.team-review/99-consolidated.md`."
 VERIFIES_CONSOLIDATED = "select consolidated findings with confidence `>= 50%`"
 FRESH_LENSES = ("dispatch lenses 1 and 2 independently through the declared "
@@ -147,6 +149,7 @@ class CompiledPackage:
             and dispatch["isolated"] is True
             and dispatch["inline_workers"] is True
             and ISOLATION in self._unit("review-method")
+            and EXPECTED_SET in self._unit("review-method")
         )
 
     @property
@@ -223,7 +226,9 @@ class ReviewPipelinePortTests(unittest.TestCase):
 
         method = prose(self.units["review-method"])
         self.assertIn("## Phase 2: Adversarial Review (parallel)", method)
-        self.assertIn("For each selected dimension (always-on + detected conditional)", method)
+        self.assertIn("Its `roster` supplies required coverage; validated `jobs`", prose(self.units["review-preparation"]))
+        self.assertIn("The mapping below names owners, not extra activation rules.", method)
+        self.assertIn("A dispatch failure or missing output cannot shrink that set", method)
         self.assertIn(ISOLATION, method)
         self.assertIn(EXPECTED_SET, method)
         self.assertIn(BARRIER, method)
@@ -259,7 +264,7 @@ class ReviewPipelinePortTests(unittest.TestCase):
         self.assertIn(SINGLE_WRITER, prose(
             (self.skills / "review-consolidation/SKILL.md").read_text(encoding="utf-8")))
         self.assertIn(REPORT_OWNER, prose((self.skills / "review-method/SKILL.md").read_text(encoding="utf-8")))
-        self.assertIn("Write your output to .team-review/findings-{dimension}.md", self.units["review-method"])
+        self.assertIn("Write the one report to the prepared job.output_path", self.units["review-method"])
 
     def test_every_record_contract_exists(self):
         plugin = load_plugin(REPO_ROOT / "plugins/senior-review")
@@ -288,6 +293,23 @@ class ReviewPipelinePortTests(unittest.TestCase):
                 self.assertTrue(package.has_consolidation)
                 self.assertEqual(package.artifact_root("xray"), ".codebase-map")
 
+    def test_every_host_preserves_content_eligibility_and_assigned_job_output(self):
+        for host in HOSTS:
+            with self.subTest(host=host):
+                skills = compiled_review_package(host).review / "skills"
+                light = prose((skills / "review-method/references/light.md").read_text(encoding="utf-8"))
+                self.assertIn("content/claims use the requested snapshot's policy", light)
+                self.assertIn("Content reviews admit evidenced defects in the named scope, including preexisting ones.", light)
+                self.assertIn("`BLOCK` while a verified or contested eligible `Critical` or `High` remains", light)
+                team = unit_text(skills, "review-method")
+                self.assertIn("job.output_path", team)
+                self.assertNotIn("findings-{dimension}.md", team)
+                panel = (skills / "review-quality-gates/references/panel-and-critic-prompts.md").read_text(encoding="utf-8")
+                self.assertIn("For changeset basis only", panel)
+                self.assertNotIn("findings-{dimension}.md", panel)
+                consolidation = prose((skills / "review-consolidation/references/code-review.md").read_text(encoding="utf-8"))
+                self.assertIn("evidenced defects within the named scope remain eligible even when preexisting", consolidation)
+
     def test_senior_review_no_longer_depends_on_an_external_team_runtime(self):
         plugin = load_plugin(REPO_ROOT / "plugins/senior-review")
         self.assertNotIn(
@@ -314,24 +336,66 @@ class ReviewPipelinePortTests(unittest.TestCase):
                 with self.subTest(owner=owner, dimension=dimension):
                     self.assertIn(dimension, plugin.required_dependencies)
 
-    def test_every_reviewer_states_the_anchor_metric_as_the_method_does(self):
-        # Each reviewer carries its own copy of the pipeline conventions on purpose, so a
-        # correction has to reach every copy. The method calls anchor citations an
-        # operational measure; twelve roles kept calling them a quality metric.
+    def test_anchor_metrics_remain_operational_with_shared_reviewer_conventions(self):
+        # Metric policy lives in the quality gate; discovery reviewers load the
+        # shared evidence/delivery convention rather than repeating that policy.
+        # Retained copies must agree, but their count is not a quality property.
         canonical = ("Findings that cite map anchors feed the map utilization rate, "
                      "an operational measure of map consumption, not a quality signal.")
         method = (REPO_ROOT / "plugins/senior-review/skills/review-quality-gates/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn(canonical, " ".join(method.split()))
-        carriers = []
+        self.assertIn(canonical, prose(method))
+        self.assertIn("references/reviewer-common.md", prose(method))
         for role in sorted((REPO_ROOT / "plugins").glob("*/roles/*.md")):
-            text = " ".join(role.read_text(encoding="utf-8").split())
+            text = prose(role.read_text(encoding="utf-8"))
             label = f"{role.parent.parent.name}/{role.stem}"
             with self.subTest(role=label):
                 self.assertNotIn("quality metric", text)
                 if "Findings that cite map anchors" in text:
                     self.assertIn(canonical, text)
-                    carriers.append(label)
-        self.assertGreaterEqual(len(carriers), 12, carriers)
+
+        common = Path("skills/review-quality-gates/references/reviewer-common.md")
+        provider = load_plugin(REPO_ROOT / "plugins/senior-review")
+        from scripts.daodan.role_bodies import resolve_role, role_text
+        registry = {path.parent.name: load_plugin(path.parent)
+                    for path in (REPO_ROOT / "plugins").glob("*/plugin.toml")}
+        # Premise challenge/derivation has its own mode contract and is not a
+        # discovery defect reviewer. Every registered discovery role must load
+        # the shared contract, including future additions to the registry.
+        discovery = set(provider.components.roles) - {"premise-auditor"}
+        role_layouts = {
+            "kernel": "roles/{role}.md",
+            "claude": "agents/{role}.md",
+            "copilot": "agents/{role}.agent.md",
+            "codex": "roles/{role}.md",
+            "pi": "skills/senior-review-{role}/SKILL.md",
+            "opencode": "agents/{role}.md",
+        }
+        for host, layout in role_layouts.items():
+            root = provider.root if host == "kernel" else compiled_review_package(host).review
+            with self.subTest(host=host, contract="shared conventions"):
+                shared = prose((root / common).read_text(encoding="utf-8"))
+                self.assertIn("Do not consume peer findings before independent delivery", shared)
+                self.assertIn("preserve causal provenance", shared)
+                self.assertIn("unfinished required check makes the assignment failed", shared)
+                self.assertIn("premise_provenance", shared)
+                self.assertNotIn("quality metric", shared)
+                gate = prose((root / "skills/review-quality-gates/SKILL.md").read_text(encoding="utf-8"))
+                self.assertIn(canonical, gate)
+                self.assertIn("references/reviewer-common.md", gate)
+            for role in discovery:
+                with self.subTest(host=host, role=role):
+                    resolved = resolve_role(registry, "senior-review", role)
+                    body = prose(role_text(resolved) if host == "kernel" else
+                                 (root / layout.format(role=role)).read_text(encoding="utf-8"))
+                    if resolved["composed"]:
+                        self.assertIn("common review conventions and working discipline supplied", body)
+                        self.assertIn("Missing required brief inputs fail", body)
+                        self.assertIn("Return one member_results entry per specialist", body)
+                        self.assertNotRegex(body, r"(?i)read\s+`[^`]*reviewer-common\.md`")
+                        for member in resolved["members"]:
+                            self.assertEqual(body.count(f"## Specialist `{member}`"), 1)
+                    else:
+                        self.assertRegex(body, r"(?i)read\s+`[^`]*skills/review-quality-gates/references/reviewer-common\.md`")
 
 
 if __name__ == "__main__":

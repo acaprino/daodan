@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review keyboard focus when opening the fetched settings dialog.",
+    "artifacts": [
+      {
+        "path": "settings.js",
+        "content": "let generation = 0;\nexport async function openSettings(dialog, fetchForm) {\n  const current = ++generation;\n  const form = await fetchForm();\n  if (current !== generation) return;\n  dialog.replaceChildren(form);\n  dialog.showModal();\n  dialog.querySelector(\"input\")?.focus();\n}\nexport function closeSettings(dialog) {\n  ++generation;\n  dialog.close();\n}"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "choice",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    }
+  }
+}

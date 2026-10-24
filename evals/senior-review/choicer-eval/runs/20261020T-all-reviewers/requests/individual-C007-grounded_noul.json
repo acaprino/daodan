@@ -1,0 +1,34 @@
+{
+  "id": "individual-C007-grounded_noul",
+  "kind": "individual",
+  "case_id": "C007",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Check the tracked generated site output and report whether it is intentional publication material or repository debris. Make no changes.",
+    "artifacts": [
+      {
+        "path": "evidence/git-ls-files.txt",
+        "content": "dist/index.html\ndist/assets/main.js\n.github/workflows/pages.yml\nCNAME"
+      },
+      {
+        "path": ".github/workflows/pages.yml",
+        "content": "name: Pages\non: [push]\njobs:\n  publish:\n    steps:\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: dist"
+      },
+      {
+        "path": "CNAME",
+        "content": "docs.example.org"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    }
+  },
+  "sha256": "4c5a38c24116809958aa5d2c1aa4c39528d889a2fd035251875952d2af48316d"
+}

@@ -1,0 +1,4251 @@
+{
+  "failures": [],
+  "gold_counts": {
+    "gold_c_activations": 23,
+    "gold_c_cases": 11,
+    "gold_c_labeled": 10,
+    "team_required": 39,
+    "team_roles": 22,
+    "teams": 12
+  },
+  "metrics_source": "imported ../metrics.py (_role_metrics, _calibration)",
+  "mode": "gold-replay",
+  "runtime_identity": "mock-gutsy/v1",
+  "suite2_matches_recorded": {
+    "0.45": true,
+    "0.50": true,
+    "0.55": true,
+    "0.60": true,
+    "0.65": true
+  },
+  "suite2_threshold_only_replay": {
+    "0.45": {
+      "acceptable_teams": "2/12",
+      "mandatory_found": "33/39 (84.6%)",
+      "mean_out_of_scope_per_team": 1.33,
+      "out_of_scope_selections": 16,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:api-contract-auditor"
+          ],
+          "required_found": "5/5",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:resource-lifecycle-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:data-integrity-auditor"
+          ],
+          "required_found": "4/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [],
+          "out_of_scope": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "4/4",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:ui-race-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [
+            "abstraction-architect:abstraction-architect-agent",
+            "project-knowledge:documentation-engineer"
+          ],
+          "required_found": "3/4",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "project-knowledge:documentation-engineer",
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "typescript-development:type-safety-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "senior-review:code-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/3",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T08",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "1/1",
+          "selected": [
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor",
+            "testing:test-suite-auditor"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T10",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [],
+          "out_of_scope": [
+            "abstraction-architect:abstraction-architect-agent",
+            "repo-hygiene:workspace-auditor",
+            "senior-review:api-contract-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "2/2",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "project-knowledge:instructions-auditor",
+            "repo-hygiene:workspace-auditor",
+            "senior-review:api-contract-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer"
+          ],
+          "out_of_scope": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "3/4",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "project-knowledge:instructions-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        }
+      ],
+      "total_selected": 53
+    },
+    "0.50": {
+      "acceptable_teams": "2/12",
+      "mandatory_found": "31/39 (79.5%)",
+      "mean_out_of_scope_per_team": 1.0,
+      "out_of_scope_selections": 12,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:api-contract-auditor"
+          ],
+          "required_found": "5/5",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:code-auditor",
+            "senior-review:resource-lifecycle-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:data-integrity-auditor"
+          ],
+          "required_found": "4/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:distributed-flow-auditor"
+          ],
+          "out_of_scope": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "2/4",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:ui-race-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "typescript-development:type-safety-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "senior-review:code-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/3",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T08",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "1/1",
+          "selected": [
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor",
+            "testing:test-suite-auditor"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T10",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [],
+          "out_of_scope": [
+            "abstraction-architect:abstraction-architect-agent",
+            "senior-review:api-contract-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "2/2",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent",
+            "project-knowledge:instructions-auditor",
+            "senior-review:api-contract-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer"
+          ],
+          "out_of_scope": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "3/4",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "project-knowledge:instructions-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        }
+      ],
+      "total_selected": 45
+    },
+    "0.55": {
+      "acceptable_teams": "2/12",
+      "mandatory_found": "26/39 (66.7%)",
+      "mean_out_of_scope_per_team": 0.58,
+      "out_of_scope_selections": 7,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:api-contract-auditor"
+          ],
+          "required_found": "5/5",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:security-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/4",
+          "selected": [
+            "senior-review:resource-lifecycle-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:code-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:distributed-flow-auditor"
+          ],
+          "out_of_scope": [
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:resource-lifecycle-auditor",
+            "senior-review:ui-race-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "typescript-development:type-safety-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/3",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T08",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "1/1",
+          "selected": [
+            "senior-review:temporal-resilience-auditor",
+            "testing:test-suite-auditor"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T10",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:data-integrity-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "2/2",
+          "selected": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "2/4",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "project-knowledge:instructions-auditor",
+            "senior-review:logic-integrity-auditor"
+          ]
+        }
+      ],
+      "total_selected": 35
+    },
+    "0.60": {
+      "acceptable_teams": "1/12",
+      "mandatory_found": "20/39 (51.3%)",
+      "mean_out_of_scope_per_team": 0.33,
+      "out_of_scope_selections": 4,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [
+            "senior-review:api-contract-auditor"
+          ],
+          "required_found": "2/5",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/4",
+          "selected": [
+            "senior-review:resource-lifecycle-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:distributed-flow-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/4",
+          "selected": [
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "typescript-development:type-safety-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/3",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T08",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "2/2",
+          "selected": [
+            "repo-hygiene:workspace-auditor",
+            "senior-review:cleanup-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T09",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "required_found": "1/1",
+          "selected": [
+            "senior-review:temporal-resilience-auditor",
+            "testing:test-suite-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/2",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:data-integrity-auditor"
+          ],
+          "required_found": "2/2",
+          "selected": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "2/4",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer",
+            "senior-review:logic-integrity-auditor"
+          ]
+        }
+      ],
+      "total_selected": 25
+    },
+    "0.65": {
+      "acceptable_teams": "1/12",
+      "mandatory_found": "17/39 (43.6%)",
+      "mean_out_of_scope_per_team": 0.17,
+      "out_of_scope_selections": 2,
+      "per_team": [
+        {
+          "acceptable": false,
+          "id": "T01",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:distributed-flow-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/5",
+          "selected": [
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T02",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor",
+            "senior-review:temporal-resilience-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/4",
+          "selected": [
+            "senior-review:resource-lifecycle-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T03",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "senior-review:distributed-flow-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T04",
+          "missing": [
+            "senior-review:chicken-egg-detector",
+            "senior-review:code-auditor",
+            "senior-review:distributed-flow-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/4",
+          "selected": [
+            "senior-review:logic-integrity-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T05",
+          "missing": [
+            "platform-engineering:platform-reviewer"
+          ],
+          "out_of_scope": [],
+          "required_found": "3/4",
+          "selected": [
+            "react-development:react-performance-optimizer",
+            "senior-review:code-auditor",
+            "senior-review:ui-race-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T06",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:security-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "2/4",
+          "selected": [
+            "senior-review:api-contract-auditor",
+            "typescript-development:type-safety-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T07",
+          "missing": [
+            "senior-review:code-auditor",
+            "senior-review:logic-integrity-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/3",
+          "selected": [
+            "abstraction-architect:abstraction-architect-agent"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T08",
+          "missing": [
+            "senior-review:cleanup-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/2",
+          "selected": [
+            "repo-hygiene:workspace-auditor"
+          ]
+        },
+        {
+          "acceptable": true,
+          "id": "T09",
+          "missing": [],
+          "out_of_scope": [],
+          "required_found": "1/1",
+          "selected": [
+            "testing:test-suite-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T10",
+          "missing": [
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [],
+          "required_found": "1/2",
+          "selected": [
+            "project-knowledge:documentation-engineer",
+            "project-knowledge:guide-reviewer"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T11",
+          "missing": [],
+          "out_of_scope": [
+            "senior-review:data-integrity-auditor"
+          ],
+          "required_found": "2/2",
+          "selected": [
+            "project-knowledge:instructions-auditor",
+            "senior-review:data-integrity-auditor",
+            "senior-review:premise-auditor"
+          ]
+        },
+        {
+          "acceptable": false,
+          "id": "T12",
+          "missing": [
+            "project-knowledge:doc-humanizer",
+            "project-knowledge:documentation-engineer",
+            "senior-review:premise-auditor"
+          ],
+          "out_of_scope": [
+            "senior-review:logic-integrity-auditor"
+          ],
+          "required_found": "1/4",
+          "selected": [
+            "project-knowledge:guide-reviewer",
+            "senior-review:logic-integrity-auditor"
+          ]
+        }
+      ],
+      "total_selected": 20
+    }
+  },
+  "suite3_calibration": {
+    "available": true,
+    "ece": 0.15386620555555558,
+    "interpretation": "Descriptive case-role ECE against partial benchmark labels. An absent expected role is a proxy negative, not proof that its review is irrelevant. P(case, role) is the maximum P(true) across that case's hunks.",
+    "observation_count": 180,
+    "observations": [
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.086795,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.280199,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.036718,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.020106,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.164134,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.560004,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.042057,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.237939,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C01",
+        "probability": 0.098394,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.835681,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.351515,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.219258,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.190854,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.563651,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C01",
+        "probability": 0.370996,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.032664,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.099917,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C01",
+        "probability": 0.327593,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.050468,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.141163,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.154384,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.017621,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.304009,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.740301,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.048675,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.864649,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C03",
+        "probability": 0.7334,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.402678,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.452927,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.25285,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.572376,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.068919,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.098557,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.038442,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.104993,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C03",
+        "probability": 0.403868,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.121501,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.157775,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.22155,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.050672,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.129198,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.413155,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.075736,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.878381,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.236338,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.758993,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C04",
+        "probability": 0.454243,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.207765,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.636463,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.030696,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C04",
+        "probability": 0.218623,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.342633,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.207922,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C04",
+        "probability": 0.456348,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.076331,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.055827,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.05631,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.025502,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.226911,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.012188,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.034316,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.816257,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.045503,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.357878,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C05",
+        "probability": 0.271549,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.199265,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.2086,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C05",
+        "probability": 0.065548,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.078531,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.063581,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.111698,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C05",
+        "probability": 0.205205,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.138098,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.361216,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.182971,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.09429,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.392745,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.679379,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.083077,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.861434,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.19653,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.73079,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.505828,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.325849,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.275203,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.052274,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C06",
+        "probability": 0.490701,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C06",
+        "probability": 0.124984,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.435836,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C06",
+        "probability": 0.552233,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.19673,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.225097,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.171636,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.198365,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.071241,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.671917,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C07",
+        "probability": 0.107749,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C07",
+        "probability": 0.705721,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.058661,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.042356,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C07",
+        "probability": 0.397369,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.330814,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.317451,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.149644,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C07",
+        "probability": 0.417689,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C07",
+        "probability": 0.048541,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.01647,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C07",
+        "probability": 0.329954,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.080621,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.095433,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.369876,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.076405,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.407996,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.023428,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.103189,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.720722,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C08",
+        "probability": 0.789317,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.072903,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.458451,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.199194,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.335586,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.157134,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.292006,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.081417,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.070955,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C08",
+        "probability": 0.346845,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.113879,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.186273,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.353635,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.032608,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.514547,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.074957,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.049863,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C09",
+        "probability": 0.874071,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.546935,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.166755,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.415757,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.197683,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C09",
+        "probability": 0.890785,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.081965,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C09",
+        "probability": 0.918384,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.279817,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.237296,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C09",
+        "probability": 0.485869,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.138875,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.076896,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.094661,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.028315,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.293909,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.011404,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.034709,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.838893,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C10",
+        "probability": 0.82773,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C10",
+        "probability": 0.305092,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C10",
+        "probability": 0.421578,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.196267,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.664511,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.113973,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.061759,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.049853,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.209557,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C10",
+        "probability": 0.476241,
+        "role": "typescript-development:type-safety-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.116703,
+        "role": "abstraction-architect:abstraction-architect-agent"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.089993,
+        "role": "platform-engineering:platform-reviewer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.319596,
+        "role": "react-development:react-performance-optimizer"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.040894,
+        "role": "repo-hygiene:workspace-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.171288,
+        "role": "senior-review:api-contract-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.012371,
+        "role": "senior-review:chicken-egg-detector"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.03837,
+        "role": "senior-review:cleanup-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C11",
+        "probability": 0.922402,
+        "role": "senior-review:code-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.458156,
+        "role": "senior-review:data-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.061735,
+        "role": "senior-review:distributed-flow-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.461501,
+        "role": "senior-review:logic-integrity-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.177991,
+        "role": "senior-review:premise-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.478393,
+        "role": "senior-review:resource-lifecycle-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.07262,
+        "role": "senior-review:security-auditor"
+      },
+      {
+        "benchmark_label": 1,
+        "case_id": "C11",
+        "probability": 0.955832,
+        "role": "senior-review:temporal-resilience-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.0743,
+        "role": "senior-review:ui-race-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.131216,
+        "role": "testing:test-suite-auditor"
+      },
+      {
+        "benchmark_label": 0,
+        "case_id": "C11",
+        "probability": 0.340422,
+        "role": "typescript-development:type-safety-auditor"
+      }
+    ],
+    "reason": null,
+    "reliability": [
+      {
+        "absolute_gap": 0.006193542372881354,
+        "benchmark_positive_frequency": 0.05084745762711865,
+        "count": 59,
+        "lower": 0.0,
+        "mean_probability": 0.057041,
+        "upper": 0.1,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.09430581818181819,
+        "benchmark_positive_frequency": 0.06060606060606061,
+        "count": 33,
+        "lower": 0.1,
+        "mean_probability": 0.1549118787878788,
+        "upper": 0.2,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.1403797,
+        "benchmark_positive_frequency": 0.1,
+        "count": 20,
+        "lower": 0.2,
+        "mean_probability": 0.2403797,
+        "upper": 0.3,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.19405370000000002,
+        "benchmark_positive_frequency": 0.15,
+        "count": 20,
+        "lower": 0.3,
+        "mean_probability": 0.3440537,
+        "upper": 0.4,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.22174372222222222,
+        "benchmark_positive_frequency": 0.2222222222222222,
+        "count": 18,
+        "lower": 0.4,
+        "mean_probability": 0.4439659444444444,
+        "upper": 0.5,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.545082,
+        "benchmark_positive_frequency": 0,
+        "count": 7,
+        "lower": 0.5,
+        "mean_probability": 0.545082,
+        "upper": 0.6,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.6630674999999999,
+        "benchmark_positive_frequency": 0,
+        "count": 4,
+        "lower": 0.6,
+        "mean_probability": 0.6630674999999999,
+        "upper": 0.7,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.31132057142857145,
+        "benchmark_positive_frequency": 0.42857142857142855,
+        "count": 7,
+        "lower": 0.7,
+        "mean_probability": 0.739892,
+        "upper": 0.8,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.5208756666666667,
+        "benchmark_positive_frequency": 0.3333333333333333,
+        "count": 9,
+        "lower": 0.8,
+        "mean_probability": 0.854209,
+        "upper": 0.9,
+        "upper_inclusive": false
+      },
+      {
+        "absolute_gap": 0.06779400000000002,
+        "benchmark_positive_frequency": 1,
+        "count": 3,
+        "lower": 0.9,
+        "mean_probability": 0.932206,
+        "upper": 1.0,
+        "upper_inclusive": true
+      }
+    ]
+  },
+  "suite3_per_case_selected_matches_recorded_gutsy_exact_catalog_th_0.50": true,
+  "suite3_role_metrics_at_0.50": {
+    "benchmark_excess_activations": 21,
+    "benchmark_excess_per_case": 2.1,
+    "critical": {
+      "senior-review:data-integrity-auditor": {
+        "false_negatives": 1,
+        "recall": 0.75,
+        "support": 4,
+        "true_positives": 3
+      },
+      "senior-review:premise-auditor": {
+        "false_negatives": 0,
+        "recall": null,
+        "support": 0,
+        "true_positives": 0
+      },
+      "senior-review:security-auditor": {
+        "false_negatives": 1,
+        "recall": 0.0,
+        "support": 1,
+        "true_positives": 0
+      }
+    },
+    "critical_overall": {
+      "false_negatives": 2,
+      "recall": 0.6,
+      "support": 5,
+      "true_positives": 3
+    },
+    "expected_role_activations": 23,
+    "expected_role_recall": 0.391304347826087,
+    "false_negatives": 14,
+    "labeled_cases": 10,
+    "matched_expected_roles": 9
+  },
+  "team_policy_results": [
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.642091,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.621805,
+            "qid": "senior-review:code-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.579899,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.558907,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.701665,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.577659,
+            "qid": "senior-review:security-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.367046,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.099825,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.054927,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.030284,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.038582,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.076304,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.005531,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.030109,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.00972,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.016268,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.249583,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.206849,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.048104,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.009197,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.007916,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.011401,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T01",
+      "nominated": [
+        "senior-review:api-contract-auditor",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.534013,
+            "qid": "senior-review:code-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.851559,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.452278,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.020598,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.073484,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.079175,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.079901,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.039526,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.006375,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.041366,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.013098,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.005479,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.106502,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.048057,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.022096,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.269336,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.206655,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.027929,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.234589,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.010958,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.021802,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.007834,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T02",
+      "nominated": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.879754,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.533157,
+            "qid": "senior-review:code-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.54687,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.695395,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.597528,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.103215,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.010635,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.06008,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.136139,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.049558,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.012782,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.014534,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.013749,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.017773,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.008117,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.184838,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.060037,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.042164,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.058303,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.035198,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.003611,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.066953,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T03",
+      "nominated": [
+        "senior-review:api-contract-auditor",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.507048,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.559528,
+            "qid": "senior-review:code-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.723618,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.589252,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.015376,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.064235,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.109622,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.040617,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.026161,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.013723,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.019991,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.039815,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.487587,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.019347,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.11961,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.450465,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.197359,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.159113,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.014006,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.140205,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.010998,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.017038,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T04",
+      "nominated": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.911891,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.79553,
+            "qid": "senior-review:code-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.584855,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.902517,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.108875,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.038457,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.053715,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.00754,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.100622,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.011023,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.007817,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.013476,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.013528,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.008062,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.021563,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.075198,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.388164,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.189076,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.016252,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.041457,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.003421,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.002899,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T05",
+      "nominated": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.873902,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.546388,
+            "qid": "senior-review:code-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.852185,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.488699,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.121126,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.225932,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.466178,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.237036,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.011367,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.009153,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.010585,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.012863,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.027141,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.057529,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.229498,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.482947,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.300597,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.071519,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.436041,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.021658,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.021826,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.012275,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T06",
+      "nominated": [
+        "senior-review:api-contract-auditor",
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.873952,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.533604,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.006536,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.096759,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.167939,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.423692,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.037395,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.006117,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.027883,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.041789,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.016903,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.062205,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.1343,
+            "qid": "senior-review:code-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.012962,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.077351,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.424895,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.030104,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.026363,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.032014,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.060623,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.013257,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.005966,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T07",
+      "nominated": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:logic-integrity-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.769755,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.64057,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.161896,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.007082,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.093256,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.037776,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.012199,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.034901,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.014478,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.038897,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.097841,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.175212,
+            "qid": "senior-review:code-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.157572,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.032169,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.070188,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.072943,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.1275,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.034369,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.039413,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.021346,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.004869,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.022252,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T08",
+      "nominated": [
+        "repo-hygiene:workspace-auditor",
+        "senior-review:cleanup-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.54694,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.632013,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.685655,
+            "qid": "testing:test-suite-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.427193,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.015185,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.058478,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.017794,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.010372,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.039113,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.030686,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.081966,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.035379,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.053614,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.045046,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.187644,
+            "qid": "senior-review:code-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.125737,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.097902,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.053902,
+            "qid": "senior-review:premise-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.12491,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.028425,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.422036,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.043511,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T09",
+      "nominated": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "testing:test-suite-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.86842,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.77014,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.552516,
+            "qid": "senior-review:premise-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.058861,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.007402,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.158244,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.231382,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.027036,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.012571,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.088149,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.115819,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.051801,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.177102,
+            "qid": "senior-review:code-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.034935,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.05415,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.176187,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.041631,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.02798,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.048165,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.03057,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.002896,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.011717,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T10",
+      "nominated": [
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "senior-review:premise-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.513997,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.906406,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.540342,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.746608,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.564708,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.703775,
+            "qid": "senior-review:premise-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.019617,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.087628,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.201138,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.270225,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.050088,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.477124,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.10001,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.036859,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.140755,
+            "qid": "senior-review:code-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.488636,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.069188,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.096167,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.113884,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.091107,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.254481,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.030651,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T11",
+      "nominated": [
+        "abstraction-architect:abstraction-architect-agent",
+        "project-knowledge:instructions-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:premise-auditor"
+      ]
+    },
+    {
+      "audit": {
+        "abstained": [],
+        "applied": [
+          {
+            "p_true": 0.646767,
+            "qid": "project-knowledge:documentation-engineer",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.759759,
+            "qid": "project-knowledge:guide-reviewer",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.55997,
+            "qid": "project-knowledge:instructions-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.659619,
+            "qid": "senior-review:logic-integrity-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.546085,
+            "qid": "senior-review:premise-auditor",
+            "reason": "threshold_met",
+            "threshold": 0.5
+          }
+        ],
+        "discarded": [
+          {
+            "p_true": 0.268733,
+            "qid": "abstraction-architect:abstraction-architect-agent",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.031612,
+            "qid": "platform-engineering:platform-reviewer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.448889,
+            "qid": "project-knowledge:doc-humanizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.004665,
+            "qid": "react-development:react-performance-optimizer",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.044254,
+            "qid": "repo-hygiene:workspace-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.021947,
+            "qid": "senior-review:api-contract-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.3507,
+            "qid": "senior-review:chicken-egg-detector",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.017188,
+            "qid": "senior-review:cleanup-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.101682,
+            "qid": "senior-review:code-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.061156,
+            "qid": "senior-review:data-integrity-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.05579,
+            "qid": "senior-review:distributed-flow-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.043773,
+            "qid": "senior-review:resource-lifecycle-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.026335,
+            "qid": "senior-review:security-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.183988,
+            "qid": "senior-review:temporal-resilience-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.017825,
+            "qid": "senior-review:ui-race-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.0041,
+            "qid": "testing:test-suite-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          },
+          {
+            "p_true": 0.005359,
+            "qid": "typescript-development:type-safety-auditor",
+            "reason": "below_threshold",
+            "status": "discarded",
+            "threshold": 0.5
+          }
+        ],
+        "profile": {
+          "default_threshold": 0.5,
+          "mandatory_lenses": [],
+          "min_margin": 0.0,
+          "per_role_thresholds": {},
+          "require_evidence_binding": false
+        }
+      },
+      "case_id": "T12",
+      "nominated": [
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:instructions-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:premise-auditor"
+      ]
+    }
+  ]
+}

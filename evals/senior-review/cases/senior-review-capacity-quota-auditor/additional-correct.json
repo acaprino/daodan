@@ -1,0 +1,39 @@
+{
+  "requirement": "Total retained jobs <=20, workers must complete jobs, each tenant receives capacity, origin permits 5 concurrent refreshes.",
+  "queue": {
+    "capacity": 20,
+    "producer": "rejects before allocating a waiting task",
+    "outside_waiters": 0
+  },
+  "pool": {
+    "workers": 2,
+    "active_tasks": [
+      "parent1",
+      "parent2"
+    ],
+    "parent_behavior": "continues asynchronously after child; releases worker while waiting",
+    "queued": [
+      "child1",
+      "child2"
+    ]
+  },
+  "quota": {
+    "weighted_limit": 10,
+    "units_per_request": "sum of admitted child calls",
+    "tenant_key": "authenticated tenant id",
+    "atomic_shared": true,
+    "reset": "UTC window included in key"
+  },
+  "cache": {
+    "entries": 100,
+    "expiry": "same instant",
+    "refresh": "one origin call per distinct key",
+    "shared_admission": 5
+  },
+  "retry": {
+    "pages": 10,
+    "attempts_per_page": 3,
+    "admission_units": "every attempt",
+    "allowed_work": 10
+  }
+}

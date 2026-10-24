@@ -1,0 +1,6 @@
+{
+  "case_id": "C03",
+  "started_at": "2026-10-20T10:13:28.915571+00:00",
+  "transport": "native isolated agent; fork_turns=none; requested gpt-6-luna, reasoning_effort=low",
+  "wall_scope": "dispatch marker to response-file write; includes host and file-tool overhead, not provider-only latency"
+}

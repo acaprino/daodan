@@ -1,0 +1,31 @@
+{
+  "status": "frozen",
+  "roles": [
+    "senior-review:security-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:ui-race-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:cleanup-auditor"
+  ],
+  "jobs": 496,
+  "source_revision": "936ba644e2cee4680be1d2c29c7aadfbfb86e1bf",
+  "memory_limit_bytes": 1000000000,
+  "server_context_tokens": 1536,
+  "selection": "exact generated A only; Z and invalid outputs never become No",
+  "scope": "C01/C07 input ablation plus 8 real-source applicability cases, no production changes",
+  "historical_context": "manually authored V2 fixture, not extracted map cards; potential contamination",
+  "questions": "one frozen candidate; no tuning after verification outcomes",
+  "splits": "distinct source files; one project; same coordinator labels and prompts; not independently blinded",
+  "inference_inputs": "opaque case ID, source path/range/text, fixed questions; no expected labels or titles",
+  "predeclared_success": "Report recall, explicit-negative activations, coverage, latency, memory and regressions; no target accuracy promised",
+  "hashes": {
+    "cases.json": "4af762748f7efc48b9dd1e6ba2cdb8f219c5faba1b06d897e589f6f0ee616f92",
+    "jobs.json": "333e8edbbf9464a1a630ce2219faeb4d098151643938890c95756b9d57108126",
+    "prompts.json": "14ad5e0270a5d84d64cd13220205cd4322c44e2a25a6a0fd548474c3da9f78d0"
+  },
+  "runner_sha256": "ccb8dd02ae833e3e8c55d0b964e0d35e3d724f02a79250eb596b7867d2df4263",
+  "legacy_sha256": "a6a2913264b91abdca5b84ddee11b030c4711d157c0a4829cd4e5a92f96f52b3"
+}

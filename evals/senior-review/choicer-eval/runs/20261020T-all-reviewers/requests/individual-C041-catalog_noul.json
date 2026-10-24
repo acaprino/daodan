@@ -1,0 +1,30 @@
+{
+  "id": "individual-C041-catalog_noul",
+  "kind": "individual",
+  "case_id": "C041",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit only AGENTS.md for duplicated policy, scope precedence and claims that a runtime guard enforces file ownership. No product documentation is in scope.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "Nested rules override every root rule globally. The host enforces assigned file ownership automatically.\nAlways preserve preexisting edits.\nPreserve preexisting edits in every task."
+      },
+      {
+        "path": "host/probe-summary.txt",
+        "content": "No instruction-loading or write-guard probe has been run."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift."
+      }
+    }
+  },
+  "sha256": "6a9c4a5cd239a382ab395fb46c51fbf225704d3fe438fb7e9ca1a73676990224"
+}

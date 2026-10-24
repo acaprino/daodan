@@ -1,0 +1,952 @@
+{
+  "id": "Q0141",
+  "case_id": "C07",
+  "role": "senior-review:resource-lifecycle-auditor",
+  "mode": "windowed",
+  "variant": "v2",
+  "window_id": "W013",
+  "prompt_sha256": "2d9e4a3d4047ea22d5514807ce3950e7cada29dea9d99b09631b6f3ce6d670e9",
+  "prompt_tokens": 1089,
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase C07\n[Architecture Context]\nModule role: Desktop application update manager (React hooks, Redux store, UI modal).\nPeriodically polls release endpoints, downloads binary packages in the background, and manages user update install prompts.\n\n[Code Under Review]\n[H20] jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx:1 (character offset 0)\n/**\n * Tests for useUpdater\n *\n * These pin the two ways an update reaches the machine without anyone clicking\n * anything: applied on the spot at startup, or downloaded silently and applied\n * at the next local midnight behind a five-minute warning. The hook has two\n * independent consumers in the app (the \"Check for Updates\" menu item and the\n * banner), so the shared-state contract is pinned too.\n */\n\nimport { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'\nimport { act, renderHook } from '@testing-library/react'\n\nconst checkMock = vi.fn()\nconst notifyMock = vi.fn().mockResolvedValue(true)\nconst showMock = vi.fn().mockResolvedValue(undefined)\nconst focusMock = vi.fn().mockResolvedValue(undefined)\n\nvi.mock('@tauri-apps/plugin-updater', () => ({\n  check: (...args: unknown[]) => checkMock(...args),\n}))\n\nvi.mock('@/lib/nativeNotification', () => ({\n  sendNativeNotification: (...args: unknown[]) => notifyMock(...args),\n  sendUrgentNativeNotification: (...args: unknown[]) => notifyMock(...args),\n}))\n\nvi.mock('@tauri-apps/api/window', () => ({\n  getCurrentWindow: () => ({ show: showMock, setFocus: focusMock }),\n}))\n\nvi.mock('@/lib/tauri', () => ({\n  isTauri: () => true,\n}))\n\nimport { useUpdater, nextLocalMidnight } from '../useUpdater'\nimport { useGanymedeStore } from '@/store/useGanymedeStore'\nimport { UPDATER_INITIAL_STATE } from '@/store/slices/updaterSlice'\n\nconst STARTUP_DELAY_MS = 5000\nconst HOUR_MS = 60 * 60 * 1000\nconst TICK_MS = 60 * 1000\nconst WARNING_MS = 5 * 60 * 1000\nconst TOAST_DELAY_MS = 3000\n\n/** Fixed local wall clock: 2026-08-09 10:00, far from any midnight boundary. */\nconst NOW = new Date(2026, 7, 9, 10, 0, 0)\nconst MIDNIGHT_AUG_10 = new Date(2026, 7, 10, 0, 0, 0).getTime()\nconst MIDNIGHT_AUG_11 = new Date(2026, 7, 11, 0, 0, 0).getTime()\n\ninterface UpdateStub {\n  version: string\n  date: string\n  body: string\n  download: ReturnType<typeof vi.fn>\n  install: ReturnType<typeof vi.fn>\n  close: ReturnType<typeof vi.fn>\n}\n\n/**\n * Stand-in for the Tauri `Update` resource. A fresh object per `check()` call\n * mirrors the plugin, which mints a new Rust resource every time.\n */\ninterface StubBehaviour {\n  download?: ReturnType<typeof vi.fn>\n  install?: ReturnType<typeof vi.fn>\n  close?: ReturnType<typeof vi.fn>\n}\n\nconst makeUpdate = (version: string, behaviour: StubBehaviour = {}): UpdateStub => ({\n  version,\n  date: '2026-08-09',\n  body: `Jupiter Desktop v${version}`,\n  download: behaviour.download ?? vi.fn().mockResolvedValue(undefined),\n  install: behaviour.install ?? vi.fn().mockResolvedValue(undefined),\n  close: behaviour.close ?? vi.fn().mockResolvedValue(undefined),\n})\n\n/** Every stub handed out by `check()`, newest last. */\nconst handedOut: UpdateStub[] = []\n\n\n\n[H20] jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx:82 (character offset 2737)\nconst servesUpdate = (version: string, behaviour: StubBehaviour\n\nQuestion: Should the resource-lifecycle-auditor review lens be activated for acquiring or releasing system resources like DB connection pools, sockets, file handles, or listeners?\n\nOptions:\nA. Yes: activate resource-lifecycle-auditor\nB. No: do not activate resource-lifecycle-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true
+  },
+  "status": "ok",
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 1089,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase C07\n[Architecture Context]\nModule role: Desktop application update manager (React hooks, Redux store, UI modal).\nPeriodically polls release endpoints, downloads binary packages in the background, and manages user update install prompts.\n\n[Code Under Review]\n[H20] jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx:1 (character offset 0)\n/**\n * Tests for useUpdater\n *\n * These pin the two ways an update reaches the machine without anyone clicking\n * anything: applied on the spot at startup, or downloaded silently and applied\n * at the next local midnight behind a five-minute warning. The hook has two\n * independent consumers in the app (the \"Check for Updates\" menu item and the\n * banner), so the shared-state contract is pinned too.\n */\n\nimport { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'\nimport { act, renderHook } from '@testing-library/react'\n\nconst checkMock = vi.fn()\nconst notifyMock = vi.fn().mockResolvedValue(true)\nconst showMock = vi.fn().mockResolvedValue(undefined)\nconst focusMock = vi.fn().mockResolvedValue(undefined)\n\nvi.mock('@tauri-apps/plugin-updater', () => ({\n  check: (...args: unknown[]) => checkMock(...args),\n}))\n\nvi.mock('@/lib/nativeNotification', () => ({\n  sendNativeNotification: (...args: unknown[]) => notifyMock(...args),\n  sendUrgentNativeNotification: (...args: unknown[]) => notifyMock(...args),\n}))\n\nvi.mock('@tauri-apps/api/window', () => ({\n  getCurrentWindow: () => ({ show: showMock, setFocus: focusMock }),\n}))\n\nvi.mock('@/lib/tauri', () => ({\n  isTauri: () => true,\n}))\n\nimport { useUpdater, nextLocalMidnight } from '../useUpdater'\nimport { useGanymedeStore } from '@/store/useGanymedeStore'\nimport { UPDATER_INITIAL_STATE } from '@/store/slices/updaterSlice'\n\nconst STARTUP_DELAY_MS = 5000\nconst HOUR_MS = 60 * 60 * 1000\nconst TICK_MS = 60 * 1000\nconst WARNING_MS = 5 * 60 * 1000\nconst TOAST_DELAY_MS = 3000\n\n/** Fixed local wall clock: 2026-08-09 10:00, far from any midnight boundary. */\nconst NOW = new Date(2026, 7, 9, 10, 0, 0)\nconst MIDNIGHT_AUG_10 = new Date(2026, 7, 10, 0, 0, 0).getTime()\nconst MIDNIGHT_AUG_11 = new Date(2026, 7, 11, 0, 0, 0).getTime()\n\ninterface UpdateStub {\n  version: string\n  date: string\n  body: string\n  download: ReturnType<typeof vi.fn>\n  install: ReturnType<typeof vi.fn>\n  close: ReturnType<typeof vi.fn>\n}\n\n/**\n * Stand-in for the Tauri `Update` resource. A fresh object per `check()` call\n * mirrors the plugin, which mints a new Rust resource every time.\n */\ninterface StubBehaviour {\n  download?: ReturnType<typeof vi.fn>\n  install?: ReturnType<typeof vi.fn>\n  close?: ReturnType<typeof vi.fn>\n}\n\nconst makeUpdate = (version: string, behaviour: StubBehaviour = {}): UpdateStub => ({\n  version,\n  date: '2026-08-09',\n  body: `Jupiter Desktop v${version}`,\n  download: behaviour.download ?? vi.fn().mockResolvedValue(undefined),\n  install: behaviour.install ?? vi.fn().mockResolvedValue(undefined),\n  close: behaviour.close ?? vi.fn().mockResolvedValue(undefined),\n})\n\n/** Every stub handed out by `check()`, newest last. */\nconst handedOut: UpdateStub[] = []\n\n\n\n[H20] jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx:82 (character offset 2737)\nconst servesUpdate = (version: string, behaviour: StubBehaviour\n\nQuestion: Should the resource-lifecycle-auditor review lens be activated for acquiring or releasing system resources like DB connection pools, sockets, file handles, or listeners?\n\nOptions:\nA. Yes: activate resource-lifecycle-auditor\nB. No: do not activate resource-lifecycle-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 1089,
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 1089,
+      "prompt_ms": 10234.549,
+      "prompt_per_token_ms": 9.398116620752985,
+      "prompt_per_second": 106.4042978347165,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.6056876182556152,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -0.6056876182556152
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -3.325080394744873
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -3.36323881149292
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -3.6898322105407715
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.987269878387451
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -4.023097515106201
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -4.743567943572998
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.903579235076904
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -4.949761867523193
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -5.363841533660889
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.483300685882568
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -5.534835338592529
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -5.559169292449951
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.6141276359558105
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -5.6351189613342285
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -5.671970844268799
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.7722601890563965
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -5.8053812980651855
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -5.8512492179870605
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.907467365264893
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -5.988603115081787
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -6.060832500457764
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -6.066590785980225
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -6.136086940765381
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -6.274514675140381
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -6.282516002655029
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -6.323098659515381
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -6.349002361297607
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.354029178619385
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -6.362227916717529
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.416555881500244
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -6.462466716766357
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -6.521107196807861
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.5950188636779785
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.625538349151611
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -6.639604091644287
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -6.774093151092529
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -6.775632381439209
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.8192009925842285
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -6.828199863433838
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.871918201446533
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.914592266082764
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -6.962976932525635
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -7.015927791595459
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -7.076470851898193
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -7.079386234283447
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.084498882293701
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -7.106765270233154
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.128053188323975
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.173354625701904
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.18677282333374
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -7.2195963859558105
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -7.226624965667725
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.234215259552002
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.315621852874756
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.342048168182373
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -7.363531589508057
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.389890193939209
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.396320819854736
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -7.4305100440979
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -7.445433139801025
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.479283809661865
+          },
+          {
+            "id": 3320,
+            "token": "Be",
+            "bytes": [
+              66,
+              101
+            ],
+            "logprob": -7.483174800872803
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -7.48860502243042
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.4978718757629395
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.5196614265441895
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.532012462615967
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.5341925621032715
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.5884928703308105
+          },
+          {
+            "id": 1,
+            "token": "\"",
+            "bytes": [
+              34
+            ],
+            "logprob": -7.616115093231201
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.6500563621521
+          },
+          {
+            "id": 11261,
+            "token": "BE",
+            "bytes": [
+              66,
+              69
+            ],
+            "logprob": -7.668345928192139
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.706355571746826
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.750110149383545
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.753184795379639
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.75338888168335
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -7.768807888031006
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.769761562347412
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.792288303375244
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.7947611808776855
+          },
+          {
+            "id": 4738,
+            "token": "BC",
+            "bytes": [
+              66,
+              67
+            ],
+            "logprob": -7.823492527008057
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.836648464202881
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -7.839970111846924
+          },
+          {
+            "id": 22,
+            "token": "7",
+            "bytes": [
+              55
+            ],
+            "logprob": -7.851325988769531
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.889035224914551
+          },
+          {
+            "id": 1323,
+            "token": "be",
+            "bytes": [
+              98,
+              101
+            ],
+            "logprob": -7.895946025848389
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -7.9035115242004395
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -7.916498184204102
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.930352210998535
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.956181049346924
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.984923362731934
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.996757984161377
+          },
+          {
+            "id": 1856,
+            "token": "not",
+            "bytes": [
+              110,
+              111,
+              116
+            ],
+            "logprob": -8.010933876037598
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -8.06662368774414
+          },
+          {
+            "id": 3,
+            "token": "$",
+            "bytes": [
+              36
+            ],
+            "logprob": -8.085726737976074
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -8.120949745178223
+          },
+          {
+            "id": 248068,
+            "token": "<think>",
+            "bytes": [
+              60,
+              116,
+              104,
+              105,
+              110,
+              107,
+              62
+            ],
+            "logprob": -8.154013633728027
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.174125671386719
+          },
+          {
+            "id": 2887,
+            "token": "do",
+            "bytes": [
+              100,
+              111
+            ],
+            "logprob": -8.187718391418457
+          },
+          {
+            "id": 34902,
+            "token": "Bi",
+            "bytes": [
+              66,
+              105
+            ],
+            "logprob": -8.215991020202637
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 10.246506300001784,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.03596962686820978,
+    "B": 0.545699064962588,
+    "Z": 0.0010828055621308118
+  }
+}

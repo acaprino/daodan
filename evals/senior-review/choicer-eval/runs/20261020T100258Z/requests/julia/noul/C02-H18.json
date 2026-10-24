@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H18",
+  "state": "[H18]\njupiter-core/jupiter_core/agents/alive_agent.py:1080 \njupiter-core/jupiter_core/agents/alive_agent.py:1081     async def _setup_market_state_resync_listener(self):\njupiter-core/jupiter_core/agents/alive_agent.py:1082         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:1083         Setup listener for market-state resync requests from the middleware.\njupiter-core/jupiter_core/agents/alive_agent.py:1084 \njupiter-core/jupiter_core/agents/alive_agent.py:1085         The middleware publishes command.request_market_state.{agent_instance_id}\njupiter-core/jupiter_core/agents/alive_agent.py:1086         when its in-memory market-state cache lacks this agent's entry (fast\njupiter-core/jupiter_core/agents/alive_agent.py:1087         path on heartbeat auto-registration, then the periodic convergence\njupiter-core/jupiter_core/agents/alive_agent.py:1088         sweep). The answer travels back through the regular\njupiter-core/jupiter_core/agents/alive_agent.py:1089         event.market_state.raw flow via NotifierMarketState.resync.\njupiter-core/jupiter_core/agents/alive_agent.py:1090 \njupiter-core/jupiter_core/agents/alive_agent.py:1091         Only agents that own a market observer register this listener — the\njupiter-core/jupiter_core/agents/alive_agent.py:1092         call site is gated on _should_register_market_observer(), so executors\njupiter-core/jupiter_core/agents/alive_agent.py:1093         (which receive market state FROM the middleware) never bind the queue.\njupiter-core/jupiter_core/agents/alive_agent.py:1094 \njupiter-core/jupiter_core/agents/alive_agent.py:1095         Non-critical: on failure the middleware's sweep keeps retrying and the\njupiter-core/jupiter_core/agents/alive_agent.py:1096         cache stays unseeded until the next genuine transition — degraded\njupiter-core/jupiter_core/agents/alive_agent.py:1097         service, never a startup abort.\njupiter-core/jupiter_core/agents/alive_agent.py:1098         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:1099         try:\njupiter-core/jupiter_core/agents/alive_agent.py:1100             mode_prefix = self.config.get_bot_mode().name[:3]\njupiter-core/jupiter_core/agents/alive_agent.py:1101             routing_key = RoutingKeyBuilder.command_request_market_state(self.id)\njupiter-core/jupiter_core/agents/alive_agent.py:1102             queue_name = (\njupiter-core/jupiter_core/agents/alive_agent.py:1103                 f\"command.request_market_state.{self.config.get_config_name()}\"\njupiter-core/jupiter_core/agents/alive_agent.py:1104                 f\".{mode_prefix}.{self.topic}.{self.id}\"\njupiter-core/jupiter_core/agents/alive_agent.py:1105             )\njupiter-core/jupiter_core/agents/alive_agent.py:1106             self._market_resync_consumer_tag = await self.amqp_s.register_listener(\njupiter-core/jupiter_core/agents/alive_agent.py:1107                 exchange_name=AMQPExchange.jupiter_commands.name,\njupiter-core/jupiter_core/agents/alive_agent.py:1108                 exchange_type=AMQPExchange.jupiter_commands.exchange_type,\njupiter-core/jupiter_core/agents/alive_agent.py:1109                 routing_key=routing_key,\njupiter-core/jupiter_core/agents/alive_agent.py:1110                 callback=self._on_request_market_state,\njupiter-core/jupiter_core/agents/alive_agent.py:1111                 queue_name=queue_name,\njupiter-core/jupiter_core/agents/alive_agent.py:1112             )\njupiter-core/jupiter_core/agents/alive_agent.py:1113             self.info(\njupiter-core/jupiter_core/agents/alive_agent.py:1114                 f\"Registered market-state resync listener on '{routing_key}' \"\njupiter-core/jupiter_core/agents/alive_agent.py:1115                 f\"(queue '{queue_name}')\"\njupiter-core/jupiter_core/agents/alive_agent.py:1116             )\njupiter-core/jupiter_core/agents/alive_agent.py:1117         except Exception as e:\njupiter-core/jupiter_core/agents/alive_agent.py:1118             self.warning(f\"Failed to setup market-state resync listener: {str(e)}\")",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "a94e7a0585f1f657b1bca4ac04e20c1f1cf02f0039f05e1b6e5870e213cd8a93"
+}

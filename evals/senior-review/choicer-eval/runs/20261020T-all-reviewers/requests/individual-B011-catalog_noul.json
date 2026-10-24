@@ -1,0 +1,26 @@
+{
+  "id": "individual-B011-catalog_noul",
+  "kind": "individual",
+  "case_id": "B011",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the locking around concurrent updates to the running metrics accumulator.",
+    "artifacts": [
+      {
+        "path": "metrics.py",
+        "content": "from threading import Lock\nclass Metrics:\n    def __init__(self):\n        self.lock = Lock()\n        self.count = 0\n    def record(self):\n        with self.lock:\n            self.count += 1\n    def snapshot(self):\n        with self.lock:\n            return self.count"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
+      }
+    }
+  },
+  "sha256": "154d2697457e270e72bcdc109613bbfdc815159549008a3ea3bc4b689b8e516b"
+}

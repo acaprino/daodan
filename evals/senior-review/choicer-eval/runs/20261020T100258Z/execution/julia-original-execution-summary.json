@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-10-20T10:46:32.934137+00:00",
+  "historical_results_preserved_exactly": 23,
+  "variants": {
+    "noul": {
+      "result_records": 129,
+      "status_counts": {
+        "error": 129
+      },
+      "phase_counts": {
+        "cold": 1,
+        "warm": 22,
+        "preflight": 106
+      },
+      "actual_answer_count": 207,
+      "explicit_atomic_rejection_count": 106,
+      "question_error_counts": {
+        "ValueError: Option exceeds 48-token model contract": 774,
+        "ValueError: JSONL line 1: options must contain 2\u201320 nonempty rendered descriptions": 387,
+        "ValueError: Game state exceeds lossless context budget": 36
+      }
+    },
+    "choice": {
+      "result_records": 129,
+      "status_counts": {
+        "error": 129
+      },
+      "phase_counts": {
+        "preflight": 129
+      },
+      "actual_answer_count": 0,
+      "explicit_atomic_rejection_count": 129,
+      "question_error_counts": {
+        "ValueError: Option exceeds 48-token model contract": 129
+      }
+    }
+  },
+  "conclusion": "The exact catalog never produced a complete case. Earlier partial answers remain diagnostic only. Atomic rejections preserve unknown predictions; no false negatives or successful classifications are invented."
+}

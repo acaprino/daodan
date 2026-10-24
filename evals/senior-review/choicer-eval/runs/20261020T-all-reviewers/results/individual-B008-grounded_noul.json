@@ -1,0 +1,39 @@
+{
+  "id": "individual-B008-grounded_noul",
+  "request_sha256": "f6bb9e1d1a316bec78937e3713b8ab059f1c12d3eb3c90927921cc4a4a06249e",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:chicken-egg-detector": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.00022760481568047473,
+          "true": 0.9997723951843195
+        },
+        "noul": 0.9997723951843195
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:chicken-egg-detector": 0.9997723951843195
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:chicken-egg-detector": {
+      "tokens": 273,
+      "optionTokens": [
+        21,
+        26
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:chicken-egg-detector"
+  ],
+  "wall_seconds": 0.5639195999829099
+}

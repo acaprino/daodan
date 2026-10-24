@@ -169,7 +169,8 @@ OPENCODE_MANIFEST_SCHEMA = 1
 
 
 def _opencode_entry(
-    plugin: PluginSpec, package: Path | None, layout: Mapping[str, str]
+    plugin: PluginSpec, package: Path | None, layout: Mapping[str, str],
+    registry: Mapping[str, PluginSpec] | None = None,
 ) -> dict[str, object]:
     """What the OpenCode loader needs to register one plugin.
 
@@ -180,6 +181,7 @@ def _opencode_entry(
     """
     # Imported here: render imports this module for OWNER.
     from .render import PLUGIN_ROOT_PLACEHOLDER, _frontmatter, _one_line, _package_context, opencode_permissions
+    from .role_bodies import resolve_role
 
     entry: dict[str, object] = {"root": f"plugins/{plugin.name}"}
     dependencies = [item for item in plugin.required_dependencies if "@" not in item]
@@ -211,7 +213,7 @@ def _opencode_entry(
     agents = []
     for role in plugin.components.roles:
         relative = render_path(layout["roles"], {**context, "role": role}).as_posix()
-        kernel, _ = _frontmatter((plugin.root / "roles" / f"{role}.md").read_text(encoding="utf-8"))
+        kernel = resolve_role(registry or {plugin.name: plugin}, plugin.name, role)["metadata"]
         agents.append(
             {
                 "id": f"{plugin.name}:{role}",
@@ -273,7 +275,8 @@ def _opencode_manifest(
             "schema": OPENCODE_MANIFEST_SCHEMA,
             "plugins": {
                 plugin.name: _opencode_entry(
-                    plugin, (packages or {}).get(plugin.name), layout
+                    plugin, (packages or {}).get(plugin.name), layout,
+                    {item.name: item for item in ordered},
                 )
                 for plugin in ordered
             },

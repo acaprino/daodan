@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the new balance transfer implementation. Each execute call commits independently, and multiple request workers can call it.",
+    "artifacts": [
+      {
+        "path": "src/transfers.py",
+        "content": "def transfer(db, source, destination, amount):\n    db.execute(\"UPDATE wallets SET cents = cents - %s WHERE id = %s\",\n               (amount, source))\n    db.execute(\"UPDATE wallets SET cents = cents + %s WHERE id = %s\",\n               (amount, destination))\n"
+      },
+      {
+        "path": "db/schema.sql",
+        "content": "CREATE TABLE wallets (id BIGINT PRIMARY KEY, cents BIGINT NOT NULL);\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    }
+  }
+}

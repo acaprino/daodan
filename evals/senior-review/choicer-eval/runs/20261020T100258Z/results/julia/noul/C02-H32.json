@@ -1,0 +1,53 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H32",
+  "request_sha256": "a7c9dfeca1a2486ca2665f47cefce2da925a162ffe735f84d73f793d93f39426",
+  "status": "error",
+  "selected": [],
+  "probabilities": null,
+  "wall_seconds": 0.06345140002667904,
+  "cpu_seconds": 0.0625,
+  "phase": "preflight",
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": 0
+  },
+  "raw_output": {
+    "answers": {}
+  },
+  "validation_warnings": [],
+  "runtime_config": {
+    "batch_size": 1,
+    "threads": 4
+  },
+  "model_session_id": "noul-2026-10-20T10:44:27.809611+00:00",
+  "catalog_validation": "complete_catalog_required",
+  "inference_attempted": false,
+  "inference_performed": false,
+  "submitted_question_ids": [],
+  "encoding": {},
+  "question_errors": {
+    "abstraction-architect:abstraction-architect-agent": "ValueError: Option exceeds 48-token model contract",
+    "platform-engineering:platform-reviewer": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "react-development:react-performance-optimizer": "ValueError: Option exceeds 48-token model contract",
+    "repo-hygiene:workspace-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:api-contract-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:chicken-egg-detector": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:cleanup-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:code-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:data-integrity-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:distributed-flow-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "senior-review:logic-integrity-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:premise-auditor": "ValueError: Option exceeds 48-token model contract",
+    "senior-review:resource-lifecycle-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:security-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:temporal-resilience-auditor": "ValueError: Game state exceeds lossless context budget",
+    "senior-review:ui-race-auditor": "ValueError: JSONL line 1: options must contain 2–20 nonempty rendered descriptions",
+    "testing:test-suite-auditor": "ValueError: Game state exceeds lossless context budget",
+    "typescript-development:type-safety-auditor": "ValueError: Option exceeds 48-token model contract"
+  },
+  "rejection_reason": "Complete catalog required; at least one requested question is unsupported.",
+  "error": "One or more exact questions are unsupported; see question_errors"
+}

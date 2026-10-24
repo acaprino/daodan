@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Check the setup guide examples and its reader path against the checked-in configuration. Return source-backed discrepancies or missing explanations only.",
+    "artifacts": [
+      {
+        "path": "docs/setup.md",
+        "content": "Run the server and browse to http://localhost:8080. If you change the port, follow the example in advanced-setup.md."
+      },
+      {
+        "path": "config/defaults.toml",
+        "content": "[server]\nport = 9090"
+      },
+      {
+        "path": "docs/advanced-setup.md",
+        "content": "Set APP_PORT before starting the server. For example: APP_PORT=9100 ./serve."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "noul",
+      "instructions": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      }
+    }
+  }
+}

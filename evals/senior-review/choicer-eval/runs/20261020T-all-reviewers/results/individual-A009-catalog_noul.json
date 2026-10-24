@@ -1,0 +1,14 @@
+{
+  "id": "individual-A009-catalog_noul",
+  "request_sha256": "e91b2a6b09aee98182ec455f596f17db522a1db4eefe8de4614d4e0a4a2c1ccf",
+  "status": "error",
+  "raw_output": null,
+  "probabilities": null,
+  "inference_performed": false,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {},
+  "encoding_errors": {
+    "senior-review:premise-auditor": "ValueError: Option exceeds 48-token model contract"
+  },
+  "wall_seconds": 0.0002610000083222985
+}

@@ -94,7 +94,8 @@ You are reviewing for the {dimension} dimension.
 The shared context is NOT ground truth. It is an index of hypotheses produced by
 one upstream observer.
 
-- Claims marked `verified` may be reused directly.
+- Claims marked `verified` guide source reading; confirm the premise against
+  current source before using it in a finding.
 - Claims marked `documented`, `unverified` or `disputed` are hypotheses. You MUST
   independently re-derive any such claim before using it as the premise of a finding.
 - Actively search for code paths, tests or documents that contradict the context.
@@ -115,7 +116,7 @@ also cite the map anchor that surfaced the concern. Give every finding its trigg
 counterevidence you checked, introduced_by_candidate and evidence_class. Do not restate a
 tool line from the evidence pack; report what tools cannot see.
 
-Write your output to .team-review/findings-{dimension}.md.
+Write the one report to the prepared job.output_path, preserving each assigned member's findings and coverage.
 ```
 
 **Path substitution:** In `team-review`, the Codebase Map line resolves to `$XRAY_RUN_DIR` (the immutable directory of the run Phase 1a started; never the `.codebase-map/` mirror). `code-review` uses its own Codebase Map Context Template (`references/code-review-agents.md`) and reads the `.codebase-map/` mirror when consuming a pre-existing analysis.
@@ -123,6 +124,12 @@ Write your output to .team-review/findings-{dimension}.md.
 ---
 
 ## 2. Adversarial Verification Panel Prompts
+
+Every isolated panel/critic brief carries `review_basis`, governing policy and its
+base or requested snapshot, exact candidate, `conclusion_paths` and `read_scope`.
+Supply an actual comparison only for changesets; an empty diff never establishes
+the basis. Missing required basis/policy is a coverage gap, not a reason to exclude
+a finding as preexisting. Keep these inputs with the assigned finding and output.
 
 Dispatch one isolated worker per lens per finding through the consuming workflow's host harness:
 - **Lens 0:** `senior-review:premise-auditor` in Mode 2.
@@ -210,7 +217,9 @@ Your job: actively try to REFUTE the finding. Default to FALSE_POSITIVE if uncer
 Try to explain the flagged code away as one of:
 1. Framework convention (Django/FastAPI/pytest/etc. idiom that is correct by design)
 2. Intentional design choice consistent with surrounding code or CLAUDE.md
-3. Pre-existing code not introduced or made newly relevant by the diff
+3. For changeset basis only, preexisting code excluded by its base policy because
+   the diff neither introduces nor exposes the defect. Content findings within
+   the named scope remain eligible; document claims keep their specific method.
 4. A misunderstanding of the code's actual behavior or context
 Return REAL only if the finding survives refutation on all four counts.
 
@@ -267,15 +276,18 @@ to find new bugs directly. It is to find what the review did not examine.
 ## Dimensions that ran
 [list]
 
+## Examined coverage
+[reviewer report paths: completed checks, no-findings results and declared gaps]
+
 ## Context available
 [Codebase Map paths and interconnect map path, or "none"]
 
 ## Instructions
 Produce a "## Coverage Gaps" list across these categories, each item actionable and specific:
 1. Dimensions warranted by the scope but not run
-2. In-scope files cited by no finding
-3. Interconnect-map assumptions marked unverified that no finding addressed
-4. High-risk hot-spots (05-risks.md / Integration Hot-Spots) with zero findings
+2. In-scope files not examined; absence of finding citations alone proves no gap
+3. Interconnect assumptions left unverified after the reported checks
+4. High-risk hot-spots with missing checks, not merely zero findings
 5. Findings closed as acceptable on a metric alone: for each, ask "what does the
    user see when this happens?" -- if the answer is missing or is "nothing, silently",
    re-open it as a gap; also flag any quantitative closure whose number is derived

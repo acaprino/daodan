@@ -1,9 +1,9 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:e4beea8c8776641a16c22843ed21f29c6ad6bcbdb75f6594791261a2840532bb",
+  "coreDigest": "sha256:c6dcfbde17aa311a0e49e342686e4fad1fbf540b928920167cc5c4ce22bf81e6",
   "harnessStrategies": {},
   "host": "opencode",
   "overrides": [],
   "plugin": "platform-engineering",
-  "version": "2.0.0"
+  "version": "2.2.0"
 }

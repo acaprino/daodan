@@ -1,0 +1,30 @@
+{
+  "id": "individual-A033-catalog_noul",
+  "kind": "individual",
+  "case_id": "A033",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the relative timeout budgets across these two request handlers. The task is limited to this synchronous call chain, not resident workers or retry behavior.",
+    "artifacts": [
+      {
+        "path": "gateway/settings.json",
+        "content": "{\"request_timeout_seconds\": 4, \"catalog_service\": \"http://catalog:8080\"}\n"
+      },
+      {
+        "path": "catalog/settings.json",
+        "content": "{\"request_timeout_seconds\": 12, \"database_query_timeout_seconds\": 9}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
+      }
+    }
+  },
+  "sha256": "8f1198274324af6a6f5d96cabc7cb4c6e83026ccbb606a3a1851dcc5051c0a3e"
+}

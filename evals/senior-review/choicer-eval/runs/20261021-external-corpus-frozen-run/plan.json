@@ -1,0 +1,34 @@
+{
+  "status": "frozen",
+  "roles": [
+    "senior-review:security-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:ui-race-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:cleanup-auditor"
+  ],
+  "jobs": 1312,
+  "cases": 52,
+  "prefix_mode": "slot-restore",
+  "prefix_mode_basis": "Slot restore adopted in runs/20261021-gutsy-followup-slot/COMPARISON.md. Compare only within one prefix mode.",
+  "memory_limit_bytes": 1000000000,
+  "server_context_tokens": 1536,
+  "selection": "exact generated A only; Z and invalid outputs never become No",
+  "scope": "External corpus freeze from SWE-bench Verified, Multi-SWE-bench, Devign and CommitBench backup candidates; no production changes",
+  "label_basis": "Conservative adjudication from external evidence only; Devign security is gold, other accepted positives are silver.",
+  "splits": "development and verification split proposals preserved from candidate generation; verification locked at freeze",
+  "inference_inputs": "opaque case ID, source path/range/text and frozen questions; no issue text, CVE IDs, commit messages, test names, titles or expected roles",
+  "predeclared_success": "Report recall and explicit-negative activations by lens and split; no prompt tuning on verification outcomes",
+  "stage_run": "runs/20261021-external-corpus-stage1",
+  "hashes": {
+    "cases.json": "cec146fc2dd60f551b877d11d13d39d35707b8f0a29feca8e98146498b89e649",
+    "jobs.json": "4ae48c23d0b0eff21dd185f07703886420a83c7cb2b5a7b16d9e1a1738ab406a",
+    "prompts.json": "14ad5e0270a5d84d64cd13220205cd4322c44e2a25a6a0fd548474c3da9f78d0"
+  },
+  "runner_sha256": "423d66c582dc6e9534a801cf64e6d3dcdfb72161bfe674143ab3dce7a6b5bc71",
+  "freeze_runner_sha256": "ec2643149cc85996d50990dfa482459213ff719862a973210a9671a5d162124a",
+  "legacy_sha256": "a6a2913264b91abdca5b84ddee11b030c4711d157c0a4829cd4e5a92f96f52b3"
+}

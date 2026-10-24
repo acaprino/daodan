@@ -1,0 +1,63 @@
+{
+  "schema": "choicer-eval/fresh-controls-v1",
+  "purpose": "New diagnostic controls; not statistically representative.",
+  "selection": "Eight source-only snippets frozen before inference: two React, two Python persistence or cache, two Python computation without persistence, and two TypeScript computation without React.",
+  "cases": [
+    {
+      "id": "F01",
+      "state": "import { useState } from \"react\";\n\nexport function LanternCounter() {\n  const [lanterns, setLanterns] = useState(0);\n  return (\n    <button onClick={() => setLanterns(value => value + 1)}>\n      Lanterns: {lanterns}\n    </button>\n  );\n}\n",
+      "expected_family": "react",
+      "expected_has_react": true,
+      "expected_has_persistence": false
+    },
+    {
+      "id": "F02",
+      "state": "import { useMemo, useState } from \"react\";\n\nexport function OrchardPicker({ varieties }) {\n  const [query, setQuery] = useState(\"\");\n  const visible = useMemo(\n    () => varieties.filter(value => value.toLowerCase().includes(query.toLowerCase())),\n    [varieties, query]\n  );\n  return (\n    <section>\n      <input value={query} onChange={event => setQuery(event.target.value)} />\n      <ul>{visible.map(value => <li key={value}>{value}</li>)}</ul>\n    </section>\n  );\n}\n",
+      "expected_family": "react",
+      "expected_has_react": true,
+      "expected_has_persistence": false
+    },
+    {
+      "id": "F03",
+      "state": "import sqlite3\n\n\ndef record_telescope_reading(database_path: str, magnitude: float) -> int:\n    connection = sqlite3.connect(database_path)\n    try:\n        with connection:\n            connection.execute(\n                \"CREATE TABLE IF NOT EXISTS telescope_readings \"\n                \"(id INTEGER PRIMARY KEY, magnitude REAL NOT NULL)\"\n            )\n            cursor = connection.execute(\n                \"INSERT INTO telescope_readings (magnitude) VALUES (?)\",\n                (magnitude,),\n            )\n            return int(cursor.lastrowid)\n    finally:\n        connection.close()\n",
+      "expected_family": "persistence",
+      "expected_has_react": false,
+      "expected_has_persistence": true
+    },
+    {
+      "id": "F04",
+      "state": "import json\n\nfrom redis import Redis\n\n\natlas_store = Redis(host=\"localhost\", port=6379, decode_responses=True)\n\n\ndef remember_route(route_code: str, waypoints: list[str]) -> None:\n    atlas_store.set(f\"atlas:{route_code}\", json.dumps(waypoints), ex=120)\n\n\ndef recall_route(route_code: str) -> list[str] | None:\n    encoded = atlas_store.get(f\"atlas:{route_code}\")\n    return None if encoded is None else json.loads(encoded)\n",
+      "expected_family": "persistence",
+      "expected_has_react": false,
+      "expected_has_persistence": true
+    },
+    {
+      "id": "F05",
+      "state": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef pottery_total(prices: list[Decimal], discount: Decimal) -> Decimal:\n    if not Decimal(\"0\") <= discount <= Decimal(\"1\"):\n        raise ValueError(\"Discount must be between zero and one\")\n    subtotal = sum(prices, start=Decimal(\"0\"))\n    return (subtotal * (Decimal(\"1\") - discount)).quantize(\n        Decimal(\"0.01\"), rounding=ROUND_HALF_UP\n    )\n",
+      "expected_family": "computation",
+      "expected_has_react": false,
+      "expected_has_persistence": false
+    },
+    {
+      "id": "F06",
+      "state": "def ridge_median(heights: list[float]) -> float:\n    if not heights:\n        raise ValueError(\"At least one height is required\")\n    ordered = sorted(heights)\n    midpoint = len(ordered) // 2\n    if len(ordered) % 2:\n        return ordered[midpoint]\n    return (ordered[midpoint - 1] + ordered[midpoint]) / 2\n",
+      "expected_family": "computation",
+      "expected_has_react": false,
+      "expected_has_persistence": false
+    },
+    {
+      "id": "F07",
+      "state": "export function boundCompass(value: number, lower: number, upper: number): number {\n  if (![value, lower, upper].every(Number.isFinite)) {\n    throw new Error(\"Bounds and value must be finite\");\n  }\n  if (lower > upper) {\n    throw new Error(\"Lower bound exceeds upper bound\");\n  }\n  return Math.min(upper, Math.max(lower, value));\n}\n",
+      "expected_family": "computation",
+      "expected_has_react": false,
+      "expected_has_persistence": false
+    },
+    {
+      "id": "F08",
+      "state": "export function pebbleFrequencies(values: readonly string[]): Record<string, number> {\n  const counts: Record<string, number> = Object.create(null);\n  for (const value of values) {\n    counts[value] = (counts[value] ?? 0) + 1;\n  }\n  return counts;\n}\n",
+      "expected_family": "computation",
+      "expected_has_react": false,
+      "expected_has_persistence": false
+    }
+  ]
+}

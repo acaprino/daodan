@@ -1,0 +1,34 @@
+{
+  "impl": "julia",
+  "variant": "choice",
+  "case_id": "C10",
+  "hunk_id": "H1",
+  "state": "[H1]\npayments/service.py:1 # payments/service.py\npayments/service.py:2 async def record_payment(session, order_id: str, amount: Decimal) -> Payment:\npayments/service.py:3     existing = await session.execute(\npayments/service.py:4         select(Payment).where(Payment.order_id == order_id)\npayments/service.py:5     )\npayments/service.py:6     if existing.scalar_one_or_none() is not None:\npayments/service.py:7         raise DuplicatePaymentError(order_id)\npayments/service.py:8 \npayments/service.py:9     payment = Payment(order_id=order_id, amount=amount, status=\"captured\")\npayments/service.py:10     session.add(payment)\npayments/service.py:11     await session.commit()\npayments/service.py:12 \npayments/service.py:13     await charge_gateway(order_id, amount)  # network call, can fail\npayments/service.py:14     return payment",
+  "questions": {
+    "reviewer": {
+      "type": "choice",
+      "instructions": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+      "criteria": {
+        "abstraction-architect:abstraction-architect-agent": "Duplicate domain logic or competing sources of truth; excludes dead code, security, and dependency cycles.",
+        "platform-engineering:platform-reviewer": "Web, mobile or desktop platform security, architecture or performance; excludes platform-independent code.",
+        "react-development:react-performance-optimizer": "React renders, state subscriptions, components or bundle performance; excludes CSS polish and native backends.",
+        "repo-hygiene:workspace-auditor": "Tracked build output, ignore gaps, scratch files or stale Git state; excludes source dead code.",
+        "senior-review:api-contract-auditor": "Declared API schemas versus implementations or API changes; excludes absent contracts and internal invariants.",
+        "senior-review:chicken-egg-detector": "Startup ordering, bootstrap, configuration or migration dependencies; excludes steady-state flows.",
+        "senior-review:cleanup-auditor": "Dead code, unused dependencies, orphan assets or stale documentation; excludes filesystem and Git tidying.",
+        "senior-review:code-auditor": "Architecture, coupling, failure paths, stale caches or code quality; excludes security-only audits.",
+        "senior-review:data-integrity-auditor": "Database writes, transactions, caches or persistence races; excludes domain-only rules and messaging.",
+        "senior-review:distributed-flow-auditor": "Cross-service flows, messaging, idempotency and compensation; excludes isolated local operations.",
+        "senior-review:logic-integrity-auditor": "Domain rules, state machines, ordering or idempotency; excludes styling and security alone.",
+        "senior-review:premise-auditor": "Code claims, defaults, thresholds, signs or business boundaries; excludes styling and map construction.",
+        "senior-review:resource-lifecycle-auditor": "Handles, sockets, connections, listeners, locks or timers need release; excludes general architecture and exploitation.",
+        "senior-review:security-auditor": "URLs, public functions, auth, permissions, ID access or secrets; excludes internal styling.",
+        "senior-review:temporal-resilience-auditor": "Retries, timers, queues, polling or workers surviving repeated failure; excludes startup and UI races.",
+        "senior-review:ui-race-auditor": "Async UI rendering, layout, scroll, focus or measurements race; excludes static styling and backend concurrency.",
+        "testing:test-suite-auditor": "Test hygiene, flakiness, redundancy, placement or layer distribution; excludes writing tests or applying quarantine.",
+        "typescript-development:type-safety-auditor": "TypeScript any, casts, boundary validation or exhaustiveness; excludes naming, React performance and dead code."
+      }
+    }
+  },
+  "request_sha256": "0f720d875b2526bba14d815518831d6b9aef77544c71aea1c5eacef831d43f6f"
+}

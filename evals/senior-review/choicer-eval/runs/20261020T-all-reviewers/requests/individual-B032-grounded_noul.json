@@ -1,0 +1,34 @@
+{
+  "id": "individual-B032-grounded_noul",
+  "kind": "individual",
+  "case_id": "B032",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the new CSV export helper in relation to the existing text serialization utilities.",
+    "artifacts": [
+      {
+        "path": "text/csv.py",
+        "content": "import csv\nimport io\ndef encode_row(cells):\n    out = io.StringIO(newline=\"\")\n    csv.writer(out, lineterminator=\"\\n\").writerow(cells)\n    return out.getvalue()"
+      },
+      {
+        "path": "exports/ledger.py",
+        "content": "def encode_ledger_row(cells):\n    return \",\".join(str(cell) for cell in cells) + \"\\n\""
+      },
+      {
+        "path": "text/README.md",
+        "content": "text.csv.encode_row owns CSV row encoding for every export. Cells may contain commas, quotes, and newlines."
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    }
+  },
+  "sha256": "ddbb5307a533ca1ba0d4e1ffb54c87100b052f5cef946e9431cec5472df71fb9"
+}

@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the order controller for responsibility boundaries and error handling.",
+    "artifacts": [
+      {
+        "path": "OrderController.ts",
+        "content": "export async function createOrder(req, db, mailer) {\n  const items = JSON.parse(req.body.items);\n  if (!Array.isArray(items) || items.length === 0) throw new Error(\"items required\");\n  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);\n  const order = await db.insert(\"orders\", {items, total});\n  try { await mailer.send(order); } catch (error) { console.error(error); }\n  return order;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  }
+}

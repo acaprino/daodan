@@ -1,0 +1,26 @@
+{
+  "id": "individual-A027-grounded_noul",
+  "kind": "individual",
+  "case_id": "A027",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review mounting and disposing this widget, which may be opened repeatedly in a long-lived page.",
+    "artifacts": [
+      {
+        "path": "web/width.js",
+        "content": "export function mountWidth(node) {\n  const update = () => { node.textContent = String(window.innerWidth); };\n  window.addEventListener(\"resize\", update);\n  update();\n  return () => { node.remove(); };\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  },
+  "sha256": "020691e3863892743164807df55ccdccdb7435a5e74b0e28eecf33c0ed0f6567"
+}

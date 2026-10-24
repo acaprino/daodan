@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review the relative timeout budgets across these two request handlers. The task is limited to this synchronous call chain, not resident workers or retry behavior.",
+    "artifacts": [
+      {
+        "path": "gateway/settings.json",
+        "content": "{\"request_timeout_seconds\": 4, \"catalog_service\": \"http://catalog:8080\"}\n"
+      },
+      {
+        "path": "catalog/settings.json",
+        "content": "{\"request_timeout_seconds\": 12, \"database_query_timeout_seconds\": 9}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
+      }
+    }
+  }
+}

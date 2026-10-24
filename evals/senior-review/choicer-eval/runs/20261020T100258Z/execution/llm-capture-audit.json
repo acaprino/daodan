@@ -1,0 +1,28 @@
+{
+  "recorded_at": "2026-10-20T10:47:05.061369+00:00",
+  "native_case_tasks": 11,
+  "provider_api_call_count": null,
+  "limited_check_passes": 7,
+  "failures": [
+    {
+      "case_id": "C02",
+      "error": "Citation is outside the supplied hunk"
+    },
+    {
+      "case_id": "C03",
+      "error": "Citation snippet is absent at the cited line"
+    },
+    {
+      "case_id": "C07",
+      "error": "Citation is outside the supplied hunk"
+    },
+    {
+      "case_id": "C08",
+      "error": "Missing reason or reason exceeds 15 words"
+    }
+  ],
+  "response_sha256_definition": "SHA-256 of UTF-8 response text stored inside the capture envelope; universal newline normalization may differ from original capture-file bytes.",
+  "citation_limitation": "Input hunks omit base/candidate side bindings; all side values remain unverified. Passing other checks is not full evidence-contract conformity.",
+  "provider_identity_usage_and_timings": "Not exposed by native task tool; unknown.",
+  "all_response_text_hashes_verified": true
+}

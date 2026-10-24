@@ -1,0 +1,26 @@
+{
+  "id": "individual-B034-catalog_noul",
+  "kind": "individual",
+  "case_id": "B034",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the responsibilities and error handling inside this parser function.",
+    "artifacts": [
+      {
+        "path": "parse.py",
+        "content": "import json\ndef parse_and_save(text, database, logger):\n    data = json.loads(text)\n    if \"name\" not in data:\n        raise ValueError(\"name required\")\n    data[\"name\"] = data[\"name\"].strip()\n    database.insert(data)\n    logger.info(\"saved\")\n    return data"
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor).",
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic."
+      }
+    }
+  },
+  "sha256": "60e53eaa0d6b71601acf55b45f081f599aac1e36e5af7d660b589729509e3acb"
+}

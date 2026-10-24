@@ -1,0 +1,773 @@
+{
+  "schema": "choicer-eval/blind-audit-results-v1",
+  "total_slots": 280,
+  "exact_slot_agreement": "264/280 (94.3%)",
+  "jupiter_calibration": {
+    "positives_total": 11,
+    "reader_1_recovered": 11,
+    "reader_2_recovered": 11,
+    "both_recovered": 11,
+    "explicit_negatives_total": 30,
+    "reader_1_false_positives": 0,
+    "reader_2_false_positives": 0,
+    "either_false_positive": 0,
+    "rubric_gate_passed": true
+  },
+  "development_positives_total": 32,
+  "code_supported_positives": 9,
+  "any_reader_applicable_positives": 11,
+  "strata": {
+    "code_supported": {
+      "count": 9,
+      "v2_hits": 2,
+      "v2_recall": 0.2222,
+      "candidate_hits": 1,
+      "candidate_recall": 0.1111
+    },
+    "disputed_applicable": {
+      "count": 2,
+      "v2_hits": 0,
+      "v2_recall": 0.0,
+      "candidate_hits": 0,
+      "candidate_recall": 0.0
+    },
+    "insufficient_or_external_only": {
+      "count": 4,
+      "v2_hits": 1,
+      "v2_recall": 0.25,
+      "candidate_hits": 0,
+      "candidate_recall": 0.0
+    },
+    "code_not_applicable": {
+      "count": 17,
+      "v2_hits": 0,
+      "v2_recall": 0.0,
+      "candidate_hits": 2,
+      "candidate_recall": 0.1176
+    }
+  },
+  "per_lens_agreement": {
+    "security-auditor": {
+      "agreed": 33,
+      "total": 35,
+      "both_applicable": 8,
+      "any_applicable": 10
+    },
+    "data-integrity-auditor": {
+      "agreed": 33,
+      "total": 35,
+      "both_applicable": 2,
+      "any_applicable": 3
+    },
+    "temporal-resilience-auditor": {
+      "agreed": 35,
+      "total": 35,
+      "both_applicable": 3,
+      "any_applicable": 3
+    },
+    "resource-lifecycle-auditor": {
+      "agreed": 33,
+      "total": 35,
+      "both_applicable": 4,
+      "any_applicable": 5
+    },
+    "ui-race-auditor": {
+      "agreed": 35,
+      "total": 35,
+      "both_applicable": 0,
+      "any_applicable": 0
+    },
+    "distributed-flow-auditor": {
+      "agreed": 35,
+      "total": 35,
+      "both_applicable": 2,
+      "any_applicable": 2
+    },
+    "logic-integrity-auditor": {
+      "agreed": 28,
+      "total": 35,
+      "both_applicable": 15,
+      "any_applicable": 20
+    },
+    "cleanup-auditor": {
+      "agreed": 32,
+      "total": 35,
+      "both_applicable": 2,
+      "any_applicable": 5
+    }
+  },
+  "development_positive_rows": [
+    {
+      "blind_id": "D01",
+      "case_id": "F01",
+      "source_candidate_id": "X103",
+      "source": "commitbench",
+      "repo": "WellCommerce_WishlistBundle",
+      "role": "cleanup-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Entity/ClientContactDetails.php:12 imports ContactDetails from the exact same namespace WellCommerce\\Bundle\\ClientBundle\\Entity (redundant same-namespace use statement)."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1 `Entity/ClientContactDetails.php:13-15` imports `WellCommerce\\Bundle\\ClientBundle\\Entity\\ContactDetails` inside the exact same namespace."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D02",
+      "case_id": "F02",
+      "source_candidate_id": "X112",
+      "source": "commitbench",
+      "repo": "WellCommerce_WishlistBundle",
+      "role": "cleanup-auditor",
+      "visibility_status": "insufficient_or_external_only",
+      "reader_1": {
+        "judgment": "insufficient_evidence",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Only use imports are visible without the rest of the file to verify whether imported symbols are unused."
+      },
+      "reader_2": {
+        "judgment": "insufficient_evidence",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Cannot verify whether the 7 imported DataGrid classes are used because rest of `ProductDataGrid.php` is omitted."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D03",
+      "case_id": "F03",
+      "source_candidate_id": "X117",
+      "source": "commitbench",
+      "repo": "openlayers_openlayers",
+      "role": "cleanup-auditor",
+      "visibility_status": "insufficient_or_external_only",
+      "reader_1": {
+        "judgment": "insufficient_evidence",
+        "confidence": "low",
+        "code_anchor_or_exclusion": "Only JSDoc typedef header is shown without constructor implementation to compare against documented options."
+      },
+      "reader_2": {
+        "judgment": "insufficient_evidence",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Only 11 lines of JSDoc `@typedef {Object} Options` are shown without constructor/implementation to check for drift."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D04",
+      "case_id": "F04",
+      "source_candidate_id": "X072",
+      "source": "commitbench",
+      "repo": "tensorflow_probability",
+      "role": "cleanup-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Test skip guards and helper class header show no dead code or contradictory comments."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Normal test file snippets with no dead code or contradictory comments visible."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D06",
+      "case_id": "F06",
+      "source_candidate_id": "X051",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "role": "security-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Internal FLAC encoder bit-count calculation over encoder structures with no untrusted input boundary or secrets."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Internal FLAC encoder helper computing exact bit count from encoder structs."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D08",
+      "case_id": "F08",
+      "source_candidate_id": "X057",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "role": "security-auditor",
+      "visibility_status": "disputed_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Internal VC-1 inverse transform DC loop writing 8x8 pixel block via ff_cropTbl lookup without direct untrusted input parsing."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "H1 `FFmpeg/function-121.c:13` indexes `ff_cropTbl + MAX_NEG_CROP + dc` + `dest[0..7]` where untrusted `block[0]` (`dc`) could go out of bounds."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D09",
+      "case_id": "F09",
+      "source_candidate_id": "X058",
+      "source": "devign",
+      "repo": "FFmpeg",
+      "role": "security-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Internal AC-3 audio encoder rematrixing calculation over MDCT coefficients with no untrusted boundary."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Internal AC3 audio encoder rematrixing calculation over in-memory MDCT coefficients."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D11",
+      "case_id": "F11",
+      "source_candidate_id": "X036",
+      "source": "multi-swe-bench",
+      "repo": "fasterxml/jackson-databind",
+      "role": "logic-integrity-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "EnumDeserializer.java:486 useNullForUnknownEnum defines fallback precedence between per-deserializer _useNullForUnknownEnum and context feature flag."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H2 `EnumDeserializer.java:487` defines fallback semantics (`_useNullForUnknownEnum` or `READ_UNKNOWN_ENUM_VALUES_AS_NULL`)."
+      },
+      "model_v2_activated": true,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D12",
+      "case_id": "F12",
+      "source_candidate_id": "X088",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "role": "temporal-resilience-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "dns_resolver.go:268 resets retryCount and timer d.t.Reset(d.freq) before sleeping to throttle re-resolutions."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1 `dns_resolver.go:268` resets `d.retryCount = 0` and timer `d.t.Reset(d.freq)` to govern polling/backoff over time."
+      },
+      "model_v2_activated": true,
+      "model_candidate_activated": true
+    },
+    {
+      "blind_id": "D13",
+      "case_id": "F13",
+      "source_candidate_id": "X089",
+      "source": "multi-swe-bench",
+      "repo": "grpc/grpc-go",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Reads local platform manufacturer info with no persisted records or cache state."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Reads manufacturer info once without caching or persisting state in the shown window."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D14",
+      "case_id": "F14",
+      "source_candidate_id": "X025",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "role": "ui-race-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Excludes static styling without asynchronous UI state coordination."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Static styling definitions (`border`, `borderColor`, `borderRadius`), explicitly excluded by rubric."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D15",
+      "case_id": "F15",
+      "source_candidate_id": "X027",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Static navigation arrays, type definitions, and local React demo state with no persistence or cache."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Static route arrays, translation strings, and React component re-exports."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D16",
+      "case_id": "F16",
+      "source_candidate_id": "X086",
+      "source": "multi-swe-bench",
+      "repo": "mui/material-ui",
+      "role": "ui-race-auditor",
+      "visibility_status": "insufficient_or_external_only",
+      "reader_1": {
+        "judgment": "insufficient_evidence",
+        "confidence": "low",
+        "code_anchor_or_exclusion": "LoadingButton.js:135 is truncated at prop destructuring before any loading state rendering coordination is shown."
+      },
+      "reader_2": {
+        "judgment": "insufficient_evidence",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "H6 `LoadingButton.js:135` begins `LoadingButton` render prop destructuring (`disabled = false`), but body is truncated."
+      },
+      "model_v2_activated": true,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D17",
+      "case_id": "F17",
+      "source_candidate_id": "X009",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "distributed-flow-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process method check with no cross-service messaging."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process method checking local object attributes."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D17",
+      "case_id": "F17",
+      "source_candidate_id": "X009",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "logic-integrity-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "astropy/timeseries/core.py:55,76 _check_required_columns enforces required prefix column ordering invariants and _required_columns_relax fallback rules."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1-H2 `timeseries/core.py:55,76` enforces required leading column invariant and `_required_columns_relax` fallback rule."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D18",
+      "case_id": "F18",
+      "source_candidate_id": "X024",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "logic-integrity-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "astropy/modeling/separable.py:242 constructs separability matrix cright and slice assignment cright[-right.shape[0]:, -right.shape[1]:] = 1."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1 `separable.py:242` enforces separable coordinate matrix block structure (`cright[-right.shape[0]:, -right.shape[1]:] = 1`)."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D19",
+      "case_id": "F19",
+      "source_candidate_id": "X079",
+      "source": "swe-bench-verified",
+      "repo": "astropy/astropy",
+      "role": "data-integrity-auditor",
+      "visibility_status": "disputed_applicable",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "astropy/io/fits/card.py:66,859 parses FITS card string values, stripping trailing spaces, unescaping doubled quotes, and handling ampersand continuation."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-memory regex parsing of a single card string into local `values` list."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D20",
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "security-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "django/core/validators.py:94 defines URL validation regex matching scheme, user:pass authentication, host/IP, port, and path on untrusted input."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1 `django/core/validators.py:94` compiles URL validation regex matching scheme, `user:pass@` auth, host/IP, port, and path."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D20",
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Compiled regex definition with no persistence or cache operations."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Compiled regex definition with no persistence or cache reads/writes."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D20",
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "distributed-flow-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process URL validation regex with no message transport."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Local regex definition with no network or inter-process messaging."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": true
+    },
+    {
+      "blind_id": "D20",
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "logic-integrity-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "django/core/validators.py:94 specifies structural URL syntax rules for credentials, IPv4/IPv6/host, port range, and path."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1 `validators.py:94` enforces structural URL grammar rules (scheme, optional auth, IPv4/IPv6/host, port range, path)."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D21",
+      "case_id": "F21",
+      "source_candidate_id": "X005",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Stateless HTML escaping and URL text transformation utilities without persistence or caching."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Pure string escaping and URL quoting functions with no persisted or cached state."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D21",
+      "case_id": "F21",
+      "source_candidate_id": "X005",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "distributed-flow-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process string sanitization utilities with no service boundary messaging."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process string sanitization helpers with no cross-process transport."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D22",
+      "case_id": "F22",
+      "source_candidate_id": "X074",
+      "source": "swe-bench-verified",
+      "repo": "django/django",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "django/contrib/staticfiles/storage.py:226-250 reconciles multi-pass post-processed static file paths and updates self.hashed_files mapping."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1-H2 `storage.py:226-249` reconciles multi-pass static asset hashes and persists them via `self.hashed_files.update(hashed_files)`."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D23",
+      "case_id": "F23",
+      "source_candidate_id": "X011",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "role": "ui-race-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Static plot label string formatting without asynchronous UI state coordination."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Static string formatting helper without asynchronous UI state or event coordination."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D23",
+      "case_id": "F23",
+      "source_candidate_id": "X011",
+      "source": "swe-bench-verified",
+      "repo": "matplotlib/matplotlib",
+      "role": "distributed-flow-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process string helper with no cross-service communication."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "Pure in-process string formatting function."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D24",
+      "case_id": "F24",
+      "source_candidate_id": "X013",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "role": "distributed-flow-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Local URL host validation prior to network call rather than message routing or transport protocol handling."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process URL host validation helper; no message publishing or routing."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": true
+    },
+    {
+      "blind_id": "D24",
+      "case_id": "F24",
+      "source_candidate_id": "X013",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "role": "logic-integrity-auditor",
+      "visibility_status": "code_supported",
+      "reader_1": {
+        "judgment": "applicable",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "requests/models.py:403 enforces valid IDNA host encoding and forbids leading asterisk wildcard labels during URL preparation."
+      },
+      "reader_2": {
+        "judgment": "applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "H1 `requests/models.py:403` enforces RFC/IDNA host label domain rules and wildcard host rejection."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D25",
+      "case_id": "F25",
+      "source_candidate_id": "X080",
+      "source": "swe-bench-verified",
+      "repo": "psf/requests",
+      "role": "resource-lifecycle-auditor",
+      "visibility_status": "insufficient_or_external_only",
+      "reader_1": {
+        "judgment": "insufficient_evidence",
+        "confidence": "low",
+        "code_anchor_or_exclusion": "Session method is truncated at Request(method=method.upper() before connection or socket lifecycle appears."
+      },
+      "reader_2": {
+        "judgment": "insufficient_evidence",
+        "confidence": "medium",
+        "code_anchor_or_exclusion": "Session file shows imports and truncated `Request(` instantiation without session or connection lifecycle body."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D26",
+      "case_id": "F26",
+      "source_candidate_id": "X085",
+      "source": "swe-bench-verified",
+      "repo": "scikit-learn/scikit-learn",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-memory estimator attributes and constructor arguments with no persistence or external cache."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-memory estimator attributes (`cv_values_`, `coef_`) only; no persisted or cached external state."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D27",
+      "case_id": "F27",
+      "source_candidate_id": "X022",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "role": "data-integrity-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-memory mathematical polynomial variables with no persistence or caching."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-memory polynomial variables only; no persisted records or cached external state."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    },
+    {
+      "blind_id": "D27",
+      "case_id": "F27",
+      "source_candidate_id": "X022",
+      "source": "swe-bench-verified",
+      "repo": "sympy/sympy",
+      "role": "distributed-flow-auditor",
+      "visibility_status": "code_not_applicable",
+      "reader_1": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process algebraic calls with no service boundary messaging."
+      },
+      "reader_2": {
+        "judgment": "not_applicable",
+        "confidence": "high",
+        "code_anchor_or_exclusion": "In-process function calls (`dmp_sqf_part`, `dmp_sqf_norm`, `dmp_factor_list_include`) only."
+      },
+      "model_v2_activated": false,
+      "model_candidate_activated": false
+    }
+  ]
+}

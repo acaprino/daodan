@@ -1,0 +1,26 @@
+{
+  "id": "individual-A017-grounded_noul",
+  "kind": "individual",
+  "case_id": "A017",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the alignment of an already-loaded report table in the browser. Only the stylesheet is changing.",
+    "artifacts": [
+      {
+        "path": "web/report.css",
+        "content": ".report { border-collapse: collapse; width: 100%; }\n.report td { padding: 0.5rem; }\n.report .amount { text-align: right; }\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores?",
+      "criteria": {
+        "false": "The scope does not involve persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores.",
+        "true": "The scope involves persistent-state guarantees, schema constraints, transaction or concurrent-write semantics, stored representations, or consistency between a service's database and derived stores."
+      }
+    }
+  },
+  "sha256": "c3a392c4a47bc997138da62b4b1316f087be2a755e1007d92f11bfe0768952b8"
+}

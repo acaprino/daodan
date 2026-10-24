@@ -1,0 +1,1091 @@
+{
+  "schema": "choicer-eval/adapted-reviewers-v1",
+  "language": "en",
+  "purpose": "Outcome-blind adaptation of all 18 reviewer lenses to code-relevance decisions within the installed model's input limits.",
+  "authoring_blindness": {
+    "labels_or_outputs_provided_to_author": false,
+    "labels_or_outputs_read_by_author": false,
+    "statement": "The author was not given and did not read benchmark cases, labels, captures, results, model predictions, or other agents' work. Adaptation used only the frozen catalog, frozen reviewer prompt, the three identified original role bodies, and tokenizer/serializer source.",
+    "iterations": "Token-count and serializer validation only; no output-guided tuning."
+  },
+  "reviewer_ids": [
+    "abstraction-architect:abstraction-architect-agent",
+    "platform-engineering:platform-reviewer",
+    "react-development:react-performance-optimizer",
+    "repo-hygiene:workspace-auditor",
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:cleanup-auditor",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:ui-race-auditor",
+    "testing:test-suite-auditor",
+    "typescript-development:type-safety-auditor"
+  ],
+  "reviewer_count": 18,
+  "decision_contract": {
+    "binary_question": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+    "binary_option_order": [
+      "false",
+      "true"
+    ],
+    "binary_probability_threshold": 0.5,
+    "choice_question": "Which reviewer's TRIGGER WHEN is best satisfied by this hunk?",
+    "choice_option_order": "reviewer_ids order",
+    "choice_options_field": "choice_description",
+    "criterion_max_tokens": 48,
+    "choice_description_target_tokens": 20,
+    "head_length": 512,
+    "max_length": 8192,
+    "strict": true,
+    "token_counting": "tokenizer.encode(' ' + criterion, add_special_tokens=False)",
+    "question_scope": "Code relevance, not permission to dispatch or execute a reviewer. Prerequisite recovery and mandatory selection rules remain coordinator responsibilities."
+  },
+  "reviewers": [
+    {
+      "id": "abstraction-architect:abstraction-architect-agent",
+      "original": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      },
+      "adapted": {
+        "true": "Duplicated domain concepts or logic, competing sources of truth, wrong abstractions, or unclear canonical ownership of facts, policies or state.",
+        "false": "Implementation, security, distributed flows, dead code, or dependency cycles and cohesion, without duplicated domain concepts or competing ownership."
+      },
+      "choice_description": "Duplicate domain logic or competing sources of truth; excludes dead code, security, and dependency cycles.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "abstraction-architect:abstraction-architect-agent",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+          "sha256_frozen": "612a59a887bd514df8a40f0fd40122ef828b38f1767315b66d37cc64c000bc14",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "adapted_from_source"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Replace dispatch instructions with the role's structural-entropy remit; remove owner names and qualify exclusions to preserve overlapping relevant lenses.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 65,
+          "false": 58
+        },
+        "adapted": {
+          "true": 26,
+          "false": 24
+        },
+        "choice_description": 19
+      }
+    },
+    {
+      "id": "platform-engineering:platform-reviewer",
+      "original": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": null
+      },
+      "adapted": {
+        "true": "Security, architecture or performance compliance in SPA, PWA, mobile, Electron or Tauri applications, including platform permissions, client trust, IPC, service workers, storage or rendering.",
+        "false": "Platform-independent code or documents with no SPA, PWA, mobile or desktop application security, architecture or performance concern."
+      },
+      "choice_description": "Web, mobile or desktop platform security, architecture or performance; excludes platform-independent code.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "platform-engineering:platform-reviewer",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/platform-engineering/roles/platform-reviewer.md",
+          "sha256_frozen": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6",
+          "description_start_line": 4,
+          "body_consulted": true,
+          "sections_consulted": [
+            "Phase 1: Detect Platform Context",
+            "Phase 2: Security Audit",
+            "Phase 3: Architecture Audit",
+            "Phase 4: Performance Audit",
+            "Rules"
+          ],
+          "sha256_current_verified": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6"
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "authored_missing_criterion"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Remove dispatch prose and express observable platform context from the role body. Author the missing negative from its platform applicability rule.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 76,
+          "false": null
+        },
+        "adapted": {
+          "true": 36,
+          "false": 24
+        },
+        "choice_description": 18
+      }
+    },
+    {
+      "id": "react-development:react-performance-optimizer",
+      "original": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      },
+      "adapted": {
+        "true": "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      },
+      "choice_description": "React renders, state subscriptions, components or bundle performance; excludes CSS polish and native backends.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "react-development:react-performance-optimizer",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/react-development/roles/react-performance-optimizer.md",
+          "sha256_frozen": "802cb1207d04f075ea75b49b03aba1d6f038b4358e16ee2c58797a44ec520a84",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Remove dispatch prose and compress examples while retaining React-specific performance signals. Preserve the original negative criterion.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 86,
+          "false": 28
+        },
+        "adapted": {
+          "true": 24,
+          "false": 28
+        },
+        "choice_description": 19
+      }
+    },
+    {
+      "id": "repo-hygiene:workspace-auditor",
+      "original": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      },
+      "adapted": {
+        "true": "Finding tracked build artifacts, ignore-rule gaps, scratch directories, orphan documentation assets or stale Git stashes, worktrees and branches.",
+        "false": "Source-level dead code or unused dependencies, or applying removals rather than auditing workspace hygiene."
+      },
+      "choice_description": "Tracked build output, ignore gaps, scratch files or stale Git state; excludes source dead code.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "repo-hygiene:workspace-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/repo-hygiene/roles/workspace-auditor.md",
+          "sha256_frozen": "d68c5ad5e01d297a9a90e85f06fbbcd69c8550f68723b01f0510b64314f4e293",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "adapted_from_source"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Replace dispatch instructions with the catalog's filesystem and Git hygiene remit; remove execution-owner references from the exclusion.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 61,
+          "false": 41
+        },
+        "adapted": {
+          "true": 27,
+          "false": 18
+        },
+        "choice_description": 20
+      }
+    },
+    {
+      "id": "senior-review:api-contract-auditor",
+      "original": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      },
+      "adapted": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      },
+      "choice_description": "Declared API schemas versus implementations or API changes; excludes absent contracts and internal invariants.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:api-contract-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/api-contract-auditor.md",
+          "sha256_frozen": "d9f8111a6682b67582f078868892684afa048dc36a02ed7f0320ee1de8426d17",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Both original criteria are complete, code-relevant and within the option limit; preserve them exactly.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 36,
+          "false": 38
+        },
+        "adapted": {
+          "true": 36,
+          "false": 38
+        },
+        "choice_description": 17
+      }
+    },
+    {
+      "id": "senior-review:chicken-egg-detector",
+      "original": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      },
+      "adapted": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      },
+      "choice_description": "Startup ordering, bootstrap, configuration or migration dependencies; excludes steady-state flows.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:chicken-egg-detector",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/chicken-egg-detector.md",
+          "sha256_frozen": "0c517c9d552da2a661c1f8e0be70433e58bbcc0f90b6c846667d3f4653db6506",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Both original criteria are complete, code-relevant and within the option limit; preserve them exactly.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 31,
+          "false": 18
+        },
+        "adapted": {
+          "true": 31,
+          "false": 18
+        },
+        "choice_description": 16
+      }
+    },
+    {
+      "id": "senior-review:cleanup-auditor",
+      "original": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      },
+      "adapted": {
+        "true": "Auditing dead code, orphan application assets, unused dependencies, stale documentation, or migration and debug leftovers.",
+        "false": "Applying removals, filesystem or Git tidying, or a standalone language-specific unused-code scan."
+      },
+      "choice_description": "Dead code, unused dependencies, orphan assets or stale documentation; excludes filesystem and Git tidying.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:cleanup-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/cleanup-auditor.md",
+          "sha256_frozen": "3f46c57b34faf982d4734b9de132ff4eb3d4e8e351730da7031828db1905cc97",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "adapted_from_source"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Replace workflow activation with the catalog's application-hygiene remit and compress exclusions without changing their ownership boundaries.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 64,
+          "false": 67
+        },
+        "adapted": {
+          "true": 20,
+          "false": 20
+        },
+        "choice_description": 19
+      }
+    },
+    {
+      "id": "senior-review:code-auditor",
+      "original": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      },
+      "adapted": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      },
+      "choice_description": "Architecture, coupling, failure paths, stale caches or code quality; excludes security-only audits.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:code-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/code-auditor.md",
+          "sha256_frozen": "d4072cd6dc267138154402334ee6fc50e3f39d92e8f0a4abf289b0f0e46e3944",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Preserve the original broad code-review criterion and its security-specific exclusion; both fit the option limit.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 24,
+          "false": 14
+        },
+        "adapted": {
+          "true": 24,
+          "false": 14
+        },
+        "choice_description": 19
+      }
+    },
+    {
+      "id": "senior-review:data-integrity-auditor",
+      "original": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      },
+      "adapted": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      },
+      "choice_description": "Database writes, transactions, caches or persistence races; excludes domain-only rules and messaging.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:data-integrity-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/data-integrity-auditor.md",
+          "sha256_frozen": "3002f553c9bc1f4efacf14c0e91be3e53684659f3710fd50e9d4c602f942d192",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Both original criteria are complete, code-relevant and within the option limit; preserve them exactly.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 19,
+          "false": 29
+        },
+        "adapted": {
+          "true": 19,
+          "false": 29
+        },
+        "choice_description": 18
+      }
+    },
+    {
+      "id": "senior-review:distributed-flow-auditor",
+      "original": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": null
+      },
+      "adapted": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": "A single local operation with no cross-service, agent or module interaction, producer-consumer contract, or integration boundary."
+      },
+      "choice_description": "Cross-service flows, messaging, idempotency and compensation; excludes isolated local operations.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:distributed-flow-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+          "sha256_frozen": "156b7ec5ebdba1c76fe1d9c15b4e1308af04a00c659282e87d85606db694aee8",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "authored_missing_criterion"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Preserve the original positive. Author the missing negative as the absence of the stated cross-boundary remit.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 37,
+          "false": null
+        },
+        "adapted": {
+          "true": 37,
+          "false": 24
+        },
+        "choice_description": 19
+      }
+    },
+    {
+      "id": "senior-review:logic-integrity-auditor",
+      "original": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      },
+      "adapted": {
+        "true": "Cross-component ordering, idempotency, state machines, terminal states, domain rules or invariants require a logic or contract audit.",
+        "false": "Only style, lint or security concerns are present, without domain logic, contracts, ordering or state invariants."
+      },
+      "choice_description": "Domain rules, state machines, ordering or idempotency; excludes styling and security alone.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:logic-integrity-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+          "sha256_frozen": "e417e5fa015e53042406346798db4f1fcfca09f05dbc239aaf3cbfb14a92daab",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "adapted_from_source"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": [
+          "SELECTION RULES 6"
+        ],
+        "prompt_source": {
+          "path": "runs/20261020T100258Z/prompts.json",
+          "sha256": "dc4d1c3e317af954b5551bc1432a8059f03d211de30cec14b704a5abc7b7f0f1",
+          "key": "REVIEWER_CHOICER",
+          "text_sha256": "3ae175b259f2737f3d095e5850151ac961c1a700385994f8cbb09b2c74cba117"
+        }
+      },
+      "rationale": "Replace phase activation with the catalog's logic remit. A missing interconnect map is a preparation requirement, not irrelevance, under frozen selection rule 6.",
+      "policy_adaptation": {
+        "substantive": true,
+        "source_rules": [
+          "SELECTION RULES 6"
+        ],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "Align activation and exclusions with the frozen reviewer-selection policy; this is not equivalent compression of the role metadata.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 32,
+          "false": 38
+        },
+        "adapted": {
+          "true": 27,
+          "false": 21
+        },
+        "choice_description": 19
+      }
+    },
+    {
+      "id": "senior-review:premise-auditor",
+      "original": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      },
+      "adapted": {
+        "true": "Code claims or assumptions require independent verification; touched functions have optional/default parameters, numeric/date thresholds, sign handling, or business-rule boundary cases.",
+        "false": "Only defect hunting, map construction, style or wording is requested, without code claims, optional/default parameters, thresholds, sign handling or business-rule boundaries."
+      },
+      "choice_description": "Code claims, defaults, thresholds, signs or business boundaries; excludes styling and map construction.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:premise-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/premise-auditor.md",
+          "sha256_frozen": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39",
+          "description_start_line": 4,
+          "body_consulted": true,
+          "sections_consulted": [
+            "Mode 1: Independent derivation (Phase 1c)",
+            "Mode 2: Adversarial premise challenge (Phase 4b, Lens 0)",
+            "Mode 3: Claim check (a plan, a specification or a document)"
+          ],
+          "sha256_current_verified": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39"
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "adapted_from_source"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": [
+          "SELECTION RULES 3: premise mandatory check"
+        ],
+        "prompt_source": {
+          "path": "runs/20261020T100258Z/prompts.json",
+          "sha256": "dc4d1c3e317af954b5551bc1432a8059f03d211de30cec14b704a5abc7b7f0f1",
+          "key": "REVIEWER_CHOICER",
+          "text_sha256": "3ae175b259f2737f3d095e5850151ac961c1a700385994f8cbb09b2c74cba117"
+        }
+      },
+      "rationale": "Replace workflow-only activation with independent derivation and claim checking from the role body, plus frozen mandatory rule 3. Qualify the original exclusion so it cannot negate mandatory boundary checks.",
+      "policy_adaptation": {
+        "substantive": true,
+        "source_rules": [
+          "SELECTION RULES 3: premise mandatory check"
+        ],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "Align activation and exclusions with the frozen reviewer-selection policy; this is not equivalent compression of the role metadata.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 52,
+          "false": 26
+        },
+        "adapted": {
+          "true": 31,
+          "false": 32
+        },
+        "choice_description": 18
+      }
+    },
+    {
+      "id": "senior-review:resource-lifecycle-auditor",
+      "original": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      },
+      "adapted": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      },
+      "choice_description": "Handles, sockets, connections, listeners, locks or timers need release; excludes general architecture and exploitation.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:resource-lifecycle-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+          "sha256_frozen": "12c350b62d5eb0dfe4cec49a53cd981e12ff05ef735b205459a89c1c87f52383",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Both original criteria are complete, code-relevant and within the option limit; preserve them exactly.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 28,
+          "false": 37
+        },
+        "adapted": {
+          "true": 28,
+          "false": 37
+        },
+        "choice_description": 20
+      }
+    },
+    {
+      "id": "senior-review:security-auditor",
+      "original": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      },
+      "adapted": {
+        "true": "Security review or changes to URLs, routes, endpoints, public functions, login, sessions, roles, permissions, data access by ID, injection, secrets, cryptography or security headers.",
+        "false": "Only style, internal code quality or infrastructure/network configuration, without application interfaces, authentication, authorization, ID-based data access, secrets, injection, cryptography or security-header changes."
+      },
+      "choice_description": "URLs, public functions, auth, permissions, ID access or secrets; excludes internal styling.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:security-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/security-auditor.md",
+          "sha256_frozen": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9",
+          "description_start_line": 4,
+          "body_consulted": true,
+          "sections_consulted": [
+            "Input Trust Boundaries",
+            "Auth & Authorization",
+            "Secrets & Credentials",
+            "Cryptographic Mistakes",
+            "API & Header Security"
+          ],
+          "sha256_current_verified": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9"
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "adapted_from_source"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": [
+          "SELECTION RULES 3: security mandatory check"
+        ],
+        "prompt_source": {
+          "path": "runs/20261020T100258Z/prompts.json",
+          "sha256": "dc4d1c3e317af954b5551bc1432a8059f03d211de30cec14b704a5abc7b7f0f1",
+          "key": "REVIEWER_CHOICER",
+          "text_sha256": "3ae175b259f2737f3d095e5850151ac961c1a700385994f8cbb09b2c74cba117"
+        }
+      },
+      "rationale": "The original fits 48 tokens but omits the frozen mandatory interface triggers. Integrate selection rule 3 with the role's application-security remit; qualify its general-quality and infrastructure exclusions accordingly.",
+      "policy_adaptation": {
+        "substantive": true,
+        "source_rules": [
+          "SELECTION RULES 3: security mandatory check"
+        ],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "Align activation and exclusions with the frozen reviewer-selection policy; this is not equivalent compression of the role metadata.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 46,
+          "false": 24
+        },
+        "adapted": {
+          "true": 36,
+          "false": 37
+        },
+        "choice_description": 18
+      }
+    },
+    {
+      "id": "senior-review:temporal-resilience-auditor",
+      "original": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      },
+      "adapted": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      },
+      "choice_description": "Retries, timers, queues, polling or workers surviving repeated failure; excludes startup and UI races.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:temporal-resilience-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+          "sha256_frozen": "7d2783596e7e043046978f6b26756133cd681b47f8c11c7f05a3e87cef858d2b",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Both original criteria are complete, code-relevant and within the option limit; preserve them exactly.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 25,
+          "false": 39
+        },
+        "adapted": {
+          "true": 25,
+          "false": 39
+        },
+        "choice_description": 20
+      }
+    },
+    {
+      "id": "senior-review:ui-race-auditor",
+      "original": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": null
+      },
+      "adapted": {
+        "true": "UI races between async data loading, rendering, layout and event handlers; scroll, focus, resize, stale measurements or layout reads before rendering completes.",
+        "false": "No UI timing or layout interaction: only backend concurrency, static visual styling, or non-UI operations."
+      },
+      "choice_description": "Async UI rendering, layout, scroll, focus or measurements race; excludes static styling and backend concurrency.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "senior-review:ui-race-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/senior-review/roles/ui-race-auditor.md",
+          "sha256_frozen": "e2c13d0f21b3bbf76706f7ce7433bac2b760f2c9c3e70620beb75455e99548be",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "authored_missing_criterion"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Compress the original 49-token positive without dropping its timing remit. Author the missing negative from that framework-agnostic UI scope.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 49,
+          "false": null
+        },
+        "adapted": {
+          "true": 29,
+          "false": 21
+        },
+        "choice_description": 20
+      }
+    },
+    {
+      "id": "testing:test-suite-auditor",
+      "original": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      },
+      "adapted": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      },
+      "choice_description": "Test hygiene, flakiness, redundancy, placement or layer distribution; excludes writing tests or applying quarantine.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "testing:test-suite-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/testing/roles/test-suite-auditor.md",
+          "sha256_frozen": "f3543674b00d0a17429c798a39dc4f7e1c33deffb26007a3ba7d2b838f098d33",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "preserved_exactly",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Both original criteria are complete, code-relevant and within the option limit; preserve them exactly.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": true,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 25,
+          "false": 31
+        },
+        "adapted": {
+          "true": 25,
+          "false": 31
+        },
+        "choice_description": 20
+      }
+    },
+    {
+      "id": "typescript-development:type-safety-auditor",
+      "original": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      },
+      "adapted": {
+        "true": "TypeScript type safety: any leakage, unsound casts or assertions, missing runtime boundary validation, non-exhaustive handling, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      },
+      "choice_description": "TypeScript any, casts, boundary validation or exhaustiveness; excludes naming, React performance and dead code.",
+      "provenance": {
+        "catalog": {
+          "path": "runs/20261020T100258Z/catalog.json",
+          "sha256": "d52b8501ba2ce07ed0279de8402829e9fc1b9d2db509ca4ad5ecfc4c36e071a3",
+          "role_id": "typescript-development:type-safety-auditor",
+          "original_field_mapping": {
+            "true": "trigger_when",
+            "false": "do_not_trigger_when"
+          }
+        },
+        "role_source": {
+          "path": "plugins/typescript-development/roles/type-safety-auditor.md",
+          "sha256_frozen": "b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39",
+          "description_start_line": 4,
+          "body_consulted": false,
+          "sections_consulted": []
+        },
+        "field_status": {
+          "true": "adapted_from_source",
+          "false": "preserved_exactly"
+        },
+        "choice_description_status": "authored_compact_summary",
+        "prompt_rules": []
+      },
+      "rationale": "Remove dispatch prose and retain the type-safety remit from the catalog description and trigger. Preserve the original negative criterion.",
+      "policy_adaptation": {
+        "substantive": false,
+        "source_rules": [],
+        "equivalent_to_original_criteria": false,
+        "meaning_change": "No additional prompt-policy rule is introduced. Changed criteria re-express the original remit for code relevance; missing negatives are authored, not extracted.",
+        "activation_is_evidence_conditioned": true
+      },
+      "token_counts": {
+        "original": {
+          "true": 72,
+          "false": 32
+        },
+        "adapted": {
+          "true": 29,
+          "false": 32
+        },
+        "choice_description": 20
+      }
+    }
+  ]
+}

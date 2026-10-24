@@ -1,0 +1,12 @@
+{
+  "status": "prepared; no model calls",
+  "impl": "llm",
+  "variant": "noul",
+  "calls": 11,
+  "cases": 11,
+  "questions": 0,
+  "input_characters": 736290,
+  "provider_input_tokens": null,
+  "planning_estimate_tokens_chars_div_4": 184073,
+  "estimate_warning": "Planning heuristic only, not tokenizer counts or provider usage."
+}

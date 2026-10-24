@@ -1,0 +1,38 @@
+{
+  "requirement": "Total retained jobs <=20, workers must complete jobs, each tenant receives capacity, origin permits 5 concurrent refreshes.",
+  "queue": {
+    "capacity": 20,
+    "producer": "creates a new suspended task on every enqueue when queue full",
+    "outside_waiters": 10000
+  },
+  "pool": {
+    "workers": 2,
+    "active_tasks": [
+      "parent1",
+      "parent2"
+    ],
+    "parent_behavior": "submit child to same pool and synchronously wait",
+    "queued": [
+      "child1",
+      "child2"
+    ]
+  },
+  "quota": {
+    "request_limit": 10,
+    "units_per_request": "unbounded fanout",
+    "tenant_key": "rotating request id",
+    "downstream_budget": 10
+  },
+  "cache": {
+    "entries": 100,
+    "expiry": "same instant",
+    "refresh": "one origin request per miss",
+    "coalescing": false
+  },
+  "retry": {
+    "pages": 10,
+    "attempts_per_page": 3,
+    "admission_units": 1,
+    "allowed_work": 10
+  }
+}

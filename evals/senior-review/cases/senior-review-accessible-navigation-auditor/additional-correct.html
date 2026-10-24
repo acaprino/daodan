@@ -1,0 +1,8 @@
+<!-- Requirements: keyboard and screen-reader users must navigate Required steps, toggle alerts with accurate state, open and dismiss Help, and reorder the item. Focus must remain visible and return to the trigger after Help. Native dialog semantics are supported, including Escape and focus return. -->
+<!doctype html><html lang="en"><title>Controls</title><style>:focus-visible{outline:2px solid black}</style><body>
+<nav aria-label="Required steps"><a href="/step">Continue</a></nav>
+<button aria-pressed="false" onclick="this.setAttribute('aria-pressed',String(this.getAttribute('aria-pressed')!=='true'))">Enable alerts</button>
+<button id="opener" onclick="help.showModal()">Help</button>
+<dialog id="help" aria-label="Help"><p>Instructions</p><form method="dialog"><button>Dismiss</button></form></dialog>
+<div class="item">Item<button onclick="this.parentElement.dataset.order='first'">Move first</button></div>
+</body></html>

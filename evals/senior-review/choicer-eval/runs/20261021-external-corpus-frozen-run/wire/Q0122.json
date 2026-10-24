@@ -1,0 +1,968 @@
+{
+  "id": "Q0122",
+  "case_id": "F07",
+  "role": "senior-review:data-integrity-auditor",
+  "mode": "windowed",
+  "variant": "v2",
+  "window_id": "W001",
+  "prompt_sha256": "f78a0b14df6d8f25cfe0610eba583ebc5271e89aecdd15ebb6cdd833d6a31e28",
+  "prompt_tokens": 1108,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F07\n[Code Under Review]\n[H1] FFmpeg/function-60.c:1 (character offset 0)\nstatic int mpeg1_decode_sequence(AVCodecContext *avctx, \n\n                                 UINT8 *buf, int buf_size)\n\n{\n\n    Mpeg1Context *s1 = avctx->priv_data;\n\n    MpegEncContext *s = &s1->mpeg_enc_ctx;\n\n    int width, height, i, v, j;\n\n    float aspect;\n\n\n\n    init_get_bits(&s->gb, buf, buf_size);\n\n\n\n    width = get_bits(&s->gb, 12);\n\n    height = get_bits(&s->gb, 12);\n\n    s->aspect_ratio_info= get_bits(&s->gb, 4);\n\n    if(!s->mpeg2){\n\n        aspect= mpeg1_aspect[s->aspect_ratio_info];\n\n        if(aspect!=0.0) avctx->aspect_ratio= width/(aspect*height);\n\n    }\n\n\n\n    s->frame_rate_index = get_bits(&s->gb, 4);\n\n    if (s->frame_rate_index == 0)\n\n        return -1;\n\n    s->bit_rate = get_bits(&s->gb, 18) * 400;\n\n    if (get_bits1(&s->gb) == 0) /* marker */\n\n        return -1;\n\n    if (width <= 0 || height <= 0 ||\n\n        (width % 2) != 0 || (height % 2) != 0)\n\n        return -1;\n\n    if (width != s->width ||\n\n        height != s->height) {\n\n        /* start new mpeg1 context decoding */\n\n        s->out_format = FMT_MPEG1;\n\n        if (s1->mpeg_enc_ctx_allocated) {\n\n            MPV_common_end(s);\n\n        }\n\n        s->width = width;\n\n        s->height = height;\n\n        avctx->has_b_frames= 1;\n\n        s->avctx = avctx;\n\n        avctx->width = width;\n\n        avctx->height = height;\n\n        if (s->frame_rate_index >= 9) {\n\n            /* at least give a valid frame rate (some old mpeg1 have this) */\n\n            avctx->frame_rate = 25 * FRAME_RATE_BASE;\n\n        } else {\n\n            avctx->frame_rate = frame_rate_tab[s->frame_rate_index];\n\n        }\n\n        s->frame_rate = avctx->frame_rate;\n\n        avctx->bit_rate = s->bit_rate;\n\n        \n\n        if (MPV_common_init(s) < 0)\n\n            return -1;\n\n        s1->mpeg_enc_ctx_allocated = 1;\n\n    }\n\n\n\n    skip_bits(&s->gb, 10); /* vbv_buffer_size */\n\n    skip_bits(&s->gb, 1);\n\n\n\n    /* get matrix */\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->intra_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_intra_matrix[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n    }\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n\n\n[H1] FFmpeg/function-60.c:171 (character offset 2792)\n\nQuestion: Should the data-integrity-auditor review lens be activated for database persistence, SQL/ORM models, partial writes, unique keys, or cache synchronization?\n\nOptions:\nA. Yes: activate data-integrity-auditor\nB. No: do not activate data-integrity-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "7a8644d846a87dd7177c5678c71c49e66bbfe20d86b97084bd6ebfe10bb2a42d",
+  "prefix_tokens": 1015,
+  "state_id": "S008",
+  "restore": {
+    "seconds": 0.05603089999931399,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 1015,
+      "n_read": 52904844,
+      "timings": {
+        "restore_ms": 53.723
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 1108,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F07\n[Code Under Review]\n[H1] FFmpeg/function-60.c:1 (character offset 0)\nstatic int mpeg1_decode_sequence(AVCodecContext *avctx, \n\n                                 UINT8 *buf, int buf_size)\n\n{\n\n    Mpeg1Context *s1 = avctx->priv_data;\n\n    MpegEncContext *s = &s1->mpeg_enc_ctx;\n\n    int width, height, i, v, j;\n\n    float aspect;\n\n\n\n    init_get_bits(&s->gb, buf, buf_size);\n\n\n\n    width = get_bits(&s->gb, 12);\n\n    height = get_bits(&s->gb, 12);\n\n    s->aspect_ratio_info= get_bits(&s->gb, 4);\n\n    if(!s->mpeg2){\n\n        aspect= mpeg1_aspect[s->aspect_ratio_info];\n\n        if(aspect!=0.0) avctx->aspect_ratio= width/(aspect*height);\n\n    }\n\n\n\n    s->frame_rate_index = get_bits(&s->gb, 4);\n\n    if (s->frame_rate_index == 0)\n\n        return -1;\n\n    s->bit_rate = get_bits(&s->gb, 18) * 400;\n\n    if (get_bits1(&s->gb) == 0) /* marker */\n\n        return -1;\n\n    if (width <= 0 || height <= 0 ||\n\n        (width % 2) != 0 || (height % 2) != 0)\n\n        return -1;\n\n    if (width != s->width ||\n\n        height != s->height) {\n\n        /* start new mpeg1 context decoding */\n\n        s->out_format = FMT_MPEG1;\n\n        if (s1->mpeg_enc_ctx_allocated) {\n\n            MPV_common_end(s);\n\n        }\n\n        s->width = width;\n\n        s->height = height;\n\n        avctx->has_b_frames= 1;\n\n        s->avctx = avctx;\n\n        avctx->width = width;\n\n        avctx->height = height;\n\n        if (s->frame_rate_index >= 9) {\n\n            /* at least give a valid frame rate (some old mpeg1 have this) */\n\n            avctx->frame_rate = 25 * FRAME_RATE_BASE;\n\n        } else {\n\n            avctx->frame_rate = frame_rate_tab[s->frame_rate_index];\n\n        }\n\n        s->frame_rate = avctx->frame_rate;\n\n        avctx->bit_rate = s->bit_rate;\n\n        \n\n        if (MPV_common_init(s) < 0)\n\n            return -1;\n\n        s1->mpeg_enc_ctx_allocated = 1;\n\n    }\n\n\n\n    skip_bits(&s->gb, 10); /* vbv_buffer_size */\n\n    skip_bits(&s->gb, 1);\n\n\n\n    /* get matrix */\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->intra_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_intra_matrix[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n    }\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n\n\n[H1] FFmpeg/function-60.c:171 (character offset 2792)\n\nQuestion: Should the data-integrity-auditor review lens be activated for database persistence, SQL/ORM models, partial writes, unique keys, or cache synchronization?\n\nOptions:\nA. Yes: activate data-integrity-auditor\nB. No: do not activate data-integrity-auditor\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 1108,
+    "timings": {
+      "cache_n": 1015,
+      "prompt_n": 93,
+      "prompt_ms": 816.572,
+      "prompt_per_token_ms": 8.780344086021506,
+      "prompt_per_second": 113.89075305055769,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.4616830050945282,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -0.4616830050945282
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -3.5750300884246826
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -3.8260505199432373
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -3.8953959941864014
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -4.429783344268799
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -4.617807865142822
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -4.889547348022461
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -5.036344051361084
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -5.184851169586182
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -5.187683582305908
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -5.444153308868408
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -5.4682488441467285
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -5.485556602478027
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -5.4951276779174805
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -5.528039455413818
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -5.543489933013916
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -5.641557216644287
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -5.906604766845703
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -5.994259357452393
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -6.0088276863098145
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -6.135410785675049
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -6.185093879699707
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -6.317823886871338
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -6.32557487487793
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -6.383750915527344
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -6.397176742553711
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.457549571990967
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -6.457551002502441
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -6.524147987365723
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.525568962097168
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -6.526449680328369
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.535670757293701
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -6.536841869354248
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.570265293121338
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.687549114227295
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.702185153961182
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -6.734679698944092
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -6.748927593231201
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.770720958709717
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -6.811989784240723
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -6.815585613250732
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.828375339508057
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -6.869822025299072
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -6.894432544708252
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -6.921667098999023
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -6.94864559173584
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.013367652893066
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -7.021137714385986
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.046692848205566
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -7.055581092834473
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.055968761444092
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -7.0875959396362305
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.11236047744751
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.127750873565674
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -7.201205253601074
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -7.276999473571777
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -7.326647758483887
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -7.375675678253174
+          },
+          {
+            "id": 22,
+            "token": "7",
+            "bytes": [
+              55
+            ],
+            "logprob": -7.4063920974731445
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.4094438552856445
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -7.4280171394348145
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -7.462021827697754
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.4936747550964355
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.494650363922119
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.497025489807129
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -7.521140098571777
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.55153751373291
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -7.593696594238281
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.600285053253174
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.601892471313477
+          },
+          {
+            "id": 3320,
+            "token": "Be",
+            "bytes": [
+              66,
+              101
+            ],
+            "logprob": -7.614285469055176
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.627064228057861
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -7.633228778839111
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.638211727142334
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.643407821655273
+          },
+          {
+            "id": 1,
+            "token": "\"",
+            "bytes": [
+              34
+            ],
+            "logprob": -7.645176887512207
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.669753551483154
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.760423183441162
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.774979591369629
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.7896952629089355
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -7.827372074127197
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.838240146636963
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.842711448669434
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.913460731506348
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.914082050323486
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.925531387329102
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -7.927239418029785
+          },
+          {
+            "id": 28,
+            "token": "=",
+            "bytes": [
+              61
+            ],
+            "logprob": -8.018606185913086
+          },
+          {
+            "id": 1323,
+            "token": "be",
+            "bytes": [
+              98,
+              101
+            ],
+            "logprob": -8.03131103515625
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -8.039817810058594
+          },
+          {
+            "id": 11261,
+            "token": "BE",
+            "bytes": [
+              66,
+              69
+            ],
+            "logprob": -8.067276000976562
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -8.081707954406738
+          },
+          {
+            "id": 248068,
+            "token": "<think>",
+            "bytes": [
+              60,
+              116,
+              104,
+              105,
+              110,
+              107,
+              62
+            ],
+            "logprob": -8.095390319824219
+          },
+          {
+            "id": 25,
+            "token": ":",
+            "bytes": [
+              58
+            ],
+            "logprob": -8.098310470581055
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -8.10683822631836
+          },
+          {
+            "id": 4738,
+            "token": "BC",
+            "bytes": [
+              66,
+              67
+            ],
+            "logprob": -8.11303424835205
+          },
+          {
+            "id": 331,
+            "token": "if",
+            "bytes": [
+              105,
+              102
+            ],
+            "logprob": -8.118276596069336
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -8.126964569091797
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.21203899383545
+          },
+          {
+            "id": 2887,
+            "token": "do",
+            "bytes": [
+              100,
+              111
+            ],
+            "logprob": -8.248773574829102
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.8291345000034198,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.028014582846874695,
+    "B": 0.6302220854714923,
+    "Z": 0.0006263033758786651
+  },
+  "prefix_reuse_verified": true
+}

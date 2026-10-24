@@ -1,5 +1,5 @@
 ---
-title: useEffectEvent for Stable Callback Refs
+title: useEffectEvent for Latest Effect Values
 impact: LOW
 impactDescription: prevents effect re-runs
 tags: advanced, hooks, useEffectEvent, refs, optimization
@@ -76,9 +76,9 @@ or agent-sdk-builder. A host-as-subject API is not a tool provided to this sessi
 Compiled binding and static checks do not prove an installed host executed a run.
 </daodan_host_binding>
 
-## useEffectEvent for Stable Callback Refs
+## useEffectEvent for Latest Effect Values
 
-Access latest values in callbacks without adding them to dependency arrays. Prevents effect re-runs while avoiding stale closures.
+Use Effect Events for non-reactive logic fired from an Effect in supported React versions. Keep values that should resynchronize the Effect in its dependencies. This is not a stable callback API or a general dependency escape. The example assumes changes to onSearch alone must not restart the debounce. See [React useEffectEvent](https://react.dev/reference/react/useEffectEvent).
 
 **Incorrect (effect re-runs on every callback change):**
 

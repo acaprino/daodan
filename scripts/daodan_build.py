@@ -163,8 +163,10 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
     catalog_name, catalog_description, version = marketplace_metadata(root)
     prepared = []
     retired = []
+    host_overrides = {}
     for host in hosts:
         adapter = load_adapter(root / "adapters", host)
+        host_overrides[host] = {plugin.name: _overrides_for(root, host, plugin) for plugin in plugins}
         stale, ownership_issues = _retired_packages(root, adapter, set(plugin_registry))
         retired.extend(stale)
         issues.extend(ownership_issues)
@@ -178,7 +180,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
             host, plugins, version, packages, name=catalog_name, description=catalog_description
         )
         for plugin in plugins:
-            overrides = _overrides_for(root, host, plugin)
+            overrides = host_overrides[host][plugin.name]
             declared = frozenset(plugin.capabilities.required) | frozenset(
                 plugin.capabilities.optional
             )
@@ -210,7 +212,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
 
             live = root / adapter.layout["root"] / "plugins" / plugin.name
             if check:
-                if _package_drifted(plugin, adapter, live, overrides, root, plugin_registry):
+                if _package_drifted(plugin, adapter, live, overrides, root, plugin_registry, host_overrides[host]):
                     drift.append(live)
             else:
                 prepared.append((plugin, adapter, live, overrides))
@@ -228,7 +230,7 @@ def _build_repository(root: Path, hosts: tuple[str, ...], check: bool) -> BuildR
         try:
             for plugin, adapter, live, overrides in prepared:
                 target = staging / adapter.host / plugin.name
-                render_plugin(plugin, adapter, target, overrides, root / "adapters", plugin_registry)
+                render_plugin(plugin, adapter, target, overrides, root / "adapters", plugin_registry, host_overrides[adapter.host])
                 staged_packages[(adapter.host, plugin.name)] = target
         except RenderError as error:
             return BuildReport(issues=(ValidationIssue("render-error", root, str(error)),),
@@ -460,14 +462,14 @@ def _render_host_catalog(root, adapter, host, plugins, version, catalog_path: Pa
     )
 
 
-def _package_drifted(plugin, adapter, live: Path, overrides, root: Path, plugin_registry=None) -> bool:
+def _package_drifted(plugin, adapter, live: Path, overrides, root: Path, plugin_registry=None, role_overrides=None) -> bool:
     if not live.is_dir():
         return True
     holder = Path(tempfile.mkdtemp())
     try:
         staging = holder / live.name
         try:
-            render_plugin(plugin, adapter, staging, overrides, root / "adapters", plugin_registry)
+            render_plugin(plugin, adapter, staging, overrides, root / "adapters", plugin_registry, role_overrides)
         except RenderError:
             return True
         return tree_digest(staging) != tree_digest(live)

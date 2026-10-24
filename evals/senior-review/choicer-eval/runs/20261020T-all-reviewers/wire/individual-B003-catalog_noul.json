@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Review the inventory event producer after adding a warehouse identifier.",
+    "artifacts": [
+      {
+        "path": "contracts/stock.schema.json",
+        "content": "{\"type\":\"object\",\"required\":[\"sku\",\"warehouse_id\",\"quantity\"],\"properties\":{\"sku\":{\"type\":\"string\"},\"warehouse_id\":{\"type\":\"string\"},\"quantity\":{\"type\":\"integer\"}}}"
+      },
+      {
+        "path": "events/publish_stock.py",
+        "content": "def publish_stock(bus, stock):\n    bus.publish(\"stock.changed\", {\n        \"sku\": stock.sku,\n        \"warehouse\": stock.warehouse_id,\n        \"quantity\": stock.quantity,\n    })"
+      },
+      {
+        "path": "contracts/channels.md",
+        "content": "`stock.changed` messages use stock.schema.json. Warehouse identifiers are stable strings."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor).",
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes."
+      }
+    }
+  }
+}

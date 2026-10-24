@@ -1,0 +1,40 @@
+{
+  "id": "individual-C035-grounded_choice",
+  "request_sha256": "e4d1565d0cd63012c03fdb256bafdfb30220c3a03de68f0f1d9e4dbe83406307",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "project-knowledge:instructions-auditor": {
+        "type": "choice",
+        "probabilities": {
+          "false": 0.06290328612391641,
+          "true": 0.9370967138760836
+        },
+        "choice": "true",
+        "max_probability": 0.9370967138760836
+      }
+    }
+  },
+  "probabilities": {
+    "project-knowledge:instructions-auditor": 0.9370967138760836
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "project-knowledge:instructions-auditor": {
+      "tokens": 193,
+      "optionTokens": [
+        21,
+        28
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "project-knowledge:instructions-auditor"
+  ],
+  "wall_seconds": 0.38916469999821857
+}

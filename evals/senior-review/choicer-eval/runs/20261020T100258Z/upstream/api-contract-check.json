@@ -1,0 +1,54 @@
+{
+  "kind": "Source-level API contract check only; stub logits, no model inference or runtime import.",
+  "named_response_example": {
+    "answers": {
+      "bool": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.2689414213699951,
+          "true": 0.7310585786300049
+        },
+        "noul": 0.7310585786300049
+      },
+      "pick": {
+        "type": "choice",
+        "probabilities": {
+          "r1": 0.2689414213699951,
+          "r2": 0.7310585786300049
+        },
+        "choice": "r2",
+        "max_probability": 0.7310585786300049
+      }
+    }
+  },
+  "expected_schema_errors": {
+    "wrong_choice_key": "Choice criteria must map nonempty IDs to descriptions",
+    "empty_false": "JSONL line 1: options must contain 2\u201320 nonempty rendered descriptions"
+  },
+  "allow_patterns": [
+    "*.json",
+    "*.safetensors",
+    "julia/**/*.py",
+    "julia/*.py",
+    "*.txt"
+  ],
+  "runtime_source_coverage": {
+    "model.safetensors": true,
+    "julia_config.json": true,
+    "encoder/config.json": true,
+    "tokenizer/tokenizer.json": true,
+    "tokenizer/tokenizer_config.json": true,
+    "julia/__init__.py": true,
+    "julia/inference.py": true,
+    "julia/typed.py": true,
+    "julia/data.py": true,
+    "julia/model.py": true,
+    "julia/cuda.py": true,
+    "julia/probabilities.py": true,
+    "julia/router/__init__.py": true,
+    "julia/router/engine.py": true,
+    "julia/router/encoder.py": true,
+    "julia/router/specialize.py": true
+  },
+  "note": "fnmatch wildcards match path separators; broad *.json already includes nested tokenizer files."
+}

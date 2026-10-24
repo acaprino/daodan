@@ -1,0 +1,39 @@
+{
+  "id": "individual-B005-catalog_noul",
+  "request_sha256": "443fbf77218ad7fa3bfc7acb725c0a564621b96473fa405fcae5e61537921714",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "senior-review:api-contract-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.011861268999230477,
+          "true": 0.9881387310007695
+        },
+        "noul": 0.9881387310007695
+      }
+    }
+  },
+  "probabilities": {
+    "senior-review:api-contract-auditor": 0.9881387310007695
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "senior-review:api-contract-auditor": {
+      "tokens": 260,
+      "optionTokens": [
+        38,
+        36
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "senior-review:api-contract-auditor"
+  ],
+  "wall_seconds": 0.398665799992159
+}

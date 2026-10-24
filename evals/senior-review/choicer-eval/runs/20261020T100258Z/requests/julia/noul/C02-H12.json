@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H12",
+  "state": "[H12]\njupiter-core/jupiter_core/agents/alive_agent.py:801 \njupiter-core/jupiter_core/agents/alive_agent.py:802     async def _send_deregistration_message(self):\njupiter-core/jupiter_core/agents/alive_agent.py:803         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:804         Send deregistration message to middleware when agent is stopping.\njupiter-core/jupiter_core/agents/alive_agent.py:805 \njupiter-core/jupiter_core/agents/alive_agent.py:806         This ensures immediate notification of agent shutdown rather than\njupiter-core/jupiter_core/agents/alive_agent.py:807         waiting for heartbeat timeout (120 seconds).\njupiter-core/jupiter_core/agents/alive_agent.py:808         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:809         # Guard: _tracer and amqp_s are initialized in start(), but stop() can be called\njupiter-core/jupiter_core/agents/alive_agent.py:810         # before start() completes (e.g., early shutdown during initialization).\njupiter-core/jupiter_core/agents/alive_agent.py:811         # Middleware will detect via heartbeat timeout (120s) if deregistration can't be sent.\njupiter-core/jupiter_core/agents/alive_agent.py:812         if not hasattr(self, '_tracer') or self._tracer is None:\njupiter-core/jupiter_core/agents/alive_agent.py:813             self.warning(\"Skipping deregistration - agent stopped before start() completed (no tracer/AMQP)\")\njupiter-core/jupiter_core/agents/alive_agent.py:814             return\njupiter-core/jupiter_core/agents/alive_agent.py:815 \njupiter-core/jupiter_core/agents/alive_agent.py:816         # Trace deregistration for lifecycle visibility\njupiter-core/jupiter_core/agents/alive_agent.py:817         with self._tracer.start_as_current_span(\njupiter-core/jupiter_core/agents/alive_agent.py:818             \"agent.lifecycle.deregistration\",\njupiter-core/jupiter_core/agents/alive_agent.py:819             kind=SpanKind.PRODUCER\njupiter-core/jupiter_core/agents/alive_agent.py:820         ) as span:\njupiter-core/jupiter_core/agents/alive_agent.py:821             span.set_attribute(\"agent.instance_id\", self.id)\njupiter-core/jupiter_core/agents/alive_agent.py:822             span.set_attribute(\"agent.name\", self.agent)\njupiter-core/jupiter_core/agents/alive_agent.py:823             span.set_attribute(\"agent.symbol\", self.trading_config.get_symbol())\njupiter-core/jupiter_core/agents/alive_agent.py:824             span.set_attribute(\"agent.timeframe\", self.trading_config.get_timeframe().name)\njupiter-core/jupiter_core/agents/alive_agent.py:825             span.set_attribute(\"agent.direction\", self.trading_config.get_trading_direction().name)\njupiter-core/jupiter_core/agents/alive_agent.py:826 \njupiter-core/jupiter_core/agents/alive_agent.py:827             try:\njupiter-core/jupiter_core/agents/alive_agent.py:828                 if not self.amqp_s:\njupiter-core/jupiter_core/agents/alive_agent.py:829                     self.warning(\"AMQP service not available for deregistration\")\njupiter-core/jupiter_core/agents/alive_agent.py:830                     span.add_event(\"deregistration_skipped\", {\"reason\": \"amqp_not_available\"})\njupiter-core/jupiter_core/agents/alive_agent.py:831                     return\njupiter-core/jupiter_core/agents/alive_agent.py:832 \njupiter-core/jupiter_core/agents/alive_agent.py:833                 # Prepare deregistration message payload (business data only)\njupiter-core/jupiter_core/agents/alive_agent.py:834                 # Note: agent_instance_id is in meta_inf, not payload (sender identity)\njupiter-core/jupiter_core/agents/alive_agent.py:835 \njupiter-core/jupiter_core/agents/alive_agent.py:836                 broker_alias = self._get_broker_alias()\njupiter-core/jupiter_core/agents/alive_agent.py:837 \njupiter-core/jupiter_core/agents/alive_agent.py:838                 name = self.config.get_config_name()\njupiter-core/jupiter_core/agents/alive_agent.py:839                 deregistration_msg = {\njupiter-core/jupiter_core/agents/alive_agent.py:840                     \"agent_name\": self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:841                     \"tenant\": self.config.get_tenant(),\njupiter-core/jupiter_core/agents/alive_agent.py:842                     \"config_name\": name,\njupiter-core/jupiter_core/agents/alive_agent.py:843                     \"symbol\": self.trading_config.get_symbol(),\njupiter-core/jupiter_core/agents/alive_agent.py:844                     \"timeframe\": self.trading_config.get_timeframe().name,\njupiter-core/jupiter_core/agents/alive_agent.py:845                     \"direction\": self.trading_config.get_trading_direction().name,\njupiter-core/jupiter_core/agents/alive_agent.py:846                     \"mode\": self.config.get_bot_mode().name,\njupiter-core/jupiter_core/agents/alive_agent.py:847                     \"broker_alias\": broker_alias,\njupiter-core/jupiter_core/agents/alive_agent.py:848                     \"timestamp\": now_utc().isoformat(),\njupiter-core/jupiter_core/agents/alive_agent.py:849                     \"reason\": \"agent_shutdown\",\njupiter-core/jupiter_core/agents/alive_agent.py:850                     # 2026-04-26: propagate boot_id so middleware's strict\njupiter-core/jupiter_core/agents/alive_agent.py:851                     # session guard accepts this dereg only when it matches\njupiter-core/jupiter_core/agents/alive_agent.py:852                     # the currently-registered process session.\njupiter-core/jupiter_core/agents/alive_agent.py:853                     \"boot_id\": _PROCESS_BOOT_ID,\njupiter-core/jupiter_core/agents/alive_agent.py:854                 }\njupiter-core/jupiter_core/agents/alive_agent.py:855 \njupiter-core/jupiter_core/agents/alive_agent.py:856                 # Send to middleware.deregistration routing key\njupiter-core/jupiter_core/agents/alive_agent.py:857                 routing_key = RoutingKeyBuilder.middleware_deregistration()\njupiter-core/jupiter_core/agents/alive_agent.py:858                 span.set_attribute(\"messaging.routing_key\", routing_key)\njupiter-core/jupiter_core/agents/alive_agent.py:859 \njupiter-core/jupiter_core/agents/alive_agent.py:860                 # Build message context with sender identity (A2-H02: shared builder)\njupiter-core/jupiter_core/agents/alive_agent.py:861                 meta_inf = self._build_message_context()\njupiter-core/jupiter_core/agents/alive_agent.py:862 \njupiter-core/jupiter_core/agents/alive_agent.py:863                 # Create QueueMessage for the deregistration\njupiter-core/jupiter_core/agents/alive_agent.py:864                 deregistration_message = QueueMessage(\njupiter-core/jupiter_core/agents/alive_agent.py:865                     sender=self.agent,\njupiter-core/jupiter_core/agents/alive_agent.py:866                     recipient=\"middleware\",\njupiter-core/jupiter_core/agents/alive_agent.py:867                     context=meta_inf,\njupiter-core/jupiter_core/agents/alive_agent.py:868                     payload=deregistration_msg\njupiter-core/jupiter_core/agents/alive_agent.py:869                 )\njupiter-core/jupiter_core/agents/alive_agent.py:870 \njupiter-core/jupiter_core/agents/alive_agent.py:871                 await self.amqp_s.publish_message(\njupiter-core/jupiter_core/agents/alive_agent.py:872                     exchange_name=AMQPExchange.jupiter_system.name,\njupiter-core/jupiter_core/agents/alive_agent.py:873                     exchange_type=AMQPExchange.jupiter_system.exchange_type,\njupiter-core/jupiter_core/agents/alive_agent.py:874                     routing_key=routing_key,\njupiter-core/jupiter_core/agents/alive_agent.py:875                     message=deregistration_message\njupiter-core/jupiter_core/agents/alive_agent.py:876                 )\njupiter-core/jupiter_core/agents/alive_agent.py:877 \njupiter-core/jupiter_core/agents/alive_agent.py:878                 self.info(f\"Sent deregistration message for agent {self.id} to {routing_key}\")\njupiter-core/jupiter_core/agents/alive_agent.py:879                 span.add_event(\"deregistration_published\", {\"agent_id\": self.id})\njupiter-core/jupiter_core/agents/alive_agent.py:880 \njupiter-core/jupiter_core/agents/alive_agent.py:881             except Exception as e:\njupiter-core/jupiter_core/agents/alive_agent.py:882                 self.error(f\"Failed to send deregistration message: {str(e)}\", exc_info=e)\njupiter-core/jupiter_core/agents/alive_agent.py:883                 set_span_error(span, e, \"Deregistration failed\")",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "b23201dbf6f3e01ad3bb9fa7c046e6011bafb814a29d6a03ebdf274ca091081a"
+}

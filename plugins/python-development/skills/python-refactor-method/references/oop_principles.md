@@ -6,7 +6,7 @@ This guide promotes **Object-Oriented Programming** principles to avoid spaghett
 
 ## Core Principle
 
-**AVOID SCRIPT-LIKE CODE** - Transform procedural, script-style code into well-organized, OOP-based architecture with clear responsibilities, proper encapsulation, and modular structure.
+Choose the simplest structure that keeps state ownership, responsibilities and dependencies clear. Pure modules, small CLIs and functional pipelines are valid. Introduce classes only where encapsulated state or behavior benefits the actual contract; missing classes, length and docstring quotas are investigation leads, not defects.
 
 ---
 

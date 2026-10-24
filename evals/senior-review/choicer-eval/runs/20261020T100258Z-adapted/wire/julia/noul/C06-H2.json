@@ -1,0 +1,150 @@
+{
+  "source_request_sha256": "79139b4a2ff8cc9b5a1d06ba2ba0a519bcaddcb598223c8de8305655670de67c",
+  "state": "[H2]\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:56 // Notification Helper\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:57 // ============================================================================\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:58 \njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:59 interface TradeNotificationParams {\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:60   symbol?: string\njupiter-desktop/src-react/src/hooks/events/useTradeEvents.ts:61   direction?: string",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Duplicated domain concepts or logic, competing sources of truth, wrong abstractions, or unclear canonical ownership of facts, policies or state.",
+        "false": "Implementation, security, distributed flows, dead code, or dependency cycles and cohesion, without duplicated domain concepts or competing ownership."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Security, architecture or performance compliance in SPA, PWA, mobile, Electron or Tauri applications, including platform permissions, client trust, IPC, service workers, storage or rendering.",
+        "false": "Platform-independent code or documents with no SPA, PWA, mobile or desktop application security, architecture or performance concern."
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Reviewing or optimizing React performance: re-renders, React Compiler, Server Components, bundle size, state subscriptions or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Finding tracked build artifacts, ignore-rule gaps, scratch directories, orphan documentation assets or stale Git stashes, worktrees and branches.",
+        "false": "Source-level dead code or unused dependencies, or applying removals rather than auditing workspace hygiene."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Auditing dead code, orphan application assets, unused dependencies, stale documentation, or migration and debug leftovers.",
+        "false": "Applying removals, filesystem or Git tidying, or a standalone language-specific unused-code scan."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": "A single local operation with no cross-service, agent or module interaction, producer-consumer contract, or integration boundary."
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Cross-component ordering, idempotency, state machines, terminal states, domain rules or invariants require a logic or contract audit.",
+        "false": "Only style, lint or security concerns are present, without domain logic, contracts, ordering or state invariants."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Code claims or assumptions require independent verification; touched functions have optional/default parameters, numeric/date thresholds, sign handling, or business-rule boundary cases.",
+        "false": "Only defect hunting, map construction, style or wording is requested, without code claims, optional/default parameters, thresholds, sign handling or business-rule boundaries."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Security review or changes to URLs, routes, endpoints, public functions, login, sessions, roles, permissions, data access by ID, injection, secrets, cryptography or security headers.",
+        "false": "Only style, internal code quality or infrastructure/network configuration, without application interfaces, authentication, authorization, ID-based data access, secrets, injection, cryptography or security-header changes."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "UI races between async data loading, rendering, layout and event handlers; scroll, focus, resize, stale measurements or layout reads before rendering completes.",
+        "false": "No UI timing or layout interaction: only backend concurrency, static visual styling, or non-UI operations."
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "TypeScript type safety: any leakage, unsound casts or assertions, missing runtime boundary validation, non-exhaustive handling, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  }
+}

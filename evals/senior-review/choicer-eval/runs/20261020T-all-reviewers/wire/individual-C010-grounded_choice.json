@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Determine whether the exported formatter is truly dead by following dynamic imports and plugin registration. Review source reachability only; do not inspect Git housekeeping.",
+    "artifacts": [
+      {
+        "path": "src/formatters.ts",
+        "content": "export function money(value: number) { return value.toFixed(2); }\nexport function percent(value: number) { return `${value * 100}%`; }"
+      },
+      {
+        "path": "src/plugins.ts",
+        "content": "export const extensions = [{ module: \"./formatters\", entry: \"percent\" }];"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    }
+  }
+}

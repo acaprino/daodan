@@ -75,7 +75,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Client-Server Architecture
 
-The separation-of-concerns principle applies universally: **clients handle presentation; servers enforce truth**. UI rendering, form hints, navigation, and display logic belong on the client. Pricing calculations, discount rules, eligibility checks, workflow orchestration, and all authorization decisions belong on the server.
+Identify the authoritative trust boundary for each decision. Untrusted clients may calculate previews and own local behavior, but remote protected actions require enforcement at the trusted server/core boundary. Offline or local applications need their actual authority model; the presence of business logic in a client is not by itself a defect.
 
 ## MUST
 

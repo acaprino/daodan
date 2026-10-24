@@ -1,79 +1,49 @@
 # Platform Engineering Plugin
 
-> Cross-platform development rulebook covering security, architecture, and performance for SPA, PWA, mobile (iOS/Android), and desktop (Electron/Tauri) applications. MUST/DO/DON'T framework with real-world incident references and platform-specific guidance.
+Client platform mechanisms and compatibility for supported browsers, PWAs, mobile
+apps, WebViews, Electron and Tauri. Bind every review to the application's actual
+platform/version support, required behavior and effective configuration.
 
-Command examples and named tools in this guide use Claude notation. For other
-hosts, use the entry points and bindings in the source-derived reference below
-and [host setup](../hosts.md).
+Command examples use Claude notation. Other hosts use the bindings in the
+source-derived reference below and [host setup](../hosts.md).
 
-## Agents
+## Reviewer and method
 
-### `platform-reviewer`
+`platform-reviewer` checks browser APIs and storage, offline/service-worker
+lifecycle, native bridges, permissions, packaging and platform-specific execution
+boundaries. Its canonical body and the `platform-engineering` skill are linked
+in the generated inventory below. The skill loads only reference sections needed
+for the mechanism under review. Historical examples, numeric budgets and preferred
+technologies require verification against the actual target before they become
+review obligations.
 
-Adversarial cross-platform code reviewer that audits code against the platform-engineering rulebook.
+Application vulnerabilities, general query/algorithm cost, accessibility and
+service rollout/recovery retain their specialist owners in
+[senior-review](senior-review.md). The platform reviewer returns adjacent leads
+with evidence without claiming those dimensions were reviewed. The
+[specialist design](../superpowers/specs/2026-10-22-specialized-reviewers-design.md)
+records these boundaries.
 
-| | |
-|---|---|
-| **Model** | `inherit` |
-| **Tools** | `Read, Write, Glob, Grep, Bash` |
-| **Use for** | Reviewing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop platforms |
+## Entry and result
 
-**Invocation:**
-```
-Use the platform-reviewer agent to audit [path or PR]
-```
+The plugin has no command of its own. `/daodan:check-health` loads the targeted
+platform audit through the skill's `references/audit.md`. Inside senior-review,
+the computed roster selects the same reviewer with the prepared target and
+snapshot; the standalone audit is not repeated for that assignment.
 
-**What it audits:**
-- Server validation and trust boundaries
-- Auth token storage (cookies vs localStorage vs secure storage)
-- API security (CORS, rate limiting, HTTPS)
-- XSS/CSP headers
-- Secrets exposure
-- Platform-specific security: Electron `nodeIntegration`, `contextIsolation`, `sandbox` and `webSecurity` settings, code signing, unvalidated `shell.openExternal()` URLs and broad IPC channels; Tauri command exposure; mobile certificate pinning, system biometrics and secrets in binaries; PWA sensitive data in the Cache API, broad service-worker scope and missing HTTPS
-- Architecture patterns (client-server, REST vs GraphQL, offline-first)
-- Performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching)
+A file, directory or diff retains its scope. Detect platforms from relevant
+configuration and entrypoints when the caller has not named them; an installed
+dependency alone does not prove an active mechanism. A security, architecture or
+performance focus narrows platform-specific questions, rather than adding a
+second general audit.
 
----
-
-## Skills
-
-### `platform-engineering`
-
-Comprehensive cross-platform development rulebook with 13 reference documents covering security, architecture, and performance.
-
-| | |
-|---|---|
-| **Trigger** | Cross-platform app review, security posture checks, architecture validation, performance optimization |
-
-**Reference documents:** server-validation, auth-tokens, passkeys-webauthn, api-security, xss-csp, secrets-management, platform-security, client-server-architecture, api-design, offline-first, infrastructure, frontend-performance, backend-and-platform-performance.
-
----
-
-## Entry and method
-
-The plugin has no command of its own. `/daodan:check-health` runs the audit when the project ships an SPA, PWA, mobile, Electron or Tauri app, loading `platform-engineering:platform-engineering` and following its `references/audit.md`. Inside `/daodan:review-changes` and `/daodan:review-branch`, senior-review dispatches the `platform-reviewer` agent with inputs it prepares instead, so the two never run on the same target.
-
-The audit auto-detects the platform mix (SPA, PWA, mobile, Electron, Tauri) from `package.json`, `Cargo.toml`, `manifest.json`, and `tauri.conf.json`, then spawns the `platform-reviewer` agent against every applicable rulebook. Writes a persistent report to `platform-review/REPORT.md` in the caller's run directory. Report-only; never auto-fixes.
-
-What were flags are now readings of the target the caller passes:
-
-| Input | Effect |
-|------|--------|
-| Target | The project root by default; a path or a diff narrows the review to it |
-| Platforms | Auto-detected and reported before reviewing; text naming platforms (`spa`, `pwa`, `mobile`, `electron`, `tauri`) reviews those |
-| Focus | All three pillars by default; text restricting the audit to `security`, `arch` or `perf` reviews that pillar only |
-
-**Output sections in `REPORT.md`:** detected platforms, summary counts, findings by severity (CRITICAL / HIGH / MEDIUM) with `file:line` plus rule violated and suggested fix, hardening checklist for Electron / Tauri, auth posture checklist, recommendations ordered by impact.
-
-**When to invoke:**
-- Before a PR touching auth, secrets, or platform integration
-- Quarterly cross-platform hygiene
-- After adding a new platform target (e.g., shipping mobile alongside web)
-- Electron / Tauri release hardening
-
----
-
-**Related:** [senior-review](senior-review.md) (signal-selected platform dimension across the three correctness-review variants) | [react-development](react-development.md) (React performance review) | [typescript-development](typescript-development.md) (TypeScript type-safety review)
+The targeted audit writes `<run>/platform-review/REPORT.md`; a senior-review
+assignment uses its prepared intermediate output path. Findings identify the
+supported target/version, required operation, effective mechanism, evidence,
+observable impact, counterevidence and correction. Coverage and unknown support
+remain visible. Static reasoning and supplied runtime results are distinct;
+new device/browser probes require the caller's corresponding authorization.
+The review grants no fix, installation, signing, deployment or publication authority.
 
 <!-- daodan:reference:start -->
 ## Source-derived reference
@@ -81,7 +51,7 @@ What were flags are now readings of the target the caller passes:
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `2.0.0`. **Source:** [plugin.toml](<../../plugins/platform-engineering/plugin.toml>).
+**Version:** `2.2.0`. **Source:** [plugin.toml](<../../plugins/platform-engineering/plugin.toml>).
 
 ### Required dependencies
 
@@ -110,8 +80,13 @@ The source links carry the complete instructions and accepted arguments.
 
 | Kind | ID | Purpose and trigger | Source |
 |---|---|---|---|
-| Skill | `platform-engineering:platform-engineering` | Rulebook of MUST/DO/DON'T rules backed by real-world incident references. TRIGGER WHEN: building or reviewing SPA, PWA, mobile (iOS/Android), or desktop (Electron/Tauri) apps for security posture, architecture decisions, performance, or compliance with OWASP, Core Web Vitals, and OAuth 2.1. | [platform-engineering](<../../plugins/platform-engineering/skills/platform-engineering/SKILL.md>) |
-| Role | `platform-engineering:platform-reviewer` | Adversarial reviewer that assumes violations of the platform-engineering rulebook exist and proves them. TRIGGER WHEN: dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms. | [platform-reviewer](<../../plugins/platform-engineering/roles/platform-reviewer.md>) |
+| Skill | `platform-engineering:platform-engineering` | Platform mechanisms and compatibility for browser, PWA, mobile, Electron and Tauri applications. TRIGGER WHEN: building or reviewing supported browsers/devices, native integration, offline lifecycle, packaging, or platform-specific trust boundaries. | [platform-engineering](<../../plugins/platform-engineering/skills/platform-engineering/SKILL.md>) |
+| Role | `platform-engineering:platform-reviewer` | Reviews declared browser, PWA, mobile, WebView and Electron/Tauri targets for compatible APIs, lifecycle behavior and native platform mechanisms. TRIGGER WHEN: platform audit or senior-review targets client runtime boundaries, native integration, app packaging, service workers or supported browser behavior. | [platform-reviewer](<../../plugins/platform-engineering/roles/platform-reviewer.md>) |
+| Role | `platform-engineering:browser-compatibility-auditor` | Review required browser or WebView journeys against supported APIs, layout, input, permissions and lifecycle. TRIGGER WHEN: reviewing required browser or WebView journeys against supported APIs, layout, input, permissions and lifecycle. DO NOT TRIGGER WHEN: implementing changes or applying remediation. | [browser-compatibility-auditor](<../../plugins/platform-engineering/roles/browser-compatibility-auditor.md>) |
+| Role | `platform-engineering:offline-lifecycle-auditor` | Review PWA scope, service-worker installation, offline recovery and old/new controlled-client coexistence. TRIGGER WHEN: reviewing PWA scope, service-worker installation, offline recovery and old/new controlled-client coexistence. DO NOT TRIGGER WHEN: implementing changes or applying remediation. | [offline-lifecycle-auditor](<../../plugins/platform-engineering/roles/offline-lifecycle-auditor.md>) |
+| Role | `platform-engineering:native-lifecycle-auditor` | Review native suspend, recreation, permission, external-intent and OS resource behavior against required outcomes. TRIGGER WHEN: reviewing native suspend, recreation, permission, external-intent and OS resource behavior against required outcomes. DO NOT TRIGGER WHEN: implementing changes or applying remediation. | [native-lifecycle-auditor](<../../plugins/platform-engineering/roles/native-lifecycle-auditor.md>) |
+| Role | `platform-engineering:desktop-bridge-auditor` | Review Electron or Tauri native command exposure, payloads, caller capability and window/process event contracts. TRIGGER WHEN: reviewing Electron or Tauri native command exposure, payloads, caller capability and window/process event contracts. DO NOT TRIGGER WHEN: implementing changes or applying remediation. | [desktop-bridge-auditor](<../../plugins/platform-engineering/roles/desktop-bridge-auditor.md>) |
+| Role | `platform-engineering:app-distribution-auditor` | Review packaged resources, target architecture, signing, update channels and verification hooks for declared distributions. TRIGGER WHEN: reviewing packaged resources, target architecture, signing, update channels and verification hooks for declared distributions. DO NOT TRIGGER WHEN: implementing changes or applying remediation. | [app-distribution-auditor](<../../plugins/platform-engineering/roles/app-distribution-auditor.md>) |
 
 ### Host exports
 

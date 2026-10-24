@@ -1,0 +1,30 @@
+{
+  "id": "individual-B037-catalog_noul",
+  "kind": "individual",
+  "case_id": "B037",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the window settings before shipping the desktop preferences window.",
+    "artifacts": [
+      {
+        "path": "desktop/main.ts",
+        "content": "import {BrowserWindow} from \"electron\";\nexport function preferences() {\n  return new BrowserWindow({webPreferences: {\n    nodeIntegration: false,\n    contextIsolation: true,\n    sandbox: true,\n    preload: require.resolve(\"./preferences-preload\"),\n  }});\n}"
+      },
+      {
+        "path": "desktop/preferences-preload.ts",
+        "content": "import {contextBridge, ipcRenderer} from \"electron\";\ncontextBridge.exposeInMainWorld(\"preferences\", {\n  readTheme: () => ipcRenderer.invoke(\"preferences:readTheme\"),\n});"
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms."
+      }
+    }
+  },
+  "sha256": "bc5081cadd83fb9dfe6ecbe6e604913d35ba89798cdea5d6a836a6b4358889d9"
+}

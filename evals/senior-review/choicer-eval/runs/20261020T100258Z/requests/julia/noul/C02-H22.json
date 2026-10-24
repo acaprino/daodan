@@ -1,0 +1,154 @@
+{
+  "impl": "julia",
+  "variant": "noul",
+  "case_id": "C02",
+  "hunk_id": "H22",
+  "state": "[H22]\njupiter-core/jupiter_core/agents/alive_agent.py:1211 \njupiter-core/jupiter_core/agents/alive_agent.py:1212     @exception_handler\njupiter-core/jupiter_core/agents/alive_agent.py:1213     async def on_client_registration_ack(self, routing_key: str, message: QueueMessage):\njupiter-core/jupiter_core/agents/alive_agent.py:1214         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:1215         Handle registration ACK from middleware.\njupiter-core/jupiter_core/agents/alive_agent.py:1216 \njupiter-core/jupiter_core/agents/alive_agent.py:1217         v5.0: Extracts and stores agent_path from validated API key for scope-based visibility.\njupiter-core/jupiter_core/agents/alive_agent.py:1218         v5.1: Validates trace_id to reject stale ACKs from previous registration attempts.\njupiter-core/jupiter_core/agents/alive_agent.py:1219 \njupiter-core/jupiter_core/agents/alive_agent.py:1220         Why check agent_instance_id: Multiple agents may register simultaneously.\njupiter-core/jupiter_core/agents/alive_agent.py:1221         Why check success flag: Middleware may reject duplicate registrations.\njupiter-core/jupiter_core/agents/alive_agent.py:1222         Why check trace_id: Prevents accepting stale ACKs from RabbitMQ queue during deployments.\njupiter-core/jupiter_core/agents/alive_agent.py:1223         \"\"\"\njupiter-core/jupiter_core/agents/alive_agent.py:1224         # Read sender identity from context (WHO sent the ACK - which agent it's for)\njupiter-core/jupiter_core/agents/alive_agent.py:1225         received_agent_instance_id = message.context.get_agent_instance_id() if message.context else None\njupiter-core/jupiter_core/agents/alive_agent.py:1226 \njupiter-core/jupiter_core/agents/alive_agent.py:1227         if not received_agent_instance_id:\njupiter-core/jupiter_core/agents/alive_agent.py:1228             self.warning(\"Received registration ACK without agent_instance_id in context\")\njupiter-core/jupiter_core/agents/alive_agent.py:1229             return\njupiter-core/jupiter_core/agents/alive_agent.py:1230 \njupiter-core/jupiter_core/agents/alive_agent.py:1231         payload = message.payload\njupiter-core/jupiter_core/agents/alive_agent.py:1232         registration_success = payload.get(\"success\", False)  # Default to False if 'success' key is missing\njupiter-core/jupiter_core/agents/alive_agent.py:1233 \njupiter-core/jupiter_core/agents/alive_agent.py:1234         if received_agent_instance_id != self.id:\njupiter-core/jupiter_core/agents/alive_agent.py:1235             self.warning(f\"Received ACK for different agent instance ID: {received_agent_instance_id}\")\njupiter-core/jupiter_core/agents/alive_agent.py:1236             return\njupiter-core/jupiter_core/agents/alive_agent.py:1237 \njupiter-core/jupiter_core/agents/alive_agent.py:1238         # v5.1: Validate trace_id matches the pending registration request\njupiter-core/jupiter_core/agents/alive_agent.py:1239         # This prevents accepting stale ACKs from previous registration attempts\njupiter-core/jupiter_core/agents/alive_agent.py:1240         # (e.g., old messages sitting in RabbitMQ queue during middleware deployments)\njupiter-core/jupiter_core/agents/alive_agent.py:1241         ack_trace_id = message.trace_id\njupiter-core/jupiter_core/agents/alive_agent.py:1242 \njupiter-core/jupiter_core/agents/alive_agent.py:1243         # v5.2: Reject ACK if no registration is pending\njupiter-core/jupiter_core/agents/alive_agent.py:1244         # Without this check, stale ACKs from RabbitMQ queue would be accepted\njupiter-core/jupiter_core/agents/alive_agent.py:1245         # because the mismatch check below requires _pending_registration_trace_id to be set\njupiter-core/jupiter_core/agents/alive_agent.py:1246         if not self._pending_registration_trace_id:\njupiter-core/jupiter_core/agents/alive_agent.py:1247             self.warning(\njupiter-core/jupiter_core/agents/alive_agent.py:1248                 f\"[REGISTRATION] Ignoring unsolicited ACK: no registration pending. \"\njupiter-core/jupiter_core/agents/alive_agent.py:1249                 f\"Received ACK with trace_id='{ack_trace_id}'. \"\njupiter-core/jupiter_core/agents/alive_agent.py:1250                 f\"This is likely a stale ACK from RabbitMQ queue.\",\njupiter-core/jupiter_core/agents/alive_agent.py:1251                 received_trace_id=ack_trace_id\njupiter-core/jupiter_core/agents/alive_agent.py:1252             )\njupiter-core/jupiter_core/agents/alive_agent.py:1253             return\njupiter-core/jupiter_core/agents/alive_agent.py:1254 \njupiter-core/jupiter_core/agents/alive_agent.py:1255         if ack_trace_id != self._pending_registration_trace_id:\njupiter-core/jupiter_core/agents/alive_agent.py:1256             self.warning(\njupiter-core/jupiter_core/agents/alive_agent.py:1257                 f\"[REGISTRATION] Ignoring stale ACK: trace_id mismatch. \"\njupiter-core/jupiter_core/agents/alive_agent.py:1258                 f\"Expected '{self._pending_registration_trace_id}', got '{ack_trace_id}'. \"\njupiter-core/jupiter_core/agents/alive_agent.py:1259                 f\"This ACK is from a previous registration attempt.\",\njupiter-core/jupiter_core/agents/alive_agent.py:1260                 expected_trace_id=self._pending_registration_trace_id,\njupiter-core/jupiter_core/agents/alive_agent.py:1261                 received_trace_id=ack_trace_id\njupiter-core/jupiter_core/agents/alive_agent.py:1262             )\njupiter-core/jupiter_core/agents/alive_agent.py:1263             return\njupiter-core/jupiter_core/agents/alive_agent.py:1264 \njupiter-core/jupiter_core/agents/alive_agent.py:1265         if registration_success:\njupiter-core/jupiter_core/agents/alive_agent.py:1266             # v5.0: Extract and store agent_path from ACK payload\njupiter-core/jupiter_core/agents/alive_agent.py:1267             agent_path = payload.get(\"agent_path\")\njupiter-core/jupiter_core/agents/alive_agent.py:1268             if agent_path:\njupiter-core/jupiter_core/agents/alive_agent.py:1269                 self._agent_path = agent_path\njupiter-core/jupiter_core/agents/alive_agent.py:1270                 self.info(f\"Registration confirmed for {self.agent}, agent_path='{agent_path}'\")\njupiter-core/jupiter_core/agents/alive_agent.py:1271             else:\njupiter-core/jupiter_core/agents/alive_agent.py:1272                 # This should not happen with v5.0+ middleware - log as error for investigation\njupiter-core/jupiter_core/agents/alive_agent.py:1273                 self.error(\njupiter-core/jupiter_core/agents/alive_agent.py:1274                     f\"Registration ACK missing agent_path for {self.agent}. \"\njupiter-core/jupiter_core/agents/alive_agent.py:1275                     f\"This indicates middleware may be running an old version without API key validation. \"\njupiter-core/jupiter_core/agents/alive_agent.py:1276                     f\"trace_id={ack_trace_id}\"\njupiter-core/jupiter_core/agents/alive_agent.py:1277                 )\njupiter-core/jupiter_core/agents/alive_agent.py:1278 \njupiter-core/jupiter_core/agents/alive_agent.py:1279             # Clear pending trace_id after successful registration\njupiter-core/jupiter_core/agents/alive_agent.py:1280             self._pending_registration_trace_id = None\njupiter-core/jupiter_core/agents/alive_agent.py:1281             self.client_registered_event.set()\njupiter-core/jupiter_core/agents/alive_agent.py:1282         else:\njupiter-core/jupiter_core/agents/alive_agent.py:1283             # v5.0: Registration rejected - extract error details\njupiter-core/jupiter_core/agents/alive_agent.py:1284             error_code = payload.get(\"error_code\", \"UNKNOWN\")\njupiter-core/jupiter_core/agents/alive_agent.py:1285             error_message = payload.get(\"error_message\", \"Registration failed\")\njupiter-core/jupiter_core/agents/alive_agent.py:1286 \njupiter-core/jupiter_core/agents/alive_agent.py:1287             self.error(\njupiter-core/jupiter_core/agents/alive_agent.py:1288                 f\"Registration REJECTED for {self.agent}: [{error_code}] {error_message}\",\njupiter-core/jupiter_core/agents/alive_agent.py:1289                 error_code=error_code,\njupiter-core/jupiter_core/agents/alive_agent.py:1290                 error_message=error_message\njupiter-core/jupiter_core/agents/alive_agent.py:1291             )",
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "spawned by the abstraction-architect audit method (references/audit.md, run by /daodan:check-health) or by the reviews of /daodan:review-changes and /daodan:review-branch; asking who canonically owns a fact/policy/state or whether new code duplicates existing logic.",
+        "false": "implementation, security (use senior-review:security-auditor), distributed flows (use senior-review:distributed-flow-auditor), dead code (use senior-review:cleanup-auditor), or cycles/cohesion (use senior-review:code-auditor)."
+      }
+    },
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms.",
+        "false": ""
+      }
+    },
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling.",
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices)."
+      }
+    },
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches.",
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo)."
+      }
+    },
+    "senior-review:api-contract-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "checking OpenAPI/Swagger, JSON Schema, GraphQL SDL, gRPC .proto, AsyncAPI, TypeScript DTOs or Pydantic models against code, or reviewing API surface changes.",
+        "false": "no contract file exists (use code-auditor), cross-service runtime flows (use distributed-flow-auditor), or internal domain invariants (use logic-integrity-auditor)."
+      }
+    },
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck.",
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by senior-review's review method under /daodan:review-changes or /daodan:review-branch, by /daodan:tidy-repo or /daodan:check-health, or asked for a technical-debt, dead-code, orphan-asset or unused-dependency audit.",
+        "false": "applying removals (use senior-review:application-cleanup-method under commit authorization, from /daodan:tidy-repo), filesystem/git tidying (use repo-hygiene:workspace-auditor), or single-language scans (use typescript-development:knip or python-development:python-dead-code)."
+      }
+    },
+    "senior-review:code-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a code review, architecture audit, quality scoring, failure-path analysis, or pattern consistency check.",
+        "false": "the task is security-specific auditing (use security-auditor)."
+      }
+    },
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries.",
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor)."
+      }
+    },
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review.",
+        "false": ""
+      }
+    },
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit.",
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:premise-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "Phase 1c of senior-review's branch review (/daodan:review-branch) runs, the verification panel spawns Lens 0 for a finding premise, or a review of a plan, a specification or a document dispatches the claim check.",
+        "false": "hunting defects (use dimension auditors) or building the interconnect map (use codebase-map:semantic-interconnect-mapper)."
+      }
+    },
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory.",
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor)."
+      }
+    },
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers.",
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer)."
+      }
+    },
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs.",
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor)."
+      }
+    },
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders.",
+        "false": ""
+      }
+    },
+    "testing:test-suite-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "auditing a test suite, reviewing test hygiene, detecting flaky or dead tests, or assessing test redundancy, layer distribution or placement.",
+        "false": "tests should be written (use test-writer), or quarantine or consolidation applied (use testing:test-remediation-method in quarantine or consolidate mode)."
+      }
+    },
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does this hunk satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift.",
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip)."
+      }
+    }
+  },
+  "request_sha256": "2e859eb2e2d144248fa9b2e16849830650cf3f794e5cb0f9df5154bc0ace78b8"
+}

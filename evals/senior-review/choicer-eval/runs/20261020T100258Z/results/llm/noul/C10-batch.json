@@ -1,0 +1,62 @@
+{
+  "impl": "llm",
+  "variant": "noul",
+  "case_id": "C10",
+  "hunk_id": null,
+  "request_sha256": "7542861f6f5c16f08796dfafa153bd27882558b0b75b8357c24c6335eb714366",
+  "status": "ok",
+  "selected": [
+    "senior-review:security-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:premise-auditor"
+  ],
+  "probabilities": null,
+  "wall_seconds": null,
+  "cpu_seconds": null,
+  "phase": "unknown",
+  "usage": null,
+  "raw_output": {
+    "schema": "choicer-eval/native-capture-v1",
+    "request_sha256": "7542861f6f5c16f08796dfafa153bd27882558b0b75b8357c24c6335eb714366",
+    "response": "{\n  \"mode\": \"full\",\n  \"selected\": [\n    {\n      \"trigger_line\": \"[H1] candidate payments/service.py:4 select(Payment).where(Payment.order_id == order_id)\",\n      \"reason\": \"Verify order-scoped payment access cannot expose or alter another customer's payment.\",\n      \"role\": \"senior-review:security-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H1] candidate payments/service.py:11 await session.commit()\",\n      \"reason\": \"Check payment persistence and gateway charging remain consistent across transaction failures.\",\n      \"role\": \"senior-review:data-integrity-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    },\n    {\n      \"trigger_line\": \"[H1] candidate payments/service.py:6 if existing.scalar_one_or_none() is not None:\",\n      \"reason\": \"Check duplicate-payment business-rule boundaries and behavior under concurrent requests.\",\n      \"role\": \"senior-review:premise-auditor\",\n      \"tier\": \"tier2\",\n      \"effort\": \"high\"\n    }\n  ],\n  \"recommend_full_review\": false,\n  \"recommend_full_reason\": null\n}\n",
+    "response_sha256": "8ddad77ecd7848444f3e098b23f677f72d98ab178c9ce28fb1bfcde77650906b",
+    "model": {
+      "provider": "OpenAI through Codex native subagent",
+      "requested_model": "gpt-6-luna",
+      "requested_reasoning_effort": "low",
+      "host_accepted_override": true,
+      "provider_reported_model": null
+    },
+    "usage": null,
+    "wall_seconds": null,
+    "cpu_seconds": null,
+    "phase": "unknown",
+    "transport": {
+      "tool": "collaboration.spawn_agent",
+      "task_name": "/root/baseline_c10",
+      "fork_turns": "none",
+      "loader_prompt": "Execute one isolated reviewer-Choicer request. Your only task input is the UTF-8 JSON file D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/requests/llm/noul/C10-batch.json. Read only that file, load its `prompt` field verbatim and follow that prompt as your task. Read the full prompt without truncation. Do not read any other repository file, case labels, prior outputs, instructions files, or other agents' work. Do not browse or delegate. The frozen prompt contains all evidence you may use. Save your exact response JSON to D:/Projects/daodan/evals/senior-review/choicer-eval/runs/20261020T100258Z/captures/C10-response.json using a file tool, and return that same JSON as your final answer. Write no other files. Do not invent token usage, timing or model metadata.",
+      "loader_prompt_sha256": "7cb9dbc5d3a1887b5a9e9b8a9cae6bbca77f4a5c22b3b92e6ec62e6364391fa9",
+      "effective_provider_request": null,
+      "provider_finish_reason": null,
+      "provider_api_call_count": null,
+      "final_response_source": "Native agent final delivery, preserved without changing reviewer decisions. Coordinator persisted delivery when the child did not write the requested file."
+    },
+    "limitations": [
+      "Native tool does not expose provider token usage, final model identity, finish reason, API call count or per-case inference timing.",
+      "File-loader wrapper and inherited host tool/system context are part of transport; this is not a bare single HTTP prompt."
+    ]
+  },
+  "validation_warnings": [
+    "H1: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding.",
+    "H1: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding.",
+    "H1: citation side 'candidate' is not independently verified; the supplied evidence omitted a side binding."
+  ],
+  "model": {
+    "provider": "OpenAI through Codex native subagent",
+    "requested_model": "gpt-6-luna",
+    "requested_reasoning_effort": "low",
+    "host_accepted_override": true,
+    "provider_reported_model": null
+  }
+}

@@ -451,14 +451,19 @@ def create_context(manifest, request, recipient, *, authority, out, cursor=None,
         plan = scope.advance_scope(plan, request, authority=authority, indexes=indexes, max_steps=100)
     packet = build_packet(plan, request, authority=authority, recipient=recipient, indexes=indexes,
                           cursor=checkpoint['cursor'] if checkpoint else None)
+    import map_slice
+    slice_ = map_slice.project_slice(plan, request, authority=authority, indexes=indexes)
     identity = retrieval._digest(packet)
     packet_path = output / ('context-' + identity + '.json')
     cursor_path = output / ('cursor-' + identity + '.json')
+    slice_path = output / ('map-slice-' + identity + '.json')
     output.mkdir(parents=True, exist_ok=True)
     scope._path(output, Path(authority['root']))
     saved = persist_packet(packet, packet_path, authority=authority)
     checkpoint = dict(schema='daodan/context-checkpoint/v1', plan=plan, cursor=packet['cursor'])
     checkpoint['sha256'] = retrieval._digest(checkpoint)
     embedding_worker._publish_json(cursor_path, checkpoint)
+    embedding_worker._publish_json(slice_path, slice_)
     return dict(saved, cursor_path=str(cursor_path), cursor_sha256=artifact_digest(cursor_path),
+                map_slice_path=str(slice_path), map_slice_sha256=artifact_digest(slice_path),
                 gaps=len(packet['gaps']), dispatch_gap=packet['dispatch_gap'])

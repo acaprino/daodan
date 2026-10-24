@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Run Ruff F401 on this Python module and return its diagnostics without broader repository analysis.",
+    "artifacts": [
+      {
+        "path": "tool.py",
+        "content": "import json\nimport math\n\ndef serialize(value):\n    return json.dumps(value)"
+      },
+      {
+        "path": "pyproject.toml",
+        "content": "[tool.ruff.lint]\nselect = [\"F401\"]"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    }
+  }
+}

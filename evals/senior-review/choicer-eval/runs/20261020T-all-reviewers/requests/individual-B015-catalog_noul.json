@@ -1,0 +1,34 @@
+{
+  "id": "individual-B015-catalog_noul",
+  "kind": "individual",
+  "case_id": "B015",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review why the update badge should reflect the result of the toolbar check.",
+    "artifacts": [
+      {
+        "path": "useUpdate.ts",
+        "content": "export function useUpdate() {\n  const [available, setAvailable] = useState(false);\n  const check = async () => setAvailable(await bridge.checkUpdate());\n  useEffect(() => { check(); }, []);\n  return {available, check};\n}"
+      },
+      {
+        "path": "Toolbar.tsx",
+        "content": "export function Toolbar() {\n  const {check} = useUpdate();\n  return <button onClick={check}>Check for updates</button>;\n}"
+      },
+      {
+        "path": "UpdateBadge.tsx",
+        "content": "export function UpdateBadge() {\n  const {available} = useUpdate();\n  return available ? <span>Update ready</span> : null;\n}"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "races between async data loading, layout, event handlers, and programmatic scroll, focus, or resize; scroll position corruption, sticky or auto-scroll breakage, focus theft, layout shift, stale measurement closures, layout-dependent reads racing incomplete renders."
+      }
+    }
+  },
+  "sha256": "6d6480bfc9fb658c366fe0c6cd696db17ff7abe2f98207896653b6c6fbfc3121"
+}

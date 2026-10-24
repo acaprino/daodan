@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supersonic-julia"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["torch>=2.6", "transformers>=5.0,<5.1", "safetensors>=0.5", "numpy>=1.26"]
+
+[tool.setuptools.packages.find]
+include = ["julia*"]
+exclude = ["julia.router.tests*"]
+
+[project.optional-dependencies]
+benchmark = ["pyarrow>=15"]
+cuda = ["bitsandbytes>=0.48,<0.50", "accelerate>=1.10,<2"]
+
+[tool.setuptools.package-data]
+"julia.router" = ["native/*.bend", "native/*.c", "README.md"]
+"julia" = ["native/*.c", "native/*.bend", "native/*.json"]

@@ -73,9 +73,8 @@ Compiled binding and static checks do not prove an installed host executed a run
 ## Grounding before questions
 
 1. Load `codebase-map:map-method`; deepen the requested area using
-   `references/deepen.md`. Read the named entities' cards, their one-hop
-   neighbours from `edit-impact`, and current source. Cards are leads; source
-   establishes facts.
+   `references/deepen.md`. Read entity cards, `edit-impact` one-hop neighbours and current source;
+   cards are leads, source establishes facts.
 2. Load `project-knowledge:adr-method`; `resolve` the scope. Inherit the
    returned one to three active records as constraints.
 3. Read base-commit instructions (`AGENTS.md`, `CLAUDE.md`, nested files)
@@ -83,17 +82,17 @@ Compiled binding and static checks do not prove an installed host executed a run
 4. Record grounding as `active` in the run's `adr` section and every later
    worker brief.
 
-Before fixing scope, trace affected flows in source beyond immediate map
-neighbours: callers, tests, fixtures, configuration and exports that must change
-together. These are required scope, not extra features. For bugs, locate the
-shared cause before choosing a repair site. Necessary paths outside approved
-scope return to planning before edits there.
+Before fixing scope, trace affected callers, tests, fixtures, configuration and
+exports beyond map neighbours. Include paths that must change together; locate
+bugs’ shared cause before choosing repairs. Replan before editing unapproved paths.
+Before splitting producer/consumer work, agree the authoritative contract and
+wire/error/version compatibility. Derive types/mocks; check actual serialization.
+A shared type suffices within an atomic boundary; schema validity proves no domain rule.
 
 ## One question per turn
 
-Ask one question at a time. Anchor it to a file and line, showing current and proposed behavior
-through concrete inputs and outputs from code or tests. Prefer questions that
-close design branches. Recommend an answer and explain alternatives' costs.
+Ask one question at a time, anchored to a file/line and concrete current/proposed
+inputs and outputs. Close design branches; recommend an answer and explain costs.
 Use the host's question tool; without one, record every pending question in the
 run's `questions` section, end the turn listing them, and resume that run with
 answers.

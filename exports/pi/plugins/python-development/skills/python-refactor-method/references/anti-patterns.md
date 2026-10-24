@@ -71,7 +71,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Code Anti-Patterns Reference
 
-This document catalogs common code anti-patterns that harm readability and maintainability, with detection criteria and refactoring guidance.
+This document catalogs investigation leads for readability and maintainability. Promote only evidenced comprehension or behavioral cost under the project’s requirements. Line counts, missing classes, annotations and docstring percentages are not standalone defects; pure modules and small CLIs can be the simplest correct design. Review bindings consume this knowledge read-only.
 
 ## Table of Contents
 
@@ -87,13 +87,13 @@ These anti-patterns significantly harm code comprehension and should be fixed fi
 
 ### 1. Script-Like / Procedural Code (Spaghetti Code)
 
-**Problem:** Code organized as a script with scattered functions, global state, and no clear structure instead of proper OOP architecture.
+**Problem:** Shared mutable state or unrelated responsibilities obscure ownership and cause demonstrated coupling. Procedural code alone is not a defect.
 
 **Detection:**
 - Global variables for state management
 - Functions scattered without cohesion
-- No classes or poorly designed classes
-- Everything in one file
+- State ownership obscured by poorly chosen modules or classes
+- Unrelated responsibilities sharing mutable state
 - No clear separation of concerns
 - Direct dependencies instead of dependency injection
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     result = process_user(123)
 ```
 
-**Fix:** Transform to OOP architecture - see oop_principles.md
+**Fix:** Clarify ownership using existing modules or classes; use oop_principles.md when state encapsulation is justified.
 
 **Good Example:**
 ```python

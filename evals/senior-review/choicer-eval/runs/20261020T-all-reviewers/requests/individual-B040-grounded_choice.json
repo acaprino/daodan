@@ -1,0 +1,30 @@
+{
+  "id": "individual-B040-grounded_choice",
+  "kind": "individual",
+  "case_id": "B040",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review memory use in the command-line mesh converter while processing large files.",
+    "artifacts": [
+      {
+        "path": "converter.cpp",
+        "content": "#include <vector>\n#include \"mesh.hpp\"\nint main(int argc, char **argv) {\n  auto mesh = read_mesh(argv[1]);\n  std::vector<Vertex> normalized = normalize(mesh.vertices);\n  write_mesh(argv[2], normalized);\n}"
+      },
+      {
+        "path": "README.md",
+        "content": "mesh-convert is a headless C++ command-line tool. It runs in batch jobs and has no browser, mobile, or desktop application frontend."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "choice",
+      "instructions": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      }
+    }
+  },
+  "sha256": "ecb475d2c1ed274bd1f045da22a826273b701d3d6eee6091a6c574b427193426"
+}

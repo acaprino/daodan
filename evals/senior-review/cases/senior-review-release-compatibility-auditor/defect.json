@@ -1,0 +1,35 @@
+{
+  "requirement": "Rolling update keeps v1 serving until v2 ready. v1 reads orders.total; v2 reads orders.amount. All phases must support active readers. Complete inventory and ordered rollout are declared below.",
+  "schema": [
+    "orders.total"
+  ],
+  "v1": {
+    "reads": [
+      "orders.total"
+    ]
+  },
+  "v2": {
+    "reads": [
+      "orders.amount"
+    ]
+  },
+  "rollout": [
+    {
+      "active": [
+        "v1"
+      ],
+      "migration": "rename orders.total to amount"
+    },
+    {
+      "active": [
+        "v1",
+        "v2"
+      ]
+    },
+    {
+      "active": [
+        "v2"
+      ]
+    }
+  ]
+}

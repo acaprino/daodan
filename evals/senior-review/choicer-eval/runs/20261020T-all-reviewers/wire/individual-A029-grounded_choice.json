@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the steady-state uniqueness constraint in this schema. Connection management is outside scope.",
+    "artifacts": [
+      {
+        "path": "db/rooms.sql",
+        "content": "CREATE TABLE rooms (\n  id BIGINT PRIMARY KEY,\n  building_id BIGINT NOT NULL,\n  name TEXT NOT NULL,\n  UNIQUE (building_id, name)\n);\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review allocation overhead in this pure transformation of a bounded tuple. The result is returned directly and nothing is retained elsewhere.",
+    "artifacts": [
+      {
+        "path": "src/labels.py",
+        "content": "def labels(values):\n    return tuple(str(value).upper() for value in values)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scoped code acquire, retain, transfer or release handles, connections, subscriptions, locks, timers, concurrent tasks or native resources whose ownership and exit paths need review?",
+      "criteria": {
+        "false": "The scoped work involves no resource ownership or acquisition-and-release behavior; ordinary short-lived garbage-collected values alone do not qualify.",
+        "true": "The scoped work involves resource acquisition, retention, ownership transfer or release across success, error or cancellation, including structurally managed resources."
+      }
+    }
+  }
+}

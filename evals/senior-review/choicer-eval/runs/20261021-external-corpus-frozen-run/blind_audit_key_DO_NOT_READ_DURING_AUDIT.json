@@ -1,0 +1,762 @@
+{
+  "schema": "choicer-eval/blind-audit-key-v1",
+  "warning": "Read only after blind_audit_packet.json judgments are frozen.",
+  "key": {
+    "J01": {
+      "case_id": "E01",
+      "split": "development",
+      "expected_roles": [
+        "senior-review:security-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "rationale": "Filters account visibility using JWT scopes and ownership keys; local sets are not persistence."
+    },
+    "J02": {
+      "case_id": "E02",
+      "split": "development",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "rationale": "Gets and sets cache entries and TTL; no credentials, UI or resource acquisition is shown."
+    },
+    "J03": {
+      "case_id": "E03",
+      "split": "development",
+      "expected_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "rationale": "Publish/ACK correlation, bounded attempts, timeouts and final cleanup; no persistence or UI."
+    },
+    "J04": {
+      "case_id": "E04",
+      "split": "development",
+      "expected_roles": [],
+      "negative_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "rationale": "Pure datetime conversion is not a scheduler, retry, resource, transport or trust boundary."
+    },
+    "J05": {
+      "case_id": "E05",
+      "split": "verification",
+      "expected_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "rationale": "Circuit state admission and release of bounded in-flight probe slots govern recovery and lifecycle."
+    },
+    "J06": {
+      "case_id": "E06",
+      "split": "verification",
+      "expected_roles": [],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "rationale": "Deterministic display/agent identifiers use SHA-256; no security token or transport is implemented here."
+    },
+    "J07": {
+      "case_id": "E07",
+      "split": "verification",
+      "expected_roles": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "rationale": "Lock acquisition/release and async context-manager exit; metrics are local counters."
+    },
+    "J08": {
+      "case_id": "E08",
+      "split": "verification",
+      "expected_roles": [
+        "senior-review:security-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "rationale": "Masks credentials and sensitive values in output; connection strings are text, not acquired sockets."
+    },
+    "D01": {
+      "case_id": "F01",
+      "source_candidate_id": "X103",
+      "source": "commitbench",
+      "expected_roles": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "provenance": {
+        "dataset": "Maxscha/commitbench",
+        "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+        "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+        "repo": "WellCommerce_WishlistBundle",
+        "revision": "0bd757116b0efaf015fc6076a1ac5d578ed6b45b",
+        "source_candidate_id": "X103",
+        "evidence_summary": "Removed unused use statements (cherry picked from commit fe<I>e8e<I>c0ee<I>de<I>a5cb4deb<I>f<I>c<I>)"
+      }
+    },
+    "D02": {
+      "case_id": "F02",
+      "source_candidate_id": "X112",
+      "source": "commitbench",
+      "expected_roles": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "provenance": {
+        "dataset": "Maxscha/commitbench",
+        "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+        "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+        "repo": "WellCommerce_WishlistBundle",
+        "revision": "1f1b1030245c4cd1cec2c9fe42d0b8739854f746",
+        "source_candidate_id": "X112",
+        "evidence_summary": "Removed unused use statement in ProductDatagrid"
+      }
+    },
+    "D03": {
+      "case_id": "F03",
+      "source_candidate_id": "X117",
+      "source": "commitbench",
+      "expected_roles": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "provenance": {
+        "dataset": "Maxscha/commitbench",
+        "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+        "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+        "repo": "openlayers_openlayers",
+        "revision": "60c5d016a6fd8661b8fad57a1bfb7b42e2a86647",
+        "source_candidate_id": "X117",
+        "evidence_summary": "Remove unused 'opaque' property from ol/source/Stamen options And set the `layer` property as mandatory."
+      }
+    },
+    "D04": {
+      "case_id": "F04",
+      "source_candidate_id": "X072",
+      "source": "commitbench",
+      "expected_roles": [
+        "senior-review:cleanup-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "provenance": {
+        "dataset": "Maxscha/commitbench",
+        "dataset_revision": "1500792cd6998308da046ba72b688156b2ffa471",
+        "license": "CC BY-NC 4.0; backup candidate generation only, no commercial path and no gold labels",
+        "repo": "tensorflow_probability",
+        "revision": "fb685ff214d15bfdb9848bddaa4666c954a9324b",
+        "source_candidate_id": "X072",
+        "evidence_summary": "sort supported dtypes in host_callback_test.py (#<I>) * sort supported dtypes in host_callback_test.py This fixes issues I ran into with running `pytest -n auto tests/host_callback_test.py` or similar. * remove unused import"
+      }
+    },
+    "D05": {
+      "case_id": "F05",
+      "source_candidate_id": "X049",
+      "source": "devign",
+      "expected_roles": [],
+      "negative_roles": [
+        "senior-review:security-auditor"
+      ],
+      "provenance": {
+        "dataset": "DetectVul/devign",
+        "dataset_revision": "see source_inventory.json",
+        "commit_id": "32bf6550cb9cc9f487a6722fe2bfc272a93c1065",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "FFmpeg",
+        "revision": "32bf6550cb9cc9f487a6722fe2bfc272a93c1065",
+        "source_candidate_id": "X049",
+        "evidence_summary": "Devign dataset target=False"
+      }
+    },
+    "D06": {
+      "case_id": "F06",
+      "source_candidate_id": "X051",
+      "source": "devign",
+      "expected_roles": [
+        "senior-review:security-auditor"
+      ],
+      "negative_roles": [],
+      "provenance": {
+        "dataset": "DetectVul/devign",
+        "dataset_revision": "see source_inventory.json",
+        "commit_id": "5ff998a233d759d0de83ea6f95c383d03d25d88e",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "FFmpeg",
+        "revision": "5ff998a233d759d0de83ea6f95c383d03d25d88e",
+        "source_candidate_id": "X051",
+        "evidence_summary": "Devign dataset target=True"
+      }
+    },
+    "D07": {
+      "case_id": "F07",
+      "source_candidate_id": "X052",
+      "source": "devign",
+      "expected_roles": [],
+      "negative_roles": [
+        "senior-review:security-auditor"
+      ],
+      "provenance": {
+        "dataset": "DetectVul/devign",
+        "dataset_revision": "see source_inventory.json",
+        "commit_id": "68f593b48433842f3407586679fe07f3e5199ab9",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "FFmpeg",
+        "revision": "68f593b48433842f3407586679fe07f3e5199ab9",
+        "source_candidate_id": "X052",
+        "evidence_summary": "Devign dataset target=False"
+      }
+    },
+    "D08": {
+      "case_id": "F08",
+      "source_candidate_id": "X057",
+      "source": "devign",
+      "expected_roles": [
+        "senior-review:security-auditor"
+      ],
+      "negative_roles": [],
+      "provenance": {
+        "dataset": "DetectVul/devign",
+        "dataset_revision": "see source_inventory.json",
+        "commit_id": "c23acbaed40101c677dfcfbbfe0d2c230a8e8f44",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "FFmpeg",
+        "revision": "c23acbaed40101c677dfcfbbfe0d2c230a8e8f44",
+        "source_candidate_id": "X057",
+        "evidence_summary": "Devign dataset target=True"
+      }
+    },
+    "D09": {
+      "case_id": "F09",
+      "source_candidate_id": "X058",
+      "source": "devign",
+      "expected_roles": [
+        "senior-review:security-auditor"
+      ],
+      "negative_roles": [],
+      "provenance": {
+        "dataset": "DetectVul/devign",
+        "dataset_revision": "see source_inventory.json",
+        "commit_id": "323e6fead07c75f418e4b60704a4f437bb3483b2",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "FFmpeg",
+        "revision": "323e6fead07c75f418e4b60704a4f437bb3483b2",
+        "source_candidate_id": "X058",
+        "evidence_summary": "Devign dataset target=True"
+      }
+    },
+    "D10": {
+      "case_id": "F10",
+      "source_candidate_id": "X060",
+      "source": "devign",
+      "expected_roles": [],
+      "negative_roles": [
+        "senior-review:security-auditor"
+      ],
+      "provenance": {
+        "dataset": "DetectVul/devign",
+        "dataset_revision": "see source_inventory.json",
+        "commit_id": "3547f8e8f8418af0c578eba0de62ecba08e460c2",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "FFmpeg",
+        "revision": "3547f8e8f8418af0c578eba0de62ecba08e460c2",
+        "source_candidate_id": "X060",
+        "evidence_summary": "Devign dataset target=False"
+      }
+    },
+    "D11": {
+      "case_id": "F11",
+      "source_candidate_id": "X036",
+      "source": "multi-swe-bench",
+      "expected_roles": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "ByteDance-Seed/Multi-SWE-bench",
+        "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "file": "java/fasterxml__jackson-databind_dataset.jsonl",
+        "scanned_rows": 4,
+        "license": "other in the Hugging Face API response; upstream project licenses apply",
+        "repo": "fasterxml/jackson-databind",
+        "revision": "e71e1a227e796abd8a55e8135044133667d6555e",
+        "source_candidate_id": "X036",
+        "evidence_summary": "Fix #4481: allow override of `READ_UNKNOWN_ENUM_VALUES_AS_NULL`; Unable to override `DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL` with `JsonFormat.Feature.READ_UNKNOWN_ENUM_VALUES_AS_NULL`"
+      }
+    },
+    "D12": {
+      "case_id": "F12",
+      "source_candidate_id": "X088",
+      "source": "multi-swe-bench",
+      "expected_roles": [
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "ByteDance-Seed/Multi-SWE-bench",
+        "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "file": "go/grpc__grpc-go_dataset.jsonl",
+        "scanned_rows": 5,
+        "license": "other in the Hugging Face API response; upstream project licenses apply",
+        "repo": "grpc/grpc-go",
+        "revision": "7c1d326729dc9b0a07135f8902ddcc050ff8ab64",
+        "source_candidate_id": "X088",
+        "evidence_summary": "dns: do not call NewServiceConfig when lookups are disabled; Re-resolution loop when service config is not supported"
+      }
+    },
+    "D13": {
+      "case_id": "F13",
+      "source_candidate_id": "X089",
+      "source": "multi-swe-bench",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "ByteDance-Seed/Multi-SWE-bench",
+        "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "file": "go/grpc__grpc-go_dataset.jsonl",
+        "scanned_rows": 7,
+        "license": "other in the Hugging Face API response; upstream project licenses apply",
+        "repo": "grpc/grpc-go",
+        "revision": "45bd2846a34b039c5f1e69b7202f118687156b34",
+        "source_candidate_id": "X089",
+        "evidence_summary": "credentials/alts: fix panic detecting GCP environment; credentials/alts: isRunningOnGCP fatalf's if /sys/class/dmi/id/product_name does not exist"
+      }
+    },
+    "D14": {
+      "case_id": "F14",
+      "source_candidate_id": "X025",
+      "source": "multi-swe-bench",
+      "expected_roles": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "ByteDance-Seed/Multi-SWE-bench",
+        "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "file": "ts/mui__material-ui_dataset.jsonl",
+        "scanned_rows": 1,
+        "license": "other in the Hugging Face API response; upstream project licenses apply",
+        "repo": "mui/material-ui",
+        "revision": "553cf822f6500075d374f3e89ad04b8308cd9f47",
+        "source_candidate_id": "X025",
+        "evidence_summary": "[system] Add outlineColor to defaultSxConfig; [system] `sx` field outlineColor doesn't take the theme into account"
+      }
+    },
+    "D15": {
+      "case_id": "F15",
+      "source_candidate_id": "X027",
+      "source": "multi-swe-bench",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "ByteDance-Seed/Multi-SWE-bench",
+        "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "file": "ts/mui__material-ui_dataset.jsonl",
+        "scanned_rows": 3,
+        "license": "other in the Hugging Face API response; upstream project licenses apply",
+        "repo": "mui/material-ui",
+        "revision": "f69997e32614d07f26782dddd0fb6f96c67c3c4d",
+        "source_candidate_id": "X027",
+        "evidence_summary": "[joy-ui][Stepper] Add new `Stepper` components; [joy-ui] Add `Stepper` component"
+      }
+    },
+    "D16": {
+      "case_id": "F16",
+      "source_candidate_id": "X086",
+      "source": "multi-swe-bench",
+      "expected_roles": [
+        "senior-review:ui-race-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "ByteDance-Seed/Multi-SWE-bench",
+        "dataset_revision": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "file": "ts/mui__material-ui_dataset.jsonl",
+        "scanned_rows": 4,
+        "license": "other in the Hugging Face API response; upstream project licenses apply",
+        "repo": "mui/material-ui",
+        "revision": "b6f2e488d639e42d4e2d0518a0fecc4df5167c18",
+        "source_candidate_id": "X086",
+        "evidence_summary": "[lab][LoadingButton] LoadingButton now inherits props from ButtonGroup; LoadingButton doesn't inherit from ButtonGroup props"
+      }
+    },
+    "D17": {
+      "case_id": "F17",
+      "source_candidate_id": "X009",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/astropy/astropy/commit/298ccb478e6bf092953bca67a3d29dc6c35f6752",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "astropy/astropy",
+        "revision": "298ccb478e6bf092953bca67a3d29dc6c35f6752",
+        "source_candidate_id": "X009",
+        "evidence_summary": "TimeSeries: misleading exception when required column check fails. <!-- This comments are hidden when you submit the issue, so you do not need to remove them! --> <!-- Please be sure to check out our contributing guidelines, https://github.com/astropy/astropy/blob/main/CONTRIBUTING.md . Please be su"
+      }
+    },
+    "D18": {
+      "case_id": "F18",
+      "source_candidate_id": "X024",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/astropy/astropy/commit/d16bfe05a744909de4b27f5875fe0d4ed41ce607",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "astropy/astropy",
+        "revision": "d16bfe05a744909de4b27f5875fe0d4ed41ce607",
+        "source_candidate_id": "X024",
+        "evidence_summary": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels Consider the following model: ```python from astropy.modeling import models as m from astropy.modeling.separable import separability_matrix cm = m.Linear1D(10) & m.Linear1D(5) ``` It's separability mat"
+      }
+    },
+    "D19": {
+      "case_id": "F19",
+      "source_candidate_id": "X079",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "astropy/astropy",
+        "revision": "80c3854a5f4f4a6ab86c03d9db7854767fcd83c1",
+        "source_candidate_id": "X079",
+        "evidence_summary": "Inconsistency in double single-quote ('') management in FITS Card ### Description The management of single-quotes in FITS cards seem correct, except *sometimes* when dealing with null strings, i.e. double single quotes (`''`), which sometimes are transformed into single single quotes (`'`). E.g.: ``"
+      }
+    },
+    "D20": {
+      "case_id": "F20",
+      "source_candidate_id": "X001",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/django/django/commit/b9cf764be62e77b4777b3a75ec256f6209a57671",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "django/django",
+        "revision": "b9cf764be62e77b4777b3a75ec256f6209a57671",
+        "source_candidate_id": "X001",
+        "evidence_summary": "Make URLValidator reject invalid characters in the username and password Description (last modified by Tim Bell) Since #20003, core.validators.URLValidator accepts URLs with usernames and passwords. RFC 1738 section 3.1 requires \"Within the user and password field, any \":\", \"@\", or \"/\" must be encod"
+      }
+    },
+    "D21": {
+      "case_id": "F21",
+      "source_candidate_id": "X005",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/django/django/commit/28d5262fa3315690395f04e3619ed554dbaf725b",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "django/django",
+        "revision": "28d5262fa3315690395f04e3619ed554dbaf725b",
+        "source_candidate_id": "X005",
+        "evidence_summary": "Use Python stdlib html.escape() to in django.utils.html.escape() Description The function django.utils.html.escape() partially duplicates the Python stdlib function html.escape(). We can replace this duplication with wider community developed version. html.escape() has been available since Python 3."
+      }
+    },
+    "D22": {
+      "case_id": "F22",
+      "source_candidate_id": "X074",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "django/django",
+        "revision": "179ee13eb37348cd87169a198aec18fedccc8668",
+        "source_candidate_id": "X074",
+        "evidence_summary": "HashedFilesMixin's post_process() yields multiple times for the same file Description As part of fixing #24452, the implementation of HashedFilesMixin (used by both ManifestStaticFilesStorage and CachedStaticFilesStorage) was changed such that it performs several passes against the found files, ther"
+      }
+    },
+    "D23": {
+      "case_id": "F23",
+      "source_candidate_id": "X011",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:ui-race-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/matplotlib/matplotlib/commit/f0632c0fc7339f68e992ed63ae4cfac76cd41aad",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "matplotlib/matplotlib",
+        "revision": "f0632c0fc7339f68e992ed63ae4cfac76cd41aad",
+        "source_candidate_id": "X011",
+        "evidence_summary": "[Bug]: Datetime axis with usetex is unclear ### Bug summary The spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3. ### Code for reproduction ```python import matplotlib import matplotlib.pyplot as plt import numpy as np import pandas a"
+      }
+    },
+    "D24": {
+      "case_id": "F24",
+      "source_candidate_id": "X013",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/psf/requests/commit/39d0fdd9096f7dceccbc8f82e1eda7dd64717a8e",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "psf/requests",
+        "revision": "39d0fdd9096f7dceccbc8f82e1eda7dd64717a8e",
+        "source_candidate_id": "X013",
+        "evidence_summary": "Getting http://.example.com raises UnicodeError Attempting to get e.g. `http://.example.com` results in a `UnicodeError`. It seems like the intention so far has been to raise `InvalidUrl` instead (see e.g. [this line](https://github.com/psf/requests/blob/ca6f9af5dba09591007b15a7368bc0f006b7cc50/requ"
+      }
+    },
+    "D25": {
+      "case_id": "F25",
+      "source_candidate_id": "X080",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "psf/requests",
+        "revision": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+        "source_candidate_id": "X080",
+        "evidence_summary": "Unicode method names cause UnicodeDecodeError for some requests in Python 2.7.2 The following example works fine: ``` files = {u'file': open(u'/usr/bin/diff', u'rb')} response = requests.request(method='POST', url=u'http://httpbin.org/post', files=files) ``` But the following example (using `method="
+      }
+    },
+    "D26": {
+      "case_id": "F26",
+      "source_candidate_id": "X085",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "scikit-learn/scikit-learn",
+        "revision": "b90661d6a46aa3619d3eec94d5281f5888add501",
+        "source_candidate_id": "X085",
+        "evidence_summary": "linear_model.RidgeClassifierCV's Parameter store_cv_values issue #### Description Parameter store_cv_values error on sklearn.linear_model.RidgeClassifierCV #### Steps/Code to Reproduce import numpy as np from sklearn import linear_model as lm #test database n = 100 x = np.random.randn(n, 30) y = np."
+      }
+    },
+    "D27": {
+      "case_id": "F27",
+      "source_candidate_id": "X022",
+      "source": "swe-bench-verified",
+      "expected_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor"
+      ],
+      "negative_roles": [
+        "senior-review:security-auditor",
+        "senior-review:ui-race-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "provenance": {
+        "dataset": "princeton-nlp/SWE-bench_Verified",
+        "dataset_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "url": "https://github.com/sympy/sympy/commit/b9179e80d2daa1bb6cba1ffe35ca9e6612e115c9",
+        "license": "not stated in the Hugging Face API response; upstream project licenses apply",
+        "repo": "sympy/sympy",
+        "revision": "b9179e80d2daa1bb6cba1ffe35ca9e6612e115c9",
+        "source_candidate_id": "X022",
+        "evidence_summary": "Factor with extension=True drops a factor of y-1 I guess this related (or a duplicate of?) #5786 This is from stackoverflow: https://stackoverflow.com/questions/60682765/python-sympy-factoring-polynomial-over-complex-numbers ```julia In [9]: z = expand((x-1)*(y-1)) In [10]: z Out[10]: x⋅y - x - y + "
+      }
+    }
+  }
+}

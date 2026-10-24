@@ -1,0 +1,30 @@
+{
+  "id": "individual-B038-catalog_noul",
+  "kind": "individual",
+  "case_id": "B038",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review how the Android application saves the refresh token after login.",
+    "artifacts": [
+      {
+        "path": "app/src/main/AndroidManifest.xml",
+        "content": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"><application android:label=\"Field Notes\" /></manifest>"
+      },
+      {
+        "path": "app/src/main/java/SessionStore.kt",
+        "content": "class SessionStore(context: Context) {\n    private val preferences = context.getSharedPreferences(\"session\", Context.MODE_PRIVATE)\n    fun saveRefreshToken(token: String) {\n        preferences.edit().putString(\"refresh_token\", token).apply()\n    }\n}"
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms."
+      }
+    }
+  },
+  "sha256": "9c6c41d57ddae7567e5710b011f87a6b1432cd6a3cd90d7b72e58d282f0dc651"
+}

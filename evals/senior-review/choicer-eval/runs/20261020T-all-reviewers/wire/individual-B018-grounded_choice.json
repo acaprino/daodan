@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Check the rounding convention used to display tax in the invoice row.",
+    "artifacts": [
+      {
+        "path": "TaxRow.tsx",
+        "content": "export function TaxRow({taxCents}: {taxCents: number}) {\n  const value = (Math.round(taxCents) / 100).toFixed(2);\n  return <tr><th>Tax</th><td>{value}</td></tr>;\n}"
+      },
+      {
+        "path": "money.md",
+        "content": "taxCents is computed before rendering. The display must round to the nearest whole cent, with exact halves away from zero."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "choice",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    }
+  }
+}

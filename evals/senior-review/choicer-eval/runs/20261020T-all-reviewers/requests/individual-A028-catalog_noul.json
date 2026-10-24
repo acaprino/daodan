@@ -1,0 +1,26 @@
+{
+  "id": "individual-A028-catalog_noul",
+  "kind": "individual",
+  "case_id": "A028",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review whether this pure function computes the intended retry delays: 1, 2, 4, then at most 8 seconds. Timer creation and execution are outside the change.",
+    "artifacts": [
+      {
+        "path": "src/delay.py",
+        "content": "def delay_seconds(attempt):\n    if attempt < 0:\n        raise ValueError(\"negative attempt\")\n    return min(8, 2 ** attempt)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory."
+      }
+    }
+  },
+  "sha256": "5d78736151184976d94af11bef6b9dffac45f3c6134a3b26d3eefbadb3713ad4"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-B023-grounded_choice",
+  "kind": "individual",
+  "case_id": "B023",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Write a short release announcement from the completed change notes.",
+    "artifacts": [
+      {
+        "path": "CHANGELOG.md",
+        "content": "## 2.4\n- Added CSV exports for saved searches.\n- Added a keyboard shortcut to open settings.\n- Reduced repeated notifications after reconnecting."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  },
+  "sha256": "ce2bbf150be88ece63a1a0de82bbf20c4e32584a77ce9fa87ac56a2e2a434c2c"
+}

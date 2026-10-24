@@ -1,0 +1,26 @@
+{
+  "id": "individual-A026-catalog_noul",
+  "kind": "individual",
+  "case_id": "A026",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review allocation overhead in this pure transformation of a bounded tuple. The result is returned directly and nothing is retained elsewhere.",
+    "artifacts": [
+      {
+        "path": "src/labels.py",
+        "content": "def labels(values):\n    return tuple(str(value).upper() for value in values)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory."
+      }
+    }
+  },
+  "sha256": "0d6b91f4d6e59bd6d803faaa27e9a016b242ab2e974ace1f5f8902544d8ffd54"
+}

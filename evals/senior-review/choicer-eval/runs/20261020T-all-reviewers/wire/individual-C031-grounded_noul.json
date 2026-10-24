@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Verify the repository instructions against the configured build and test commands. Report stale commands and supporting evidence without updating files.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "Use npm run verify before delivery. This executes Jest and the TypeScript compiler."
+      },
+      {
+        "path": "package.json",
+        "content": "{\"scripts\":{\"check\":\"tsc --noEmit && vitest run\"},\"devDependencies\":{\"typescript\":\"^5.9.0\",\"vitest\":\"^3.2.0\"}}"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      }
+    }
+  }
+}

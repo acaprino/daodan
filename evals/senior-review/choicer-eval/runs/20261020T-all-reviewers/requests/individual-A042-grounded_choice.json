@@ -1,0 +1,30 @@
+{
+  "id": "individual-A042-grounded_choice",
+  "kind": "individual",
+  "case_id": "A042",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review the payment request across checkout and billing, including the caller's retry after a timeout.",
+    "artifacts": [
+      {
+        "path": "checkout/pay.py",
+        "content": "def pay(http, order):\n    for attempt in range(2):\n        try:\n            return http.post(\"http://billing:8080/charge\", json={\"order_id\": order.id, \"cents\": order.cents}, timeout=3)\n        except TimeoutError:\n            if attempt == 1:\n                raise\n"
+      },
+      {
+        "path": "billing/routes.py",
+        "content": "@app.post(\"/charge\")\ndef charge():\n    payment = processor.charge(request.json[\"cents\"])\n    return {\"payment_id\": payment.id}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "choice",
+      "instructions": "Given the task and artifacts, does the scope warrant comparing interacting services or agents across a communication boundary for contract agreement, delivery semantics, timeout budgets, failure propagation or coordinated state changes?",
+      "criteria": {
+        "false": "The scope does not concern interacting services or agents across a communication boundary, or their contracts, delivery semantics, timeout budgets, failures or coordinated state changes.",
+        "true": "The scope concerns interacting services or agents across a communication boundary and their contracts, delivery semantics, timeout budgets, failures or coordinated state changes."
+      }
+    }
+  },
+  "sha256": "f8eb7f05703aef2008408271f4181cd46accad1df2a095282ab7a31e37909e64"
+}

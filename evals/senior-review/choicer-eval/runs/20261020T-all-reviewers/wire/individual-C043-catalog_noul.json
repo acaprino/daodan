@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Audit the existing operator guide and propose a reorganization so first-time readers can complete setup before encountering the full parameter reference. Preserve every fact, table and command; do not edit documents.",
+    "artifacts": [
+      {
+        "path": "docs/operator.md",
+        "content": "# Operator guide\nCACHE_TTL: seconds before eviction; default 60.\nTo begin, create config.toml.\n| Option | Default |\n| workers | 4 |\nRun service start after saving config.toml.\nCACHE_SIZE: maximum entries; default 5000.\nFirst install the service package.\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "editing prose voice (use text-humanizer).",
+        "true": "spawned by project-knowledge methods to restructure technical documentation."
+      }
+    }
+  }
+}

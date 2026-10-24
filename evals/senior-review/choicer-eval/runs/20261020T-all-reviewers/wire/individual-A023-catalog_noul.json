@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review how a local workflow handles replay of a completed step. Everything shown runs within one process and mutates an in-memory session.",
+    "artifacts": [
+      {
+        "path": ".team-review/02-interconnect.md",
+        "content": "## Invariants\nA completed step contributes its points at most once per session.\n## Integration Hot-Spots\nresume_step can replay the last step after an interruption.\n"
+      },
+      {
+        "path": "src/steps.py",
+        "content": "def complete(session, step):\n    session.points += step.points\n    session.completed.add(step.id)\n\ndef resume_step(session, step):\n    complete(session, step)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit."
+      }
+    }
+  }
+}

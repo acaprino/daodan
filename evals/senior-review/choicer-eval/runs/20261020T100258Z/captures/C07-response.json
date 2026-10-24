@@ -1,0 +1,42 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H38] candidate jupiter-desktop/src-tauri/tauri.conf.json:54 \"https://jupiter-desktop-releases.s3.eu-west-1.amazonaws.com/stable/latest.json\"",
+      "reason": "Verify updater URL trust, artifact integrity, and the security of the privileged update path.",
+      "role": "senior-review:security-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H28] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:145 export const nextLocalMidnight = (from: Date): number =>",
+      "reason": "Check local-midnight arithmetic and date-boundary behavior, including DST transitions and postponement.",
+      "role": "senior-review:premise-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H29] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:470 schedulerTimer = setInterval(runSchedulerTick, SCHEDULER_TICK_MS)",
+      "reason": "Verify scheduler timing, delayed ticks, and restart behavior across sleep or clock changes.",
+      "role": "senior-review:temporal-resilience-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H27] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:129 let checkTimer: ReturnType<typeof setTimeout> | null = null",
+      "reason": "Check timer and updater-handle cleanup across app lifetime, retries, and overlapping flows.",
+      "role": "senior-review:resource-lifecycle-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    },
+    {
+      "trigger_line": "[H23] candidate jupiter-desktop/src-react/src/hooks/useUpdater.ts:445 export function useUpdater(): UseUpdaterReturn {",
+      "reason": "Review updater state transitions, concurrency guards, and failure recovery as one cross-module flow.",
+      "role": "senior-review:code-auditor",
+      "tier": "tier2",
+      "effort": "medium"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

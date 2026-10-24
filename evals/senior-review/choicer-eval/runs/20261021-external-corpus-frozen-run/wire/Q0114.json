@@ -1,0 +1,963 @@
+{
+  "id": "Q0114",
+  "case_id": "F07",
+  "role": "senior-review:data-integrity-auditor",
+  "mode": "windowed",
+  "variant": "candidate",
+  "window_id": "W001",
+  "prompt_sha256": "b9b93430e068e59b4cfe953d1ded4707af28135dc4d12212f84a2e013297291c",
+  "prompt_tokens": 1102,
+  "prefix_mode": "slot-restore",
+  "request": {
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F07\n[Code Under Review]\n[H1] FFmpeg/function-60.c:1 (character offset 0)\nstatic int mpeg1_decode_sequence(AVCodecContext *avctx, \n\n                                 UINT8 *buf, int buf_size)\n\n{\n\n    Mpeg1Context *s1 = avctx->priv_data;\n\n    MpegEncContext *s = &s1->mpeg_enc_ctx;\n\n    int width, height, i, v, j;\n\n    float aspect;\n\n\n\n    init_get_bits(&s->gb, buf, buf_size);\n\n\n\n    width = get_bits(&s->gb, 12);\n\n    height = get_bits(&s->gb, 12);\n\n    s->aspect_ratio_info= get_bits(&s->gb, 4);\n\n    if(!s->mpeg2){\n\n        aspect= mpeg1_aspect[s->aspect_ratio_info];\n\n        if(aspect!=0.0) avctx->aspect_ratio= width/(aspect*height);\n\n    }\n\n\n\n    s->frame_rate_index = get_bits(&s->gb, 4);\n\n    if (s->frame_rate_index == 0)\n\n        return -1;\n\n    s->bit_rate = get_bits(&s->gb, 18) * 400;\n\n    if (get_bits1(&s->gb) == 0) /* marker */\n\n        return -1;\n\n    if (width <= 0 || height <= 0 ||\n\n        (width % 2) != 0 || (height % 2) != 0)\n\n        return -1;\n\n    if (width != s->width ||\n\n        height != s->height) {\n\n        /* start new mpeg1 context decoding */\n\n        s->out_format = FMT_MPEG1;\n\n        if (s1->mpeg_enc_ctx_allocated) {\n\n            MPV_common_end(s);\n\n        }\n\n        s->width = width;\n\n        s->height = height;\n\n        avctx->has_b_frames= 1;\n\n        s->avctx = avctx;\n\n        avctx->width = width;\n\n        avctx->height = height;\n\n        if (s->frame_rate_index >= 9) {\n\n            /* at least give a valid frame rate (some old mpeg1 have this) */\n\n            avctx->frame_rate = 25 * FRAME_RATE_BASE;\n\n        } else {\n\n            avctx->frame_rate = frame_rate_tab[s->frame_rate_index];\n\n        }\n\n        s->frame_rate = avctx->frame_rate;\n\n        avctx->bit_rate = s->bit_rate;\n\n        \n\n        if (MPV_common_init(s) < 0)\n\n            return -1;\n\n        s1->mpeg_enc_ctx_allocated = 1;\n\n    }\n\n\n\n    skip_bits(&s->gb, 10); /* vbv_buffer_size */\n\n    skip_bits(&s->gb, 1);\n\n\n\n    /* get matrix */\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->intra_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_intra_matrix[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n    }\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n\n\n[H1] FFmpeg/function-60.c:171 (character offset 2792)\n\nQuestion: Does this code read, write, invalidate or reconcile persisted records or cached copies of external state? Include local caches whose contents must agree with a source of truth. A temporary dictionary used only for computation is not sufficient.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "n_predict": 1,
+    "temperature": 0,
+    "seed": 42,
+    "n_probs": 100,
+    "cache_prompt": true,
+    "id_slot": 0
+  },
+  "status": "ok",
+  "prefix_sha256": "7a8644d846a87dd7177c5678c71c49e66bbfe20d86b97084bd6ebfe10bb2a42d",
+  "prefix_tokens": 1015,
+  "state_id": "S008",
+  "restore": {
+    "seconds": 0.05151750000368338,
+    "response": {
+      "id_slot": 0,
+      "filename": "prefix-state.bin",
+      "n_restored": 1015,
+      "n_read": 52904844,
+      "timings": {
+        "restore_ms": 48.801
+      }
+    }
+  },
+  "response": {
+    "index": 0,
+    "content": "B",
+    "tokens": [],
+    "id_slot": 0,
+    "stop": true,
+    "model": "D:\\Projects\\daodan\\evals\\senior-review\\choicer-eval\\.cache\\gutsy\\gutsy-0.8b-v04-q4_k_m.gguf",
+    "tokens_predicted": 1,
+    "tokens_evaluated": 1102,
+    "generation_settings": {
+      "seed": 42,
+      "temperature": 0.0,
+      "dynatemp_range": 0.0,
+      "dynatemp_exponent": 1.0,
+      "top_k": 40,
+      "top_p": 0.949999988079071,
+      "min_p": 0.05000000074505806,
+      "top_n_sigma": -1.0,
+      "xtc_probability": 0.0,
+      "xtc_threshold": 0.10000000149011612,
+      "typical_p": 1.0,
+      "repeat_last_n": 64,
+      "repeat_penalty": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "dry_multiplier": 0.0,
+      "dry_base": 1.75,
+      "dry_allowed_length": 2,
+      "dry_penalty_last_n": 64,
+      "dry_sequence_breakers": [
+        "\n",
+        ":",
+        "\"",
+        "*"
+      ],
+      "mirostat": 0,
+      "mirostat_tau": 5.0,
+      "mirostat_eta": 0.10000000149011612,
+      "adaptive_target": -1.0,
+      "adaptive_decay": 0.8999999761581421,
+      "stop": [],
+      "max_tokens": 1,
+      "n_predict": 1,
+      "n_keep": 0,
+      "n_discard": 0,
+      "ignore_eos": false,
+      "stream": false,
+      "logit_bias": [],
+      "n_probs": 100,
+      "min_keep": 0,
+      "grammar": "",
+      "grammar_lazy": false,
+      "grammar_triggers": [],
+      "preserved_tokens": [],
+      "chat_format": "Content-only",
+      "reasoning_format": "deepseek",
+      "reasoning_in_content": false,
+      "generation_prompt": "",
+      "samplers": [
+        "penalties",
+        "dry",
+        "top_n_sigma",
+        "top_k",
+        "typ_p",
+        "top_p",
+        "min_p",
+        "xtc",
+        "temperature"
+      ],
+      "speculative.types": "none",
+      "timings_per_token": false,
+      "post_sampling_probs": false,
+      "backend_sampling": false,
+      "lora": []
+    },
+    "prompt": "<|im_start|>system\nYou are a decision model. Read the state, then answer the question by choosing exactly one of the options. Reply with only the letter of your choice.<|im_end|>\n<|im_start|>user\nState:\nCase F07\n[Code Under Review]\n[H1] FFmpeg/function-60.c:1 (character offset 0)\nstatic int mpeg1_decode_sequence(AVCodecContext *avctx, \n\n                                 UINT8 *buf, int buf_size)\n\n{\n\n    Mpeg1Context *s1 = avctx->priv_data;\n\n    MpegEncContext *s = &s1->mpeg_enc_ctx;\n\n    int width, height, i, v, j;\n\n    float aspect;\n\n\n\n    init_get_bits(&s->gb, buf, buf_size);\n\n\n\n    width = get_bits(&s->gb, 12);\n\n    height = get_bits(&s->gb, 12);\n\n    s->aspect_ratio_info= get_bits(&s->gb, 4);\n\n    if(!s->mpeg2){\n\n        aspect= mpeg1_aspect[s->aspect_ratio_info];\n\n        if(aspect!=0.0) avctx->aspect_ratio= width/(aspect*height);\n\n    }\n\n\n\n    s->frame_rate_index = get_bits(&s->gb, 4);\n\n    if (s->frame_rate_index == 0)\n\n        return -1;\n\n    s->bit_rate = get_bits(&s->gb, 18) * 400;\n\n    if (get_bits1(&s->gb) == 0) /* marker */\n\n        return -1;\n\n    if (width <= 0 || height <= 0 ||\n\n        (width % 2) != 0 || (height % 2) != 0)\n\n        return -1;\n\n    if (width != s->width ||\n\n        height != s->height) {\n\n        /* start new mpeg1 context decoding */\n\n        s->out_format = FMT_MPEG1;\n\n        if (s1->mpeg_enc_ctx_allocated) {\n\n            MPV_common_end(s);\n\n        }\n\n        s->width = width;\n\n        s->height = height;\n\n        avctx->has_b_frames= 1;\n\n        s->avctx = avctx;\n\n        avctx->width = width;\n\n        avctx->height = height;\n\n        if (s->frame_rate_index >= 9) {\n\n            /* at least give a valid frame rate (some old mpeg1 have this) */\n\n            avctx->frame_rate = 25 * FRAME_RATE_BASE;\n\n        } else {\n\n            avctx->frame_rate = frame_rate_tab[s->frame_rate_index];\n\n        }\n\n        s->frame_rate = avctx->frame_rate;\n\n        avctx->bit_rate = s->bit_rate;\n\n        \n\n        if (MPV_common_init(s) < 0)\n\n            return -1;\n\n        s1->mpeg_enc_ctx_allocated = 1;\n\n    }\n\n\n\n    skip_bits(&s->gb, 10); /* vbv_buffer_size */\n\n    skip_bits(&s->gb, 1);\n\n\n\n    /* get matrix */\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n#ifdef DEBUG\n\n        dprintf(\"intra matrix present\\n\");\n\n        for(i=0;i<64;i++)\n\n            dprintf(\" %d\", s->intra_matrix[s->intra_scantable.permutated[i]]);\n\n        printf(\"\\n\");\n\n#endif\n\n    } else {\n\n        for(i=0;i<64;i++) {\n\n            int j= s->idct_permutation[i];\n\n            v = ff_mpeg1_default_intra_matrix[i];\n\n            s->intra_matrix[j] = v;\n\n            s->chroma_intra_matrix[j] = v;\n\n        }\n\n    }\n\n    if (get_bits1(&s->gb)) {\n\n        for(i=0;i<64;i++) {\n\n            v = get_bits(&s->gb, 8);\n\n            j = s->intra_scantable.permutated[i];\n\n            s->inter_matrix[j] = v;\n\n            s->chroma_inter_matrix[j] = v;\n\n\n\n[H1] FFmpeg/function-60.c:171 (character offset 2792)\n\nQuestion: Does this code read, write, invalidate or reconcile persisted records or cached copies of external state? Include local caches whose contents must agree with a source of truth. A temporary dictionary used only for computation is not sufficient.\n\nOptions:\nA. Yes\nB. No\nZ. None of the options fits, or the state does not say\n\nAnswer with a single letter.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+    "has_new_line": false,
+    "truncated": false,
+    "stop_type": "limit",
+    "stopping_word": "",
+    "tokens_cached": 1102,
+    "timings": {
+      "cache_n": 1015,
+      "prompt_n": 87,
+      "prompt_ms": 667.146,
+      "prompt_per_token_ms": 7.668344827586206,
+      "prompt_per_second": 130.40623791493917,
+      "predicted_n": 1,
+      "predicted_ms": 0.001,
+      "predicted_per_token_ms": 0.0,
+      "predicted_per_second": 0.0
+    },
+    "completion_probabilities": [
+      {
+        "id": 33,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.7309683561325073,
+        "top_logprobs": [
+          {
+            "id": 33,
+            "token": "B",
+            "bytes": [
+              66
+            ],
+            "logprob": -0.7309683561325073
+          },
+          {
+            "id": 32,
+            "token": "A",
+            "bytes": [
+              65
+            ],
+            "logprob": -2.7553164958953857
+          },
+          {
+            "id": 35,
+            "token": "D",
+            "bytes": [
+              68
+            ],
+            "logprob": -3.298872709274292
+          },
+          {
+            "id": 34,
+            "token": "C",
+            "bytes": [
+              67
+            ],
+            "logprob": -3.491598129272461
+          },
+          {
+            "id": 36,
+            "token": "E",
+            "bytes": [
+              69
+            ],
+            "logprob": -3.715156316757202
+          },
+          {
+            "id": 39,
+            "token": "H",
+            "bytes": [
+              72
+            ],
+            "logprob": -4.574965476989746
+          },
+          {
+            "id": 37,
+            "token": "F",
+            "bytes": [
+              70
+            ],
+            "logprob": -4.670615196228027
+          },
+          {
+            "id": 65,
+            "token": "b",
+            "bytes": [
+              98
+            ],
+            "logprob": -4.781607627868652
+          },
+          {
+            "id": 67,
+            "token": "d",
+            "bytes": [
+              100
+            ],
+            "logprob": -4.9567060470581055
+          },
+          {
+            "id": 68,
+            "token": "e",
+            "bytes": [
+              101
+            ],
+            "logprob": -4.959455490112305
+          },
+          {
+            "id": 45,
+            "token": "N",
+            "bytes": [
+              78
+            ],
+            "logprob": -5.165660858154297
+          },
+          {
+            "id": 15,
+            "token": "0",
+            "bytes": [
+              48
+            ],
+            "logprob": -5.257452964782715
+          },
+          {
+            "id": 38,
+            "token": "G",
+            "bytes": [
+              71
+            ],
+            "logprob": -5.310651779174805
+          },
+          {
+            "id": 417,
+            "token": " B",
+            "bytes": [
+              32,
+              66
+            ],
+            "logprob": -5.324082374572754
+          },
+          {
+            "id": 44,
+            "token": "M",
+            "bytes": [
+              77
+            ],
+            "logprob": -5.502364158630371
+          },
+          {
+            "id": 54,
+            "token": "W",
+            "bytes": [
+              87
+            ],
+            "logprob": -5.543397903442383
+          },
+          {
+            "id": 50,
+            "token": "S",
+            "bytes": [
+              83
+            ],
+            "logprob": -5.57328987121582
+          },
+          {
+            "id": 43,
+            "token": "L",
+            "bytes": [
+              76
+            ],
+            "logprob": -5.596563339233398
+          },
+          {
+            "id": 66,
+            "token": "c",
+            "bytes": [
+              99
+            ],
+            "logprob": -5.743054389953613
+          },
+          {
+            "id": 49,
+            "token": "R",
+            "bytes": [
+              82
+            ],
+            "logprob": -5.749645233154297
+          },
+          {
+            "id": 64,
+            "token": "a",
+            "bytes": [
+              97
+            ],
+            "logprob": -5.772660255432129
+          },
+          {
+            "id": 16,
+            "token": "1",
+            "bytes": [
+              49
+            ],
+            "logprob": -5.811367988586426
+          },
+          {
+            "id": 71,
+            "token": "h",
+            "bytes": [
+              104
+            ],
+            "logprob": -5.842876434326172
+          },
+          {
+            "id": 82,
+            "token": "s",
+            "bytes": [
+              115
+            ],
+            "logprob": -5.908514976501465
+          },
+          {
+            "id": 42,
+            "token": "K",
+            "bytes": [
+              75
+            ],
+            "logprob": -5.964878082275391
+          },
+          {
+            "id": 17,
+            "token": "2",
+            "bytes": [
+              50
+            ],
+            "logprob": -5.982362747192383
+          },
+          {
+            "id": 53,
+            "token": "V",
+            "bytes": [
+              86
+            ],
+            "logprob": -5.999000549316406
+          },
+          {
+            "id": 76,
+            "token": "m",
+            "bytes": [
+              109
+            ],
+            "logprob": -6.114923477172852
+          },
+          {
+            "id": 55,
+            "token": "X",
+            "bytes": [
+              88
+            ],
+            "logprob": -6.132634162902832
+          },
+          {
+            "id": 46,
+            "token": "O",
+            "bytes": [
+              79
+            ],
+            "logprob": -6.134401321411133
+          },
+          {
+            "id": 47,
+            "token": "P",
+            "bytes": [
+              80
+            ],
+            "logprob": -6.146944999694824
+          },
+          {
+            "id": 69,
+            "token": "f",
+            "bytes": [
+              102
+            ],
+            "logprob": -6.200344085693359
+          },
+          {
+            "id": 40,
+            "token": "I",
+            "bytes": [
+              73
+            ],
+            "logprob": -6.219281196594238
+          },
+          {
+            "id": 198,
+            "token": "\n",
+            "bytes": [
+              10
+            ],
+            "logprob": -6.226139068603516
+          },
+          {
+            "id": 271,
+            "token": "\n\n",
+            "bytes": [
+              10,
+              10
+            ],
+            "logprob": -6.314520835876465
+          },
+          {
+            "id": 77,
+            "token": "n",
+            "bytes": [
+              110
+            ],
+            "logprob": -6.330646514892578
+          },
+          {
+            "id": 52,
+            "token": "U",
+            "bytes": [
+              85
+            ],
+            "logprob": -6.496071815490723
+          },
+          {
+            "id": 70,
+            "token": "g",
+            "bytes": [
+              103
+            ],
+            "logprob": -6.584183692932129
+          },
+          {
+            "id": 72,
+            "token": "i",
+            "bytes": [
+              105
+            ],
+            "logprob": -6.605475425720215
+          },
+          {
+            "id": 248046,
+            "token": "",
+            "bytes": [],
+            "logprob": -6.646993637084961
+          },
+          {
+            "id": 87,
+            "token": "x",
+            "bytes": [
+              120
+            ],
+            "logprob": -6.657964706420898
+          },
+          {
+            "id": 57,
+            "token": "Z",
+            "bytes": [
+              90
+            ],
+            "logprob": -6.675724029541016
+          },
+          {
+            "id": 51,
+            "token": "T",
+            "bytes": [
+              84
+            ],
+            "logprob": -6.67796516418457
+          },
+          {
+            "id": 85,
+            "token": "v",
+            "bytes": [
+              118
+            ],
+            "logprob": -6.682839393615723
+          },
+          {
+            "id": 84,
+            "token": "u",
+            "bytes": [
+              117
+            ],
+            "logprob": -6.688162803649902
+          },
+          {
+            "id": 78,
+            "token": "o",
+            "bytes": [
+              111
+            ],
+            "logprob": -6.755758285522461
+          },
+          {
+            "id": 41,
+            "token": "J",
+            "bytes": [
+              74
+            ],
+            "logprob": -6.756848335266113
+          },
+          {
+            "id": 86,
+            "token": "w",
+            "bytes": [
+              119
+            ],
+            "logprob": -6.814811706542969
+          },
+          {
+            "id": 2083,
+            "token": "no",
+            "bytes": [
+              110,
+              111
+            ],
+            "logprob": -6.840950965881348
+          },
+          {
+            "id": 2665,
+            "token": "No",
+            "bytes": [
+              78,
+              111
+            ],
+            "logprob": -6.917150497436523
+          },
+          {
+            "id": 79,
+            "token": "p",
+            "bytes": [
+              112
+            ],
+            "logprob": -7.080602645874023
+          },
+          {
+            "id": 74,
+            "token": "k",
+            "bytes": [
+              107
+            ],
+            "logprob": -7.081995964050293
+          },
+          {
+            "id": 20,
+            "token": "5",
+            "bytes": [
+              53
+            ],
+            "logprob": -7.0826568603515625
+          },
+          {
+            "id": 21,
+            "token": "6",
+            "bytes": [
+              54
+            ],
+            "logprob": -7.094383239746094
+          },
+          {
+            "id": 89,
+            "token": "z",
+            "bytes": [
+              122
+            ],
+            "logprob": -7.108542442321777
+          },
+          {
+            "id": 248044,
+            "token": "",
+            "bytes": [],
+            "logprob": -7.13578987121582
+          },
+          {
+            "id": 56,
+            "token": "Y",
+            "bytes": [
+              89
+            ],
+            "logprob": -7.150496482849121
+          },
+          {
+            "id": 75,
+            "token": "l",
+            "bytes": [
+              108
+            ],
+            "logprob": -7.150872230529785
+          },
+          {
+            "id": 196,
+            "token": "\b",
+            "bytes": [
+              8
+            ],
+            "logprob": -7.15376091003418
+          },
+          {
+            "id": 58,
+            "token": "[",
+            "bytes": [
+              91
+            ],
+            "logprob": -7.155901908874512
+          },
+          {
+            "id": 220,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -7.157205581665039
+          },
+          {
+            "id": 88,
+            "token": "y",
+            "bytes": [
+              121
+            ],
+            "logprob": -7.157346725463867
+          },
+          {
+            "id": 18,
+            "token": "3",
+            "bytes": [
+              51
+            ],
+            "logprob": -7.169960021972656
+          },
+          {
+            "id": 73,
+            "token": "j",
+            "bytes": [
+              106
+            ],
+            "logprob": -7.246241569519043
+          },
+          {
+            "id": 12,
+            "token": "-",
+            "bytes": [
+              45
+            ],
+            "logprob": -7.260150909423828
+          },
+          {
+            "id": 81,
+            "token": "r",
+            "bytes": [
+              114
+            ],
+            "logprob": -7.303022384643555
+          },
+          {
+            "id": 2,
+            "token": "#",
+            "bytes": [
+              35
+            ],
+            "logprob": -7.309759140014648
+          },
+          {
+            "id": 19,
+            "token": "4",
+            "bytes": [
+              52
+            ],
+            "logprob": -7.32960319519043
+          },
+          {
+            "id": 48,
+            "token": "Q",
+            "bytes": [
+              81
+            ],
+            "logprob": -7.415384292602539
+          },
+          {
+            "id": 83,
+            "token": "t",
+            "bytes": [
+              116
+            ],
+            "logprob": -7.454951763153076
+          },
+          {
+            "id": 27,
+            "token": "<",
+            "bytes": [
+              60
+            ],
+            "logprob": -7.485529899597168
+          },
+          {
+            "id": 24,
+            "token": "9",
+            "bytes": [
+              57
+            ],
+            "logprob": -7.5005598068237305
+          },
+          {
+            "id": 30,
+            "token": "?",
+            "bytes": [
+              63
+            ],
+            "logprob": -7.517294406890869
+          },
+          {
+            "id": 91,
+            "token": "|",
+            "bytes": [
+              124
+            ],
+            "logprob": -7.53223180770874
+          },
+          {
+            "id": 80,
+            "token": "q",
+            "bytes": [
+              113
+            ],
+            "logprob": -7.572908878326416
+          },
+          {
+            "id": 3320,
+            "token": "Be",
+            "bytes": [
+              66,
+              101
+            ],
+            "logprob": -7.620064735412598
+          },
+          {
+            "id": 357,
+            "token": " A",
+            "bytes": [
+              32,
+              65
+            ],
+            "logprob": -7.664251327514648
+          },
+          {
+            "id": 9,
+            "token": "*",
+            "bytes": [
+              42
+            ],
+            "logprob": -7.687123775482178
+          },
+          {
+            "id": 60,
+            "token": "]",
+            "bytes": [
+              93
+            ],
+            "logprob": -7.6904616355896
+          },
+          {
+            "id": 332,
+            "token": "**",
+            "bytes": [
+              42,
+              42
+            ],
+            "logprob": -7.704535484313965
+          },
+          {
+            "id": 59,
+            "token": "\\",
+            "bytes": [
+              92
+            ],
+            "logprob": -7.708920478820801
+          },
+          {
+            "id": 23,
+            "token": "8",
+            "bytes": [
+              56
+            ],
+            "logprob": -7.710594177246094
+          },
+          {
+            "id": 510,
+            "token": "</",
+            "bytes": [
+              60,
+              47
+            ],
+            "logprob": -7.75951623916626
+          },
+          {
+            "id": 1,
+            "token": "\"",
+            "bytes": [
+              34
+            ],
+            "logprob": -7.764303684234619
+          },
+          {
+            "id": 760,
+            "token": "The",
+            "bytes": [
+              84,
+              104,
+              101
+            ],
+            "logprob": -7.773514270782471
+          },
+          {
+            "id": 90,
+            "token": "{",
+            "bytes": [
+              123
+            ],
+            "logprob": -7.782545566558838
+          },
+          {
+            "id": 8,
+            "token": ")",
+            "bytes": [
+              41
+            ],
+            "logprob": -7.865215301513672
+          },
+          {
+            "id": 29,
+            "token": ">",
+            "bytes": [
+              62
+            ],
+            "logprob": -7.869743347167969
+          },
+          {
+            "id": 7,
+            "token": "(",
+            "bytes": [
+              40
+            ],
+            "logprob": -7.879283905029297
+          },
+          {
+            "id": 414,
+            "token": " D",
+            "bytes": [
+              32,
+              68
+            ],
+            "logprob": -7.889616966247559
+          },
+          {
+            "id": 63,
+            "token": "`",
+            "bytes": [
+              96
+            ],
+            "logprob": -7.916472434997559
+          },
+          {
+            "id": 92,
+            "token": "}",
+            "bytes": [
+              125
+            ],
+            "logprob": -7.93295955657959
+          },
+          {
+            "id": 22,
+            "token": "7",
+            "bytes": [
+              55
+            ],
+            "logprob": -7.9579362869262695
+          },
+          {
+            "id": 28,
+            "token": "=",
+            "bytes": [
+              61
+            ],
+            "logprob": -8.036321640014648
+          },
+          {
+            "id": 1323,
+            "token": "be",
+            "bytes": [
+              98,
+              101
+            ],
+            "logprob": -8.059832572937012
+          },
+          {
+            "id": 256,
+            "token": "  ",
+            "bytes": [
+              32,
+              32
+            ],
+            "logprob": -8.137749671936035
+          },
+          {
+            "id": 3928,
+            "token": "None",
+            "bytes": [
+              78,
+              111,
+              110,
+              101
+            ],
+            "logprob": -8.141948699951172
+          },
+          {
+            "id": 6,
+            "token": "'",
+            "bytes": [
+              39
+            ],
+            "logprob": -8.157116889953613
+          },
+          {
+            "id": 1076,
+            "token": "...",
+            "bytes": [
+              46,
+              46,
+              46
+            ],
+            "logprob": -8.188606262207031
+          },
+          {
+            "id": 3,
+            "token": "$",
+            "bytes": [
+              36
+            ],
+            "logprob": -8.244010925292969
+          }
+        ]
+      }
+    ]
+  },
+  "seconds": 0.6784158999944339,
+  "letter": "B",
+  "probabilities": {
+    "A": 0.06358889086064773,
+    "B": 0.4814425564377305,
+    "Z": 0.001261159138730808
+  },
+  "prefix_reuse_verified": true
+}

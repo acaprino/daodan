@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review a reminder that should fire at 09:00 local time each day while the process remains running.",
+    "artifacts": [
+      {
+        "path": "src/reminders.py",
+        "content": "from datetime import datetime, timedelta\nfrom zoneinfo import ZoneInfo\n\ndef next_run(previous_epoch):\n    return previous_epoch + timedelta(days=1).total_seconds()\n\nfirst = datetime(2027, 3, 27, 9, tzinfo=ZoneInfo(\"Europe/Rome\")).timestamp()\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
+      }
+    }
+  }
+}

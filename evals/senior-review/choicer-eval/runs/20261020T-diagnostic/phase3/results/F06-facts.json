@@ -1,0 +1,34 @@
+{
+  "id": "F06-facts",
+  "request_sha256": "f09e1132c5e4f0a47b1d29242a0eedef4ba45ee68082796a1a25ed8027c6ce3d",
+  "raw_output": {
+    "answers": {
+      "family": {
+        "type": "choice",
+        "probabilities": {
+          "react": 0.32141474359524375,
+          "persistence": 0.008765843442087601,
+          "computation": 0.6698194129626687
+        },
+        "choice": "computation",
+        "max_probability": 0.6698194129626687
+      },
+      "react": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.2548293726719976,
+          "true": 0.7451706273280023
+        },
+        "noul": 0.7451706273280023
+      },
+      "persistence": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.29938276616542947,
+          "true": 0.7006172338345705
+        },
+        "noul": 0.7006172338345705
+      }
+    }
+  }
+}

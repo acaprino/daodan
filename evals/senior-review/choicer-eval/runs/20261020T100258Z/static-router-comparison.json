@@ -1,0 +1,856 @@
+{
+  "baselines": {
+    "julia_adapted_noul_8_labeled_cases": {
+      "benchmark_excess_activations": 112,
+      "benchmark_excess_per_case": 12.444444444444445,
+      "critical": {
+        "senior-review:data-integrity-auditor": {
+          "false_negatives": 0,
+          "recall": 1.0,
+          "support": 4,
+          "true_positives": 4
+        },
+        "senior-review:premise-auditor": {
+          "false_negatives": 0,
+          "recall": null,
+          "support": 0,
+          "true_positives": 0
+        },
+        "senior-review:security-auditor": {
+          "false_negatives": 0,
+          "recall": 1.0,
+          "support": 1,
+          "true_positives": 1
+        }
+      },
+      "critical_overall": {
+        "false_negatives": 0,
+        "recall": 1.0,
+        "support": 5,
+        "true_positives": 5
+      },
+      "expected_role_activations": 18,
+      "expected_role_recall": 0.7777777777777778,
+      "false_negatives": 4,
+      "labeled_cases": 9,
+      "matched_expected_roles": 14
+    },
+    "julia_adapted_noul_pruned_by_hybrid_ast_8_labeled_cases": {
+      "benchmark_excess_activations": 15,
+      "benchmark_excess_per_case": 1.6666666666666667,
+      "critical": {
+        "senior-review:data-integrity-auditor": {
+          "false_negatives": 1,
+          "recall": 0.75,
+          "support": 4,
+          "true_positives": 3
+        },
+        "senior-review:premise-auditor": {
+          "false_negatives": 0,
+          "recall": null,
+          "support": 0,
+          "true_positives": 0
+        },
+        "senior-review:security-auditor": {
+          "false_negatives": 1,
+          "recall": 0.0,
+          "support": 1,
+          "true_positives": 0
+        }
+      },
+      "critical_overall": {
+        "false_negatives": 2,
+        "recall": 0.6,
+        "support": 5,
+        "true_positives": 3
+      },
+      "expected_role_activations": 18,
+      "expected_role_recall": 0.4444444444444444,
+      "false_negatives": 10,
+      "labeled_cases": 9,
+      "matched_expected_roles": 8
+    },
+    "llm_raw_declared_10_labeled_cases": {
+      "benchmark_excess_activations": 14,
+      "benchmark_excess_per_case": 1.4,
+      "critical": {
+        "senior-review:data-integrity-auditor": {
+          "false_negatives": 2,
+          "recall": 0.5,
+          "support": 4,
+          "true_positives": 2
+        },
+        "senior-review:premise-auditor": {
+          "false_negatives": 0,
+          "recall": null,
+          "support": 0,
+          "true_positives": 0
+        },
+        "senior-review:security-auditor": {
+          "false_negatives": 1,
+          "recall": 0.0,
+          "support": 1,
+          "true_positives": 0
+        }
+      },
+      "critical_overall": {
+        "false_negatives": 3,
+        "recall": 0.4,
+        "support": 5,
+        "true_positives": 2
+      },
+      "expected_role_activations": 23,
+      "expected_role_recall": 0.30434782608695654,
+      "false_negatives": 16,
+      "labeled_cases": 10,
+      "matched_expected_roles": 7
+    },
+    "llm_validated_7_labeled_cases": {
+      "benchmark_excess_activations": 6,
+      "benchmark_excess_per_case": 0.8571428571428571,
+      "critical": {
+        "senior-review:data-integrity-auditor": {
+          "false_negatives": 1,
+          "recall": 0.5,
+          "support": 2,
+          "true_positives": 1
+        },
+        "senior-review:premise-auditor": {
+          "false_negatives": 0,
+          "recall": null,
+          "support": 0,
+          "true_positives": 0
+        },
+        "senior-review:security-auditor": {
+          "false_negatives": 1,
+          "recall": 0.0,
+          "support": 1,
+          "true_positives": 0
+        }
+      },
+      "critical_overall": {
+        "false_negatives": 2,
+        "recall": 0.3333333333333333,
+        "support": 3,
+        "true_positives": 1
+      },
+      "expected_role_activations": 16,
+      "expected_role_recall": 0.25,
+      "false_negatives": 12,
+      "labeled_cases": 7,
+      "matched_expected_roles": 4
+    }
+  },
+  "per_case_details": {
+    "C01": {
+      "ast_domain_router": [
+        "senior-review:api-contract-auditor",
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:api-contract-auditor": [
+          "H11:schema_or_route_decorator",
+          "H12:schema_or_route_decorator",
+          "H14:schema_or_route_decorator"
+        ],
+        "senior-review:distributed-flow-auditor": [
+          "H13:path_and_flow:jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "H2:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H3:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H5:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H6:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H7:path_and_flow:jupiter-core/jupiter_core/notifiers/notifier_market_state.py",
+          "H9:path_and_flow:jupiter-core/jupiter_core/notifiers/notifier_market_state.py"
+        ],
+        "senior-review:security-auditor": [
+          "H1:security_keyword"
+        ],
+        "senior-review:temporal-resilience-auditor": [
+          "H1:temporal_keyword",
+          "H2:temporal_keyword",
+          "H6:temporal_keyword",
+          "H7:import:asyncio"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:api-contract-auditor",
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor",
+        "senior-review:security-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "jupiter-cache-convergence"
+    },
+    "C02": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:data-integrity-auditor": [
+          "H32:call:add"
+        ],
+        "senior-review:distributed-flow-auditor": [
+          "H10:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H11:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H12:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H13:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H14:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H15:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H16:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H17:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H18:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H19:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H1:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H20:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H21:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H22:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H23:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H25:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H30:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H31:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H32:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H33:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H34:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H35:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H36:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H37:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H38:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H3:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H40:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H41:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H42:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H43:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H44:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H45:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H46:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H47:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H48:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H49:path_and_flow:jupiter-core/jupiter_core/middleware/heartbeat_monitor.py",
+          "H4:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H5:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H6:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H8:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py",
+          "H9:path_and_flow:jupiter-core/jupiter_core/agents/alive_agent.py"
+        ],
+        "senior-review:resource-lifecycle-auditor": [
+          "H1:call:asyncio.Lock",
+          "H31:call:asyncio.Lock",
+          "H32:resource_context_or_handle",
+          "H33:resource_context_or_handle"
+        ],
+        "senior-review:security-auditor": [
+          "H10:security_keyword",
+          "H13:security_keyword",
+          "H1:security_keyword",
+          "H21:security_keyword",
+          "H24:security_keyword",
+          "H2:security_keyword",
+          "H31:security_keyword",
+          "H32:security_keyword",
+          "H33:security_keyword",
+          "H41:security_keyword",
+          "H49:security_keyword",
+          "H4:security_keyword",
+          "H6:security_keyword"
+        ],
+        "senior-review:temporal-resilience-auditor": [
+          "H10:temporal_keyword",
+          "H11:temporal_keyword",
+          "H12:temporal_keyword",
+          "H13:call:asyncio.sleep",
+          "H13:call:heartbeat",
+          "H13:temporal_keyword",
+          "H14:temporal_keyword",
+          "H15:temporal_keyword",
+          "H16:temporal_keyword",
+          "H17:temporal_keyword",
+          "H18:temporal_keyword",
+          "H1:import:asyncio",
+          "H1:temporal_keyword",
+          "H21:temporal_keyword",
+          "H23:temporal_keyword",
+          "H26:temporal_keyword",
+          "H31:import:asyncio",
+          "H31:temporal_keyword",
+          "H32:call:heartbeat",
+          "H32:temporal_keyword",
+          "H33:call:asyncio.sleep",
+          "H33:call:heartbeat",
+          "H33:temporal_keyword",
+          "H34:temporal_keyword",
+          "H35:temporal_keyword",
+          "H36:temporal_keyword",
+          "H37:temporal_keyword",
+          "H38:temporal_keyword",
+          "H3:temporal_keyword",
+          "H40:call:asyncio.sleep",
+          "H40:call:heartbeat",
+          "H40:temporal_keyword",
+          "H41:temporal_keyword",
+          "H42:temporal_keyword",
+          "H43:temporal_keyword",
+          "H44:temporal_keyword",
+          "H45:temporal_keyword",
+          "H46:temporal_keyword",
+          "H47:temporal_keyword",
+          "H48:temporal_keyword",
+          "H49:temporal_keyword",
+          "H4:call:asyncio.sleep",
+          "H4:call:asyncio.wait_for",
+          "H4:temporal_keyword",
+          "H5:temporal_keyword",
+          "H6:temporal_keyword",
+          "H8:temporal_keyword",
+          "H9:temporal_keyword"
+        ]
+      },
+      "expected_roles": [],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "label_status": "unlabeled",
+      "roster_full_tier": [
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "jupiter-credential-refill"
+    },
+    "C03": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:data-integrity-auditor": [
+          "H2:path_and_domain:jupiter-core/jupiter_core/services/beanie/economic_event_repository.py",
+          "H3:call:insert",
+          "H3:call:update",
+          "H3:path_and_domain:jupiter-core/jupiter_core/services/beanie/economic_event_repository.py"
+        ],
+        "senior-review:temporal-resilience-auditor": [
+          "H1:import:time"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "jupiter-economic-events-upsert"
+    },
+    "C04": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:resource-lifecycle-auditor": [
+          "H7:resource_context_or_handle"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "jupiter-market-state-tristate"
+    },
+    "C05": {
+      "ast_domain_router": [
+        "senior-review:code-auditor"
+      ],
+      "ast_evidence": {},
+      "expected_roles": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:security-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "jupiter-position-notice-owner"
+    },
+    "C06": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "ast_evidence": {
+        "typescript-development:type-safety-auditor": [
+          "H5:ts_boundary_or_cast",
+          "H6:ts_boundary_or_cast",
+          "H7:ts_boundary_or_cast"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "jupiter-trade-failure-drop"
+    },
+    "C07": {
+      "ast_domain_router": [
+        "react-development:react-performance-optimizer",
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "ast_evidence": {
+        "react-development:react-performance-optimizer": [
+          "H14:jsx_or_react_import",
+          "H15:jsx_or_react_import",
+          "H19:jsx_or_react_import",
+          "H20:jsx_or_react_import",
+          "H24:jsx_or_react_import"
+        ],
+        "senior-review:chicken-egg-detector": [
+          "H20:startup_path:jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx",
+          "H21:startup_path:jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx",
+          "H22:startup_path:jupiter-desktop/src-react/src/hooks/__tests__/useUpdater.test.tsx",
+          "H23:startup_path:jupiter-desktop/src-react/src/hooks/useUpdater.ts",
+          "H24:startup_path:jupiter-desktop/src-react/src/hooks/useUpdater.ts",
+          "H25:startup_path:jupiter-desktop/src-react/src/hooks/useUpdater.ts",
+          "H27:startup_path:jupiter-desktop/src-react/src/hooks/useUpdater.ts",
+          "H28:startup_path:jupiter-desktop/src-react/src/hooks/useUpdater.ts",
+          "H29:startup_path:jupiter-desktop/src-react/src/hooks/useUpdater.ts",
+          "H32:startup_path:jupiter-desktop/src-react/src/store/slices/updaterSlice.ts"
+        ],
+        "senior-review:data-integrity-auditor": [
+          "H2:call:Update",
+          "H32:path_and_domain:jupiter-desktop/src-react/src/store/slices/updaterSlice.ts"
+        ],
+        "senior-review:resource-lifecycle-auditor": [
+          "H28:call:update.close"
+        ],
+        "senior-review:security-auditor": [
+          "H15:security_keyword",
+          "H20:security_keyword",
+          "H21:security_keyword",
+          "H22:security_keyword",
+          "H23:security_keyword",
+          "H28:security_keyword",
+          "H31:security_keyword",
+          "H33:security_keyword",
+          "H35:security_keyword"
+        ],
+        "senior-review:temporal-resilience-auditor": [
+          "H19:call:setInterval",
+          "H19:temporal_keyword",
+          "H20:temporal_keyword",
+          "H22:temporal_keyword",
+          "H25:temporal_keyword",
+          "H27:temporal_keyword",
+          "H28:call:setTimeout",
+          "H28:temporal_keyword",
+          "H29:call:setInterval",
+          "H29:temporal_keyword",
+          "H32:temporal_keyword",
+          "H3:temporal_keyword"
+        ],
+        "senior-review:ui-race-auditor": [
+          "H19:jsx_and_layout_timing"
+        ],
+        "typescript-development:type-safety-auditor": [
+          "H19:ts_boundary_or_cast",
+          "H20:ts_boundary_or_cast",
+          "H22:ts_boundary_or_cast",
+          "H25:ts_boundary_or_cast",
+          "H28:ts_boundary_or_cast",
+          "H29:ts_boundary_or_cast",
+          "H32:ts_boundary_or_cast"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "react-development:react-performance-optimizer",
+        "senior-review:chicken-egg-detector",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "abstraction-architect:abstraction-architect-agent",
+        "react-development:react-performance-optimizer",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:premise-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "roster_signals_only": [
+        "react-development:react-performance-optimizer",
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:ui-race-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "roster_tier": "large",
+      "source_case": "jupiter-updater"
+    },
+    "C08": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:data-integrity-auditor": [
+          "H1:call:db.profiles.delete_one",
+          "H1:call:db.profiles.find_one",
+          "H1:call:db.profiles.update_one",
+          "H1:path_and_domain:profiles/repo.py",
+          "H1:store_call:redis.get",
+          "H1:store_call:redis.set"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:data-integrity-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "synthetic-cache-stale-read"
+    },
+    "C09": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:data-integrity-auditor": [
+          "H1:external_call_type:database"
+        ],
+        "senior-review:resource-lifecycle-auditor": [
+          "H1:call:client.release",
+          "H1:call:pool.connect"
+        ],
+        "senior-review:temporal-resilience-auditor": [
+          "H1:call:setInterval",
+          "H1:temporal_keyword"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:code-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "abstraction-architect:abstraction-architect-agent",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:premise-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:security-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "testing:test-suite-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "typescript-development:type-safety-auditor"
+      ],
+      "roster_tier": "large",
+      "source_case": "synthetic-connection-pool-leak"
+    },
+    "C10": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:data-integrity-auditor": [
+          "H1:call:session.add",
+          "H1:call:session.commit",
+          "H1:call:session.execute",
+          "H1:external_call_type:database"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:data-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "abstraction-architect:abstraction-architect-agent",
+        "repo-hygiene:workspace-auditor",
+        "senior-review:cleanup-auditor",
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:premise-auditor",
+        "senior-review:security-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor",
+        "senior-review:data-integrity-auditor"
+      ],
+      "roster_tier": "large",
+      "source_case": "synthetic-payment-double-insert"
+    },
+    "C11": {
+      "ast_domain_router": [
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "ast_evidence": {
+        "senior-review:distributed-flow-auditor": [
+          "H1:path_and_flow:sync/replicator.py"
+        ],
+        "senior-review:temporal-resilience-auditor": [
+          "H1:call:asyncio.sleep",
+          "H1:temporal_keyword"
+        ]
+      },
+      "expected_roles": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "hybrid_union_candidates": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:code-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "label_status": "labeled",
+      "roster_full_tier": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor",
+        "testing:test-suite-auditor"
+      ],
+      "roster_signals_only": [
+        "senior-review:code-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "roster_tier": "small",
+      "source_case": "synthetic-retry-storm"
+    }
+  },
+  "schema": "choicer-eval/static-router-comparison-v1",
+  "variants_all_11_cases_10_labeled": {
+    "ast_domain_router": {
+      "critical_recall": "3/5 (60.0%)",
+      "excess_activations_per_case": 2.5,
+      "expected_role_recall": "15/23 (65.2%)",
+      "labeled_cases": 10,
+      "mean_selected_per_labeled_case": 4.0
+    },
+    "hybrid_union_candidates": {
+      "critical_recall": "3/5 (60.0%)",
+      "excess_activations_per_case": 3.8,
+      "expected_role_recall": "16/23 (69.6%)",
+      "labeled_cases": 10,
+      "mean_selected_per_labeled_case": 5.4
+    },
+    "roster_full_tier": {
+      "critical_recall": "1/5 (20.0%)",
+      "excess_activations_per_case": 3.9,
+      "expected_role_recall": "12/23 (52.2%)",
+      "labeled_cases": 10,
+      "mean_selected_per_labeled_case": 5.1
+    },
+    "roster_signals_only": {
+      "critical_recall": "1/5 (20.0%)",
+      "excess_activations_per_case": 1.5,
+      "expected_role_recall": "9/23 (39.1%)",
+      "labeled_cases": 10,
+      "mean_selected_per_labeled_case": 2.4
+    }
+  },
+  "variants_on_9_adapted_cases_8_labeled": {
+    "ast_domain_router": {
+      "critical_recall": "3/5 (60.0%)",
+      "excess_activations_per_case": 2.111,
+      "expected_role_recall": "11/18 (61.1%)",
+      "labeled_cases": 9
+    },
+    "hybrid_union_candidates": {
+      "critical_recall": "3/5 (60.0%)",
+      "excess_activations_per_case": 3.444,
+      "expected_role_recall": "12/18 (66.7%)",
+      "labeled_cases": 9
+    },
+    "roster_full_tier": {
+      "critical_recall": "1/5 (20.0%)",
+      "excess_activations_per_case": 3.333,
+      "expected_role_recall": "7/18 (38.9%)",
+      "labeled_cases": 9
+    },
+    "roster_signals_only": {
+      "critical_recall": "1/5 (20.0%)",
+      "excess_activations_per_case": 1.222,
+      "expected_role_recall": "6/18 (33.3%)",
+      "labeled_cases": 9
+    }
+  }
+}

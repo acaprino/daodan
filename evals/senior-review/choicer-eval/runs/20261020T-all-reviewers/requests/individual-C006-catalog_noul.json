@@ -1,0 +1,30 @@
+{
+  "id": "individual-C006-catalog_noul",
+  "kind": "individual",
+  "case_id": "C006",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the command-line import parser for unsound TypeScript casts. Limit the review to input typing; there is no React UI in this package.",
+    "artifacts": [
+      {
+        "path": "cli/read-record.ts",
+        "content": "type RecordRow = { amount: number };\nexport function readRecord(text: string): RecordRow {\n  return JSON.parse(text) as RecordRow;\n}"
+      },
+      {
+        "path": "package.json",
+        "content": "{\"name\":\"ledger-import\",\"type\":\"module\",\"dependencies\":{\"commander\":\"^14.0.0\"}}"
+      }
+    ]
+  },
+  "questions": {
+    "react-development:react-performance-optimizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "CSS/design polish, native desktop backend work (Rust, IPC), or general Next.js setup (use react-best-practices).",
+        "true": "dispatched by the React performance audit of react-best-practices (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; reviewing or optimizing React 19 performance: re-renders, React Compiler, Server Components, bundle analysis, state management (Zustand/Redux/Jotai/TanStack), or profiling."
+      }
+    }
+  },
+  "sha256": "54acd65ddbb2d72704e7385fa7bc36bf92135a5e510404ad375abfc32d864200"
+}

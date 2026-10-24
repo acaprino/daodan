@@ -75,7 +75,58 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 ## Step 3: Qualitative audit (agent)
 
-Spawn this plugin's `test-suite-auditor` agent with: the target path, the Step 2 metrics, the scope, run permission (`--no-run` propagates), and an output path of `<output-root>/findings.md`. The agent covers the judgment dimensions (orphans, duplicates, contradictions, implementation-coupling, never-failing tests) and returns the findings report. It is report-only; nothing moves in this step.
+Dispatch `testing:test-suite-auditor` through the caller's declared isolated host harness using its actual rendered role. Supply the prepared target/snapshot, global D1/D9 metrics and provenance, runner diagnosis/configuration, requirements, scope, run permission (`--no-run` propagates), working discipline, provider root, assigned knowledge and `<output-root>/findings.md`. Canonical members own the checks; do not recreate a dimension checklist in the worker prompt. It is report-only; nothing moves in this step.
+
+Supply the native conventions below once in the assignment. Findings require current evidence and an independent behavioral oracle, causal impact/counterevidence, confidence, cause classification and owner. Unknown causes and missing runtime evidence stay explicit. Account for every assigned member through its findings or coverage/gaps, including `member_results` when the rendered composition requires it, and return assigned knowledge usage. A missing/failed member or input blocks completion; a clean finding list does not close missing coverage. The coordinator verifies the intermediate delivery before writing the one audit history.
+
+```markdown
+### Test-Suite Audit
+
+**Scope:** [whole suite | modules | diff range]
+**Runner(s):** [detected]
+**Execution:** [full run | reruns N | no-run (reasons)]
+**Runner diagnosis:** [available | runner-missing | configuration-disabled | suite-absent | detection-unresolved]
+**Dimensions scanned:** D1 inventory | D2 orphans | D3 skipped | D4 failing/flaky | D5 duplicates | D6 contradictions | D7 impl-coupled | D8 never-failing | D9 runtime/coverage
+
+---
+
+### Findings
+
+**[CRITICAL] [Title]**
+- **Location:** `file:line`
+- **Evidence:** [command output line, git log line, or the pair of asserts]
+- **Impact:** [one sentence]
+- **Confidence:** [0-100, with unresolved premises stated]
+- **Cause:** [product-defect | wrong-oracle | environment | test-isolation | intermittent | unknown]
+- **Fix path / owner:** [implementation owner | testing:test-writer oracle/authoring | environment/configuration owner | consolidation | eligible quarantine]
+- **Protected behavior / failure mode / bugfix provenance:** [evidence or explicitly unknown]
+
+*(continue by severity)*
+
+---
+
+### False-Positive Candidates (require confirmation)
+
+| Item | Why flagged | Why likely FP |
+|------|-------------|---------------|
+| `tests/unit/api/test_routes.py` | 40 near-identical cases | Parametrized table; one behavior per row |
+
+---
+
+### Statistics
+
+| Dimension | Findings | Affected files | Wasted runtime (est.) |
+|-----------|----------|----------------|------------------------|
+| D1 .. D9 | N | N | Xs |
+
+---
+
+### Recommended Remediation Order
+
+1. Resolve product/oracle/environment diagnoses and missing runner/configuration/absent-suite findings; keep unresolved protection visible
+2. `/daodan:tidy-repo` test consolidation for the worst modules by D5/D7 density: [ranked list]
+3. [Coverage-absence modules worth new tests, if D9 found any]
+```
 
 ## Step 4: Write TEST_AUDIT.md
 

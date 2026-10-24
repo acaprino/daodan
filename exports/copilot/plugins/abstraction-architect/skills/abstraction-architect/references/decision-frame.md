@@ -112,7 +112,7 @@ Severity says how much it matters. Confidence says how sure you are, and they ar
 
 Two flags are mandatory when they apply, because they mark the failure modes that cost the most:
 
-- **`Bounded-context exception: unverified`** when context membership could not be determined. On track B this caps the finding at Low confidence and it is never promoted above Medium severity, because unifying across a context boundary is the most expensive wrong move available.
+- **`Bounded-context exception: unverified`** when context membership could not be determined. On track B this remains an unresolved candidate in Gaps, not a finding at lower confidence or severity; K6 is a hard gate.
 - **`Index-seeded: yes`** when a concept index entry pointed at the evidence. This is provenance, not a quality signal, and nothing in the report or in any consuming pipeline may reward it.
 
 ## Remediation framing

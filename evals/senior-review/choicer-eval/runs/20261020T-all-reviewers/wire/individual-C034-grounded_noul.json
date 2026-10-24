@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Check the public installation guide for a stale download URL. Limit the task to this user-facing page; do not inspect agent instructions.",
+    "artifacts": [
+      {
+        "path": "docs/install.md",
+        "content": "Download the CLI from https://downloads.example.org/cli/v1/ and run cli init."
+      },
+      {
+        "path": "release/links.json",
+        "content": "{\"cli\":\"https://downloads.example.org/cli/v2/\"}"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task audit or maintain durable project instructions, including claim accuracy, scoped ownership, references, duplication, transient state, or host activation claims?",
+      "criteria": {
+        "false": "The requested scope contains no durable project-instruction claim, structure, scope, activation, or maintenance work.",
+        "true": "The scope includes durable project-instruction claims or structure, their scoped application, or authorized maintenance of those instructions, including unverifiable host claims."
+      }
+    }
+  }
+}

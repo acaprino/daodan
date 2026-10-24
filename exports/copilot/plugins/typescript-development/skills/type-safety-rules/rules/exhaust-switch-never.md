@@ -108,4 +108,4 @@ switch (order.status) {
 }
 ```
 
-**Detection:** `rg -n 'switch \(' --type ts` on files defining union types; flag switches over a discriminant with no `never`-typed default.
+**Detection:** Inspect supported discriminant variants and required outcomes. Prove an unhandled case; never is one technique, not required syntax.

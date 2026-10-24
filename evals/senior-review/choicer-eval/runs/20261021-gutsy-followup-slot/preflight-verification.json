@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "phase": "preflight",
+  "cases": 10,
+  "jobs": 496,
+  "source_hunks_verified": 61,
+  "source_files_verified": 29,
+  "split_path_overlap": 0,
+  "source_coverage": "all supplied hunk text reconstructs exactly",
+  "not_verified": [
+    "semantic citation relevance",
+    "independent applicability labels",
+    "production routing",
+    "full reviewer catalog"
+  ]
+}

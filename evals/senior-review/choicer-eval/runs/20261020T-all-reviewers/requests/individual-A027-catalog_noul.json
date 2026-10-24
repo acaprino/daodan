@@ -1,0 +1,26 @@
+{
+  "id": "individual-A027-catalog_noul",
+  "kind": "individual",
+  "case_id": "A027",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review mounting and disposing this widget, which may be opened repeatedly in a long-lived page.",
+    "artifacts": [
+      {
+        "path": "web/width.js",
+        "content": "export function mountWidth(node) {\n  const update = () => { node.textContent = String(window.innerWidth); };\n  window.addEventListener(\"resize\", update);\n  update();\n  return () => { node.remove(); };\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:resource-lifecycle-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "behavior over time after a leak (use temporal-resilience-auditor), memory-safety exploitation (use security-auditor), or general architecture (use code-auditor).",
+        "true": "target acquires file handles, sockets, streams, DB connections, subprocesses, listeners, locks, threads, timers or GPU/native memory."
+      }
+    }
+  },
+  "sha256": "263d88f3eccdac3b0fe57f094f97d359354a0dd3b8632285a59a5f6433307f4d"
+}

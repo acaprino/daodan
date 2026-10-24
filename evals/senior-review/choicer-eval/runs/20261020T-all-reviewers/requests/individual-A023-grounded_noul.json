@@ -1,0 +1,30 @@
+{
+  "id": "individual-A023-grounded_noul",
+  "kind": "individual",
+  "case_id": "A023",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review how a local workflow handles replay of a completed step. Everything shown runs within one process and mutates an in-memory session.",
+    "artifacts": [
+      {
+        "path": ".team-review/02-interconnect.md",
+        "content": "## Invariants\nA completed step contributes its points at most once per session.\n## Integration Hot-Spots\nresume_step can replay the last step after an interruption.\n"
+      },
+      {
+        "path": "src/steps.py",
+        "content": "def complete(session, step):\n    session.points += step.points\n    session.completed.add(step.id)\n\ndef resume_step(session, step):\n    complete(session, step)\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Given the task and artifacts, does the scope warrant checking cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics against the source?",
+      "criteria": {
+        "false": "The scope does not concern cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics.",
+        "true": "The scope concerns cross-component domain rules, implicit contracts, operation ordering, state transitions or within-process replay semantics, even when the implementation appears consistent."
+      }
+    }
+  },
+  "sha256": "bac2d507a9a3e24df77f8317e89034fb8e27652817ab960e73b52b8f2663757b"
+}

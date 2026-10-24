@@ -1,0 +1,30 @@
+{
+  "id": "individual-C047-catalog_noul",
+  "kind": "individual",
+  "case_id": "C047",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Check only whether the documented function signature matches current code and report factual drift. Do not assess organization, navigation, wording or presentation.",
+    "artifacts": [
+      {
+        "path": "docs/client.md",
+        "content": "connect(host: str, port: int = 443) returns Connection."
+      },
+      {
+        "path": "src/client.py",
+        "content": "def connect(host: str, port: int = 8443, *, tls: bool = True):\n    return Connection(host, port, tls=tls)\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:doc-humanizer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "editing prose voice (use text-humanizer).",
+        "true": "spawned by project-knowledge methods to restructure technical documentation."
+      }
+    }
+  },
+  "sha256": "a309c4275c21a7853cd103e432dd6f6bb6e01fcdbaa357ec05eb0a7775a5436f"
+}

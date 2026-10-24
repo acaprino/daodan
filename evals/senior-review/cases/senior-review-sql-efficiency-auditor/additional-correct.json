@@ -1,0 +1,49 @@
+{
+  "requirement": "Each search may examine at most 100 rows under the supplied workload; inserts must write at most one identical status index. An intentionally rare export on a bounded 10-row table permits a scan; offset pagination is part of that contract.",
+  "schema": {
+    "indexes": [
+      {
+        "name": "status_a",
+        "keys": [
+          "status"
+        ]
+      },
+      {
+        "name": "day_name",
+        "keys": [
+          "day",
+          "name"
+        ],
+        "partial": "active=false",
+        "collation": "locale"
+      }
+    ]
+  },
+  "query": {
+    "sql": "SELECT id FROM orders WHERE day = ? AND active = false ORDER BY name COLLATE locale LIMIT 100",
+    "frequency_per_second": 100,
+    "columns_needed": [
+      "id"
+    ],
+    "returned_columns": [
+      "id"
+    ],
+    "plan": {
+      "examined_rows": 100,
+      "sort_rows": 0,
+      "used_index": "day_name"
+    }
+  },
+  "join": {
+    "sql": "orders JOIN per_order_line_totals USING(order_id) JOIN per_order_tag_lists USING(order_id)",
+    "orders": 100,
+    "required": "one order total and its tag list",
+    "intermediate_rows": 100
+  },
+  "rare_export": {
+    "rows": 10,
+    "frequency": "monthly",
+    "index": null,
+    "pagination": "offset required"
+  }
+}

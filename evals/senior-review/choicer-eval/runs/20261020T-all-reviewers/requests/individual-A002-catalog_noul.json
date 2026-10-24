@@ -1,0 +1,26 @@
+{
+  "id": "individual-A002-catalog_noul",
+  "kind": "individual",
+  "case_id": "A002",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the network rule limiting database access to the application subnet. Only the infrastructure rule is in scope.",
+    "artifacts": [
+      {
+        "path": "infra/database.tf",
+        "content": "resource \"aws_security_group_rule\" \"database_ingress\" {\n  type              = \"ingress\"\n  protocol          = \"tcp\"\n  from_port         = 5432\n  to_port           = 5432\n  cidr_blocks       = [\"10.20.4.0/24\"]\n  security_group_id = aws_security_group.database.id\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers."
+      }
+    }
+  },
+  "sha256": "0a1acd564bd4dfd5a15818b68197514c3b2fdc696878217bd0583fd3e576f483"
+}

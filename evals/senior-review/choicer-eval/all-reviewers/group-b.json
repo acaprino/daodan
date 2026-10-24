@@ -1,0 +1,613 @@
+{
+  "roles": [
+    {
+      "role_id": "senior-review:api-contract-auditor",
+      "source_path": "plugins/senior-review/roles/api-contract-auditor.md",
+      "source_sha256": "d9f8111a6682b67582f078868892684afa048dc36a02ed7f0320ee1de8426d17",
+      "question": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      },
+      "adaptation_rationale": "Replaces dispatch wording with the substantive contract comparison. Preserves the body exception that runtime validators count without a standalone specification, and preserves the exclusions for internal invariants and runtime coordination. Selection does not require proven drift.",
+      "cases": [
+        {
+          "id": "B001", "expected": true,
+          "state": {
+            "task": "Review the member endpoint change that adds an optional display name for existing clients.",
+            "artifacts": [
+              {"path": "api/member.schema.json", "content": "{\"type\":\"object\",\"required\":[\"id\"],\"properties\":{\"id\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"}},\"additionalProperties\":false}"},
+              {"path": "api/member.ts", "content": "import {memberSchema} from \"./schemas\";\nrouter.get(\"/members/:id\", validateResponse(memberSchema), async (req, res) => {\n  const member = await store.get(req.params.id);\n  const body = {id: member.id, ...(member.displayName == null ? {} : {display_name: member.displayName})};\n  res.json(body);\n});"},
+              {"path": "web/member.ts", "content": "export type Member = {id: string; display_name?: string};\nexport const label = (m: Member) => m.display_name ?? m.id;"}
+            ]
+          },
+          "rationale": "A compatible optional response field still requires checking schema, implementation, and consumer agreement; absence of a defect does not remove applicability.",
+          "evidence": ["api/member.schema.json:1 defines the public response shape.", "api/member.ts:4 and web/member.ts:1 implement and consume that shape."]
+        },
+        {
+          "id": "B002", "expected": true,
+          "state": {
+            "task": "Review the search endpoint accepting a result limit and returning matches.",
+            "artifacts": [
+              {"path": "app.py", "content": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\napp = FastAPI()\nclass SearchRequest(BaseModel):\n    query: str\n    limit: int = Field(default=20, ge=1, le=50)\nclass Match(BaseModel):\n    id: str\n@app.post(\"/search\", response_model=list[Match])\ndef search(request: SearchRequest):\n    return [Match(id=str(i)) for i in range(request.limit)]"}
+            ]
+          },
+          "rationale": "Boundary positive: the request model and declared response model are runtime contracts even though no separate specification file is supplied.",
+          "evidence": ["app.py:4-8 declares runtime request constraints and the response shape.", "app.py:9-11 binds those types to an API operation."]
+        },
+        {
+          "id": "B003", "expected": true,
+          "state": {
+            "task": "Review the inventory event producer after adding a warehouse identifier.",
+            "artifacts": [
+              {"path": "contracts/stock.schema.json", "content": "{\"type\":\"object\",\"required\":[\"sku\",\"warehouse_id\",\"quantity\"],\"properties\":{\"sku\":{\"type\":\"string\"},\"warehouse_id\":{\"type\":\"string\"},\"quantity\":{\"type\":\"integer\"}}}"},
+              {"path": "events/publish_stock.py", "content": "def publish_stock(bus, stock):\n    bus.publish(\"stock.changed\", {\n        \"sku\": stock.sku,\n        \"warehouse\": stock.warehouse_id,\n        \"quantity\": stock.quantity,\n    })"},
+              {"path": "contracts/channels.md", "content": "`stock.changed` messages use stock.schema.json. Warehouse identifiers are stable strings."}
+            ]
+          },
+          "rationale": "A formal message schema and producer are available for the API contract comparison, including the newly added field.",
+          "evidence": ["contracts/stock.schema.json:1 requires warehouse_id.", "events/publish_stock.py:2-6 publishes the corresponding message."]
+        },
+        {
+          "id": "B004", "expected": false,
+          "state": {
+            "task": "Review the download handler for stream cleanup when a client disconnects.",
+            "artifacts": [
+              {"path": "server/download.js", "content": "import fs from \"node:fs\";\nexport function download(req, res) {\n  const stream = fs.createReadStream(\"/srv/export.csv\");\n  res.on(\"close\", () => stream.destroy());\n  stream.on(\"error\", error => res.destroy(error));\n  stream.pipe(res);\n}"},
+              {"path": "server/README.md", "content": "This internal Express route has no OpenAPI specification, response DTO, or runtime schema. It streams the current CSV file."}
+            ]
+          },
+          "rationale": "Near-neighbor negative: an HTTP handler alone is insufficient. The task concerns resource lifecycle and there is no declared contract to compare.",
+          "evidence": ["server/README.md:1 establishes the absence of a specification or runtime schema.", "server/download.js:4-6 is the stream lifecycle under review."]
+        },
+        {
+          "id": "B005", "expected": false,
+          "state": {
+            "task": "Check that the allocation function preserves the total quantity across bins.",
+            "artifacts": [
+              {"path": "allocation.ts", "content": "type Bin = {capacity: number; quantity: number};\nexport function allocate(amount: number, bins: Bin[]): number {\n  let remaining = amount;\n  for (const bin of bins) {\n    const moved = Math.min(remaining, bin.capacity - bin.quantity);\n    bin.quantity += moved; remaining -= moved;\n  }\n  return remaining;\n}"},
+              {"path": "design.md", "content": "Allocation is an in-process calculation. The sum of the quantity increases plus the returned remainder must equal the input amount."}
+            ]
+          },
+          "rationale": "The typed structure is an internal domain model and the task checks a conservation invariant, not a declared API boundary.",
+          "evidence": ["allocation.ts:1 is a private in-process type.", "design.md:1 identifies the internal quantity invariant."]
+        },
+        {
+          "id": "B006", "expected": false,
+          "state": {
+            "task": "Review compensation when shipment reservation fails after payment capture.",
+            "artifacts": [
+              {"path": "orders/fulfill.py", "content": "async def fulfill(order, payments, shipping):\n    charge = await payments.capture(order.id)\n    try:\n        return await shipping.reserve(order.id)\n    except ReservationError:\n        await payments.refund(charge.id)\n        raise"},
+              {"path": "orders/change.md", "content": "The change is confined to orchestration after payment capture. Payment and shipment request and response contracts remain unchanged. Review retry and compensation behavior."}
+            ]
+          },
+          "rationale": "The scoped concern is a cross-service runtime flow and compensation, explicitly excluded from this contract comparison role.",
+          "evidence": ["orders/fulfill.py:2-7 contains the runtime sequence and refund.", "orders/change.md:1 limits the task to retry and compensation behavior."]
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:chicken-egg-detector",
+      "source_path": "plugins/senior-review/roles/chicken-egg-detector.md",
+      "source_sha256": "0c517c9d552da2a661c1f8e0be70433e58bbcc0f90b6c846667d3f4653db6506",
+      "question": "Does the task examine dependencies that determine whether components, configuration, infrastructure, or migrations become ready during initialization or deployment?",
+      "criteria": {
+        "false": "The task concerns steady-state behavior or unrelated build and code issues, without initialization or deployment readiness dependencies.",
+        "true": "The task examines readiness dependencies, ordering, cycles, or temporal coupling during startup, bootstrap, configuration loading, discovery, or migration."
+      },
+      "adaptation_rationale": "Expresses the readiness dependency remit without requiring a demonstrated cycle. Retains module, service, configuration, and migration initialization, while distinguishing runtime calls and ordinary compilation problems. A valid explicit ordering remains reviewable.",
+      "cases": [
+        {
+          "id": "B007", "expected": true,
+          "state": {
+            "task": "Review the first-deployment sequence for the API and its database.",
+            "artifacts": [
+              {"path": "compose.yaml", "content": "services:\n  db:\n    image: postgres:16\n    environment: {POSTGRES_PASSWORD: local}\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n  migrate:\n    image: app:local\n    command: [\"python\", \"migrate.py\"]\n    depends_on:\n      db: {condition: service_healthy}\n  api:\n    image: app:local\n    depends_on:\n      migrate: {condition: service_completed_successfully}\n"},
+              {"path": "deploy.md", "content": "migrate.py creates the API tables and exits zero only after committing. The API starts accepting traffic after migration completion."}
+            ]
+          },
+          "rationale": "A correct linear readiness chain is still in scope for startup review. It must not be confused with a requirement to find a cycle.",
+          "evidence": ["compose.yaml:11-16 gates migration on database health and API startup on migration completion.", "deploy.md:1 defines the readiness obligations."]
+        },
+        {
+          "id": "B008", "expected": true,
+          "state": {
+            "task": "Review construction of the services when the desktop process launches.",
+            "artifacts": [
+              {"path": "services.py", "content": "class Container:\n    def __init__(self):\n        self.instances = {}\n    def resolve(self, name):\n        if name not in self.instances:\n            self.instances[name] = self.factories[name](self)\n        return self.instances[name]\n\ncontainer = Container()\ncontainer.factories = {\n    \"catalog\": lambda c: Catalog(c.resolve(\"search\")),\n    \"search\": lambda c: Search(c.resolve(\"catalog\")),\n}\ncontainer.resolve(\"catalog\")"}
+            ]
+          },
+          "rationale": "The service factories form an initialization dependency cycle inside one process. Distributed infrastructure is not necessary for applicability.",
+          "evidence": ["services.py:11-12 makes each factory resolve the other.", "services.py:14 starts dependency construction at launch."]
+        },
+        {
+          "id": "B009", "expected": true,
+          "state": {
+            "task": "Review deployment of the tenant migration on an empty installation.",
+            "artifacts": [
+              {"path": "migrations/002_tenants.py", "content": "def upgrade(db, directory):\n    admin = directory.get_initial_admin()\n    db.execute(\"INSERT INTO tenants(owner_id) VALUES (?)\", [admin.id])"},
+              {"path": "directory/start.py", "content": "def start(db, server):\n    tenant = db.one(\"SELECT owner_id FROM tenants LIMIT 1\")\n    server.serve(initial_admin=tenant.owner_id)"},
+              {"path": "deploy.md", "content": "A fresh installation starts with an empty tenants table. The directory API exposes get_initial_admin only after directory/start.py finishes; migration 002 runs before the application accepts traffic."}
+            ]
+          },
+          "rationale": "Boundary positive: a migration and service bootstrap share a readiness dependency even though the migration is not a long-running component.",
+          "evidence": ["migrations/002_tenants.py:2 requires the directory API before seeding the row.", "directory/start.py:2-3 requires that row before serving.", "deploy.md:1 gives the empty-installation sequence."]
+        },
+        {
+          "id": "B010", "expected": false,
+          "state": {
+            "task": "Review the quote callback loop used during an already-running checkout session.",
+            "artifacts": [
+              {"path": "checkout.py", "content": "async def quote(cart, pricing):\n    return await pricing.quote(cart.id, callback=\"/cart/discount\")\nasync def discount(cart_id, carts):\n    return await carts.discount_for(cart_id)"},
+              {"path": "operations.md", "content": "Both services finish startup independently. These endpoints run only after a customer requests a quote; neither endpoint participates in readiness or initialization."}
+            ]
+          },
+          "rationale": "Near-neighbor negative: reciprocal service calls occur only during steady-state request handling, not initialization.",
+          "evidence": ["checkout.py:1-4 contains runtime calls.", "operations.md:1 explicitly establishes independent startup."]
+        },
+        {
+          "id": "B011", "expected": false,
+          "state": {
+            "task": "Review the locking around concurrent updates to the running metrics accumulator.",
+            "artifacts": [
+              {"path": "metrics.py", "content": "from threading import Lock\nclass Metrics:\n    def __init__(self):\n        self.lock = Lock()\n        self.count = 0\n    def record(self):\n        with self.lock:\n            self.count += 1\n    def snapshot(self):\n        with self.lock:\n            return self.count"}
+            ]
+          },
+          "rationale": "The presence of a constructor and locking does not create an initialization dependency. The task concerns concurrent runtime state updates.",
+          "evidence": ["metrics.py:3-5 initializes only local fields.", "metrics.py:6-11 is the steady-state locking behavior under review."]
+        },
+        {
+          "id": "B012", "expected": false,
+          "state": {
+            "task": "Explain why the TypeScript compilation fails after changing the path alias.",
+            "artifacts": [
+              {"path": "tsconfig.json", "content": "{\"compilerOptions\":{\"baseUrl\":\".\",\"paths\":{\"@shared/*\":[\"lib/*\"]}}}"},
+              {"path": "src/main.ts", "content": "import {parse} from \"@shared/parser\";\nexport const read = (input: string) => parse(input);"},
+              {"path": "build.txt", "content": "error TS2307: Cannot find module @shared/parser. The parser source is src/shared/parser.ts."}
+            ]
+          },
+          "rationale": "This is module resolution at compilation, with no readiness ordering or initialization dependency. A dependency-related word is not enough.",
+          "evidence": ["tsconfig.json:1 maps the alias to lib.", "build.txt:1 identifies a compile-time missing module and its source location."]
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:ui-race-auditor",
+      "source_path": "plugins/senior-review/roles/ui-race-auditor.md",
+      "source_sha256": "e2c13d0f21b3bbf76706f7ce7433bac2b760f2c9c3e70620beb75455e99548be",
+      "question": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      },
+      "adaptation_rationale": "Preserves the framework-independent timing lens and explicitly includes the body extension for deterministic per-instance state divergence. Selection depends on the UI interaction under review rather than an already-proven scheduling failure.",
+      "cases": [
+        {
+          "id": "B013", "expected": true,
+          "state": {
+            "task": "Review restoration of the conversation viewport when older messages finish loading.",
+            "artifacts": [
+              {"path": "History.tsx", "content": "function History({load}) {\n  const [messages, setMessages] = useState([]);\n  const pane = useRef(null);\n  useEffect(() => { load().then(setMessages); }, [load]);\n  useEffect(() => {\n    pane.current.scrollTop = pane.current.scrollHeight;\n  }, [messages]);\n  return <div ref={pane}><VirtualList items={messages} estimateSize={() => 30} /></div>;\n}"},
+              {"path": "VirtualList.md", "content": "Rows are measured after mounting. Images can change row heights when they load; the virtualizer updates its total height after each measurement."}
+            ]
+          },
+          "rationale": "Asynchronous data, deferred size measurement, and programmatic scrolling interact directly in the task.",
+          "evidence": ["History.tsx:4-7 loads messages and scrolls after the state change.", "VirtualList.md:1 establishes later layout changes."]
+        },
+        {
+          "id": "B014", "expected": true,
+          "state": {
+            "task": "Review keyboard focus when opening the fetched settings dialog.",
+            "artifacts": [
+              {"path": "settings.js", "content": "let generation = 0;\nexport async function openSettings(dialog, fetchForm) {\n  const current = ++generation;\n  const form = await fetchForm();\n  if (current !== generation) return;\n  dialog.replaceChildren(form);\n  dialog.showModal();\n  dialog.querySelector(\"input\")?.focus();\n}\nexport function closeSettings(dialog) {\n  ++generation;\n  dialog.close();\n}"}
+            ]
+          },
+          "rationale": "A generation guard and mounted dialog may already synchronize the flow correctly. Async arrival, dismissal, and focus ownership nevertheless warrant this review.",
+          "evidence": ["settings.js:3-8 coordinates asynchronous data, mounting, and focus.", "settings.js:10-12 invalidates a pending opening when dismissed."]
+        },
+        {
+          "id": "B015", "expected": true,
+          "state": {
+            "task": "Review why the update badge should reflect the result of the toolbar check.",
+            "artifacts": [
+              {"path": "useUpdate.ts", "content": "export function useUpdate() {\n  const [available, setAvailable] = useState(false);\n  const check = async () => setAvailable(await bridge.checkUpdate());\n  useEffect(() => { check(); }, []);\n  return {available, check};\n}"},
+              {"path": "Toolbar.tsx", "content": "export function Toolbar() {\n  const {check} = useUpdate();\n  return <button onClick={check}>Check for updates</button>;\n}"},
+              {"path": "UpdateBadge.tsx", "content": "export function UpdateBadge() {\n  const {available} = useUpdate();\n  return available ? <span>Update ready</span> : null;\n}"}
+            ]
+          },
+          "rationale": "Boundary positive: independent instances of a stateful hook represent one application-wide fact. The role explicitly covers deterministic divergence without requiring a layout race.",
+          "evidence": ["useUpdate.ts:2-5 allocates and changes state per hook instance.", "Toolbar.tsx:2 and UpdateBadge.tsx:2 instantiate separate copies."]
+        },
+        {
+          "id": "B016", "expected": false,
+          "state": {
+            "task": "Review the worker pool for duplicate reservation of queued jobs.",
+            "artifacts": [
+              {"path": "worker.py", "content": "async def take(queue, store):\n    job = await queue.peek()\n    if job is not None and not await store.is_reserved(job.id):\n        await store.reserve(job.id)\n        return job"},
+              {"path": "README.md", "content": "This process consumes jobs from a broker. It has no graphical interface or browser connection."}
+            ]
+          },
+          "rationale": "Near-neighbor negative: asynchronous check-then-act behavior is backend concurrency, with no UI rendering, events, or layout involvement.",
+          "evidence": ["worker.py:2-5 contains the backend concurrency sequence.", "README.md:1 establishes a headless process."]
+        },
+        {
+          "id": "B017", "expected": false,
+          "state": {
+            "task": "Review the spacing and text contrast in the printed receipt template.",
+            "artifacts": [
+              {"path": "receipt.html", "content": "<article class=\"receipt\"><h1>Receipt</h1><p class=\"total\">Total: 19.50</p></article>"},
+              {"path": "receipt.css", "content": ".receipt { color: #222; background: white; padding: 24px; }\n.total { margin-top: 16px; font-weight: bold; }"},
+              {"path": "rendering.md", "content": "The server renders this static HTML once for printing. It includes no scripts, event handlers, delayed images, or programmatic position changes."}
+            ]
+          },
+          "rationale": "Static presentation checks do not involve the timing or state synchronization this reviewer analyzes.",
+          "evidence": ["receipt.css:1-2 specifies fixed styling.", "rendering.md:1 establishes a static, script-free rendering path."]
+        },
+        {
+          "id": "B018", "expected": false,
+          "state": {
+            "task": "Check the rounding convention used to display tax in the invoice row.",
+            "artifacts": [
+              {"path": "TaxRow.tsx", "content": "export function TaxRow({taxCents}: {taxCents: number}) {\n  const value = (Math.round(taxCents) / 100).toFixed(2);\n  return <tr><th>Tax</th><td>{value}</td></tr>;\n}"},
+              {"path": "money.md", "content": "taxCents is computed before rendering. The display must round to the nearest whole cent, with exact halves away from zero."}
+            ]
+          },
+          "rationale": "A component file alone does not imply UI timing work. The scoped question is a pure numerical display transformation.",
+          "evidence": ["TaxRow.tsx:2 is a synchronous pure computation.", "money.md:1 states the rounding requirement."]
+        }
+      ]
+    }
+    ,
+    {
+      "role_id": "senior-review:code-auditor",
+      "source_path": "plugins/senior-review/roles/code-auditor.md",
+      "source_sha256": "d4072cd6dc267138154402334ee6fc50e3f39d92e8f0a4abf289b0f0e46e3944",
+      "question": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      },
+      "adaptation_rationale": "Turns the general review trigger into an applicability question while retaining security-only exclusion and the source boundary between local abstraction smells and cross-file ownership. Small or sound code remains eligible; findings are not a prerequisite.",
+      "cases": [
+        {
+          "id": "B019", "expected": true,
+          "state": {
+            "task": "Review whether the import can resume safely after a disk write or parsing failure.",
+            "artifacts": [
+              {"path": "importer.py", "content": "import json\ndef import_rows(source, output, checkpoint):\n    offset = int(checkpoint.read_text()) if checkpoint.exists() else 0\n    rows = source.read_text().splitlines()\n    with output.open(\"a\") as handle:\n        for i, row in enumerate(rows[offset:], start=offset):\n            handle.write(json.dumps(json.loads(row)) + \"\\n\")\n            checkpoint.write_text(str(i + 1))"},
+              {"path": "requirements.md", "content": "Restarting the importer must preserve each valid input row exactly once in the output. A process can stop between any two file operations."}
+            ]
+          },
+          "rationale": "Persisted state, I/O kill points, checkpoint validity, and retry behavior are central failure-path responsibilities of this reviewer.",
+          "evidence": ["importer.py:3-8 maintains output and checkpoint state separately.", "requirements.md:1 defines the resume behavior to assess."]
+        },
+        {
+          "id": "B020", "expected": true,
+          "state": {
+            "task": "Review the order controller for responsibility boundaries and error handling.",
+            "artifacts": [
+              {"path": "OrderController.ts", "content": "export async function createOrder(req, db, mailer) {\n  const items = JSON.parse(req.body.items);\n  if (!Array.isArray(items) || items.length === 0) throw new Error(\"items required\");\n  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);\n  const order = await db.insert(\"orders\", {items, total});\n  try { await mailer.send(order); } catch (error) { console.error(error); }\n  return order;\n}"}
+            ]
+          },
+          "rationale": "The task requests local architectural and failure-handling review of parsing, validation, business computation, persistence, and notification in one unit.",
+          "evidence": ["OrderController.ts:2-6 combines multiple responsibilities.", "OrderController.ts:6 handles a notification failure."]
+        },
+        {
+          "id": "B021", "expected": true,
+          "state": {
+            "task": "Review this change to the empty-input behavior of the average helper.",
+            "artifacts": [
+              {"path": "average.py", "content": "def average(values):\n    if not values:\n        return None\n    return sum(values) / len(values)"},
+              {"path": "requirements.md", "content": "Return None for an empty finite sequence. Otherwise return its arithmetic mean."}
+            ]
+          },
+          "rationale": "Boundary positive: an explicit code review of a small, apparently correct function is still within the general review remit. Complexity or a visible defect is not required.",
+          "evidence": ["average.py:2-4 implements both branches.", "requirements.md:1 provides an observable requirement."]
+        },
+        {
+          "id": "B022", "expected": false,
+          "state": {
+            "task": "Audit the export endpoint only for command injection and unauthorized filesystem access.",
+            "artifacts": [
+              {"path": "export.js", "content": "import {exec} from \"node:child_process\";\nrouter.post(\"/export\", (req, res) => {\n  exec(`tar -czf /tmp/export.tgz ${req.body.folder}`, (error) => {\n    if (error) return res.sendStatus(500);\n    res.download(\"/tmp/export.tgz\");\n  });\n});"}
+            ]
+          },
+          "rationale": "Near-neighbor negative: the code contains reviewable issues, but the task is expressly security-specific, which the role delegates elsewhere.",
+          "evidence": ["export.js:3 passes request data to a shell.", "The task limits the audit to injection and unauthorized access."]
+        },
+        {
+          "id": "B023", "expected": false,
+          "state": {
+            "task": "Write a short release announcement from the completed change notes.",
+            "artifacts": [
+              {"path": "CHANGELOG.md", "content": "## 2.4\n- Added CSV exports for saved searches.\n- Added a keyboard shortcut to open settings.\n- Reduced repeated notifications after reconnecting."}
+            ]
+          },
+          "rationale": "The requested result is editorial release prose, with no code-quality or architecture review.",
+          "evidence": ["CHANGELOG.md:1-4 supplies finished release facts.", "The task requests an announcement."]
+        },
+        {
+          "id": "B024", "expected": false,
+          "state": {
+            "task": "Assess which module should own the delivery cutoff policy and whether its active definitions must change together.",
+            "artifacts": [
+              {"path": "checkout/cutoff.py", "content": "def same_day_available(hour):\n    return hour < 14"},
+              {"path": "fulfillment/schedule.py", "content": "def ships_today(hour):\n    return hour < 14"},
+              {"path": "policy.md", "content": "Checkout promises and fulfillment scheduling implement the same same-day delivery cutoff for the same warehouse and local timezone. Both modules are active."}
+            ]
+          },
+          "rationale": "The task is exclusively about cross-file duplicated policy ownership. The code auditor explicitly assigns that question to a different dimension, while retaining local smells.",
+          "evidence": ["checkout/cutoff.py:1-2 and fulfillment/schedule.py:1-2 separately represent the policy.", "policy.md:1 establishes common semantics and scope."]
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:cleanup-auditor",
+      "source_path": "plugins/senior-review/roles/cleanup-auditor.md",
+      "source_sha256": "3f46c57b34faf982d4734b9de132ff4eb3d4e8e351730da7031828db1905cc97",
+      "question": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      },
+      "adaptation_rationale": "Removes pipeline entry names and states the five application hygiene dimensions directly. Retains report-only scope and the explicit exclusions for applying removals, filesystem or Git tidying, and standalone language scans. Candidates may prove intentional.",
+      "cases": [
+        {
+          "id": "B025", "expected": true,
+          "state": {
+            "task": "Audit application assets and help references after the product icon replacement.",
+            "artifacts": [
+              {"path": "src/Header.tsx", "content": "export function Header() {\n  return <img src=\"/icons/atlas.svg\" alt=\"Atlas\" />;\n}"},
+              {"path": "public/icons/atlas.svg", "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" /></svg>"},
+              {"path": "public/icons/compass.svg", "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 2L22 22H2Z\" /></svg>"},
+              {"path": "docs/help.md", "content": "The header displays the Compass icon from public/icons/compass.svg."},
+              {"path": "migration.md", "content": "The rename to Atlas is complete. The header is the only application icon consumer; docs/help.md is the user-facing help page."}
+            ]
+          },
+          "rationale": "The audit requires understanding current application asset use and documentation after completed work, not merely filesystem tracking status.",
+          "evidence": ["src/Header.tsx:2 uses the new asset.", "docs/help.md:1 still refers to the previous asset.", "migration.md:1 supplies the completed lifecycle context."]
+        },
+        {
+          "id": "B026", "expected": true,
+          "state": {
+            "task": "Audit dependency declarations across the workspace packages before publishing them separately.",
+            "artifacts": [
+              {"path": "package.json", "content": "{\"private\":true,\"workspaces\":[\"packages/*\"]}"},
+              {"path": "packages/web/package.json", "content": "{\"name\":\"web\",\"dependencies\":{\"date-fns\":\"4.1.0\"}}"},
+              {"path": "packages/web/index.js", "content": "export const title = \"Team calendar\";"},
+              {"path": "packages/calendar/package.json", "content": "{\"name\":\"calendar\",\"dependencies\":{}}"},
+              {"path": "packages/calendar/index.js", "content": "import {formatISO} from \"date-fns\";\nexport const serializeDay = day => formatISO(day, {representation: \"date\"});"}
+            ]
+          },
+          "rationale": "Workspace-aware dependency hygiene requires comparing declarations with the package that actually consumes each dependency.",
+          "evidence": ["packages/web/package.json:1 declares date-fns.", "packages/calendar/index.js:1 consumes it in the sibling package.", "packages/calendar/package.json:1 lacks that dependency."]
+        },
+        {
+          "id": "B027", "expected": true,
+          "state": {
+            "task": "Audit remaining migration adapters for unused code and explain which ones should be retained.",
+            "artifacts": [
+              {"path": "adapters/legacy_csv.py", "content": "from registry import register\n@register(\"legacy-csv\")\nclass LegacyCsv:\n    def decode(self, text):\n        return text.split(\",\")"},
+              {"path": "registry.py", "content": "handlers = {}\ndef register(name):\n    def add(cls):\n        handlers[name] = cls\n        return cls\n    return add"},
+              {"path": "loader.py", "content": "import importlib\nfrom registry import handlers\nimportlib.import_module(\"adapters.legacy_csv\")\nparser = handlers[\"legacy-csv\"]()"},
+              {"path": "migration.md", "content": "The new JSON format is deployed. Existing customer archives still contain legacy CSV and remain supported."}
+            ]
+          },
+          "rationale": "Boundary positive: dynamic registration and an active compatibility requirement may justify keeping the adapter. The requested source-informed residue audit remains applicable without an actual dead artifact.",
+          "evidence": ["adapters/legacy_csv.py:2 registers the class.", "loader.py:3-4 loads and consumes it dynamically.", "migration.md:1 establishes a continuing lifecycle."]
+        },
+        {
+          "id": "B028", "expected": false,
+          "state": {
+            "task": "Review repository tracking rules so generated build output stays out of Git.",
+            "artifacts": [
+              {"path": ".gitignore", "content": "node_modules/\n"},
+              {"path": "build.md", "content": "The bundler writes dist/ on every build. All dist files are reproducible and have no hand-maintained content."},
+              {"path": "tracked-files.txt", "content": "dist/app.js\ndist/app.js.map\npackage.json\nsrc/app.ts"}
+            ]
+          },
+          "rationale": "Near-neighbor negative: generated output tracking can be decided from filesystem and Git facts, a boundary explicitly assigned outside application hygiene.",
+          "evidence": ["build.md:1 identifies reproducible build output.", "tracked-files.txt:1-2 shows that output is tracked."]
+        },
+        {
+          "id": "B029", "expected": false,
+          "state": {
+            "task": "Apply the approved removal list and run the listed build check.",
+            "artifacts": [
+              {"path": "cleanup-approved.json", "content": "{\"approved_removals\":[\"public/retired-banner.svg\"],\"verification\":\"npm run build\",\"audit_complete\":true}"},
+              {"path": "public/retired-banner.svg", "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"><rect width=\"10\" height=\"10\" /></svg>"}
+            ]
+          },
+          "rationale": "The request is execution of an already approved removal, not another audit. The role is explicitly report-only and excludes applying removals.",
+          "evidence": ["cleanup-approved.json:1 identifies a completed audit and concrete approved removal.", "The task requests applying the list and checking the build."]
+        },
+        {
+          "id": "B030", "expected": false,
+          "state": {
+            "task": "Run Ruff F401 on this Python module and return its diagnostics without broader repository analysis.",
+            "artifacts": [
+              {"path": "tool.py", "content": "import json\nimport math\n\ndef serialize(value):\n    return json.dumps(value)"},
+              {"path": "pyproject.toml", "content": "[tool.ruff.lint]\nselect = [\"F401\"]"}
+            ]
+          },
+          "rationale": "The role explicitly excludes standalone single-language scans. This task requests only one analyzer result, without a source-informed application hygiene audit.",
+          "evidence": ["pyproject.toml:1-2 scopes the analyzer to unused imports.", "The task requests raw diagnostics only."]
+        }
+      ]
+    },
+    {
+      "role_id": "abstraction-architect:abstraction-architect-agent",
+      "source_path": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+      "source_sha256": "612a59a887bd514df8a40f0fd40122ef828b38f1767315b66d37cc64c000bc14",
+      "question": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      },
+      "adaptation_rationale": "Replaces workflow names with the substantive cross-file question. Preserves all seven dimensions and the distinction between applicability and their finding gates: two policy authorities, one bypass, or a correct shared owner can warrant review. Local smells and formal contract drift remain excluded.",
+      "cases": [
+        {
+          "id": "B031", "expected": true,
+          "state": {
+            "task": "Review how the renewal eligibility rule is represented in the renewal job and account screen.",
+            "artifacts": [
+              {"path": "jobs/renewals.py", "content": "def eligible(account):\n    return account.active and account.unpaid_days <= 7"},
+              {"path": "web/account.py", "content": "def show_renew_button(account):\n    return account.active and account.unpaid_days < 8"},
+              {"path": "rules.md", "content": "There is one renewal eligibility policy for all accounts. The scheduled renewal job and customer screen must make the same decision from the same account data."}
+            ]
+          },
+          "rationale": "Two active representations encode the same policy and must stay consistent. They currently agree, which does not remove the ownership review question.",
+          "evidence": ["jobs/renewals.py:1-2 and web/account.py:1-2 implement the rule separately.", "rules.md:1 proves shared meaning and authority scope."]
+        },
+        {
+          "id": "B032", "expected": true,
+          "state": {
+            "task": "Review the new CSV export helper in relation to the existing text serialization utilities.",
+            "artifacts": [
+              {"path": "text/csv.py", "content": "import csv\nimport io\ndef encode_row(cells):\n    out = io.StringIO(newline=\"\")\n    csv.writer(out, lineterminator=\"\\n\").writerow(cells)\n    return out.getvalue()"},
+              {"path": "exports/ledger.py", "content": "def encode_ledger_row(cells):\n    return \",\".join(str(cell) for cell in cells) + \"\\n\""},
+              {"path": "text/README.md", "content": "text.csv.encode_row owns CSV row encoding for every export. Cells may contain commas, quotes, and newlines."}
+            ]
+          },
+          "rationale": "A canonical implementation and a new parallel implementation make reuse review applicable without needing a third occurrence.",
+          "evidence": ["text/README.md:1 establishes canonical ownership and semantics.", "text/csv.py:3-6 supplies the existing mechanism.", "exports/ledger.py:1-2 implements the same responsibility elsewhere."]
+        },
+        {
+          "id": "B033", "expected": true,
+          "state": {
+            "task": "Review whether the pricing layer gives both checkout and invoice generation one source for the service fee.",
+            "artifacts": [
+              {"path": "pricing/fees.py", "content": "def service_fee_cents(subtotal):\n    return min(500, subtotal // 20)"},
+              {"path": "checkout/total.py", "content": "from pricing.fees import service_fee_cents\ndef total(subtotal):\n    return subtotal + service_fee_cents(subtotal)"},
+              {"path": "invoices/rows.py", "content": "from pricing.fees import service_fee_cents\ndef fee_row(subtotal):\n    return {\"label\": \"Service fee\", \"cents\": service_fee_cents(subtotal)}"}
+            ]
+          },
+          "rationale": "Boundary positive: the cross-file canonical ownership question is applicable even when consumers already delegate to a single source and there may be no structural finding.",
+          "evidence": ["pricing/fees.py:1-2 owns the calculation.", "checkout/total.py:1-3 and invoices/rows.py:1-3 consume that owner."]
+        },
+        {
+          "id": "B034", "expected": false,
+          "state": {
+            "task": "Review the responsibilities and error handling inside this parser function.",
+            "artifacts": [
+              {"path": "parse.py", "content": "import json\ndef parse_and_save(text, database, logger):\n    data = json.loads(text)\n    if \"name\" not in data:\n        raise ValueError(\"name required\")\n    data[\"name\"] = data[\"name\"].strip()\n    database.insert(data)\n    logger.info(\"saved\")\n    return data"}
+            ]
+          },
+          "rationale": "Near-neighbor negative: the task concerns cohesion and error handling wholly visible within one file, explicitly assigned outside the cross-file structural remit.",
+          "evidence": ["parse.py:3-8 combines parsing, validation, normalization, persistence, and logging.", "The task restricts the question to the function itself."]
+        },
+        {
+          "id": "B035", "expected": false,
+          "state": {
+            "task": "Check that this formatting-only patch preserves the arithmetic expression.",
+            "artifacts": [
+              {"path": "format.patch", "content": "diff --git a/geometry.py b/geometry.py\n--- a/geometry.py\n+++ b/geometry.py\n@@ -1,2 +1,2 @@\n def area(width, height):\n-    return width*height\n+    return width * height\n"}
+            ]
+          },
+          "rationale": "Pure formatting is explicitly ignored when extracting changed structural or semantic units, and introduces no ownership or cross-file abstraction question.",
+          "evidence": ["format.patch:6-7 changes only whitespace in one expression."]
+        },
+        {
+          "id": "B036", "expected": false,
+          "state": {
+            "task": "Compare the documented response with the handler output for the session endpoint.",
+            "artifacts": [
+              {"path": "session.schema.json", "content": "{\"type\":\"object\",\"required\":[\"expires_at\"],\"properties\":{\"expires_at\":{\"type\":\"string\",\"format\":\"date-time\"}}}"},
+              {"path": "session.py", "content": "def get_session(session):\n    return {\"expires_at\": int(session.expires_at.timestamp())}"},
+              {"path": "api.md", "content": "GET /session returns session.schema.json. The task is to verify the wire representation."}
+            ]
+          },
+          "rationale": "This is formal API contract drift between a schema and handler, explicitly excluded from the structural ownership audit.",
+          "evidence": ["session.schema.json:1 declares a timestamp string.", "session.py:2 emits an integer.", "api.md:1 defines the wire-contract comparison."]
+        }
+      ]
+    },
+    {
+      "role_id": "platform-engineering:platform-reviewer",
+      "source_path": "plugins/platform-engineering/roles/platform-reviewer.md",
+      "source_sha256": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6",
+      "question": "Does the task review security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application or its supporting backend?",
+      "criteria": {
+        "false": "No supported application platform is evidenced, or the task is limited to content, formatting, or other work outside security, architecture, and performance.",
+        "true": "The task reviews security, architecture, or performance for an evidenced SPA, PWA, mobile, Electron, or Tauri application, including its backend boundaries."
+      },
+      "adaptation_rationale": "Replaces dispatcher and workflow references with the platform detection and three-pillar review remit. Includes backend API and database work connected to a supported application, and does not require an existing rule violation.",
+      "cases": [
+        {
+          "id": "B037", "expected": true,
+          "state": {
+            "task": "Review the window settings before shipping the desktop preferences window.",
+            "artifacts": [
+              {"path": "desktop/main.ts", "content": "import {BrowserWindow} from \"electron\";\nexport function preferences() {\n  return new BrowserWindow({webPreferences: {\n    nodeIntegration: false,\n    contextIsolation: true,\n    sandbox: true,\n    preload: require.resolve(\"./preferences-preload\"),\n  }});\n}"},
+              {"path": "desktop/preferences-preload.ts", "content": "import {contextBridge, ipcRenderer} from \"electron\";\ncontextBridge.exposeInMainWorld(\"preferences\", {\n  readTheme: () => ipcRenderer.invoke(\"preferences:readTheme\"),\n});"}
+            ]
+          },
+          "rationale": "Electron is directly evidenced and renderer isolation and exposed IPC belong to its platform security rules. Correct-looking settings still warrant review.",
+          "evidence": ["desktop/main.ts:1 identifies Electron.", "desktop/main.ts:3-7 sets renderer isolation.", "desktop/preferences-preload.ts:2-4 exposes a bounded bridge."]
+        },
+        {
+          "id": "B038", "expected": true,
+          "state": {
+            "task": "Review how the Android application saves the refresh token after login.",
+            "artifacts": [
+              {"path": "app/src/main/AndroidManifest.xml", "content": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"><application android:label=\"Field Notes\" /></manifest>"},
+              {"path": "app/src/main/java/SessionStore.kt", "content": "class SessionStore(context: Context) {\n    private val preferences = context.getSharedPreferences(\"session\", Context.MODE_PRIVATE)\n    fun saveRefreshToken(token: String) {\n        preferences.edit().putString(\"refresh_token\", token).apply()\n    }\n}"}
+            ]
+          },
+          "rationale": "Android application context and credential persistence directly call for the mobile platform security lens.",
+          "evidence": ["app/src/main/AndroidManifest.xml:1 identifies the Android application.", "app/src/main/java/SessionStore.kt:2-4 persists a refresh token in ordinary preferences."]
+        },
+        {
+          "id": "B039", "expected": true,
+          "state": {
+            "task": "Review performance of the new activity endpoint used by the browser dashboard.",
+            "artifacts": [
+              {"path": "web/package.json", "content": "{\"name\":\"dashboard\",\"dependencies\":{\"react\":\"19.0.0\",\"react-dom\":\"19.0.0\"}}"},
+              {"path": "web/src/App.tsx", "content": "export function App() {\n  const {data} = useQuery({queryKey: [\"activity\"], queryFn: () => fetch(\"/api/activity\").then(r => r.json())});\n  return <ActivityList items={data ?? []} />;\n}"},
+              {"path": "api/activity.py", "content": "def activity(db, user):\n    return db.query(\"SELECT * FROM activity WHERE user_id = ? ORDER BY created_at DESC\", [user.id])"},
+              {"path": "web/README.md", "content": "The dashboard is a client-rendered single-page application. Each account may accumulate several million activity records."}
+            ]
+          },
+          "rationale": "Boundary positive: the code under review is backend querying, but its explicit SPA consumer makes pagination and API/database performance part of this platform review.",
+          "evidence": ["web/README.md:1 establishes SPA context and data volume.", "web/src/App.tsx:2 calls the endpoint.", "api/activity.py:2 supplies the query under review."]
+        },
+        {
+          "id": "B040", "expected": false,
+          "state": {
+            "task": "Review memory use in the command-line mesh converter while processing large files.",
+            "artifacts": [
+              {"path": "converter.cpp", "content": "#include <vector>\n#include \"mesh.hpp\"\nint main(int argc, char **argv) {\n  auto mesh = read_mesh(argv[1]);\n  std::vector<Vertex> normalized = normalize(mesh.vertices);\n  write_mesh(argv[2], normalized);\n}"},
+              {"path": "README.md", "content": "mesh-convert is a headless C++ command-line tool. It runs in batch jobs and has no browser, mobile, or desktop application frontend."}
+            ]
+          },
+          "rationale": "Performance is relevant, but no supported application platform is present. General native CLI memory review does not establish this role applicability.",
+          "evidence": ["converter.cpp:3-6 is command-line conversion.", "README.md:1 defines the headless execution context."]
+        },
+        {
+          "id": "B041", "expected": false,
+          "state": {
+            "task": "Proofread the FAQ wording for clarity and consistent capitalization.",
+            "artifacts": [
+              {"path": "web/package.json", "content": "{\"dependencies\":{\"react\":\"19.0.0\"}}"},
+              {"path": "web/content/faq.md", "content": "# Frequently asked questions\n## Can i change my display name?\nOpen settings, choose profile and enter a new name.\n## Where are exports?\nYour exports appear in Downloads."}
+            ]
+          },
+          "rationale": "Near-neighbor negative: a supported app exists, but this task is editorial and does not request security, architecture, or performance review.",
+          "evidence": ["web/package.json:1 establishes app technology only.", "web/content/faq.md:1-5 supplies the prose to proofread."]
+        },
+        {
+          "id": "B042", "expected": false,
+          "state": {
+            "task": "Review retry behavior when the nightly weather import cannot reach its upstream feed.",
+            "artifacts": [
+              {"path": "collector.py", "content": "import time\nimport requests\ndef collect(url):\n    for delay in (1, 2, 4):\n        try:\n            response = requests.get(url, timeout=10)\n            response.raise_for_status()\n            return response.json()\n        except requests.RequestException:\n            time.sleep(delay)\n    raise RuntimeError(\"feed unavailable\")"},
+              {"path": "deployment.md", "content": "This scheduled Python job writes an archive for research batch processing. It exposes no application API and serves no web, mobile, Electron, or Tauri client."}
+            ]
+          },
+          "rationale": "Network resilience alone does not make a platform application review applicable. The task and source establish only a headless batch collector.",
+          "evidence": ["collector.py:4-11 contains the retry logic.", "deployment.md:1 rules out an application platform or supporting API."]
+        }
+      ]
+    }
+  ]
+}

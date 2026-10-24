@@ -1,0 +1,26 @@
+{
+  "id": "individual-B011-grounded_noul",
+  "kind": "individual",
+  "case_id": "B011",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review the locking around concurrent updates to the running metrics accumulator.",
+    "artifacts": [
+      {
+        "path": "metrics.py",
+        "content": "from threading import Lock\nclass Metrics:\n    def __init__(self):\n        self.lock = Lock()\n        self.count = 0\n    def record(self):\n        with self.lock:\n            self.count += 1\n    def snapshot(self):\n        with self.lock:\n            return self.count"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the task examine dependencies that determine whether components, configuration, infrastructure, or migrations become ready during initialization or deployment?",
+      "criteria": {
+        "false": "The task concerns steady-state behavior or unrelated build and code issues, without initialization or deployment readiness dependencies.",
+        "true": "The task examines readiness dependencies, ordering, cycles, or temporal coupling during startup, bootstrap, configuration loading, discovery, or migration."
+      }
+    }
+  },
+  "sha256": "4349ffb5165ca80fe444e889894a9caddeb956e90f10cc132075446602731dd8"
+}

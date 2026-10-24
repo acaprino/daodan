@@ -1,0 +1,37 @@
+{
+  "state": {
+    "task": "Audit application assets and help references after the product icon replacement.",
+    "artifacts": [
+      {
+        "path": "src/Header.tsx",
+        "content": "export function Header() {\n  return <img src=\"/icons/atlas.svg\" alt=\"Atlas\" />;\n}"
+      },
+      {
+        "path": "public/icons/atlas.svg",
+        "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" /></svg>"
+      },
+      {
+        "path": "public/icons/compass.svg",
+        "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 2L22 22H2Z\" /></svg>"
+      },
+      {
+        "path": "docs/help.md",
+        "content": "The header displays the Compass icon from public/icons/compass.svg."
+      },
+      {
+        "path": "migration.md",
+        "content": "The rename to Atlas is complete. The header is the only application icon consumer; docs/help.md is the user-facing help page."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    }
+  }
+}

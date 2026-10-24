@@ -1,0 +1,28 @@
+{
+  "mode": "full",
+  "selected": [
+    {
+      "trigger_line": "[H1] candidate payments/service.py:4 select(Payment).where(Payment.order_id == order_id)",
+      "reason": "Verify order-scoped payment access cannot expose or alter another customer's payment.",
+      "role": "senior-review:security-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H1] candidate payments/service.py:11 await session.commit()",
+      "reason": "Check payment persistence and gateway charging remain consistent across transaction failures.",
+      "role": "senior-review:data-integrity-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    },
+    {
+      "trigger_line": "[H1] candidate payments/service.py:6 if existing.scalar_one_or_none() is not None:",
+      "reason": "Check duplicate-payment business-rule boundaries and behavior under concurrent requests.",
+      "role": "senior-review:premise-auditor",
+      "tier": "tier2",
+      "effort": "high"
+    }
+  ],
+  "recommend_full_review": false,
+  "recommend_full_reason": null
+}

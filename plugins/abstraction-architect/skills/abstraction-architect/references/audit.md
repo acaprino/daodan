@@ -56,9 +56,9 @@ None. The method edits no source and asks for no authorization. Its only write o
 
    An absent or unusable index is not an error. The audit proceeds and declares the reduced coverage in its Gaps section.
 
-5. **Spawn the `abstraction-architect-agent` agent** through its declared host harness, placing in the worker prompt `codebase_path`, `mode`, `xray_path` (the bound run directory), `map_run_id`, `map_snapshot_path`, `map_changes_path`, `map_outside_diff_changed_files`, `concept_index_path`, `changed_files` in diff mode, `report_path` in the run directory, and the resolved `scope`, `severity_floor` and `focus`.
+5. **Dispatch `abstraction-architect:abstraction-architect-agent`** through its declared isolated host harness with the actual rendered role and immutable input binding. Supply `codebase_path`, `mode`, bound `xray_path`, `map_run_id`, `map_snapshot_path`, `map_changes_path`, `map_outside_diff_changed_files`, `concept_index_path`, `changed_files` in diff mode, `report_path`, `scope`, `severity_floor` and `focus`. Include the caller's working discipline, permissions, resolved provider root and native report conventions below once, not another detection checklist. Each canonical member must deliver its findings or explicit gaps in the one report. A missing/failed member prevents a clean completion.
 
-6. **The agent writes the report** to `report_path`: `<run directory>/findings.md`, or `<run directory>/findings-diff.md` in diff mode. In global mode it also rewrites `concept-index.json`. **Diff mode never writes the index.**
+6. **Verify delivery and maintain the index.** The reviewer writes `<run directory>/findings.md`, or `findings-diff.md` in diff mode. It never overwrites the persistent index. When global mode uses an index, request its full source-confirmed census as `<run directory>/concept-index-candidate.json`, using the existing `concept-index-protocol.md` schema and `concept-census.md` method. Include healthy single-representation concepts, not only findings. This is the existing global census delivery, not a new review schema. The coordinator validates it with `concept_index.py validate`, verifies the candidate/scope and examined territory, and alone publishes it to `concept_index_path`. Preserve the old index if delivery, provenance, validation or required census coverage is incomplete. A narrower scope must never overwrite a broader index. Record the actual commit/tree and dirty-state limitations; never label uncommitted evidence as a verified clean tree. `concept_index_path: none` disables both index read and publication. **Diff mode never writes the index.**
 
 7. **Report to the user:** the report path, summary counts, the concept index state, and the top three findings as one-line previews.
 
@@ -149,7 +149,7 @@ new Map. The coordinator retains the native report owner and delivery checks.
 
 `<run directory>/findings.md`, or `<run directory>/findings-diff.md` in diff mode, passed to the auditor as `report_path`.
 
-The concept index stays at `<path>/.abstraction-architect/concept-index.json`, where the auditor, `references/concept-index-protocol.md`, its script and the reviews read it across runs. Its directory is created automatically if missing.
+The concept index stays at `<path>/.abstraction-architect/concept-index.json`, where the coordinator publishes the verified global census and review workers read it across runs, following `references/concept-index-protocol.md`. Its directory is created automatically if missing.
 
 ## Prerequisites
 
@@ -167,3 +167,74 @@ The concept index stays at `<path>/.abstraction-architect/concept-index.json`, w
 ## Out of scope
 
 This method does not produce a refactoring plan. The `suggested direction` field in each finding names the target layer or refactoring move in one sentence.
+
+
+## Native report conventions
+
+The coordinator supplies this format to all assigned members. Report current source evidence, causal impact and counterevidence; discovery counts are coverage facts, not severity. Keep knowledge selection/usage and required member_results in the same report. Missing required inputs remain failed coverage. Do not claim runtime verification from static analysis.
+
+Both modes use the same section letters so consolidation is uniform. Omit an empty section.
+
+````markdown
+# Abstraction-architect findings[ (diff-anchored)]
+
+**Generated:** <ISO timestamp>
+**Mode:** global | diff
+**Scope:** <codebase_path[/scope]>
+**Codebase Map source:** <xray_path | none>
+**Concept index:** <path> (<fresh | delta-stale | unusable: reason>)
+**Severity floor:** <low | medium | high>
+**Focus:** <all | knowledge | form | Dn>
+
+## Summary
+- N findings (H high, M medium, L low)
+- Concepts censused: <n>  |  with more than one representation: <n>
+- Top three findings, one line each
+
+## A. Competing sources of truth (D2)
+## B. Duplicated or derivable state (D4)
+## C. Redundant representation (D3)
+## D. Duplicated domain knowledge (D1)
+## E. Prior art available (D6)
+## F. Missed unification (D5)
+## G. Abstraction fitness (D7)
+
+### <Section letter><n>. <one-line title> (<severity>)
+
+- **Dimension:** <Dn name>
+- **Confidence:** <0-100, with unresolved premises stated>
+- **Pattern:** <catalog id and name, or `uncatalogued`>
+- **Evidence:**
+  - <path/file.ext>:<line-range>: <role: candidate_owner | implementation | parameter | ...>
+  - <path/file.ext>:<line-range>: <role>
+- **Why this is a problem:** <one or two sentences naming the force that makes these change together>
+- **Change amplification (L1):** <count> sites must change when this concept changes
+- **Suggested direction:** <target layer or move, one sentence, per the remediation table>
+
+```
+Evidence track: KNOWLEDGE            Evidence track: FORM
+Semantic identity: proven            Occurrences: 4
+Occurrences: 2                       Independent implementations: yes
+Must remain consistent: yes          Shared lifecycle: yes
+Bounded-context exception: none      Rule of Three: satisfied
+Canonical owner: ambiguous           Index-seeded: no
+Index-seeded: <yes|no>
+```
+
+## H. Second occurrences noted, not flagged
+
+One line per pair, exempt from `severity_floor`, so the next occurrence is recognisable. Form-track pairs only: a knowledge-track pair that passed its gate is a finding above, not a note here.
+
+## I. Confidence and Gaps
+
+- **Coverage:** concepts censused, representations read, searches run per concept
+- **Concept index:**
+  ```
+  Concept index baseline: <sha>      Current HEAD: <sha>
+  Delta determined: <yes|no>         Indexed concepts revalidated: <n>
+  Unindexed changed concepts discovered: <n>
+  ```
+  Or, when degraded, the specific condition and what coverage was lost.
+- **Index contradictions:** entries the source disproved, with what the source says
+- **Gaps:** Codebase Map files missing, directories not covered, units skipped and why; every path changed since the bound Map snapshot outside the review diff, plus failed currentness checks
+````

@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Review the spacing and text contrast in the printed receipt template.",
+    "artifacts": [
+      {
+        "path": "receipt.html",
+        "content": "<article class=\"receipt\"><h1>Receipt</h1><p class=\"total\">Total: 19.50</p></article>"
+      },
+      {
+        "path": "receipt.css",
+        "content": ".receipt { color: #222; background: white; padding: 24px; }\n.total { margin-top: 16px; font-weight: bold; }"
+      },
+      {
+        "path": "rendering.md",
+        "content": "The server renders this static HTML once for printing. It includes no scripts, event handlers, delayed images, or programmatic position changes."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:ui-race-auditor": {
+      "type": "choice",
+      "instructions": "Does the task examine asynchronous UI rendering, layout, event callbacks, programmatic scroll or focus, or synchronization of state shared across UI consumers?",
+      "criteria": {
+        "false": "The task has no relevant UI timing or shared-state synchronization concern; backend concurrency, static styling, and pure display computations alone are outside scope.",
+        "true": "The task examines UI timing, layout-dependent actions, stale UI callbacks, or independent state instances representing a shared fact, even when synchronization is correct."
+      }
+    }
+  }
+}

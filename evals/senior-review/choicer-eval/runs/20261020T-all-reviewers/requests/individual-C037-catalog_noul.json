@@ -1,0 +1,30 @@
+{
+  "id": "individual-C037-catalog_noul",
+  "kind": "individual",
+  "case_id": "C037",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Audit the service configuration reference against its current defaults and environment overrides. Report drift with both document and implementation locations.",
+    "artifacts": [
+      {
+        "path": "docs/configuration.md",
+        "content": "REQUEST_TIMEOUT defaults to 30 seconds. Set RETRIES to control retry count; the default is 5."
+      },
+      {
+        "path": "src/config.py",
+        "content": "import os\nREQUEST_TIMEOUT = int(os.getenv(\"REQUEST_TIMEOUT\", \"20\"))\nMAX_RETRIES = int(os.getenv(\"MAX_RETRIES\", \"3\"))\n"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:documentation-engineer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge's documentation audit (/daodan:write-docs) or lifecycle knowledge phases to audit or repair documentation drift."
+      }
+    }
+  },
+  "sha256": "bae564618b62bd3c814631a9109d373635251ca0102dc6e50de009d62f8828ac"
+}

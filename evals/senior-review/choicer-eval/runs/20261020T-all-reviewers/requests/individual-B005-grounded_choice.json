@@ -1,0 +1,30 @@
+{
+  "id": "individual-B005-grounded_choice",
+  "kind": "individual",
+  "case_id": "B005",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Check that the allocation function preserves the total quantity across bins.",
+    "artifacts": [
+      {
+        "path": "allocation.ts",
+        "content": "type Bin = {capacity: number; quantity: number};\nexport function allocate(amount: number, bins: Bin[]): number {\n  let remaining = amount;\n  for (const bin of bins) {\n    const moved = Math.min(remaining, bin.capacity - bin.quantity);\n    bin.quantity += moved; remaining -= moved;\n  }\n  return remaining;\n}"
+      },
+      {
+        "path": "design.md",
+        "content": "Allocation is an in-process calculation. The sum of the quantity increases plus the returned remainder must equal the input amount."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:api-contract-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review examine agreement or compatibility between an API contract, including runtime request or response types, and its implementation or consumers?",
+      "criteria": {
+        "false": "The task does not review an explicit API contract, or concerns only internal rules, untyped routes, or runtime coordination.",
+        "true": "The task reviews an API surface with an explicit schema or runtime contract, including producer, consumer, compatibility, validation, or response consistency."
+      }
+    }
+  },
+  "sha256": "658f310ff2f1086880affe1b907cc6b27ff00e7e0dc9a10f77e16d5786ae85e6"
+}

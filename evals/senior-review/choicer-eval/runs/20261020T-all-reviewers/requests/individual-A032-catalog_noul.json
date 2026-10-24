@@ -1,0 +1,26 @@
+{
+  "id": "individual-A032-catalog_noul",
+  "kind": "individual",
+  "case_id": "A032",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the catalog refresher that runs for the duration of a desktop session and the status text users see.",
+    "artifacts": [
+      {
+        "path": "src/refresher.js",
+        "content": "let status = \"Catalog current\";\nasync function tick() {\n  try { await refreshCatalog(); } catch (error) {}\n  setTimeout(tick, 60000);\n}\nexport const statusText = () => status;\ntick();\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:temporal-resilience-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "startup/bootstrap cycles (use chicken-egg-detector), cross-service timeout chains (use distributed-flow-auditor), or UI rendering races (use ui-race-auditor).",
+        "true": "reviewing timers, schedulers, polling loops, retry/reconnect logic, queues, cron jobs, background workers or watchdogs."
+      }
+    }
+  },
+  "sha256": "3d0e200b7697cd1b5e1106923dfb9c5c0075f891ecafb97bbd389c5096cc14a0"
+}

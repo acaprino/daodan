@@ -1,0 +1,29 @@
+{
+  "state": {
+    "task": "Audit ignore-rule completeness and breadth using the supplied Git evidence; identify rules hiding maintainable project files without editing them.",
+    "artifacts": [
+      {
+        "path": ".gitignore",
+        "content": "node_modules/\n*.json\n.cache/"
+      },
+      {
+        "path": "evidence/git-check-ignore.txt",
+        "content": ".gitignore:2:*.json package.json\n.gitignore:2:*.json config/pricing.json"
+      },
+      {
+        "path": "evidence/git-status.txt",
+        "content": "?? src/\n?? README.md"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the requested task call for a report on filesystem or Git hygiene, including tracked artifacts, ignore rules, scratch paths, document assets, or auxiliary Git state?",
+      "criteria": {
+        "false": "The task requests no filesystem or Git hygiene assessment; source-semantic analysis and applying approved removals alone do not qualify.",
+        "true": "The task requests a filesystem or Git hygiene assessment, including evidence that a suspicious artifact should be kept."
+      }
+    }
+  }
+}

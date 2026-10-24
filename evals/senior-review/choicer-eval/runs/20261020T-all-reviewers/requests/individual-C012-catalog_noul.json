@@ -1,0 +1,34 @@
+{
+  "id": "individual-C012-catalog_noul",
+  "kind": "individual",
+  "case_id": "C012",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Apply the already approved cleanup plan exactly to the two owned scratch files. The assessment is complete; do not perform a new audit or expand the list.",
+    "artifacts": [
+      {
+        "path": "maintenance/approved-removals.json",
+        "content": "{\"authorization\":\"apply\",\"owned_paths\":[\"scratch/sample.log\",\"scratch/request.txt\"],\"disposition\":\"quarantine\"}"
+      },
+      {
+        "path": "scratch/sample.log",
+        "content": "Temporary parser experiment finished."
+      },
+      {
+        "path": "scratch/request.txt",
+        "content": "GET /demo HTTP/1.1"
+      }
+    ]
+  },
+  "questions": {
+    "repo-hygiene:workspace-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "source-level dead code or unused dependencies (use senior-review:cleanup-auditor), or applying removals (the tidy method applies them after its authorization, through /daodan:tidy-repo).",
+        "true": "dispatched by the tidy method of repo-hygiene:repo-hygiene behind /daodan:tidy-repo, or spawned in review pipelines, for tidying a repository, finding committed build output, auditing .gitignore, locating scratch directories, or listing stale stashes/worktrees/branches."
+      }
+    }
+  },
+  "sha256": "7ab51628c83427cdf0d8b4f1369b348faaca8d089cdb54767de49677e9964e0e"
+}

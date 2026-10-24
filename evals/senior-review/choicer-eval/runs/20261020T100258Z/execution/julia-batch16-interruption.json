@@ -1,0 +1,129 @@
+{
+  "recorded_at": "2026-10-20T10:33:40.3466120Z",
+  "process_id": 73184,
+  "process_creation_time": "2026-10-20T10:13:47.1369340Z",
+  "reason": "Observed process lifetime memory peak near 25 GiB private allocation on a 31.46 GiB machine. Coordinator authorized resuming remaining exact inputs with batch_size=1, preserving completed evidence.",
+  "authorization": "Coordinator instruction in this conversation following measured resource diagnosis",
+  "scope": "Stop only the verified model process. Preserve successful outputs byte-for-byte. Do not invent a result or latency for the interrupted hunk.",
+  "completed_outputs": [
+    {
+      "name": "C01-H1.json",
+      "bytes": 5552,
+      "sha256": "6a05879f02fe637869500090aff858ad521cf9c17a0902a480b39728999096c2"
+    },
+    {
+      "name": "C01-H10.json",
+      "bytes": 5546,
+      "sha256": "b40ef5f79e3cbb0737e177648b98ae8b5f284ad059aabc471a041f77a118d64c"
+    },
+    {
+      "name": "C01-H11.json",
+      "bytes": 5551,
+      "sha256": "2f8239d3b624388b72a6a491dcb7e8130711c67189e69354d2982b67c142680c"
+    },
+    {
+      "name": "C01-H12.json",
+      "bytes": 5548,
+      "sha256": "4d15db246ab0718a8af09f853cdad0f028520a1ae7e9474d3e135ca95f77dd30"
+    },
+    {
+      "name": "C01-H13.json",
+      "bytes": 5550,
+      "sha256": "7c48dc3ac140587e75776363040b014143ede142335a04e7872b81a7cba3f68e"
+    },
+    {
+      "name": "C01-H14.json",
+      "bytes": 5556,
+      "sha256": "1d22ab6e850174e8ac7a52ea13a109d0e357dc0829f76a3c8c7d46cbdaa628ee"
+    },
+    {
+      "name": "C01-H2.json",
+      "bytes": 5553,
+      "sha256": "e232c30799e17d6083639b7cf6b710e099f01370bc7048c6e6e0c7210c541084"
+    },
+    {
+      "name": "C01-H3.json",
+      "bytes": 5559,
+      "sha256": "6b572d6e146c2b25f3d2400948cb4dc6cc45f9afba5903e78a7d7efc400c121a"
+    },
+    {
+      "name": "C01-H4.json",
+      "bytes": 5555,
+      "sha256": "db3ff1663b47b660eff23b048679114f91ed4e5339a3134952079978cbdad172"
+    },
+    {
+      "name": "C01-H5.json",
+      "bytes": 5546,
+      "sha256": "87329f987f54a2babab1d524dedbc15ea91aa22f61124b57be81d4ad7fc98239"
+    },
+    {
+      "name": "C01-H6.json",
+      "bytes": 5549,
+      "sha256": "184eda5d22037d9f009330f03bc9950270bd95de0016d5f645cd6836c78e73e8"
+    },
+    {
+      "name": "C01-H7.json",
+      "bytes": 5552,
+      "sha256": "fdcdf622f46bc1d389e81581e797685e8ee5b0e94d22882e51025909eb9a4480"
+    },
+    {
+      "name": "C01-H8.json",
+      "bytes": 5561,
+      "sha256": "878c8c5f049cd5301a35808992b2ad2694d636bad6759deab6ee1c0a7635b336"
+    },
+    {
+      "name": "C01-H9.json",
+      "bytes": 5553,
+      "sha256": "6bf2c69725dd879ccf7f2b174a9100abbfd489584eaec1dd368076ce2f87cd63"
+    },
+    {
+      "name": "C02-H1.json",
+      "bytes": 5562,
+      "sha256": "9fe4e5103730644fc18753eaf551953f5eab1142b2ecbe84b38239c5b8136ea5"
+    },
+    {
+      "name": "C02-H2.json",
+      "bytes": 5559,
+      "sha256": "6c858c13fc53945b10fd786979cda810e2072c42ce1e62a9584ff20db570447a"
+    },
+    {
+      "name": "C02-H3.json",
+      "bytes": 5559,
+      "sha256": "4d7aedb8ae10d4f6f200601584328ec7c2b3d8774203c698d1e83ad18eecd6ed"
+    },
+    {
+      "name": "C02-H4.json",
+      "bytes": 5563,
+      "sha256": "36d579f6e389f888e9a419d291475d95f463d5c1a6f3649b84d2b5e546a11f4c"
+    },
+    {
+      "name": "C02-H5.json",
+      "bytes": 5550,
+      "sha256": "1bf507731497e4bc04bb40934091d0095f04d069401e7345b2bc82cc1abd9394"
+    },
+    {
+      "name": "C02-H6.json",
+      "bytes": 5557,
+      "sha256": "e81a1a984e3bec358fb1b13136c3b139d3026ba883ac19f78fd993a6578adbfc"
+    },
+    {
+      "name": "C02-H7.json",
+      "bytes": 5549,
+      "sha256": "003e02333eee19c9b5f019d062dca0322384009326c8f95b20a292eb18296a68"
+    },
+    {
+      "name": "C02-H8.json",
+      "bytes": 5556,
+      "sha256": "c9fdc4580846301949f94c827bc4f6e6db74e5e4803c598f4df051f392a2ab02"
+    },
+    {
+      "name": "C02-H9.json",
+      "bytes": 5557,
+      "sha256": "5712af36e94c087b66c4b4d61a26f0f3b5223402274efa59e33455af2a08ce47"
+    }
+  ],
+  "outcome": "verified model process stopped",
+  "first_unfinished_request": "C02-H10",
+  "inflight_latency_seconds": null,
+  "inflight_latency_note": "The process was stopped without a saved result for C02-H10. No per-hunk latency is fabricated. The full interrupted attempt elapsed time is recorded separately."
+}

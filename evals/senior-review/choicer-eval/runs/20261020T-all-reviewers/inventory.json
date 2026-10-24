@@ -1,0 +1,883 @@
+{
+  "schema": "daodan-reviewer-inventory/v1",
+  "scope": "All registered roles in canonical plugins/*/roles/*.md; selector applicability only, not live review execution.",
+  "inclusion_rule": "Include independent reviewer/auditor mandates, including separately authorized audit/repair owners and the explicit document-structure audit hybrid. Exclude generic authors, map evidence producers, coordinators and finding respondents.",
+  "counts": {
+    "registered_roles": 44,
+    "core_reviewers_auditors": 21,
+    "hybrid_structure_auditors": 1,
+    "included": 22,
+    "excluded": 22
+  },
+  "included_role_ids": [
+    "abstraction-architect:abstraction-architect-agent",
+    "platform-engineering:platform-reviewer",
+    "project-knowledge:doc-humanizer",
+    "project-knowledge:documentation-engineer",
+    "project-knowledge:guide-reviewer",
+    "project-knowledge:instructions-auditor",
+    "react-development:react-performance-optimizer",
+    "repo-hygiene:workspace-auditor",
+    "senior-review:api-contract-auditor",
+    "senior-review:chicken-egg-detector",
+    "senior-review:cleanup-auditor",
+    "senior-review:code-auditor",
+    "senior-review:data-integrity-auditor",
+    "senior-review:distributed-flow-auditor",
+    "senior-review:logic-integrity-auditor",
+    "senior-review:premise-auditor",
+    "senior-review:resource-lifecycle-auditor",
+    "senior-review:security-auditor",
+    "senior-review:temporal-resilience-auditor",
+    "senior-review:ui-race-auditor",
+    "testing:test-suite-auditor",
+    "typescript-development:type-safety-auditor"
+  ],
+  "skill_only_audits": "Audit skills with no registered role, including dependency-audit and python-audit-method, do not add role IDs.",
+  "roles": [
+    {
+      "role_id": "abstraction-architect:abstraction-architect-agent",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent structural entropy audit",
+      "source_path": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+      "source_sha256": "612a59a887bd514df8a40f0fd40122ef828b38f1767315b66d37cc64c000bc14",
+      "registration_path": "plugins/abstraction-architect/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/abstraction-architect/roles/abstraction-architect-agent.md",
+          "line": 209
+        }
+      ]
+    },
+    {
+      "role_id": "clean-code:clean-code-agent",
+      "included": false,
+      "classification": "implementation_worker",
+      "rationale": "Executes approved readability changes; incidental suggestions do not define an independent audit.",
+      "source_path": "plugins/clean-code/roles/clean-code-agent.md",
+      "source_sha256": "c34e4c7ef90edd098c533ee242563350c1196ae50b72043ee000de9e0dd89ff7",
+      "registration_path": "plugins/clean-code/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/clean-code/roles/clean-code-agent.md",
+          "line": 14
+        },
+        {
+          "path": "plugins/clean-code/roles/clean-code-agent.md",
+          "line": 74
+        }
+      ]
+    },
+    {
+      "role_id": "codebase-map:map-analyst",
+      "included": false,
+      "classification": "map_evidence_producer",
+      "rationale": "Produces static map phase evidence; downstream owners retain review judgments.",
+      "source_path": "plugins/codebase-map/roles/map-analyst.md",
+      "source_sha256": "7e4f551303453cc8fa7e2e9e86e474a8bb00124d3db720e74d843171b135b8e2",
+      "registration_path": "plugins/codebase-map/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/codebase-map/roles/map-analyst.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/codebase-map/roles/map-analyst.md",
+          "line": 16
+        },
+        {
+          "path": "plugins/codebase-map/skills/map-method/references/phases-5-6.md",
+          "line": 190
+        }
+      ]
+    },
+    {
+      "role_id": "codebase-map:partition-behavior-worker",
+      "included": false,
+      "classification": "map_evidence_producer",
+      "rationale": "Produces flow and semantic evidence for one partition.",
+      "source_path": "plugins/codebase-map/roles/partition-behavior-worker.md",
+      "source_sha256": "721aaf9394ba2f94328f6e55939a9aa918e78df41818c70bad4143695981ad84",
+      "registration_path": "plugins/codebase-map/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/codebase-map/roles/partition-behavior-worker.md",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "role_id": "codebase-map:partition-quality-worker",
+      "included": false,
+      "classification": "map_evidence_producer",
+      "rationale": "Produces risk and documentation-health map evidence; downstream knowledge maintenance owns review.",
+      "source_path": "plugins/codebase-map/roles/partition-quality-worker.md",
+      "source_sha256": "ee63ad5bf3a7d679ee6c9fe997c23654ddba312237c60c435d707d09e7b6bc41",
+      "registration_path": "plugins/codebase-map/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/codebase-map/roles/partition-quality-worker.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/codebase-map/skills/map-method/references/phases-5-6.md",
+          "line": 190
+        }
+      ]
+    },
+    {
+      "role_id": "codebase-map:partition-structure-worker",
+      "included": false,
+      "classification": "map_evidence_producer",
+      "rationale": "Produces structural and interface evidence for one partition.",
+      "source_path": "plugins/codebase-map/roles/partition-structure-worker.md",
+      "source_sha256": "c25e3ebdcd9c026a6f06331dd63bdcc903289822ca1c696466dffbaca82948d5",
+      "registration_path": "plugins/codebase-map/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/codebase-map/roles/partition-structure-worker.md",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "role_id": "codebase-map:partition-synthesizer",
+      "included": false,
+      "classification": "map_consolidator",
+      "rationale": "Consolidates partition evidence rather than defining an independent review dimension.",
+      "source_path": "plugins/codebase-map/roles/partition-synthesizer.md",
+      "source_sha256": "9b53f1cb4f92ab1973e6ff031b55fd34f4f2c3292d0eee4179521ddb72bbb1c5",
+      "registration_path": "plugins/codebase-map/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/codebase-map/roles/partition-synthesizer.md",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "role_id": "codebase-map:semantic-interconnect-mapper",
+      "included": false,
+      "classification": "map_evidence_producer",
+      "rationale": "Builds contracts and invariant context for reviewers; canonical body explicitly says it does not review code.",
+      "source_path": "plugins/codebase-map/roles/semantic-interconnect-mapper.md",
+      "source_sha256": "f5c8fea8c7aa025eedf87790f8126e4e0e5ca10ce6f9ceb80876656730a4b606",
+      "registration_path": "plugins/codebase-map/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/codebase-map/roles/semantic-interconnect-mapper.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/codebase-map/skills/map-method/references/role-semantic-interconnect-mapper.md",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "role_id": "peer-review:brief-builder",
+      "included": false,
+      "classification": "review_input_author",
+      "rationale": "Materializes decisions; explicitly never judges whether they were good.",
+      "source_path": "plugins/peer-review/roles/brief-builder.md",
+      "source_sha256": "1056cd6355b9a752401b0b59653faa1316a44dd7a99117ecab9b23b8d63bff2c",
+      "registration_path": "plugins/peer-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/peer-review/roles/brief-builder.md",
+          "line": 24
+        },
+        {
+          "path": "plugins/peer-review/roles/brief-builder.md",
+          "line": 26
+        },
+        {
+          "path": "plugins/peer-review/roles/brief-builder.md",
+          "line": 94
+        }
+      ]
+    },
+    {
+      "role_id": "peer-review:packet-builder",
+      "included": false,
+      "classification": "review_input_builder",
+      "rationale": "Builds the challenge packet and explicitly excludes review or merits opinions.",
+      "source_path": "plugins/peer-review/roles/packet-builder.md",
+      "source_sha256": "fda2036339311cc7d38ac9aba4053488a4f4a5181d7c8b042bbc38c1cef0c090",
+      "registration_path": "plugins/peer-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/peer-review/roles/packet-builder.md",
+          "line": 18
+        },
+        {
+          "path": "plugins/peer-review/roles/packet-builder.md",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "role_id": "peer-review:respondent",
+      "included": false,
+      "classification": "finding_respondent",
+      "rationale": "Investigates findings already raised; explicitly never rules on the artifact merits.",
+      "source_path": "plugins/peer-review/roles/respondent.md",
+      "source_sha256": "bdb56ebd4a59d8c3910ee776ce7d12958c598b1603040832d54b604009b45f24",
+      "registration_path": "plugins/peer-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/peer-review/roles/respondent.md",
+          "line": 18
+        },
+        {
+          "path": "plugins/peer-review/roles/respondent.md",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "role_id": "platform-engineering:platform-reviewer",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent platform security, architecture and performance review",
+      "source_path": "plugins/platform-engineering/roles/platform-reviewer.md",
+      "source_sha256": "eefae94aa7c87d5f19709ec7da0982035b70226486cbd8e3609b72dc476934a6",
+      "registration_path": "plugins/platform-engineering/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/platform-engineering/roles/platform-reviewer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/platform-engineering/roles/platform-reviewer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:codebase-explorer",
+      "included": false,
+      "classification": "context_evidence_producer",
+      "rationale": "Gathers implementation and intention evidence for documentation writers and auditors.",
+      "source_path": "plugins/project-knowledge/roles/codebase-explorer.md",
+      "source_sha256": "b9cad3fc0d7640f2d4ee117ad52dce3aa0b56c9bef02a2d1bfd401c901798739",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/codebase-explorer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/project-knowledge/roles/codebase-explorer.md",
+          "line": 43
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:doc-humanizer",
+      "included": true,
+      "classification": "hybrid_structure_auditor",
+      "rationale": "Independently diagnoses document-structure problems and explicitly supports an audit returning a proposed structure without edits. Included as a hybrid, separately from factual reviewers.",
+      "source_path": "plugins/project-knowledge/roles/doc-humanizer.md",
+      "source_sha256": "284de7b45fa66a618be8647811c73ed9ab8656803db909d08f432303f97c368f",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/doc-humanizer.md",
+          "line": 25
+        },
+        {
+          "path": "plugins/project-knowledge/roles/doc-humanizer.md",
+          "line": 38
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:documentation-engineer",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent documentation drift audit, with separately authorized writing",
+      "source_path": "plugins/project-knowledge/roles/documentation-engineer.md",
+      "source_sha256": "28b8b178d2db039b7a96916dbd353e4353937b47f982c17be0e9d1cb0f37553f",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/documentation-engineer.md",
+          "line": 24
+        },
+        {
+          "path": "plugins/project-knowledge/roles/documentation-engineer.md",
+          "line": 33
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:flow-writer",
+      "included": false,
+      "classification": "documentation_author",
+      "rationale": "Authors scoped flow documentation; shared audit-only safety text supplies no independent reviewer mandate.",
+      "source_path": "plugins/project-knowledge/roles/flow-writer.md",
+      "source_sha256": "50ddbe28b6a58f0d32312fd64edc7f05f85f2e0da88c5c54d563c34149c120ad",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/flow-writer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/project-knowledge/roles/flow-writer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:guide-reviewer",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent factual, provenance, terminology and navigation review of guides",
+      "source_path": "plugins/project-knowledge/roles/guide-reviewer.md",
+      "source_sha256": "c8ca15c28f3939cfd8b9a45f35430143cb403293fdcb18a97b828da81a642780",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/guide-reviewer.md",
+          "line": 24
+        },
+        {
+          "path": "plugins/project-knowledge/roles/guide-reviewer.md",
+          "line": 36
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:instructions-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent instruction claim audit, with separately authorized repairs",
+      "source_path": "plugins/project-knowledge/roles/instructions-auditor.md",
+      "source_sha256": "87569236a71d439c9f2deec278d6afd4ff004dcce9dd9211cd5846e1f0ddeec3",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/instructions-auditor.md",
+          "line": 17
+        },
+        {
+          "path": "plugins/project-knowledge/roles/instructions-auditor.md",
+          "line": 57
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:onboarding-writer",
+      "included": false,
+      "classification": "documentation_author",
+      "rationale": "Authors onboarding documentation; shared audit-only safety text supplies no independent reviewer mandate.",
+      "source_path": "plugins/project-knowledge/roles/onboarding-writer.md",
+      "source_sha256": "b045fdad199b1950968b8000f555d3de0a4e066f2f3f5fa34ed5716487efc41a",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/onboarding-writer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/project-knowledge/roles/onboarding-writer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:ops-writer",
+      "included": false,
+      "classification": "documentation_author",
+      "rationale": "Authors operational references and how-tos; shared audit-only safety text supplies no independent reviewer mandate.",
+      "source_path": "plugins/project-knowledge/roles/ops-writer.md",
+      "source_sha256": "8e71aa656b6b51e7518a86714a93127ff4d6949746fc300c92a4b8091dba7713",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/ops-writer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/project-knowledge/roles/ops-writer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:overview-writer",
+      "included": false,
+      "classification": "documentation_author",
+      "rationale": "Authors project overview and feature documentation; shared audit-only safety text supplies no independent reviewer mandate.",
+      "source_path": "plugins/project-knowledge/roles/overview-writer.md",
+      "source_sha256": "8873b0c18d4a776987430a3b552428440e361186b80ee0b29f9b99713be96761",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/overview-writer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/project-knowledge/roles/overview-writer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "project-knowledge:tech-writer",
+      "included": false,
+      "classification": "documentation_author",
+      "rationale": "Authors technical documentation; shared audit-only safety text supplies no independent reviewer mandate.",
+      "source_path": "plugins/project-knowledge/roles/tech-writer.md",
+      "source_sha256": "59a24c1b3a48a0c6fc41abb95863d9b9dcf3edc58af5e0a827a04ab2aa523559",
+      "registration_path": "plugins/project-knowledge/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-knowledge/roles/tech-writer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/project-knowledge/roles/tech-writer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "project-protocol:isolated-worker",
+      "included": false,
+      "classification": "generic_execution_worker",
+      "rationale": "Executes the supplied domain method; supplies no independent audit dimension and must not invent one.",
+      "source_path": "plugins/project-protocol/roles/isolated-worker.md",
+      "source_sha256": "b9af721d265c17c8621c2cf316e5e3b85d3e6e45cd4e24e40d8396f1ed3eb6ad",
+      "registration_path": "plugins/project-protocol/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/project-protocol/roles/isolated-worker.md",
+          "line": 15
+        },
+        {
+          "path": "plugins/project-protocol/roles/isolated-worker.md",
+          "line": 18
+        },
+        {
+          "path": "plugins/project-protocol/roles/isolated-worker.md",
+          "line": 28
+        }
+      ]
+    },
+    {
+      "role_id": "python-development:python-engineer",
+      "included": false,
+      "classification": "implementation_worker",
+      "rationale": "Designs and implements Python software.",
+      "source_path": "plugins/python-development/roles/python-engineer.md",
+      "source_sha256": "a2fe664daecd5117f649e3316d687c0369c26ec8c59187442221b51fdf63e1de",
+      "registration_path": "plugins/python-development/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/python-development/roles/python-engineer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/python-development/roles/python-engineer.md",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "role_id": "python-development:python-refactor-agent",
+      "included": false,
+      "classification": "implementation_worker",
+      "rationale": "Refactors Python; docstring auditing is a capability inside analyze-plan-apply, without a standalone audit contract.",
+      "source_path": "plugins/python-development/roles/python-refactor-agent.md",
+      "source_sha256": "8f83b9cdf4fc83d4c0e00428359260d2634c29f175576e08f13d84923ce7dee5",
+      "registration_path": "plugins/python-development/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/python-development/roles/python-refactor-agent.md",
+          "line": 24
+        },
+        {
+          "path": "plugins/python-development/roles/python-refactor-agent.md",
+          "line": 32
+        },
+        {
+          "path": "plugins/python-development/roles/python-refactor-agent.md",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "role_id": "react-development:react-performance-optimizer",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent React performance and effect audit with optional optimization",
+      "source_path": "plugins/react-development/roles/react-performance-optimizer.md",
+      "source_sha256": "802cb1207d04f075ea75b49b03aba1d6f038b4358e16ee2c58797a44ec520a84",
+      "registration_path": "plugins/react-development/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/react-development/roles/react-performance-optimizer.md",
+          "line": 5
+        },
+        {
+          "path": "plugins/react-development/roles/react-performance-optimizer.md",
+          "line": 86
+        }
+      ]
+    },
+    {
+      "role_id": "repo-hygiene:workspace-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent filesystem and Git hygiene audit",
+      "source_path": "plugins/repo-hygiene/roles/workspace-auditor.md",
+      "source_sha256": "d68c5ad5e01d297a9a90e85f06fbbcd69c8550f68723b01f0510b64314f4e293",
+      "registration_path": "plugins/repo-hygiene/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/repo-hygiene/roles/workspace-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/repo-hygiene/roles/workspace-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:api-contract-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent contract versus implementation audit",
+      "source_path": "plugins/senior-review/roles/api-contract-auditor.md",
+      "source_sha256": "d9f8111a6682b67582f078868892684afa048dc36a02ed7f0320ee1de8426d17",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/api-contract-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/api-contract-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:chicken-egg-detector",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent startup dependency and bootstrap audit",
+      "source_path": "plugins/senior-review/roles/chicken-egg-detector.md",
+      "source_sha256": "0c517c9d552da2a661c1f8e0be70433e58bbcc0f90b6c846667d3f4653db6506",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/chicken-egg-detector.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/chicken-egg-detector.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:cleanup-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent source-aware application hygiene audit",
+      "source_path": "plugins/senior-review/roles/cleanup-auditor.md",
+      "source_sha256": "3f46c57b34faf982d4734b9de132ff4eb3d4e8e351730da7031828db1905cc97",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/cleanup-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/cleanup-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:code-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent code architecture and failure-path audit",
+      "source_path": "plugins/senior-review/roles/code-auditor.md",
+      "source_sha256": "d4072cd6dc267138154402334ee6fc50e3f39d92e8f0a4abf289b0f0e46e3944",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/code-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/code-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:data-integrity-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent persistence semantics audit",
+      "source_path": "plugins/senior-review/roles/data-integrity-auditor.md",
+      "source_sha256": "3002f553c9bc1f4efacf14c0e91be3e53684659f3710fd50e9d4c602f942d192",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/data-integrity-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/data-integrity-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:distributed-flow-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent cross-service interaction audit",
+      "source_path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+      "source_sha256": "156b7ec5ebdba1c76fe1d9c15b4e1308af04a00c659282e87d85606db694aee8",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/distributed-flow-auditor.md",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:logic-integrity-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent contract, invariant and domain-rule review",
+      "source_path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+      "source_sha256": "e417e5fa015e53042406346798db4f1fcfca09f05dbc239aaf3cbfb14a92daab",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/logic-integrity-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:premise-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent review of the premises supporting other findings",
+      "source_path": "plugins/senior-review/roles/premise-auditor.md",
+      "source_sha256": "538b8cc029cd16ef7c51e34c40380fba8bb7634b0b8a2879d55935ea0172aa39",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/premise-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/premise-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:resource-lifecycle-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent resource acquisition, ownership and teardown audit",
+      "source_path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+      "source_sha256": "12c350b62d5eb0dfe4cec49a53cd981e12ff05ef735b205459a89c1c87f52383",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/resource-lifecycle-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:security-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent security review",
+      "source_path": "plugins/senior-review/roles/security-auditor.md",
+      "source_sha256": "08fd5e369982772ed5c4a9b21a4824fc6f09547a6e643057f7034217920582d9",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/security-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/security-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:temporal-resilience-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent time, restart and long-lived execution audit",
+      "source_path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+      "source_sha256": "7d2783596e7e043046978f6b26756133cd681b47f8c11c7f05a3e87cef858d2b",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/temporal-resilience-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "senior-review:ui-race-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent UI asynchronous interaction and race audit",
+      "source_path": "plugins/senior-review/roles/ui-race-auditor.md",
+      "source_sha256": "e2c13d0f21b3bbf76706f7ce7433bac2b760f2c9c3e70620beb75455e99548be",
+      "registration_path": "plugins/senior-review/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/senior-review/roles/ui-race-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/senior-review/roles/ui-race-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "testing:test-suite-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent suite health audit",
+      "source_path": "plugins/testing/roles/test-suite-auditor.md",
+      "source_sha256": "f3543674b00d0a17429c798a39dc4f7e1c33deffb26007a3ba7d2b838f098d33",
+      "registration_path": "plugins/testing/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/testing/roles/test-suite-auditor.md",
+          "line": 5
+        },
+        {
+          "path": "plugins/testing/roles/test-suite-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "testing:test-writer",
+      "included": false,
+      "classification": "test_author",
+      "rationale": "Authors behavioral tests or drives TDD; ordinary validation is not independent suite auditing.",
+      "source_path": "plugins/testing/roles/test-writer.md",
+      "source_sha256": "487b90694898d337cacfb71ecbda8ca838720a6e4771b074e9ebc0606eeeb3db",
+      "registration_path": "plugins/testing/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/testing/roles/test-writer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/testing/roles/test-writer.md",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "role_id": "text-humanizer:text-humanizer",
+      "included": false,
+      "classification": "prose_editor",
+      "rationale": "Edits prose and self-checks the rewritten text; delivers edited content rather than an independent audit.",
+      "source_path": "plugins/text-humanizer/roles/text-humanizer.md",
+      "source_sha256": "e82f786eb88119c14235304ebcd1cf2373470a1d221da8ecddb5bd62d9f12e50",
+      "registration_path": "plugins/text-humanizer/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/text-humanizer/roles/text-humanizer.md",
+          "line": 14
+        },
+        {
+          "path": "plugins/text-humanizer/roles/text-humanizer.md",
+          "line": 29
+        },
+        {
+          "path": "plugins/text-humanizer/roles/text-humanizer.md",
+          "line": 38
+        }
+      ]
+    },
+    {
+      "role_id": "typescript-development:type-safety-auditor",
+      "included": true,
+      "classification": "core_reviewer_auditor",
+      "rationale": "Independent TypeScript type soundness audit",
+      "source_path": "plugins/typescript-development/roles/type-safety-auditor.md",
+      "source_sha256": "b244dfb361efee0e10504ce5451843f039821d562675af5cfde6acb564d1fd39",
+      "registration_path": "plugins/typescript-development/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/typescript-development/roles/type-safety-auditor.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/typescript-development/roles/type-safety-auditor.md",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "role_id": "typescript-development:typescript-engineer",
+      "included": false,
+      "classification": "implementation_worker",
+      "rationale": "Designs and implements TypeScript software.",
+      "source_path": "plugins/typescript-development/roles/typescript-engineer.md",
+      "source_sha256": "62498e16595db7ff0a5d28aeaac59c6de1b5e7fa51f8b2c4fa3c833d7a225290",
+      "registration_path": "plugins/typescript-development/plugin.toml",
+      "source_refs": [
+        {
+          "path": "plugins/typescript-development/roles/typescript-engineer.md",
+          "line": 4
+        },
+        {
+          "path": "plugins/typescript-development/roles/typescript-engineer.md",
+          "line": 14
+        }
+      ]
+    }
+  ]
+}

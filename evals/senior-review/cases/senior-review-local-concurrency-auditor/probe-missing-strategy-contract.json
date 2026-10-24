@@ -1,0 +1,18 @@
+{
+  "scope": "Complete available packet for one local shared-strategy scenario; no implementation or requirement outside this packet is supplied.",
+  "available_facts": {
+    "singleton": true,
+    "callers": [
+      "A",
+      "B"
+    ],
+    "flow": [
+      "A writes discount=0.5",
+      "B writes discount=0",
+      "A reads discount=0"
+    ],
+    "runtime": "Each shown read/write is atomic and sequentially consistent in this exact permitted order. No cancellation, failure, additional actor or other state exists."
+  },
+  "application_discount_contract": null,
+  "unavailable_input": "The application requirement deciding whether discount is per-invocation state or an intentionally shared current setting is not available."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "individual-B008-catalog_noul",
+  "kind": "individual",
+  "case_id": "B008",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review construction of the services when the desktop process launches.",
+    "artifacts": [
+      {
+        "path": "services.py",
+        "content": "class Container:\n    def __init__(self):\n        self.instances = {}\n    def resolve(self, name):\n        if name not in self.instances:\n            self.instances[name] = self.factories[name](self)\n        return self.instances[name]\n\ncontainer = Container()\ncontainer.factories = {\n    \"catalog\": lambda c: Catalog(c.resolve(\"search\")),\n    \"search\": lambda c: Search(c.resolve(\"catalog\")),\n}\ncontainer.resolve(\"catalog\")"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:chicken-egg-detector": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is runtime flow with no initialization phase (use distributed-flow-auditor).",
+        "true": "the target involves startup ordering, initialization sequences, bootstrap or config loading, service discovery, or migration dependencies; or the system comes up correctly only by luck."
+      }
+    }
+  },
+  "sha256": "09fa6a535d9101e77eb45fdbe50835f2cb1035acd92029dddede796001a835c8"
+}

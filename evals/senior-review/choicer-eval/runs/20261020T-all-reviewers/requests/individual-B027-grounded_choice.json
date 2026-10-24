@@ -1,0 +1,38 @@
+{
+  "id": "individual-B027-grounded_choice",
+  "kind": "individual",
+  "case_id": "B027",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Audit remaining migration adapters for unused code and explain which ones should be retained.",
+    "artifacts": [
+      {
+        "path": "adapters/legacy_csv.py",
+        "content": "from registry import register\n@register(\"legacy-csv\")\nclass LegacyCsv:\n    def decode(self, text):\n        return text.split(\",\")"
+      },
+      {
+        "path": "registry.py",
+        "content": "handlers = {}\ndef register(name):\n    def add(cls):\n        handlers[name] = cls\n        return cls\n    return add"
+      },
+      {
+        "path": "loader.py",
+        "content": "import importlib\nfrom registry import handlers\nimportlib.import_module(\"adapters.legacy_csv\")\nparser = handlers[\"legacy-csv\"]()"
+      },
+      {
+        "path": "migration.md",
+        "content": "The new JSON format is deployed. Existing customer archives still contain legacy CSV and remain supported."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    }
+  },
+  "sha256": "a7f97ca7e8ed0bdb93985b102dd99bb4bf4fbc51a3d9a4633cec73eb83946390"
+}

@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Review the alignment of an already-loaded report table in the browser. Only the stylesheet is changing.",
+    "artifacts": [
+      {
+        "path": "web/report.css",
+        "content": ".report { border-collapse: collapse; width: 100%; }\n.report td { padding: 0.5rem; }\n.report .amount { text-align: right; }\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:data-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "domain rules/state machines (use logic-integrity-auditor) or cross-service message flows (use distributed-flow-auditor).",
+        "true": "target touches schemas, models, ORM entities, repositories, raw SQL, caches or transaction boundaries."
+      }
+    }
+  }
+}

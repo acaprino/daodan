@@ -96,7 +96,12 @@ def reference(plugin, plugins, adapters, destination: Path, root: Path) -> str:
                 path = plugin.root / "skills" / name / "SKILL.md"
             else:
                 path = plugin.root / ("roles" if kind == "Role" else "workflows") / f"{name}.md"
-            metadata, _ = _frontmatter(path.read_text(encoding="utf-8"))
+            if kind == "Role" and name in dict(plugin.reviewer_compositions):
+                from scripts.daodan.role_bodies import resolve_role
+                metadata = resolve_role(plugins, plugin.name, name)["metadata"]
+                path = plugin.root / "plugin.toml"
+            else:
+                metadata, _ = _frontmatter(path.read_text(encoding="utf-8"))
             purpose = _unquote(metadata.get("description", ""))
             if not purpose:
                 raise ValueError(f"Missing component description: {path}")

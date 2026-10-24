@@ -1,0 +1,25 @@
+{
+  "state": {
+    "task": "Review whether the import can resume safely after a disk write or parsing failure.",
+    "artifacts": [
+      {
+        "path": "importer.py",
+        "content": "import json\ndef import_rows(source, output, checkpoint):\n    offset = int(checkpoint.read_text()) if checkpoint.exists() else 0\n    rows = source.read_text().splitlines()\n    with output.open(\"a\") as handle:\n        for i, row in enumerate(rows[offset:], start=offset):\n            handle.write(json.dumps(json.loads(row)) + \"\\n\")\n            checkpoint.write_text(str(i + 1))"
+      },
+      {
+        "path": "requirements.md",
+        "content": "Restarting the importer must preserve each valid input row exactly once in the output. A process can stop between any two file operations."
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:code-auditor": {
+      "type": "choice",
+      "instructions": "Does the task request general code quality, architecture, failure-path, resource lifecycle, or local pattern review, rather than a separately scoped specialist concern?",
+      "criteria": {
+        "false": "The task is limited to security auditing, cross-file duplication ownership, non-code work, or implementation without a code-quality review.",
+        "true": "The task requests general code quality, architecture, failure-path, resource lifecycle, or local pattern review, including small correct changes."
+      }
+    }
+  }
+}

@@ -310,6 +310,15 @@ def extract_references(plugins):
                 refs.append(Reference(owner, md, i, ns, kind, lines))
     for sidecar in sorted(PLUGINS.glob("*/workflows/*.toml")):
         refs.extend(_sidecar_references(sidecar))
+    for manifest in sorted(PLUGINS.glob("*/plugin.toml")):
+        lines = manifest.read_text(encoding="utf-8").splitlines()
+        data = tomllib.loads("\n".join(lines))
+        owner = manifest.parent.name
+        for definition in data.get("reviewers", {}).get("compositions", {}).values():
+            for member in definition.get("members", []):
+                provider, _, role = member.partition(":")
+                if provider != owner:
+                    refs.append(Reference(owner, manifest, 1, provider, "phase-role", lines, role))
     return refs
 
 

@@ -1,0 +1,26 @@
+{
+  "id": "individual-C019-grounded_choice",
+  "kind": "individual",
+  "case_id": "C019",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review whether the imported account object is trustworthy after crossing the JSON boundary and whether its declared TypeScript type is justified.",
+    "artifacts": [
+      {
+        "path": "src/accounts.ts",
+        "content": "type Account = { id: string; credit: number };\nexport function parseAccount(raw: string): Account {\n  return JSON.parse(raw) as Account;\n}\nexport const available = (account: Account) => account.credit.toFixed(2);"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested review concern TypeScript type soundness, assertions or suppressions, runtime validation at typed boundaries, exhaustiveness, or compiler strictness?",
+      "criteria": {
+        "false": "The scope contains no TypeScript soundness, boundary-validation, exhaustiveness, or strictness assessment; style, React performance, and dead-code reachability alone do not qualify.",
+        "true": "The scope includes TypeScript type soundness, boundary validation, exhaustive handling, or strict configuration, even if the supplied patterns are already safe."
+      }
+    }
+  },
+  "sha256": "35ca0c34da2d15dcfe7ad09f462cdcc7f01a183476435d0c7f36d124845bfbd6"
+}

@@ -29,4 +29,4 @@ function loadCache<T>(key: string, schema: z.ZodType<T>): T {
 const user = loadCache('user', UserSchema)
 ```
 
-**Detection:** `rg -n '= any>' --type ts`. Also flag `<T = unknown>` on functions that then cast internally.
+**Detection:** Locate any defaults and internal casts; prove which unconstrained instantiation reaches an unsupported operation. A correctly validated unknown boundary is valid.

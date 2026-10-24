@@ -1,0 +1,26 @@
+{
+  "id": "individual-C022-catalog_noul",
+  "kind": "individual",
+  "case_id": "C022",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Suggest clearer local names for this function without assessing or changing typing, runtime behavior, or compiler configuration.",
+    "artifacts": [
+      {
+        "path": "src/display.ts",
+        "content": "export function display(x: string, n: number): string {\n  const y = x.trim();\n  return y.repeat(n);\n}"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
+      }
+    }
+  },
+  "sha256": "b4e4becf819515c77a0608f54f850846c63ed78a706a63b819a545af36f81a06"
+}

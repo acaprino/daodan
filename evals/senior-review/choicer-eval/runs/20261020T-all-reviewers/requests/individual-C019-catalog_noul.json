@@ -1,0 +1,26 @@
+{
+  "id": "individual-C019-catalog_noul",
+  "kind": "individual",
+  "case_id": "C019",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review whether the imported account object is trustworthy after crossing the JSON boundary and whether its declared TypeScript type is justified.",
+    "artifacts": [
+      {
+        "path": "src/accounts.ts",
+        "content": "type Account = { id: string; credit: number };\nexport function parseAccount(raw: string): Account {\n  return JSON.parse(raw) as Account;\n}\nexport const available = (account: Account) => account.credit.toFixed(2);"
+      }
+    ]
+  },
+  "questions": {
+    "typescript-development:type-safety-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/naming review (use typescript-write), React performance (use react-development:react-performance-optimizer), or dead code (use knip).",
+        "true": "dispatched by the type-safety audit of type-safety-rules (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing TypeScript changes or codebases for type safety, unsound assertions, missing runtime schemas at boundaries, or strict tsconfig drift."
+      }
+    }
+  },
+  "sha256": "797e4ff0cd8f8bf2d91e9cd551b0c97a91ac18ca409259ba6257ba2cad2fde08"
+}

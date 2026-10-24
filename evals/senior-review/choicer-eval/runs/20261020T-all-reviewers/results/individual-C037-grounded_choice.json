@@ -1,0 +1,40 @@
+{
+  "id": "individual-C037-grounded_choice",
+  "request_sha256": "0b1dfeb42a48f94111a58d86ad4bc7a930b743c1d284e59e118feb8083c9743f",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "project-knowledge:documentation-engineer": {
+        "type": "choice",
+        "probabilities": {
+          "false": 0.015207804917904888,
+          "true": 0.9847921950820951
+        },
+        "choice": "true",
+        "max_probability": 0.9847921950820951
+      }
+    }
+  },
+  "probabilities": {
+    "project-knowledge:documentation-engineer": 0.9847921950820951
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "project-knowledge:documentation-engineer": {
+      "tokens": 234,
+      "optionTokens": [
+        32,
+        30
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [
+    "project-knowledge:documentation-engineer"
+  ],
+  "wall_seconds": 0.5831343000172637
+}

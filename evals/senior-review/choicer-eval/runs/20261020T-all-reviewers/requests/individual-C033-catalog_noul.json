@@ -1,0 +1,30 @@
+{
+  "id": "individual-C033-catalog_noul",
+  "kind": "individual",
+  "case_id": "C033",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review whether the coding-agent instruction file contains transient run state or duplicated rules that should have a durable owner. Propose destinations without deleting information.",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "content": "Use the existing test owner before adding another file.\nCurrent task: finish the checkout retry patch on branch retry-fix.\nTemporary evidence is in scratch/run-58.\nBefore writing tests, use the existing test owner."
+      },
+      {
+        "path": "docs/working-principles.md",
+        "content": "Test additions extend the existing owner unless a justified split is approved."
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:instructions-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by project-knowledge:instructions-method (/daodan:write-docs) or lifecycle knowledge phases to audit AGENTS.md/CLAUDE.md."
+      }
+    }
+  },
+  "sha256": "a5e989854bae4db36b092d37b08fbb81f2799ee24a46d8669e8753bdc4177e63"
+}

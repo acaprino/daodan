@@ -1,0 +1,21 @@
+{
+  "state": {
+    "task": "Check that this formatting-only patch preserves the arithmetic expression.",
+    "artifacts": [
+      {
+        "path": "format.patch",
+        "content": "diff --git a/geometry.py b/geometry.py\n--- a/geometry.py\n+++ b/geometry.py\n@@ -1,2 +1,2 @@\n def area(width, height):\n-    return width*height\n+    return width * height\n"
+      }
+    ]
+  },
+  "questions": {
+    "abstraction-architect:abstraction-architect-agent": {
+      "type": "noul",
+      "instructions": "Does the requested review examine how concepts, policies, state, reusable mechanisms, or abstractions are owned and represented across files?",
+      "criteria": {
+        "false": "The task is limited to implementation, formatting, deletion, security, runtime flows, contract drift, dependency cycles, or responsibility smells visible within one file.",
+        "true": "The task reviews canonical ownership, duplicated knowledge or mechanisms, parallel models or maintained state, reuse, or abstraction friction across files."
+      }
+    }
+  }
+}

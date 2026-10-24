@@ -426,17 +426,199 @@ def validate_environment(section, rules):
             raise ProtocolError(f"environment.commands.{name} is not one of {', '.join(rules['commands'])}")
         if not isinstance(command, str) or not command.strip():
             raise ProtocolError(f"environment.commands.{name} must be a nonempty command")
+    if "models" in section:
+        validate_model_assignments(section["models"], rules["models"])
 
 
-def validate_reviews(section, rules, deliveries):
+def validate_model_assignments(models, rules):
+    """Validate recorded bindings, without claiming to prove human consent or host support."""
+    if not isinstance(models, dict):
+        raise ProtocolError("environment.models must be an object")
+    assignments = models.get("assignments", {})
+    if not isinstance(assignments, dict):
+        raise ProtocolError("environment.models.assignments must be an object")
+    for flag in ("model_override_supported", "effort_override_supported"):
+        if flag in models and not isinstance(models[flag], bool):
+            raise ProtocolError(f"environment.models.{flag} must be boolean")
+    if assignments and (not isinstance(models.get("host"), str) or not models["host"].strip()):
+        raise ProtocolError("Confirmed model assignments must name the active host")
+    for digest, entry in assignments.items():
+        if not isinstance(entry, dict) or set(rules["required"]) - set(entry):
+            raise ProtocolError("Each model assignment records " + ", ".join(rules["required"]))
+        if entry["schema"] != rules["schema"] or entry["tier"] not in rules["tiers"]:
+            raise ProtocolError("Unknown task binding schema or tier")
+        if digest != entry["request_sha256"]:
+            raise ProtocolError("A model assignment key must match its request_sha256")
+        for field in ("request_sha256", "models_sha256", "catalog_sha256"):
+            value = entry[field]
+            if field == "catalog_sha256" and value is None:
+                continue
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+                raise ProtocolError(f"Task binding {field} must be a SHA256 digest")
+        model_id, effort = entry["model_id"], entry["effort"]
+        if not isinstance(model_id, str) or not model_id.strip() or "#" in model_id:
+            raise ProtocolError("Task binding model_id must name a model without an effort suffix")
+        if effort is not None and (not isinstance(effort, str) or not effort.strip() or "#" in effort):
+            raise ProtocolError("Task binding effort must be null or a nonempty variant")
+        if entry["model_param"] != (f"{model_id}#{effort}" if effort else model_id):
+            raise ProtocolError("Task binding model_param must match model_id and effort")
+        confirmation = entry["confirmation"]
+        if (not isinstance(confirmation, dict) or confirmation.get("confirmed") is not True
+                or not isinstance(confirmation.get("source"), str) or not confirmation["source"].strip()):
+            raise ProtocolError("Each model assignment records the user's explicit confirmation source")
+        if not isinstance(confirmation.get("host"), str) or not confirmation["host"].strip():
+            raise ProtocolError("A model confirmation must record its original host")
+        if confirmation.get("model_override_supported") is not True:
+            raise ProtocolError("A model confirmation requires recorded host model support")
+        if not isinstance(confirmation.get("effort_override_supported"), bool):
+            raise ProtocolError("A model confirmation records boolean host effort support")
+        if effort is not None and confirmation["effort_override_supported"] is not True:
+            raise ProtocolError("A model confirmation with effort requires recorded host effort support")
+
+
+def report_path(value):
+    """One lexical boundary for planned and delivered worker outputs."""
+    if not isinstance(value, str) or not value.strip():
+        raise ProtocolError("Delivery report must be a nonempty relative path")
+    output = Path(value)
+    if output.is_absolute() or ".." in output.parts:
+        raise ProtocolError("Delivery output must stay inside its owned run")
+    if (any(":" in part for part in output.parts)
+            or output.as_posix().rstrip(" .").casefold() in {"work.json", "result.json", ".write-lock"}):
+        raise ProtocolError("A coordinator record or lock is not a worker report")
+    return output
+
+
+def validate_review_checks(review, deliveries, *, complete=True):
+    """Check required independent deliveries, without judging their conclusions."""
+    outputs = {}
+    for key, delivery in deliveries.items():
+        if isinstance(delivery, dict) and "output" in delivery:
+            outputs.setdefault(report_path(delivery["output"]), []).append(key)
+    jobs = {job["id"]: job for job in review.get("jobs", [])}
+    discovery_outputs = {report_path(job["output_path"]) for job in jobs.values()}
+    rows = []
+    verdicts = {0: ("HOLDS", "REFUTED", "UNCERTAIN"),
+                1: ("REAL", "FALSE_POSITIVE", "UNCERTAIN"), 2: ("REAL", "FALSE_POSITIVE", "UNCERTAIN"),
+                3: ("REAL",)}
+    for key, delivery in deliveries.items():
+        if not isinstance(delivery, dict) or delivery.get("review") != review["id"] or "check" not in delivery:
+            continue
+        if "job_id" in delivery or key in jobs:
+            raise ProtocolError(f"Delivery {key}: an independent check cannot consume a discovery job")
+        check = delivery["check"]
+        if not isinstance(check, dict) or check.get("kind") not in ("blind-derivation", "verification", "critic"):
+            raise ProtocolError(f"Delivery {key}: invalid independent check kind")
+        kind, lens = check["kind"], check.get("lens")
+        if kind == "verification" and (type(lens) is not int or lens not in verdicts):
+            raise ProtocolError(f"Delivery {key}: verification check requires a lens from 0 to 3")
+        if kind != "verification" and "lens" in check:
+            raise ProtocolError(f"Delivery {key}: only verification checks have a lens")
+        mode = "blind" if kind == "blind-derivation" else "critic" if kind == "critic" else "full-context" if lens == 0 else "verification"
+        if "input_mode" in check and check["input_mode"] != mode:
+            raise ProtocolError(f"Delivery {key}: independent check input mode mismatch")
+        if "independent" in check and not isinstance(check["independent"], bool):
+            raise ProtocolError(f"Delivery {key}: independent check declaration must be boolean")
+        if "evidence" in check and (not isinstance(check["evidence"], list) or not check["evidence"]
+                or any(not isinstance(item, (str, dict)) or not item for item in check["evidence"])):
+            raise ProtocolError(f"Delivery {key}: independent check evidence must be a nonempty array")
+        if "targets" in check:
+            targets = check["targets"]
+            if (not isinstance(targets, list) or not targets or any(not isinstance(target, dict)
+                    or not all(isinstance(target.get(field), str) and target[field].strip()
+                               for field in ("job_id", "finding_id")) for target in targets)):
+                raise ProtocolError(f"Delivery {key}: invalid independent check targets")
+        if "verdict" in check and (lens is None or check["verdict"] not in verdicts[lens]):
+            raise ProtocolError(f"Delivery {key}: invalid independent check verdict")
+        for field in ("counterexample", "target", "severity_vote"):
+            if field in check and (not isinstance(check[field], str) or not check[field].strip()):
+                raise ProtocolError(f"Delivery {key}: independent check {field} must be a nonempty string")
+        if "coverage" in delivery and delivery["coverage"] not in ("complete", "incomplete"):
+            raise ProtocolError(f"Delivery {key}: invalid independent check coverage")
+        if "gaps" in delivery:
+            required_gaps(delivery["gaps"])
+        if "output" in delivery:
+            output = report_path(delivery["output"])
+            if output in discovery_outputs or len(outputs[output]) != 1:
+                raise ProtocolError(f"Delivery {key}: independent check requires its own output report")
+        rows.append(delivery)
+
+    if not complete:
+        return
+
+    def obtain(kind, target=None, lens=None):
+        selected = [d for d in rows if isinstance(d["check"], dict) and d["check"].get("kind") == kind
+                    and (target is None or target in d["check"].get("targets", []))
+                    and (lens is None or d["check"].get("lens") == lens)]
+        label = f"{kind} check" + (f" lens {lens}" if lens is not None else "")
+        if len(selected) != 1:
+            raise ProtocolError(f"Review {review['id']}: missing or duplicate {label}")
+        result = selected[0]
+        expected_role = "senior-review:premise-auditor" if kind == "blind-derivation" or lens == 0 else "project-protocol:isolated-worker"
+        expected_mode = "blind" if kind == "blind-derivation" else "critic" if kind == "critic" else "full-context" if lens == 0 else "verification"
+        if (result.get("role") != expected_role or result.get("status") != "delivered"
+                or result.get("coverage") != "complete" or required_gaps(result.get("gaps", []))
+                or result.get("candidate") != review.get("grounding", {}).get("candidate")
+                or result["check"].get("input_mode") != expected_mode
+                or result["check"].get("independent") is not True or not result["check"].get("evidence")):
+            raise ProtocolError(f"Review {review['id']}: incomplete {label}")
+        if lens is not None and result["check"].get("verdict") not in verdicts[lens]:
+            raise ProtocolError(f"Review {review['id']}: missing {label} verdict")
+        return result["check"]
+
+    for flag, kind in (("blind_derivation", "blind-derivation"), ("critic", "critic")):
+        if review.get(flag):
+            obtain(kind)
+    for job_id, delivery in ((d["job_id"], d) for d in deliveries.values()
+                              if d.get("review") == review["id"] and "job_id" in d):
+        for finding in delivery.get("findings", []):
+            severity, confidence = finding.get("severity"), finding.get("confidence")
+            if (not isinstance(severity, str) or type(confidence) not in (int, float) or not 0 <= confidence <= 100):
+                raise ProtocolError(f"Review {review['id']}: finding lacks verification eligibility")
+            if review.get("review_basis", "changeset") == "changeset" and finding.get("introduced_by_candidate") is False:
+                continue
+            level = review["verification"]
+            selected = confidence >= 50 if level == "all-above-floor" else severity.lower() in {"critical", "high"}
+            if not selected:
+                continue
+            target = {"job_id": job_id, "finding_id": finding["id"]}
+            light = review["shape"] == "light"
+            provenance = finding.get("premise_provenance")
+            universal = re.search(r"\b(no|never|cannot|always|only)\b", str(finding.get("premise", "")), re.IGNORECASE)
+            if light or provenance != "independent" or universal:
+                premise = obtain("verification", target, 0)
+                refuted = premise.get("verdict") == "REFUTED" and re.search(r".+:\d+", str(premise.get("counterexample", "")))
+                if refuted and (premise.get("target") == "PREMISE" or
+                                premise.get("target") == "SUPPORT" and provenance == "shared-context"):
+                    continue
+            first = obtain("verification", target, 1)
+            if not light:
+                second = obtain("verification", target, 2)
+                if not all(r.get("verdict") == "FALSE_POSITIVE" for r in (first, second)):
+                    obtain("verification", target, 3)
+
+
+def required_gaps(gaps):
+    """Unassigned limitations may be recorded without waiving mandatory checks."""
+    if not isinstance(gaps, list):
+        raise ProtocolError("Coverage gaps must be an array")
+    if any(isinstance(gap, dict) and gap.get("required") is False and
+           (not isinstance(gap.get("reason"), str) or not gap["reason"].strip()) for gap in gaps):
+        raise ProtocolError("An unassigned limitation requires its reason")
+    return any(not isinstance(gap, dict) or gap.get("required") is not False for gap in gaps)
+
+
+def validate_reviews(section, rules, deliveries, *, complete=False):
     """Each review records the roster its helper computed and bounds the deliveries bound to it."""
     if not isinstance(section, list):
         raise ProtocolError("reviews must be an array")
-    allowed = {}
+    allowed, plans = {}, {}
     for review in section:
         if not isinstance(review, dict) or set(rules["required"]) - set(review):
             raise ProtocolError("Each review records " + ", ".join(rules["required"]))
         name = review["id"]
+        if not isinstance(name, str) or not name.strip():
+            raise ProtocolError("Review identity must be a nonempty string")
         if name in allowed:
             raise ProtocolError(f"Review id repeated: {name}")
         for key, values in (("schema", [rules["schema"]]), ("shape", rules["shapes"]),
@@ -448,15 +630,126 @@ def validate_reviews(section, rules, deliveries):
                                    for group in roles):
             raise ProtocolError(f"Review {name}: roster must be a nonempty list of role identities")
         allowed[name] = set(roles[0]) | set(roles[1])
+        for flag in ("blind_derivation", "critic"):
+            if flag in review and not isinstance(review[flag], bool):
+                raise ProtocolError(f"Review {name}: {flag} must be boolean")
+        for field in ("required_specialists", "jobs"):
+            if field in review and not isinstance(review[field], list):
+                raise ProtocolError(f"Review {name}: {field} must be an array")
+        if "required_specialists" in review or "jobs" in review:
+            if not all(field in review for field in ("required_specialists", "jobs")):
+                raise ProtocolError(f"Review {name}: a composition plan requires both obligations and jobs")
+            if review["verification"] not in rules["verification_levels"]:
+                raise ProtocolError(f"Review {name}: invalid verification level")
+            if complete and (not review["required_specialists"] or not review["jobs"]):
+                raise ProtocolError(f"Review {name}: completion requires a nonempty composition plan")
+            if "grounding" in review and not isinstance(review["grounding"], dict):
+                raise ProtocolError(f"Review {name}: grounding must be an object")
+            required, covered, jobs = set(), [], {}
+            for member in review.get("required_specialists", []):
+                if (not isinstance(member, dict) or not all(isinstance(member.get(k), str) and member[k]
+                        for k in ("specialist_id", "scope_id")) or not isinstance(member.get("evidence"), list)
+                        or not member["evidence"] or any(not isinstance(item, (str, dict)) or not item for item in member["evidence"])):
+                    raise ProtocolError(f"Review {name}: invalid specialist obligation")
+                required.add((member["specialist_id"], member["scope_id"]))
+            for job in review.get("jobs", []):
+                fields = rules["job_required"]
+                if not isinstance(job, dict) or not all(job.get(k) for k in fields):
+                    raise ProtocolError(f"Review {name}: incomplete job binding")
+                if not all(isinstance(job[k], str) and job[k].strip() for k in ("id", "role", "scope_id", "input_mode", "body_sha256", "output_path")):
+                    raise ProtocolError(f"Review {name}: job identities and paths must be strings")
+                if "knowledge_selection" in job and (not isinstance(job["knowledge_selection"], str) or not job["knowledge_selection"].strip()):
+                    raise ProtocolError(f"Review {name}: job knowledge selection must be a fingerprint string")
+                if "source_bindings" in job and not isinstance(job["source_bindings"], dict):
+                    raise ProtocolError(f"Review {name}: job source bindings must be an object")
+                report_path(job["output_path"])
+                if job["id"] in jobs:
+                    raise ProtocolError(f"Review {name}: duplicate job identity")
+                members = job["specialist_ids"]
+                if not isinstance(members, list) or not all(isinstance(m, str) and m for m in members):
+                    raise ProtocolError(f"Review {name}: invalid job members")
+                if not isinstance(job["candidate"], dict) or not job["candidate"] or job["candidate"] != review.get("grounding", {}).get("candidate"):
+                    raise ProtocolError(f"Review {name}: job candidate mismatch")
+                if job["role"] not in allowed[name]:
+                    raise ProtocolError(f"Review {name}: job role outside roster and support")
+                if job["input_mode"] != "discovery" and len(members) != 1:
+                    raise ProtocolError(f"Review {name}: independent job cannot merge members")
+                jobs[job["id"]] = job
+                covered.extend((m, job["scope_id"]) for m in members)
+            if set(covered) != required or len(covered) != len(set(covered)):
+                raise ProtocolError(f"Review {name}: jobs do not cover every scoped obligation exactly once")
+            if review["shape"] == "light" and jobs and len(jobs) != 1:
+                raise ProtocolError(f"Review {name}: light review has exactly one discovery")
+            plans[name] = jobs
+    accounted = set()
     for key, delivery in deliveries.items():
         if not isinstance(delivery, dict) or "review" not in delivery:
             continue
         bound = delivery["review"]
+        if not isinstance(bound, str) or not isinstance(delivery.get("role"), str):
+            raise ProtocolError(f"Delivery {key}: review and role must be strings")
         if bound not in allowed:
             raise ProtocolError(f"Delivery {key} names review {bound}, which the run does not record")
         if delivery.get("role") not in allowed[bound]:
             raise ProtocolError(f"Delivery {key} dispatches {delivery.get('role')}, "
                                 f"which the computed roster of review {bound} does not contain")
+        if "job_id" not in delivery:
+            continue
+        if not isinstance(delivery["job_id"], str) or not delivery["job_id"].strip():
+            raise ProtocolError(f"Delivery {key}: review job identity must be a nonempty string")
+        identity = (bound, delivery["job_id"])
+        job = plans.get(bound, {}).get(delivery["job_id"])
+        if job is None or identity in accounted:
+            raise ProtocolError(f"Delivery {key}: unknown or duplicate review job")
+        accounted.add(identity)
+        if delivery.get("role") != job["role"]:
+            raise ProtocolError(f"Delivery {key}: job role mismatch")
+        if delivery.get("status") != "delivered":
+            if complete:
+                raise ProtocolError(f"Delivery {key}: mandatory job not delivered")
+            continue
+        for field in ("scope_id", "body_sha256", "candidate", "specialist_ids"):
+            if delivery.get(field) != job[field]:
+                raise ProtocolError(f"Delivery {key}: job {field} mismatch")
+        for field in ("knowledge_selection", "source_bindings"):
+            if field in job and delivery.get(field) != job[field]:
+                raise ProtocolError(f"Delivery {key}: job {field} mismatch")
+        if str(delivery.get("output", "")).replace("\\", "/") != str(job["output_path"]).replace("\\", "/"):
+            raise ProtocolError(f"Delivery {key}: job output path mismatch")
+        outcomes = delivery.get("member_results")
+        if not isinstance(outcomes, list) or len(outcomes) != len(job["specialist_ids"]):
+            raise ProtocolError(f"Delivery {key}: missing member results")
+        seen_members = set()
+        findings = delivery.get("findings")
+        if not isinstance(findings, list) or any(not isinstance(f, dict) or not isinstance(f.get("id"), str) or not f["id"] for f in findings):
+            raise ProtocolError(f"Delivery {key}: canonical findings require unique IDs")
+        finding_ids = {f["id"] for f in findings}
+        if len(finding_ids) != len(findings):
+            raise ProtocolError(f"Delivery {key}: duplicate canonical finding")
+        referenced = set()
+        for result in outcomes:
+            if not isinstance(result, dict) or result.get("specialist_id") not in job["specialist_ids"]:
+                raise ProtocolError(f"Delivery {key}: unknown member result")
+            member = result["specialist_id"]
+            if member in seen_members:
+                raise ProtocolError(f"Delivery {key}: duplicate member result")
+            seen_members.add(member)
+            if (result.get("status") not in ("delivered", "failed")
+                    or result.get("coverage") not in ("complete", "incomplete")
+                    or not isinstance(result.get("findings"), list) or not isinstance(result.get("gaps"), list)):
+                raise ProtocolError(f"Delivery {key}: invalid member outcome")
+            if any(not isinstance(f, str) or f not in finding_ids for f in result["findings"]):
+                raise ProtocolError(f"Delivery {key}: member references unknown canonical finding")
+            referenced.update(result["findings"])
+            if complete and (result["status"] != "delivered" or result["coverage"] != "complete" or required_gaps(result["gaps"])):
+                raise ProtocolError(f"Delivery {key}: member {member} has unsuccessful coverage")
+        if referenced != finding_ids:
+            raise ProtocolError(f"Delivery {key}: canonical finding has no member attribution")
+    if complete and {(review, job) for review, jobs in plans.items() for job in jobs} - accounted:
+        raise ProtocolError("Completion requires every expected review job and member delivery")
+    for review in section:
+        if review["id"] in plans:
+            validate_review_checks(review, deliveries, complete=complete)
 
 
 def validate_grants(record):
@@ -495,7 +788,8 @@ def validate_loop(record):
         validate_waves(present["waves"], rules["waves"], present.get("workspace"))
     if "rulings" in present:
         validate_rulings(present["rulings"], rules["rulings"])
-    validate_reviews(record.get("reviews", []), rules["reviews"], record.get("deliveries", {}))
+    validate_reviews(record.get("reviews", []), rules["reviews"], record.get("deliveries", {}),
+                     complete=record.get("status") == "complete")
     if "questions" in present:
         validate_questions(present["questions"], rules["questions"])
     if "environment" in present:
@@ -536,6 +830,7 @@ def validate_record(record, project=None, root=None, current=False):
         raise ProtocolError("Unknown lifecycle operation")
     if record["status"] not in rules["fields"]["status"]["values"]:
         raise ProtocolError("Invalid run status")
+    delivery_reports = []
     for container, state_kind in (("phases", "phases"), ("deliveries", "deliveries"), ("gates", "gates")):
         for identity, item in record[container].items():
             if not isinstance(identity, str) or not isinstance(item, dict):
@@ -547,23 +842,22 @@ def validate_record(record, project=None, root=None, current=False):
             if container == "deliveries" and item["status"] == "delivered" and not item.get("output"):
                 raise ProtocolError(f"Delivered worker requires an explicit report: {identity}")
             if container == "deliveries" and "output" in item:
-                if not isinstance(item["output"], str) or not item["output"].strip():
-                    raise ProtocolError("Delivery report must be a nonempty relative path")
-                output = Path(item["output"])
-                if output.is_absolute() or ".." in output.parts:
-                    raise ProtocolError("Delivery output must stay inside its owned run")
-                if (any(":" in part for part in output.parts)
-                        or output.as_posix().rstrip(" .").casefold() in {"work.json", "result.json", ".write-lock"}):
-                    raise ProtocolError("A coordinator record or lock is not a worker report")
+                output = report_path(item["output"])
                 if project is not None and item["status"] == "delivered":
                     report = root / "runs" / record["run_id"] / output
                     no_links(report, root)
                     if not report.is_file():
                         raise ProtocolError(f"Delivered report is missing: {identity}")
+                    if report.stat().st_size == 0:
+                        raise ProtocolError(f"Delivered report is empty: {identity}")
                     directory = root / "runs" / record["run_id"]
                     if any(reserved.exists() and report.samefile(reserved)
                            for reserved in (directory / name for name in ("work.json", "result.json", ".write-lock"))):
                         raise ProtocolError("A coordinator record or lock is not a worker report")
+                    if any(("check" in item or is_check) and report.samefile(other)
+                           for other, is_check in delivery_reports):
+                        raise ProtocolError("An independent check requires its own output report")
+                    delivery_reports.append((report, "check" in item))
     validate_grants(record)
     validate_loop(record)
     if project is not None:

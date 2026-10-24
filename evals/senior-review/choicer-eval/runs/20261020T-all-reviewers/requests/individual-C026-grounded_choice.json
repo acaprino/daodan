@@ -1,0 +1,38 @@
+{
+  "id": "individual-C026-grounded_choice",
+  "kind": "individual",
+  "case_id": "C026",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Review this single onboarding guide for truthful navigation and clear attribution of current behavior versus future intent. Do not assume an unimplemented roadmap promise is current behavior.",
+    "artifacts": [
+      {
+        "path": "docs/start.md",
+        "content": "Uploads accept CSV today. For the file format, see format.md. Decision 7 approves adding JSON import in a later release; it is not available yet."
+      },
+      {
+        "path": "docs/format.md",
+        "content": "Each CSV row contains email,name. The first row is a header."
+      },
+      {
+        "path": "docs/adr/007-imports.md",
+        "content": "Approved: add JSON import after the CSV release. This decision records intent, not a claim of present implementation."
+      },
+      {
+        "path": "src/imports.ts",
+        "content": "export const acceptedFormats = [\"csv\"] as const;"
+      }
+    ]
+  },
+  "questions": {
+    "project-knowledge:guide-reviewer": {
+      "type": "choice",
+      "instructions": "Does the requested task review existing guide content for factual consistency, source or intention provenance, terminology, examples, cross-references, or reader navigation?",
+      "criteria": {
+        "false": "The task does not review existing guide content; pure authorship, prose-voice editing, and durable agent-instruction auditing do not qualify.",
+        "true": "The task reviews existing guide content against implementation or attributed intent, including terminology, examples, cross-references, and reader navigation."
+      }
+    }
+  },
+  "sha256": "cd63847b6487cf4912e0f3a37b2bdf3f2022c33b29dd7946e885ebb9dd3efdad"
+}

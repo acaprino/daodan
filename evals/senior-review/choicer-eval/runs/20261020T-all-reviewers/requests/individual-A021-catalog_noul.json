@@ -1,0 +1,30 @@
+{
+  "id": "individual-A021-catalog_noul",
+  "kind": "individual",
+  "case_id": "A021",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review only the database guarantee preventing duplicate registrations during simultaneous inserts. Registration policy and application transitions are outside scope.",
+    "artifacts": [
+      {
+        "path": "db/registrations.sql",
+        "content": "CREATE TABLE registrations (\n  id BIGINT PRIMARY KEY,\n  event_id BIGINT NOT NULL,\n  email TEXT NOT NULL\n);\n"
+      },
+      {
+        "path": "src/store.py",
+        "content": "def add(db, event_id, email):\n    db.execute(\"INSERT INTO registrations(event_id, email) VALUES (%s, %s)\",\n               (event_id, email))\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:logic-integrity-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "style/lint review (use code-auditor), security-only review (use security-auditor), or when no interconnect map exists yet (use semantic-interconnect-mapper).",
+        "true": "Phase 2 of senior-review's branch review (/daodan:review-branch) runs, or asked for a logic, contract or invariant audit."
+      }
+    }
+  },
+  "sha256": "f5f67784e641ad3a172e8c0a2bfd80e82c1d7bea207fb03d0b2722954b900775"
+}

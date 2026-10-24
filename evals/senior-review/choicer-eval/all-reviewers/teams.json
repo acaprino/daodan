@@ -1,0 +1,413 @@
+{
+  "schema": "choicer-eval/team-controls-v1",
+  "purpose": "Synthetic task-plus-evidence problems with mandatory, acceptable optional and out-of-scope reviewer sets. No predictions were consulted during authoring.",
+  "cases": [
+    {
+      "id": "T01",
+      "state": {
+        "task": "Review the changed purchase handler for application correctness, caller permissions and atomic charging. The HTTP interface and database schema are unchanged. No browser, deployment or documentation files changed.",
+        "artifacts": [
+          {
+            "path": "purchase.py",
+            "content": "def purchase(request, db, payments):\n    account = db.accounts.get(request.json['account_id'])\n    charge = payments.capture(account.card, request.json['amount'])\n    db.orders.insert(account_id=account.id, charge_id=charge.id)\n    return {'charge_id': charge.id}\n"
+          },
+          {
+            "path": "purchase-contract.txt",
+            "content": "A signed-in caller may buy only for their own account. A purchase must be recorded exactly once for a successful charge. The payments provider is external and an order insert may fail."
+          }
+        ]
+      },
+      "required_roles": [
+        "senior-review:security-auditor",
+        "senior-review:data-integrity-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:premise-auditor",
+        "senior-review:temporal-resilience-auditor"
+      ],
+      "rationale": "Permissions and ID-based access, database writes, purchase invariants, external payment/storage boundary and implementation failure paths all require review. Independent premise checking and recovery-over-time analysis are acceptable additions; no formal API contract comparison is requested.",
+      "evidence": [
+        "purchase.py:2-4",
+        "purchase-contract.txt:1"
+      ]
+    },
+    {
+      "id": "T02",
+      "state": {
+        "task": "Review the local worker's reconnect, shutdown and state-transition behavior. It owns a socket and timer. The reviewed scope contains no browser or database code and no inter-service message protocol.",
+        "artifacts": [
+          {
+            "path": "worker.py",
+            "content": "class Worker:\n    def __init__(self, connect, schedule):\n        self.connect = connect\n        self.schedule = schedule\n        self.stopped = False\n        self.socket = None\n    def reconnect(self):\n        self.socket = self.connect()\n        self.schedule(1, self.reconnect)\n    def stop(self):\n        self.stopped = True\n        if self.socket:\n            self.socket.close()\n"
+          },
+          {
+            "path": "worker-contract.txt",
+            "content": "After stop returns, the worker must never open a new socket. Each opened socket and scheduled timer has exactly one owner."
+          }
+        ]
+      },
+      "required_roles": [
+        "senior-review:temporal-resilience-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:premise-auditor",
+        "abstraction-architect:abstraction-architect-agent"
+      ],
+      "rationale": "Reconnect timers, socket ownership and terminal-state guarantees are all explicit review concerns. Ownership and independent claim verification are permissible additional lenses.",
+      "evidence": [
+        "worker.py:7-13",
+        "worker-contract.txt:1"
+      ]
+    },
+    {
+      "id": "T03",
+      "state": {
+        "task": "Review the integration change between the order event publisher and fulfilment consumer against the shared schema. Evaluate implementation and domain behavior. Storage, authentication, browser UI and deployment are outside this change.",
+        "artifacts": [
+          {
+            "path": "order-event.schema.json",
+            "content": "{\"type\":\"object\",\"required\":[\"order_id\",\"quantity\"],\"properties\":{\"order_id\":{\"type\":\"string\"},\"quantity\":{\"type\":\"integer\",\"minimum\":1}}}"
+          },
+          {
+            "path": "publisher.py",
+            "content": "def publish_order(bus, order):\n    bus.publish('orders', {'order_id': order.id, 'count': order.quantity})\n"
+          },
+          {
+            "path": "consumer.py",
+            "content": "def receive_order(event, warehouse):\n    warehouse.reserve(event['order_id'], event['quantity'])\n"
+          },
+          {
+            "path": "integration-map.txt",
+            "content": "publisher.publish_order -> orders event -> consumer.receive_order -> warehouse.reserve. The consumer requires positive quantity for every emitted order."
+          }
+        ]
+      },
+      "required_roles": [
+        "senior-review:api-contract-auditor",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:premise-auditor"
+      ],
+      "rationale": "Formal schema, producer-consumer agreement and the positive-quantity domain contract are mandatory review concerns. Independent claim validation is an acceptable supplementary check. Storage is explicitly outside scope.",
+      "evidence": [
+        "order-event.schema.json:1",
+        "publisher.py:2",
+        "consumer.py:2",
+        "integration-map.txt:1"
+      ]
+    },
+    {
+      "id": "T04",
+      "state": {
+        "task": "Review startup ordering and readiness across these two services. Inspect their integration and initialization invariants. Steady-state retry policy, UI, documentation and build output are outside the task.",
+        "artifacts": [
+          {
+            "path": "registry.py",
+            "content": "def start_registry(settings_service, ready):\n    settings = settings_service.wait_until_ready()\n    bind_port(settings.registry_port)\n    ready.set()\n"
+          },
+          {
+            "path": "settings.py",
+            "content": "def start_settings(registry, ready):\n    registry.wait_until_ready()\n    publish_settings()\n    ready.set()\n"
+          },
+          {
+            "path": "startup-map.txt",
+            "content": "The registry readiness signal requires settings readiness. Settings readiness requires registry readiness. Each starts concurrently in a separate service process. A service is ready only after its published interface can serve callers."
+          }
+        ]
+      },
+      "required_roles": [
+        "senior-review:chicken-egg-detector",
+        "senior-review:distributed-flow-auditor",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "rationale": "A cross-service bootstrap dependency cycle and readiness invariants are explicit. Resource/startup ownership and premise derivation are relevant additions.",
+      "evidence": [
+        "registry.py:2-4",
+        "settings.py:2-4",
+        "startup-map.txt:1"
+      ]
+    },
+    {
+      "id": "T05",
+      "state": {
+        "task": "Review this React screen's rendering cost, asynchronous result handling, focus and browser layout behavior. This is a SPA UI change; backend APIs, user permissions and persisted models are unchanged.",
+        "artifacts": [
+          {
+            "path": "SearchPanel.jsx",
+            "content": "import { useEffect, useRef, useState } from 'react';\nexport function SearchPanel({ query, lookup }) {\n  const [rows, setRows] = useState([]);\n  const list = useRef(null);\n  useEffect(() => {\n    lookup(query).then(result => {\n      setRows(result);\n      list.current.scrollTop = list.current.scrollHeight;\n      list.current.focus();\n    });\n  }, [query, lookup]);\n  return <ul ref={list} tabIndex={0}>{rows.map(row => <li key={row.id}>{row.name}</li>)}</ul>;\n}\n"
+          },
+          {
+            "path": "screen-contract.txt",
+            "content": "A late response for an older query must not replace newer results. Scrolling depends on the rendered rows. Typing in the search box must keep keyboard focus there."
+          }
+        ]
+      },
+      "required_roles": [
+        "react-development:react-performance-optimizer",
+        "senior-review:ui-race-auditor",
+        "platform-engineering:platform-reviewer",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:resource-lifecycle-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "rationale": "React rendering, stale async state, layout/focus timing and SPA behavior are direct scope. Invariants, cancellation ownership and premise checks are acceptable additions.",
+      "evidence": [
+        "SearchPanel.jsx:5-12",
+        "screen-contract.txt:1"
+      ]
+    },
+    {
+      "id": "T06",
+      "state": {
+        "task": "Review the TypeScript request boundary for type safety, authorization and consistency with its published input contract. This server-side handler has no browser, database or background scheduling code.",
+        "artifacts": [
+          {
+            "path": "role-route.ts",
+            "content": "type RoleRequest = { memberId: string; role: 'reader' | 'admin' };\nexport async function setRole(request: Request, identity: { memberId: string }, directory: Directory) {\n  const body = (await request.json()) as RoleRequest;\n  directory.setRole(body.memberId, body.role);\n  return new Response('ok');\n}\n"
+          },
+          {
+            "path": "role-input.schema.json",
+            "content": "{\"type\":\"object\",\"required\":[\"memberId\",\"role\"],\"properties\":{\"memberId\":{\"type\":\"string\"},\"role\":{\"enum\":[\"reader\",\"admin\"]}},\"additionalProperties\":false}"
+          },
+          {
+            "path": "authorization.txt",
+            "content": "Only administrators may change roles. The directory is an in-memory abstraction owned elsewhere; this task concerns the request boundary and its permission checks."
+          }
+        ]
+      },
+      "required_roles": [
+        "typescript-development:type-safety-auditor",
+        "senior-review:api-contract-auditor",
+        "senior-review:security-auditor",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:logic-integrity-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "rationale": "Runtime input cast to a DTO, a formal schema and administrative authorization require distinct lenses. Domain-contract consistency and independent premise checking are acceptable additions. Persistence integrity is outside the stated scope.",
+      "evidence": [
+        "role-route.ts:1-4",
+        "role-input.schema.json:1",
+        "authorization.txt:1"
+      ]
+    },
+    {
+      "id": "T07",
+      "state": {
+        "task": "Review the ownership of price policy and the consistency of these two calculations. Determine whether the new path duplicates an existing domain rule. No persistence, network, UI or documentation changes are in scope.",
+        "artifacts": [
+          {
+            "path": "cart.py",
+            "content": "def final_price(subtotal, member):\n    discount = subtotal * 0.10 if member else 0\n    return round((subtotal - discount) * 1.20, 2)\n"
+          },
+          {
+            "path": "invoice.py",
+            "content": "def invoice_price(subtotal, member):\n    tax = subtotal * 0.20\n    discount = (subtotal + tax) * 0.15 if member else 0\n    return round(subtotal + tax - discount, 2)\n"
+          },
+          {
+            "path": "pricing-policy.txt",
+            "content": "Cart and invoice compute the same payable amount for the same purchase. Membership discount policy has one canonical owner. Existing public callers invoke both functions independently."
+          }
+        ]
+      },
+      "required_roles": [
+        "abstraction-architect:abstraction-architect-agent",
+        "senior-review:logic-integrity-auditor",
+        "senior-review:code-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:premise-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "rationale": "Competing implementations of the same fact and inconsistent domain calculations require ownership, invariant and implementation review. Redundancy cleanup or independent policy premise checking are acceptable.",
+      "evidence": [
+        "cart.py:1-3",
+        "invoice.py:1-4",
+        "pricing-policy.txt:1"
+      ]
+    },
+    {
+      "id": "T08",
+      "state": {
+        "task": "Audit repository hygiene and unused application material. Report only; do not remove anything. The task covers tracked build output, scratch files, an unreferenced asset and a dependency with no remaining consumers.",
+        "artifacts": [
+          {
+            "path": "tracked-files.txt",
+            "content": "src/main.ts\npublic/old-banner.png\ndist/main.bundle.js\nscratch/request-dump.txt\npackage.json\n"
+          },
+          {
+            "path": ".gitignore",
+            "content": "node_modules/\n"
+          },
+          {
+            "path": "package.json",
+            "content": "{\"dependencies\":{\"left-pad\":\"1.3.0\"},\"scripts\":{\"build\":\"tsc\"}}"
+          },
+          {
+            "path": "usage-inventory.txt",
+            "content": "All shipped source and templates were searched. src/main.ts has no imports. No file references old-banner.png or left-pad. dist/main.bundle.js is generated from src/main.ts. scratch/request-dump.txt is a local experiment."
+          }
+        ]
+      },
+      "required_roles": [
+        "repo-hygiene:workspace-auditor",
+        "senior-review:cleanup-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:code-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "rationale": "Tracked generated/scratch material belongs to workspace hygiene; application assets and unused dependencies belong to cleanup. Verification of inventory completeness or broader structure review is optional.",
+      "evidence": [
+        "tracked-files.txt:1-5",
+        ".gitignore:1",
+        "package.json:1",
+        "usage-inventory.txt:1"
+      ]
+    },
+    {
+      "id": "T09",
+      "state": {
+        "task": "Audit this test suite's isolation, timing sensitivity and redundant coverage. The production implementation is unchanged and outside review. Identify meaningful independent protection before suggesting any test consolidation.",
+        "artifacts": [
+          {
+            "path": "tests/test_clock.py",
+            "content": "import time\nSTATE = []\ndef test_enqueue():\n    STATE.append('job')\n    assert STATE == ['job']\ndef test_elapsed():\n    start = time.time()\n    time.sleep(0.001)\n    assert time.time() - start == 0.001\ndef test_nonempty_a():\n    assert len(['job']) > 0\ndef test_nonempty_b():\n    assert bool(['job'])\n"
+          }
+        ]
+      },
+      "required_roles": [
+        "testing:test-suite-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:code-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "rationale": "Shared state, exact timing and redundant assertions are test-governance concerns. General code review and independent premise checks can help. A one-shot test sleep does not establish a recurring-operation resilience concern.",
+      "evidence": [
+        "tests/test_clock.py:2-13"
+      ]
+    },
+    {
+      "id": "T10",
+      "state": {
+        "task": "Audit the existing command documentation for drift and independently verify its claims against the current implementation. Report factual corrections; do not redesign or edit the implementation or reorganize the document.",
+        "artifacts": [
+          {
+            "path": "docs/commands.md",
+            "content": "# Export\nRun `tool export --format xml`. The default format is XML. The command writes to stdout and never creates a file.\n"
+          },
+          {
+            "path": "cli.py",
+            "content": "def export(args):\n    parser.add_argument('--format', choices=['json', 'csv'], default='json')\n    parser.add_argument('--output', default='export.json')\n    write_file(args.output, render(args.format))\n"
+          }
+        ]
+      },
+      "required_roles": [
+        "project-knowledge:documentation-engineer",
+        "senior-review:premise-auditor"
+      ],
+      "allowed_roles": [
+        "project-knowledge:guide-reviewer",
+        "senior-review:cleanup-auditor"
+      ],
+      "rationale": "Current signatures/defaults contradict written claims. Documentation drift and independent claim checks are mandatory; guide factual review and stale-document cleanup are useful additions.",
+      "evidence": [
+        "docs/commands.md:2",
+        "cli.py:2-4"
+      ]
+    },
+    {
+      "id": "T11",
+      "state": {
+        "task": "Audit durable agent instructions for accuracy, conflicting directives and transient session material. Independently verify their statements against configured tooling. Preserve policies whose intention cannot be settled from source.",
+        "artifacts": [
+          {
+            "path": "AGENTS.md",
+            "content": "# Project rules\nRun `npm test` for the required suite.\nThe active branch is fix-session-23 and the migration is still in progress.\nThe root instructions forbid generated-file edits.\n"
+          },
+          {
+            "path": "subproject/AGENTS.md",
+            "content": "# Generated client\nEdit generated/client.ts directly whenever an API field changes.\n"
+          },
+          {
+            "path": "package.json",
+            "content": "{\"scripts\":{\"check\":\"node --test\"}}"
+          },
+          {
+            "path": "generator-policy.txt",
+            "content": "generated/client.ts is emitted from schema.json. The approved policy requires editing the schema and regenerating the client."
+          }
+        ]
+      },
+      "required_roles": [
+        "project-knowledge:instructions-auditor",
+        "senior-review:premise-auditor"
+      ],
+      "allowed_roles": [
+        "project-knowledge:documentation-engineer",
+        "project-knowledge:guide-reviewer"
+      ],
+      "rationale": "Instruction command claims, scope conflicts and transient state belong to instruction auditing. Independently checking factual claims is explicitly requested. Related documentation reviewers are acceptable.",
+      "evidence": [
+        "AGENTS.md:2-4",
+        "subproject/AGENTS.md:2",
+        "package.json:1",
+        "generator-policy.txt:1"
+      ]
+    },
+    {
+      "id": "T12",
+      "state": {
+        "task": "Audit a newly authored setup guide for factual consistency, terminology, navigation and suitability for a new operator. Also propose a clearer document structure without rewriting files. Independently check its source claims. Implementation is provided only as evidence.",
+        "artifacts": [
+          {
+            "path": "docs/setup-guide.md",
+            "content": "# Setup\nThe worker starts automatically after installation.\n## Internal dictionary\nThe scheduler polls every 60 seconds. A shard is a node. A node is an entire cluster.\n## First run\nFor authentication, see ../auth-old.md.\n## Storage internals\nRows are checkpointed before processing.\n## Another first run\nSet TOKEN, then run `worker start`.\n"
+          },
+          {
+            "path": "worker.py",
+            "content": "POLL_INTERVAL = 10\ndef main(args):\n    if args.command == 'start':\n        require_env('TOKEN')\n        run_worker(interval=POLL_INTERVAL)\n"
+          },
+          {
+            "path": "project-facts.txt",
+            "content": "Installation does not register a service. docs/authentication.md is the current authentication guide. A shard is one partition hosted by a node; a cluster contains multiple nodes. Checkpoints are written after processing."
+          }
+        ]
+      },
+      "required_roles": [
+        "project-knowledge:guide-reviewer",
+        "project-knowledge:doc-humanizer",
+        "project-knowledge:documentation-engineer",
+        "senior-review:premise-auditor"
+      ],
+      "allowed_roles": [
+        "senior-review:cleanup-auditor"
+      ],
+      "rationale": "Authored guide review, structure-only audit, implementation drift and independent source claim checking are explicitly in scope. Stale document material can also justify cleanup review.",
+      "evidence": [
+        "docs/setup-guide.md:1-13",
+        "worker.py:1-5",
+        "project-facts.txt:1"
+      ]
+    }
+  ]
+}

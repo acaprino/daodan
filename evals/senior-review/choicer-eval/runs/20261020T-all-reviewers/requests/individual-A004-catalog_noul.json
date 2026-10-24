@@ -1,0 +1,26 @@
+{
+  "id": "individual-A004-catalog_noul",
+  "kind": "individual",
+  "case_id": "A004",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the focus visibility and spacing of the sign-in button. Only these style declarations are changing.",
+    "artifacts": [
+      {
+        "path": "web/signin.css",
+        "content": ".signin-button { padding: 0.75rem 1rem; }\n.signin-button:focus-visible {\n  outline: 3px solid #185abc;\n  outline-offset: 3px;\n}\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:security-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "the concern is general code quality (use code-auditor) or infrastructure and network security (use platform-reviewer).",
+        "true": "the user asks for a security review, SAST audit, OWASP or CWE analysis, secret-leak scan, or an authentication or authorization code review; injection vectors, auth bypasses, crypto mistakes, or missing security headers."
+      }
+    }
+  },
+  "sha256": "e8db6c189b8207ec3eea80fc6f78ba3266b9201885c0ebadc22f1379f9107fc5"
+}

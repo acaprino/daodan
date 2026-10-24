@@ -1,0 +1,37 @@
+{
+  "id": "individual-C016-catalog_noul",
+  "request_sha256": "b2cf60ef775cb12b1d844c6902a5c3839a3f2cad5f63cb15695f5e3ee509dfc2",
+  "status": "ok",
+  "raw_output": {
+    "answers": {
+      "testing:test-suite-auditor": {
+        "type": "noul",
+        "probabilities": {
+          "false": 0.8653453171728149,
+          "true": 0.13465468282718512
+        },
+        "noul": 0.13465468282718512
+      }
+    }
+  },
+  "probabilities": {
+    "testing:test-suite-auditor": 0.13465468282718512
+  },
+  "inference_performed": true,
+  "model_session_id": "all-reviewers-2026-10-20T11:36:06.654362+00:00",
+  "encoding": {
+    "testing:test-suite-auditor": {
+      "tokens": 200,
+      "optionTokens": [
+        31,
+        25
+      ],
+      "headLength": 512,
+      "stateTruncated": false,
+      "optionsTruncated": false
+    }
+  },
+  "encoding_errors": {},
+  "selected": [],
+  "wall_seconds": 1.2097135999938473
+}

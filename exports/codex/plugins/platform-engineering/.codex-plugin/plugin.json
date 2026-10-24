@@ -5,5 +5,5 @@
   "description": "Cross-platform development rulebook: security (validation, auth tokens, passkeys/WebAuthn, API security, XSS/CSP, secrets), architecture (client-server, REST vs GraphQL, offline-first, monolith-first, CI/CD), and performance (bundles, images, Core Web Vitals, SSR/SSG, CDN caching) for SPA, PWA, mobile, Electron (with Fuses + asar integrity), and Tauri; its audit method runs under /daodan:check-health and its reviewer inside senior-review's reviews",
   "license": "MIT",
   "name": "platform-engineering",
-  "version": "2.0.0"
+  "version": "2.2.0"
 }

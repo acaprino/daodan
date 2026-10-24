@@ -1,0 +1,26 @@
+{
+  "id": "individual-A038-catalog_noul",
+  "kind": "individual",
+  "case_id": "A038",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review the agreement between this service's local cache and its database after renaming a label. Other services are outside scope.",
+    "artifacts": [
+      {
+        "path": "app/labels.py",
+        "content": "cache = {}\n\ndef lookup(db, key):\n    if key not in cache:\n        cache[key] = db.scalar(\"SELECT text FROM labels WHERE id = %s\", (key,))\n    return cache[key]\n\ndef rename(db, key, text):\n    db.execute(\"UPDATE labels SET text = %s WHERE id = %s\", (text, key))\n"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:distributed-flow-auditor": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "the target spans microservices, agent systems, or multiple modules and the question is cross-service: request flow tracing, contract mismatch between producer and consumer, or integration-boundary review."
+      }
+    }
+  },
+  "sha256": "253b922752d8d898cc2e564832dc4631039d4483c0ae8d7fc3f73c3bf3e9106b"
+}

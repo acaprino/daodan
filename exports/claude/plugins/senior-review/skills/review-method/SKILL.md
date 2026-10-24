@@ -75,67 +75,57 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # Unified review method
 
-Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle;
-optional `shape` (`light` for one wave's diff, `branch` for the whole candidate) and
-`target-kind` (`changeset`, `plan`, `spec`, `doc`), both resolved by preparation
-when absent.
-Output: native report and the project-result envelope.
+Input: variant, target/flags, output root; optional same-snapshot `prepared` bundle.
+Preparation resolves absent `shape` (`light`/`branch`) and `target-kind`
+(`changeset`/`plan`/`spec`/`doc`). Output: native report and project-result envelope.
 
-**Shape `light`:** read `references/light.md` in this skill and nothing else
-of this method. Shape `branch` runs variant `team-review`, or `pr-review` on a
-pull request, through the steps below.
+**Shape `light`:** read only `references/light.md` in this method. Branch uses
+`team-review`, or `pr-review` for a pull request, through these steps.
 
-Do not delegate execution
-to a second workflow or a nested lifecycle scheduler. In team-review Phase 1a,
-the coordinator executes the `codebase-map:map-method` analyze entry's preflight,
-answerable checkpoints, delivery check and publication decision. Its
-`codebase-map:map-analyst` runs the requested phases in one isolated context
-through this workflow's declared host harness. Loading the method alone executes
-no phase; use the analyst as a role, never as a skill or declarative `invoke`.
-Keep one review preparation and final report owner; required workers still run
-in isolated contexts through the declared host bindings.
+Do not delegate execution to another workflow or nested lifecycle scheduler.
+For team-review Phase 1a, the coordinator executes `codebase-map:map-method`
+analyze preflight, answerable checkpoints, delivery check and publication decision.
+Its `codebase-map:map-analyst` executes requested phases in one isolated context
+through the declared host harness. Loading a method executes no phase; the analyst
+is a role, never a skill or declarative `invoke`.
+Keep one review preparation and final report owner; required workers retain isolation.
 
-The consuming workflow declares the named reviewer inventory in `dispatch.roles`
-and isolated inline workers in its sidecar. Any inline lens, critic, history,
-hygiene or minimal-fix brief in the references uses the canonical
-`project-protocol:isolated-worker` binding supplied by the host harness, never
-a generic host role name. Keep scope, authorization,
-budget, expected report path and delivered or failed outcome for every brief.
+The workflow sidecar declares `dispatch.roles` and isolated inline workers.
+Inline lens, critic, history, hygiene and minimal-fix briefs use
+`project-protocol:isolated-worker` through that host binding, never an invented
+generic role. Bind scope, authorization, budget, report path and delivered/failed
+outcome for every brief.
 
-1. Load the `senior-review:review-preparation` skill, unless a same-snapshot prepared
-   bundle was supplied. Before reusing one, validate its target, run identity,
-   snapshot and knowledge selection (schema, candidate, fingerprints, scope,
-   assigned delivery IDs), and require activation evidence or a skip or gap
-   reason for all three stack dimensions; anything missing or stale is prepared
-   again against this exact candidate. Do not prepare another run or dispatch a
-   reviewer twice.
-2. Read `references/<variant>.md` in this skill. Dispatch the full prepared selection,
-   including applicable React, TypeScript and platform reviewers, in the same batch.
-   Core role inputs and prompts remain canonical in `senior-review:review-quality-gates`;
-   stack roles use their canonical provider definitions and preparation's shared inputs.
-   Preserve the prepared `knowledge_selection` and assign each worker only its scoped
-   `knowledge_ids`, selection fingerprint and exact catalog load/reference bindings.
-   Each worker loads its assigned knowledge as read-only input, applies it against
-   code evidence, and returns `knowledge_usage` with scope, worker, hashes, references
-   and application explanation. Account for task-specific knowledge lenses in this
-   same dispatch and delivery ledger. No worker receives peer findings before delivery.
-   Use isolated contexts and the host's supplied coordination mechanism. Account
-   for every selected worker before starting consolidation.
-3. Load the `senior-review:review-consolidation` skill with all native reviewer
-   results. Do not run the reference's output/fix tail until consolidation finishes.
-4. For code review, read `references/code-review-delivery.md` only after all core
-   and stack results have passed native consolidation and verification. Team
-   and PR report delivery remains in their consolidation references. Run delivery
-   and any authorized fix steps once. Application subtraction loads
-   `senior-review:application-cleanup-method`; significant semantic refactors are
-   returned to the caller's development plan and are never delegated to cleanup.
+1. Load `senior-review:review-preparation`, unless a prepared bundle exists.
+   Validate target, run, snapshot, knowledge schema/candidate/fingerprints/scope,
+   delivery IDs and applicable activation evidence or skip/gap reason. Reprepare
+   stale or incomplete bindings against this candidate, without another run or
+   duplicate dispatch.
+2. Read `references/<variant>.md`. Dispatch validated `jobs` once each under
+   preparation's `references/composition.md`, including stack members. The roster
+   supplies coverage obligations, never another dispatch list. Core inputs remain
+   canonical in `senior-review:review-quality-gates`; stack members use their
+   provider definitions and shared preparation. Preserve `knowledge_selection`;
+   assign scoped `knowledge_ids`, fingerprint and exact catalog load/reference
+   bindings. Workers read assigned knowledge, apply it against source and return
+   `knowledge_usage` with scope, worker, hashes, references and application evidence.
+   Account for knowledge lenses in the same ledger.
+   No worker receives peer findings before delivery.
+   Use isolated contexts and the host's coordination mechanism.
+   Account for every selected worker before starting consolidation.
+   Each member retains canonical checks, coverage and finding references.
+   Context, blind derivation and verification keep separate inputs and deliveries.
+3. Load `senior-review:review-consolidation` with native results. Finish it before
+   the variant's output/fix tail.
+4. Code review then reads `references/code-review-delivery.md`; team/PR delivery
+   stays in consolidation. Execute delivery and authorized fixes once. Application
+   subtraction uses `senior-review:application-cleanup-method`; significant semantic
+   refactors return to the caller's development plan, never cleanup.
 
-Read-only review preserves application files and preexisting edits.
-The coordinator alone may perform the project-bound Codebase Map preflight
-before dispatch: move an idle legacy archive intact and write only bound
-relocation metadata. This bounded exception authorizes no application changes,
-analysis run, worker migration or generic filesystem move.
-Before any accepted fix, load
-`project-protocol:project-protocol` for execution preflight, authorizations,
-baseline, candidate gate and owned recovery. Commit and publication are separate
-authorizations; a request for review is not authorization to publish.
+Read-only review preserves application files and preexisting edits. Only the
+coordinator may perform project-bound Codebase Map preflight: move an idle legacy
+archive intact and write bound relocation metadata. This grants no application
+change, analysis run, worker migration or generic move.
+Before accepted fixes load `project-protocol:project-protocol` for preflight,
+authorizations, baseline, candidate gate and owned recovery. Commit/publication
+require separate authorization; review grants neither.

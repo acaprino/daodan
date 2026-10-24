@@ -1,0 +1,26 @@
+{
+  "requirement": "Tenant aggregate <=10 charged units; cancellation must admit no new charged work; applicable v2 tariff is 2 credits per unit.",
+  "limits": {
+    "shared_atomic_tenant_reservation": 10,
+    "per_operation": 10
+  },
+  "cancel": {
+    "flag": true,
+    "next_action": "stop before admission"
+  },
+  "pricing": {
+    "version": "v2",
+    "credits_per_unit": 2,
+    "units": 5,
+    "estimate_credits": 10,
+    "claim": "estimate from identified tariff and assumed units; no invoice"
+  },
+  "counter": {
+    "tracks": "started calls"
+  },
+  "alert": {
+    "defined": true,
+    "reception_evidence": null,
+    "claim": "configured only"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "individual-B042-catalog_noul",
+  "kind": "individual",
+  "case_id": "B042",
+  "variant": "catalog_noul",
+  "state": {
+    "task": "Review retry behavior when the nightly weather import cannot reach its upstream feed.",
+    "artifacts": [
+      {
+        "path": "collector.py",
+        "content": "import time\nimport requests\ndef collect(url):\n    for delay in (1, 2, 4):\n        try:\n            response = requests.get(url, timeout=10)\n            response.raise_for_status()\n            return response.json()\n        except requests.RequestException:\n            time.sleep(delay)\n    raise RuntimeError(\"feed unavailable\")"
+      },
+      {
+        "path": "deployment.md",
+        "content": "This scheduled Python job writes an archive for research batch processing. It exposes no application API and serves no web, mobile, Electron, or Tauri client."
+      }
+    ]
+  },
+  "questions": {
+    "platform-engineering:platform-reviewer": {
+      "type": "noul",
+      "instructions": "Does the supplied task and evidence satisfy the reviewer's TRIGGER WHEN?",
+      "criteria": {
+        "false": "",
+        "true": "dispatched by the platform audit of the platform-engineering skill (run by `/daodan:check-health`) or by senior-review in `/daodan:review-changes` and `/daodan:review-branch`; auditing PRs or code for security, architecture, or performance compliance across SPA, PWA, mobile, and desktop (Electron/Tauri) platforms."
+      }
+    }
+  },
+  "sha256": "26e8710f99a3df18767d42ca841fb12e4ffc87eebbbbec50e15b4fe8fa4461a1"
+}

@@ -17,6 +17,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.daodan.adapter import HOSTS, load_adapter
 from scripts.daodan.load import load_plugin
+from scripts.daodan.role_bodies import resolve_role
 from scripts.daodan.render import (
     MCP_REGISTRATION_STRATEGY, RenderError, _copilot_tools, _frontmatter, _host_text,
     _inline_role_scope, _mcp_registration_notes, _operational_binding, render_plugin,
@@ -167,7 +168,8 @@ class OperationalBindingTests(unittest.TestCase):
                 if host in ("codex", "pi"):
                     self.assertIn("Declared role operation allowlist", text)
                     self.assertIn("execute shell commands", text)
-                    self.assertNotIn("create or overwrite files;", text)
+                    # The role writes its assigned report on inline hosts too.
+                    self.assertIn("create or overwrite files;", text)
         for host in ("codex", "pi"):
             with self.subTest(host=host, resource=True):
                 # Since 38.0.0 senior-review registers no workflow, so the inline
@@ -180,10 +182,10 @@ class OperationalBindingTests(unittest.TestCase):
                     self.assertNotRegex(text, r"(?m)^model:", name)
                     self.assertNotRegex(text, r"(?m)^tools:", name)
                     owner, role = Path(name).relative_to("contracts/dispatch").with_suffix("").parts
-                    source = (REPO_ROOT / "plugins" / owner / "roles" / f"{role}.md").read_text(encoding="utf-8")
+                    source_meta = resolve_role(plugin_registry(), owner, role)["metadata"]
                     # A role without a source restriction keeps the session's
                     # permissions rather than becoming a read-only worker.
-                    if "tools" in _frontmatter(source)[0]:
+                    if "tools" in source_meta:
                         self.assertIn("Declared role operation allowlist", text, name)
                     else:
                         self.assertIn("declares no additional tool restriction", text, name)
@@ -368,10 +370,13 @@ class OperationalBindingTests(unittest.TestCase):
         meta, _ = _frontmatter(text)
         self.assertIn("'runCommands'", meta["tools"])
         self.assertIn("'edit'", meta["tools"])
-        readonly = self.render_in_memory("senior-review", "copilot")["agents/api-contract-auditor.agent.md"]
-        readonly_meta, _ = _frontmatter(readonly)
-        self.assertIn("'runCommands'", readonly_meta["tools"])
-        self.assertNotIn("'edit'", readonly_meta["tools"])
+        # API review persists its assigned report, so it must retain write access.
+        api = self.render_in_memory("senior-review", "copilot")["agents/api-contract-auditor.agent.md"]
+        api_meta, _ = _frontmatter(api)
+        self.assertIn("'edit'", api_meta["tools"])
+        readonly_tools = _copilot_tools("Read, Glob, Grep, Bash")
+        self.assertIn("'runCommands'", readonly_tools)
+        self.assertNotIn("'edit'", readonly_tools)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,162 @@
+{
+  "schema": "choicer-eval/external-sources-v1",
+  "fetched_at_unix": 1792572981,
+  "sources": [
+    {
+      "id": "swe-bench-verified",
+      "name": "SWE-bench Verified",
+      "kind": "huggingface",
+      "dataset": "princeton-nlp/SWE-bench_Verified",
+      "url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Verified",
+      "access": "datasets-server rows API, default/test",
+      "label_signal": "Human-validated issue/PR pair; problem_statement and FAIL_TO_PASS tests are adjudication evidence only.",
+      "planned_use": "Python candidates for logic, data, temporal, resource and distributed lenses.",
+      "limits": "Python only. Issue text, test names and titles must not enter model jobs.",
+      "live_metadata": {
+        "sha": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+        "last_modified": "2025-02-18T23:48:55.000Z",
+        "downloads": 181765,
+        "used_storage_bytes": 8393818,
+        "license": null,
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "data/test-00000-of-00001.parquet"
+        ],
+        "response_sha256": "3aea852b032befc7000a2a9b25e9c8fb9e408d83a9d7c94955a82bc7bbcfa149"
+      }
+    },
+    {
+      "id": "multi-swe-bench",
+      "name": "Multi-SWE-bench",
+      "kind": "huggingface",
+      "dataset": "ByteDance-Seed/Multi-SWE-bench",
+      "url": "https://huggingface.co/datasets/ByteDance-Seed/Multi-SWE-bench",
+      "access": "per-repository JSONL files under resolve/main",
+      "label_signal": "Expert-curated issue/PR pairs; PR title, resolved issues and fail-to-pass tests are adjudication evidence only.",
+      "planned_use": "TypeScript, JavaScript, Go, Java and Rust candidates, especially UI and distributed cases.",
+      "limits": "Large aggregate dataset; fetch only selected repository files. Per-repository licenses apply.",
+      "live_metadata": {
+        "sha": "56ff018c04a38e27ada1e9d0a6d5839a51f88f0d",
+        "last_modified": "2026-07-08T03:38:12.000Z",
+        "downloads": 31498,
+        "used_storage_bytes": 5534575583,
+        "license": "other",
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "c/facebook__zstd_dataset.jsonl",
+          "c/jqlang__jq_dataset.jsonl",
+          "c/ponylang__ponyc_dataset.jsonl",
+          "cpp/catchorg__Catch2_dataset.jsonl",
+          "cpp/fmtlib__fmt_dataset.jsonl",
+          "cpp/nlohmann__json_dataset.jsonl",
+          "cpp/simdjson__simdjson_dataset.jsonl",
+          "cpp/yhirose__cpp-httplib_dataset.jsonl",
+          "go/cli__cli_dataset.jsonl",
+          "go/grpc__grpc-go_dataset.jsonl",
+          "go/zeromicro__go-zero_dataset.jsonl",
+          "java/alibaba__fastjson2_dataset.jsonl",
+          "java/apache__dubbo_dataset.jsonl",
+          "java/elastic__logstash_dataset.jsonl",
+          "java/fasterxml__jackson-core_dataset.jsonl",
+          "java/fasterxml__jackson-databind_dataset.jsonl",
+          "java/fasterxml__jackson-dataformat-xml_dataset.jsonl",
+          "java/google__gson_dataset.jsonl"
+        ],
+        "response_sha256": "1d1654577043b34a301fe517fa1a83f9216269c77e881e895799b8b21e94bdca"
+      }
+    },
+    {
+      "id": "devign",
+      "name": "Devign",
+      "kind": "huggingface",
+      "dataset": "DetectVul/devign",
+      "url": "https://huggingface.co/datasets/DetectVul/devign",
+      "access": "datasets-server rows API, default/test",
+      "label_signal": "Dataset-native vulnerable/non-vulnerable function target.",
+      "planned_use": "Gold security positives and security-only explicit negatives.",
+      "limits": "C/C++ only. A non-vulnerable target labels only the security lens.",
+      "live_metadata": {
+        "sha": "db50acfa25d02fe99e9d50064b613fae3e934b11",
+        "last_modified": "2024-09-15T13:21:57.000Z",
+        "downloads": 431,
+        "used_storage_bytes": 1596098807,
+        "license": null,
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "data/test-00000-of-00001-e0e162fa10729371.parquet",
+          "data/train-00000-of-00001-396a063c42dfdb0a.parquet",
+          "data/validation-00000-of-00001-5d4ba937305086b9.parquet"
+        ],
+        "response_sha256": "8822f36cd5082eabc8123db34ceb1327d449d4a3b52dbfaf731cabd793732225"
+      }
+    },
+    {
+      "id": "cvefixes",
+      "name": "CVEfixes v1.0.8",
+      "kind": "zenodo",
+      "url": "https://doi.org/10.5281/zenodo.13118970",
+      "access": "Zenodo record 13118970",
+      "label_signal": "CVE/CWE provenance at commit, file and method level.",
+      "planned_use": "Later targeted security provenance if a selective query path is justified.",
+      "limits": "Zenodo ZIP is 12,708,711,268 bytes; not downloaded in Stage 1.",
+      "live_metadata": {
+        "doi": "10.5281/zenodo.13118970",
+        "version": "v1.0.8",
+        "license": "cc-by-4.0",
+        "files": [
+          {
+            "key": "CVEfixes_v1.0.8.zip",
+            "size": 12708711268,
+            "checksum": "md5:4586a358977acfa4c60b1a2cdd096221"
+          }
+        ],
+        "response_sha256": "6755e1d822db82615241ae719235782297a14f9286e494e6601a70fa28031a71"
+      }
+    },
+    {
+      "id": "hapy-bug",
+      "name": "HaPy-Bug",
+      "kind": "github",
+      "url": "https://github.com/ncusi/HaPy-Bug",
+      "access": "public Git repository",
+      "label_signal": "793 Python bug-fix commits annotated by three experts.",
+      "planned_use": "Small high-confidence development pool and label-protocol checks.",
+      "limits": "Python only; annotations describe changes, not reviewer applicability directly."
+    },
+    {
+      "id": "commitbench",
+      "name": "CommitBench",
+      "kind": "huggingface",
+      "dataset": "Maxscha/commitbench",
+      "url": "https://huggingface.co/datasets/Maxscha/commitbench",
+      "access": "datasets-server rows API, default/test",
+      "label_signal": "Real diffs plus commit messages as weak evidence.",
+      "planned_use": "Backup candidate generation only.",
+      "limits": "Dataset license is CC BY-NC 4.0; excluded from any commercial path and from gold labels.",
+      "live_metadata": {
+        "sha": "1500792cd6998308da046ba72b688156b2ffa471",
+        "last_modified": "2024-02-14T11:19:43.000Z",
+        "downloads": 2392,
+        "used_storage_bytes": 4526861396,
+        "license": "cc-by-nc-4.0",
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "test.csv",
+          "train.csv",
+          "val.csv"
+        ],
+        "response_sha256": "e4bf5daed7eb56ef1f9cfcbdaae501f26c8f6697d8939b1b3db834c664a36136"
+      }
+    }
+  ],
+  "rules": [
+    "No bulk CVEfixes download in Stage 1.",
+    "CommitBench is backup only because its dataset license is CC BY-NC 4.0.",
+    "Label evidence stays in provenance and never enters model jobs.",
+    "Unknown lenses are omitted, never converted to negatives."
+  ]
+}

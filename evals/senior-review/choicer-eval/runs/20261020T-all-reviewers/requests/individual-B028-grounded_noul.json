@@ -1,0 +1,34 @@
+{
+  "id": "individual-B028-grounded_noul",
+  "kind": "individual",
+  "case_id": "B028",
+  "variant": "grounded_noul",
+  "state": {
+    "task": "Review repository tracking rules so generated build output stays out of Git.",
+    "artifacts": [
+      {
+        "path": ".gitignore",
+        "content": "node_modules/\n"
+      },
+      {
+        "path": "build.md",
+        "content": "The bundler writes dist/ on every build. All dist files are reproducible and have no hand-maintained content."
+      },
+      {
+        "path": "tracked-files.txt",
+        "content": "dist/app.js\ndist/app.js.map\npackage.json\nsrc/app.ts"
+      }
+    ]
+  },
+  "questions": {
+    "senior-review:cleanup-auditor": {
+      "type": "noul",
+      "instructions": "Does the task request a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or residue from completed work?",
+      "criteria": {
+        "false": "The task only applies approved removals, tidies filesystem or Git state, runs a single-language scanner, or lacks application hygiene review.",
+        "true": "The task requests a source-informed application hygiene audit of dead code, assets, dependencies, stale documentation, or completed-work residue."
+      }
+    }
+  },
+  "sha256": "b77840ec4cd0c5656222582b1a5f9b231c7ac5f6fc7a0edf8fb04807d78b284c"
+}

@@ -71,123 +71,33 @@ Compiled binding and static checks do not prove an installed host executed a run
 
 # TypeScript Type-Safety Audit
 
-Audit a codebase for type-system erosion and write a markdown report: `any` leakage, unsound casts, tsconfig strictness, exhaustiveness, generics soundness, and missing runtime validation at boundaries. Shape: detect scope, run the compiler and linter, dispatch the plugin's reviewer in an isolated context, write the report.
+Audit type soundness and typed runtime boundaries. The coordinator prepares evidence, dispatches the declared reviewer and writes the native final report below. Canonical member roles own detection; do not copy their checklists into a second worker prompt.
 
-Caller: `/daodan:check-health`, which runs this audit when the project has TypeScript. Inside `/daodan:review-changes` and `/daodan:review-branch`, senior-review dispatches `typescript-development:type-safety-auditor` with inputs it prepares, not through this procedure: never run both on the same target.
+Caller: `/daodan:check-health`. Senior-review supplies its own prepared scope and native format when it dispatches `typescript-development:type-safety-auditor`; do not also run this method for that assignment.
 
-Not this audit: style review (`typescript-write`), React performance (the React audit of the react-development plugin), dead-code detection (`knip`).
+## Inputs and scope
 
-Act as a senior TypeScript type-safety auditor. Review TypeScript code for type-system erosion: any leakage, unsound casts, missing boundary validation, assertion abuse, configuration drift, exhaustiveness gaps, and unsound generics.
+Use the caller's target, candidate/snapshot, requirements, run directory and permissions. A project uses full scope; a path uses that directory/file scope; a caller-resolved diff uses changeset scope with both sides, staged/unstaged work, untracked paths, removals and renames. Follow implicated callers, configuration and unchanged counterparts within admitted read scope. Do not infer that a preexisting content defect was introduced by the change.
 
-## Inputs
+Include TypeScript modules, first-party declarations, boundary producers/consumers and the effective tsconfig closure, including extends and project references. Preserve runtime schemas and serialization evidence; compiler success alone does not prove boundary validity.
 
-- **TARGET**: what the caller passes.
-  - The project, or nothing: full mode over the default source roots.
-  - A path (file or directory): full mode restricted to that path.
-  - A diff (uncommitted changes, or a commit, range or branch the caller resolved to a revision range): diff mode over the TypeScript files it changes.
-  - Free text that names no path and no diff: full mode over the default source roots.
-- **Mode**: method decision. Full mode when called by `/daodan:check-health`; diff mode only when the caller passes a diff.
-- **Run directory**: the caller's run directory, written `<run>` below. Everything this audit writes goes under `<run>/ts-review/`; it edits no project file.
+Keep a complete scoped inventory and the paths read in depth separately. Prioritize entrypoints and consequential paths, then finish the assigned checks or report the unexamined scope. Sampling or a read limit never proves full coverage. If no applicable source exists, record the inspected inventory and reason.
 
-## CRITICAL RULES
+## Prepare evidence
 
-1. **Type-safety-only scope.** Ignore style, naming, formatting, performance, and dead code. Focus on where the type system stops telling the truth.
-2. **Run the declared reviewer.** Dispatch `typescript-development:type-safety-auditor` in its required isolated context through the host harness with the full prepared scope.
-3. **Write markdown report.** Output is `<run>/ts-review/report.md`: an actionable checklist with scores, findings, and fix instructions.
-4. **Never enter plan mode.** Execute immediately.
+Inspect relevant source and project configuration before dispatch. Collect the project-configured type check (including referenced projects) and linting when available and authorized. Use existing local tooling, preserve the actual command, exit status, candidate and output, and report unavailable tooling rather than hiding errors or treating it as a clean run. Do not install tools implicitly.
 
-## Step 1: Detect Scope
-
-### Decision tree
-
-**Full mode** (the default; the caller passes no diff, as `/daodan:check-health` does):
-- Scan the whole source tree: `src/`, `app/`, `lib/`, `packages/`, or the TARGET path
-
-**Diff mode** (the caller passes a diff):
-- Review only the changed TypeScript files
-- Get the diff: `git diff HEAD -- <ts files>` for uncommitted changes, `git diff <range> -- <ts files>` for a revision range
-
-### Check for TypeScript files (diff mode only)
-
-For uncommitted changes:
-
-```bash
-git diff HEAD --name-only | grep -E '\.tsx?$' || true
-git diff --name-only | grep -E '\.tsx?$' || true
-git diff --cached --name-only | grep -E '\.tsx?$' || true
-```
-
-For a revision range: `git diff <range> --name-only | grep -E '\.tsx?$' || true`.
-
-### Discover TypeScript files (full mode only)
-
-```bash
-find src -type f \( -name "*.ts" -o -name "*.tsx" \) | head -80
-```
-
-Or use the TARGET path in place of `src` when the caller names one.
-
-If no TypeScript files are found, stop and say so.
-
-## Step 1.5: Run Deterministic Ground Truth (if available)
-
-```bash
-npx tsc --noEmit --pretty false 2>/dev/null || true
-npx eslint --format json "src/**/*.{ts,tsx}" 2>/dev/null || true
-```
-
-Pass both outputs to the agent. If the tools are unavailable, proceed without them and note it in the report.
-
-## Step 2: Sample Key Files & Gather Context
-
-Read a representative cross-section:
-- `tsconfig.json` and every config it extends (always)
-- Boundary modules: API clients, route handlers, queue consumers, storage access, env/config access
-- 3-5 core domain modules with exported types
-- Any first-party `.d.ts` files
+Bind supplied performance profiles, budgets, compiler/linter output and product requirements to their source and conditions. Source reasoning is not a measured runtime result. Resolve the installed provider root and assigned knowledge once; an unknown target, missing mandatory input or stale binding remains a gap.
 
 ## Step 3: Run Review Agent
 
-The host harness binds the declared `typescript-development:type-safety-auditor` role. Give it the
-following task, the exact scope, relevant files, authorization and an owned
-intermediate report path `<run>/ts-review/worker-findings.md`. The reviewer
-returns its findings and a delivered or failed outcome; it does not write
-the final report. Record that outcome before the report phase. A failed or
-missing delivery leaves the review incomplete and must be reported.
+Dispatch `typescript-development:type-safety-auditor` in its required isolated context through the host harness. Supply the full prepared scope, source/evidence paths, provider root, snapshot, requirements, working discipline, permissions and intermediate report path `<run>/ts-review/worker-findings.md`. Use the actual rendered role, including each canonical member; loading a role as a skill is not dispatch.
 
-````text
-Audit the type safety of this TypeScript codebase.
+The reviewer returns its findings and a delivered or failed outcome; it does not write the final report. Record that outcome before the report phase. A failed or missing delivery leaves the review incomplete and must be reported.
 
-## Scope
-[list of key files sampled]
+Supply the native report fields below as the assignment's common review conventions, once. Findings carry severity, current file:line evidence, the required behavior or budget, causal impact, counterevidence, numeric confidence and a concrete correction. Preserve rejected candidates, coverage/gaps, assigned knowledge usage and any required member_results in the one intermediate report. No automatic violation follows merely from an absent optimization, new API, compiler flag or preferred technique.
 
-## File Contents
-[paste tsconfig.json, boundary modules, and sampled core modules]
-
-## Compiler Output (if available)
-[paste tsc --noEmit output, or "No compiler output available"]
-
-## Linter Output (if available)
-[paste ESLint JSON report, or "No linter output available"]
-
-## Type-Safety Rules Checklist (20 rules; flag violations by id)
-
-**1. Any Erosion (CRITICAL):** any-explicit (unknown plus narrowing over any), any-implicit-boundary (type JSON.parse and response.json() immediately), any-generic-default (never <T = any>)
-**2. Unsound Casts (CRITICAL):** cast-as-unsound (shape-changing as needs a runtime check), cast-double (as unknown as X is a bypass), cast-const-assertion (as const over widening annotations)
-**3. Boundary Validation (CRITICAL):** boundary-http (schema-parse payloads at the edge), boundary-queue (validate messages on receipt), boundary-storage (validate and version storage reads), boundary-env (one validated config module)
-**4. Assertion Abuse (HIGH):** assert-non-null (! needs justification or a fail-fast check), assert-ts-expect-error (@ts-expect-error with reason, never @ts-ignore)
-**5. Compiler Configuration (HIGH):** config-strict (strict true baseline), config-unchecked-index (noUncheckedIndexedAccess), config-exact-optional (exactOptionalPropertyTypes), config-skiplibcheck (never hide first-party errors)
-**6. Exhaustiveness (MEDIUM-HIGH):** exhaust-switch-never (never assertion in default), exhaust-satisfies-record (satisfies Record for lookup tables)
-**7. Generics Soundness (MEDIUM):** generics-constraint (constrain public type parameters), generics-type-guards (predicates verify the whole shape)
-
-## Instructions
-Use the checklist as your primary audit framework. Cite rule ids in every finding (e.g. "Violates boundary-http"). Cross-check candidates against the compiler output: a tsc error near a grep hit raises confidence.
-
-For each finding: rule id, severity (Critical/High/Medium/Low), file + line, confidence (0-100), what breaks at runtime, concrete fix with a code example.
-Note what is done well.
-
-Return the structured JSON block from your output format at the end.
-````
+The coordinator verifies delivery and every assigned member before consolidation. Deduplicate the same cause without hiding independent failure modes. Keep all mandatory gaps open. Scores use evidenced category judgments and explicitly mark unassessed categories; do not derive a score from file counts or API adoption alone.
 
 ## Step 4: Generate Markdown Report
 
@@ -200,11 +110,11 @@ Order findings by severity, then file name.
 ```markdown
 # TypeScript Type-Safety Review: [date]
 
-[Diff mode: N changed files | Full mode: N files sampled]
+[Mode, scoped inventory, paths read in depth, runtime paths exercised and remaining gaps]
 
 ## Ground Truth
 
-[tsc error count and eslint summary, or "Compiler and linter unavailable: review is heuristic only."]
+[tsc error count and eslint summary, or "Compiler/linter unavailable: static source analysis only; unverified checks and impact listed below."]
 
 ## Scores
 

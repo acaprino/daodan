@@ -1,6 +1,6 @@
 schema = "daodan/v1"
 name = "senior-review"
-version = "16.2.1"
+version = "16.4.0"
 description = "Unified evidence-aware code, team and PR review with scope-selected available domain knowledge and canonical React, TypeScript and platform specialists. One preparation, delivery ledger, verification panel and report; application subtraction, test quality, structural entropy and workspace hygiene reuse their canonical owners. Seven native review schemas preserve finding provenance and delivery accounting."
 license = "MIT"
 
@@ -13,7 +13,7 @@ required = ["repo-hygiene", "codebase-map", "abstraction-architect", "testing", 
 
 [components]
 skills = ["defect-taxonomy", "review-quality-gates", "review-method", "review-preparation", "review-consolidation", "application-cleanup-method", "investigation-method"]
-roles = ["api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor"]
+roles = ["accessibility-auditor", "api-contract-auditor", "chicken-egg-detector", "cleanup-auditor", "code-auditor", "data-integrity-auditor", "distributed-flow-auditor", "logic-integrity-auditor", "operability-auditor", "performance-auditor", "premise-auditor", "resource-lifecycle-auditor", "security-auditor", "temporal-resilience-auditor", "ui-race-auditor", "authorization-auditor", "session-delegation-auditor", "secret-exposure-auditor", "input-validation-auditor", "untrusted-resource-auditor", "browser-security-auditor", "callback-authenticity-auditor", "ai-boundary-auditor", "audit-trail-auditor", "transaction-integrity-auditor", "schema-coherence-auditor", "cache-consistency-auditor", "data-representation-auditor", "data-retention-auditor", "message-delivery-auditor", "remote-effect-auditor", "service-resilience-auditor", "sql-efficiency-auditor", "algorithmic-cost-auditor", "asset-delivery-auditor", "capacity-quota-auditor", "runtime-cost-auditor", "observability-auditor", "service-health-auditor", "release-compatibility-auditor", "environment-binding-auditor", "feature-flag-auditor", "recovery-auditor", "accessible-navigation-auditor", "accessible-perception-auditor", "local-correctness-auditor", "local-concurrency-auditor", "application-reachability-auditor", "dependency-usage-auditor", "artifact-lifecycle-auditor"]
 workflows = []
 policies = []
 

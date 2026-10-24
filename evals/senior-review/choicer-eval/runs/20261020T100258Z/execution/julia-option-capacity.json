@@ -1,0 +1,170 @@
+{
+  "kind": "Exact tokenizer capacity audit; no inference. Tokenization matches Julia data.sequence option prefix and add_special_tokens=False.",
+  "tokenizers_version": "0.22.2",
+  "tokenizer_sha256": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+  "option_limit": 48,
+  "roles": [
+    {
+      "role": "abstraction-architect:abstraction-architect-agent",
+      "option_tokens": {
+        "true": 65,
+        "false": 58
+      },
+      "empty_false": false,
+      "noul_options_fit": false
+    },
+    {
+      "role": "platform-engineering:platform-reviewer",
+      "option_tokens": {
+        "true": 76,
+        "false": 1
+      },
+      "empty_false": true,
+      "noul_options_fit": false
+    },
+    {
+      "role": "react-development:react-performance-optimizer",
+      "option_tokens": {
+        "true": 86,
+        "false": 28
+      },
+      "empty_false": false,
+      "noul_options_fit": false
+    },
+    {
+      "role": "repo-hygiene:workspace-auditor",
+      "option_tokens": {
+        "true": 61,
+        "false": 41
+      },
+      "empty_false": false,
+      "noul_options_fit": false
+    },
+    {
+      "role": "senior-review:api-contract-auditor",
+      "option_tokens": {
+        "true": 36,
+        "false": 38
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:chicken-egg-detector",
+      "option_tokens": {
+        "true": 31,
+        "false": 18
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:cleanup-auditor",
+      "option_tokens": {
+        "true": 64,
+        "false": 67
+      },
+      "empty_false": false,
+      "noul_options_fit": false
+    },
+    {
+      "role": "senior-review:code-auditor",
+      "option_tokens": {
+        "true": 24,
+        "false": 14
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:data-integrity-auditor",
+      "option_tokens": {
+        "true": 19,
+        "false": 29
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:distributed-flow-auditor",
+      "option_tokens": {
+        "true": 37,
+        "false": 1
+      },
+      "empty_false": true,
+      "noul_options_fit": false
+    },
+    {
+      "role": "senior-review:logic-integrity-auditor",
+      "option_tokens": {
+        "true": 32,
+        "false": 38
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:premise-auditor",
+      "option_tokens": {
+        "true": 52,
+        "false": 26
+      },
+      "empty_false": false,
+      "noul_options_fit": false
+    },
+    {
+      "role": "senior-review:resource-lifecycle-auditor",
+      "option_tokens": {
+        "true": 28,
+        "false": 37
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:security-auditor",
+      "option_tokens": {
+        "true": 46,
+        "false": 24
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:temporal-resilience-auditor",
+      "option_tokens": {
+        "true": 25,
+        "false": 39
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "senior-review:ui-race-auditor",
+      "option_tokens": {
+        "true": 49,
+        "false": 1
+      },
+      "empty_false": true,
+      "noul_options_fit": false
+    },
+    {
+      "role": "testing:test-suite-auditor",
+      "option_tokens": {
+        "true": 25,
+        "false": 31
+      },
+      "empty_false": false,
+      "noul_options_fit": true
+    },
+    {
+      "role": "typescript-development:type-safety-auditor",
+      "option_tokens": {
+        "true": 72,
+        "false": 32
+      },
+      "empty_false": false,
+      "noul_options_fit": false
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "individual-C013-grounded_choice",
+  "kind": "individual",
+  "case_id": "C013",
+  "variant": "grounded_choice",
+  "state": {
+    "task": "Assess whether these two test files duplicate the same protection or preserve distinct failure modes. Do not consolidate them during this review.",
+    "artifacts": [
+      {
+        "path": "tests/test_rounding.py",
+        "content": "from pricing import total\n\ndef test_single_item():\n    assert total([125], tax_percent=0) == 125\n"
+      },
+      {
+        "path": "tests/test_checkout_amount.py",
+        "content": "from pricing import total\n\ndef test_no_tax():\n    assert total([125], tax_percent=0) == 125\n"
+      },
+      {
+        "path": "src/pricing.py",
+        "content": "def total(cents, tax_percent):\n    return round(sum(cents) * (1 + tax_percent / 100))\n"
+      }
+    ]
+  },
+  "questions": {
+    "testing:test-suite-auditor": {
+      "type": "choice",
+      "instructions": "Does the requested task assess existing test protection, suite health, failure causes, placement, redundancy, runtime, or the absence of a usable suite?",
+      "criteria": {
+        "false": "The task does not assess test protection or suite health; test authorship, approved disposition execution, and production repair alone do not qualify.",
+        "true": "The task assesses test protection or suite health, including an absent runner or suite and static assessment when execution is prohibited."
+      }
+    }
+  },
+  "sha256": "902e1f491a90c85089b1172f4f19f13f5d73a6ffce9a23655d7a9a4a826f0f70"
+}
