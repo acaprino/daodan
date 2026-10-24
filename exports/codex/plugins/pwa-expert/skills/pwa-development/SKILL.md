@@ -3,7 +3,7 @@ name: pwa-development
 description: >
   Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility.
   TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor.
-  DO NOT TRIGGER WHEN: React render performance (use react-development:review-react), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).
+  DO NOT TRIGGER WHEN: React render performance (use react-development:react-best-practices), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).
 ---
 
 <daodan_host_binding host="codex">

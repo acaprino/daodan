@@ -303,7 +303,7 @@ Traditional SEO metrics don't directly capture AEO. Track:
 - Content tone, CTA design, narrative flow -> `content-marketer` agent
 - GA4 / GTM event tracking setup to measure AEO traffic -> `ga4-implementation-expert` agent
 - Structured data validation as part of a broader audit -> `/digital-marketing:seo-audit` command
-- Humanizing the actual prose so it reads natural and E-E-A-T-credible -> `/text-humanizer:humanize-text` (text-humanizer plugin)
+- Humanizing the actual prose so it reads natural and E-E-A-T-credible -> `/daodan:humanize-text` (Daodan's entry plugin)
 
 ## REFERENCES
 

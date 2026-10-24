@@ -529,7 +529,7 @@
       "frontend-review": {
         "commands": [
           {
-            "description": "Full frontend review combining a 9-dimension UI/UX design audit with auto-detected React, TypeScript, PWA and platform code checks into `.frontend-review/report.md`. TRIGGER WHEN: asking for a complete frontend review, UI/UX design plus code audit, or pre-release frontend pass. DO NOT TRIGGER WHEN: React-only (use /react-development:review-react), TypeScript-only (use /typescript-development:review-typescript), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /senior-review:code-review).",
+            "description": "Full frontend review combining a 9-dimension UI/UX design audit with auto-detected React, TypeScript, PWA and platform code checks into `.frontend-review/report.md`. TRIGGER WHEN: asking for a complete frontend review, UI/UX design plus code audit, or pre-release frontend pass. DO NOT TRIGGER WHEN: React-only or TypeScript-only audit (use /daodan:check-health), PWA-only (use /pwa-expert:pwa-audit), or non-UI code review (use /daodan:review-changes).",
             "file": "commands/review-frontend.md",
             "name": "frontend-review:review-frontend"
           }
@@ -1281,7 +1281,7 @@
       "pwa-expert": {
         "agents": [
           {
-            "description": "Designs and hardens a whole shippable web app across Chromium, iOS WebKit and Firefox, trading capability for reach. TRIGGER WHEN: building, auditing or scaffolding a PWA end to end, or wiring manifest, service worker, Web Push, install flow and store distribution together. DO NOT TRIGGER WHEN: React performance (use react-development:review-react), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).",
+            "description": "Designs and hardens a whole shippable web app across Chromium, iOS WebKit and Firefox, trading capability for reach. TRIGGER WHEN: building, auditing or scaffolding a PWA end to end, or wiring manifest, service worker, Web Push, install flow and store distribution together. DO NOT TRIGGER WHEN: React performance (use react-development:react-best-practices), non-PWA platform security (use platform-engineering), or Tauri and Electron shells (use tauri-development).",
             "file": "agents/pwa-architect.md",
             "id": "pwa-expert:pwa-architect",
             "permissions": [
@@ -1358,7 +1358,7 @@
         "root": "plugins/pwa-expert",
         "skills": [
           {
-            "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:review-react), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
+            "description": "Progressive Web App architecture, service workers, offline storage, Web Push and cross-engine compatibility. TRIGGER WHEN: building or auditing PWAs: Web App Manifest, service workers, Workbox, Serwist, vite-plugin-pwa, Web Push/VAPID, OPFS, Background Sync, Project Fugu, TWA or Capacitor. DO NOT TRIGGER WHEN: React render performance (use react-development:react-best-practices), general platform security (use platform-engineering), or Tauri/Electron shells (use tauri-development).",
             "file": "skills/pwa-development/SKILL.md",
             "id": "pwa-expert:pwa-development",
             "name": "pwa-development"
@@ -1772,7 +1772,7 @@
       "system-utils": {
         "commands": [
           {
-            "description": "Propose a plan first, then move or delete only what the user confirms, batch by batch. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies. DO NOT TRIGGER WHEN: the task is about code refactoring (use /clean-code:clean-code or /python-development:python-refactor).",
+            "description": "Propose a plan first, then move or delete only what the user confirms, batch by batch. TRIGGER WHEN: organizing messy folders (Downloads, Desktop, Documents), finding duplicate files, cleaning up directories, or restructuring file hierarchies. DO NOT TRIGGER WHEN: the task is about code refactoring (use /daodan:refactor-code).",
             "file": "commands/organize-files.md",
             "name": "system-utils:organize-files"
           }
@@ -2062,5 +2062,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "3.4.0"
+  "version": "3.4.1"
 }
