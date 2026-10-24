@@ -1,5 +1,5 @@
 ---
-name: presentation-design
+name: pptx
 description: >
   Coordinate presentation art direction, editable construction and independent
   rendered review through creative specialists. TRIGGER WHEN: creating,
@@ -7,25 +7,34 @@ description: >
   DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.
 ---
 
-<daodan_host_binding host="claude">
+> `<plugin-root>` names the directory that holds this plugin's `.codex-plugin/plugin.json`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
+
+<daodan_host_binding host="codex">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
 tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Claude binding: repository tools are Read/Glob/Grep and Write/Edit; shell execution
-uses Bash and network fetch uses WebFetch. Pass the executable string in Bash's
-command field, and use its registered timeout/background schema. Worker dispatch
-uses the available native Agent mechanism and its registered agent-selection and
-prompt fields. Do not turn a prose role label into an invented role argument.
-Inherit the session model unless the declared workflow and active schema permit an
-override. Load installed skills by qualified ID; named roles use their owning
-plugin's agent identity, while workflow entries use /<plugin>:<workflow>.
-Required foreign providers use Claude's marketplace/install commands:
-claude plugin marketplace add <source>, then claude plugin install <provider>@<marketplace>.
-A declared package MCP server is configured through the generated MCP manifest;
-still check its tools are actually available in the active session.
+Codex binding: the adapter binds repository read to read_file, writes to
+apply_patch and shell execution to shell; use the equivalent registered tools of
+the active Codex runtime and their actual fields. In particular, a shell example's
+command, timeout and background fields are not automatically another runtime's
+cmd, yield_time_ms or session controls.
+Start the runtime's available isolated subagent mechanism with the complete
+rendered role body in its task prompt. Role Markdown and generated dispatch bodies
+are resources, not registered skills or a native role/subagent_type parameter.
+Use only declared role bindings and report an unavailable isolation mechanism.
+Load installed skills by their advertised exact IDs; workflow skills carry the
+<workflow>-workflow suffix. Named-agent examples do not override inline delivery.
+Required foreign providers use Codex's marketplace/install commands:
+codex plugin marketplace add <source>, then codex plugin add <provider>@<marketplace>.
+Register plugin-declared MCP servers through the active host's MCP configuration
+using the generated server command. Do not assume registration makes every tool
+available to a restricted worker.
+Inherit the active session's model and default variant. A source model alias such
+as sonnet is not a portable override; request a different model only through an
+explicit adapter mapping to a valid host identity and user authorization.
 
 The executing agent and its coordinator own continuation, recovery, verification
 and delivery. Skills supply knowledge and method instructions; they are not
@@ -118,7 +127,7 @@ candidates are shown and chosen after that round, as `office:design` describes.
 For a deck with more than a few slides, or whenever direction is genuinely
 uncertain, prepare the plan and show a preview before construction: compile the
 plan JSON in `references/design-preview.md`, render it with
-`python "${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/scripts/design_preview.py"`,
+`python "<plugin-root>/skills/pptx/scripts/design_preview.py"`,
 and let the user confirm the slide sequence under the direction already chosen
 at intake. A separate style
 proof costs image generations and needs the user's explicit budget decision and

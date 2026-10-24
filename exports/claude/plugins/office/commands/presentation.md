@@ -120,8 +120,8 @@ Handle the presentation task requested in: $ARGUMENTS
 
 Load `office:intake` first. Resolve the starting point, carry-over, depth of
 change and deliverable in its single round of questions, together with the
-presentation questions of `office:presentation-design`. Then follow
-`office:presentation-design` for the route, specialist delivery and image-tool
+presentation questions of `office:pptx`. Then follow
+`office:pptx` for the route, specialist delivery and image-tool
 contract.
 
 On the substantial route, read its `references/pptx-compatibility.md`,

@@ -291,7 +291,7 @@ class FontContractTests(unittest.TestCase):
                 self.assertIn("claim embedding without the inspection result", typography.replace("do not ", ""))
                 directions = _text(root / "design/references/directions.md")
                 self.assertRegex(directions, r"\| \*\*A Executive Boardroom\*\* \|.*\| 1: Inter / Inter \|")
-                for method in ("presentation-design/SKILL.md", "docx/SKILL.md"):
+                for method in ("pptx/SKILL.md", "docx/SKILL.md"):
                     self.assertIn("font_embed.py", _text(root / method))
                     self.assertIn("font pairing", _text(root / method))
 

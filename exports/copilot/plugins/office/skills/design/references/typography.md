@@ -89,7 +89,7 @@ Attribution and retained licenses: agentit-upstream.md in this directory. -->
 Make text serve reading, hierarchy and the actual medium. Pair with
 `editorial-design.md` for reading architecture. Define typography within the
 existing document brief or presentation design report; `office:docx` and
-`office:presentation-design` retain editable-file production and verification.
+`office:pptx` retain editable-file production and verification.
 This method is not a brand redesign, copy rewrite or extra production engine.
 
 ## Establish constraints
@@ -146,7 +146,7 @@ scrolling or hover to expose clipped content. A DOCX reading on a smaller screen
 does not imply the fixed page will reflow like a responsive website.
 
 Respect the native-object and target-renderer rules in
-`${PLUGIN_ROOT}/skills/presentation-design/references/pptx-compatibility.md`
+`${PLUGIN_ROOT}/skills/pptx/references/pptx-compatibility.md`
 for PPTX. Use `office:docx` for actual field updates, pagination and source
 preservation. Do not substitute a browser proof for the saved artifact render.
 

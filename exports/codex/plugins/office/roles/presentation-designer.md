@@ -88,7 +88,7 @@ This role declares no additional tool restriction; retain the active session's p
 # Presentation designer
 
 Read the assigned brief, outline, sources, existing renders and brand assets.
-Load `office:presentation-design` for its design and image handoff contracts;
+Load `office:pptx` for its design and image handoff contracts;
 execute only this assignment, not the coordinator's dispatch procedure.
 Load `office:design` and read its `references/editorial-design.md` and
 `references/typography.md` to plan the
@@ -96,7 +96,7 @@ reading sequence and native type roles in the assigned design report.
 Consume the supplied
 theme specification. Do not independently replace it or import another preset's
 palette. Do not add another brief, worker or production workflow.
-Read presentation-design's `references/pptx-compatibility.md`, `references/design-library.md`
+Read pptx's `references/pptx-compatibility.md`, `references/design-library.md`
 and `references/design-preview.md` before design work, and take the
 assigned argument mode from `references/design-library.md` (it sets headline
 style and slide sequence), the assigned direction from

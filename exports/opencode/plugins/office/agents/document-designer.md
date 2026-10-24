@@ -116,7 +116,7 @@ For each visual asset, choose supplied/reused, searched, or harness-generated/
 edited imagery to suit the brief and shared theme. Return source-linked asset
 requests with that route, subject, crop, aspect ratio, placement and alternative
 text; include prompt intent and references when generation/editing is chosen under
-`<plugin-root>/skills/presentation-design/references/image-tools.md`.
+`<plugin-root>/skills/pptx/references/image-tools.md`.
 The coordinator owns the request and follows that contract's exposed-tool or
 supported parent-harness handoff. Keep accepted wording and
 facts intact; do not use invented quotes, values or citations as design filler.

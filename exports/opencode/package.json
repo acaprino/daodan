@@ -1165,9 +1165,9 @@
           },
           {
             "description": "Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.",
-            "file": "skills/presentation-design/SKILL.md",
-            "id": "office:presentation-design",
-            "name": "presentation-design"
+            "file": "skills/pptx/SKILL.md",
+            "id": "office:pptx",
+            "name": "pptx"
           },
           {
             "description": "Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. Targeted edits and PDF export use office:deckcraft. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation.",
@@ -2062,5 +2062,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "3.2.0"
+  "version": "3.3.0"
 }

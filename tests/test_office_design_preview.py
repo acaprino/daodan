@@ -17,7 +17,7 @@ REPO_ROOT = next(
     parent for parent in Path(__file__).resolve().parents
     if (parent / "scripts/daodan").is_dir()
 )
-PRESENTATION = REPO_ROOT / "plugins/office/skills/presentation-design"
+PRESENTATION = REPO_ROOT / "plugins/office/skills/pptx"
 SCRIPT = PRESENTATION / "scripts/design_preview.py"
 LAYOUT_PATTERNS = PRESENTATION / "references/layout-patterns.md"
 VISUAL_DIRECTIONS = PRESENTATION.parent / "design/references/directions.md"

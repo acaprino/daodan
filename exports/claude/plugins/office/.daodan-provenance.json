@@ -1,6 +1,6 @@
 {
   "adapterVersion": "1.0.0",
-  "coreDigest": "sha256:23f2bbd1adeed1c5c257e1a90b0a6bd257f9cfbe73f43d232bf0229b79218b8a",
+  "coreDigest": "sha256:e7ce8fdd3a67365afc94f70aa8f0bc7d363ee9ab509fde7107260880e8fe69ff",
   "harnessStrategies": {
     "document": "serial-isolated",
     "presentation": "serial-isolated",
@@ -9,5 +9,5 @@
   "host": "claude",
   "overrides": [],
   "plugin": "office",
-  "version": "2.2.0"
+  "version": "2.3.0"
 }

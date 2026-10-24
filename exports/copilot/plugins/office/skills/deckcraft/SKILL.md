@@ -99,11 +99,11 @@ rendering and PDF export. It complements
 Read `references/runtime.md` before discovery or the first operation. Office
 ships transport and read-only inspection helpers, not the engine or an MCP server.
 
-The presentation coordinator loads `office:presentation-design` for creative
+The presentation coordinator loads `office:pptx` for creative
 decisions, specialist review and image-tool ownership. When invoked by it, return
 operation evidence without starting another coordinator or specialist team.
-Read `${PLUGIN_ROOT}/skills/presentation-design/references/pptx-compatibility.md`
-and `${PLUGIN_ROOT}/skills/presentation-design/references/design-library.md`
+Read `${PLUGIN_ROOT}/skills/pptx/references/pptx-compatibility.md`
+and `${PLUGIN_ROOT}/skills/pptx/references/design-library.md`
 before design or native construction, including direct use. Bind accepted object
 geometry, font choices and native editability to actual supported commands.
 For a narrow edit/export, preserve the existing design and apply only the relevant
@@ -183,7 +183,7 @@ rich-text edit. Chart data edits can detach an embedded workbook and drop a
 secondary axis; verify and preserve those requirements before writing. Discover
 supported commands instead of inventing an OOXML-preservation promise.
 
-Generated or edited imagery must follow `office:presentation-design`'s harness
+Generated or edited imagery must follow `office:pptx`'s harness
 tool contract. Existing approved assets do not require generation. Do not replace
 editable content with a whole-slide raster image.
 

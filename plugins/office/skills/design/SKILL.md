@@ -20,7 +20,7 @@ references/theme-factory-upstream.md for attribution and retained licenses. -->
 
 Decide how a file looks once, for the whole file, and hand the format method a
 complete record it can build and review against. This skill adds no worker and
-no engine: `office:presentation-design` and `office:docx` own construction,
+no engine: `office:pptx` and `office:docx` own construction,
 rendering and review; the format designer roles write their reports under the
 direction and palette recorded here.
 
@@ -114,7 +114,7 @@ the brief changes its purpose.
 4. Set the type roles with `references/typography.md`: the fewest roles that
    show the structure, sizes in points, weights, spacing and reading measure,
    mapped to the direction's pairing. Numeric scales live with the format:
-   `office:presentation-design`'s `design-library.md` for the 16:9 canvas,
+   `office:pptx`'s `design-library.md` for the 16:9 canvas,
    `office:docx`'s `document-design.md` for the page.
 5. Install the pairing's faces before construction (below) and record which
    faces were installed, which fell back and why.

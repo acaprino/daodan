@@ -135,7 +135,7 @@ class EditorialDesignContractTests(unittest.TestCase):
 
     def test_presentation_and_word_methods_load_the_local_pair(self):
         for host, package in self.packages.items():
-            for relative in ("skills/presentation-design/SKILL.md", "skills/docx/SKILL.md"):
+            for relative in ("skills/pptx/SKILL.md", "skills/docx/SKILL.md"):
                 with self.subTest(host=host, method=relative):
                     self.assert_skill_loads(_read(package / relative))
             with self.subTest(host=host, method="document entry"):
@@ -149,7 +149,7 @@ class EditorialDesignContractTests(unittest.TestCase):
                 with self.subTest(host=host, role=role):
                     body = _read(package / ROLE_PATHS[host].format(role=role))
                     self.assert_skill_loads(body)
-                    self.assertIn("office:presentation-design", body)
+                    self.assertIn("office:pptx", body)
 
     def test_pair_references_resolve_without_an_upstream_checkout(self):
         editorial = _read(OFFICE / "skills/design/references/editorial-design.md")
@@ -205,10 +205,10 @@ class EditorialDesignContractTests(unittest.TestCase):
                 self.assertIn("image-tools.md", docx)
                 self.assertRegex(docx, r"(?i)native.*(?:style|paragraph)")
                 self.assertRegex(docx, r"(?i)render.*saved DOCX")
-                presentation = _read(package / "skills/presentation-design/SKILL.md")
+                presentation = _read(package / "skills/pptx/SKILL.md")
                 self.assertIn("pptx-compatibility.md", presentation)
                 self.assertIn("references/image-tools.md", presentation)
-                self.assertTrue((package / "skills/presentation-design/references/image-tools.md").is_file())
+                self.assertTrue((package / "skills/pptx/references/image-tools.md").is_file())
 
     def test_one_direction_and_an_ad_hoc_palette_replace_theme_presets(self):
         self.assertFalse((OFFICE / "skills/theme-factory").exists())
@@ -225,7 +225,7 @@ class EditorialDesignContractTests(unittest.TestCase):
                                "font_fetch.py\" install", "font_embed.py\" embed", "brand or template always wins"):
                     self.assertIn(phrase, skill)
                 self.assertNotIn("office:theme-factory", skill)
-                for relative in ("skills/docx/SKILL.md", "skills/presentation-design/SKILL.md",
+                for relative in ("skills/docx/SKILL.md", "skills/pptx/SKILL.md",
                                  "skills/slidepoise/SKILL.md", "skills/deckcraft/SKILL.md", "skills/wordcraft/SKILL.md"):
                     text = _read(package / relative)
                     self.assertIn("`office:design`", text)

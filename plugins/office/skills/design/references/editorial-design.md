@@ -8,7 +8,7 @@ See agentit-upstream.md for attribution, licenses and sync boundaries. -->
 Design how a reader enters, navigates and retains a story. Own the editorial
 concept, hierarchy, sequence and reading furniture. Pair with `typography.md`
 for typography and spatial decisions.
-`office:docx` owns native Word production; `office:presentation-design` coordinates
+`office:docx` owns native Word production; `office:pptx` coordinates
 PPTX production through the selected engine. This skill adds no worker or engine.
 
 ## Inputs and boundary
@@ -59,12 +59,12 @@ silently.
 
 Do not build a website and assume conversion preserves its layout pixel for pixel.
 For PPTX, read
-`${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/references/pptx-compatibility.md`
+`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/pptx-compatibility.md`
 and honor its editability and target-application evidence rules. For DOCX, prefer
 native flow and styles over floating text boxes used to imitate a screenshot.
 
 For generated or edited imagery, the shared image contract is
-`${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/references/image-tools.md`;
+`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/image-tools.md`;
 this method only returns image intent, reference assets, crop and placement to
 the production owner.
 

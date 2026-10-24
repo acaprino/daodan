@@ -98,11 +98,11 @@ the first presentation. Daodan installation alone does not install that runtime.
 
 ## Establish the outcome
 
-For the complete coordinated workflow, load `office:presentation-design` for
+For the complete coordinated workflow, load `office:pptx` for
 creative specialist delivery and the harness image contract. When called by its
 coordinator, consume the accepted design report and return construction evidence;
 do not start a second coordinator or duplicate specialist dispatch.
-Read `<plugin-root>/skills/presentation-design/references/pptx-compatibility.md`
+Read `<plugin-root>/skills/pptx/references/pptx-compatibility.md`
 before visual planning, including when this skill is used directly. Carry the
 fixed canvas, font choices and native-object specification into the upstream
 planning context and compiled image request. Check reference designs can be
@@ -170,7 +170,7 @@ semantic mapping, measured reconstruction, assembly and final inspection.
   typography and color system while allowing slide layouts to vary.
 - Generate from the runtime's compiled request using the image-generation tool
   actually exposed by the active harness. Preserve prompt and reference ordering
-  and follow `office:presentation-design`'s image handoff contract. The coordinator
+  and follow `office:pptx`'s image handoff contract. The coordinator
   performs the call; a worker without that tool returns the request to it.
   Missing access blocks the dependent image step. External API scripts, image
   CLIs and manual exchange require the user's explicit choice, never automatic

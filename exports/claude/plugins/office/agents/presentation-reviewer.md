@@ -81,7 +81,7 @@ Read the brief, allowed changes, design report and candidate identity. On a
 read-only review the deck under review is the unchanged source: apply the same
 identity, render and coverage checks to it, judge it against the brief, and skip
 preservation deltas and the design-report comparison that do not exist. Load
-`office:presentation-design` for its completion contract; execute only
+`office:pptx` for its completion contract; execute only
 this assignment, not its coordinator dispatch procedure.
 Load `office:design` and read its `references/editorial-design.md` and
 `references/typography.md` to assess the

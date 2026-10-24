@@ -92,7 +92,7 @@ class DocumentDesignContractTests(unittest.TestCase):
         self.assertNotIn(ROLE, components.skills)
         self.assertNotIn(ROLE, components.workflows)
         self.assertIn("docx", components.skills)
-        self.assertIn("presentation-design", components.skills)
+        self.assertIn("pptx", components.skills)
         self.assertFalse(self.plugin.mcp_servers)
 
     def test_word_dispatch_is_isolated_and_only_owns_its_designer_and_reviewer(self):
@@ -217,7 +217,7 @@ class DocumentDesignContractTests(unittest.TestCase):
             with self.subTest(host=host):
                 design = _normalized(_read(package / "skills/design/SKILL.md"))
                 self.assertIn("share one direction, one palette and one pairing", design)
-                for relative in ("skills/docx/SKILL.md", "skills/presentation-design/SKILL.md"):
+                for relative in ("skills/docx/SKILL.md", "skills/pptx/SKILL.md"):
                     method = _normalized(_read(package / relative))
                     self.assertIn("`office:design`", method)
                     self.assertIn("both format designers consume the same record", method)

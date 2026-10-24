@@ -217,7 +217,7 @@ and fields when the selected engine supports them; do not present static typed
 numbers as automatically maintained cross-references or a table of contents.
 
 For generated or edited imagery, follow the shared image contract in
-`${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/references/image-tools.md`:
+`${CLAUDE_PLUGIN_ROOT}/skills/pptx/references/image-tools.md`:
 it names who calls the harness image tool, the parent-harness handoff when this
 coordinator lacks it, provenance and verification of the returned asset, and
 what a missing tool blocks. The document coordinator is the image requester;

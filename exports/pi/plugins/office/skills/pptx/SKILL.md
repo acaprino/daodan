@@ -1,5 +1,5 @@
 ---
-name: presentation-design
+name: pptx
 description: >
   Coordinate presentation art direction, editable construction and independent
   rendered review through creative specialists. TRIGGER WHEN: creating,
@@ -7,39 +7,35 @@ description: >
   DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.
 ---
 
-> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
+> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/` and `prompts/`. Resolve it once from where this file was loaded, then substitute it into every path below that starts with it.
 
-<daodan_host_binding host="copilot">
+<daodan_host_binding host="pi">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
 tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-Copilot binding: repository reads use search, writes use edit, shell execution uses
-runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
-agent dispatch uses the agent allowlist alias; the current CLI documents a task
-dispatch tool. Call the mechanism actually registered in this session, not an
-allowlist alias assumed to be a callable tool.
-Use each registered tool's input fields; Claude's subagent_type, role and
-run_in_background fields are not a portable dispatch schema. Dispatch only the
-custom agent named by the generated owner-qualified binding and agents allowlist.
-An omitted tools restriction retains host defaults; an explicit list constrains
-the worker and does not grant omitted shell, write or MCP tools.
-Skills use their exact installed registry identity; workflows are prompt entries.
-A dispatched workflow also has its generated <workflow>-coordinator custom agent.
-Required foreign providers use Copilot's marketplace/install commands:
-copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
-Register plugin-declared MCP server commands in this host's MCP configuration as
-the generated note directs. Registration and a dependency declaration alone do
-not demonstrate that browser/server tools are callable by the selected worker.
+Pi binding: repository reads use read/find/grep, writes use edit/write, and shell
+execution uses bash or the registered powershell alternative. Use their actual
+command, timeout and process-control schema rather than capitalized foreign tools.
+Core Pi supplies neither subagent nor MCP. Isolated workers require pi-subagents:
+pi install npm:pi-subagents. Use that extension's registered subagent schema and
+pass the full rendered role body inline. Role skills named <plugin>-<role> are
+body resources with automatic invocation disabled, not a built-in named agent.
+Workflow prompt entries use /<plugin>-<workflow>; ordinary skills use their exact
+registered names. If isolation is mandatory and unavailable, stop the phase.
+MCP requires pi-mcp-adapter: pi install npm:pi-mcp-adapter, then register the
+generated server command in its supported MCP configuration.
+Keep the selected package's full local dependency closure. Provision qualified
+foreign providers as skills/resources this runtime can load; Pi does not install
+another host's marketplace plugin from a Claude install command.
 Inherit the active session's model and default variant. A source model alias such
 as sonnet is not a portable override; request a different model only through an
 explicit adapter mapping to a valid host identity and user authorization.
-Coordinator MCP allowances use <declared-server>/* for only the package's named
-servers. This requires actual server registration and tool discovery; it grants
-no undeclared server and does not prove MCP is callable in an installed run.
-Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
+Kernel <owner>:<skill> references identify the logical provider. Ordinary Pi
+skills retain their source frontmatter name, so resolve the actual registered name
+and provider path from the active inventory; do not invent a prefixed native ID.
 
 The executing agent and its coordinator own continuation, recovery, verification
 and delivery. Skills supply knowledge and method instructions; they are not
@@ -132,7 +128,7 @@ candidates are shown and chosen after that round, as `office:design` describes.
 For a deck with more than a few slides, or whenever direction is genuinely
 uncertain, prepare the plan and show a preview before construction: compile the
 plan JSON in `references/design-preview.md`, render it with
-`python "${PLUGIN_ROOT}/skills/presentation-design/scripts/design_preview.py"`,
+`python "<plugin-root>/skills/pptx/scripts/design_preview.py"`,
 and let the user confirm the slide sequence under the direction already chosen
 at intake. A separate style
 proof costs image generations and needs the user's explicit budget decision and

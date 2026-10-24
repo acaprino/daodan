@@ -184,7 +184,7 @@ external design provider. Actual
 image generation must use the exposed harness tool in a context that can call it.
 Role dispatch, image access and a visual reader need separate runtime checks.
 Every selected creative provider receives the fixed-canvas and native-object
-requirements from Office's [PPTX compatibility contract](../plugins/office/skills/presentation-design/references/pptx-compatibility.md).
+requirements from Office's [PPTX compatibility contract](../plugins/office/skills/pptx/references/pptx-compatibility.md).
 Selected-engine previews do not establish fidelity in Microsoft PowerPoint;
 that claim requires actual target-application rendering evidence.
 For example, an explicit tool allowlist can exclude an image tool even when it

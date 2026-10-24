@@ -1,5 +1,5 @@
 ---
-name: presentation-design
+name: pptx
 description: >
   Coordinate presentation art direction, editable construction and independent
   rendered review through creative specialists. TRIGGER WHEN: creating,
@@ -7,35 +7,39 @@ description: >
   DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image.
 ---
 
-> `<plugin-root>` names this plugin's directory inside the installed package, the one that holds its `skills/`, `agents/` and `commands/`. The loader substitutes it in every body it registers; in any other file, resolve it once from where that file was loaded.
+> `${PLUGIN_ROOT}` is this plugin's install directory, the one that holds its `plugin.json`. If the host has not expanded it, resolve it from where this file was loaded.
 
-<daodan_host_binding host="opencode">
+<daodan_host_binding host="copilot">
 This binding governs execution of this package and its loaded references. It takes
 precedence over executable examples written for another host. Use only registered
 tools and their actual input schema; an example never creates a tool, argument,
 permission, model alias or nested worker capability. Preserve the generated worker
 allowlist, dependency closure, scope and delivery contracts.
 
-OpenCode V2 binding: repository reads use read/glob/grep, writes use write/edit/patch,
-shell execution uses shell, network tools are webfetch/websearch, and clarification
-uses the registered question tool. shell takes command, optional workdir, timeout
-in milliseconds and background. It does not provide interactive stdin. Persistent
-capture uses background: true and an explicit noninteractive stop signal.
-Load skills with skill using id: "<plugin>:<skill>". Dispatch registered roles with
-subagent using agent: "<owner>:<role>", description and prompt; optional sessionID
-continues that child, and background: true requests asynchronous completion.
-Use only roles allowed by the current harness and permissions. A child cannot
-dispatch nested workers when its permissions or the configured depth deny it.
-Workflow entries are /<plugin>:<workflow>, registered by the package loader.
-Inherit the session model; an override requires its authorized, actually available
-provider/model identity, not another host's short model alias.
-The loader includes required local providers and registers plugin-declared MCP
-servers. Qualified foreign providers need a compatible V2 plugin/skill provisioned
-through this host, never a Claude marketplace command. Check the active registry:
-registration metadata alone does not prove a connected server or usable tool.
+Copilot binding: repository reads use search, writes use edit, shell execution uses
+runCommands and network fetch uses fetch in the adapter's tool allowlist. Custom
+agent dispatch uses the agent allowlist alias; the current CLI documents a task
+dispatch tool. Call the mechanism actually registered in this session, not an
+allowlist alias assumed to be a callable tool.
+Use each registered tool's input fields; Claude's subagent_type, role and
+run_in_background fields are not a portable dispatch schema. Dispatch only the
+custom agent named by the generated owner-qualified binding and agents allowlist.
+An omitted tools restriction retains host defaults; an explicit list constrains
+the worker and does not grant omitted shell, write or MCP tools.
+Skills use their exact installed registry identity; workflows are prompt entries.
+A dispatched workflow also has its generated <workflow>-coordinator custom agent.
+Required foreign providers use Copilot's marketplace/install commands:
+copilot plugin marketplace add <source>, then copilot plugin install <provider>@<marketplace>.
+Register plugin-declared MCP server commands in this host's MCP configuration as
+the generated note directs. Registration and a dependency declaration alone do
+not demonstrate that browser/server tools are callable by the selected worker.
 Inherit the active session's model and default variant. A source model alias such
 as sonnet is not a portable override; request a different model only through an
 explicit adapter mapping to a valid host identity and user authorization.
+Coordinator MCP allowances use <declared-server>/* for only the package's named
+servers. This requires actual server registration and tool discovery; it grants
+no undeclared server and does not prove MCP is callable in an installed run.
+Schema reference: https://docs.github.com/en/copilot/reference/custom-agents-configuration
 
 The executing agent and its coordinator own continuation, recovery, verification
 and delivery. Skills supply knowledge and method instructions; they are not
@@ -128,7 +132,7 @@ candidates are shown and chosen after that round, as `office:design` describes.
 For a deck with more than a few slides, or whenever direction is genuinely
 uncertain, prepare the plan and show a preview before construction: compile the
 plan JSON in `references/design-preview.md`, render it with
-`python "<plugin-root>/skills/presentation-design/scripts/design_preview.py"`,
+`python "${PLUGIN_ROOT}/skills/pptx/scripts/design_preview.py"`,
 and let the user confirm the slide sequence under the direction already chosen
 at intake. A separate style
 proof costs image generations and needs the user's explicit budget decision and

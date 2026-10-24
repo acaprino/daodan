@@ -28,7 +28,7 @@ from host_binding_assertions import loaded_instruction_text
 OFFICE = REPO_ROOT / "plugins/office"
 ADAPTERS = REPO_ROOT / "adapters"
 WORKFLOWS = ("presentation", "document", "workbook")
-FORMAT_METHODS = ("presentation-design", "docx", "xlsx")
+FORMAT_METHODS = ("pptx", "docx", "xlsx")
 ROUTES = ("Substantial", "Narrow", "Read-only")
 
 
@@ -110,7 +110,7 @@ class OfficeIntakeTests(unittest.TestCase):
     def test_presentation_reviewer_accepts_an_unchanged_source_deck(self):
         text = _normalized(_read(OFFICE / "roles/presentation-reviewer.md"))
         self.assertIn("On a read-only review the deck under review is the unchanged source", text)
-        method = _normalized(_read(OFFICE / "skills/presentation-design/SKILL.md"))
+        method = _normalized(_read(OFFICE / "skills/pptx/SKILL.md"))
         self.assertIn("on the read-only route after rendering the unchanged source", method)
 
 

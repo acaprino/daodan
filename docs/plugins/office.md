@@ -7,7 +7,7 @@ and explicit workflow entries:
 | Task | Skill | Workflow |
 |---|---|---|
 | Resolve where the work starts, how much it changes and what is delivered | `office:intake` | First step of all three workflows |
-| Design a deck or reusable presentation | `office:presentation-design`, `office:slidepoise` | `office:presentation` |
+| Design a deck or reusable presentation | `office:pptx`, `office:slidepoise` | `office:presentation` |
 | Edit, review, preview or export PPTX to PDF | `office:deckcraft` | `office:presentation` |
 | Create, inspect, analyze or edit XLSX | `office:xlsx` | `office:workbook` |
 | Create, read, review or edit DOCX | `office:docx`, `office:wordcraft` for native production | `office:document` |
@@ -138,7 +138,7 @@ tasks preserve their scope without a new design assignment.
 
 | Designer | Concrete output | Layout reference |
 |---|---|---|
-| `office:presentation-designer` | Per-slide wireframe, exact native object geometry, content placement, image requests and template replacement rules | [Layout patterns](../../plugins/office/skills/presentation-design/references/layout-patterns.md) with their region sketches, specified under the single slide-object schema of [pptx-compatibility](../../plugins/office/skills/presentation-design/references/pptx-compatibility.md) |
+| `office:presentation-designer` | Per-slide wireframe, exact native object geometry, content placement, image requests and template replacement rules | [Layout patterns](../../plugins/office/skills/pptx/references/layout-patterns.md) with their region sketches, specified under the single slide-object schema of [pptx-compatibility](../../plugins/office/skills/pptx/references/pptx-compatibility.md) |
 | `office:document-designer` | Page-type wireframes, covers, sections/columns, native style map, table and figure treatment, headers/footers, pagination and content-growth rules | [Word design guidance](../../plugins/office/skills/docx/references/document-design.md), with document recipes, four opening patterns and three table treatments |
 
 The region sketches in the layout patterns are adapted from PPT Visual (MIT,
@@ -172,9 +172,9 @@ of twelve Google Fonts pairings supplies the type, the editorial and typography
 references supply hierarchy and type roles, the
 [visual directions](../../plugins/office/skills/design/references/directions.md)
 (A to T) supply composition, rhythm and the pairing, and the
-[slide design library](../../plugins/office/skills/presentation-design/references/design-library.md)
+[slide design library](../../plugins/office/skills/pptx/references/design-library.md)
 supplies the canvas rules and routes to the
-[layout patterns](../../plugins/office/skills/presentation-design/references/layout-patterns.md)
+[layout patterns](../../plugins/office/skills/pptx/references/layout-patterns.md)
 (1 to 18, by communication job). Five argument modes (pyramid, narrative,
 instructional, showcase, briefing) decide how the file argues. One mode, one
 direction, one palette and one pattern per slide cover hundreds of combinations
@@ -306,14 +306,14 @@ preview to look at before construction: a wireframe page with one 16:9 frame per
 planned slide, the chosen palette and the slide sequence. It is a review artifact
 (`preview only`), not a rendered deck. To compare candidate directions without
 touching the plan, run the same plan once per direction with `--direction L` (see
-the [design preview reference](../../plugins/office/skills/presentation-design/references/design-preview.md)).
+the [design preview reference](../../plugins/office/skills/pptx/references/design-preview.md)).
 A separate style proof (one representative
 slide generated through the harness image tool) is optional and needs an explicit
 image-budget decision.
 
 ```text
-python "<plugin>/skills/presentation-design/scripts/design_preview.py" --plan plan.json --out preview.html
-python "<plugin>/skills/presentation-design/scripts/design_preview.py" --plan plan.json --view
+python "<plugin>/skills/pptx/scripts/design_preview.py" --plan plan.json --out preview.html
+python "<plugin>/skills/pptx/scripts/design_preview.py" --plan plan.json --view
 ```
 
 | Host | PowerPoint | Excel | Word |
@@ -413,7 +413,7 @@ advisory or deck-level, and only blocking findings prevent a pass. The coordinat
 owns deck writes and repairs, fixes deck-level defects at their source and stops
 after three review rounds, delivering any remaining blocking findings as open.
 
-All creative guidance follows the [PPTX compatibility contract](../../plugins/office/skills/presentation-design/references/pptx-compatibility.md)
+All creative guidance follows the [PPTX compatibility contract](../../plugins/office/skills/pptx/references/pptx-compatibility.md)
 before reference-image generation. The coordinator establishes a fixed slide
 canvas, fonts, target application and engine-supported native objects. The
 designer specifies object positions and sizes, typography, stacking, native/image
@@ -537,7 +537,7 @@ with inspiration provenance.
 Generated by `python scripts/sync_plugin_docs.py`. Edit the kernel and regenerate
 this block; keep explanations above it. `--check` detects stale references.
 
-**Version:** `2.2.0`. **Source:** [plugin.toml](<../../plugins/office/plugin.toml>).
+**Version:** `2.3.0`. **Source:** [plugin.toml](<../../plugins/office/plugin.toml>).
 
 ### Required dependencies
 
@@ -568,7 +568,7 @@ The source links carry the complete instructions and accepted arguments.
 |---|---|---|---|
 | Skill | `office:intake` | Shared contextual interview for every Office workflow: resolve where the work starts, how much it changes and what is delivered, then pick the route the format method executes. TRIGGER WHEN: an Office presentation, document or workbook task begins. DO NOT TRIGGER WHEN: a format method is already executing a resolved route. | [intake](<../../plugins/office/skills/intake/SKILL.md>) |
 | Skill | `office:design` | Shared visual design method for Office documents and presentations: one direction for composition, rhythm and type; an ad hoc palette built from the user's colour source and chosen from candidates in the browser; the argument mode, editorial hierarchy, typography, and font fetching, installation and embedding. TRIGGER WHEN: an Office intake resolved the substantial route for a Word document or PowerPoint deck. DO NOT TRIGGER WHEN: the route is narrow or read-only, or the deliverable is a website, a workbook or a standalone image. | [design](<../../plugins/office/skills/design/SKILL.md>) |
-| Skill | `office:presentation-design` | Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image. | [presentation-design](<../../plugins/office/skills/presentation-design/SKILL.md>) |
+| Skill | `office:pptx` | Coordinate presentation art direction, editable construction and independent rendered review through creative specialists. TRIGGER WHEN: creating, redesigning or editing a PPTX, reusable presentation template or branded deck. DO NOT TRIGGER WHEN: the deliverable is a website or a standalone image. | [pptx](<../../plugins/office/skills/pptx/SKILL.md>) |
 | Skill | `office:slidepoise` | Create and revise professional, editable PowerPoint presentations through the external SlidePoise framework, with visual design, native reconstruction and rendered review. TRIGGER WHEN: the user asks for a PPTX, pitch deck, consulting presentation, branded slides, a presentation from research or a workbook, or SlidePoise. Targeted edits and PDF export use office:deckcraft. DO NOT TRIGGER WHEN: the requested deliverable is only an Excel workbook (use office:xlsx) or an image without an editable presentation. | [slidepoise](<../../plugins/office/skills/slidepoise/SKILL.md>) |
 | Skill | `office:deckcraft` | Create, inspect, edit, render and export PPTX through the external DeckCraft runtime, preserving sources and checking native-feature losses. TRIGGER WHEN: direct native PowerPoint construction, targeted PPTX changes, slide previews, printable PDF or DeckCraft. DO NOT TRIGGER WHEN: a new creative deck uses SlidePoise reconstruction or only a spreadsheet or document is requested. | [deckcraft](<../../plugins/office/skills/deckcraft/SKILL.md>) |
 | Skill | `office:wordcraft` | Create, edit, inspect, render and export real editable Word documents through the external WordCraft CLI or exposed MCP interface. TRIGGER WHEN: producing DOCX from an accepted design, native Word changes or WordCraft rendering/PDF. DO NOT TRIGGER WHEN: only a design brief or read-only package inspection is needed. | [wordcraft](<../../plugins/office/skills/wordcraft/SKILL.md>) |
