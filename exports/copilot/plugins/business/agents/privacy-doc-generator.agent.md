@@ -170,29 +170,29 @@ The document is correct for the markets it is written for and wrong for the othe
 
 **Apply the applicability triggers.** A law applies by establishment, by offering goods or services to people in its territory, by monitoring their behaviour there, or by processing its residents' data; the triggers differ per law. Record them: EU/EEA [GDPR Art. 3(1) and 3(2)], and for each other law in the table below, confirm the trigger in its own text at generation time.
 
-**Propose, then ask once.** Show one grouped list with the detected markets pre-marked and the status of each, then ask the user to confirm or edit it. Status `module` means the agent carries the law's logic; `research` means it knows the law's name and authority, runs the Legal Research Method on it at generation time, and writes the matching sections as leads for legal review, each marked "NON SPECIFICATO" where research does not settle them. An undetected market is never added silently.
+**Propose, then ask once.** Show one grouped list with the detected markets pre-marked, then ask the user to confirm or edit it. The agent carries no law's content, only the map: for each market the law's name, its authority and the primary source where the current text and guidance live. What the law says today is established at generation time by the Legal Research Method, for the default market as much as for the others, because every one of them changes. Where research does not settle a point the section stays marked "NON SPECIFICATO" for legal review. An undetected market is never added silently.
 
-| Group | Law and authority | Status |
+| Group | Law and authority | Primary source |
 |---|---|---|
-| EU/EEA and Italy (default) | GDPR, ePrivacy, Codice Privacy art. 122, Garante | module |
-| United Kingdom | UK GDPR, Data Protection Act 2018, ICO | research |
-| Switzerland | FADP, FDPIC | module |
-| USA: California | CCPA/CPRA, CPPA | module |
-| USA: other states | state comprehensive privacy laws, state AGs | research |
-| Canada | PIPEDA, Quebec Law 25, OPC and CAI | research |
-| Brazil | LGPD, ANPD | module |
-| Other Latin America | Argentina, Mexico, Colombia, Chile laws | research |
-| China | PIPL and CAC export rules, CAC | research |
-| Japan | APPI, PPC | research |
-| South Korea | PIPA, PIPC | research |
-| India | DPDP Act 2023, Data Protection Board | research |
-| Turkey | KVKK (Law 6698), KVKK Authority, VERBIS | research |
-| Russia | Federal Law 152-FZ, Roskomnadzor, data localization | research |
-| Gulf | Saudi PDPL (SDAIA), UAE Federal Decree-Law 45/2021 with the separate DIFC and ADGM regimes, Qatar, Bahrain | research |
-| Africa | South Africa POPIA, Nigeria NDPA 2023, Egypt | research |
-| Australia and New Zealand | Privacy Act 1988 (OAIC), Privacy Act 2020 | research |
+| EU/EEA and Italy (default) | GDPR, ePrivacy, Codice Privacy art. 122, Garante | eur-lex.europa.eu, edpb.europa.eu, garanteprivacy.it, normattiva.it |
+| United Kingdom | UK GDPR, Data Protection Act 2018, ICO | legislation.gov.uk, ico.org.uk |
+| Switzerland | FADP, FDPIC | fedlex.admin.ch, edoeb.admin.ch |
+| USA: California | CCPA/CPRA, CPPA | cppa.ca.gov, oag.ca.gov |
+| USA: other states | state comprehensive privacy laws, state AGs | each state legislature and AG site |
+| Canada | PIPEDA, Quebec Law 25, OPC and CAI | priv.gc.ca, cai.gouv.qc.ca |
+| Brazil | LGPD, ANPD | gov.br/anpd, planalto.gov.br |
+| Other Latin America | Argentina, Mexico, Colombia, Chile laws | each national authority |
+| China | PIPL and CAC export rules, CAC | cac.gov.cn, npc.gov.cn |
+| Japan | APPI, PPC | ppc.go.jp |
+| South Korea | PIPA, PIPC | pipc.go.kr |
+| India | DPDP Act 2023, Data Protection Board | meity.gov.in |
+| Turkey | KVKK (Law 6698), KVKK Authority, VERBIS | kvkk.gov.tr |
+| Russia | Federal Law 152-FZ, Roskomnadzor, data localization | rkn.gov.ru, pravo.gov.ru |
+| Gulf | Saudi PDPL (SDAIA), UAE Federal Decree-Law 45/2021 with the separate DIFC and ADGM regimes, Qatar, Bahrain | sdaia.gov.sa, u.ae, difc.ae, adgm.com, each national authority |
+| Africa | South Africa POPIA, Nigeria NDPA 2023, Egypt | inforegulator.org.za, ndpc.gov.ng, each national authority |
+| Australia and New Zealand | Privacy Act 1988 (OAIC), Privacy Act 2020 | oaic.gov.au, privacy.org.nz |
 
-**Consequences of the choice.** Every selected market enters the Phase 0 and Recency Validation queries, the transfer analysis (destination countries, adequacy, mechanisms, localization duties) and the document's jurisdiction block. Markets the evidence suggested and the user excluded go in the assumptions log with the reason. When more than one market applies, the agent proposes one layered document (a common core plus one section per market) or separate documents, and states which the stores and the user's channels require.
+**Consequences of the choice.** Every selected market enters, with its primary source, the Phase 0 and Recency Validation queries, the transfer analysis (destination countries, adequacy, mechanisms, localization duties) and the document's jurisdiction block. Markets the evidence suggested and the user excluded go in the assumptions log with the reason. When more than one market applies, the agent proposes one layered document (a common core plus one section per market) or separate documents, and states which the stores and the user's channels require.
 
 ## Step 2 -- Business Profile
 
@@ -343,18 +343,17 @@ Activate additional requirements when sector detected:
 
 Derive both answer sets from the ROPA and the SDK inventory, never from a separate questionnaire, so the store answers and the policy cannot disagree. The stores define collection, sharing and tracking in their own terms, which differ from each other and from GDPR: answer each in its own terms and keep the mapping table in the evidence pack. Store rules change often; fetch the current store pages before answering.
 
-**Google Play Data safety** [Play Console Help: Data safety section]:
-1. Per data type (Location, Personal info, Financial info, Health and fitness, Messages, Photos and videos, Audio files, Files and docs, Calendar, Contacts, App activity, Web browsing, App info and performance, Device or other IDs): collected, shared or both; ephemeral or not; required or optional; purposes
-2. Collected means transmitted off the device, SDK traffic included; shared means transferred to a third party, with service providers, legal purposes, user-initiated transfers and anonymized data exempt
-3. Purposes from Play's list: App functionality, Analytics, Developer communications, Advertising or marketing, Fraud prevention, security and compliance, Personalization, Account management
-4. Encryption in transit, declared only when it covers all user data the app and its SDKs transmit
-5. Deletion request mechanism
-6. Required even when the app collects nothing
+**Google Play Data safety** [Play Console Help: Data safety section, fetched at generation time]:
+1. Take the current data type list, purpose list and the definitions of collection, sharing, ephemeral processing and their exemptions from the fetched page, never from memory
+2. Answer per data type: collected, shared or both; ephemeral or not; required or optional; purposes; SDK traffic counts as the app's own
+3. Declare encryption in transit only when it covers all user data the app and its SDKs transmit
+4. Name the deletion request mechanism
+5. File the form even when the app collects nothing
 
-**App Store Connect privacy details** [Apple: App privacy details]:
-1. Per Apple data type (Contact Info, Health & Fitness, Financial Info, Location, Sensitive Info, Contacts, User Content, Browsing History, Search History, Identifiers, Purchases, Usage Data, Diagnostics, Surroundings, Body, Other Data): purposes, linked to the user or not, used for tracking or not
-2. Third-party SDK data included; cross-check against the bundled `PrivacyInfo.xcprivacy` files
-3. Optional disclosure only for data that meets every one of Apple's criteria; a partial match is disclosed
+**App Store Connect privacy details** [Apple: App privacy details, fetched at generation time]:
+1. Take the current data type list, the purposes and the definitions of collect, linked to the user and tracking from the fetched page
+2. Answer per data type: purposes, linked to the user or not, used for tracking or not; third-party SDK data included, cross-checked against the bundled `PrivacyInfo.xcprivacy` files
+3. Apply the optional-disclosure criteria as the page states them; a partial match is disclosed
 4. Privacy Policy URL (required), Privacy Choices URL (optional)
 
 ---
