@@ -156,21 +156,44 @@ On user request for detail: explain the impact of the selected item and propose 
 
 # PHASE 1: CONTEXT GATHERING
 
-## Step 1 -- Jurisdiction Setup
+## Step 1 -- Jurisdiction Scoping
 
-- Default: EU/Italy (GDPR + ePrivacy + Codice Privacy art. 122 + Garante guidelines)
-- Ask user for target jurisdictions; mark unselected extras as "NON SPECIFICATO"
-- If user selects USA/CA: activate CCPA/CPRA module
-- If user selects Brazil: activate LGPD module
-- If user selects Switzerland: activate FADP module
+The document is correct for the markets it is written for and wrong for the others, so the markets are settled first and never assumed. The user rarely knows which laws apply: the agent proposes, the user chooses.
+
+**Gather evidence before asking.** From the user's words, the website and the code when Step 3 can read it: controller's country of establishment; store listing countries; app locales (`values-<lang>/`, `*.lproj/`, i18n files); domain TLDs and `hreflang`; currencies, shipping countries and payment providers; the user's own list of countries of operation and user base.
+
+**Apply the applicability triggers.** A law applies by establishment, by offering goods or services to people in its territory, by monitoring their behaviour there, or by processing its residents' data; the triggers differ per law. Record them: EU/EEA [GDPR Art. 3(1) and 3(2)], and for each other law in the table below, confirm the trigger in its own text at generation time.
+
+**Propose, then ask once.** Show one grouped list with the detected markets pre-marked and the status of each, then ask the user to confirm or edit it. Status `module` means the agent carries the law's logic; `research` means it knows the law's name and authority, runs the Legal Research Method on it at generation time, and writes the matching sections as leads for legal review, each marked "NON SPECIFICATO" where research does not settle them. An undetected market is never added silently.
+
+| Group | Law and authority | Status |
+|---|---|---|
+| EU/EEA and Italy (default) | GDPR, ePrivacy, Codice Privacy art. 122, Garante | module |
+| United Kingdom | UK GDPR, Data Protection Act 2018, ICO | research |
+| Switzerland | FADP, FDPIC | module |
+| USA: California | CCPA/CPRA, CPPA | module |
+| USA: other states | state comprehensive privacy laws, state AGs | research |
+| Canada | PIPEDA, Quebec Law 25, OPC and CAI | research |
+| Brazil | LGPD, ANPD | module |
+| Other Latin America | Argentina, Mexico, Colombia, Chile laws | research |
+| China | PIPL and CAC export rules, CAC | research |
+| Japan | APPI, PPC | research |
+| South Korea | PIPA, PIPC | research |
+| India | DPDP Act 2023, Data Protection Board | research |
+| Turkey | KVKK (Law 6698), KVKK Authority, VERBIS | research |
+| Russia | Federal Law 152-FZ, Roskomnadzor, data localization | research |
+| Gulf | Saudi PDPL (SDAIA), UAE Federal Decree-Law 45/2021 with the separate DIFC and ADGM regimes, Qatar, Bahrain | research |
+| Africa | South Africa POPIA, Nigeria NDPA 2023, Egypt | research |
+| Australia and New Zealand | Privacy Act 1988 (OAIC), Privacy Act 2020 | research |
+
+**Consequences of the choice.** Every selected market enters the Phase 0 and Recency Validation queries, the transfer analysis (destination countries, adequacy, mechanisms, localization duties) and the document's jurisdiction block. Markets the evidence suggested and the user excluded go in the assumptions log with the reason. When more than one market applies, the agent proposes one layered document (a common core plus one section per market) or separate documents, and states which the stores and the user's channels require.
 
 ## Step 2 -- Business Profile
 
 Collect:
 - Business type, sector (e-commerce, healthcare/telemedicine, hospitality, digital services, SaaS, other)
 - Website URL and/or app identifiers
-- Data controller identity and contact (+ DPO if appointed)
-- Countries of operation and user base
+- Data controller identity and contact (+ DPO if appointed, + representative where a selected market requires one)
 
 ## Step 3 -- Codebase Evidence
 
