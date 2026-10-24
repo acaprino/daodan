@@ -106,8 +106,6 @@ editorial and typographic method. Keep its record in the same design report and
 compatibility brief and pass it to the designer. Preserve supplied brands and
 session selections. For DOCX/PPTX bundles both format designers consume the
 same record. A narrow edit or export does not re-enter design.
-Read `references/ppt-visual.md` for concrete wireframes and the slide-specification
-handoff; map them to existing patterns rather than adding another layout catalog.
 Read `references/image-tools.md` before image work.
 
 Coordinated execution uses the registered `office:presentation` workflow

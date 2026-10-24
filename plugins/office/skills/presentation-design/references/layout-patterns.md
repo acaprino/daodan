@@ -35,26 +35,32 @@ Common slots for every content pattern: `kicker` (optional), `headline`,
 ## Pattern details
 
 Each entry names its composition, main slots, the variation axis that keeps decks
-from looking mechanical, and its specific requirement.
+from looking mechanical, and its specific requirement. Where a region sketch is
+given, its brackets show regions in reading order, not raster images or an
+automatic reconstruction promise; map real content labels onto them.
 
 1. **Cover** — composition: title block anchored to the left third with one
    accent band or image occupying the right; slots: `deck title`, `subtitle`,
    `audience/date meta`. Variation: image band, geometric band or full-bleed
    image. Requirement: no body copy; the cover states who, what and when.
+   Sketch: `[ title + subtitle ] [ image/accent ]; [ author/date ] [ logo ]`.
 2. **Agenda** — composition: 3 to 6 numbered rows, one line each, optional live
    page references; slots: `sections`. Variation: numbered list, timeline strip
    or two-column split. Requirement: mirrors the deck's actual section order.
 3. **Section divider** — composition: kicker plus one large section title, mostly
    empty background, optional progress marker; slots: `section number`,
    `section title`. Variation: full-bleed colour, image half or outline type.
+   Sketch: `[ open space ]; [ section title ]; [ progress marker ]`.
 4. **Executive summary** — composition: action headline plus 3 equal cards, each
    with a bold lead and 2 to 3 lines; slots: `card title`, `card body`, `takeaway`.
    Variation: 2, 3 or 4 cards; equal or weighted widths. Requirement: the
    headline carries the decision, not the topic.
+   Sketch: `[ action headline ]; [ lead + detail ] [ lead + detail ] [ lead + detail ]`.
 5. **Key metric spotlight** — composition: 2 to 4 large stat callouts with a
    summary takeaway; slots: `value`, `unit`, `delta`, `context line`. Variation:
    big numbers only, numbers plus sparkline, or numbers in cards.
    Requirement: every value cites its period and source.
+   Sketch: `[ headline ]; [ primary value + unit/context ]; [ supporting values ]; [ source/period ]`.
 6. **Chart and insight** — composition: native chart left at 60 to 65% width,
    insight card right; slots: `chart title`, `series`, `axis labels`,
    `insight`, `decision impact`. Variation: single chart, small multiples, or
@@ -64,6 +70,7 @@ from looking mechanical, and its specific requirement.
    criteria rows, recommendation highlighted; slots: `options`, `criteria`,
    `scores`, `recommendation`. Variation: matrix, side-by-side columns, or
    scorecard. Requirement: criteria are named and symmetric across options.
+   Sketch: `[ common criterion ]; [ option A ] [ option B ]; [ explicit conclusion ]`.
 8. **Options and recommendation** — composition: 2 to 4 option cards, one marked
    recommended, with cost or effort and impact; slots: `option`, `impact`,
    `effort/cost`, `risk`. Variation: cards, quadrant, or ranked list.
@@ -77,10 +84,12 @@ from looking mechanical, and its specific requirement.
     or `milestones`. Variation: horizontal spine, swimlanes, or vertical list.
     Requirement: dates and owners are explicit; no implied precision that the
     source does not support.
+    Sketch: `[ headline ]; [ milestone ] -> [ milestone ] -> [ milestone ]; [ dates/owners ]`.
 11. **Process flow** — composition: 3 to 5 connected stages with step numbers and
     short labels; slots: `stages`, `deliverables`, `handoffs`. Variation:
     horizontal chain, loop back, or vertical funnel. Requirement: connectors are
     native shapes; do not exceed 7 nodes.
+    Sketch: `[ headline ]; [ stage ] -> [ stage ] -> [ stage ]; [ handoff labels ]`.
 12. **Architecture and system map** — composition: layered or left-to-right
     boxes with aligned connectors, a legend and a constraints callout; slots:
     `components`, `interfaces`, `boundaries`, `legend`. Variation: layered stack,
@@ -94,10 +103,12 @@ from looking mechanical, and its specific requirement.
     quantified result; slots: `context`, `action`, `result`, `proof`. Variation:
     three columns, before/after, or narrative with a pull stat. Requirement: the
     result cites its measurement basis.
+    Sketch: `[ image ] [ headline + explanation ]; [ source ]`.
 15. **Quote and testimonial** — composition: large pull quote, attribution and
     one supporting line; slots: `quote`, `attribution`, `supporting fact`.
     Variation: centred quote, quote beside portrait, or quote over image.
     Requirement: quotes are real and attributed; never invent one.
+    Sketch: `[ exact quotation + attribution ] [ separate portrait ]; [ source ]`.
 16. **Team and organization** — composition: 3 to 6 people or roles with
     responsibility lines; slots: `name`, `role`, `responsibility`, `contact`.
     Variation: grid, org chart, or roster rows. Requirement: only include people
@@ -122,3 +133,31 @@ from looking mechanical, and its specific requirement.
 - A pattern is a construction plan, not a picture: if a proposed composition
   cannot be built with the engine's supported native objects, redesign it within
   the pattern or report the limitation before construction.
+- Use native text, shapes, connectors, charts or tables for editable meaning;
+  photographs, textures and illustrations may be distinct image objects. A
+  native labeled shape replaces unsupported SmartArt when that preserves the
+  requested editability.
+
+## From pattern to slide specification
+
+For each slide the designer's report records the stable slide ID, communication
+job, headline, selected pattern and variation, and a small region sketch with
+real content labels, reading order and the reason for the arrangement. Existing
+variants are enough; do not generate competing designs for every slide. Every
+region then becomes a slide-object entry under the single specification in
+`pptx-compatibility.md`; this catalog adds no second schema. For a reusable
+template, supply representative editable cover, content, evidence and closing
+layouts plus replacement instructions; it is a design specification until the
+producer builds the exemplar, and never a POTX or master-layout claim without
+verified support.
+
+## Provenance
+
+The region sketches of patterns 1, 3, 4, 5, 7, 10, 11, 14 and 15 and the
+sketch-to-specification handoff are adapted from
+[PPT Visual](https://github.com/claude-office-skills/skills/blob/9c4c7d5cd2813a8936bf2c9fdb174ea883b85a11/ppt-visual/SKILL.md)
+(claude-office-skills/skills, revision `9c4c7d5cd2813a8936bf2c9fdb174ea883b85a11`,
+MIT; full license in `LICENSE-ppt-visual-MIT.txt`). The upstream's separate
+colour and font catalogs, image-library sourcing and foreign tools are not
+adopted: palette and pairing come from `office:design`. This is a pinned adapted
+snapshot with manual review on request.

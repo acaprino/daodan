@@ -130,11 +130,10 @@ For PPTX, read
 and honor its editability and target-application evidence rules. For DOCX, prefer
 native flow and styles over floating text boxes used to imitate a screenshot.
 
-For generated or edited imagery, use the active harness image tool under
-`${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/references/image-tools.md`.
-Return image intent, reference assets, crop and placement to the existing
-production owner. Presentation workers request images from the coordinator;
-they do not call another generator or start a second agent workflow.
+For generated or edited imagery, the shared image contract is
+`${CLAUDE_PLUGIN_ROOT}/skills/presentation-design/references/image-tools.md`;
+this method only returns image intent, reference assets, crop and placement to
+the production owner.
 
 ## Review and handoff
 

@@ -112,12 +112,12 @@ and origin. For each meaningful element, provide:
 
 | Field | Required content |
 |---|---|
-| Identity and purpose | Slide/object identity, communication role, exact content and source |
-| Geometry | x/y position, width/height, margins or padding, alignment and stacking order |
-| Typography | Font family/weight, size, line spacing and intended line breaks or fit constraints |
-| Representation | Native text, shape, connector, table or chart; or a separate image asset with crop and placement |
-| Editability | What must remain editable, including chart series/data and table cells |
-| Engine evidence | Supported construction operation/type and any unresolved feature or target-renderer limitation |
+| Identity and purpose | Stable slide ID from the deck plan (not thumbnail order), object identity, communication role, selected pattern and variation, exact accepted content and its source or citation |
+| Geometry | Declared origin and unit; x/y position, width/height, margins or padding, alignment and stacking order |
+| Typography | Font role from the pairing, weight, size, line spacing, colour role from the chosen palette, and intended line breaks or fit constraints |
+| Representation | Native text, shape, connector, table or chart; or a separate image asset with crop, dimensions, placement and provenance (supplied, searched or generated under `image-tools.md`) |
+| Editability | What must remain editable, including chart series/data, table cells and diagram labels |
+| Engine evidence | Supported construction operation/type, overflow or splitting behaviour, and any unresolved feature or target-renderer limitation |
 
 Translate web-inspired layout into this fixed slide specification before
 generation. CSS flex/grid, browser viewport units, DOM structure, hover states,

@@ -215,7 +215,6 @@ class PresentationContractTests(unittest.TestCase):
                 "design-preview.md",
                 "image-tools.md",
                 "layout-patterns.md",
-                "ppt-visual.md",
                 "pptx-compatibility.md",
             ):
                 with self.subTest(host=host, reference=reference):
@@ -226,22 +225,35 @@ class PresentationContractTests(unittest.TestCase):
                     method = _read(package / "skills/presentation-design/SKILL.md")
                     self.assertIn(f"references/{reference}", method)
 
-    def test_ppt_visual_composition_is_consumed_and_retains_its_license_on_every_host(self):
-        relative = Path("skills/presentation-design/references/ppt-visual.md")
+    def test_ppt_visual_sketches_live_in_the_patterns_with_one_slide_schema(self):
+        relative = Path("skills/presentation-design/references/layout-patterns.md")
         license_relative = relative.with_name("LICENSE-ppt-visual-MIT.txt")
         source = _read(OFFICE / relative)
         license_text = _read(OFFICE / license_relative)
+        self.assertFalse((relative.parent / "ppt-visual.md").exists())
         self.assertIn("claude-office-skills/skills", source)
         self.assertRegex(source, r"\b[0-9a-f]{40}\b")
         self.assertIn(license_relative.name, source)
+        self.assertEqual(source.count("Sketch: `["), 9)
+        self.assertIn("this catalog adds no second schema", source)
         self.assertIn("Copyright (c) 2026 Claude Office Skills Contributors", license_text)
         self.assertIn("Permission is hereby granted, free of charge", license_text)
+        library = _read(OFFICE / "skills/presentation-design/references/design-library.md")
+        self.assertNotIn("| Slide ID |", library)
+        self.assertIn("single slide-object specification", library)
+        compatibility = _read(OFFICE / "skills/presentation-design/references/pptx-compatibility.md")
+        self.assertIn("do not introduce\na second construction schema", compatibility)
+        self.assertIn("Stable slide ID from the deck plan", compatibility)
         for host, package in self.packages.items():
             with self.subTest(host=host):
                 designer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-designer")))
-                self.assertIn("references/ppt-visual.md", designer)
+                self.assertIn("references/layout-patterns.md", designer)
+                self.assertNotIn("ppt-visual.md", designer)
                 self.assertIn("wireframe", designer)
                 self.assertIn("native object placement", designer)
+                reviewer = _normalized(_read(package / ROLE_PATHS[host].format(role="presentation-reviewer")))
+                self.assertIn("references/layout-patterns.md", reviewer)
+                self.assertIn("references/directions.md", reviewer)
                 self.assertEqual((package / license_relative).read_bytes(), (OFFICE / license_relative).read_bytes())
 
     def test_pptx_constraints_reach_the_workflow_workers_and_both_engines(self):
@@ -280,8 +292,8 @@ class PresentationContractTests(unittest.TestCase):
         for obligation in (
             "Use slide IDs and one declared coordinate unit and origin",
             "x/y position, width/height, margins or padding, alignment and stacking order",
-            "Native text, shape, connector, table or chart; or a separate image asset with crop and placement",
-            "What must remain editable, including chart series/data and table cells",
+            "Native text, shape, connector, table or chart; or a separate image asset with crop, dimensions, placement and provenance",
+            "What must remain editable, including chart series/data, table cells and diagram labels",
             "Build native charts from the authoritative source data, preserving labels, units and series",
             "Do not flatten a complete slide, convert required text to outlines, or silently rasterize editable objects",
             "An image or SVG inside a PPTX is not proof of native object editability",

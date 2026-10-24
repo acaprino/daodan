@@ -225,17 +225,13 @@ and useful alternative text. Keep text selectable. Use native references, bookma
 and fields when the selected engine supports them; do not present static typed
 numbers as automatically maintained cross-references or a table of contents.
 
-For generated or edited imagery, read
-`<plugin-root>/skills/presentation-design/references/image-tools.md` and
-use the image tool actually exposed by the active harness. The document-producing
-agent owns the request and records prompt/reference provenance, crop and placement;
-only a context with the actual tool performs the call. If this coordinator lacks
-it, request the existing parent-harness handoff described in that contract when
-supported, then verify the returned asset before insertion. If no such handoff
-exists, record the missing capability and block dependent imagery;
-do not start the presentation coordinator or another image service. Supplied
-images need no generation call. A missing image tool blocks dependent generation,
-while authorized text and layout work continues.
+For generated or edited imagery, follow the shared image contract in
+`<plugin-root>/skills/presentation-design/references/image-tools.md`:
+it names who calls the harness image tool, the parent-harness handoff when this
+coordinator lacks it, provenance and verification of the returned asset, and
+what a missing tool blocks. The document coordinator is the image requester;
+it does not start the presentation coordinator or another image service, and
+authorized text and layout work continues when imagery is blocked.
 
 When fields, a TOC or pagination must be current, update them through an available
 compatible Word or LibreOffice engine whose support covers this document, then

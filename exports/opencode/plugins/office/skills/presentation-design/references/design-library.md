@@ -115,8 +115,9 @@ and the pairing, including supplied brands/templates. A direction supplies
 composition and rhythm; map its slots to the chosen palette's roles, never to the
 direction's default seeds. Map engine design tokens to the same record and record
 any necessary supported substitution. Resolve an actual conflict before building.
-For concrete region sketches and a construction handoff, read `ppt-visual.md`;
-its nine wireframes map to this catalog and add no competing pattern IDs.
+Region sketches and the sketch-to-specification handoff live with the patterns
+in `layout-patterns.md`; the slide-object specification itself lives in
+`pptx-compatibility.md`.
 
 ## Canvas geometry and typography scale
 
@@ -146,18 +147,10 @@ unless the brief, an existing deck or a corporate template specifies another rat
 
 ## What every pattern entry specifies
 
-For each chosen pattern, record these values for the slide in the designer's report
-before construction, using the units and editability rules of
-`pptx-compatibility.md`:
-
-| Field | Content |
-|---|---|
-| Slide ID | Stable identity from the deck plan, not the current thumbnail order |
-| Geometry | `x`/`y` position, width and height in one declared unit and origin |
-| Typography | Font family, size, weight, alignment and colour token per slot |
-| Representation | Native text, shape, connector, table or chart; or a separate image asset with crop and placement |
-| Editable | What must stay editable, including chart series/data, table cells and diagram labels |
-| Sources | Source data, citation or note each slot must carry |
+For each chosen pattern, record the slide's objects in the designer's report
+before construction under the single slide-object specification of
+`pptx-compatibility.md` (identity and purpose, geometry, typography,
+representation, editability, engine evidence).
 
 ## Choose the visual direction, then the patterns
 

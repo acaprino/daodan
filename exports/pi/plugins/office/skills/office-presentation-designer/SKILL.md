@@ -100,10 +100,12 @@ assigned argument mode from `references/design-library.md` (it sets headline
 style and slide sequence), the assigned direction from
 `office:design`'s `references/directions.md` and each slide's pattern from
 `references/layout-patterns.md`.
-Read its `references/ppt-visual.md` for the adapted composition wireframes and
-construction handoff. Return a small wireframe with real content labels for each
-slide, concrete native object placement and template replacement/growth rules
-when reuse is requested. These extend the existing design report and patterns.
+Use the region sketches and the sketch-to-specification handoff of
+`references/layout-patterns.md`. Return a small wireframe with real content
+labels for each slide, concrete native object placement under the slide-object
+specification of `references/pptx-compatibility.md`, and template
+replacement/growth rules when reuse is requested. These extend the existing
+design report and patterns.
 Use the supplied compatibility brief and slide design library to constrain every
 design choice. Return
 the specified slide objects, geometry, typography, native/image representations,
