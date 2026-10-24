@@ -12,6 +12,8 @@ import retrieval
 import scope_planner as scope
 
 SCHEMA = 'daodan/map-slice/v1'
+PROJECTION_LIMIT = 200
+EDGE_LIMIT = 1000
 
 
 def project_slice(plan, request, *, authority, indexes=None):
@@ -22,8 +24,11 @@ def project_slice(plan, request, *, authority, indexes=None):
             request, authority, plan['index_paths'] if indexes is None else indexes, stack)
         if digest != plan['input_digest']:
             raise ValueError('cursor_stale: map-slice inputs changed')
-        selected = sorted({row['entity_id'] for row in plan['analysis']})
-        projected = selected[:200]
+        sites = {row['entity_id'] for row in plan['edit_candidates']}
+        # A proposed intervention site is the decision-relevant localization: it survives the cap first.
+        selected = sorted({row['entity_id'] for row in plan['analysis']},
+                          key=lambda entity: (entity not in sites, plan['priorities'].get(entity, [9, 0]), entity))
+        projected = selected[:PROJECTION_LIMIT]
         by_file = {}
         for identity in projected:
             record = plan['entities'][identity]
@@ -34,24 +39,32 @@ def project_slice(plan, request, *, authority, indexes=None):
         components = [dict(id='file:' + path, paths=[path], entities=identities)
                       for path, identities in sorted(by_file.items())]
         view = edge_view.load_edge_view(stores['candidate'], engine_store=paths['engine'])
-        edges, omitted = [], 0
+        calls = []
         for ref in view['references']:
             target = (ref.get('target_id') or '').split('::', 1)[0]
             source = ref['file']
-            if ref.get('resolution') != 'resolved' or source not in by_file or target not in by_file:
-                continue
-            if len(edges) >= 1000:
-                omitted += 1
-                continue
-            edges.append(dict(from_=source, to=target, kind='call', evidence={
-                'reference_id': ref['id'], 'file': source, 'span': ref.get('span'),
-                'caller': ref.get('caller'), 'target_id': ref['target_id'],
-                'resolver': ref['resolver'], 'provenance': ref['provenance']}))
-        edges = [{'from': 'file:' + row['from_'], 'to': 'file:' + row['to'],
-                  'kind': row['kind'], 'evidence': row['evidence']} for row in edges]
+            if ref.get('resolution') == 'resolved' and source in by_file and target in by_file:
+                calls.append((source, target, ref))
+        # Each distinct file pair is cited once before any pair is cited twice, so repeated
+        # calls on one pair cannot use the cap that other relations need.
+        first, seen = [], set()
+        for index, (source, target, _) in enumerate(calls):
+            if (source, target) not in seen:
+                seen.add((source, target))
+                first.append(index)
+        chosen = set(first[:EDGE_LIMIT])
+        chosen.update([i for i in range(len(calls)) if i not in chosen][:max(0, EDGE_LIMIT - len(chosen))])
+        omitted = len(calls) - len(chosen)
+        edges = [{'from': 'file:' + source, 'to': 'file:' + target, 'kind': 'call', 'evidence': {
+                    'reference_id': ref['id'], 'file': source, 'span': ref.get('span'),
+                    'caller': ref.get('caller'), 'target_id': ref['target_id'],
+                    'resolver': ref['resolver'], 'provenance': ref['provenance']}}
+                 for index, (source, target, ref) in enumerate(calls) if index in chosen]
         gaps = copy.deepcopy(plan['unresolved'])
         if len(selected) > len(projected) or omitted:
-            gaps.append(dict(kind='projection_limit', entities=len(selected) - len(projected), edges=omitted))
+            gaps.append(dict(kind='projection_limit', entities=len(selected) - len(projected),
+                             omitted_entities=selected[PROJECTION_LIMIT:], edges=omitted,
+                             edge_pairs=len(seen) - len([i for i in first[:EDGE_LIMIT]])))
         if plan['deferred']:
             gaps.append(dict(kind='scope_frontier', deferred=copy.deepcopy(plan['deferred'])))
         if not components:

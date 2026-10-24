@@ -104,7 +104,8 @@ The same context CLI/MCP operation publishes `daodan/map-slice/v1`, returned as
 verified frozen scope: disjoint file components, cited confirmed calls, snapshot
 freshness, gaps and open obligations. Its envelope binds the original request;
 `scope_input_digest` and `plan_digest` bind the packet. Empty localization abstains.
-The projection caps 200 localized entities and 1000 calls with explicit omissions.
+The projection caps 200 localized entities, proposed edit sites first, and 1000 calls,
+each file pair cited once before repeats, with explicit omissions.
 Unsupported imports/contracts, unresolved calls and partial discovery stay gaps.
 I1 supplies evidence to planners; approved requirements and contracts determine
 task precedence. It grants no edits and closes no validation. The owning lifecycle

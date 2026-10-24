@@ -105,6 +105,58 @@ class MapSliceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.project()
 
+    def test_projection_limit_keeps_priority_order_and_names_omissions(self):
+        original = map_slice.PROJECTION_LIMIT
+        map_slice.PROJECTION_LIMIT = 1
+        self.addCleanup(setattr, map_slice, 'PROJECTION_LIMIT', original)
+        result = self.project()
+        sites = {row['entity_id'] for row in self.plan['edit_candidates']}
+        selected = sorted({row['entity_id'] for row in self.plan['analysis']},
+                          key=lambda entity: (entity not in sites, self.plan['priorities'].get(entity, [9, 0]), entity))
+        kept = [entity for component in result['components'] for entity in component['entities']]
+        limits = [gap for gap in result['gaps'] if gap['kind'] == 'projection_limit']
+        self.assertEqual(kept, selected[:1])
+        self.assertEqual(limits[0]['omitted_entities'], selected[1:])
+        self.assertEqual(limits[0]['entities'], len(selected) - 1)
+        self.assertEqual(result['status'], 'ok')
+
+    def test_proposed_edit_site_survives_the_entity_cap_before_alphabetical_peers(self):
+        original = map_slice.PROJECTION_LIMIT
+        map_slice.PROJECTION_LIMIT = 1
+        self.addCleanup(setattr, map_slice, 'PROJECTION_LIMIT', original)
+        result = self.project()
+        kept = [entity for component in result['components'] for entity in component['entities']]
+        limits = [gap for gap in result['gaps'] if gap['kind'] == 'projection_limit']
+        self.assertEqual(kept, ['service.py::calculate'])
+        self.assertIn('client.py::run', limits[0]['omitted_entities'])
+
+    def test_repeated_calls_on_one_file_pair_do_not_starve_other_relations(self):
+        root = self.root / 'many'
+        root.mkdir()
+        (root / 'b.py').write_bytes(b'def target():\n    return 1\n')
+        (root / 'd.py').write_bytes(b'def other():\n    return 2\n')
+        (root / 'a.py').write_bytes(b'from b import target\n\ndef one():\n    return target()\n\n'
+                                     b'def two():\n    return target()\n\ndef three():\n    return target()\n')
+        (root / 'c.py').write_bytes(b'from d import other\n\ndef run():\n    return other()\n')
+        out = root / '.codebase-map/run'
+        out.mkdir(parents=True)
+        manifest = out / 'snapshot.sqlite'
+        snapshot.write_snapshot(root, manifest)
+        authority = dict(root=str(root), read_boundary=['.'], write_boundary=[])
+        request = dict(self.request, anchors=[{'entity_id': e} for e in (
+            'a.py::one', 'a.py::two', 'a.py::three', 'b.py::target', 'c.py::run', 'd.py::other')],
+            proposed_edits=[], write_boundary=[], candidate={'manifest': str(manifest)})
+        plan = scope_planner.prepare_scope(request, authority=authority)
+        original = map_slice.EDGE_LIMIT
+        map_slice.EDGE_LIMIT = 2
+        self.addCleanup(setattr, map_slice, 'EDGE_LIMIT', original)
+        result = map_slice.project_slice(plan, request, authority=authority)
+        self.assertEqual({(e['from'], e['to']) for e in result['edges']},
+                         {('file:a.py', 'file:b.py'), ('file:c.py', 'file:d.py')})
+        limits = [gap for gap in result['gaps'] if gap['kind'] == 'projection_limit']
+        self.assertEqual(limits[0]['edges'], 2)
+        self.assertEqual(limits[0]['edge_pairs'], 0)
+
     def test_shared_context_operation_publishes_a_digest_bound_I1_artifact(self):
         recipient = dict(id='test', available_tokens=100000, reserve_tokens=0,
                          max_chars=100000, max_evaluations=300)

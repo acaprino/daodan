@@ -113,7 +113,7 @@ For each task, in the order the wave fixes (parallel only in a `WORKTREE`):
 3. On `OK`, confirm changed paths are inside `write_set`; rerun verification
    here. Commit atomically when authorized; otherwise snapshot the candidate.
    Use `<type>(<area>): <task title>` with trailer
-   `Daodan-Task: <run id> wave <n>/<m>`. At the barrier, refresh map and protocol
+   `Daodan-Task: <run id> wave <n>/<m>`. At the barrier, refresh the map into a new manifest and the protocol
    candidate; prepare `post-task` per `references/context-cycle.md`.
    On other codes, restore owned pre-step bytes, remove only task-created
    files, preserve everything else and record the attempt. `NEEDS_REPLAN`

@@ -265,6 +265,68 @@ class CycleContextTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertNotIn(b'Traceback', result.stderr)
 
+    def test_adapter_cli_reports_malformed_documents_as_an_invocation_error(self):
+        config = self.root / 'config.json'
+        request = self.root / 'request.json'
+        recipient = self.root / 'recipient.json'
+        request.write_bytes(b'[]')
+        recipient.write_bytes(json.dumps(self.recipient).encode())
+        config.write_bytes(b'[1, 2]')
+        result = subprocess.run([sys.executable, '-B', str(CYCLE), 'task-packet', '--config', str(config),
+            '--task-id', 'T1', '--request', str(request), '--recipient', str(recipient)], capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn(b'Traceback', result.stderr)
+        config.write_bytes(json.dumps(self.config).encode())
+        result = subprocess.run([sys.executable, '-B', str(CYCLE), 'task-packet', '--config', str(config),
+            '--task-id', 'T1', '--request', str(request), '--recipient', str(recipient)], capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn(b'Traceback', result.stderr)
+
+    def test_adapter_cli_reports_unreadable_receipt_as_an_invocation_error(self):
+        path = self.root / 'config.json'
+        path.write_bytes(json.dumps(self.config).encode())
+        result = subprocess.run([sys.executable, '-B', str(CYCLE), 'verify', '--config', str(path),
+            '--receipt', str(self.root / 'absent-receipt.json')], capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn(b'Traceback', result.stderr)
+        broken = self.root / 'broken-receipt.json'
+        broken.write_bytes(b'{not json')
+        result = subprocess.run([sys.executable, '-B', str(CYCLE), 'verify', '--config', str(path),
+            '--receipt', str(broken)], capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn(b'Traceback', result.stderr)
+
+    def test_base_manifest_conflicting_with_the_previous_receipt_is_refused(self):
+        result = self.prepare()
+        record, project, home = cycle._record(self.config)
+        task = cycle._task(record, 'task-packet', 'T1')
+        prior = cycle._read_receipt(result['path'], home)
+        agreeing = dict(self.config, base_manifest=str(self.manifest))
+        request, _, _ = cycle._request(record, agreeing, self.request, 'post-task', task, prior)
+        self.assertEqual(request['base']['manifest'], str(self.manifest))
+        conflict = dict(self.config, base_manifest=str(self.root / 'other-manifest.json'))
+        with self.assertRaises(ValueError):
+            cycle._request(record, conflict, self.request, 'post-task', task, prior)
+
+    def test_exclusive_publication_refuses_different_evidence_bytes(self):
+        path = self.root / 'evidence.json'
+        cycle._publish(path, {'a': 1})
+        cycle._publish(path, {'a': 1})
+        path.write_bytes(b'{"a": 2}\n')
+        with self.assertRaises(ValueError):
+            cycle._publish(path, {'a': 1})
+
+    def test_verify_never_reports_ready_when_the_slice_abstains(self):
+        result = self.prepare()
+        read = cycle._provider_artifacts
+        def abstained(provider, request, project):
+            packet, slice_ = read(provider, request, project)
+            return packet, dict(slice_, status='abstain')
+        with patch.object(cycle, '_provider_artifacts', side_effect=abstained):
+            checked = cycle.verify_cycle(self.config, result['path'])
+        self.assertFalse(checked['dispatch_allowed'])
+        self.assertNotEqual(checked['status'], 'ready')
+
     def test_adapter_cli_reports_unreadable_inputs_as_an_invocation_error(self):
         path = self.root / 'config.json'
         path.write_bytes(json.dumps(self.config).encode())
@@ -273,6 +335,180 @@ class CycleContextTests(unittest.TestCase):
             '--recipient', str(self.root / 'absent-recipient.json')], capture_output=True)
         self.assertEqual(result.returncode, 2)
         self.assertNotIn(b'Traceback', result.stderr)
+
+
+    def cli(self, operation, config=None, request=None, recipient=None, **extra):
+        files = {'config': self.config if config is None else config,
+                 'request': self.request if request is None else request,
+                 'recipient': self.recipient if recipient is None else recipient}
+        args = [sys.executable, '-B', str(CYCLE), operation]
+        for name, value in {**files, **extra}.items():
+            path = self.root / ('cli-' + name + '.json')
+            path.write_bytes(value if isinstance(value, bytes) else json.dumps(value).encode())
+            args.extend(['--' + name.replace('_', '-'), str(path)])
+        return subprocess.run(args + ['--task-id', 'T1'] if operation != 'preflight' else args, capture_output=True)
+
+    def test_wrong_element_types_are_invocation_errors_without_a_traceback(self):
+        def request(**changes):
+            return dict(self.request, **changes)
+        def config(**changes):
+            return dict(self.config, **changes)
+        def recipient(**changes):
+            return dict(self.recipient, **changes)
+        cases = {
+            'requirement is a number': dict(request=request(mandatory_requirements=[1])),
+            'requirement is null': dict(request=request(mandatory_requirements=[None])),
+            'requirement has no id': dict(request=request(mandatory_requirements=[{}])),
+            'requirement id is a list': dict(request=request(mandatory_requirements=[{'id': [1]}])),
+            'requirement id repeats': dict(request=request(required_gates=[{'id': 'g'}, {'id': 'g'}])),
+            'gate is text': dict(request=request(required_gates=['a'])),
+            'anchors hold text': dict(request=request(anchors=['x'])),
+            'budget is a list': dict(request=request(budget=[])),
+            'source_root is a number': dict(config=config(source_root=5)),
+            'base_manifest is a list': dict(config=config(base_manifest=[1])),
+            'protocol holds a number': dict(config=config(protocol=['python', 1])),
+            'provider is empty': dict(config=config(provider=[])),
+            'indexes is a list': dict(config=config(indexes=[])),
+            'index path is a number': dict(config=config(indexes={'retrieval': 1})),
+            'run_id is a number': dict(config=config(run_id=5)),
+            'tokens are text': dict(recipient=recipient(available_tokens='5')),
+            'reserve is negative': dict(recipient=recipient(reserve_tokens=-1)),
+            'recipient has no id': dict(recipient={k: v for k, v in self.recipient.items() if k != 'id'}),
+            'config nests without end': dict(config=b'[' * 200000),
+        }
+        for name, documents in cases.items():
+            with self.subTest(name):
+                result = self.cli('task-packet', **documents)
+                self.assertEqual(result.returncode, 2, result.stderr.decode('utf8', 'replace')[-300:])
+                self.assertNotIn(b'Traceback', result.stderr)
+
+    def test_previous_receipt_that_is_unreadable_or_not_an_object_is_an_invocation_error(self):
+        for name, content in {'text': b'{not json', 'array': b'[1]', 'number': b'5'}.items():
+            with self.subTest(name):
+                result = self.cli('post-task', previous=content)
+                self.assertEqual(result.returncode, 2)
+                self.assertNotIn(b'Traceback', result.stderr)
+        absent = subprocess.run([sys.executable, '-B', str(CYCLE), 'post-task', '--config', str(self.root / 'cli-config.json'),
+            '--request', str(self.root / 'cli-request.json'), '--recipient', str(self.root / 'cli-recipient.json'),
+            '--task-id', 'T1', '--previous', str(self.root / 'absent.json')], capture_output=True)
+        self.assertEqual(absent.returncode, 2)
+
+    def test_incomplete_deliveries_from_the_protocol_or_provider_are_refused_cleanly(self):
+        for owner in ('provider', 'protocol'):
+            for printed in ('[]', '{}', 'not json'):
+                with self.subTest(owner=owner, printed=printed):
+                    config = dict(self.config, **{owner: [sys.executable, '-c', 'print(' + repr(printed) + ')']})
+                    result = self.cli('task-packet', config=config)
+                    self.assertEqual(result.returncode, 1)
+                    self.assertNotIn(b'Traceback', result.stderr)
+                    self.assertIn(owner.encode(), result.stderr)
+
+    def test_help_documents_every_input_the_cli_reads(self):
+        text = subprocess.run([sys.executable, '-B', str(CYCLE), '--help'], capture_output=True).stdout.decode()
+        for fragment in ('records_root', 'base_manifest', 'indexes', 'mandatory_requirements', 'policy_version',
+                         'max_evaluations', 'tokenizer_id', 'needs_recipient_check', 'status 2',
+                         'max_input_tokens', 'max_output_tokens', 'context.toml', 'ordered or marginal'):
+            self.assertIn(fragment, text)
+
+    def test_next_stage_refuses_a_map_refreshed_in_place_as_its_base(self):
+        task = self.prepare()
+        (self.root / 'service.py').write_bytes(b'def calculate(value, required):\n    return value + required\n')
+        self.protocol('update', {'barrier': 'source changed'})
+        snapshot.write_snapshot(self.root, self.manifest)
+        with self.assertRaisesRegex(ValueError, 'Base map revision changed'):
+            self.prepare('post-task', previous=task['path'])
+
+    def test_base_rewritten_while_the_provider_runs_is_never_stamped_as_the_revision_used(self):
+        task = self.prepare()
+        (self.root / 'service.py').write_bytes(b'def calculate(value, required):\n    return value + required\n')
+        self.protocol('update', {'barrier': 'source changed'})
+        self.config['manifest'] = str(self.map_snapshot('changed'))
+        invoke = cycle._invoke
+        def rewrite_base(config, owner, args):
+            result = invoke(config, owner, args)
+            if owner == 'provider':
+                self.manifest.write_bytes(self.manifest.read_bytes() + b'rewritten after the provider read it')
+            return result
+        with patch.object(cycle, '_invoke', side_effect=rewrite_base):
+            with self.assertRaisesRegex(ValueError, 'Base map revision changed'):
+                self.prepare('post-task', previous=task['path'])
+
+    def test_moved_provider_inputs_start_a_new_attempt_and_keep_the_old_evidence(self):
+        first = self.prepare()
+        Path(self.manifest.parent / 'engine-edges.sqlite').write_bytes(b'appeared after preparation')
+        with self.assertRaises(cycle.StaleInputs):
+            cycle.verify_cycle(self.config, first['path'])
+        second = self.prepare()
+        self.assertNotEqual(second['path'], first['path'])
+        self.assertTrue(Path(second['path']).parent.name.endswith('-a2'))
+        self.assertTrue(Path(first['path']).is_file())
+        self.assertEqual(self.prepare()['path'], second['path'])
+        self.assertEqual(cycle.verify_cycle(self.config, second['path'])['status'], 'needs_recipient_check')
+
+    def test_the_attempt_bound_applies_to_one_call_not_to_the_life_of_an_intent(self):
+        engine = Path(self.manifest.parent / 'engine-edges.sqlite')
+        paths = [self.prepare()['path']]
+        with patch.object(cycle, 'ATTEMPTS', 2):
+            for generation in (b'first change', b'second change', b'third change'):
+                engine.write_bytes(generation)
+                paths.append(self.prepare()['path'])
+        self.assertEqual(len(set(paths)), 4)
+        self.assertTrue(paths[-1].endswith('receipt.json') and '-a4' in Path(paths[-1]).parent.name)
+        self.assertEqual(self.prepare()['path'], paths[-1])
+
+    def test_a_receipt_is_identical_across_ledger_revisions(self):
+        first = self.prepare()
+        original = Path(first['path']).read_bytes()
+        self.assertNotIn('origin_revision', json.loads(original))
+        note = self.root / '.daodan/runs/workflow-fixture/note.txt'
+        note.write_bytes(b'bookkeeping')
+        self.protocol('update', {'deliveries': {'context': {'status': 'delivered', 'output': 'note.txt'}}})
+        Path(first['path']).unlink()
+        again = self.prepare()
+        self.assertEqual((again['path'], Path(again['path']).read_bytes()), (first['path'], original))
+
+    def test_claim_adopts_only_a_lost_race_and_propagates_other_refusals(self):
+        with patch.object(cycle, '_publish', side_effect=ValueError('Out of range float values are not JSON compliant')):
+            with self.assertRaisesRegex(ValueError, 'not JSON compliant'):
+                cycle._claim(self.root / 'never.json', {'a': float('nan')})
+
+    def test_non_json_constants_in_an_input_document_are_an_invocation_error(self):
+        text = json.dumps(self.request).replace('"anchors": [', '"anchors": [{"x": NaN}, ', 1).encode()
+        for name, documents in {'request': dict(request=text), 'recipient': dict(recipient=b'{"id": "x", "available_tokens": Infinity}')}.items():
+            with self.subTest(name):
+                result = self.cli('task-packet', **documents)
+                self.assertEqual(result.returncode, 2)
+                self.assertNotIn(b'Traceback', result.stderr)
+
+    def test_concurrent_identical_preparations_converge_on_one_receipt(self):
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            results = list(pool.map(lambda _: self.prepare(), range(3)))
+        self.assertEqual(len({(r['path'], r['sha256']) for r in results}), 1)
+
+    def test_first_writer_wins_and_a_conflict_with_no_stored_object_still_refuses(self):
+        path = self.root / 'claimed.json'
+        self.assertEqual(cycle._claim(path, {'a': 1}), {'a': 1})
+        self.assertEqual(cycle._claim(path, {'a': 2}), {'a': 1})
+        path.write_bytes(b'[1]\n')
+        with self.assertRaises(ValueError):
+            cycle._claim(path, {'a': 3})
+
+    def test_a_publication_race_refuses_different_bytes_and_accepts_identical_ones(self):
+        value = {'a': 1}
+        for stored, accepted in ((b'{"a":2}\n', False), (cycle._bytes(value), True)):
+            with self.subTest(accepted=accepted):
+                path = self.root / ('race-%s.json' % accepted)
+                def link(source, destination, stored=stored):
+                    Path(destination).write_bytes(stored)
+                    raise FileExistsError()
+                with patch.object(cycle.os, 'link', side_effect=link):
+                    if accepted:
+                        cycle._publish(path, value)
+                    else:
+                        with self.assertRaises(ValueError):
+                            cycle._publish(path, value)
+                self.assertEqual(path.read_bytes(), stored)
 
 
 if __name__ == '__main__':

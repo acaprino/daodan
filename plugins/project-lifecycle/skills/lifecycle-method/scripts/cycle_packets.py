@@ -2,8 +2,30 @@
 
 This adapter prepares evidence. The coordinator owns refresh, dispatch, run
 updates, authorizations and completion. No cross-plugin imports or LLM calls.
-Exit status is 2 for an incomplete or unreadable invocation and 1 for a refused
-lifecycle operation.
+
+Documents (JSON objects):
+  config     project, records_root, run_id, manifest (text); protocol, provider
+             (argument arrays). Optional: source_root, base_manifest (text),
+             indexes (name to path). base_manifest binds an existing map revision
+             for the first stage and is refused when it conflicts with the
+             previous receipt.
+  request    schema, intent, query, policy_version (text); anchors, diff,
+             proposed_edits (record lists); mandatory_requirements,
+             required_gates (record lists with unique text `id`); budget with the
+             caps max_candidates, max_edges, max_rounds, max_seconds,
+             max_input_tokens, max_output_tokens (contract:
+             codebase-map/contracts/context.toml, daodan/context-request/v1).
+             The adapter sets task_id, candidate, base and both boundaries.
+  recipient  id (text); available_tokens, reserve_tokens, max_chars,
+             max_evaluations (integers). Optional: prefix, suffix, tokenizer_id, policy
+             (ordered or marginal).
+
+Each stage's candidate manifest is a new file; the previous candidate stays
+unchanged as the next stage's base. A map refreshed in place is refused.
+The CLI cannot count recipient tokens, so `verify` reports needs_recipient_check;
+the dispatcher calls `verify_cycle(config, receipt, token_counter=..., tokenizer_id=...)`.
+A missing, unreadable or malformed input document exits with status 2; a
+refused lifecycle operation exits with status 1.
 """
 from __future__ import annotations
 
@@ -13,11 +35,77 @@ import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import subprocess
 import tempfile
 
 SCHEMA = 'daodan/cycle-context/v1'
 STAGES = ('preflight', 'task-packet', 'post-task')
+ATTEMPTS = 8
+CONFIG = ({'project': 'text', 'records_root': 'text', 'run_id': 'text', 'manifest': 'text',
+           'protocol': 'strs', 'provider': 'strs'},
+          {'source_root': 'text', 'base_manifest': 'text', 'indexes': 'paths'})
+REQUEST = ({'schema': 'text', 'intent': 'text', 'query': 'string', 'policy_version': 'text',
+            'anchors': 'records', 'diff': 'records', 'proposed_edits': 'records',
+            'mandatory_requirements': 'identified', 'required_gates': 'identified', 'budget': 'object'}, {})
+RECIPIENT = ({'id': 'text', 'available_tokens': 'count', 'reserve_tokens': 'count', 'max_chars': 'count',
+              'max_evaluations': 'count'}, {'prefix': 'string', 'suffix': 'string', 'tokenizer_id': 'text', 'policy': 'text'})
+OBJECT = ({}, {})
+RECORD_KEYS = ('run_id', 'revision', 'status', 'candidate', 'output_root', 'scope', 'authorizations')
+PROVIDER_KEYS = ('path', 'sha256', 'map_slice_path', 'map_slice_sha256', 'cursor_path', 'cursor_sha256')
+
+
+class Collision(ValueError):
+    """Different bytes already hold this evidence name: another preparation won it."""
+
+
+class StaleInputs(ValueError):
+    """Provider inputs moved after evidence was prepared; the same intent can be prepared again."""
+
+
+def _is(kind, value):
+    if kind == 'text':
+        return isinstance(value, str) and bool(value)
+    if kind == 'string':
+        return isinstance(value, str)
+    if kind == 'count':
+        return type(value) is int and value >= 0
+    if kind == 'strs':
+        return isinstance(value, list) and bool(value) and all(isinstance(v, str) and v for v in value)
+    if kind == 'object':
+        return isinstance(value, dict)
+    if kind == 'records':
+        return isinstance(value, list) and all(isinstance(v, dict) for v in value)
+    if kind == 'identified':
+        if not _is('records', value):
+            return False
+        names = [v.get('id') for v in value]
+        return all(isinstance(n, str) and n for n in names) and len(set(names)) == len(names)
+    if kind == 'paths':
+        return isinstance(value, dict) and all(isinstance(k, str) and isinstance(v, str) and v for k, v in value.items())
+    return False
+
+
+def _strict(token):
+    raise ValueError('not JSON: ' + token)
+
+
+def _document(name, value, contract):
+    """Name the first field of a JSON document that does not hold what the contract says."""
+    required, optional = contract
+    if not isinstance(value, dict):
+        raise ValueError(name + ' must be a JSON object')
+    for key, kind in {**required, **optional}.items():
+        if key in value or key in required:
+            if key not in value or not _is(kind, value[key]):
+                raise ValueError(f'{name} needs {key} as {kind}')
+    return value
+
+
+def _delivery(value, owner, keys):
+    if not isinstance(value, dict) or any(key not in value for key in keys):
+        raise ValueError(owner + ' returned an incomplete delivery')
+    return value
 
 
 def _bytes(value):
@@ -60,7 +148,7 @@ def _publish(path, value):
     data = _bytes(value)
     if path.exists():
         if path.read_bytes() != data:
-            raise ValueError('Lifecycle evidence collision')
+            raise Collision('Lifecycle evidence collision')
         return
     descriptor, name = tempfile.mkstemp(prefix='.cycle-', dir=path.parent)
     temporary = Path(name)
@@ -74,7 +162,7 @@ def _publish(path, value):
             os.link(temporary, path)
         except FileExistsError:
             if _path(path).read_bytes() != data:
-                raise ValueError('Lifecycle evidence collision')
+                raise Collision('Lifecycle evidence collision')
     finally:
         temporary.unlink()
 
@@ -89,7 +177,7 @@ def _invoke(config, owner, args):
         raise ValueError(owner + ' rejected the operation: ' + result.stderr.decode('utf8', 'replace')[-2000:])
     try:
         return json.loads(result.stdout)
-    except (ValueError, UnicodeError) as error:
+    except (ValueError, UnicodeError, RecursionError) as error:
         raise ValueError(owner + ' returned an invalid JSON delivery') from error
 
 
@@ -97,8 +185,14 @@ def _record(config):
     project = _path(config['project'])
     records = _path(config['records_root'])
     common = ['--project', str(project), '--out', str(records), '--run-id', config['run_id']]
-    record = _invoke(config, 'protocol', ['show', *common])
-    check = _invoke(config, 'protocol', ['validate', *common, '--current'])
+    record = _delivery(_invoke(config, 'protocol', ['show', *common]), 'protocol', RECORD_KEYS)
+    candidate = record['candidate']
+    if (not isinstance(candidate, dict) or not isinstance(candidate.get('root'), str)
+            or not isinstance(candidate.get('snapshot'), dict) or not isinstance(candidate['snapshot'].get('files'), dict)
+            or not isinstance(candidate['snapshot'].get('digest'), str) or not isinstance(record['output_root'], str)
+            or not isinstance(record['scope'], dict) or not isinstance(record['scope'].get('paths'), list)):
+        raise ValueError('protocol returned an incomplete delivery')
+    check = _delivery(_invoke(config, 'protocol', ['validate', *common, '--current']), 'protocol', ('valid', 'revision'))
     if (not check.get('valid') or check.get('revision') != record['revision']
             or record['run_id'] != config['run_id'] or record['status'] != 'in_progress'
             or _path(record['candidate']['root']) != project or _path(record['output_root']) != records):
@@ -177,8 +271,11 @@ def _request(record, config, supplied, stage, task, prior):
     request = copy.deepcopy(supplied)
     candidate = {'manifest': str(_path(config['manifest'], project))}
     base = {'manifest': prior['request']['candidate']['manifest']} if prior is not None else None
-    if config.get('base_manifest') is not None and prior is None:
-        base = {'manifest': str(_path(config['base_manifest'], project))}
+    if config.get('base_manifest') is not None:
+        declared = str(_path(config['base_manifest'], project))
+        if base is not None and base['manifest'] != declared:
+            raise ValueError('base_manifest conflicts with the previous lifecycle receipt')
+        base = base or {'manifest': declared}
     if request.get('candidate') not in (None, candidate) or request.get('base') not in (None, base):
         raise ValueError('Request names an independently unbound map revision')
     request.update(task_id=task['id'] if task else record['run_id'] + ':preflight',
@@ -240,49 +337,71 @@ def _prior(previous, home, binding, stage, task_id):
     return prior
 
 
-def prepare_cycle(stage, config, supplied, recipient, *, task_id=None, previous=None):
-    """Prepare one recoverable packet without updating the operational ledger."""
-    record, project, home = _record(config)
-    task = _task(record, stage, task_id)
-    binding = _binding(record, task)
-    prior = _prior(previous, home, binding, stage, task_id)
-    request, authority, writes = _request(record, config, supplied, stage, task, prior)
-    intent = dict(stage=stage, config=config, request=request, authority=authority,
-                  recipient=recipient, run_binding=binding, previous=str(previous) if previous else None)
-    directory = _path(home / 'context' / (stage + '-' + _digest(intent)), home)
+def _claim(path, value):
+    """First writer wins: a concurrent preparation adopts the value already stored."""
+    try:
+        _publish(path, value)
+    except Collision:
+        stored = json.loads(_path(path).read_bytes())
+        if not isinstance(stored, dict):
+            raise
+        return stored
+    return value
+
+
+def _attempt(stage, config, request, authority, recipient, binding, prior, previous, writes, task_id, record, project, home, name):
+    """One journaled preparation. A receipt or provider result whose inputs moved ends the attempt."""
+    directory = _path(home / 'context' / name, home)
     directory.mkdir(parents=True, exist_ok=True)
     _path(directory, home)
+    intent = dict(stage=stage, config=config, request=request, authority=authority,
+                  recipient=recipient, run_binding=binding, previous=str(previous) if previous else None)
     _publish(directory / 'intent.json', intent)
     receipt_path = directory / 'receipt.json'
     if receipt_path.exists():
-        verify_cycle(config, receipt_path)
+        try:
+            verify_cycle(config, receipt_path)
+        except StaleInputs:
+            return None
         existing = _read_receipt(receipt_path, home)
         return dict(path=str(receipt_path), sha256=hashlib.sha256(receipt_path.read_bytes()).hexdigest(), status=existing['status'])
+    base = None
+    if request['base']:
+        # The stamp is taken before the provider reads the manifest, so a base rewritten
+        # while the packet is built cannot be stamped as the revision the packet used.
+        base = _stamp(request['base']['manifest'], project)
+        if prior is not None and base != prior['input_stamps']['candidate']:
+            raise ValueError('Base map revision changed since the previous receipt; refresh the map into a new manifest')
+        stored = _claim(directory / 'base-stamp.json', base)
+        if stored != base:
+            return None
     result_path = directory / 'provider-result.json'
     if result_path.exists():
-        result = json.loads(result_path.read_bytes())
+        result = json.loads(_path(result_path).read_bytes())
     else:
-        for name, value in [('request', request), ('authority', authority), ('recipient', recipient), ('indexes', config.get('indexes', {}))]:
-            _publish(directory / (name + '.json'), value)
+        for label, value in [('request', request), ('authority', authority), ('recipient', recipient), ('indexes', config.get('indexes', {}))]:
+            _publish(directory / (label + '.json'), value)
         output = Path(request['candidate']['manifest']).parent / 'context' / directory.name
-        result = _invoke(config, 'provider', ['context', request['candidate']['manifest'],
+        result = _delivery(_invoke(config, 'provider', ['context', request['candidate']['manifest'],
             '--request', str(directory / 'request.json'), '--authority', str(directory / 'authority.json'),
-            '--recipient', str(directory / 'recipient.json'), '--indexes', str(directory / 'indexes.json'), '--out', str(output)])
-        _publish(result_path, result)
+            '--recipient', str(directory / 'recipient.json'), '--indexes', str(directory / 'indexes.json'), '--out', str(output)]),
+            'provider', PROVIDER_KEYS)
+        result = _claim(result_path, result)
+    _delivery(result, 'provider', PROVIDER_KEYS)
     packet, slice_ = _provider_artifacts(result, request, project)
     current, _, _ = _record(config)
     if _binding(current, _task(current, stage, task_id)) != binding:
         raise ValueError('Lifecycle execution inputs changed during preparation')
     stamps = dict(packet['indices'])
     stamps['candidate'] = {k: packet['candidate'][k] for k in ('path', 'sha256', 'sidecars')}
-    if request['base']:
-        stamps['base'] = _stamp(request['base']['manifest'], project)
+    if base is not None:
+        stamps['base'] = base
     for stamp in stamps.values():
         if stamp != _stamp(stamp['path'], project):
-            raise ValueError('Provider inputs changed during preparation')
+            return None
     obligations = [*packet['obligations'], *(prior['residual_obligations'] if prior else [])]
     residual = {_digest(dict(row, status='open')): dict(row, status='open') for row in obligations}
-    receipt = dict(schema=SCHEMA, stage=stage, task_id=request['task_id'], origin_revision=record['revision'],
+    receipt = dict(schema=SCHEMA, stage=stage, task_id=request['task_id'],
         run_binding=binding, config_digest=_digest(config), request=request, recipient=recipient, write_set=writes,
         previous=str(previous) if previous else None, provider=result, input_stamps=stamps,
         packet={'path': result['path'], 'sha256': result['sha256']},
@@ -292,6 +411,31 @@ def prepare_cycle(stage, config, supplied, recipient, *, task_id=None, previous=
     receipt['digest'] = _digest(receipt)
     _publish(receipt_path, receipt)
     return dict(path=str(receipt_path), sha256=hashlib.sha256(receipt_path.read_bytes()).hexdigest(), status=receipt['status'])
+
+
+def prepare_cycle(stage, config, supplied, recipient, *, task_id=None, previous=None):
+    """Prepare one recoverable packet without updating the operational ledger.
+
+    The intent names a journal. When the inputs a receipt was built from move, that
+    attempt stays as evidence and the same intent is prepared again in the next one.
+    """
+    record, project, home = _record(config)
+    task = _task(record, stage, task_id)
+    binding = _binding(record, task)
+    prior = _prior(previous, home, binding, stage, task_id)
+    request, authority, writes = _request(record, config, supplied, stage, task, prior)
+    intent = dict(stage=stage, config=config, request=request, authority=authority,
+                  recipient=recipient, run_binding=binding, previous=str(previous) if previous else None)
+    prefix = stage + '-' + _digest(intent)
+    generations = [int(m.group(1)) for item in (home / 'context').glob(prefix + '-a*')
+                   if (m := re.fullmatch(re.escape(prefix) + r'-a(\d+)', item.name))]
+    first = max([1, *generations])
+    for number in range(first, first + ATTEMPTS):
+        done = _attempt(stage, config, request, authority, recipient, binding, prior, previous, writes, task_id,
+                        record, project, home, prefix if number == 1 else f'{prefix}-a{number}')
+        if done is not None:
+            return done
+    raise ValueError('Lifecycle context inputs kept changing during preparation')
 
 
 def verify_cycle(config, receipt_path, *, token_counter=None, tokenizer_id=None):
@@ -310,7 +454,7 @@ def verify_cycle(config, receipt_path, *, token_counter=None, tokenizer_id=None)
     packet, slice_ = _provider_artifacts(receipt['provider'], request, project)
     for stamp in receipt['input_stamps'].values():
         if stamp != _stamp(stamp['path'], project):
-            raise ValueError('Lifecycle provider inputs are stale')
+            raise StaleInputs('Lifecycle provider inputs are stale')
     ready = packet['status'] == 'ready' and slice_['status'] == 'ok'
     cost = None
     if token_counter is not None:
@@ -326,7 +470,10 @@ def verify_cycle(config, receipt_path, *, token_counter=None, tokenizer_id=None)
     if _binding(current, _task(current, receipt['stage'], task_id)) != binding:
         raise ValueError('Lifecycle execution inputs changed during recipient verification')
     allowed = ready and cost is not None and cost <= available
-    status = ('ready' if allowed else 'needs_recipient_check' if cost is None else 'needs_split') if ready else receipt['status']
+    if ready:
+        status = 'ready' if allowed else 'needs_recipient_check' if cost is None else 'needs_split'
+    else:
+        status = receipt['status'] if receipt['status'] != 'ready' else 'incomplete'
     return dict(status=status,
         preparation_ready=ready, dispatch_allowed=allowed,
         input_tokens=cost, recipient_check_required=cost is None, residual_obligations=receipt['residual_obligations'],
@@ -337,38 +484,47 @@ REQUIRED_OPTIONS = {'preflight': ('request', 'recipient'),
                     'task-packet': ('task-id', 'request', 'recipient'),
                     'post-task': ('task-id', 'request', 'recipient', 'previous'),
                     'verify': ('receipt',)}
+REFUSED = (ValueError, OSError, subprocess.TimeoutExpired, KeyError, TypeError, AttributeError, RecursionError)
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('operation', choices=(*STAGES, 'verify'))
     parser.add_argument('--config', required=True)
     parser.add_argument('--request')
     parser.add_argument('--recipient')
     parser.add_argument('--task-id')
-    parser.add_argument('--previous')
-    parser.add_argument('--receipt')
+    parser.add_argument('--previous', help='receipt of the previous stage')
+    parser.add_argument('--receipt', help='receipt to verify')
     args = parser.parse_args()
     missing = [name for name in REQUIRED_OPTIONS[args.operation]
                if getattr(args, name.replace('-', '_')) is None]
     if missing:
         parser.error('missing required arguments: ' + ', '.join('--' + name for name in missing))
 
-    def load(option):
+    def load(option, contract):
+        """Read one input document; anything but a document of its kind is an invocation error."""
         try:
-            return json.loads(Path(getattr(args, option.replace('-', '_'))).read_bytes())
-        except (OSError, ValueError, UnicodeError) as error:
-            parser.exit(2, 'cannot read --' + option + ': ' + str(error) + '\n')
+            value = json.loads(Path(getattr(args, option.replace('-', '_'))).read_bytes(), parse_constant=_strict)
+            _document('--' + option, value, contract)
+        except (OSError, ValueError, UnicodeError, RecursionError) as error:
+            parser.exit(2, f'cannot use --{option}: {error}\n')
+        return value
 
-    config = load('config')
+    config = load('config', CONFIG)
     try:
         if args.operation == 'verify':
+            load('receipt', OBJECT)
             result = verify_cycle(config, args.receipt)
         else:
-            result = prepare_cycle(args.operation, config, load('request'), load('recipient'),
+            request = load('request', REQUEST)
+            recipient = load('recipient', RECIPIENT)
+            if args.previous is not None:
+                load('previous', OBJECT)
+            result = prepare_cycle(args.operation, config, request, recipient,
                                    task_id=args.task_id, previous=args.previous)
-    except (ValueError, OSError, subprocess.TimeoutExpired) as error:
-        parser.exit(1, str(error) + '\n')
+    except REFUSED as error:
+        parser.exit(1, (str(error) if isinstance(error, ValueError) else f'{type(error).__name__}: {error}') + '\n')
     print(json.dumps(result, sort_keys=True))
 
 

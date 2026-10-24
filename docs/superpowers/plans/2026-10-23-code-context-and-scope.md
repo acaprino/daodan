@@ -326,12 +326,26 @@ boundary uguale a `record["scope"]`) lega task, requisiti, write set e contesto;
 `post-task` legge il delta aggiornato a barriera e produce obblighi residui. Il
 coordinatore registra gli output tramite protocollo.
 
-- [ ] Scrivere fixture di workflow: bug senza diff, cambio firma, documento da aggiornare, task test e candidata modificata durante la preparazione. Un packet di un'altra revisione deve bloccare il dispatch dipendente.
-- [ ] Collegare P7 attraverso un adapter esplicito al provider, senza importare file privati cross-plugin. Il provider prepara dati; il coordinatore mantiene dispatch, stato, autorizzazioni e consegne.
-- [ ] Portare I1 (`daodan/map-slice/v1`, definito in `contracts/context.toml` e proiettato da `codebase-map`) come artefatto con digest al pianificatore. Non creare precedenze dal solo call graph e non allargare il write set a tutti gli `edit_candidates` (`edit_candidates` resta disgiunto da `outside_boundary`).
-- [ ] Dopo una modifica aggiornare snapshot/derivati necessari, invalidare pacchetti interessati e conservare obblighi aperti. Il budget non chiude una fase con contesto insufficiente.
-- [ ] Eseguire `test_cycle_context_packets.py`, `test_project_protocol.py`, `test_codebase_map_composition.py` e prove di interruzione prima/dopo la scrittura del pacchetto.
-- [ ] Aggiornare docs lifecycle/codebase-map, gate comuni e commit P8. **Done:** preflight, esecuzione e verifica usano il contesto della revisione corretta e si riprendono dal ledger.
+- [x] Scrivere fixture di workflow: bug senza diff, cambio firma, documento da aggiornare, task test e candidata modificata durante la preparazione. Un packet di un'altra revisione deve bloccare il dispatch dipendente.
+- [x] Collegare P7 attraverso un adapter esplicito al provider, senza importare file privati cross-plugin. Il provider prepara dati; il coordinatore mantiene dispatch, stato, autorizzazioni e consegne.
+- [x] Portare I1 (`daodan/map-slice/v1`, definito in `contracts/context.toml` e proiettato da `codebase-map`) come artefatto con digest al pianificatore. Non creare precedenze dal solo call graph e non allargare il write set a tutti gli `edit_candidates` (`edit_candidates` resta disgiunto da `outside_boundary`).
+- [x] Dopo una modifica aggiornare snapshot/derivati necessari, invalidare pacchetti interessati e conservare obblighi aperti. Il budget non chiude una fase con contesto insufficiente.
+- [x] Eseguire `test_cycle_context_packets.py`, `test_project_protocol.py`, `test_codebase_map_composition.py` e prove di interruzione prima/dopo la scrittura del pacchetto.
+- [x] Aggiornare docs lifecycle/codebase-map, gate comuni e commit P8. **Done:** preflight, esecuzione e verifica usano il contesto della revisione corretta e si riprendono dal ledger.
+
+Checkpoint P8 (2026-10-24): `cycle_packets.py` collega preflight, task e post-task
+solo tramite le CLI pubbliche di protocollo e mappa. I receipt legano candidato,
+task, scope, requisiti, gate e destinatario; la sola registrazione nel ledger non
+invalida gli input di esecuzione, una modifica di codice o di indici sì. La
+proiezione I1 viaggia come artefatto con percorso e digest, `edit_candidates`
+restano disgiunti dal write set. La CLI distingue l'invocazione incompleta o
+illeggibile (uscita 2, nessun traceback) dall'operazione rifiutata (uscita 1).
+Il brief `context-cycle.md` (22 parole) entra nei passi del ciclo senza aumentare
+i tetti esistenti: la skill lifecycle resta sotto il tetto di 630 parole (597
+sull'albero principale, 599 sul candidato). I 17 test del ciclo e i 5
+del budget passano su albero principale e candidato; la milestone si chiude con
+la revisione indipendente e i gate registrati nel run. Dettagli nel
+[report P8](../reports/2026-10-24-code-context-p8.md). P9-P10 restano da completare.
 
 ## P9: consumatori e chiusura
 
