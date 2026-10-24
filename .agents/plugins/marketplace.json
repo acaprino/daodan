@@ -8,7 +8,7 @@
   ],
   "metadata": {
     "description": "Shinatama: companion AI domain specialists, research, deliberation, office workflows and framework toolkits across five coding-agent hosts.",
-    "version": "2.4.0"
+    "version": "2.5.0"
   },
   "name": "shinatama",
   "owner": {
@@ -81,7 +81,7 @@
         "./skills/saas-business-plan"
       ],
       "source": "./exports/codex/plugins/business",
-      "version": "1.12.3"
+      "version": "1.13.0"
     },
     {
       "author": {

@@ -293,7 +293,7 @@
             ]
           },
           {
-            "description": "Draft and audit data-protection documents from a ROPA-driven model. TRIGGER WHEN: the user needs a Privacy Policy, Cookie Policy, DPA, consent notice, or DPIA under GDPR, ePrivacy, Codice Privacy, CCPA, LGPD, or FADP. DO NOT TRIGGER WHEN: general legal, contract, NDA, or IP questions (use legal-advisor); cookie banners, Consent Mode v2, or GTM (use digital-marketing:ga4-implementation-expert); business planning (use business-planner).",
+            "description": "Draft and audit data-protection documents from a ROPA-driven model, grounded in the projects dependency manifests and platform declarations when its source is available. TRIGGER WHEN: the user needs a Privacy Policy, Cookie Policy, DPA, consent notice, DPIA, or the Google Play Data safety and App Store privacy answers, under GDPR, ePrivacy, Codice Privacy, CCPA, LGPD, or FADP. DO NOT TRIGGER WHEN: general legal, contract, NDA, or IP questions (use legal-advisor); cookie banners, Consent Mode v2, or GTM (use digital-marketing:ga4-implementation-expert); business planning (use business-planner).",
             "file": "agents/privacy-doc-generator.md",
             "id": "business:privacy-doc-generator",
             "permissions": [
@@ -2020,5 +2020,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "2.4.0"
+  "version": "2.5.0"
 }

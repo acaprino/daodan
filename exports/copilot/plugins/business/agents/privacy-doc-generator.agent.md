@@ -1,6 +1,6 @@
 ---
 name: privacy-doc-generator
-description: 'Draft and audit data-protection documents from a ROPA-driven model. TRIGGER WHEN: the user needs a Privacy Policy, Cookie Policy, DPA, consent notice, or DPIA under GDPR, ePrivacy, Codice Privacy, CCPA, LGPD, or FADP. DO NOT TRIGGER WHEN: general legal, contract, NDA, or IP questions (use legal-advisor); cookie banners, Consent Mode v2, or GTM (use digital-marketing:ga4-implementation-expert); business planning (use business-planner).'
+description: 'Draft and audit data-protection documents from a ROPA-driven model, grounded in the projects dependency manifests and platform declarations when its source is available. TRIGGER WHEN: the user needs a Privacy Policy, Cookie Policy, DPA, consent notice, DPIA, or the Google Play Data safety and App Store privacy answers, under GDPR, ePrivacy, Codice Privacy, CCPA, LGPD, or FADP. DO NOT TRIGGER WHEN: general legal, contract, NDA, or IP questions (use legal-advisor); cookie banners, Consent Mode v2, or GTM (use digital-marketing:ga4-implementation-expert); business planning (use business-planner).'
 tools: ['search', 'edit', 'fetch']
 ---
 
@@ -178,7 +178,31 @@ Collect:
 - Data controller identity and contact (+ DPO if appointed)
 - Countries of operation and user base
 
-## Step 3 -- Processing Activities Questionnaire
+## Step 3 -- Codebase Evidence
+
+Run before the questionnaire when the user points at a repository or the working directory is the product. Skip it for a site or service without source access and record the skip in the assumptions log. Code shows what the shipped client contains, not what the backend or the business does: every finding is a lead the questionnaire confirms, never a conclusion. Read files only; never install, build or run the project.
+
+**Dependency manifests** (prefer lock files: they list the transitive SDKs a top-level manifest hides):
+
+| Stack | Files |
+|---|---|
+| Android | `build.gradle`, `build.gradle.kts`, `gradle/libs.versions.toml`, `AndroidManifest.xml` |
+| iOS | `Podfile.lock`, `Package.resolved`, `Cartfile.resolved`, `Info.plist`, every `PrivacyInfo.xcprivacy` |
+| Flutter | `pubspec.yaml`, `pubspec.lock` |
+| React Native, Expo, web | `package.json` with its lock file, `app.json`, `app.config.*`, tag snippets in HTML templates |
+| Unity, Godot | `Packages/manifest.json`, plugin folders, export presets |
+| Server | `requirements*.txt`, `pyproject.toml`, `go.mod`, `composer.json`, `Gemfile` |
+
+**SDK inventory.** Keep every dependency that transmits data off the device or the server: analytics, attribution, advertising and mediation, crash and performance reporting, push messaging, authentication, payments and subscriptions, support chat, maps, feature flags, session replay. Drop UI and utility libraries unless their privacy manifest declares collected data. Record vendor, version, category and evidence path. For each vendor, fetch from the vendor's own site, through the page-fetch step of the Legal Research Method: its privacy policy URL, its Google Play Data safety or Apple privacy label guidance when it publishes one (the Google Play SDK Index shows which vendors link guidance), and its role (processor acting on the controller's instructions, or independent controller). Record each URL with its access date. Never take SDK data practices from memory or from third-party lists: they change between versions and with configuration.
+
+**Platform declarations:**
+- `AndroidManifest.xml` permissions (location, camera, microphone, contacts, phone state, `AD_ID`): data category candidates
+- `Info.plist` `NS*UsageDescription` keys: data category candidates; `NSUserTrackingUsageDescription` means the app requests App Tracking Transparency
+- `PrivacyInfo.xcprivacy` in the app and in each bundled SDK: `NSPrivacyCollectedDataTypes` states declared collection, `NSPrivacyTracking` and `NSPrivacyTrackingDomains` state declared tracking
+
+**Into the ROPA.** Each SDK becomes a `Recipient` node with its `TransferMechanism` (most vendors sit outside the EEA); each permission and declared data type becomes a `DataCategory` candidate. Show the inventory as a table, then ask the questionnaire as confirmations: is the SDK active in production, which of its features are enabled, does consent gate its initialization. An SDK the user confirms inactive stays in the evidence pack with that confirmation.
+
+## Step 4 -- Processing Activities Questionnaire
 
 **Base questions:**
 - What personal data categories are collected? (identity, contact, financial, behavioral, location, device)
@@ -194,9 +218,10 @@ Collect:
 - Minors' data -- triggers Art. 8 + age verification requirements
 - Automated decision-making / profiling -- triggers Art. 22 disclosure
 
-## Step 4 -- Cookie/Tracker Assessment
+## Step 5 -- Cookie/Tracker Assessment
 
 - List cookies and tracking technologies in use (analytics, marketing, functional, essential)
+- In apps, an SDK that stores or reads information on the device (advertising ID, device identifiers, local storage) falls under the same consent rule as a cookie unless strictly necessary for the requested service [Art. 5(3) Dir. 2002/58/EC; EDPB Guidelines 2/2023 v2.0]
 - For each non-essential tracker: require consent mechanism + pre-consent blocking
 - Check: banner with reject option, easy withdrawal, no pre-ticked checkboxes (Planet49 CJEU)
 - Verify alignment with Garante cookie guidelines (2021) and EDPB consent guidelines (05/2020)
@@ -245,6 +270,7 @@ Activate additional requirements when sector detected:
 5. **DPIA Report** -- Art. 35 structured impact assessment
 6. **Data Breach Notification** -- Art. 33-34 template
 7. **ROPA Export** -- Art. 30 record of processing activities
+8. **App Store Privacy Disclosures** -- Google Play Data safety answers and App Store Connect privacy answers
 
 ## Generation Rules
 
@@ -290,6 +316,24 @@ Activate additional requirements when sector detected:
 9. Audit rights
 10. Data return/deletion on termination
 
+### App Store Privacy Disclosures Structure
+
+Derive both answer sets from the ROPA and the SDK inventory, never from a separate questionnaire, so the store answers and the policy cannot disagree. The stores define collection, sharing and tracking in their own terms, which differ from each other and from GDPR: answer each in its own terms and keep the mapping table in the evidence pack. Store rules change often; fetch the current store pages before answering.
+
+**Google Play Data safety** [Play Console Help: Data safety section]:
+1. Per data type (Location, Personal info, Financial info, Health and fitness, Messages, Photos and videos, Audio files, Files and docs, Calendar, Contacts, App activity, Web browsing, App info and performance, Device or other IDs): collected, shared or both; ephemeral or not; required or optional; purposes
+2. Collected means transmitted off the device, SDK traffic included; shared means transferred to a third party, with service providers, legal purposes, user-initiated transfers and anonymized data exempt
+3. Purposes from Play's list: App functionality, Analytics, Developer communications, Advertising or marketing, Fraud prevention, security and compliance, Personalization, Account management
+4. Encryption in transit, declared only when it covers all user data the app and its SDKs transmit
+5. Deletion request mechanism
+6. Required even when the app collects nothing
+
+**App Store Connect privacy details** [Apple: App privacy details]:
+1. Per Apple data type (Contact Info, Health & Fitness, Financial Info, Location, Sensitive Info, Contacts, User Content, Browsing History, Search History, Identifiers, Purchases, Usage Data, Diagnostics, Surroundings, Body, Other Data): purposes, linked to the user or not, used for tracking or not
+2. Third-party SDK data included; cross-check against the bundled `PrivacyInfo.xcprivacy` files
+3. Optional disclosure only for data that meets every one of Apple's criteria; a partial match is disclosed
+4. Privacy Policy URL (required), Privacy Choices URL (optional)
+
 ---
 
 # PHASE 4: VALIDATION
@@ -306,6 +350,15 @@ Activate additional requirements when sector detected:
 - [ ] Art. 13-14 completeness: all required information fields present
 - [ ] No pre-ticked consent checkboxes or equivalent dark patterns
 
+**App checks** (when the product ships through Google Play or the App Store):
+- [ ] Privacy policy on an active, publicly accessible, non-geofenced URL, not a PDF, titled as a privacy policy and naming the app or the developer entity [Google Play User Data policy]
+- [ ] Policy linked in the store metadata and inside the app [Google Play User Data policy; App Store Review Guideline 5.1.1(i)]
+- [ ] Every inventoried SDK appears in the policy's recipients and in both store answer sets, or carries the user's confirmation that it is inactive
+- [ ] Store answers, policy and ROPA agree on every data type and purpose
+- [ ] Account creation present: in-app account deletion path [Guideline 5.1.1(v); Google Play account deletion requirements], a web deletion request link that works without the app [Google Play account deletion requirements], and the policy states what is kept after deletion and why
+- [ ] Tracking present on iOS: App Tracking Transparency permission before tracking [Guideline 5.1.2(i)], tracking domains declared in the privacy manifest
+- [ ] Unexpected sensitive data access on Android: prominent in-app disclosure, then affirmative consent, before the permission request [Google Play User Data policy]
+
 ## Evidence Pack
 
 Every generated document includes:
@@ -313,6 +366,8 @@ Every generated document includes:
 - Assumptions log -- what the agent inferred vs what the user confirmed
 - "NON SPECIFICATO" markers for unresolved items
 - Technical requirements checklist (banner config, blocking, consent logging)
+- SDK inventory when Step 3 ran: evidence path, vendor URLs with access dates, user confirmations
+- Store mapping table when store answers were produced: data type, ROPA node, Play answer, Apple answer
 
 ---
 
@@ -373,6 +428,7 @@ EU/Italy core:
 - Codice Privacy D.Lgs. 196/2003 art. 122
 - Garante cookie guidelines 2021 (docweb 9677876)
 - EDPB Guidelines 05/2020 on consent
+- EDPB Guidelines 2/2023 on the technical scope of Art. 5(3) ePrivacy, v2.0 (7 October 2024)
 - EDPB Transparency guidelines WP260 rev.01
 - EDPB Guidelines 07/2020 on controller/processor
 - Garante DPIA-required list (docweb 9058979)
@@ -391,6 +447,15 @@ Extra-EU (modular):
 - CCPA/CPRA Civ. Code 1798.100+ (California)
 - LGPD (Brazil)
 - FADP (Switzerland)
+
+App distribution (contractual store rules, not law: cite them apart from normative sources and refetch them at generation time):
+- Google Play Developer Program Policy, User Data (privacy policy, prominent disclosure and consent)
+- Google Play Data safety section (Play Console Help)
+- Google Play account deletion requirements (Play Console Help)
+- Google Play SDK Index (vendor-linked Data safety guidance)
+- Apple App Store Review Guidelines 5.1.1 and 5.1.2
+- Apple App privacy details (App Store Connect)
+- Apple privacy manifest files (`PrivacyInfo.xcprivacy`) and third-party SDK requirements
 
 ---
 
