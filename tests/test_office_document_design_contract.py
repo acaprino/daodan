@@ -87,7 +87,7 @@ class DocumentDesignContractTests(unittest.TestCase):
         components = self.plugin.components
         self.assertEqual(
             set(components.roles),
-            {ROLE, "presentation-designer", "presentation-reviewer"},
+            {ROLE, "document-reviewer", "presentation-designer", "presentation-reviewer"},
         )
         self.assertNotIn(ROLE, components.skills)
         self.assertNotIn(ROLE, components.workflows)
@@ -95,9 +95,9 @@ class DocumentDesignContractTests(unittest.TestCase):
         self.assertIn("presentation-design", components.skills)
         self.assertFalse(self.plugin.mcp_servers)
 
-    def test_word_dispatch_is_isolated_and_only_owns_the_document_designer(self):
+    def test_word_dispatch_is_isolated_and_only_owns_its_designer_and_reviewer(self):
         dispatch = self.workflow.dispatch
-        self.assertEqual(dispatch.roles, (f"office/{ROLE}",))
+        self.assertEqual(dispatch.roles, (f"office/{ROLE}", "office/document-reviewer"))
         self.assertTrue(dispatch.isolated)
         self.assertFalse(dispatch.inline_workers)
         self.assertTrue(all(phase.invoke is None for phase in self.workflow.phases))
@@ -317,6 +317,43 @@ class DocumentDesignContractTests(unittest.TestCase):
                     ))
                 else:
                     self.assertIn("./skills/wordcraft", catalog["plugins"][0]["skills"])
+
+
+class DocumentReviewContractTests(unittest.TestCase):
+    setUpClass = DocumentDesignContractTests.__dict__["setUpClass"]
+    tearDownClass = DocumentDesignContractTests.__dict__["tearDownClass"]
+    entry = DocumentDesignContractTests.entry
+
+    """Word gets the same independent review, severity scale and coverage check as PowerPoint."""
+
+    def test_document_reviewer_is_declared_registered_and_dispatched_on_every_host(self):
+        self.assertIn("document-reviewer", self.plugin.components.roles)
+        sidecar = _read(OFFICE / "workflows/document.toml")
+        self.assertIn('"office/document-reviewer"', sidecar)
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                relative = ROLE_PATHS[host].replace("document-designer", "document-reviewer")
+                body = _normalized(_read(package / relative))
+                for phrase in ("Verify candidate path and SHA-256", "Review every page",
+                               "## Classify every defect", "**Blocking**", "**Advisory**",
+                               "document-level defect", "pass/needs-fix/blocked verdict",
+                               "Do not edit the document, generate images or dispatch workers",
+                               "docx_inspect.py coverage", "`office:design`", "`office:docx`"):
+                    self.assertIn(phrase, body)
+                self.assertIn("document-reviewer", self.entry(host))
+                method = _normalized(_read(package / "skills/docx/SKILL.md"))
+                for phrase in ("Dispatch `office:document-reviewer`", "Run at most three review rounds",
+                               "resolve every blocking finding", "docx_inspect.py\" coverage",
+                               "never cut content the user did not approve"):
+                    self.assertIn(phrase, method)
+
+    def test_read_only_review_binds_to_the_unchanged_source(self):
+        for host, package in self.packages.items():
+            with self.subTest(host=host):
+                body = _normalized(_read(package / ROLE_PATHS[host].replace("document-designer", "document-reviewer")))
+                self.assertIn("the document under review is the unchanged source", body)
+                workflow = _normalized(self.entry(host))
+                self.assertIn("rendered unchanged source for a read-only review", workflow)
 
 
 if __name__ == "__main__":

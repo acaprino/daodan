@@ -8,7 +8,7 @@ concurrency = "forbidden"
 produces = ["artifact:document-result", "artifact:document-review"]
 
 [dispatch]
-roles = ["office/document-designer"]
+roles = ["office/document-designer", "office/document-reviewer"]
 isolated = true
 
 [contract]

@@ -33,7 +33,7 @@ from host_binding_assertions import canonical_markdown, loaded_instruction_text,
 OFFICE = REPO_ROOT / "plugins/office"
 ADAPTERS = REPO_ROOT / "adapters"
 ROLES = ("presentation-designer", "presentation-reviewer")
-ALL_ROLES = (*ROLES, "document-designer")
+ALL_ROLES = (*ROLES, "document-designer", "document-reviewer")
 COMPATIBILITY_REFERENCE = Path("skills/presentation-design/references/pptx-compatibility.md")
 DESIGN_LIBRARY_REFERENCE = Path("skills/presentation-design/references/design-library.md")
 HARNESS_PATHS = {

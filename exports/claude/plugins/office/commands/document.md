@@ -97,7 +97,7 @@ Harness obligations, none of them optional:
 - Follow the dispatch plan below in phase order. A phase starts only after every phase it needs has
   closed, and a phase closes only when every worker it dispatched is recorded `delivered` or
   `failed`. A missing result is a recorded failure, never a silently shorter report.
-- Dispatch only roles from this set, as the phase graph or loaded method requires: `document-designer`
+- Dispatch only roles from this set, as the phase graph or loaded method requires: `document-designer`, `document-reviewer`
 - A worker writes only what the coordinator assigned to it: its intermediate report and, when its
   task authorizes edits, its assigned files. It never reverts preexisting or foreign changes.
   The final report artifact has one exclusive owner in its declaring phase.
@@ -109,6 +109,7 @@ Dispatch plan:
 Role bindings:
 
 - `document-designer`: dispatch the installed `office:document-designer` agent by its qualified identity.
+- `document-reviewer`: dispatch the installed `office:document-reviewer` agent by its qualified identity.
 
 The phase graph, the isolation and join policies and the record schemas are in
 `contracts/document.workflow.toml`, which ships with this package.
@@ -132,12 +133,16 @@ binding. Require concrete page layouts and template instructions, verify the
 assigned design report, then load `office:wordcraft` to build, save, reopen and
 render the actual DOCX in the coordinator. On the narrow and read-only routes,
 retain the existing layout and do not start creative dispatch. The read-only
-route never writes to the source document.
+route never writes to the source document. On every route, dispatch the
+isolated `office:document-reviewer` on the rendered candidate (or on the
+rendered unchanged source for a read-only review) as `office:docx` specifies,
+and resolve its blocking findings within at most three review rounds.
 
 When figures come from a workbook, load the `office:xlsx` skill to inspect its
 native data and calculation evidence before including them in the document.
 
 Deliver editable `.docx` on the substantial route, preserve the required source
 format for narrow edits, and deliver the requested findings or export on the
-read-only route. Include a concise document review stating preservation checks,
-rendered review scope and any unsupported operation or unverified layout.
+read-only route. Include a concise document review recording candidate identity,
+inspected pages, the reviewer's verdict and open findings, coverage of source
+text, preservation checks and any unsupported operation or unverified layout.

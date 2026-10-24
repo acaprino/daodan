@@ -1118,6 +1118,18 @@
                 "resource": "<package-root>/**"
               }
             ]
+          },
+          {
+            "description": "Independently inspect Word document renders, source fidelity, native structure evidence and preservation deltas. Return a review bound to the exact candidate, or to the unchanged source document on a read-only review, without editing it.",
+            "file": "agents/document-reviewer.md",
+            "id": "office:document-reviewer",
+            "permissions": [
+              {
+                "action": "external_directory",
+                "effect": "allow",
+                "resource": "<package-root>/**"
+              }
+            ]
           }
         ],
         "commands": [
@@ -2050,5 +2062,5 @@
   "name": "shinatama",
   "private": true,
   "type": "module",
-  "version": "3.0.0"
+  "version": "3.1.0"
 }

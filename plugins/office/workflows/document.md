@@ -24,12 +24,16 @@ binding. Require concrete page layouts and template instructions, verify the
 assigned design report, then load `office:wordcraft` to build, save, reopen and
 render the actual DOCX in the coordinator. On the narrow and read-only routes,
 retain the existing layout and do not start creative dispatch. The read-only
-route never writes to the source document.
+route never writes to the source document. On every route, dispatch the
+isolated `office:document-reviewer` on the rendered candidate (or on the
+rendered unchanged source for a read-only review) as `office:docx` specifies,
+and resolve its blocking findings within at most three review rounds.
 
 When figures come from a workbook, load the `office:xlsx` skill to inspect its
 native data and calculation evidence before including them in the document.
 
 Deliver editable `.docx` on the substantial route, preserve the required source
 format for narrow edits, and deliver the requested findings or export on the
-read-only route. Include a concise document review stating preservation checks,
-rendered review scope and any unsupported operation or unverified layout.
+read-only route. Include a concise document review recording candidate identity,
+inspected pages, the reviewer's verdict and open findings, coverage of source
+text, preservation checks and any unsupported operation or unverified layout.

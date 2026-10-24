@@ -6,11 +6,14 @@ authorized edits, Word field updates, semantic completeness or layout fidelity.
 """
 
 import argparse
+import difflib
 import hashlib
 import importlib.util
 import json
 import re
 import sys
+import unicodedata
+from collections import Counter
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -35,6 +38,16 @@ STORY_ROOTS = {"document", "hdr", "ftr", "footnotes", "endnotes", "comments", "g
 STORY_RELATIONS = {"header": "hdr", "footer": "ftr", "footnotes": "footnotes", "endnotes": "endnotes", "comments": "comments"}
 REVISION_TAGS = {"ins", "del", "moveFrom", "moveTo", "pPrChange", "rPrChange", "tblPrChange", "trPrChange", "tcPrChange", "sectPrChange", "numberingChange", "cellIns", "cellDel", "cellMerge"}
 DELTA_NOTICE = "Observed deltas require review against authorized edits. Structural validity and unchanged text do not establish semantic preservation or layout fidelity."
+# Shared bound on closest-match and added-text comparisons, so hostile documents stay linear in time.
+MAX_TEXT_COMPARISONS = 5_000_000
+COVERAGE_NOTICE = (
+    "Structural text evidence only, not a visual or fidelity verdict. Source paragraphs and table "
+    "cells of the body, headers, footers, footnotes, endnotes and comments are matched "
+    "position-independently after NFKC and whitespace normalization, without case folding: an item "
+    "is present when its text occurs anywhere in the candidate text of the same group (body with "
+    "body, notes with notes, furniture with furniture). Presence does not prove meaning, order, "
+    "emphasis or rendering. Similarity ratios for missing items are hints and never count as "
+    "present. Field results, tracked deletions and generated numbering are not text items.")
 
 
 def word(element, name=None):
@@ -208,6 +221,236 @@ def compare_documents(before_path, after_path):
     }
 
 
+def normalize_text(text):
+    return " ".join(unicodedata.normalize("NFKC", text).split())
+
+
+def visible_text(element):
+    """Paragraph text as a reader sees it: no tracked deletions, no field instructions."""
+    parts = []
+    for item in element.iter():
+        if not word(item):
+            continue
+        name = package.local_name(item.tag)
+        if name == "t":
+            parts.append(item.text or "")
+        elif name in {"tab", "br", "cr"}:
+            parts.append(" ")
+    return normalize_text("".join(parts))
+
+
+def _text_without_deletions(element):
+    """A copy-free walk that skips w:del subtrees and instrText, so deleted text is not an item."""
+    skip = {"del", "moveFrom", "instrText", "delInstrText", "delText"}
+    stack, parts = [element], []
+    while stack:
+        node = stack.pop()
+        name = package.local_name(node.tag) if word(node) else None
+        if name in skip:
+            continue
+        if name == "t":
+            parts.append(node.text or "")
+        elif name in {"tab", "br", "cr"}:
+            parts.append(" ")
+        stack.extend(reversed(list(node)))
+    return normalize_text("".join(parts))
+
+
+def is_heading(paragraph):
+    for properties in (item for item in paragraph if word(item, "pPr")):
+        for item in properties:
+            if word(item, "outlineLvl"):
+                return True
+            if word(item, "pStyle"):
+                style = next((value for key, value in item.attrib.items() if package.local_name(key) == "val"), "")
+                if re.match(r"(?i)^(heading|title|titolo|überschrift|titre|t[ií]tulo)", style):
+                    return True
+    return False
+
+
+def coverage_items(inspection, roots, label):
+    """Every visible text item of a document: paragraphs outside tables and table cells, per story."""
+    items = []
+    for story in inspection["stories"]:
+        root = roots.get(story["part"])
+        if root is None:
+            continue
+        kind = story["kind"]
+        group = "body" if kind in {"document", "glossaryDocument"} else "notes" if kind in {"footnotes", "endnotes", "comments"} else "furniture"
+        section = None
+        in_table = set()
+        for table in descendants(root, "tbl"):
+            for cell in descendants(table, "tc"):
+                for paragraph in descendants(cell, "p"):
+                    in_table.add(id(paragraph))
+                text = _text_without_deletions(cell)
+                if text:
+                    items.append({"part": story["part"], "group": group, "kind": "cell", "section": section, "text": text})
+        for paragraph in descendants(root, "p"):
+            if id(paragraph) in in_table:
+                continue
+            text = _text_without_deletions(paragraph)
+            if not text:
+                continue
+            if is_heading(paragraph):
+                section = text
+            items.append({"part": story["part"], "group": group, "kind": "heading" if is_heading(paragraph) else "paragraph",
+                          "section": section, "text": text})
+    return items
+
+
+def read_cuts(path, errors):
+    """Return validated cut entries. A malformed file adds errors and applies no cut."""
+    try:
+        with open(path, "rb") as stream:
+            data = stream.read(package.MAX_PART_BYTES + 1)
+        if len(data) > package.MAX_PART_BYTES:
+            raise ValueError("file exceeds the byte limit")
+        entries = json.loads(data.decode("utf-8-sig"))
+    except (OSError, ValueError, RecursionError) as exc:
+        errors.append("Invalid cuts file: " + str(exc))
+        return []
+    problems, cuts = [], []
+    if not isinstance(entries, list):
+        problems.append("expected a JSON list of cut entries")
+        entries = []
+    for index, entry in enumerate(entries):
+        where = f"cuts[{index}]: "
+        if not isinstance(entry, dict):
+            problems.append(where + "expected an object")
+            continue
+        unknown = sorted(set(entry) - {"text", "section", "reason"})
+        if unknown:
+            problems.append(where + "unknown fields: " + ", ".join(unknown))
+        reason = entry.get("reason")
+        if not isinstance(reason, str) or not reason.strip():
+            problems.append(where + "reason must be a non-empty string")
+        if ("text" in entry) == ("section" in entry):
+            problems.append(where + "give exactly one of text or section")
+            continue
+        key = "text" if "text" in entry else "section"
+        value = entry.get(key)
+        if not isinstance(value, str) or not normalize_text(value):
+            problems.append(where + f"{key} must be a non-empty string")
+            continue
+        cuts.append({"index": index, key: normalize_text(value), "reason": reason})
+    if problems:
+        errors.extend("Invalid cuts file: " + problem for problem in problems)
+        return []
+    return cuts
+
+
+def closest_text(text, pool, budget):
+    """Best difflib ratio in the pool, or (None, None) once the comparison budget runs out."""
+    matcher = difflib.SequenceMatcher(None)
+    matcher.set_seq2(text)
+    best, ratio = None, 0.0
+    for candidate in pool:
+        if budget[0] >= MAX_TEXT_COMPARISONS:
+            budget[1] = True
+            return None, None
+        budget[0] += 1
+        matcher.set_seq1(candidate)
+        if matcher.real_quick_ratio() > ratio and matcher.quick_ratio() > ratio:
+            value = matcher.ratio()
+            if value > ratio:
+                best, ratio = candidate, value
+    return best, round(ratio, 3)
+
+
+def derived_from_source(text, haystack, sources, budget):
+    """True when the text occurs in the source, or is source texts merged with punctuation only."""
+    if text in haystack:
+        return True
+    remainder = text
+    for source in sources:
+        if budget[0] >= MAX_TEXT_COMPARISONS:
+            budget[1] = True
+            return False
+        budget[0] += 1
+        if source in remainder:
+            remainder = remainder.replace(source, "\n")
+    return not any(character.isalnum() for character in remainder)
+
+
+def _read_with_roots(path):
+    inspection = inspect_document(path)
+    roots = {}
+    if inspection["valid"] or inspection["parts"]:
+        try:
+            parts = package.read_package(path)
+            budget = [0]
+            for name, data in parts.items():
+                if name.endswith(".xml"):
+                    try:
+                        roots[name] = package.xml_part(name, data, budget)
+                    except package.InspectionError:
+                        pass
+        except (package.InspectionError, RecursionError):
+            pass
+    return inspection, roots
+
+
+def check_coverage(source_path, candidate_path, cuts_path=None):
+    source, source_roots = _read_with_roots(source_path)
+    candidate, candidate_roots = _read_with_roots(candidate_path)
+    errors = (["source: " + error for error in source["errors"]]
+              + ["candidate: " + error for error in candidate["errors"]])
+    cuts = [] if cuts_path is None else read_cuts(cuts_path, errors)
+    source_items = coverage_items(source, source_roots, "source")
+    candidate_items = coverage_items(candidate, candidate_roots, "candidate")
+
+    pools = {"body": [], "notes": [], "furniture": []}
+    for item in candidate_items:
+        pools[item["group"]].append(item["text"])
+    haystacks = {name: "\n".join(texts) for name, texts in pools.items()}
+    unique_pools = {name: list(dict.fromkeys(texts)) for name, texts in pools.items()}
+    budget = [0, False]
+    for item in source_items:
+        covering = [cut["index"] for cut in cuts
+                    if cut.get("text") == item["text"]
+                    or ("section" in cut and item["section"] == cut["section"])]
+        if covering:
+            item["cuts"] = covering
+        if item["text"] in haystacks[item["group"]]:
+            item["status"] = "cut-but-present" if covering else "present"
+        elif covering:
+            item["status"] = "cut"
+        else:
+            item["status"] = "missing"
+            item["closest"], item["similarity"] = closest_text(item["text"], unique_pools[item["group"]], budget)
+    for cut in cuts:
+        covered = [item for item in source_items if cut["index"] in item.get("cuts", ())]
+        present = sum(item["status"] == "cut-but-present" for item in covered)
+        if not covered:
+            still_present = "text" in cut and any(cut["text"] in haystack for haystack in haystacks.values())
+        else:
+            still_present = present > 0 if "text" in cut else present == len(covered)
+        cut["status"] = "cut-but-present" if still_present else "applied" if covered else "unmatched"
+        cut["covered_items"], cut["present_items"] = len(covered), present
+
+    sources = {"body": [], "notes": [], "furniture": []}
+    for item in source_items:
+        sources[item["group"]].append(item["text"])
+    source_haystacks = {name: "\n".join(texts) for name, texts in sources.items()}
+    longest_first = {name: sorted(set(texts), key=len, reverse=True) for name, texts in sources.items()}
+    added = [{"part": item["part"], "kind": item["kind"], "text": item["text"]} for item in candidate_items
+             if not derived_from_source(item["text"], source_haystacks[item["group"]], longest_first[item["group"]], budget)]
+    counts = Counter(item["status"] for item in source_items)
+    valid = not errors
+    return {"schema": "daodan/docx-coverage/v1", "valid": valid, "errors": errors,
+            "complete": valid and counts["missing"] == 0,
+            "notice": COVERAGE_NOTICE,
+            "summary": {"source_items": len(source_items), "present": counts["present"],
+                        "cut": counts["cut"], "cut_but_present": counts["cut-but-present"],
+                        "unexpected_missing": counts["missing"], "added": len(added)},
+            "source": {"path": source["path"], "valid": source["valid"], "stories": len(source["stories"])},
+            "candidate": {"path": candidate["path"], "valid": candidate["valid"], "stories": len(candidate["stories"])},
+            "cuts_file": None if cuts_path is None else str(Path(cuts_path).resolve()),
+            "cuts": cuts, "items": source_items, "added": added,
+            "comparison_budget_exhausted": budget[1]}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -216,8 +459,23 @@ def main(argv=None):
     compare_parser = commands.add_parser("compare", help="Report native content and package deltas")
     compare_parser.add_argument("before", type=Path)
     compare_parser.add_argument("after", type=Path)
+    coverage_help = ("Check that every source text item (paragraphs, table cells, headers, footers, "
+                     "notes, comments) reached the candidate document, except approved cuts. "
+                     "Structural text evidence only, not a visual or fidelity verdict.")
+    coverage_parser = commands.add_parser("coverage", help=coverage_help, description=coverage_help)
+    coverage_parser.add_argument("source", type=Path)
+    coverage_parser.add_argument("candidate", type=Path)
+    coverage_parser.add_argument("--cuts", type=Path, help=(
+        'JSON list of approved cuts, each {"text": "...", "reason": "..."} (a source item with exactly '
+        'that normalized text) or {"section": "<heading text>", "reason": "..."} (every item from that '
+        'heading to the next heading)'))
     args = parser.parse_args(argv)
-    result = inspect_document(args.document) if args.command == "inspect" else compare_documents(args.before, args.after)
+    if args.command == "inspect":
+        result = inspect_document(args.document)
+    elif args.command == "compare":
+        result = compare_documents(args.before, args.after)
+    else:
+        result = check_coverage(args.source, args.candidate, args.cuts)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0 if result["valid"] else 1
 

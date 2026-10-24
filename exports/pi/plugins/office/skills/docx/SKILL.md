@@ -140,7 +140,19 @@ Use the read-only helper on native DOCX packages:
 ```text
 python "<plugin-root>/skills/docx/scripts/docx_inspect.py" inspect INPUT.docx
 python "<plugin-root>/skills/docx/scripts/docx_inspect.py" compare INPUT.docx OUTPUT.docx
+python "<plugin-root>/skills/docx/scripts/docx_inspect.py" coverage INPUT.docx OUTPUT.docx --cuts cuts.json
 ```
+
+`compare` matches paragraphs by position, so it suits scoped edits. After a
+restyle, restructure or shortening, use `coverage`: it checks, independently of
+position, that every source paragraph and table cell of the body, headers,
+footers, notes and comments reached the candidate, except the approved cuts
+(`cuts.json`, a JSON list of `{"text": ..., "reason": ...}` or
+`{"section": "<heading text>", "reason": ...}`, the latter covering every item
+from that heading to the next). `complete` is true only when no item is
+unexpectedly missing; missing items carry their closest candidate text and a
+similarity ratio. Tracked deletions and field instructions are not text items.
+It is structural text evidence, not a visual or fidelity verdict.
 
 The JSON inventories native content, document structure and preservation-sensitive
 features, validates bounded ZIP/XML and internal relationship targets, and reports
@@ -239,7 +251,12 @@ styles, lists, tables, images, section settings, headers/footers and references.
 For existing-file edits, compare source and candidate; account for removed parts
 and unexpected content, style, relationship or sensitive-feature changes. Changed
 part hashes show changed bytes, not semantic loss. Counts alone cannot prove that
-comment anchors, revision ranges, fields or hyperlinks remain valid.
+comment anchors, revision ranges, fields or hyperlinks remain valid. When the
+substantial route starts from an existing document (derived, restyled,
+restructured or shortened), write the approved cuts recorded at intake to a cuts
+file and run `docx_inspect.py coverage` on the source and each candidate. Every
+unexpectedly missing item is restored or brought back to the user as a proposed
+cut; never cut content the user did not approve.
 
 Render the saved DOCX with an available compatible renderer and inspect its actual
 pages. Check clipping, overlaps, headings separated from their text, tables split
@@ -247,10 +264,32 @@ awkwardly, blank pages, image quality, page numbers and header/footer collisions
 Correct routine defects within the brief, save and review the affected pages again.
 Verify key claims and figures independently of the document's own text.
 
+## Independent review
+
+Dispatch `office:document-reviewer` in an isolated context through the registered
+`office:document` entry's generated bindings after actual candidate rendering, or
+on the read-only route after rendering the unchanged source, which then stands in
+for the candidate. Supply the exact candidate path and SHA-256, render engine and
+version, page manifest, brief, design report, source and candidate inspections,
+allowed changes, the coverage report when one exists, the `office:design` record
+and font evidence. Require inspected page identities, concrete defects classified
+blocking or advisory, preservation findings, coverage gaps, field-update evidence
+and a pass/needs-fix/blocked verdict. An empty response or an uninspected render
+cannot satisfy this delivery. Unavailable isolation blocks the review delivery.
+
+Verify report artifacts and coverage, resolve every blocking finding, rerender
+changed pages and obtain an updated review tied to the new candidate. Fix a
+document-level defect at its source (a style, a section, the template), not page
+by page. Apply an advisory finding only when the fix is local and cannot create
+a new defect. Run at most three review rounds: if blocking findings remain after
+the third, stop and deliver the candidate with them listed as open, rather than
+oscillating between fixes. Do not apply a verdict to another file.
+
 When the document uses fonts outside Microsoft Office, embed them in the delivered
 copy with `office:design`'s `font_embed.py` and record its
 inspection result. Deliver the editable `.docx`, with a useful preview when
-available, and a concise account of changes. Name the editing and rendering engines and any remaining
+available, and a concise account of changes with the reviewer's verdict and open
+findings. Name the editing and rendering engines and any remaining
 preservation or field-update limit. If rendering was unavailable, label page layout
 unverified and distinguish completed structural checks. Never call a document
 visually verified from package inspection alone.

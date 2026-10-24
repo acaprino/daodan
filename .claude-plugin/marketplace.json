@@ -7,7 +7,7 @@
   ],
   "metadata": {
     "description": "Shinatama: companion AI domain specialists, research, deliberation, office workflows and framework toolkits across five coding-agent hosts.",
-    "version": "3.0.0"
+    "version": "3.1.0"
   },
   "name": "shinatama",
   "owner": {
@@ -296,6 +296,7 @@
     {
       "agents": [
         "./agents/document-designer.md",
+        "./agents/document-reviewer.md",
         "./agents/presentation-designer.md",
         "./agents/presentation-reviewer.md"
       ],
@@ -322,7 +323,7 @@
         "./skills/xlsx"
       ],
       "source": "./exports/claude/plugins/office",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "agents": [
