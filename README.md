@@ -60,14 +60,14 @@ works alone and is also a step of the task cycle.
 | | `/daodan:refactor-code` | Restructure with behavior unchanged, readability included |
 | | `/daodan:continue-task` | Resume the branch's task from any session; your text answers pending questions |
 | | `/daodan:show-status` | Open tasks, who holds them, pending questions, map and records |
-| | `/daodan:finish-task` | Branch review, merge with your authorization, record promoted, knowledge realigned |
+| | `/daodan:finish-task` | Branch review, merge with your authorization, record promoted when there is one, knowledge realigned |
 | | `/daodan:sync-upstream` | Bring in others' commits: fetch, report, fast-forward only, realign |
 | Review | `/daodan:review-changes` | Light review of your changes, a commit, a file or a document |
 | | `/daodan:review-branch` | Complete review of a branch or a pull request |
 | Tools | `/daodan:write-tests` | Tests for the code you name |
 | | `/daodan:map-code` | Deepen the Codebase Map on an area, or map the project |
 | | `/daodan:write-docs` | Realign the docs, or write a guide, the README or the instructions |
-| | `/daodan:record-decision` | A decision record outside a task |
+| | `/daodan:record-decision` | A decision record outside a task; turns records on for a project without them |
 | | `/daodan:tidy-repo` | Junk files, dead code, redundant tests: preview, then one authorization |
 | | `/daodan:humanize-text` | Make a text read naturally |
 
@@ -89,8 +89,10 @@ Copilot; OpenCode V2 uses the Claude Code form.
 
 A work command asks whether to work in a worktree, a branch or in place, then
 interviews you with real examples from your code, one question at a time, until
-scope, examples, rejected alternatives and invariants are fixed. It writes a
-proposed decision record under `docs/adr/`, plans waves of micro-tasks of at most
+scope, examples, rejected alternatives and invariants are fixed. It writes them
+as a proposed decision record under `docs/adr/` when the project keeps decision
+records, a choice asked once at its first use, or into the task's run otherwise;
+then it plans waves of micro-tasks of at most
 four files, has the stack's specialist write each one test first, and commits each
 with a line naming the task and wave. It stops only for your answers, the plan
 approval and the merge authorization. How many reviewers each review gets is
@@ -123,7 +125,7 @@ one of them is disabled. External dependencies must also be available on the hos
 
 The lifecycle owns its task cycle and declares no upstream development method:
 its interview, plan and execution are shaped by the Codebase Map, the decision
-records under `docs/adr/` and the protocol's wave rules. Testing uses
+records under `docs/adr/` when the project keeps them, and the protocol's wave rules. Testing uses
 mattpocock-skills@mattpocock and developer-essentials@claude-code-workflows.
 The [dependency catalog](.claude-plugin/marketplace.json) records the exact declarations.
 No upstream method is copied into a second local implementation.

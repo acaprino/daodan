@@ -530,7 +530,7 @@
       "daodan": {
         "commands": [
           {
-            "description": "Bring a project into the Daodan cycle: map, decision record index, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
+            "description": "Bring a project into the Daodan cycle: the first-use choices (decision records, analysis depth), map, decision record index when chosen, verified environment and commands, the loop block in the instructions, the test baseline. On an empty folder, scaffold it first. TRIGGER WHEN: a project has never been used with Daodan, or the user asks to set it up or start a new project. DO NOT TRIGGER WHEN: the project is already initialized and the user wants work done (use new-feature, fix-bug or refactor-code, which initialize by themselves when needed).",
             "file": "commands/init-project.md",
             "name": "daodan:init-project"
           },
@@ -550,7 +550,7 @@
             "name": "daodan:run-maintenance"
           },
           {
-            "description": "Explore an idea with the user, grounded in the code and the decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
+            "description": "Explore an idea with the user, grounded in the code and, when the project keeps them, its decision records: one question at a time, alternatives with their costs. Writes no code. Ends by starting the feature, keeping a note in docs/ideas/, or dropping it. TRIGGER WHEN: the user has an idea that is not yet clear, or wants to think something through before building it. DO NOT TRIGGER WHEN: the request is already clear enough to build (use new-feature).",
             "file": "commands/brainstorm-idea.md",
             "name": "daodan:brainstorm-idea"
           },
@@ -565,12 +565,12 @@
             "name": "daodan:get-second-opinion"
           },
           {
-            "description": "Add new behavior through the task cycle: an interview grounded in your code, a proposed decision record, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
+            "description": "Add new behavior through the task cycle: an interview grounded in your code, its intent kept in a proposed decision record when the project uses them, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).",
             "file": "commands/new-feature.md",
             "name": "daodan:new-feature"
           },
           {
-            "description": "Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).",
+            "description": "Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the project keeps them and the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).",
             "file": "commands/fix-bug.md",
             "name": "daodan:fix-bug"
           },
@@ -585,12 +585,12 @@
             "name": "daodan:continue-task"
           },
           {
-            "description": "Show where the work stands: open tasks with phase, progress, holder and pending questions, their branches, the maps freshness and the decision records. Changes nothing. TRIGGER WHEN: the user asks what is open, where a task stands, who is working on what, or what to do next. DO NOT TRIGGER WHEN: the user wants a task continued (use continue-task).",
+            "description": "Show where the work stands: open tasks with phase, progress, holder and pending questions, their branches, the maps freshness and the decision records when the project keeps them. Changes nothing. TRIGGER WHEN: the user asks what is open, where a task stands, who is working on what, or what to do next. DO NOT TRIGGER WHEN: the user wants a task continued (use continue-task).",
             "file": "commands/show-status.md",
             "name": "daodan:show-status"
           },
           {
-            "description": "Close the current branchs task: complete review of the branch, merge with your authorization, decision record promoted, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).",
+            "description": "Close the current branchs task: complete review of the branch, merge with your authorization, decision record promoted when there is one, map and documentation realigned, worktree removed. TRIGGER WHEN: the user wants a task completed, merged or closed. DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).",
             "file": "commands/finish-task.md",
             "name": "daodan:finish-task"
           },
@@ -615,7 +615,7 @@
             "name": "daodan:write-tests"
           },
           {
-            "description": "Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).",
+            "description": "Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, or the depth chosen at the projects first use, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).",
             "file": "commands/map-code.md",
             "name": "daodan:map-code"
           },
@@ -625,7 +625,7 @@
             "name": "daodan:write-docs"
           },
           {
-            "description": "Record an architecture decision outside a task: a grounded interview, then a Proposed record under docs/adr/ and its index. TRIGGER WHEN: the user wants to write down, propose or document a technical decision. DO NOT TRIGGER WHEN: the decision belongs to a task being built (new-feature records it).",
+            "description": "Record an architecture decision outside a task: a grounded interview, then a Proposed record under docs/adr/ and its index. On a project without decision records, this turns them on. TRIGGER WHEN: the user wants to write down, propose or document a technical decision. DO NOT TRIGGER WHEN: the decision belongs to a task being built (new-feature records it).",
             "file": "commands/record-decision.md",
             "name": "daodan:record-decision"
           },
@@ -5381,5 +5381,5 @@
   "name": "daodan",
   "private": true,
   "type": "module",
-  "version": "39.1.0"
+  "version": "39.2.0"
 }

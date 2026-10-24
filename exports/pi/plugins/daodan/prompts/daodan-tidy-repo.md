@@ -148,5 +148,8 @@ project, each owner's detection:
 | redundant or obsolete tests | `testing:test-remediation-method`, mode `consolidate` |
 | output of concluded Daodan runs | `project-lifecycle:lifecycle-method`, its `references/retention.md` |
 
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first.
 Show one preview, then ask once which groups to apply and whether to commit. Untracked
 removals are quarantined, never deleted; permanent deletion is a separate authorization.

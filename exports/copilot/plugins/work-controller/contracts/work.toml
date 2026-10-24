@@ -54,7 +54,7 @@ append_only = true
 # Optional sections a lifecycle run may carry. Absent sections are not validated;
 # a present section must satisfy its rules. The required fields above are untouched.
 [loop]
-sections = ["workspace", "preflight", "adr", "waves", "rulings", "reviews", "questions", "environment"]
+sections = ["workspace", "preflight", "adr", "first_use", "intent", "waves", "rulings", "reviews", "questions", "environment"]
 
 [loop.workspace]
 required = ["mode", "branch", "base_sha"]
@@ -70,6 +70,19 @@ migrations = ["ALIGNED", "PENDING", "DIVERGED", "UNKNOWN", "NOT_APPLICABLE"]
 [loop.adr]
 statuses = ["Proposed", "Accepted", "Superseded"]
 id_pattern = "^ADR-[0-9]{4}$"
+
+# The first-use answers, asked once before a project's first Daodan write
+# (ADR-0005): whether it keeps decision records and how deep to analyze it now.
+# Set once: an update never changes or removes them.
+[loop.first_use]
+required = ["records", "analysis"]
+analysis = ["none", "lite", "full"]
+
+# The task's intent file when the project keeps no decision records (ADR-0005):
+# a path inside the run and its SHA-256. One owner per task, so a run with an
+# intent proposes no record. A revised intent is a new file, never an edit.
+[loop.intent]
+required = ["path", "sha256"]
 
 [loop.waves]
 states = ["pending", "in_progress", "verified", "sealed", "rolled_back"]

@@ -1,8 +1,7 @@
 # Brainstorm
 
-Explore an idea with the user before a task exists. It reads the project and
-writes no code, no decision record and no plan; its run, with operation
-`brainstorm`, holds the conversation.
+Explore an idea with the user before a task exists. It reads the project,
+writes no code, record or plan; its `brainstorm` run holds the conversation.
 
 ## Ground first
 

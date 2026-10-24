@@ -1,6 +1,6 @@
 ---
 name: new-feature-workflow
-description: 'Add new behavior through the task cycle: an interview grounded in your code, a proposed decision record, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).'
+description: 'Add new behavior through the task cycle: an interview grounded in your code, its intent kept in a proposed decision record when the project uses them, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).'
 ---
 
 > Arguments: `<what to build>`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -227,7 +227,10 @@ The phase graph and record-schema references ship under `contracts/new-feature.w
 <arguments>
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`work-controller:work-record`. Run operation `change` for the request above
+`work-controller:work-record`.
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first. Run operation `change` for the request above
 through the phases of the lifecycle method's `references/change.md`, initializing the
 project first when it is not in the cycle. A request that turns out to be a defect or a
 pure restructuring follows `references/repair.md` or `references/refactor.md` instead,

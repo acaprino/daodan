@@ -151,15 +151,16 @@ A project driven by the lifecycle loop carries one bounded block in its
 authoritative instruction file, between `<!-- LOOP-HARNESS:BEGIN -->` and
 `<!-- LOOP-HARNESS:END -->`. The block holds only what every task needs at
 its start: the verified test, lint, type and build commands with their
-prerequisites; the active architecture decision records per domain, by
-identity and title, resolved through `project-knowledge:adr-method`; the
+prerequisites; on a project that keeps decision records, the active ones per
+domain, by identity and title, resolved through `project-knowledge:adr-method`; the
 workspace convention (worktree root, branch naming); and the sentence that the
 loop's run records live under `.daodan/runs/`. Reasons stay in the records,
 procedures stay in the loaded methods, and run state never enters the block.
 
 Create the block at project initialization when creation is authorized;
 otherwise report it as a planned change. At the close of a task, regenerate
-the block from the run record and the record index, and touch nothing outside
+the block from the run record and, when the project keeps decision records, the
+record index, and touch nothing outside
 the markers. A missing marker pair in an existing file is a finding, not a
 reason to append a second block. Generated copies follow the project's
 synchronization rule as for any other instruction change.

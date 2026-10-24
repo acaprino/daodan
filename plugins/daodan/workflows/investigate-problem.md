@@ -13,6 +13,9 @@ $ARGUMENTS
 Read the argument as a path, a commit, a pull request or a branch when one exists,
 otherwise as text, and say how you read it before starting. Load the skills
 `senior-review:investigation-method` and `work-controller:work-record` and
-investigate the problem above. Nothing in the product changes; the reproduction test is
-the one project file it writes, uncommitted. When the user wants it fixed, continue as
+investigate the problem above. Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first. Nothing in the product changes; the reproduction test is
+the one project file it writes, uncommitted. What the user's first-use answers create comes before this command and
+is not its write. When the user wants it fixed, continue as
 `/daodan:fix-bug` with the reproduction test as its oracle.

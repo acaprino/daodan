@@ -1,6 +1,6 @@
 ---
 name: fix-bug
-description: 'Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).'
+description: 'Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the project keeps them and the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).'
 argument-hint: '<the defect>'
 ---
 

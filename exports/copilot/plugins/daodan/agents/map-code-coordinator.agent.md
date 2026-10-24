@@ -1,6 +1,6 @@
 ---
 name: map-code-coordinator
-description: 'Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).'
+description: 'Deepen the projects Codebase Map on an area, or on the whole project: the lite map first when none exists, or the depth chosen at the projects first use, then the cards of the symbols that lack a fresh one. TRIGGER WHEN: the user asks to map, analyze or understand the structure of code, or to refresh the map. DO NOT TRIGGER WHEN: the user wants a written guide (use write-docs) or a verdict on a change (use review-changes).'
 tools: ['agent', 'codebase-map/*', 'edit', 'moe/*', 'peer-review/*', 'runCommands', 'search']
 agents: ['codebase-map:map-analyst', 'codebase-map:partition-behavior-worker', 'codebase-map:partition-quality-worker', 'codebase-map:partition-structure-worker', 'codebase-map:partition-synthesizer', 'codebase-map:semantic-interconnect-mapper', 'work-controller:isolated-worker']
 ---
@@ -141,7 +141,13 @@ The phase graph and record schemas ship with this package in
 
 <arguments>
 
-Load the skill `codebase-map:map-method`. Without a complete analysis of the project, or
+Load the skill `codebase-map:map-method`, and `work-controller:work-record` for
+the first-use probe.
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first. As
+this command is an analysis, the first use asks the depth and not whether to analyze.
+Without a complete analysis of the project, or
 when the user asks for a new run, run the analyze entry (`references/entry-analyze.md`) at
 lite depth, or at the depth, phases and run name the user asks for; for a large,
 multi-language or multi-workspace scope it recommends the team entry

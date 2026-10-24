@@ -74,7 +74,7 @@ Compiled binding and static checks do not prove an installed host executed a run
 The first entry of a project into the cycle, new or existing, and the only
 assess operation that writes outside its run. It is idempotent: a part that
 exists and validates is kept. Every work command runs it first when the
-project has no map, no record index or no loop block.
+project has no loop block.
 
 ## An empty folder
 
@@ -86,12 +86,12 @@ running it. Then continue below.
 
 ## An existing project
 
-1. **Map.** Execute the analyze entry's preflight at lite depth, dispatch
+1. **Map.** Execute the analyze entry's preflight at the first use's depth, lite
+   by default (none skips this step), dispatch
    `codebase-map:map-analyst` in an isolated context, and bind the run. An
    existing completed run on the same target is offered as the update parent.
    Areas deepen later, where tasks work.
-2. **Decision records.** Load `project-knowledge:adr-method` and run
-   `init-index`; an existing directory is validated, never rewritten.
+2. **Decision records.** Load `project-knowledge:adr-method` and run `validate`.
 3. **Environment.** Probe the interpreter and runners as
    `references/preflight.md` does and record them in the run's `environment`.
 4. **Instructions.** Load `project-knowledge:instructions-method`; create the

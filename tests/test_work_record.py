@@ -2,6 +2,7 @@
 
 import json
 import contextlib
+import hashlib
 import io
 import os
 import runpy
@@ -802,6 +803,118 @@ class LoopRecordTests(ProtocolCase):
         self.invoke("init", self.payload, ["--session", "s1"])
         held = self.ask({"id": "Q1", "phase": "interview", "text": "Keep the sync API?"}, ok=False, extra=["--session", "s2"])
         self.assertIn("held by session s1", held.stderr)
+
+
+class FirstUseTests(ProtocolCase):
+    """ADR-0005: the read-only first-use probe and the first_use and intent sections."""
+
+    def probe(self, project=None):
+        stdout = io.StringIO()
+        args = ["first-use", "--project", str(project or self.project)]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(self.runtime["main"](args), 0)
+        return json.loads(stdout.getvalue())
+
+    def intent(self, text="EX-001: input -> expected\n", name="intent.md"):
+        path = self.project / ".daodan/runs/test-run" / name
+        path.write_text(text, encoding="utf-8")
+        return {"path": name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+    def test_probe_of_a_fresh_project_reports_first_use_and_writes_nothing(self):
+        self.git("init", "-q")
+        before = sorted(p.name for p in self.project.iterdir())
+        result = self.probe()
+        self.assertEqual((result["first_use"], result["records"], result["found"]), (True, False, []))
+        self.assertEqual(Path(result["home"]), self.project.resolve())
+        self.assertEqual(sorted(p.name for p in self.project.iterdir()), before)
+        self.assertFalse((self.project / ".daodan").exists())
+
+    def test_a_map_directory_ends_first_use(self):
+        self.git("init", "-q")
+        (self.project / ".codebase-map").mkdir()
+        result = self.probe()
+        self.assertEqual((result["first_use"], result["found"]), (False, [".codebase-map"]))
+
+    def test_an_adr_index_enables_records(self):
+        self.git("init", "-q")
+        (self.project / "docs/adr").mkdir(parents=True)
+        (self.project / "docs/adr/README.md").write_text("# Decision records\n", encoding="utf-8")
+        result = self.probe()
+        self.assertEqual((result["first_use"], result["records"]), (True, True))
+
+    def test_probe_from_a_linked_worktree_reports_the_main_checkout(self):
+        self.committed_project()
+        worktree = self.temp / "wt"
+        self.git("worktree", "add", "-q", "-b", "task/wt", str(worktree))
+        self.assertTrue(self.probe(worktree)["first_use"])
+        (self.project / ".daodan").mkdir()
+        result = self.probe(worktree)
+        self.assertEqual(Path(result["home"]), self.project.resolve())
+        self.assertEqual((result["first_use"], result["found"]), (False, [".daodan"]))
+
+    def test_first_use_answers_are_validated(self):
+        self.payload["first_use"] = {"records": False, "analysis": "deep"}
+        self.assertIn("first_use.analysis must be one of", self.invoke("init", self.payload, ok=False).stderr)
+        self.payload["first_use"] = {"records": "no", "analysis": "lite"}
+        self.assertIn("first_use.records must be a boolean", self.invoke("init", self.payload, ok=False).stderr)
+        self.payload["first_use"] = {"records": False, "analysis": "full"}
+        self.assertEqual(self.init()["first_use"], {"records": False, "analysis": "full"})
+
+    def test_first_use_is_answered_once(self):
+        self.init()
+        answers = {"records": True, "analysis": "lite"}
+        self.assertEqual(self.invoke("update", {"first_use": answers}, ["--expected-revision", "0"])["first_use"], answers)
+        changed = self.invoke("update", {"first_use": {"analysis": "full"}}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("answered once", changed.stderr)
+        self.invoke("update", {"first_use": None}, ["--expected-revision", "1"], ok=False)
+        self.assertEqual(self.invoke("show")["first_use"], answers)
+        with self.assertRaisesRegex(self.runtime["ProtocolError"], "answered once"):
+            self.runtime["validate_loop_transitions"]({"first_use": answers}, {})
+
+    def test_intent_is_pinned_to_a_file_of_its_run(self):
+        self.init()
+        intent = self.intent()
+        self.assertEqual(self.invoke("update", {"intent": intent}, ["--expected-revision", "0"])["intent"], intent)
+        self.assertTrue(self.invoke("validate")["valid"])
+        stale = {**intent, "sha256": "0" * 64}
+        self.assertIn("stale", self.invoke("update", {"intent": stale}, ["--expected-revision", "1"], ok=False).stderr)
+        revised = self.intent("EX-001: revised\n", "intent-2.md")
+        self.assertEqual(self.invoke("update", {"intent": revised}, ["--expected-revision", "1"])["intent"], revised)
+        (self.project / ".daodan/runs/test-run/intent-2.md").write_text("edited in place\n", encoding="utf-8")
+        self.assertIn("stale", self.invoke("validate", extra=["--current"], ok=False).stderr)
+
+    def test_an_intent_edited_in_place_never_locks_its_run(self):
+        self.init()
+        self.invoke("update", {"intent": self.intent()}, ["--expected-revision", "0"])
+        (self.project / ".daodan/runs/test-run/intent.md").write_text("edited in place\n", encoding="utf-8")
+        self.assertTrue(self.invoke("validate")["valid"])
+        self.assertEqual(self.invoke("show")["revision"], 1)
+        revised = self.intent("EX-001: revised\n", "intent-2.md")
+        self.assertEqual(self.invoke("update", {"intent": revised}, ["--expected-revision", "1"])["intent"], revised)
+        self.assertTrue(self.invoke("validate", extra=["--current"])["valid"])
+
+    def test_intent_path_cannot_escape_its_run(self):
+        self.init()
+        outside = self.project / ".daodan/runs/other"
+        outside.mkdir()
+        (outside / "intent.md").write_bytes(b"x\n")
+        digest = hashlib.sha256(b"x\n").hexdigest()
+        for path in ("../other/intent.md", str(outside / "intent.md")):
+            refusal = self.invoke("update", {"intent": {"path": path, "sha256": digest}},
+                                  ["--expected-revision", "0"], ok=False)
+            self.assertIn("inside its run", refusal.stderr)
+
+    def test_intent_and_a_proposed_record_never_own_one_task(self):
+        self.payload["adr"] = {"active": [], "proposed": "ADR-0001"}
+        self.init()
+        intent = self.intent()
+        refusal = self.invoke("update", {"intent": intent}, ["--expected-revision", "0"], ok=False)
+        self.assertIn("one owner", refusal.stderr)
+        withdrawn = self.invoke("update", {"adr": {"proposed": None}, "intent": intent}, ["--expected-revision", "0"])
+        self.assertEqual(withdrawn["intent"], intent)
+        refusal = self.invoke("update", {"adr": {"proposed": "ADR-0002"}}, ["--expected-revision", "1"], ok=False)
+        self.assertIn("one owner", refusal.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

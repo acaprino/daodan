@@ -157,11 +157,12 @@ snapshot --project ROOT --payload CONTEXT.json [--out INTERNAL_ROOT]
 agenda --project ROOT [--branch NAME] [--out INTERNAL_ROOT]
 ask --project ROOT --run-id ID --payload QUESTION.json
 answer --project ROOT --run-id ID --payload ANSWER.json
+first-use --project ROOT
 ```
 
 `agenda.json` beside `runs/` holds one row per task. `--session ID` on init, update and resume records the holder; a task
 another session holds is refused until `--take-over`, once the user confirms
-that session is closed. A branch holds one open loop task; a completed run
+it closed. A branch holds one open loop task; a completed run
 releases its row.
 
 Keep a custom `--out` consistent. Init requires
@@ -198,8 +199,8 @@ phase at once.
 
 ## Loop sections
 
-A lifecycle run may carry the optional sections of the work contract's
-`[loop]`, each validated whenever present.
+A lifecycle run may carry the work contract's optional `[loop]` sections,
+each validated when present, `first_use` and `intent` included.
 
 | Section | Holds | The helper refuses |
 |---|---|---|

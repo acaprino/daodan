@@ -94,7 +94,7 @@ Rules that hold across phases:
   current code is never promoted into the requirement.
 - Preserve preexisting edits and other sessions' work. Recovery restores the
   owned pre-phase state, never `HEAD~1`.
-- A project without map, record index or loop block is initialized first
+- A project without loop block is initialized first
   through `references/init.md`.
 - Severe evidenced defects and broken entry paths come before cosmetic work.
 - A plan or a diff without verification is not completed development.

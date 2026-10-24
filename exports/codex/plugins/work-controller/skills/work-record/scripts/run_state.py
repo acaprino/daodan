@@ -91,6 +91,21 @@ def checkout_home(project):
     return common_path.parent
 
 
+STATE_DIRECTORIES = (".codebase-map", ".codebase-xray", ".daodan")
+
+
+def first_use_probe(project):
+    """Whether a project has any Daodan state yet (ADR-0005). Writes nothing."""
+    project = Path(project).resolve()
+    if not project.is_dir():
+        raise ProtocolError("Project root must be a directory")
+    home = checkout_home(project)
+    found = sorted(name for name in STATE_DIRECTORIES if (home / name).is_dir() or (project / name).is_dir())
+    records = any((base / "docs/adr/README.md").is_file() for base in (home, project))
+    return {"first_use": not found, "records": records,
+            "home": str(home), "found": found}
+
+
 def roots(project, output):
     project = Path(project).resolve()
     if not project.is_dir():
@@ -302,6 +317,45 @@ def validate_adr(section, rules):
     proposed = section.get("proposed")
     if proposed is not None and (not isinstance(proposed, str) or not pattern.fullmatch(proposed)):
         raise ProtocolError("adr.proposed must be an ADR identifier or null")
+
+
+def validate_first_use(section, rules):
+    if not isinstance(section, dict) or set(rules["required"]) - set(section):
+        raise ProtocolError("first_use must be an object with " + ", ".join(rules["required"]))
+    if not isinstance(section["records"], bool):
+        raise ProtocolError("first_use.records must be a boolean")
+    if section["analysis"] not in rules["analysis"]:
+        raise ProtocolError("first_use.analysis must be one of " + ", ".join(rules["analysis"]))
+
+
+def validate_intent(section, rules, directory, adr, digests):
+    """The task's intent file, pinned by digest inside the run's own directory.
+
+    The file is compared with its digest only when `digests` is set: when an
+    update records a new intent and when the current candidate is validated.
+    Reading a stored record never fails on it, so a run whose intent file was
+    edited in place can still record the revised file.
+    """
+    if not isinstance(section, dict) or set(rules["required"]) - set(section):
+        raise ProtocolError("intent must be an object with " + ", ".join(rules["required"]))
+    if isinstance(adr, dict) and adr.get("proposed") is not None:
+        raise ProtocolError("A task's intent has one owner, the decision record or the run's intent, never both")
+    if directory is None:
+        raise ProtocolError("intent is checked only inside a stored run")
+    try:
+        path = directory / report_path(section["path"])
+    except ProtocolError as error:
+        raise ProtocolError(f"intent.path must name a file inside its run: {section['path']}") from error
+    no_links(path, directory)
+    digest = section["sha256"]
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise ProtocolError("intent.sha256 must be a SHA256 digest")
+    if not digests:
+        return
+    if not path.is_file():
+        raise ProtocolError(f"Intent file is missing: {section['path']}")
+    if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+        raise ProtocolError("intent.sha256 is stale; write a revised intent to a new file and record its digest")
 
 
 def validate_task(task, rules):
@@ -817,8 +871,12 @@ def validate_grants(record):
             raise ProtocolError(f"Grant {grant['id']} names the user's answer as its source")
 
 
-def validate_loop(record):
-    """Validate the optional loop sections a lifecycle run carries."""
+def validate_loop(record, directory=None, digests=False):
+    """Validate the optional loop sections a lifecycle run carries.
+
+    `directory` is the run's own directory, which only a stored record has;
+    `intent` needs it to check its file, and `digests` to compare the file's bytes.
+    """
     rules = contract().get("loop")
     if rules is None:
         return
@@ -829,6 +887,10 @@ def validate_loop(record):
         validate_preflight(present["preflight"], rules["preflight"])
     if "adr" in present:
         validate_adr(present["adr"], rules["adr"])
+    if "first_use" in present:
+        validate_first_use(present["first_use"], rules["first_use"])
+    if "intent" in present:
+        validate_intent(present["intent"], rules["intent"], directory, present.get("adr"), digests)
     if "waves" in present:
         validate_waves(present["waves"], rules["waves"], present.get("workspace"))
     if "rulings" in present:
@@ -857,9 +919,11 @@ def validate_loop_transitions(old, new):
             for b, a in zip(before, after)):
         raise ProtocolError("Questions are append-only; a question or its answer cannot be altered or removed")
     validate_written_questions(after, before)
+    if "first_use" in old and new.get("first_use") != old["first_use"]:
+        raise ProtocolError("first_use is answered once; an update cannot change or remove it")
 
 
-def validate_record(record, project=None, root=None, current=False):
+def validate_record(record, project=None, root=None, current=False, digests=False):
     rules = contract()
     missing = sorted(set(rules["required"]) - set(record))
     if missing:
@@ -912,7 +976,7 @@ def validate_record(record, project=None, root=None, current=False):
                         raise ProtocolError("An independent check requires its own output report")
                     delivery_reports.append((report, "check" in item))
     validate_grants(record)
-    validate_loop(record)
+    validate_loop(record, None if root is None else root / "runs" / record["run_id"], digests)
     if project is not None:
         if record["project"].get("root") != str(project):
             raise ProtocolError("Project identity does not match this invocation")
@@ -1116,7 +1180,9 @@ def commit_change(project, root, directory, path, session, take_over, change):
         updated["revision"] += 1
         updated["updated_at"] = timestamp()
         updated["candidate"] = project_binding(project, before["scope"], root)
-        validate_record(updated, project, root, current=True)
+        validate_record(updated, project, root, current=True,
+                        digests=updated.get("intent") != before.get("intent")
+                        or updated["status"] == "complete")
         validate_transitions(before, updated)
         agenda = plan_agenda(root, project, updated, session, take_over)
         atomic_write(path, updated, root)
@@ -1241,7 +1307,7 @@ def atomic_write(path, record, boundary):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check", "agenda", "ask", "answer"))
+    parser.add_argument("command", choices=("init", "show", "update", "validate", "resume", "snapshot", "plan-check", "agenda", "ask", "answer", "first-use"))
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--run-id")
     parser.add_argument("--session", help="identity of the session doing the work; recorded as the task's holder")
@@ -1254,6 +1320,11 @@ def main(argv=None):
     parser.add_argument("--current", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command == "first-use":
+            # Read-only and run before the first write: it resolves no output
+            # root, so a root's dedication check never refuses the probe.
+            print(json.dumps(first_use_probe(args.project), indent=2, sort_keys=True))
+            return 0
         project, root = roots(args.project, args.out)
         payload = read_json(args.payload) if args.payload else {}
         if args.command == "plan-check":
@@ -1290,7 +1361,7 @@ def main(argv=None):
                       "updated_at": timestamp()}
             for key, default in (("phases", {}), ("plan", []), ("deliveries", {}), ("required_gates", []), ("gates", {})):
                 record.setdefault(key, default)
-            validate_record(record, project, root)
+            validate_record(record, project, root, digests=True)
             validate_written_questions(record.get("questions"))
             if directory.exists():
                 raise ProtocolError("Run already exists; choose another exact ID or resume")
@@ -1312,6 +1383,8 @@ def main(argv=None):
             elif args.command == "validate":
                 if args.current and project_binding(project, record["scope"], root) != record.get("candidate", record["project"]):
                     raise ProtocolError("Current candidate snapshot or workspace identity changed")
+                if args.current:
+                    validate_loop(record, directory, digests=True)
                 if args.result:
                     no_links(args.result.absolute(), directory)
                     validate_result(read_json(args.result), record)

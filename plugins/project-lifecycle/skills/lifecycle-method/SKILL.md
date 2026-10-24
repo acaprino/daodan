@@ -18,6 +18,7 @@ Read each step's units at its start.
 
 | Operation or step | Read |
 |---|---|
+| first use | `references/first-use.md` |
 | initialization | `references/init.md` |
 | assess, the diagnosis | `references/assess.md` |
 | change, phase 1 | `references/preflight.md`, `references/context-cycle.md` |
@@ -39,13 +40,13 @@ Read each step's units at its start.
 
 Inputs: operation, project root, objective and its source; optional target,
 run identity and prior evidence. Initialize
-through the protocol helper with operation, objective, scope, authorizations,
-budget, phases, plan, deliveries and required gates; the loop sections are
-added as the phases produce them, and a draft plan passes `plan-check` before
-it enters the run. Resume the branch's task from the agenda with current
+through the protocol helper; loop sections arrive with their phases, and a
+draft plan passes `plan-check` before entering it. Resume the branch's task from the agenda with current
 authorizations and this session's id. Preview is the default; an
 authorization is asked when a step needs it and recorded in the run: `fix` for
 in-scope edits, `commit` for commits, neither a push or a permanent deletion.
+Without `docs/adr/README.md`: no `adr_tool.py` but `template`, no mention of
+records; "record" is the run's `intent.md`.
 
 ## Canonical methods
 

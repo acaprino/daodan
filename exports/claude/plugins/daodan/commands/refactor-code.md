@@ -220,7 +220,10 @@ The phase graph, the isolation and join policies and the record schemas are in
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`work-controller:work-record`. Run operation `change` for the request above as the
+`work-controller:work-record`.
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first. Run operation `change` for the request above as the
 lifecycle method's `references/refactor.md` directs: characterization tests before any
 refactoring wave, structural oracles, behavior unchanged at every step. Stop only for
 the user's answers, the plan approval and the merge authorization; ask each as the work record's question rule says; a yes to an authorization is

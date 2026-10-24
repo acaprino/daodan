@@ -143,4 +143,7 @@ Route the request above, then load the method it needs together with
 | the README | `project-knowledge:readme-craft` |
 | instructions, CLAUDE.md, AGENTS.md | `project-knowledge:instructions-method` |
 
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first.
 Audit first; writing into the repository is an authorization asked when needed.

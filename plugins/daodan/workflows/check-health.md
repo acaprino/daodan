@@ -11,7 +11,10 @@ argument-hint: "[area]"
 $ARGUMENTS
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`work-controller:work-record`. Run operation `assess`, the diagnosis of the
+`work-controller:work-record`.
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first. Run operation `assess`, the diagnosis of the
 lifecycle method's `references/assess.md`, with focus `all` on the area named above or
 the whole project: knowledge, structure, tests, artifacts and every stack the snapshot
 shows. It is read-only. The result is the plan of actions with owner, scope, evidence,

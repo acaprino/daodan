@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: 'Add new behavior through the task cycle: an interview grounded in your code, a proposed decision record, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).'
+description: 'Add new behavior through the task cycle: an interview grounded in your code, its intent kept in a proposed decision record when the project uses them, a plan in waves you approve, execution by the stacks specialists with a light review before each commit. TRIGGER WHEN: the user wants new behavior, a feature or a capability added; also the default when unsure which work command fits. DO NOT TRIGGER WHEN: a defect is to be fixed (use fix-bug) or behavior must stay the same (use refactor-code).'
 argument-hint: '<what to build>'
 ---
 

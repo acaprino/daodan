@@ -1,6 +1,6 @@
 ---
 description: >
-  Close the current branch's task: complete review of the branch, merge with your authorization, decision record promoted, map and documentation realigned, worktree removed.
+  Close the current branch's task: complete review of the branch, merge with your authorization, decision record promoted when there is one, map and documentation realigned, worktree removed.
   TRIGGER WHEN: the user wants a task completed, merged or closed.
   DO NOT TRIGGER WHEN: the task still has open waves (use continue-task).
 ---

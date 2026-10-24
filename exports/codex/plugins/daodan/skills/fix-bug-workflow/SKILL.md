@@ -1,6 +1,6 @@
 ---
 name: fix-bug-workflow
-description: 'Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).'
+description: 'Fix a defect: first the test that reproduces it, then a short interview, the fix, a light review. A decision record only when the project keeps them and the fix changes a contract. Without a known cause, investigates first. TRIGGER WHEN: the user reports a bug to fix, a regression or a failing behavior and wants it corrected. DO NOT TRIGGER WHEN: the user only wants to understand a problem (use investigate-problem).'
 ---
 
 > Arguments: `<the defect>`. Wherever `<arguments>` appears below, substitute the text the user typed after the skill name.
@@ -227,7 +227,10 @@ The phase graph and record-schema references ship under `contracts/fix-bug.workf
 <arguments>
 
 Load the skills `project-lifecycle:lifecycle-method` and
-`work-controller:work-record`. Run operation `repair` for the defect above as the
+`work-controller:work-record`.
+Before anything is written, run `run_state.py first-use --project ROOT`; on
+`first_use: true`, load `project-lifecycle:lifecycle-method` and follow its
+`references/first-use.md` first. Run operation `repair` for the defect above as the
 lifecycle method's `references/repair.md` directs: without a demonstrated cause,
 `senior-review:investigation-method` runs first and its reproduction test becomes the
 oracle. Stop only for the user's answers, the plan approval and the merge authorization;
